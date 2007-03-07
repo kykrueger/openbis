@@ -221,3 +221,4 @@ Makefile* = svn:eol-style=native
 *.ps = svn:mime-type=application/postscript;svn:needs-lock
 *.swf = svn:mime-type=application/x-shockwave-flash;svn:needs-lock
 *.exe = svn:mime-type=application/octet-stream;svn:executable;svn:needs-lock
+*.dll = svn:mime-type=application/octet-stream;svn:needs-lock
