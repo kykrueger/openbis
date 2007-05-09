@@ -1,0 +1,35 @@
+<project name="Ant Tasks" default="jar" basedir="..">
+
+  <import file="../../build_resources/ant/build-common.xml" />
+  <project-classpath name="ecp" classes="${classes}" />
+
+	<property name="jar.dir" value="${targets}/jar"/>
+	<property name="jar.file" value="${jar.dir}/cisd-ant-tasks.jar"/>
+
+	<target name="clean">
+        <delete dir="${jar.dir}"/>
+	</target>
+
+    <target name="compile" depends="clean">
+        <antcall target="-compile" />
+    </target>
+
+	<target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <build-info revision="revision.number" version="version.number"/>
+        <echo file="${build.info.file}">${version.number}:${revision.number}:${clean.flag}</echo>
+        <echo level="info">BUILD INFO: ${version.number}:${revision.number}:${clean.flag}</echo>
+        <recursive-jar destfile="${jar.file}">
+            <fileset dir="${classes}">
+                <include name="**/*.class" />
+                <include name="${build.info.filename}" />
+            </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="ch.systemsx.cisd.common.utilities.BuildAndEnvironmentInfo" />
+                <attribute name="Version" value="${version.number}" />
+                <attribute name="Build-Number" value="${version.number} (r${revision.number},${clean.flag})" />
+            </manifest>
+        </recursive-jar>
+	</target>
+
+</project>
