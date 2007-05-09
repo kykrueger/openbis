@@ -1,0 +1,73 @@
+<project name="build-common" basedir="..">
+  <path id="build-resource.path">
+    <fileset dir="../build_resources/lib">
+      <include name="*.jar"/>
+    </fileset>
+  </path> 
+  <taskdef name="build-info" 
+           classname="ch.systemsx.cisd.ant.task.subversion.GatherRevisionAndVersionTask"
+           classpathref="build-resource.path" />
+  <taskdef name="build-java-subprojects"
+           classname="ch.systemsx.cisd.ant.task.subprojectbuilder.BuildJavaSubprojectsTask" 
+           classpathref="build-resource.path" />
+  <taskdef name="project-classpath" classname="ch.systemsx.cisd.ant.task.SetEclipseClasspathTask" 
+           classpathref="build-resource.path" />
+  <typedef name="recursive-jar" classname="ch.systemsx.cisd.ant.task.RecursiveJar"  
+           classpathref="build-resource.path"/>
+  <taskdef resource="testngtasks" classpath="../libraries/testng/testng-jdk15.jar"/> 
+
+  <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter" />
+  <property name="targets" value="targets" />
+  <property name="sources" value="source/java" />
+  <property name="sources.test" value="sourceTest/java" />
+  <property name="classes" value="${targets}/ant/classes" />
+  <property name="output.test" value="${targets}/test-output" />
+  <property name="build.info.filename" value="BUILD.INFO" />
+  <property name="build.info.file" value="${classes}/${build.info.filename}" />
+ 
+  
+  <target name="_dummy" description="Dummy target used by cruisecontrol"/> 
+
+  <target name="-prepare">
+    <delete dir="${classes}" />
+    <mkdir dir="${classes}" />
+  </target>
+
+  <target name="-compile" depends="-prepare">
+    <build-java-subprojects target="compile" />
+    <antcall target="_plain-compile">
+      <param name="src" value="${sources}"/> 
+    </antcall>  
+  </target>
+
+  <target name="-compile-tests" depends="-compile">
+    <build-java-subprojects target="compile-tests" />
+    <antcall target="_plain-compile">
+      <param name="src" value="${sources.test}"/> 
+    </antcall>  
+  </target>
+ 
+  <!-- Compile Java classes using the Eclipse compiler 
+       Note: THIS IS A PRIVATE TARGET. It isn't intended to be used in other build scripts.
+       Parameter: src = source folder
+  --> 
+  <target name="_plain-compile">
+    <echo level="info">Compile all classes in ${basedir}/${src} and subfolders</echo> 
+    <javac srcdir="${src}" destdir="${classes}" classpath="${ecp}" 
+           source="1.5" target="1.5" debug="true">
+      <compilerarg line="-warn:none" />
+    </javac>
+  </target> 
+
+  <!-- Runs a TestNG test suite
+       Parameter: test.suite = path of test suite relative to the test source folder
+  --> 
+  <target name="-run-tests" depends="-compile-tests">
+    <delete dir="${output.test}"/> 
+    <testng classpath="${ecp}" workingDir="." outputdir="${output.test}" haltonfailure="true">
+      <xmlfileset dir="${sources.test}" includes="${test.suite}"/>
+    </testng> 
+  </target>
+
+
+</project>
