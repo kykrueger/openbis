@@ -1,28 +1,30 @@
 # Summary
 
-openBIS should be extended to support big-data use cases. This requires changing openBIS to be aware of data that it does not manage (unmanaged data). Interaction with openBIS for these use cases will be done with a command-line client.
+openBIS should be extended to support big-data use cases. This requires changing openBIS to be aware of data that it does not manage (externally managed data). Interaction with openBIS for these use cases will be done with a command-line client.
 
 # Implementation Breakdown
 
 - Implement command-line tool (obis) for interacting with openBIS
-- Extend openBIS to support unmanaged data
+- Extend openBIS to support externally managed data
+  - Allow a data set to be designated as externally managed.
+  - Support data set versions
 
 # obis Commands
 
 | Command       | Description                                                                                 |
 |---------------|---------------------------------------------------------------------------------------------|
-| obis init     | Register unmanaged data set with openBIS                                                    |
-| obis commit   | Commit local state to openBIS server and synchronize database                                                       |
-| obis add-ref  | Reference a existing unmanaged data set                                                     |
+| obis init     | Register externally managed data set with openBIS                                           |
+| obis commit   | Commit local state to openBIS server and synchronize database                               |
+| obis add-ref  | Reference a existing externally managed data set                                            |
 | obis clone    | Copy data to new location and register copy with openBIS                                    |
-| obis get      | Retrieve the files for an unmanaged data set                                                |
+| obis get      | Retrieve the files for an externally managed data set                                       |
 
 
 # Implementation Sketch
 
 Our suggestion is to implement this feature by leveraging existing tools that can help us. In particular, our suggestion is to implement the obis with help from *git* and *git-annex*. Unmanaged obis data would be kept in the form of a git repository. Large files would be stored using git-annex, which is an extension of git explicitly designed for this purpose.
 
-In this implementation openBIS would neither store files nor file metadata for unmanaged data sets. It would only store git commit IDs and URLs for git repositories. Git itself would be used to make the contents of unmanaged data sets available to others. The advantages of this solution include the ability to publish workflows while keeping some data private, as might be necessary in, e.g., personalized medicine contexts.
+In this implementation openBIS would neither store files nor file metadata for externally managed data sets. It would only store git commit IDs and URLs for git repositories. Git itself would be used to make the contents of externally managed data sets available to others. The advantages of this solution include the ability to publish workflows while keeping some data private, as might be necessary in, e.g., personalized medicine contexts.
 
 The solution we propose here has many similarities to the one outlined in this paper:
 
@@ -42,15 +44,15 @@ A user wishes to analyze a large data set on a cluster. Here is an overview of t
 | Command              | Effect                                                                                  |
 |----------------------|-----------------------------------------------------------------------------------------|
 | [download data]      | Stage data on the server in folder "foo"                                                |
-| obis init data .     | Prepare an unmanaged (data) data set                                                    |
-| obis commit          | Inform the openBIS server about the current state and send a file listing for the database                                       |
+| obis init data .     | Prepare an externally managed (data) data set                                                    |
+| obis commit          | Inform the openBIS server about the current state and send a file listing for the database       |
 | mkdir/cd ../bar      | Create a folder to contain the analysis code                                            |
-| obis init analysis . | Prepare an unmanaged (analysis) data set                                                |
+| obis init analysis . | Prepare an externally managed (analysis) data set                                                |
 | obis add-ref  [path] | Indicate that the analysis data set references the data data set                        |
 | [run analysis]       | Do the data analysis                                                                    |
 | obis commit          | Commit the results of the analysis to openBIS.                                          |
 
-This would result in two data sets created in openBIS: DS1 and DS2. DS1 would be an unmanaged data data set and include as metadata the commit id for the data repository. DS2 would be an unmanaged analysis data set and include as metadata the commit id for the analysis repository.
+This would result in two data sets created in openBIS: DS1 and DS2. DS1 would be an externally managed data data set and include as metadata the commit id for the data repository. DS2 would be an externally managed analysis data set and include as metadata the commit id for the analysis repository.
 
 Later, the user could run the following sequence of commands on a different machine, for example.
 
@@ -67,11 +69,11 @@ This would make it possible to re-run the analysis on different infrastructure. 
 
 ## obis init [data/analysis]
 
-Create a new unmanaged data set in openBIS. This command has two variants: data and analysis. With the data argument, a git-annex is also initialized so that the (potentially large) data files can be managed. With the analysis argument only git is initialized, since the repository is assumed to hold just source code and analysis results (which are assumed to be small). Here the user is also queried about the openBIS instance they want to use for this repository/dataset. 
+Create a new externally managed data set in openBIS. This command has two variants: data and analysis. With the data argument, a git-annex is also initialized so that the (potentially large) data files can be managed. With the analysis argument only git is initialized, since the repository is assumed to hold just source code and analysis results (which are assumed to be small). Here the user is also queried about the openBIS instance they want to use for this repository/dataset. 
 
 ## obis commit
 
-Informs openBIS about the current state of the repository. If it is unknown to openBIS, a new data set is created. If is is known to openBIS, a new data set is created which is the child of the previous state of the data set. The unmanaged data set stores the git commit id as metadata. Unmanaged data sets may have copies. A reference to the git repository is stored (a git URL) so that the data set may be cloned at a later time. Once the data set ID is returned by the openBIS server, a marker file is created in the directories belonging to the dataset to enable discovery in case of a lost link. 
+Informs openBIS about the current state of the repository. If it is unknown to openBIS, a new data set is created. If is is known to openBIS, a new data set is created which is the child of the previous state of the data set. The externally managed data set stores the git commit id as metadata. Unmanaged data sets may have copies. A reference to the git repository is stored (a git URL) so that the data set may be cloned at a later time. Once the data set ID is returned by the openBIS server, a marker file is created in the directories belonging to the dataset to enable discovery in case of a lost link. 
 
 ## obis add-ref [path do data set]
 
@@ -93,7 +95,7 @@ This is described in the use case above.
 
 ## Visibility / Access / Publishing
 
-The contents of unmanaged data sets are not visible in general to openBIS users because they may reside on computers where the openBIS has no access. To make the contents visible, they need to be pushed to publicly accessible repositories. This gives users control of what data and code are public, and what are kept private. It also allows for partial publication of data, useful e.g., when dealing with privacy-sensitive content (say, in the context of medicine).
+The contents of externally managed data sets are not visible in general to openBIS users because they may reside on computers where the openBIS has no access. To make the contents visible, they need to be pushed to publicly accessible repositories. This gives users control of what data and code are public, and what are kept private. It also allows for partial publication of data, useful e.g., when dealing with privacy-sensitive content (say, in the context of medicine).
 
 ## Management of Data in Non-POSIX File Systems
 
@@ -101,9 +103,21 @@ This needs to be looked into in greater detail. Git-annex can manage data that i
 
 # openBIS changes
 
-- New data set type -- unmanaged
-- New concept on data sets: copies
-- [Copies can be "altered"] -- This is no longer needed
+- Need to be able to designate data sets as externally managed.
+  - It might be sufficient to leave the store field empty to do this, otherwise it may still require a new kind of data set
+- Need to be able to track versions of data sets
+  - A version is a new kind of relationship between two data sets. Both data sets need to be of the same type.
+  - On the relationship, it should be possible to mark the new version as inheriting properties from the upstream.
+  
+## Support for Versions
+
+Since externally managed data sets may be changed, openBIS needs to track versions of data sets. This concept should be introduced for all data sets, not just externally managed ones. A version of a data set is another data set of the same type with a particular type of relationship between them. Currently we support parent/child relationships between data sets. We will also need to support "version" as a new type of relationship.
+
+  
+## Data set property inheritance
+
+To make maintenance of versions of data sets manageable, openBIS should support inheritance of properties. openBIS already supports defining a graph of relationships between data sets. Property inheritance should be a flag that any be applied to any edge in the relationship graph. If it is set, values for the properties on the downstream node are inherited from the parent. This means that if a property is set, this is the value for the property; if no property value is set, the value is the property value of the upstream node (recursively).
+
 
 # Outstanding Questions
 
