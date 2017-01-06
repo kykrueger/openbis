@@ -35,7 +35,7 @@ DROPBOX_PLUGIN = "jupyter-uploader-api"
 def _definitions(what):
     entities = {
         "Sample": {
-            "attrs": "code permId identifier type container components attachments space project experiment parents children container components tags ".split(),
+            "attrs": "code permId identifier type parents children attachments space project experiment container components tags ".split(),
             "ids2type": {
                 'parentIds': { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
                 'childIds':  { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
@@ -46,7 +46,7 @@ def _definitions(what):
             "multi": "parents children components tags".split(),
         },
         "Experiment": {
-            "attrs": "code permId identifier type space project tags samples attachments".split(),
+            "attrs": "code permId identifier type space project tags attachments".split(),
             "multi": "tags".split(),
             "identifier": "experimentId",
         },
@@ -88,10 +88,12 @@ def _definitions(what):
     return entities[what]
 
 
-search_for_type = {
+search_criteria = {
     "space":      "as.dto.space.search.SpaceSearchCriteria",
     "project":    "as.dto.project.search.ProjectSearchCriteria",
     "experiment": "as.dto.experiment.search.ExperimentSearchCriteria",
+    "sample":     "as.dto.sample.search.SampleSearchCriteria",
+    "dataset":    "as.dto.dataset.search.DataSetSearchCriteria",
     "code":       "as.dto.common.search.CodeSearchCriteria",
     "sample_type":"as.dto.sample.search.SampleTypeSearchCriteria",
 }
@@ -211,6 +213,13 @@ def check_datatype(type_name, value):
 def is_identifier(ident):
     # assume we got a sample identifier e.g. /TEST/TEST-SAMPLE
     match = re.match('/', ident)
+    if match:
+        return True
+    else:
+        return False
+
+def is_permid(ident):
+    match = re.match('^\d+\-\d+$', ident)
     if match:
         return True
     else:
@@ -577,19 +586,26 @@ def _subcriteria_for_permid(permids, entity_type, parents_or_children=''):
     return criteria
 
 def _subcriteria_for_code(code, object_type):
+    if is_permid(code):
+        fieldname = "permId"
+        fieldtype = "as.dto.common.search.PermIdSearchCriteria"
+    else:
+        fieldname = "code"
+        fieldtype = "as.dto.common.search.CodeSearchCriteria"
+
     criteria = {
         "criteria": [
             {
-                "fieldName": "code",
+                "fieldName": fieldname,
                 "fieldType": "ATTRIBUTE",
                 "fieldValue": {
                     "value": code.upper(),
                     "@type": "as.dto.common.search.StringEqualToValue"
                 },
-                "@type": "as.dto.common.search.CodeSearchCriteria"
+                "@type": fieldtype 
             }
         ],
-        "@type": search_for_type[object_type],
+        "@type": search_criteria[object_type.lower()],
         "operator": "AND"
     }
     crit = _gen_search_request({
@@ -629,12 +645,6 @@ class Openbis:
         self.sample_types = None
         self.files_in_wsp = []
         self.token_path = None
-
-        # some default settings for working with samples etc.
-        self.default_space = None
-        self.default_project = None
-        self.default_experiment = None
-        self.default_sample_type = None
 
         # use an existing token, if available
         if self.token is None:
@@ -859,11 +869,6 @@ class Openbis:
         """ Get a list of all samples for a given space/project/experiment (or any combination)
         """
 
-        if space is None:
-            space = self.default_space
-        if project is None:
-            project = self.default_project
-
         sub_criteria = []
         if space:
             sub_criteria.append(_gen_search_request({
@@ -880,8 +885,6 @@ class Openbis:
             sub_criteria.append(exp_crit)
         if experiment:
             sub_criteria.append(_subcriteria_for_code(experiment, 'experiment'))
-        if experiment is None:
-            experiment = self.default_experiment
         if properties is not None:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
@@ -965,11 +968,6 @@ class Openbis:
         """ Get a list of all experiment for a given space or project (or any combination)
         """
 
-        if space is None:
-            space = self.default_space
-        if project is None:
-            project = self.default_project
-
         sub_criteria = []
         if space:
             sub_criteria.append(_subcriteria_for_code(space, 'space'))
@@ -1033,7 +1031,7 @@ class Openbis:
     def get_datasets(self, 
         code=None, type=None, 
         withParents=None, withChildren=None,
-        withSamples=None, withExperiments=None
+        sample=None, experiment=None
     ):
 
         sub_criteria = []
@@ -1046,11 +1044,11 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_permid(withParents, 'DataSet', 'Parents'))
         if withChildren:
             sub_criteria.append(_subcriteria_for_permid(withChildren, 'DataSet', 'Children'))
-        if withSamples:
-            sub_criteria.append(_subcriteria_for_permid(withSamples, 'Sample'))
 
-        if withExperiments:
-            sub_criteria.append(_subcriteria_for_permid(withExperiments, 'Experiment'))
+        if sample:
+            sub_criteria.append(_subcriteria_for_code(sample, 'Sample'))
+        if experiment:
+            sub_criteria.append(_subcriteria_for_code(experiment, 'Experiment'))
 
         criteria = {
             "criteria": sub_criteria,
@@ -1329,9 +1327,6 @@ class Openbis:
     def get_projects(self, space=None):
         """ Get a list of all available projects (DataFrame object).
         """
-
-        if space is None:
-            space = self.default_space
 
         sub_criteria = []
         if space:
@@ -2593,7 +2588,7 @@ class Sample():
         self.openbis.delete_entity('sample', self.permId, reason)
 
     def get_datasets(self):
-        return self.openbis.get_datasets(withSamples=[self.permId])
+        return self.openbis.get_datasets(sample=self.permId)
 
     def get_projects(self):
         return self.openbis.get_project(withSamples=[self.permId])
@@ -2697,9 +2692,9 @@ class Experiment():
         # the list of possible methods/attributes displayed
         # when invoking TAB-completition
         return [
-            'props', 'space', 'project', 'samples',
+            'props', 'space', 'project', 
             'project','tags', 'attachments', 'data',
-            'get_datasets()'
+            'get_datasets()', 'get_samples()'
         ]
 
     @property
@@ -2771,13 +2766,13 @@ class Experiment():
         self.openbis.delete_entity('experiment', self.permId, reason)
 
     def get_datasets(self):
-        return self.openbis.get_datasets(withExperiments=[self.permId])
+        return self.openbis.get_datasets(experiment=self.permId)
 
     def get_projects(self):
-        return self.openbis.get_project(withExperiments=[self.permId])
+        return self.openbis.get_project(experiment=self.permId)
 
     def get_samples(self):
-        return self.openbis.get_samples(withExperiments=[self.permId])
+        return self.openbis.get_samples(experiment=self.permId)
 
     def get_attachments(self):
         pass
