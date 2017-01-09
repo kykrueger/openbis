@@ -32,10 +32,10 @@ from queue import Queue
 DROPBOX_PLUGIN = "jupyter-uploader-api"
 
 
-def _definitions(what):
+def _definitions(entity):
     entities = {
         "Sample": {
-            "attrs": "code permId identifier type parents children attachments space project experiment container components tags ".split(),
+            "attrs": "code permId identifier type parents children attachments space experiment container components tags ".split(),
             "ids2type": {
                 'parentIds': { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
                 'childIds':  { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
@@ -51,7 +51,7 @@ def _definitions(what):
             "identifier": "experimentId",
         },
         "Project": {
-            "attrs": "code permId identifier type space tags samples attachments".split(),
+            "attrs": "code description permId identifier space attachments".split(),
             "multi": "tags".split(),
             "identifier": "projectId",
         },
@@ -70,12 +70,12 @@ def _definitions(what):
             "sample"     : "sampleId",
             "experiment" : "experimentId",
             "space"      : "spaceId",
+            "project"    : "projectId",
             "container"  : "containerId",
             "component"  : "componentId",
             "components" : "componentIds",
             "parents"    : "parentIds",
             "children"   : "childIds",
-            "project"    : "projectId",
             "tags"       : "tagIds",
         },
         "ids2type": {
@@ -85,7 +85,7 @@ def _definitions(what):
             'tagIds': { 'code': { '@type': 'as.dto.tag.id.TagCode' } },
         },
     }
-    return entities[what]
+    return entities[entity]
 
 
 search_criteria = {
@@ -225,18 +225,18 @@ def is_permid(ident):
     else:
         return False
 
-def search_request_for_identifier(ident, entity_type):
+def search_request_for_identifier(ident, entity):
     search_request = {}
 
     if is_identifier(ident):
         search_request = {
             "identifier": ident.upper(),
-            "@type": "as.dto.{}.id.{}Identifier".format(entity_type.lower(), entity_type.capitalize())
+            "@type": "as.dto.{}.id.{}Identifier".format(entity.lower(), entity.capitalize())
         }
     else:
         search_request = {
             "permId": ident,
-            "@type": "as.dto.{}.id.{}PermId".format(entity_type.lower(), entity_type.capitalize())
+            "@type": "as.dto.{}.id.{}PermId".format(entity.lower(), entity.capitalize())
         }
     return search_request
 
@@ -444,10 +444,10 @@ def _criteria_for_code(code):
         "@type": "as.dto.common.search.CodeSearchCriteria"
     }
 
-def _subcriteria_for_type(code, entity_type):
+def _subcriteria_for_type(code, entity):
 
     return {
-        "@type": "as.dto.{}.search.{}TypeSearchCriteria".format(entity_type.lower(), entity_type),
+        "@type": "as.dto.{}.search.{}TypeSearchCriteria".format(entity.lower(), entity),
           "criteria": [
             {
               "@type": "as.dto.common.search.CodeSearchCriteria",
@@ -559,7 +559,7 @@ def _subcriteria_for_properties(prop, val):
         }
     }
 
-def _subcriteria_for_permid(permids, entity_type, parents_or_children=''):
+def _subcriteria_for_permid(permids, entity, parents_or_children=''):
 
     if not isinstance(permids, list):
         permids = [permids]
@@ -579,7 +579,7 @@ def _subcriteria_for_permid(permids, entity_type, parents_or_children=''):
     criteria = {
         "criteria": criterias,
         "@type": "as.dto.{}.search.{}{}SearchCriteria".format(
-            entity_type.lower(), entity_type, parents_or_children
+            entity.lower(), entity, parents_or_children
         ),
         "operator": "OR"
     }
@@ -1244,13 +1244,13 @@ class Openbis:
         self._post_request(self.as_v3, request)
 
 
-    def delete_entity(self, what, permid, reason):
+    def delete_entity(self, entity, permid, reason):
         """Deletes Spaces, Projects, Experiments, Samples and DataSets
         """
 
-        entity_type = "as.dto.{}.id.{}PermId".format(what.lower(), what.capitalize())
+        entity_type = "as.dto.{}.id.{}PermId".format(entity.lower(), entity.capitalize())
         request = {
-            "method": "delete" + what.capitalize()  + 's',
+            "method": "delete" + entity.capitalize()  + 's',
             "params": [
                 self.token,
                 [
@@ -1261,7 +1261,7 @@ class Openbis:
                 ],
                 {
                     "reason": reason,
-                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(what.lower(), what.capitalize())
+                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(entity.lower(), entity.capitalize())
                 }
             ]
         }
@@ -1319,9 +1319,11 @@ class Openbis:
 
 
     def get_project(self, projectId):
-        request = self._create_get_request('getProjects', 'project', projectId, ['attachments'])
+        request = self._create_get_request(
+            'getProjects', 'project', projectId, ['space', 'registrator', 'attachments']
+        )
         resp = self._post_request(self.as_v3, request)
-        return resp
+        return Project(self, resp[projectId])
 
 
     def get_projects(self, space=None):
@@ -1378,12 +1380,12 @@ class Openbis:
             raise ValueError("No projects found!")
 
 
-    def _create_get_request(self, method_name, entity_type, permids, options):
+    def _create_get_request(self, method_name, entity, permids, options):
 
         if not isinstance(permids, list):
             permids = [permids]
 
-        type = "as.dto.{}.id.{}".format(entity_type.lower(), entity_type.capitalize())
+        type = "as.dto.{}.id.{}".format(entity.lower(), entity.capitalize())
         search_params = []
         for permid in permids:
             # decide if we got a permId or an identifier
@@ -1519,7 +1521,7 @@ class Openbis:
             raise ValueError("No such dataSet type: {}".format(type))
 
 
-    def _get_types_of(self, method_name, entity_type, type=None, additional_attributes=[]):
+    def _get_types_of(self, method_name, entity, type=None, additional_attributes=[]):
         """ Returns a list of all available experiment types
         """
 
@@ -1530,14 +1532,14 @@ class Openbis:
 
         if type is not None:
             search_request = _gen_search_request({
-                entity_type.lower(): entity_type + "Type",
+                entity.lower(): entity + "Type",
                 "operator": "AND",
                 "code": type
             })
 
             fetch_options = {
                 "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions".format(
-                    entity_type.lower(), entity_type
+                    entity.lower(), entity
                 )
             }
             fetch_options['propertyAssignments'] = fetch_option['propertyAssignments']
@@ -1555,7 +1557,7 @@ class Openbis:
         if len(resp['objects']) >= 1:
             types = DataFrame(resp['objects'])
             types['modificationDate'] = types['modificationDate'].map(format_timestamp)
-            return Things(self, entity_type.lower()+'_type', types[attributes])
+            return Things(self, entity.lower()+'_type', types[attributes])
             return types[attributes]
             
         else:
@@ -1684,7 +1686,6 @@ class Openbis:
             "params": [
                 self.token,
                 [ {
-                    "@id": 0,
                     "code": name,
                     "description": description,
                     "@type": "as.dto.space.create.SpaceCreation"
@@ -2237,13 +2238,14 @@ class AttrHolder():
     - tags
     """
 
-    def __init__(self, openbis_obj, type):
+    def __init__(self, openbis_obj, entity, type=None):
         self.__dict__['_openbis'] = openbis_obj
-        self.__dict__['_type_obj'] = type
+        self.__dict__['_entity'] = entity
 
-        entity_type = type.data['@type'].split('.')[2].capitalize()
-        self.__dict__['_entity_type'] = entity_type
-        self.__dict__['_allowed_attrs'] = _definitions(entity_type)['attrs']
+        if type is not None:
+            self.__dict__['_type_obj'] = type
+
+        self.__dict__['_allowed_attrs'] = _definitions(entity)['attrs']
         self.__dict__['_identifier'] = None
         self.__dict__['_is_new'] = True
 
@@ -2255,34 +2257,39 @@ class AttrHolder():
                         "container","components","attachments"]:
                 self.__dict__['_'+attr] = data.get(attr, None)
 
-            if attr in ["space"]:
+            elif attr in ["space"]:
                 d =  data.get(attr, None)
                 if d is not None:
                     d = d['permId']
                 self.__dict__['_'+attr] = d
 
-            if attr in ["experiment", "project"]:
+            elif attr in ["experiment", "project"]:
                 d =  data.get(attr, None)
                 if d is not None:
                     d = d['identifier']
                 self.__dict__['_'+attr] = d
 
-            if attr in ["parents","children","samples"]:
+            elif attr in ["parents","children","samples"]:
                 self.__dict__['_'+attr] = []
                 for item in data[attr]:
                     self.__dict__['_'+attr].append(item['identifier'])
 
-            if attr in ["tags"]:
+            elif attr in ["tags"]:
                 self.__dict__['_'+attr] = []
                 for item in data[attr]:
                     self.__dict__['_'+attr].append({
                         "code": item['code'],
                         "@type": "as.dto.tag.id.TagCode"
                     })
+            elif attr in ["attachments"]:
+                pass
+
+            else:
+                self.__dict__['_'+attr] = data.get(attr, None)
 
 
     def _all_attrs(self):
-        defs = _definitions(self._entity_type)
+        defs = _definitions(self._entity)
         attr2ids = _definitions('attr2ids')
         ids2type = _definitions('ids2type')
 
@@ -2390,7 +2397,7 @@ class AttrHolder():
             objs = []
             for val in value:
                 # fetch objects in openBIS, make sure they actually exists
-                obj = getattr(self._openbis, 'get_'+self._entity_type.lower())(val)
+                obj = getattr(self._openbis, 'get_'+self._entity.lower())(val)
                 objs.append(obj)
             self.__dict__['_'+name] = {
                 "@type": "as.dto.common.update.IdListUpdateValue",
@@ -2409,7 +2416,18 @@ class AttrHolder():
 
             self.__dict__['_tags'] = tags
 
-        elif name in ["space", "project", "experiment"]:
+        elif name in ["experiment"]:
+            # fetch object in openBIS, make sure it actually exists
+            obj = getattr(self._openbis, "get_"+name)(value)
+            self.__dict__['_'+name] = obj.data['identifier']
+
+                # mark attribute as modified, if it's an existing entity
+            if self.__dict__['_is_new']:
+                pass
+            else:
+                self.__dict__['_'+name]['isModified'] = True
+
+        elif name in ["space"]:
             # fetch object in openBIS, make sure it actually exists
             obj = getattr(self._openbis, "get_"+name)(value)
             self.__dict__['_'+name] = obj['permId']
@@ -2420,11 +2438,23 @@ class AttrHolder():
             else:
                 self.__dict__['_'+name]['isModified'] = True
 
+        elif name in ["project"]:
+            # fetch object in openBIS, make sure it actually exists
+            obj = getattr(self._openbis, "get_"+name)(value)
+            self.__dict__['_'+name] = obj['identifier']
+
+                # mark attribute as modified, if it's an existing entity
+            if self.__dict__['_is_new']:
+                pass
+            else:
+                self.__dict__['_'+name]['isModified'] = True
+
+
         elif name in ["identifier", "project"]:
             raise KeyError("you can not modify the {}".format(name))
         elif name == "code":
             if self.__dict__['_type_obj'].data['autoGeneratedCode']:
-                raise KeyError("for this {}Type you can not set a code".format(self.__dict__['_entity_type']))
+                raise KeyError("for this {}Type you can not set a code".format(self.__dict__['_entity']))
             else:
                 self.__dict__['_code'] = value
         else:
@@ -2435,11 +2465,11 @@ class AttrHolder():
 
     def get_parents(self):
         # e.g. self._openbis.get_samples(withChildren=self.identifier)
-        return getattr(self._openbis, 'get_'+self._entity_type.lower()+'s')(withChildren=self.identifier)
+        return getattr(self._openbis, 'get_'+self._entity.lower()+'s')(withChildren=self.identifier)
 
     def get_children(self):
         # e.g. self._openbis.get_samples(withParents=self.identifier)
-        return getattr(self._openbis, 'get_'+self._entity_type.lower()+'s')(withParents=self.identifier)
+        return getattr(self._openbis, 'get_'+self._entity.lower()+'s')(withParents=self.identifier)
 
     @property 
     def set_tags(self, tags):
@@ -2477,7 +2507,7 @@ class AttrHolder():
             html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
                 attr, nvl(getattr(self, attr, ''),'') 
             )
-        if 'attachments' in self._allowed_attrs:
+        if 'attachments' in self._allowed_attrs and self._attachments is not None:
             html += "<tr><td>attachments</td><td>"
             html += "<br/>".join(att['fileName'] for att in self._attachments)
             html += "</td></tr>"
@@ -2497,7 +2527,7 @@ class Sample():
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
-        self.__dict__['a'] = AttrHolder(openbis_obj, type)
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'Sample', type)
 
         if data is not None:
             self._set_data(data)
@@ -2634,9 +2664,9 @@ class Things():
        
     """
 
-    def __init__(self, openbis_obj, what, df, identifier_name='code'):
+    def __init__(self, openbis_obj, entity, df, identifier_name='code'):
         self.openbis = openbis_obj
-        self.what = what
+        self.entity = entity
         self.df = df
         self.identifier_name = identifier_name
 
@@ -2657,8 +2687,8 @@ class Things():
                 row = self.df[self.df[self.identifier_name]==key.upper()]
 
             if row is not None:
-                # invoke the openbis.get_what() method
-                return getattr(self.openbis, 'get_'+self.what)(row[self.identifier_name].values[0])
+                # invoke the openbis.get_entity() method
+                return getattr(self.openbis, 'get_'+self.entity)(row[self.identifier_name].values[0])
 
 
 class Experiment():
@@ -2669,7 +2699,7 @@ class Experiment():
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
-        self.__dict__['a'] = AttrHolder(openbis_obj, type)
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'Experiment', type)
 
         if data is not None:
             self._set_data(data)
@@ -2870,3 +2900,22 @@ class Attachments:
             if row is not None:
                 self._download()
 
+
+class Project:
+
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['openbis'] = openbis_obj
+        self.__dict__['type'] = type
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'Project')
+
+        if data is not None:
+            self.a(data)
+            self.__dict__['data'] = data
+
+        if kwargs is not None:
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+    def _repr_html_(self):
+        html = self.a._repr_html_()
+        return html
