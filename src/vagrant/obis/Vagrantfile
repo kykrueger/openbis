@@ -77,6 +77,10 @@ Vagrant.configure(2) do |config|
   # Install necessary packages and tools (yum commands + install conda)
   config.vm.provision :shell, inline: "/vagrant_initialize/setup_general.sh || true"
 
+  # Install git-annex
+  config.vm.provision :shell, inline: "/vagrant_initialize/setup_git-annex.sh || true"
+
+
   # Install python
   config.vm.provision :shell, inline: "/vagrant_initialize/setup_python.sh || true"
 
