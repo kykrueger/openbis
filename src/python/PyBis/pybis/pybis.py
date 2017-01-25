@@ -37,7 +37,7 @@ DROPBOX_PLUGIN = "jupyter-uploader-api"
 def _definitions(entity):
     entities = {
         "Sample": {
-            "attrs": "code permId identifier type attachments space experiment container components tags ".split(),
+            "attrs": "code permId identifier type attachments space experiment tags".split(),
             "ids2type": {
                 'parentIds': { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
                 'childIds':  { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
@@ -48,8 +48,7 @@ def _definitions(entity):
             "multi": "parents children components tags".split(),
         },
         "Space": {
-            "attrs": "code description registrator registrationDate modificationDate".split(),
-            "identifier": "spaceId",
+            "attrs": "code permId description registrator registrationDate modificationDate".split(), "identifier": "spaceId",
         },
         "Experiment": {
             "attrs": "code permId identifier type space project tags attachments".split(),
@@ -202,14 +201,10 @@ def extract_property_assignments(pas):
             pa_strings.append(pa['propertyType']['label'])
     return pa_strings
 
-
 def extract_person(person):
     if not isinstance(person, dict):
         return str(person)
-    if 'email' in person and person['email'] is not '':
-        return "%s %s <%s>" % (person['firstName'], person['lastName'], person['email'])
-    else:
-        return "%s %s" % (person['firstName'], person['lastName'])
+    return person['userId']
 
 def crc32(fileName):
     """since Python3 the zlib module returns unsigned integers (2.7: signed int)
@@ -445,34 +440,34 @@ def _subcriteria_for_permid(permids, entity, parents_or_children=''):
     return criteria
 
 def _subcriteria_for_code(code, object_type):
-    if is_permid(code):
-        fieldname = "permId"
-        fieldtype = "as.dto.common.search.PermIdSearchCriteria"
-    else:
-        fieldname = "code"
-        fieldtype = "as.dto.common.search.CodeSearchCriteria"
+    if code is not None:
+        if is_permid(code):
+            fieldname = "permId"
+            fieldtype = "as.dto.common.search.PermIdSearchCriteria"
+        else:
+            fieldname = "code"
+            fieldtype = "as.dto.common.search.CodeSearchCriteria"
 
-    criteria = {
-        "criteria": [
-            {
-                "fieldName": fieldname,
-                "fieldType": "ATTRIBUTE",
-                "fieldValue": {
-                    "value": code.upper(),
-                    "@type": "as.dto.common.search.StringEqualToValue"
-                },
-                "@type": fieldtype 
-            }
-        ],
-        "@type": search_criteria[object_type.lower()],
-        "operator": "AND"
-    }
-    crit = _gen_search_criteria({
-        object_type.lower() : object_type.capitalize(),
-        "operator": "AND",
-        "code": code
-    })
-    return criteria
+        criteria = {
+            "criteria": [
+                {
+                    "fieldName": fieldname,
+                    "fieldType": "ATTRIBUTE",
+                    "fieldValue": {
+                        "value": code.upper(),
+                        "@type": "as.dto.common.search.StringEqualToValue"
+                    },
+                    "@type": fieldtype 
+                }
+            ],
+            "@type": search_criteria[object_type.lower()],
+            "operator": "AND"
+        }
+        return criteria
+    else:
+        criteria = { "@type": search_criteria[object_type.lower()] }
+        return criteria
+
 
 class Openbis:
     """Interface for communicating with openBIS. A current version of openBIS is needed.
@@ -580,26 +575,27 @@ class Openbis:
         os.remove(token_path)
 
 
-    def _post_request(self, resource, data):
+    def _post_request(self, resource, request):
         """ internal method, used to handle all post requests and serializing / deserializing
         data
         """
-        if "id" not in data:
-            data["id"] = "1"
-        if "jsonrpc" not in data:
-            data["jsonrpc"] = "2.0"
+        if "id" not in request:
+            request["id"] = "1"
+        if "jsonrpc" not in request:
+            request["jsonrpc"] = "2.0"
         resp = requests.post(
             self.url + resource, 
-            json.dumps(data), 
+            json.dumps(request), 
             verify=self.verify_certificates
         )
 
         if resp.ok:
-            data = resp.json()
-            if 'error' in data:
-                raise ValueError('an error has occured: ' + data['error']['message'] )
-            elif 'result' in data:
-                return data['result']
+            resp = resp.json()
+            if 'error' in resp:
+                print(json.dumps(request))
+                raise ValueError('an error has occured: ' + resp['error']['message'] )
+            elif 'result' in resp:
+                return resp['result']
             else:
                 raise ValueError('request did not return either result nor error')
         else:
@@ -845,21 +841,15 @@ class Openbis:
             "@type": "as.dto.experiment.search.ExperimentSearchCriteria",
             "operator": "AND"
         }
-        options = {
-            "properties": { "@type": "as.dto.property.fetchoptions.PropertyFetchOptions" },
-            "tags": { "@type": "as.dto.tag.fetchoptions.TagFetchOptions" },
-            "registrator": { "@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
-            "modifier": { "@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
-            "project": { "@type": "as.dto.project.fetchoptions.ProjectFetchOptions" },
-            "type": { "@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions" },
-            "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions" 
-        }
+        fetchopts = { "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions" }
+        for option in ['tags', 'properties', 'registrator', 'modifier', 'project']:
+            fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchExperiments",
             "params": [ self.token, 
                 criteria,
-                options,
+                fetchopts,
             ],
         }
         resp = self._post_request(self.as_v3, request)
@@ -876,17 +866,17 @@ class Openbis:
         experiments['registrator'] = experiments['registrator'].map(extract_person)
         experiments['modifier'] = experiments['modifier'].map(extract_person)
         experiments['identifier'] = experiments['identifier'].map(extract_identifier)
+        experiments['permId'] = experiments['permId'].map(extract_permid)
         experiments['type'] = experiments['type'].map(extract_code)
 
-        exps = experiments[['code', 'identifier', 'project', 'type', 'registrator', 
+        exps = experiments[['identifier', 'permId', 'project', 'type', 'registrator', 
             'registrationDate', 'modifier', 'modificationDate']]
         return Things(self, 'experiment', exps, 'identifier')
 
 
     def get_datasets(self, 
-        code=None, type=None, 
-        withParents=None, withChildren=None,
-        sample=None, experiment=None
+        code=None, type=None, withParents=None, withChildren=None,
+        sample=None, experiment=None, project=None
     ):
 
         sub_criteria = []
@@ -904,6 +894,12 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_code(sample, 'Sample'))
         if experiment:
             sub_criteria.append(_subcriteria_for_code(experiment, 'Experiment'))
+        if project:
+            exp_crit = _subcriteria_for_code(experiment, 'Experiment')
+            proj_crit = _subcriteria_for_code(project, 'Project')
+            exp_crit['criteria'] = []
+            exp_crit['criteria'].append(proj_crit)
+            sub_criteria.append(exp_crit)
 
         criteria = {
             "criteria": sub_criteria,
@@ -912,13 +908,11 @@ class Openbis:
         }
 
         fetchopts = {
-#            "parents":      { "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions" },
-#            "children":     { "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions" },
             "containers":   { "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions" },
             "type":         { "@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions" }
         }
 
-        for option in ['tags', 'properties', 'sample']:
+        for option in ['tags', 'properties', 'sample', 'experiment']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -937,12 +931,15 @@ class Openbis:
             datasets = DataFrame(objects)
             datasets['registrationDate']= datasets['registrationDate'].map(format_timestamp)
             datasets['modificationDate']= datasets['modificationDate'].map(format_timestamp)
+            datasets['experiment']= datasets['experiment'].map(extract_nested_identifier)
             datasets['sample']= datasets['sample'].map(extract_nested_identifier)
             datasets['type']= datasets['type'].map(extract_code)
+            datasets['permId'] = datasets['code']
             ds = Things(
                 self,
                 'dataset',
-                datasets[['code', 'properties', 'type', 'sample', 'registrationDate', 'modificationDate']]
+                datasets[['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate']],
+                'permId'
             )
             return ds
 
@@ -1149,7 +1146,7 @@ class Openbis:
         return DataFrame(new_objs)
 
 
-    def new_project(self, space_code, code, description, leaderId):
+    def new_project(self, space_code, code, description):
         request = {
             "method": "createProjects",
             "params": [
@@ -1163,7 +1160,6 @@ class Openbis:
                         },
                         "@type": "as.dto.project.create.ProjectCreation",
                         "description": description,
-                        "leaderId": leaderId,
                         "attachments": None
                     }
                 ]
@@ -1180,7 +1176,7 @@ class Openbis:
 
 
     def get_project(self, projectId):
-        options = ['space', 'registrator', 'attachments']
+        options = ['space', 'registrator', 'modifier', 'attachments']
         if is_identifier(projectId):
             request = self._create_get_request(
                 'getProjects', 'project', projectId, options
@@ -1217,19 +1213,15 @@ class Openbis:
             "operator": "AND"
         }
 
-        options = {
-            "registrator": { "@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
-            "modifier": { "@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
-            "experiments": { "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions", },
-            "space": { "@type": "as.dto.space.fetchoptions.SpaceFetchOptions" },
-            "@type": "as.dto.project.fetchoptions.ProjectFetchOptions"
-        }
+        fetchopts = { "@type": "as.dto.project.fetchoptions.ProjectFetchOptions" }
+        for option in ['registrator', 'modifier', 'leader' ]:
+            fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchProjects",
             "params": [ self.token, 
                 criteria,
-                options,
+                fetchopts,
             ],
         }
 
@@ -1244,14 +1236,14 @@ class Openbis:
 
             projects['registrationDate']= projects['registrationDate'].map(format_timestamp)
             projects['modificationDate']= projects['modificationDate'].map(format_timestamp)
+            projects['leader'] = projects['leader'].map(extract_person)
             projects['registrator'] = projects['registrator'].map(extract_person)
             projects['modifier'] = projects['modifier'].map(extract_person)
-            projects['permid'] = projects['permId'].map(extract_permid)
+            projects['permId'] = projects['permId'].map(extract_permid)
             projects['identifier'] = projects['identifier'].map(extract_identifier)
-            projects['space'] = projects['space'].map(extract_code)
 
-            pros=projects[['code', 'space', 'registrator', 'registrationDate', 
-                            'modifier', 'modificationDate', 'permid', 'identifier']]
+            pros=projects[['identifier', 'permId', 'leader', 'registrator', 'registrationDate', 
+                            'modifier', 'modificationDate']]
             return Things(self, 'project', pros, 'identifier')
         else:
             raise ValueError("No projects found!")
@@ -1398,10 +1390,12 @@ class Openbis:
             raise ValueError("No such dataSet type: {}".format(type))
 
 
-    def _get_types_of(self, method_name, entity, type_name=None, additional_attributes=[]):
+    def _get_types_of(self, method_name, entity, type_name=None, additional_attributes=None):
         """ Returns a list of all available types of an entity.
         If the name of the entity-type is given, it returns a PropertyAssignments object
         """
+        if additional_attributes is None:
+            additional_attributes = []
 
         attributes = ['code', 'description', *additional_attributes, 'modificationDate']
 
@@ -1557,7 +1551,7 @@ class Openbis:
 
 
     def new_space(self, name, description=None):
-        """ Creates a new space in the openBIS instance. Returns a list of all spaces
+        """ Creates a new space in the openBIS instance.
         """
         request = {
             "method": "createSpaces",
@@ -1571,7 +1565,7 @@ class Openbis:
             ],
         }
         resp = self._post_request(self.as_v3, request)
-        return self.get_spaces(refresh=True)
+        return self.get_space(name)
 
 
     def new_analysis(self, name, description=None, sample=None, dss_code=None, result_files=None,
@@ -1654,20 +1648,16 @@ class Openbis:
             dss_code,
             DROPBOX_PLUGIN,
             { 
-            	"sample" : {
-                    "identifier" : sample.identifier
-                },
+                "sample" : { "identifier" : sample.identifier },
                 "sampleId": sampleId,
                 "parentIds": parentIds,
-                "containers" : [ 
-                    {
-                    	"dataSetType" : "JUPYTER_CONTAINER",
-                    	"properties" : {
-                			"NAME" : name,
-                			"DESCRIPTION" : description
-                    	}
+                "containers" : [ {
+                    "dataSetType" : "JUPYTER_CONTAINER",
+                    "properties" : {
+                        "NAME" : name,
+                        "DESCRIPTION" : description
                     }
-                ],
+                } ],
                 "dataSets" : data_sets,
             }
           ],
@@ -1871,25 +1861,29 @@ class OpenBisObject():
             for key, value in data['properties'].items():
                 self.p.__dict__[key.lower()] = value
 
-    def get_space(self):
+    @property
+    def space(self):
         try: 
-            return self.openbis.get_space(self._space['code'])
+            return self.openbis.get_space(self._space['permId'])
         except Exception:
             pass
 
-    def get_project(self):
+    @property
+    def project(self):
         try: 
             return self.openbis.get_project(self._project['identifier'])
         except Exception:
             pass
 
-    def get_experiment(self):
+    @property
+    def experiment(self):
         try: 
             return self.openbis.get_experiment(self._experiment['identifier'])
         except Exception:
             pass
 
-    def get_sample(self):
+    @property
+    def sample(self):
         try:
             return self.openbis.get_sample(self._sample['permId']['permId'])
         except Exception:
@@ -2088,8 +2082,7 @@ class AttrHolder():
     def __call__(self, data):
         self.__dict__['_is_new'] = False
         for attr in self._allowed_attrs:
-            if attr in ["code","permId","identifier","type",
-                        "container","components","attachments"]:
+            if attr in ["code","permId","identifier","type", "container","components"]:
                 self.__dict__['_'+attr] = data.get(attr, None)
 
             elif attr in ["space"]:
@@ -2119,9 +2112,6 @@ class AttrHolder():
                         "code": item['code'],
                         "@type": "as.dto.tag.id.TagCode"
                     })
-            elif attr in ["attachments"]:
-                pass
-
             else:
                 self.__dict__['_'+attr] = data.get(attr, None)
 
@@ -2136,9 +2126,28 @@ class AttrHolder():
         # look at all attributes available for that entity
         for attr in self._allowed_attrs:
             # these attributes cannot be changed (or not directly)
-            if attr in ["code", "permId", "identifier", "type", "attachments"]:
+            if attr in ["code", "permId", "identifier", "type", "registrator", "registrationDate", "modifier", "modificationDate"]:
                 continue
-            if '_'+attr in self.__dict__:
+
+            if attr == 'attachments':
+                # v3 API currently only supports adding attachments
+                attachments = self.__dict__.get('_new_attachments', None)
+                if attachments is None:
+                    continue
+                atts_data = [ attachment.get_data() for attachment in attachments ]
+
+                if self._is_new:
+                    request['attachments'] = atts_data
+                else:
+                    request['attachments'] = {
+                        "actions": [ {
+                            "items": atts_data,
+                            "@type": "as.dto.common.update.ListUpdateActionAdd"
+                  } ],
+                        "@type": "as.dto.attachment.update.AttachmentListUpdateValue"
+                    } 
+
+            elif '_'+attr in self.__dict__:
                 if self._is_new:
                     # handle multivalue attributes (parents, children, tags etc.)
                     if attr in defs['multi']:
@@ -2167,7 +2176,7 @@ class AttrHolder():
                             "@type": "as.dto.common.update.IdListUpdateValue"
                         }
                     else:
-                        # handle single attribut4es (space, experiment, project, container, etc.)
+                        # handle single attributes (space, experiment, project, container, etc.)
                         value =  self.__dict__.get('_'+attr, {})
                         if value is None:
                             pass
@@ -2199,9 +2208,7 @@ class AttrHolder():
                 
         int_name = '_'+name
         if int_name in self.__dict__: 
-            if int_name == '_attachments':
-                return Attachments(self._attachments)
-            elif int_name in ['_registrator','_modifier']:
+            if int_name in ['_registrator','_modifier']:
                 return self.__dict__[int_name].get('userId', None)
             elif int_name in ['_registrationDate', '_modificationDate']:
                 return format_timestamp(self.__dict__[int_name])
@@ -2235,6 +2242,7 @@ class AttrHolder():
 
 
     def __setattr__(self, name, value):
+        print("hier in setattr: {} = {}".format(name, value))
         if name in ["parents", "children", "components"]:
             if not isinstance(value, list):
                 value = [value]
@@ -2257,7 +2265,6 @@ class AttrHolder():
                     "@type": "as.dto.tag.id.TagCode",
                     "code": val
                 })
-
             self.__dict__['_tags'] = tags
 
         elif name in ["sample", "experiment"]:
@@ -2332,6 +2339,52 @@ class AttrHolder():
         tagIds = _tagIds_for_tags(tags, 'Remove')
         self.openbis.update_sample(self.permId, tagIds=tagIds)
 
+    def get_attachments(self):
+        if getattr(self, '_attachments') is None:
+            return None
+        else:
+            return DataFrame(self._attachments)[['fileName','title','description','version']]
+
+    def add_attachment(self, filename, title=None, description=None):
+        att = Attachment(filename=filename, title=title, description=description)
+        if getattr(self, '_attachments') is None:
+            self.__dict__['_attachments'] = []
+        self._attachments.append(att.get_data_short())
+
+        if getattr(self, '_new_attachments') is None:
+            self.__dict__['_new_attachments'] = []
+        self._new_attachments.append(att)
+
+    def download_attachments(self):
+        method = 'get'+self.entity+'s'
+        entity = self.entity.lower()
+        request = {
+            "method": method,
+            "params": [ self._openbis.token,
+                [ self._permId ],
+                {
+                    "attachments": fetch_option['attachmentsWithContent'],
+                    **fetch_option[entity]
+                }
+            ]
+        }
+        resp = self._openbis._post_request(self._openbis.as_v3, request)
+        attachments = resp[self.permId]['attachments']
+        file_list = []
+        for attachment in attachments:
+            filename = os.path.join(
+                self._openbis.hostname, 
+                self.permId,
+                attachment['fileName']
+            )
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            with open(filename, 'wb') as att:
+                content = base64.b64decode(attachment['content'])
+                att.write(content)    
+            file_list.append(filename)
+        return file_list
+
+
     def _repr_html_(self):
         def nvl(val, string=''):
             if val is None:
@@ -2355,7 +2408,7 @@ class AttrHolder():
             html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
                 attr, nvl(getattr(self, attr, ''),'') 
             )
-        if 'attachments' in self._allowed_attrs and self._attachments is not None:
+        if 'attachments' in self._allowed_attrs:
             html += "<tr><td>attachments</td><td>"
             html += "<br/>".join(att['fileName'] for att in self._attachments)
             html += "</td></tr>"
@@ -2395,7 +2448,12 @@ class Sample():
                 self.p.__dict__[key.lower()] = value
 
     def __dir__(self):
-        return ['props', 'get_parents()', 'get_children()', 'get_datasets()', 'get_experiment()', 'space', 'project', 'experiment', 'project','tags', 'attachments', 'data']
+        return [
+            'props', 'get_parents()', 'get_children()',
+            'get_datasets()', 'get_experiment()',
+            'space', 'project', 'experiment', 'project', 'tags', 
+            'add_attachment()', 'get_attachments()', 'download_attachments()'
+        ]
 
     @property
     def props(self):
@@ -2506,7 +2564,7 @@ class Space(OpenBisObject):
         when using the autocompletion feature (TAB) in Jupyter
         """
         return['code','permId', 'description', 'registrator', 'registrationDate',
-        'modificationDate', 'get_projects()', 'get_samples()']
+        'modificationDate', 'get_projects()', 'get_samples()', 'delete()']
 
     def __str__(self):
         return self.data.get('code', None)
@@ -2516,6 +2574,12 @@ class Space(OpenBisObject):
 
     def get_projects(self):
         return self.openbis.get_projects(space=self.code)
+
+    def new_project(self, code, description):
+        return self.openbis.new_project(self.code, code, description)
+
+    def delete(self, reason):
+        self.openbis.delete_entity('Space', self.permId, reason)
 
 
 class Things():
@@ -2586,7 +2650,8 @@ class Experiment(OpenBisObject):
         return [
             'props', 'space', 'project', 
             'project','tags', 'attachments', 'data',
-            'get_datasets()', 'get_samples()'
+            'get_datasets()', 'get_samples()', 
+            'add_attachment()', 'get_attachments()', 'download_attachments()'
         ]
 
     @property
@@ -2666,39 +2731,34 @@ class Experiment(OpenBisObject):
     def get_samples(self):
         return self.openbis.get_samples(experiment=self.permId)
 
-    def get_attachments(self):
-        pass
 
+class Attachment():
 
-class Attachments():
+    def __init__(self, filename, title=None, description=None):
+        if not os.path.exists(filename):
+            raise ValueError("File not found: {}".format(filename))
+        self.fileName = filename
+        self.title = title
+        self.description = description
 
-    def __init__(self, attachments):
-        self.atts = attachments
-        atts = []
-        for att in attachments:
-            atts.append({
-                "fileName": att["fileName"],
-                "title": att["title"],
-                "description": att["description"],
-                "registrationDate": format_timestamp(att["registrationDate"]), 
-                "version": att["version"],
-            })
-        self.df = DataFrame(atts)[['fileName','title','description','registrationDate','version']]
+    def get_data_short(self):
+        return {
+            "fileName"    : self.fileName,
+            "title"       : self.title,
+            "description" : self.description,
+        }
 
-    def _repr_html_(self):  
-        return self.df._repr_html_() 
-
-    def download(self):
-        pass         
-
-    def __getitem__(self, key):
-        if self.df is not None  and len(self.df) > 0:
-            row = None
-            if isinstance(key, int):
-                row = self.df.loc[[key]]
-
-            if row is not None:
-                self._download()
+    def get_data(self):
+        with open(self.fileName, 'rb') as att:
+            content = att.read()
+            contentb64 = base64.b64encode(content).decode()
+        return {
+            "fileName"    : self.fileName,
+            "title"       : self.title,
+            "description" : self.description,
+            "content"     : contentb64,
+            "@type"       : "as.dto.attachment.create.AttachmentCreation",
+        }
 
 
 class Project(OpenBisObject):
@@ -2715,3 +2775,54 @@ class Project(OpenBisObject):
             for key in kwargs:
                 setattr(self, key, kwargs[key])
 
+    def _modifiable_attrs(self):
+        return
+ 
+    def __dir__(self):
+        """all the available methods and attributes that should be displayed
+        when using the autocompletion feature (TAB) in Jupyter
+        """
+        return['code','permId', 'identifier', 'description', 'space', 'registrator',
+        'registrationDate', 'modifier', 'modificationDate', 'add_attachment()',
+        'get_attachments()', 'download_attachments()',
+        'get_experiments()', 'get_samples()', 'get_datasets()'
+        ]
+
+    def get_samples(self):
+        return self.openbis.get_samples(project=self.permId)
+
+    def get_experiments(self):
+        return self.openbis.get_experiments(project=self.permId)
+
+    def get_datasets(self):
+        return self.openbis.get_datasets(project=self.permId)
+
+    def save(self):
+        attrs = self.a._all_attrs()
+
+        if self.identifier is None:
+            attrs["@type"] = "as.dto.project.create.ProjectCreation"
+            attrs["typeId"] = self.__dict__['type'].data['permId']
+            request = {
+                "method": "createProjects",
+                "params": [ self.openbis.token, [ attrs ] ]
+            }
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+            new_sample_data = self.openbis.get_sample(resp[0]['permId'], only_data=True)
+            self._set_data(new_sample_data)
+            return self
+            
+        else:
+            attrs["@type"] = "as.dto.project.update.ProjectUpdate"
+            attrs["projectId"] = {
+                "permId": self.permId,
+                "@type": "as.dto.project.id.ProjectPermId"
+            }
+            request = {
+                "method": "updateProjects",
+                "params": [ self.openbis.token,
+                    [ attrs ]
+                ]
+            }
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+            print('Project successfully updated')
