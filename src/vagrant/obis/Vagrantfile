@@ -37,10 +37,10 @@ Vagrant.configure(2) do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
-  config.vm.synced_folder "../python", "/vagrant_python"
-  config.vm.synced_folder "initialize", "/vagrant_initialize"
-  config.vm.synced_folder "./", "/vagrant"
-  config.vm.synced_folder "../core-plugins", "/vagrant_core-plugins"
+  config.vm.synced_folder "../../python", "/vagrant_python", type: "virtualbox"
+  config.vm.synced_folder "initialize", "/vagrant_initialize", type: "virtualbox"
+  config.vm.synced_folder "./", "/vagrant", type: "virtualbox"
+  config.vm.synced_folder "../../core-plugins", "/vagrant_core-plugins", type: "virtualbox"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -49,7 +49,7 @@ Vagrant.configure(2) do |config|
    config.vm.provider "virtualbox" do |vb|
      # Display the VirtualBox GUI when booting the machine
   #   vb.gui = true
-  
+
      # Customize the amount of memory on the VM:
      vb.memory = "2048"
    end
@@ -77,11 +77,15 @@ Vagrant.configure(2) do |config|
   # Install necessary packages and tools (yum commands + install conda)
   config.vm.provision :shell, inline: "/vagrant_initialize/setup_general.sh || true"
 
-  # Install Jupyterhub
-  config.vm.provision :shell, inline: "/vagrant_initialize/setup_jupyterhub.sh || true"
+  # Install git-annex
+  config.vm.provision :shell, inline: "/vagrant_initialize/setup_git-annex.sh || true"
+
+
+  # Install python
+  config.vm.provision :shell, inline: "/vagrant_initialize/setup_python.sh || true"
 
   # Install openBIS
-  config.vm.provision :shell, inline: "/vagrant_initialize/setup_openbis.sh"
+  config.vm.provision :shell, inline: "/vagrant_initialize/setup_openbis.sh || true"
 
 
   # Start the jupyter notebook (does not seem to work...)
@@ -97,4 +101,3 @@ Vagrant.configure(2) do |config|
   #  hostname `cat /etc/hostname`"
   #end
 end
-
