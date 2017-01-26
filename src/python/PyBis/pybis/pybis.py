@@ -36,8 +36,29 @@ DROPBOX_PLUGIN = "jupyter-uploader-api"
 
 def _definitions(entity):
     entities = {
+        "Space": {
+            "attrs_new": "code description".split(),
+            "attrs_up": "description".split(),
+            "attrs": "code permId description registrator registrationDate modificationDate".split(), "identifier": "spaceId",
+        },
+        "Project": {
+            "attrs_new": "code description space attachments".split(),
+            "attrs_up": "description space attachments".split(),
+            "attrs": "code description permId identifier space leader registrator registrationDate modifier modificationDate attachments".split(),
+            "multi": "".split(),
+            "identifier": "projectId",
+        },
+        "Experiment": {
+            "attrs_new": "code type space project tags attachments".split(),
+            "attrs_up": "space project tags attachments".split(),
+            "attrs": "code permId identifier type space project tags attachments".split(),
+            "multi": "tags attachments".split(),
+            "identifier": "experimentId",
+        },
         "Sample": {
-            "attrs": "code permId identifier type attachments space experiment tags".split(),
+            "attrs_new": "code type space project experiment tags attachments".split(),
+            "attrs_up": "space project experiment tags attachments".split(),
+            "attrs": "code permId identifier type space project experiment tags attachments".split(),
             "ids2type": {
                 'parentIds': { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
                 'childIds':  { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
@@ -47,34 +68,39 @@ def _definitions(entity):
             "cre_type": "as.dto.sample.create.SampleCreation",
             "multi": "parents children components tags".split(),
         },
-        "Space": {
-            "attrs": "code permId description registrator registrationDate modificationDate".split(), "identifier": "spaceId",
-        },
-        "Experiment": {
-            "attrs": "code permId identifier type space project tags attachments".split(),
-            "multi": "tags".split(),
-            "identifier": "experimentId",
-        },
-        "Project": {
-            "attrs": "code description permId identifier space leader registrator registrationDate modifier modificationDate attachments".split(),
-            "multi": "tags".split(),
-            "identifier": "projectId",
-        },
         "DataSet": {
+            "attrs_new": "type experiment sample parents children container components tags".split(),
+            "attrs_up": "experiment sample parents children container components tags".split(),
             "attrs": "code permId type experiment sample parents children container components tags".split(),
             
             "ids2type": {
-                'parentIds': { 'permId': { '@type': 'as.dto.dataset.id.DataSetPermId' } },
-                'childIds':  { 'permId': { '@type': 'as.dto.dataset.id.DataSetPermId' } }, 
+                'parentIds':     { 'permId': { '@type': 'as.dto.dataset.id.DataSetPermId' } },
+                'childIds':      { 'permId': { '@type': 'as.dto.dataset.id.DataSetPermId' } }, 
+                'componentIds':  { 'permId': { '@type': 'as.dto.dataset.id.DataSetPermId' } }, 
+                'containerIds':  { 'permId': { '@type': 'as.dto.dataset.id.DataSetPermId' } }, 
             },
-            "multi": [],
+            "multi": "".split(),
             "identifier": "dataSetId",
         },
+        "Material": {
+            "attrs_new": "code description type creation tags".split(),
+            "attrs" : "code description type creation registrator tags".split()
+        },
+        "Tag": {
+            "attrs_new": "code description experiments samples dataSets materials".split(),
+            "attrs": "code description experiments samples dataSets materials registrationDate".split(),
+        },
         "attr2ids": {
-            "sample"     : "sampleId",
-            "experiment" : "experimentId",
             "space"      : "spaceId",
             "project"    : "projectId",
+            "sample"     : "sampleId",
+            "samples"    : "sampleIds",
+            "dataSet"    : "dataSetId",
+            "dataSets"   : "dataSetIds",
+            "experiment" : "experimentId",
+            "experiments": "experimentIds",
+            "material"   : "materialId",
+            "materials"  : "materialIds",
             "container"  : "containerId",
             "component"  : "componentId",
             "components" : "componentIds",
@@ -1128,27 +1154,28 @@ class Openbis:
         return DataFrame(new_objs)
 
 
-    def new_project(self, space_code, code, description):
-        request = {
-            "method": "createProjects",
-            "params": [
-                self.token,
-                [
-                    {
-                        "code": code,
-                        "spaceId": {
-                            "permId": space_code,
-                            "@type": "as.dto.space.id.SpacePermId"
-                        },
-                        "@type": "as.dto.project.create.ProjectCreation",
-                        "description": description,
-                        "attachments": None
-                    }
-                ]
-            ],
-        }
-        resp = self._post_request(self.as_v3, request)
-        return resp
+    def new_project(self, space, code, description=None, **kwargs):
+        return Project(self, None, space=space, code=code, description=description, **kwargs)
+        #request = {
+        #    "method": "createProjects",
+        #    "params": [
+        #        self.token,
+        #        [
+        #            {
+        #                "code": code,
+        #                "spaceId": {
+        #                    "permId": space_code,
+        #                    "@type": "as.dto.space.id.SpacePermId"
+        #                },
+        #                "@type": "as.dto.project.create.ProjectCreation",
+        #                "description": description,
+        #                "attachments": None
+        #            }
+        #        ]
+        #    ],
+        #}
+        #resp = self._post_request(self.as_v3, request)
+        #return resp
 
     def _gen_fetchoptions(self, options):
         fo = {}
@@ -2070,7 +2097,8 @@ class AttrHolder():
     def __call__(self, data):
         self.__dict__['_is_new'] = False
         for attr in self._allowed_attrs:
-            if attr in ["code","permId","identifier","type", "container","components"]:
+            if attr in ["code","permId","identifier",
+                    "type", "container","components"]:
                 self.__dict__['_'+attr] = data.get(attr, None)
 
             elif attr in ["space"]:
@@ -2107,18 +2135,64 @@ class AttrHolder():
                 self.__dict__['_'+attr] = data.get(attr, None)
 
 
-    def _all_attrs(self):
+    def _new_attrs(self):
+        defs = _definitions(self.entity)
+        attr2ids = _definitions('attr2ids')
+
+        new_obj = {
+           "@type" : "as.dto.{}.create.{}Creation".format(self.entity.lower(), self.entity)
+        } 
+
+        for attr in defs['attrs_new']:
+            items = None
+
+            if attr == 'attachments':
+                attachments = getattr(self,'_new_attachments')
+                if attachments is None:
+                    continue
+                atts_data = [ attachment.get_data() for attachment in attachments ]
+                items = atts_data
+
+            elif attr in defs['multi']:
+                items = getattr(self, '_'+attr)
+                if items is None:
+                    items = []
+            else:
+                items = getattr(self, '_'+attr)
+
+            key = None
+            if attr in attr2ids:
+                key = attr2ids[attr]
+            else:
+                key = attr
+            
+            new_obj[key] = items
+
+
+        # create a new entity
+        request = { 
+            "method": "create{}s".format(self.entity),
+            "params": [
+                self.openbis.token,
+                [ new_obj ]
+            ]
+        }
+        return request
+
+
+    def _up_attrs(self):
         defs = _definitions(self._entity)
         attr2ids = _definitions('attr2ids')
-        ids2type = _definitions('ids2type')
 
-        request = {}
+        up_obj = {
+           "@type" : "as.dto.{}.update.{}Update".format(self.entity.lower(), self.entity),
+           defs["identifier"]: self._permId
+        } 
 
         # look at all attributes available for that entity
-        for attr in self._allowed_attrs:
-            # these attributes cannot be changed (or not directly)
-            if attr in ["code", "permId", "identifier", "type", "registrator", "registrationDate", "modifier", "modificationDate"]:
-                continue
+        # that can be updated
+        for attr in defs['attrs_up']:
+            items = None
 
             if attr == 'attachments':
                 # v3 API currently only supports adding attachments
@@ -2128,9 +2202,9 @@ class AttrHolder():
                 atts_data = [ attachment.get_data() for attachment in attachments ]
 
                 if self._is_new:
-                    request['attachments'] = atts_data
+                    up_obj['attachments'] = atts_data
                 else:
-                    request['attachments'] = {
+                    up_obj['attachments'] = {
                         "actions": [ {
                             "items": atts_data,
                             "@type": "as.dto.common.update.ListUpdateActionAdd"
@@ -2138,7 +2212,8 @@ class AttrHolder():
                         "@type": "as.dto.attachment.update.AttachmentListUpdateValue"
                     } 
 
-            elif attr == 'tagss':
+            elif attr == 'tags':
+                # look which tags have been added or removed and update them
                 if getattr(self,'_prev_tags') is None:
                     self.__dict__['_prev_tags'] = []
                 actions = []
@@ -2156,61 +2231,53 @@ class AttrHolder():
                             "@type": "as.dto.common.update.ListUpdateActionAdd"
                         })
                     
-                request['tagIds'] = {
+                up_obj['tagIds'] = {
                     "@type": "as.dto.common.update.IdListUpdateValue",
                     "actions": actions
                 }
 
             elif '_'+attr in self.__dict__:
-                if self._is_new:
-                    # handle multivalue attributes (parents, children, tags etc.)
-                    if attr in defs['multi']:
-                        items = self.__dict__.get('_'+attr, [])
-                        if items == None:
-                            items = []
-                        request[attr2ids[attr]] = items
-                    else:
-                        request[attr2ids[attr]] = self.__dict__.get('_'+attr, None)
-
-                else:
-                    # handle multivalue attributes (parents, children, tags etc.)
-                    # we only cover the Set mechanism, which means we always update all items in a
-                    # list
-                    if attr in defs['multi']:
-                        items = self.__dict__.get('_'+attr, [])
-                        if items == None:
-                            items = []
-                        request[attr2ids[attr]] = {
-                            "actions": [
-                                {
-                                    "items": items,
-                                    "@type": "as.dto.common.update.ListUpdateActionSet",
-                                }
-                            ],
-                            "@type": "as.dto.common.update.IdListUpdateValue"
-                        }
-                    else:
-                        # handle single attributes (space, experiment, project, container, etc.)
-                        value =  self.__dict__.get('_'+attr, {})
-                        if value is None:
-                            pass
-                        else:
-                            isModified=False
-                            if 'isModified' in value:
-                                isModified=True
-                                del value['isModified']
-                            
-                            request[attr2ids[attr]] = {
-                               "@type": "as.dto.common.update.FieldUpdateValue",
-                               "isModified": isModified,
-                               "value": value,
+                # handle multivalue attributes (parents, children, tags etc.)
+                # we only cover the Set mechanism, which means we always update 
+                # all items in a list
+                if attr in defs['multi']:
+                    items = self.__dict__.get('_'+attr, [])
+                    if items == None:
+                        items = []
+                    up_obj[attr2ids[attr]] = {
+                        "actions": [
+                            {
+                                "items": items,
+                                "@type": "as.dto.common.update.ListUpdateActionSet",
                             }
+                        ],
+                        "@type": "as.dto.common.update.IdListUpdateValue"
+                    }
+                else:
+                    # handle single attributes (space, experiment, project, container, etc.)
+                    value =  self.__dict__.get('_'+attr, {})
+                    if value is None:
+                        pass
+                    else:
+                        isModified=False
+                        if 'isModified' in value:
+                            isModified=True
+                            del value['isModified']
+                        
+                        up_obj[attr2ids[attr]] = {
+                           "@type": "as.dto.common.update.FieldUpdateValue",
+                           "isModified": isModified,
+                           "value": value,
+                        }
 
-        #if self.__dict__.get('_code', None) is None:
-        #    request['autoGeneratedCode'] = True
-        #else:
-        #    pass
-            
+        # update a new entity
+        request = { 
+            "method": "update{}s".format(self.entity),
+            "params": [
+                self.openbis.token,
+                [ up_obj ]
+            ]
+        }
         return request
 
 
@@ -2222,6 +2289,14 @@ class AttrHolder():
                 
         int_name = '_'+name
         if int_name in self.__dict__: 
+            if int_name in ['_attachments']:
+                return [
+                    { 
+                        "fileName": x['fileName'],
+                        "title": x['title'],
+                        "description": x['description']
+                    } for x in self._attachments 
+                ]
             if int_name in ['_registrator','_modifier']:
                 return self.__dict__[int_name].get('userId', None)
             elif int_name in ['_registrationDate', '_modificationDate']:
@@ -2273,6 +2348,17 @@ class AttrHolder():
             }
         elif name in ["tags"]:
             self.set_tags(value)
+        
+        elif name in ["attachments"]:
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, dict):
+                        self.add_attachment(**item)
+                    else:
+                        self.add_attachment(item)
+
+            else:
+                self.add_attachment(value)
 
         elif name in ["sample", "experiment"]:
             if isinstance(value, object):
@@ -2284,7 +2370,7 @@ class AttrHolder():
             self.__dict__['_'+name] = obj.data['identifier']
 
             # mark attribute as modified, if it's an existing entity
-            if self.__dict__['_is_new']:
+            if self.is_new:
                 pass
             else:
                 self.__dict__['_'+name]['isModified'] = True
@@ -2295,7 +2381,7 @@ class AttrHolder():
             self.__dict__['_'+name] = obj.data['permId']
 
                 # mark attribute as modified, if it's an existing entity
-            if self.__dict__['_is_new']:
+            if self.is_new:
                 pass
             else:
                 self.__dict__['_'+name]['isModified'] = True
@@ -2306,7 +2392,7 @@ class AttrHolder():
             self.__dict__['_'+name] = obj.data['identifier']
 
                 # mark attribute as modified, if it's an existing entity
-            if self.__dict__['_is_new']:
+            if self.is_new:
                 pass
             else:
                 self.__dict__['_'+name]['isModified'] = True
@@ -2314,10 +2400,12 @@ class AttrHolder():
         elif name in ["identifier"]:
             raise KeyError("you can not modify the {}".format(name))
         elif name == "code":
-            if self.__dict__['_type'].data['autoGeneratedCode']:
+            if getattr(self, '_type') and self.__dict__['_type'].data['autoGeneratedCode']:
                 raise KeyError("for this {}Type you can not set a code".format(self.__dict__['_entity']))
             else:
                 self.__dict__['_code'] = value
+        elif name == "description":
+            self.__dict__['_description'] = value
         else:
             raise KeyError("no such attribute: {}".format(name))
 
@@ -2381,8 +2469,8 @@ class AttrHolder():
         else:
             return DataFrame(self._attachments)[['fileName','title','description','version']]
 
-    def add_attachment(self, filename, title=None, description=None):
-        att = Attachment(filename=filename, title=title, description=description)
+    def add_attachment(self, fileName, title=None, description=None):
+        att = Attachment(filename=fileName, title=title, description=description)
         if getattr(self, '_attachments') is None:
             self.__dict__['_attachments'] = []
         self._attachments.append(att.get_data_short())
@@ -2524,7 +2612,7 @@ class Sample():
 
     def save(self):
         props = self.p._all_props()
-        attrs = self.a._all_attrs()
+        attrs = self.a._up_attrs()
         attrs["properties"] = props
 
         if self.identifier is None:
@@ -2601,7 +2689,7 @@ class Space(OpenBisObject):
         when using the autocompletion feature (TAB) in Jupyter
         """
         return['code','permId', 'description', 'registrator', 'registrationDate',
-        'modificationDate', 'get_projects()', 'get_samples()', 'delete()']
+        'modificationDate', 'get_projects()', 'new_project()', 'get_samples()', 'delete()']
 
     def __str__(self):
         return self.data.get('code', None)
@@ -2612,8 +2700,8 @@ class Space(OpenBisObject):
     def get_projects(self):
         return self.openbis.get_projects(space=self.code)
 
-    def new_project(self, code, description):
-        return self.openbis.new_project(self.code, code, description)
+    def new_project(self, code, description=None, **kwargs):
+        return self.openbis.new_project(self.code, code, description, **kwargs)
 
     def delete(self, reason):
         self.openbis.delete_entity('Space', self.permId, reason)
@@ -2724,7 +2812,7 @@ class Experiment(OpenBisObject):
 
     def save(self):
         props = self.p._all_props()
-        attrs = self.a._all_attrs()
+        attrs = self.a._up_attrs()
         attrs["properties"] = props
 
         if self.identifier is None:
@@ -2840,31 +2928,41 @@ class Project(OpenBisObject):
         self.openbis.delete_entity('project', self.permId, reason) 
 
     def save(self):
-        attrs = self.a._all_attrs()
-
-        if self.identifier is None:
-            attrs["@type"] = "as.dto.project.create.ProjectCreation"
-            attrs["typeId"] = self.__dict__['type'].data['permId']
-            request = {
-                "method": "createProjects",
-                "params": [ self.openbis.token, [ attrs ] ]
-            }
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-            new_sample_data = self.openbis.get_sample(resp[0]['permId'], only_data=True)
-            self._set_data(new_sample_data)
-            return self
-            
+        if self.is_new:
+            request = self._new_attrs()
+            self.openbis._post_request(self.openbis.as_v3, request)
+            self.a.__dict__['_is_new'] = False
+            print("Project successfully created.")
         else:
-            attrs["@type"] = "as.dto.project.update.ProjectUpdate"
-            attrs["projectId"] = {
-                "permId": self.permId,
-                "@type": "as.dto.project.id.ProjectPermId"
-            }
-            request = {
-                "method": "updateProjects",
-                "params": [ self.openbis.token,
-                    [ attrs ]
-                ]
-            }
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-            print('Project successfully updated')
+            request = self._up_attrs()
+            self.openbis._post_request(self.openbis.as_v3, request)
+            print("Project successfully updated.")
+
+        #attrs = self.a._up_attrs()
+
+        #if self.identifier is None:
+        #    attrs["@type"] = "as.dto.project.create.ProjectCreation"
+        #    attrs["typeId"] = self.__dict__['type'].data['permId']
+        #    request = {
+        #        "method": "createProjects",
+        #        "params": [ self.openbis.token, [ attrs ] ]
+        #    }
+        #    resp = self.openbis._post_request(self.openbis.as_v3, request)
+        #    new_sample_data = self.openbis.get_sample(resp[0]['permId'], only_data=True)
+        #    self._set_data(new_sample_data)
+        #    return self
+        #    
+        #else:
+        #    attrs["@type"] = "as.dto.project.update.ProjectUpdate"
+        #    attrs["projectId"] = {
+        #        "permId": self.permId,
+        #        "@type": "as.dto.project.id.ProjectPermId"
+        #    }
+        #    request = {
+        #        "method": "updateProjects",
+        #        "params": [ self.openbis.token,
+        #            [ attrs ]
+        #        ]
+        #    }
+        #    resp = self.openbis._post_request(self.openbis.as_v3, request)
+        #    print('Project successfully updated')
