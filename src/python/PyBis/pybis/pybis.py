@@ -49,9 +49,9 @@ def _definitions(entity):
             "identifier": "projectId",
         },
         "Experiment": {
-            "attrs_new": "code type space project tags attachments".split(),
-            "attrs_up": "space project tags attachments".split(),
-            "attrs": "code permId identifier type space project tags attachments".split(),
+            "attrs_new": "code type project tags attachments".split(),
+            "attrs_up": "project tags attachments".split(),
+            "attrs": "code permId identifier type project tags attachments".split(),
             "multi": "tags attachments".split(),
             "identifier": "experimentId",
         },
@@ -2360,38 +2360,17 @@ class AttrHolder():
             else:
                 self.add_attachment(value)
 
-        elif name in ["sample", "experiment"]:
+        elif name in ["sample", "experiment", "space", "project"]:
+            obj = None
             if isinstance(value, object):
                 obj = value
             else:
                 # fetch object in openBIS, make sure it actually exists
                 obj = getattr(self._openbis, "get_"+name)(value)
 
-            self.__dict__['_'+name] = obj.data['identifier']
+            self.__dict__['_'+name] = obj._identifier
 
             # mark attribute as modified, if it's an existing entity
-            if self.is_new:
-                pass
-            else:
-                self.__dict__['_'+name]['isModified'] = True
-
-        elif name in ["space"]:
-            # fetch object in openBIS, make sure it actually exists
-            obj = getattr(self._openbis, "get_"+name)(value)
-            self.__dict__['_'+name] = obj.data['permId']
-
-                # mark attribute as modified, if it's an existing entity
-            if self.is_new:
-                pass
-            else:
-                self.__dict__['_'+name]['isModified'] = True
-
-        elif name in ["project"]:
-            # fetch object in openBIS, make sure it actually exists
-            obj = getattr(self._openbis, "get_"+name)(value)
-            self.__dict__['_'+name] = obj.data['identifier']
-
-                # mark attribute as modified, if it's an existing entity
             if self.is_new:
                 pass
             else:
@@ -2811,39 +2790,19 @@ class Experiment(OpenBisObject):
         self.openbis.update_experiment(self.permId, properties=properties)
 
     def save(self):
-        props = self.p._all_props()
-        attrs = self.a._up_attrs()
-        attrs["properties"] = props
-
-        if self.identifier is None:
-            # create a new experiment
-            attrs["@type"] = "as.dto.experiment.create.ExperimentCreation"
-            attrs["typeId"] = self.__dict__['type'].data['permId']
-            request = {
-                "method": "createExperiments",
-                "params": [ self.openbis.token,
-                    [ attrs ]
-                ]
-            }
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-            new_experiment_data = self.openbis.get_experiment(resp[0]['permId'], only_data=True)
-            self._set_data(new_experiment_data)
-            return self
-            
+        if self.is_new:
+            request = self._new_attrs()
+            props = self.p._all_props()
+            request["properties"] = props
+            self.openbis._post_request(self.openbis.as_v3, request)
+            self.a.__dict__['_is_new'] = False
+            print("Experiment successfully created.")
         else:
-            attrs["@type"] = "as.dto.experiment.update.ExperimentUpdate"
-            attrs["experimentId"] = {
-                "permId": self.permId,
-                "@type": "as.dto.experiment.id.ExperimentPermId"
-            }
-            request = {
-                "method": "updateExperiments",
-                "params": [ self.openbis.token,
-                    [ attrs ]
-                ]
-            }
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-            print('Experiment successfully updated')
+            request = self._up_attrs()
+            props = self.p._all_props()
+            request["properties"] = props
+            self.openbis._post_request(self.openbis.as_v3, request)
+            print("Experiment successfully updated.")
 
     def delete(self, reason):
         self.openbis.delete_entity('experiment', self.permId, reason)
@@ -2938,31 +2897,3 @@ class Project(OpenBisObject):
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Project successfully updated.")
 
-        #attrs = self.a._up_attrs()
-
-        #if self.identifier is None:
-        #    attrs["@type"] = "as.dto.project.create.ProjectCreation"
-        #    attrs["typeId"] = self.__dict__['type'].data['permId']
-        #    request = {
-        #        "method": "createProjects",
-        #        "params": [ self.openbis.token, [ attrs ] ]
-        #    }
-        #    resp = self.openbis._post_request(self.openbis.as_v3, request)
-        #    new_sample_data = self.openbis.get_sample(resp[0]['permId'], only_data=True)
-        #    self._set_data(new_sample_data)
-        #    return self
-        #    
-        #else:
-        #    attrs["@type"] = "as.dto.project.update.ProjectUpdate"
-        #    attrs["projectId"] = {
-        #        "permId": self.permId,
-        #        "@type": "as.dto.project.id.ProjectPermId"
-        #    }
-        #    request = {
-        #        "method": "updateProjects",
-        #        "params": [ self.openbis.token,
-        #            [ attrs ]
-        #        ]
-        #    }
-        #    resp = self.openbis._post_request(self.openbis.as_v3, request)
-        #    print('Project successfully updated')
