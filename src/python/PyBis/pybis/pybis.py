@@ -1630,7 +1630,7 @@ class Openbis:
             dss_code,
             DROPBOX_PLUGIN,
             { 
-                "sample" : { "identifier" : sample.identifier },
+                "sample" : { "identifier" : sampleId['identifier'] },
                 "sampleId": sampleId,
                 "parentIds": parentIds,
                 "containers" : [ {
