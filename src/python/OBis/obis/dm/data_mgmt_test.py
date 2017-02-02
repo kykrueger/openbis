@@ -25,3 +25,6 @@ def test_locate_command():
     result = data_mgmt.locate_command("bash")
     assert result[0] == 0
     assert result[1] == "/bin/bash"
+
+    result = data_mgmt.locate_command("this_is_not_a_real_command")
+    assert result[0] == 1
