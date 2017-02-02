@@ -9,6 +9,7 @@ Module implementing data management operations.
 Created by Chandrasekhar Ramakrishnan on 2017-02-01.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
+import subprocess
 
 import pybis
 import abc
@@ -45,8 +46,8 @@ def complete_git_config(config):
 
     find_git = config['find_git'] if config.get('find_git') else False
     if find_git:
-        config['git_path'] = locate_path('git')
-        config['git_annex_path'] = locate_path('git-annex')
+        config['git_path'] = locate_command('git')
+        config['git_annex_path'] = locate_command('git-annex')
 
 
 def default_echo(details):
@@ -54,8 +55,10 @@ def default_echo(details):
         print(details['message'])
 
 
-def locate_path(command):
-    return None
+def locate_command(command):
+    """Return a tuple of (returncode, stdout)."""
+    result = subprocess.run(['type', '-p', command], stdout=subprocess.PIPE)
+    return result.returncode, result.stdout.decode('utf-8').strip()
 
 
 class AbstractDataMgmt(metaclass=abc.ABCMeta):

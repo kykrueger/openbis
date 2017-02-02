@@ -19,3 +19,9 @@ def test_no_git(tmpdir):
         assert False, "Command should have failed -- no git defined."
     except ValueError:
         pass
+
+
+def test_locate_command():
+    result = data_mgmt.locate_command("bash")
+    assert result[0] == 0
+    assert result[1] == "/bin/bash"
