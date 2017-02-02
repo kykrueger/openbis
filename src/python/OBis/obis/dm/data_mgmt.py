@@ -15,16 +15,19 @@ import abc
 
 
 # noinspection PyPep8Naming
-def DataMgmt(openbis_config={}, git_config={}):
+def DataMgmt(echo_func=None, openbis_config={}, git_config={}):
     """Factory method for DataMgmt instances"""
+
+    echo_func = echo_func if echo_func is not None else default_echo
+
     complete_openbis_config(openbis_config)
     complete_git_config(git_config)
 
     openbis = pybis.Openbis(**openbis_config)
     git_wrapper = GitWrapper(**git_config)
     if git_wrapper.can_run():
-        return GitDataMgmt(openbis, git_wrapper)
-    return NoGitDataMgmt(openbis, git_wrapper)
+        return GitDataMgmt(echo_func, openbis, git_wrapper)
+    return NoGitDataMgmt(echo_func, openbis, git_wrapper)
 
 
 def complete_openbis_config(config):
@@ -46,30 +49,61 @@ def complete_git_config(config):
         config['git_annex_path'] = locate_path('git-annex')
 
 
+def default_echo(details):
+    if details.get('level') != "DEBUG":
+        print(details['message'])
+
+
 def locate_path(command):
     return None
 
 
-class AbstractDataMgmt(object):
-    __metaclass__ = abc.ABCMeta
-    """Abstract object that implements operations."""
+class AbstractDataMgmt(metaclass=abc.ABCMeta):
+    """Abstract object that implements operations.
 
-    def __init__(self, openbis, git_wrapper):
+    All operations throw an exepction if they fail.
+    """
+
+    def __init__(self, echo_func, openbis, git_wrapper):
+        self.echo_func = echo_func
         self.openbis = openbis
         self.git_wrapper = git_wrapper
 
+    def echo(self, level, message):
+        details = {'level': level, 'message': message}
+        self.echo_func(details)
+
+    def info(self, message):
+        """Print info to the user."""
+        self.echo('info', message)
+
+    def error(self, message):
+        """Print an error to the user"""
+        self.echo('error', message)
+
+    def error_raise(self, command, reason):
+        """Print an error to the user and raise an exception."""
+        message = "'{}' failed. {}".format(command, reason)
+        self.echo('error', message)
+        raise ValueError(reason)
+
+    @abc.abstractmethod
     def init_data(self, path):
-        return None
+        return
 
 
 class NoGitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations when git is not available -- show error messages."""
-    pass
+
+    def init_data(self, path):
+        self.error_raise("init data", "No git command found.")
 
 
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
-    pass
+
+    def init_data(self, path):
+        return
 
 
 class GitWrapper(object):

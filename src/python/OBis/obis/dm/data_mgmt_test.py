@@ -14,4 +14,8 @@ from . import data_mgmt
 
 def test_no_git(tmpdir):
     dm = data_mgmt.DataMgmt()
-    dm.init_data(str(tmpdir))
+    try:
+        dm.init_data(str(tmpdir))
+        assert False, "Command should have failed -- no git defined."
+    except ValueError:
+        pass
