@@ -23,8 +23,13 @@ def test_no_git(tmpdir):
 
 def test_locate_command():
     result = data_mgmt.locate_command("bash")
-    assert result[0] == 0
-    assert result[1] == "/bin/bash"
+    assert result.returncode == 0
+    assert result.output == "/bin/bash"
 
     result = data_mgmt.locate_command("this_is_not_a_real_command")
-    assert result[0] == 1
+    assert result.returncode == 1
+
+
+def test_normal_use_case(shared_dm, tmpdir):
+    result = shared_dm.init_data(str(tmpdir))
+    assert result.returncode == 0

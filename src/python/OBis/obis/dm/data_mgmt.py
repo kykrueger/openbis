@@ -46,8 +46,13 @@ def complete_git_config(config):
 
     find_git = config['find_git'] if config.get('find_git') else False
     if find_git:
-        config['git_path'] = locate_command('git')
-        config['git_annex_path'] = locate_command('git-annex')
+        git_cmd = locate_command('git')
+        if git_cmd.returncode == 0:
+            config['git_path'] = git_cmd.output
+
+        git_annex_cmd = locate_command('git-annex')
+        if git_annex_cmd.returncode == 0:
+            config['git_annex_path'] = git_annex_cmd.output
 
 
 def default_echo(details):
@@ -55,10 +60,22 @@ def default_echo(details):
         print(details['message'])
 
 
+class CommandResult(object):
+    """Encapsulate result from a subprocess call."""
+
+    def __init__(self, completed_process):
+        """Convert a completed_process object into a ShellResult."""
+        self.returncode = completed_process.returncode
+        self.output = completed_process.stdout.decode('utf-8').strip()
+
+
+def run_shell(args):
+    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE))
+
+
 def locate_command(command):
     """Return a tuple of (returncode, stdout)."""
-    result = subprocess.run(['type', '-p', command], stdout=subprocess.PIPE)
-    return result.returncode, result.stdout.decode('utf-8').strip()
+    return run_shell(['type', '-p', command])
 
 
 class AbstractDataMgmt(metaclass=abc.ABCMeta):
@@ -106,13 +123,16 @@ class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
     def init_data(self, path):
-        return
+        result = self.git_wrapper.git_init(path)
+        if result.returncode != 0:
+            self.error(result.output)
+        return result
 
 
 class GitWrapper(object):
     """A wrapper on commands to git."""
 
-    def __init__(self, git_path=None, git_annex_path=None):
+    def __init__(self, git_path=None, git_annex_path=None, find_git=None):
         self.git_path = git_path
         self.git_annex_path = git_annex_path
 
@@ -122,4 +142,13 @@ class GitWrapper(object):
             return False
         if self.git_annex_path is None:
             return False
-        return False
+        if run_shell([self.git_path, 'help']).returncode != 0:
+            # git help should have a returncode of 0
+            return False
+        if run_shell([self.git_annex_path, 'help']).returncode != 0:
+            # git help should have a returncode of 0
+            return False
+        return True
+
+    def git_init(self, path):
+        return run_shell([self.git_path, "init", path])
