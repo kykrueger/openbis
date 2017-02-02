@@ -108,22 +108,27 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         raise ValueError(reason)
 
     @abc.abstractmethod
-    def init_data(self, path):
+    def init_data(self, path, desc=None):
         return
 
 
 class NoGitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations when git is not available -- show error messages."""
 
-    def init_data(self, path):
+    def init_data(self, path, desc=None):
         self.error_raise("init data", "No git command found.")
 
 
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
-    def init_data(self, path):
+    def init_data(self, path, desc=None):
+        """Initialize a data repository at the path with the description."""
         result = self.git_wrapper.git_init(path)
+        if result.returncode != 0:
+            self.error(result.output)
+            return result
+        result = self.git_wrapper.git_annex_init(path, desc)
         if result.returncode != 0:
             self.error(result.output)
         return result
@@ -152,3 +157,9 @@ class GitWrapper(object):
 
     def git_init(self, path):
         return run_shell([self.git_path, "init", path])
+
+    def git_annex_init(self, path, desc):
+        cmd = [self.git_path, "-C", path, "annex", "init"]
+        if desc is not None:
+            cmd.append(desc)
+        return run_shell(cmd)
