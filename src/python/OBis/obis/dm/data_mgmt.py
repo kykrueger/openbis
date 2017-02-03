@@ -138,15 +138,14 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def add_content(self, path):
-        """Add content to the repository."""
-        return
-
-    @abc.abstractmethod
-    def commit(self, msg):
-        """Commit the current repo.
+    def commit(self, msg, auto_add=True):
+        """
+        Commit the current repo.
 
         This issues a git commit and connects to openBIS and creates a data set in openBIS.
+        :param msg: Commit message.
+        :param auto_add: Automatically add all files in the folder to the repo. Defaults to True.
+        :return:
         """
         return
 
@@ -160,10 +159,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_analysis(self, path):
         self.error_raise("init analysis", "No git command found.")
 
-    def add_content(self, path):
-        self.error_raise("add", "No git command found.")
-
-    def commit(self, msg):
+    def commit(self, msg, auto_add=True):
         self.error_raise("commit", "No git command found.")
 
 
@@ -192,10 +188,20 @@ class GitDataMgmt(AbstractDataMgmt):
             self.error(result.output)
         return result
 
-    def commit(self, msg):
+    def commit(self, msg, auto_add=True):
+        if auto_add:
+            result = self.git_wrapper.get_top_level_path()
+            if result.returncode != 0:
+                self.error(result.output)
+                return result
+            result = self.add_content(result.output)
+            if result.returncode != 0:
+                self.error(result.output)
+                return result
         result = self.git_wrapper.git_commit(msg)
         if result.returncode != 0:
             self.error(result.output)
+        # TODO create a data set in openBIS
         return result
 
 
@@ -239,6 +245,8 @@ class GitWrapper(object):
         if result.returncode != 0:
             return result
 
+        # TODO Create a .obis directory and add it to gitignore
+
         cmd = [self.git_path, "-C", path, "commit", "-m", "Initial commit."]
         result = run_shell(cmd)
         return result
@@ -248,3 +256,6 @@ class GitWrapper(object):
 
     def git_commit(self, msg):
         return run_shell([self.git_path, "commit", '-m', msg])
+
+    def get_top_level_path(self):
+        return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])

@@ -56,13 +56,6 @@ def test_data_use_case(shared_dm, tmpdir):
     copy_test_data(tmpdir)
 
     with data_mgmt.cd(tmp_dir_path):
-        result = shared_dm.add_content(".")
-        assert result.returncode == 0
-
-        result = git_status()
-        assert result.returncode == 0
-        assert result.output == "A  snb-data.zip\nA  test.txt"
-
         result = shared_dm.commit("Added data.")
         assert result.returncode == 0
 
@@ -75,6 +68,9 @@ def test_data_use_case(shared_dm, tmpdir):
         result = data_mgmt.run_shell(['git', 'annex', 'info', 'test.txt'])
         present_p = result.output.split(' ')[-1]
         assert present_p == 'failed'
+        result = data_mgmt.run_shell(['git', 'log', '--oneline', 'test.txt'])
+        present_p = " ".join(result.output.split(' ')[1:])
+        assert present_p == 'Added data.'
 
 
 def copy_test_data(tmpdir):
