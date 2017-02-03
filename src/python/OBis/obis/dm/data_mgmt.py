@@ -9,10 +9,13 @@ Module implementing data management operations.
 Created by Chandrasekhar Ramakrishnan on 2017-02-01.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
+import abc
+import os
+import shutil
 import subprocess
+from contextlib import contextmanager
 
 import pybis
-import abc
 
 
 # noinspection PyPep8Naming
@@ -68,6 +71,12 @@ class CommandResult(object):
         self.returncode = completed_process.returncode
         self.output = completed_process.stdout.decode('utf-8').strip()
 
+    def __str__(self):
+        return "CommandResult({},{})".format(self.returncode, self.output)
+
+    def __repr__(self):
+        return "CommandResult({},{})".format(self.returncode, self.output)
+
 
 def run_shell(args):
     return CommandResult(subprocess.run(args, stdout=subprocess.PIPE))
@@ -76,6 +85,17 @@ def run_shell(args):
 def locate_command(command):
     """Return a tuple of (returncode, stdout)."""
     return run_shell(['type', '-p', command])
+
+
+@contextmanager
+def cd(newdir):
+    """Safe cd -- return to original dir after execution, even if an exception is raised."""
+    prevdir = os.getcwd()
+    os.chdir(os.path.expanduser(newdir))
+    try:
+        yield
+    finally:
+        os.chdir(prevdir)
 
 
 class AbstractDataMgmt(metaclass=abc.ABCMeta):
@@ -109,6 +129,25 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def init_data(self, path, desc=None):
+        """Initialize a data repository at the path with the description."""
+        return
+
+    @abc.abstractmethod
+    def init_analysis(self, path):
+        """Initialize an analysis repository at the path."""
+        return
+
+    @abc.abstractmethod
+    def add_content(self, path):
+        """Add content to the repository."""
+        return
+
+    @abc.abstractmethod
+    def commit(self, msg):
+        """Commit the current repo.
+
+        This issues a git commit and connects to openBIS and creates a data set in openBIS.
+        """
         return
 
 
@@ -118,17 +157,43 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_data(self, path, desc=None):
         self.error_raise("init data", "No git command found.")
 
+    def init_analysis(self, path):
+        self.error_raise("init analysis", "No git command found.")
+
+    def add_content(self, path):
+        self.error_raise("add", "No git command found.")
+
+    def commit(self, msg):
+        self.error_raise("commit", "No git command found.")
+
 
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
     def init_data(self, path, desc=None):
-        """Initialize a data repository at the path with the description."""
         result = self.git_wrapper.git_init(path)
         if result.returncode != 0:
             self.error(result.output)
             return result
         result = self.git_wrapper.git_annex_init(path, desc)
+        if result.returncode != 0:
+            self.error(result.output)
+        return result
+
+    def init_analysis(self, path):
+        result = self.git_wrapper.git_init(path)
+        if result.returncode != 0:
+            self.error(result.output)
+        return result
+
+    def add_content(self, path):
+        result = self.git_wrapper.git_add(path)
+        if result.returncode != 0:
+            self.error(result.output)
+        return result
+
+    def commit(self, msg):
+        result = self.git_wrapper.git_commit(msg)
         if result.returncode != 0:
             self.error(result.output)
         return result
@@ -159,7 +224,27 @@ class GitWrapper(object):
         return run_shell([self.git_path, "init", path])
 
     def git_annex_init(self, path, desc):
-        cmd = [self.git_path, "-C", path, "annex", "init"]
+        cmd = [self.git_path, "-C", path, "annex", "init", "--version=6"]
         if desc is not None:
             cmd.append(desc)
-        return run_shell(cmd)
+        result = run_shell(cmd)
+        if result.returncode != 0:
+            return result
+
+        attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
+        attributes_dst = os.path.join(path, ".gitattributes")
+        shutil.copyfile(attributes_src, attributes_dst)
+        cmd = [self.git_path, "-C", path, "add", ".gitattributes"]
+        result = run_shell(cmd)
+        if result.returncode != 0:
+            return result
+
+        cmd = [self.git_path, "-C", path, "commit", "-m", "Initial commit."]
+        result = run_shell(cmd)
+        return result
+
+    def git_add(self, path):
+        return run_shell([self.git_path, "add", path])
+
+    def git_commit(self, msg):
+        return run_shell([self.git_path, "commit", '-m', msg])
