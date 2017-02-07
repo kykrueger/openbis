@@ -8,6 +8,7 @@ Work with openBIS from Python.
 
 """
 
+from __future__ import print_function
 import os
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -501,15 +502,16 @@ class Openbis:
     (minimum version 16.05).
     """
 
-    def __init__(self, url='https://localhost:8443', verify_certificates=True, token=None):
+    def __init__(self, url, verify_certificates=True, token=None):
         """Initialize a new connection to an openBIS server.
-
         :param host:
         """
 
         url_obj = urlparse(url)
         if  url_obj.netloc is None:
             raise ValueError("please provide the url in this format: https://openbis.host.ch:8443")
+        if url_obj.hostname is None:
+            raise ValueError("hostname is missing")
 
         self.url_obj = url_obj
         self.url     = url_obj.geturl()
@@ -1406,7 +1408,7 @@ class Openbis:
         if additional_attributes is None:
             additional_attributes = []
 
-        attributes = ['code', 'description', *additional_attributes, 'modificationDate']
+        attributes = ['code', 'description'] + additional_attributes + ['modificationDate']
 
         search_request = {}
         fetch_options = {}
@@ -2724,6 +2726,12 @@ class Things():
             if row is not None:
                 # invoke the openbis.get_entity() method
                 return getattr(self.openbis, 'get_'+self.entity)(row[self.identifier_name].values[0])
+
+    def __iter__(self):
+        for item in self.df[[self.identifier_name]][self.identifier_name].iteritems():
+            yield getattr(self.openbis, 'get_'+self.entity)(item[1]) 
+
+        #return self.df[[self.identifier_name]].to_dict()[self.identifier_name]
 
 
 class Experiment(OpenBisObject):
