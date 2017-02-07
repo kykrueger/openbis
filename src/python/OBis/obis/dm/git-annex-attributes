@@ -1,0 +1,4 @@
+* annex.largefiles=(largerthan=100kb)
+*.zip annex.largefiles=anything
+*.py annex.largefiles=nothing
+*.r annex.largefiles=nothing

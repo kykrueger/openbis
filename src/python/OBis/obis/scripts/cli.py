@@ -72,6 +72,15 @@ def commit(ctx):
 
 @cli.command()
 @click.pass_context
+@click.argument('path')
+def add(ctx, path):
+    """Add add content to the repository.
+    """
+    click_echo("add {}".format(path))
+
+
+@cli.command()
+@click.pass_context
 @click.argument('other', type=click.Path(exists=True))
 def addref(ctx, other):
     """Add a reference to the other repository in this repository.
