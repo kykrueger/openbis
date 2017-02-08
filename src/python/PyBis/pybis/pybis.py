@@ -1158,26 +1158,7 @@ class Openbis:
 
     def new_project(self, space, code, description=None, **kwargs):
         return Project(self, None, space=space, code=code, description=description, **kwargs)
-        #request = {
-        #    "method": "createProjects",
-        #    "params": [
-        #        self.token,
-        #        [
-        #            {
-        #                "code": code,
-        #                "spaceId": {
-        #                    "permId": space_code,
-        #                    "@type": "as.dto.space.id.SpacePermId"
-        #                },
-        #                "@type": "as.dto.project.create.ProjectCreation",
-        #                "description": description,
-        #                "attachments": None
-        #            }
-        #        ]
-        #    ],
-        #}
-        #resp = self._post_request(self.as_v3, request)
-        #return resp
+
 
     def _gen_fetchoptions(self, options):
         fo = {}
@@ -1959,10 +1940,11 @@ class DataSet(OpenBisObject):
     def set_properties(self, properties):
         self.openbis.update_dataset(self.permId, properties=properties)
 
-    def download(self, files=None, wait_until_finished=True, workers=10):
+    def download(self, files=None, destination=None, wait_until_finished=True, workers=10):
         """ download the actual files and put them by default in the following folder:
-        __current_dir__/hostname/dataset_permId/
+        __current_dir__/destination/dataset_permId/
         If no files are specified, all files of a given dataset are downloaded.
+        If no destination is specified, the hostname is chosen instead.
         Files are usually downloaded in parallel, using 10 workers by default. If you want to wait until
         all the files are downloaded, set the wait_until_finished option to True.
         """
@@ -1971,6 +1953,9 @@ class DataSet(OpenBisObject):
             files = self.file_list()
         elif isinstance(files, str):
             files = [files]
+
+        if destination is None:
+            destination = self.openbis.hostname
 
         base_url = self.data['dataStore']['downloadUrl'] + '/datastore_server/' + self.permId + '/'
 
@@ -1981,15 +1966,15 @@ class DataSet(OpenBisObject):
             file_info = self.get_file_list(start_folder=filename)
             file_size = file_info[0]['fileSize']
             download_url = base_url + filename + '?sessionID=' + self.openbis.token 
-            filename = os.path.join(self.openbis.hostname, self.permId, filename)
-            queue.put([download_url, filename, file_size, self.openbis.verify_certificates])
+            filename_dest = os.path.join(destination, self.permId, filename)
+            queue.put([download_url, filename_dest, file_size, self.openbis.verify_certificates])
 
         # wait until all files have downloaded
         if wait_until_finished:
             queue.join()
 
 
-        print("Files downloaded to: %s" % os.path.join(self.openbis.hostname, self.permId))
+        print("Files downloaded to: %s" % os.path.join(destination, self.permId))
 
 
     def get_parents(self):
@@ -2475,10 +2460,10 @@ class AttrHolder():
             "method": method,
             "params": [ self._openbis.token,
                 [ self._permId ],
-                {
-                    "attachments": fetch_option['attachmentsWithContent'],
+                dict( 
+                    attachments= fetch_option['attachmentsWithContent'],
                     **fetch_option[entity]
-                }
+                )
             ]
         }
         resp = self._openbis._post_request(self._openbis.as_v3, request)
@@ -2706,6 +2691,12 @@ class Things():
         self.entity = entity
         self.df = df
         self.identifier_name = identifier_name
+
+    def __repr__(self):
+        identifiers = []
+        for item in self.df[[self.identifier_name]][self.identifier_name].iteritems():
+            identifiers.append(item[1])
+        return "\n".join(identifiers)
 
     def _repr_html_(self):
         return self.df._repr_html_()
