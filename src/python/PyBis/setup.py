@@ -15,7 +15,8 @@ setup(name='pybis',
           'requests',
           'datetime',
           'pandas',
-          'click'
+          'click',
+          'texttable',
       ],
       entry_points='''
         [console_scripts]

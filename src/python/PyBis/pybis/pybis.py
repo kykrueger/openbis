@@ -21,7 +21,9 @@ from urllib.parse import urlparse
 import zlib
 import base64
 from collections import namedtuple
-from pybis.utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid
+from texttable import Texttable
+
+from pybis.utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl
 from pybis.property import PropertyHolder, PropertyAssignments
 from pybis.masterdata import Vocabulary
 
@@ -1894,8 +1896,12 @@ class OpenBisObject():
         """Print all the assigned attributes (identifier, tags, etc.) in a nicely formatted table. See
         AttributeHolder class.
         """
-        html = self.a._repr_html_()
-        return html
+        return self.a._repr_html_()
+
+    def __repr__(self):
+        """same thing as _repr_html_() but for IPython
+        """
+        return self.a.__repr__()
 
 
 class DataSet(OpenBisObject):
@@ -2516,6 +2522,27 @@ class AttrHolder():
             </table>
         """
         return html
+        
+
+    def __repr__(self):
+
+        table = Texttable()
+        table.set_deco(Texttable.HEADER)
+
+        headers = ['property', 'value']
+
+        lines = []
+        lines.append(headers)
+        for attr in self._allowed_attrs:
+            if attr == 'attachments':
+                continue
+            lines.append([
+                attr,
+                nvl(getattr(self, attr, ''))
+            ])
+        table.add_rows(lines)
+        table.set_cols_align(['l','l'])
+        return(table.draw()) 
 
 
 class Sample():
@@ -2578,8 +2605,10 @@ class Sample():
         setattr(self.__dict__['a'], name, value)
 
     def _repr_html_(self):
-        html = self.a._repr_html_()
-        return html
+        return self.a._repr_html_()
+
+    def __repr__(self):
+        return self.a.__repr__()
 
     def set_properties(self, properties):
         self.openbis.update_sample(self.permId, properties=properties)
@@ -2696,7 +2725,7 @@ class Things():
         identifiers = []
         for item in self.df[[self.identifier_name]][self.identifier_name].iteritems():
             identifiers.append(item[1])
-        return "\n".join(identifiers)
+        return "\n".join(["{}\t{}".format(i, ident) for i, ident in enumerate(identifiers)])
 
     def _repr_html_(self):
         return self.df._repr_html_()

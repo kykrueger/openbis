@@ -1,3 +1,5 @@
+from texttable import Texttable
+
 class PropertyHolder():
 
     def __init__(self, openbis_obj, type=None):
@@ -18,13 +20,19 @@ class PropertyHolder():
         return props
 
     def __getattr__(self, name):
+        """ attribute syntax can be found out by
+            adding an underscore at the end of the property name
+        """ 
         if name.endswith('_'):
             name = name.rstrip('_')
             property_type = self._type.prop[name]['propertyType']
             if property_type['dataType'] == 'CONTROLLEDVOCABULARY':
                 return self._openbis.get_terms(name)
             else:
-                return { property_type["label"] : property_type["dataType"]}
+                syntax = { property_type["label"] : property_type["dataType"]}
+                if property_type["dataType"] == "TIMESTAMP":
+                    syntax['syntax'] = 'YYYY-MM-DD HH:MIN:SS'
+                return syntax
         else: return None
 
     def __setattr__(self, name, value):
@@ -74,6 +82,32 @@ class PropertyHolder():
             </table>
         """
         return html
+
+    def __repr__(self):
+        def nvl(val, string=''):
+            if val is None:
+                return string
+            elif val == 'true':
+                return True
+            elif val == 'false':
+                return False
+            return str(val)
+
+        table = Texttable()
+        table.set_deco(Texttable.HEADER)
+
+        headers = ['property', 'value']
+
+        lines = []
+        lines.append(headers)
+        for prop_name in self._property_names:
+            lines.append([
+                prop_name,
+                nvl(getattr(self, prop_name, ''))
+            ])
+        table.add_rows(lines)
+        table.set_cols_align(['l','l'])
+        return(table.draw()) 
 
 
 class PropertyAssignments():
@@ -148,3 +182,24 @@ class PropertyAssignments():
             </table>
         """
         return html
+
+    def __repr__(self):
+        table = Texttable()
+        table.set_deco(Texttable.HEADER)
+
+        headers = ['code', 'label', 'description', 'dataType', 'mandatory']
+
+        lines = []
+        lines.append(headers)
+        for pa in self.data['propertyAssignments']:
+            lines.append([
+                pa['propertyType']['code'].lower(),    
+                pa['propertyType']['label'],    
+                pa['propertyType']['description'],    
+                pa['propertyType']['dataType'],    
+                pa['mandatory']
+            ])
+        table.add_rows(lines)
+        table.set_cols_width([28,15,33,20,9])
+        table.set_cols_align(['l','l','l','l','l'])
+        return(table.draw()) 

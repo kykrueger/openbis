@@ -113,3 +113,8 @@ def is_permid(ident):
     else:
         return False
 
+
+def nvl(val, string=''):
+    if val is None:
+        return string
+    return val
