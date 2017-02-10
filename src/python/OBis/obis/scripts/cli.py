@@ -13,7 +13,7 @@ Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 
 import os
 from datetime import datetime
-
+from .. import dm
 import click
 
 
@@ -32,6 +32,11 @@ def click_progress_no_ts(progress_data):
         click.echo("{}".format(progress_data['message']))
 
 
+def shared_data_mgmt():
+    git_config = {'find_git': True}
+    return dm.DataMgmt(git_config=git_config)
+
+
 @click.group()
 @click.option('-q', '--quiet', default=False, is_flag=True, help='Suppress status reporting.')
 @click.pass_context
@@ -41,7 +46,7 @@ def cli(ctx, quiet):
 
 @cli.group()
 @click.pass_context
-def init(ctx, folder):
+def init(ctx):
     """Group for the various init subcommands"""
     pass
 
@@ -49,9 +54,13 @@ def init(ctx, folder):
 @init.command()
 @click.pass_context
 @click.argument('folder', type=click.Path(exists=True))
-def data(ctx, folder):
+@click.argument('name', default="")
+def data(ctx, folder, name):
     """Initialize the folder as a data folder."""
     click_echo("init data {}".format(folder))
+    data_mgmt = shared_data_mgmt()
+    name = name if name != "" else None
+    return data_mgmt.init_data(folder, name)
 
 
 @init.command()
@@ -64,19 +73,13 @@ def analysis(ctx, folder):
 
 @cli.command()
 @click.pass_context
-def commit(ctx):
-    """Commit the repository to openBIS.
+@click.option('-m', '--msg', prompt=True, help='A message explaining what was done.')
+@click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.')
+def commit(ctx, msg, auto_add):
+    """Commit the repository to git and inform openBIS.
     """
-    click_echo("commit")
-
-
-@cli.command()
-@click.pass_context
-@click.argument('path')
-def add(ctx, path):
-    """Add add content to the repository.
-    """
-    click_echo("add {}".format(path))
+    data_mgmt = shared_data_mgmt()
+    return data_mgmt.commit(msg, auto_add)
 
 
 @cli.command()
