@@ -199,6 +199,7 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def sync(self):
         # TODO create a data set in openBIS
+        # - check if openBIS has been setup. If not, prompt the user to set up openbis.
         # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
         # - call openbis to create a data set, using the existing data set as a parent, if there is one
         # - save the data set id to .git/obis/datasetid.

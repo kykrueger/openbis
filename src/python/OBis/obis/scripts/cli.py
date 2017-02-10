@@ -44,6 +44,17 @@ def cli(ctx, quiet):
     ctx.obj['quiet'] = quiet
 
 
+@cli.command()
+@click.pass_context
+@click.option('-g', '--global', default=False, is_flag=True, help='Configure global or local.')
+def config(ctx):
+    """Configure the openBIS setup.
+
+    Configure the openBIS server url, the data set type, and the data set properties.
+    """
+    click_echo("config")
+
+
 @cli.group()
 @click.pass_context
 def init(ctx):
