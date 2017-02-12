@@ -1,3 +1,4 @@
+from tabulate import tabulate
 from texttable import Texttable
 
 class PropertyHolder():
@@ -93,21 +94,15 @@ class PropertyHolder():
                 return False
             return str(val)
 
-        table = Texttable()
-        table.set_deco(Texttable.HEADER)
-
         headers = ['property', 'value']
 
         lines = []
-        lines.append(headers)
         for prop_name in self._property_names:
             lines.append([
                 prop_name,
                 nvl(getattr(self, prop_name, ''))
             ])
-        table.add_rows(lines)
-        table.set_cols_align(['l','l'])
-        return(table.draw()) 
+        return tabulate(lines, headers=headers)
 
 
 class PropertyAssignments():
@@ -184,6 +179,14 @@ class PropertyAssignments():
         return html
 
     def __repr__(self):
+        title = """
+{}: {}
+description: {}""".format (
+            self.data['@type'].split('.')[-1],
+            self.data['code'], 
+            self.data['description']
+        )
+
         table = Texttable()
         table.set_deco(Texttable.HEADER)
 
@@ -200,6 +203,6 @@ class PropertyAssignments():
                 pa['mandatory']
             ])
         table.add_rows(lines)
-        table.set_cols_width([28,15,33,20,9])
+        table.set_cols_width([28,28,28,28,9])
         table.set_cols_align(['l','l','l','l','l'])
-        return(table.draw()) 
+        return title + "\n\n" + table.draw()

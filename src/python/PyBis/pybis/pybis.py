@@ -22,6 +22,7 @@ import zlib
 import base64
 from collections import namedtuple
 from texttable import Texttable
+from tabulate import tabulate
 
 from pybis.utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl
 from pybis.property import PropertyHolder, PropertyAssignments
@@ -134,8 +135,14 @@ search_criteria = {
 fetch_option = {
     "space":        { "@type": "as.dto.space.fetchoptions.SpaceFetchOptions" },
     "project":      { "@type": "as.dto.project.fetchoptions.ProjectFetchOptions" },
-    "experiment":   { "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions" },
-    "sample":       { "@type": "as.dto.sample.fetchoptions.SampleFetchOptions" },
+    "experiment":   { 
+        "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions",
+        "type": { "@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions" }
+    },
+    "sample":       { 
+        "@type": "as.dto.sample.fetchoptions.SampleFetchOptions",
+        "type": { "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions" }
+    },
     "samples":       { "@type": "as.dto.sample.fetchoptions.SampleFetchOptions" },
     "dataSets":    {
         "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions",
@@ -807,21 +814,15 @@ class Openbis:
             "operator": "AND"
         }
 
-        options = {
-            "properties": { "@type": "as.dto.property.fetchoptions.PropertyFetchOptions" },
-            "tags": { "@type": "as.dto.tag.fetchoptions.TagFetchOptions" },
-            "registrator": { "@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
-            "modifier": { "@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
-            "experiment": { "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions" },
-            "type": { "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions" },
-            "@type": "as.dto.sample.fetchoptions.SampleFetchOptions",
-        }
+        fetchopts = fetch_option['sample'] 
+        for option in ['tags', 'properties', 'registrator', 'modifier', 'experiment']:
+            fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchSamples",
             "params": [ self.token, 
                 criteria,
-                options,
+                fetchopts,
             ],
         }
 
@@ -874,7 +875,7 @@ class Openbis:
             "@type": "as.dto.experiment.search.ExperimentSearchCriteria",
             "operator": "AND"
         }
-        fetchopts = { "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions" }
+        fetchopts = fetch_option['experiment'] 
         for option in ['tags', 'properties', 'registrator', 'modifier', 'project']:
             fetchopts[option] = fetch_option[option]
 
@@ -2526,13 +2527,8 @@ class AttrHolder():
 
     def __repr__(self):
 
-        table = Texttable()
-        table.set_deco(Texttable.HEADER)
-
         headers = ['property', 'value']
-
         lines = []
-        lines.append(headers)
         for attr in self._allowed_attrs:
             if attr == 'attachments':
                 continue
@@ -2540,9 +2536,7 @@ class AttrHolder():
                 attr,
                 nvl(getattr(self, attr, ''))
             ])
-        table.add_rows(lines)
-        table.set_cols_align(['l','l'])
-        return(table.draw()) 
+        return tabulate(lines, headers=headers)
 
 
 class Sample():
@@ -2722,10 +2716,7 @@ class Things():
         self.identifier_name = identifier_name
 
     def __repr__(self):
-        identifiers = []
-        for item in self.df[[self.identifier_name]][self.identifier_name].iteritems():
-            identifiers.append(item[1])
-        return "\n".join(["{}\t{}".format(i, ident) for i, ident in enumerate(identifiers)])
+        return tabulate(self.df, headers=list(self.df))
 
     def _repr_html_(self):
         return self.df._repr_html_()
