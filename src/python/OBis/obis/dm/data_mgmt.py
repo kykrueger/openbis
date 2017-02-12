@@ -66,10 +66,14 @@ def default_echo(details):
 class CommandResult(object):
     """Encapsulate result from a subprocess call."""
 
-    def __init__(self, completed_process):
+    def __init__(self, completed_process=None, returncode=None, output=None):
         """Convert a completed_process object into a ShellResult."""
-        self.returncode = completed_process.returncode
-        self.output = completed_process.stdout.decode('utf-8').strip()
+        if completed_process:
+            self.returncode = completed_process.returncode
+            self.output = completed_process.stdout.decode('utf-8').strip()
+        else:
+            self.returncode = returncode
+            self.output = output
 
     def __str__(self):
         return "CommandResult({},{})".format(self.returncode, self.output)
@@ -127,6 +131,12 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         self.echo('error', message)
         raise ValueError(reason)
 
+    def check_result_ok(self, result):
+        if result.returncode != 0:
+            self.error(result.output)
+            return False
+        return True
+
     @abc.abstractmethod
     def init_data(self, path, desc=None):
         """Initialize a data repository at the path with the description."""
@@ -168,40 +178,47 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def init_data(self, path, desc=None):
         result = self.git_wrapper.git_init(path)
-        if result.returncode != 0:
-            self.error(result.output)
+        if not self.check_result_ok(result):
             return result
         result = self.git_wrapper.git_annex_init(path, desc)
-        if result.returncode != 0:
-            self.error(result.output)
+        if not self.check_result_ok(result):
+            return result
         return result
 
     def init_analysis(self, path):
         result = self.git_wrapper.git_init(path)
-        if result.returncode != 0:
-            self.error(result.output)
+        if not self.check_result_ok(result):
+            return result
         return result
 
     def add_content(self, path):
         result = self.git_wrapper.git_add(path)
-        if result.returncode != 0:
-            self.error(result.output)
+        if not self.check_result_ok(result):
+            return result
         return result
+
+    def sync(self):
+        # TODO create a data set in openBIS
+        # - check if openBIS has been setup. If not, prompt the user to set up openbis.
+        # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
+        # - call openbis to create a data set, using the existing data set as a parent, if there is one
+        # - save the data set id to .git/obis/datasetid.
+        return CommandResult(returncode=0, output="")
 
     def commit(self, msg, auto_add=True):
         if auto_add:
             result = self.git_wrapper.get_top_level_path()
-            if result.returncode != 0:
-                self.error(result.output)
+            if not self.check_result_ok(result):
                 return result
             result = self.add_content(result.output)
-            if result.returncode != 0:
-                self.error(result.output)
+            if not self.check_result_ok(result):
                 return result
         result = self.git_wrapper.git_commit(msg)
-        if result.returncode != 0:
-            self.error(result.output)
-        # TODO create a data set in openBIS
+        if not self.check_result_ok(result):
+            return result
+        result = self.sync()
+        if not self.check_result_ok(result):
+            return result
         return result
 
 
