@@ -17,6 +17,7 @@ setup(name='pybis',
           'pandas',
           'click',
           'texttable',
+          'tabulate',
       ],
       entry_points='''
         [console_scripts]
