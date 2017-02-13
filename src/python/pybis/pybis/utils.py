@@ -94,6 +94,8 @@ def split_identifier(ident):
 
 
 def format_timestamp(ts):
+    if ts is None:
+        return ''
     return datetime.fromtimestamp(round(ts/1000)).strftime('%Y-%m-%d %H:%M:%S')
 
 

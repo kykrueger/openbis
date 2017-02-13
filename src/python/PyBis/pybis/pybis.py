@@ -75,7 +75,7 @@ def _definitions(entity):
         "DataSet": {
             "attrs_new": "type experiment sample parents children container components tags".split(),
             "attrs_up": "experiment sample parents children container components tags".split(),
-            "attrs": "code permId type experiment sample parents children container components tags".split(),
+            "attrs": "code permId type experiment sample parents children container components tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore measured".split(),
             
             "ids2type": {
                 'parentIds':     { 'permId': { '@type': 'as.dto.dataset.id.DataSetPermId' } },
@@ -1495,7 +1495,6 @@ class Openbis:
             raise ValueError('no such dataset found: '+permid)
         if resp is not None:
             for permid in resp:
-                #return resp[permid]
                 return DataSet(self, self.get_dataset_type(resp[permid]["type"]["code"]), resp[permid])
 
 
@@ -1901,6 +1900,60 @@ class OpenBisObject():
         return self.a.__repr__()
 
 
+class PhysicalData():
+    def __init__(self, data=None):
+        if data is None:
+            data = []
+        self.data = data
+        self.attrs = ['speedHint', 'complete', 'shareId', 'size', 
+            'fileFormatType', 'storageFormat', 'location', 'presentInArchive', 
+            'storageConfirmation', 'locatorType', 'status']
+
+    def __dir__(self):
+        return self.attrs
+
+    def __getattr__(self, name):
+        if name in self.attrs:
+            if name in self.data:
+                return self.data[name]
+        else:
+            return ''
+
+    def _repr_html_(self):
+        html = """
+            <table border="1" class="dataframe">
+            <thead>
+                <tr style="text-align: right;">
+                <th>attribute</th>
+                <th>value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        for attr in self.attrs:
+            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
+                attr, getattr(self, attr, '') 
+            )
+
+        html += """
+            </tbody>
+            </table>
+        """
+        return html
+
+    def __repr__(self):
+
+        headers = ['attribute', 'value']
+        lines = []
+        for attr in self.attrs:
+            lines.append([
+                attr,
+                getattr(self, attr, '')
+            ])
+        return tabulate(lines, headers=headers)
+
+
 class DataSet(OpenBisObject):
     """ DataSet are openBIS objects that contain the actual files.
     """
@@ -1923,7 +1976,7 @@ class DataSet(OpenBisObject):
     def __dir__(self):
         return [
             'props', 'get_parents()', 'get_children()',
-            'sample', 'experiment', 
+            'sample', 'experiment', 'physicalData',
             'tags', 'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'data'
@@ -1939,6 +1992,20 @@ class DataSet(OpenBisObject):
             self.p.__dict__['_type'] = dataset_type
             self.a.__dict__['_type'] = dataset_type
 
+    @property
+    def physicalData(self):
+        if 'physicalData' in self.data:
+            return PhysicalData(self.data['physicalData'])
+            #return self.data['physicalData']
+
+    @property
+    def status(self):
+        ds = self.openbis.get_dataset(self.permId)
+        self.data['physicalData'] = ds.data['physicalData']
+        try:
+            return self.data['physicalData']['status']
+        except Exception:
+            return None
 
     def archive(self, remove_from_data_store=True):
         fetchopts = { 
@@ -2327,9 +2394,9 @@ class AttrHolder():
                         "description": x['description']
                     } for x in self._attachments 
                 ]
-            if int_name in ['_registrator','_modifier']:
+            if int_name in ['_registrator','_modifier', '_dataProducer']:
                 return self.__dict__[int_name].get('userId', None)
-            elif int_name in ['_registrationDate', '_modificationDate']:
+            elif int_name in ['_registrationDate', '_modificationDate', '_accessDate', '_dataProductionDate']:
                 return format_timestamp(self.__dict__[int_name])
             # if the attribute contains a list, 
             # return a list of either identifiers, codes or
