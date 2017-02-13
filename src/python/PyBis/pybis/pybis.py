@@ -522,7 +522,6 @@ class Openbis:
         if url_obj.hostname is None:
             raise ValueError("hostname is missing")
 
-        self.url_obj = url_obj
         self.url     = url_obj.geturl()
         self.port    = url_obj.port
         self.hostname = url_obj.hostname
@@ -531,7 +530,6 @@ class Openbis:
         self.reg_v1 = '/openbis/openbis/rmi-query-v1.json'
         self.verify_certificates = verify_certificates
         self.token = token
-        self.datastores = []
 
         self.dataset_types = None
         self.sample_types = None
@@ -680,24 +678,22 @@ class Openbis:
             return self.token
 
 
+
     def get_datastores(self):
         """ Get a list of all available datastores. Usually there is only one, but in some cases
-        there might be more. If you upload a file, you need to specifiy the datastore you want
+        there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
         the file uploaded to.
         """
-        if len(self.datastores) == 0: 
-            request = {
-                "method": "listDataStores",
-                "params": [ self.token ],
-            }
-            resp = self._post_request(self.as_v1, request)
-            if resp is not None:
-                self.datastores = DataFrame(resp)[['code','downloadUrl', 'hostUrl']]
-                return self.datastores
-            else:
-                raise ValueError("No datastore found!")
+
+        request = {
+            "method": "listDataStores",
+            "params": [ self.token ],
+        }
+        resp = self._post_request(self.as_v1, request)
+        if resp is not None:
+            return DataFrame(resp)[['code','downloadUrl', 'hostUrl']]
         else:
-            return self.datastores
+            raise ValueError("No datastore found!")
 
 
     def get_spaces(self, code=None):
@@ -1942,6 +1938,42 @@ class DataSet(OpenBisObject):
             dataset_type = self.openbis.get_dataset_type(type_name.upper())
             self.p.__dict__['_type'] = dataset_type
             self.a.__dict__['_type'] = dataset_type
+
+
+    def archive(self, remove_from_data_store=True):
+        fetchopts = { 
+            "removeFromDataStore": remove_from_data_store,
+            "@type": "as.dto.dataset.archive.DataSetArchiveOptions" 
+        }
+        self.archive_unarchive('archiveDataSets', fetchopts)
+        print("DataSet {} archived".format(self.permId))
+
+
+    def unarchive(self):
+        fetchopts = { 
+            "@type": "as.dto.dataset.unarchive.DataSetUnarchiveOptions" 
+        }
+        self.archive_unarchive('unarchiveDataSets', fetchopts)
+        print("DataSet {} unarchived".format(self.permId))
+
+
+    def archive_unarchive(self, method, fetchopts):
+        dss = self.get_datastore
+        payload = {}
+
+        request = {
+          "method": method,
+          "params": [
+            self.openbis.token,
+            [{
+                "permId": self.permId,
+                "@type": "as.dto.dataset.id.DataSetPermId" 
+            }],
+            dict(fetchopts)
+          ],
+        }
+        resp = self.openbis._post_request(self._openbis.as_v3, request)
+        return
 
 
     def set_properties(self, properties):
