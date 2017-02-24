@@ -9,20 +9,21 @@ Configuration for obis.
 Created by Chandrasekhar Ramakrishnan on 2017-02-10.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
+import os
 
 
 class ConfigLocation(object):
     """Path for configuration information."""
 
-    def __init__(self, desc, root, path):
+    def __init__(self, desc, root, basename):
         """
-        :param desc: A description for the location.
+        :param desc: A description for the location in the form of a list of keys.
         :param root: The root for the path
-        :param path: The path for this location.
+        :param basename: The name of the folder for this location.
         """
         self.desc = desc
         self.root = root
-        self.path = path
+        self.basename = basename
 
 
 class ConfigParam(object):
@@ -50,26 +51,47 @@ class ConfigEnv(object):
         self.initialize_params()
 
     def initialize_locations(self):
-        self.add_location(ConfigLocation('global', 'user_home', '.obis'))
-        self.add_location(ConfigLocation('local_public', 'data_set', '.obis'))
-        self.add_location(ConfigLocation('local_private', 'data_set', '.git/obis'))
+        self.add_location(ConfigLocation(['global'], 'user_home', '.obis'))
+        self.add_location(ConfigLocation(['local', 'public'], 'data_set', '.obis'))
+        self.add_location(ConfigLocation(['local', 'private'], 'data_set', '.git/obis'))
 
     def add_location(self, loc):
-        self.locations[loc.desc] = loc
+        desc = loc.desc
+        depth = len(desc) - 1
+        locations = self.locations
+        for i, sub_desc in enumerate(desc):
+            if i == depth:
+                locations[sub_desc] = loc
+            else:
+                locations[sub_desc] = {}
+                locations = locations[sub_desc]
 
     def initialize_params(self):
         self.add_param(ConfigParam(name='openbis_url', copy_down=True, public=True))
         self.add_param(ConfigParam(name='user', copy_down=False, public=False))
-        self.add_param(ConfigParam(name='data_set_type', copy_down=True, public=False))
-        self.add_param(ConfigParam(name='data_set_properties', copy_down=False, public=True))
+        self.add_param(ConfigParam(name='data_set_type', copy_down=True, public=True))
+        self.add_param(ConfigParam(name='data_set_properties', copy_down=True, public=True))
 
     def add_param(self, param):
         self.params[param.name] = param
 
 
+class ConfigLocationResolver(object):
+    """Maps locations to paths."""
+
+    @staticmethod
+    def path_for_location(loc):
+        if loc.root == 'user_home':
+            root = os.path.expanduser('~')
+        else:
+            # The remaining case is data_set -- find the root of the data set we are in
+            root = './'
+        return os.path.join(root, loc.basename)
+
+
 def default_location_resolver(location):
     """Given a location, return a path"""
-    return None
+    return ConfigLocationResolver()
 
 
 class ConfigResolver(object):
