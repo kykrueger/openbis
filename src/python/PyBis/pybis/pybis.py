@@ -510,12 +510,12 @@ class Openbis:
     """Interface for communicating with openBIS. A current version of openBIS is needed.
     (minimum version 16.05).
     """
+    __version__ = '1.1.2'
 
     def __init__(self, url, verify_certificates=True, token=None):
         """Initialize a new connection to an openBIS server.
         :param host:
         """
-
         url_obj = urlparse(url)
         if  url_obj.netloc is None:
             raise ValueError("please provide the url in this format: https://openbis.host.ch:8443")
