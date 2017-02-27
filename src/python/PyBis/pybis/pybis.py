@@ -510,7 +510,7 @@ class Openbis:
     """Interface for communicating with openBIS. A current version of openBIS is needed.
     (minimum version 16.05).
     """
-    __version__ = '1.1.2'
+    __version__ = '1.1.3'
 
     def __init__(self, url, verify_certificates=True, token=None):
         """Initialize a new connection to an openBIS server.
@@ -1983,6 +1983,10 @@ class DataSet(OpenBisObject):
         ]
 
     @property
+    def props(self):
+        return self.__dict__['p']
+
+    @property
     def type(self):
         return self.__dict__['type']
 
@@ -2161,6 +2165,20 @@ class DataSet(OpenBisObject):
                 raise ValueError('request to openBIS did not return either result nor error')
         else:
             raise ValueError('internal error while performing post request')
+
+
+    def save(self):
+        if self.is_new:
+            raise ValueError('not implemented yet.')
+        else:
+            request = self._up_attrs()
+            props = self.p._all_props()
+            request["params"][1][0]["properties"] = props
+            request["params"][1][0].pop('parentIds')
+            request["params"][1][0].pop('childIds')
+
+            self.openbis._post_request(self.openbis.as_v3, request)
+            print("DataSet successfully updated.")
 
 
 class AttrHolder():
