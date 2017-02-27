@@ -2715,7 +2715,7 @@ class Sample():
         if self.identifier is None:
             request = self._new_attrs()
             props = self.p._all_props()
-            request["properties"] = props
+            request["params"][1][0]["properties"] = props
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
             print("Sample successfully created.")
@@ -2726,7 +2726,7 @@ class Sample():
         else:
             request = self._up_attrs()
             props = self.p._all_props()
-            request["properties"] = props
+            request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Sample successfully updated.")
 
@@ -2909,14 +2909,14 @@ class Experiment(OpenBisObject):
         if self.is_new:
             request = self._new_attrs()
             props = self.p._all_props()
-            request["properties"] = props
+            request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
             self.a.__dict__['_is_new'] = False
             print("Experiment successfully created.")
         else:
             request = self._up_attrs()
             props = self.p._all_props()
-            request["properties"] = props
+            request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Experiment successfully updated.")
 
