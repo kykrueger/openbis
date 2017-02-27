@@ -60,9 +60,9 @@ def _definitions(entity):
             "identifier": "experimentId",
         },
         "Sample": {
-            "attrs_new": "code type space project experiment tags attachments".split(),
-            "attrs_up": "space project experiment tags attachments".split(),
-            "attrs": "code permId identifier type space project experiment tags attachments".split(),
+            "attrs_new": "code type space experiment tags attachments".split(),
+            "attrs_up": "space experiment tags attachments".split(),
+            "attrs": "code permId identifier type space experiment tags attachments".split(),
             "ids2type": {
                 'parentIds': { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
                 'childIds':  { 'permId': { '@type': 'as.dto.sample.id.SamplePermId' } },
@@ -2185,6 +2185,7 @@ class AttrHolder():
         self.__dict__['_allowed_attrs'] = _definitions(entity)['attrs']
         self.__dict__['_identifier'] = None
         self.__dict__['_is_new'] = True
+        self.__dict__['_tags'] = []
 
 
     def __call__(self, data):
@@ -2465,7 +2466,7 @@ class AttrHolder():
             else:
                 obj = value
 
-            self.__dict__['_'+name] = obj._identifier
+            self.__dict__['_'+name] = obj.data['permId']
 
             # mark attribute as modified, if it's an existing entity
             if self.is_new:
@@ -2712,34 +2713,23 @@ class Sample():
         attrs["properties"] = props
 
         if self.identifier is None:
-            # create a new sample
-            attrs["@type"] = "as.dto.sample.create.SampleCreation"
-            attrs["typeId"] = self.__dict__['type'].data['permId']
-            request = {
-                "method": "createSamples",
-                "params": [ self.openbis.token,
-                    [ attrs ]
-                ]
-            }
+            request = self._new_attrs()
+            props = self.p._all_props()
+            request["properties"] = props
             resp = self.openbis._post_request(self.openbis.as_v3, request)
+
+            print("Sample successfully created.")
             new_sample_data = self.openbis.get_sample(resp[0]['permId'], only_data=True)
             self._set_data(new_sample_data)
             return self
             
         else:
-            attrs["@type"] = "as.dto.sample.update.SampleUpdate"
-            attrs["sampleId"] = {
-                "permId": self.permId,
-                "@type": "as.dto.sample.id.SamplePermId"
-            }
-            request = {
-                "method": "updateSamples",
-                "params": [ self.openbis.token,
-                    [ attrs ]
-                ]
-            }
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-            print('Sample successfully updated')
+            request = self._up_attrs()
+            props = self.p._all_props()
+            request["properties"] = props
+            self.openbis._post_request(self.openbis.as_v3, request)
+            print("Sample successfully updated.")
+
 
     def delete(self, reason):
         self.openbis.delete_entity('sample', self.permId, reason)
