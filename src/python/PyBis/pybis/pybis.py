@@ -366,6 +366,23 @@ def _subcriteria_for_type(code, entity):
           ]
     }
 
+def _subcriteria_for_status(status_value):
+    status_value = status_value.upper()
+    valid_status = "AVAILABLE LOCKED ARCHIVED UNARCHIVE_PENDING ARCHIVE_PENDING BACKUP_PENDING".split()
+    if not status_value in valid_status:
+        raise ValueError("status must be one of the following: " + ", ".join(valid_status))
+
+    return {
+        "@type": "as.dto.dataset.search.PhysicalDataSearchCriteria",
+        "operator": "AND",
+        "criteria": [{
+            "@type":
+            "as.dto.dataset.search.StatusSearchCriteria",
+            "fieldName" : "status",
+            "fieldType": "ATTRIBUTE",
+            "fieldValue" : status_value
+        }]
+    }
 
 def _gen_search_criteria(req):
     sreq = {}
@@ -510,7 +527,7 @@ class Openbis:
     """Interface for communicating with openBIS. A current version of openBIS is needed.
     (minimum version 16.05).
     """
-    __version__ = '1.1.3'
+    __version__ = '1.1.4'
 
     def __init__(self, url, verify_certificates=True, token=None):
         """Initialize a new connection to an openBIS server.
@@ -905,7 +922,7 @@ class Openbis:
 
 
     def get_datasets(self, 
-        code=None, type=None, withParents=None, withChildren=None,
+        code=None, type=None, withParents=None, withChildren=None, status=None,
         sample=None, experiment=None, project=None, tags=None
     ):
 
@@ -932,6 +949,8 @@ class Openbis:
             sub_criteria.append(exp_crit)
         if tags:
             sub_criteria.append(_subcriteria_for_tags(tags))
+        if status:
+            sub_criteria.append(_subcriteria_for_status(status))
 
         criteria = {
             "criteria": sub_criteria,
