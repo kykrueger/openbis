@@ -75,6 +75,12 @@ class ConfigEnv(object):
     def add_param(self, param):
         self.params[param.name] = param
 
+    def location_at_path(self, location_path):
+        location = self.locations
+        for path in location_path:
+            location = location[path]
+        return location
+
 
 def default_location_resolver(location):
     """Given a location, return a path"""
@@ -129,6 +135,30 @@ class ConfigResolver(object):
                     result[name] = val
         return result
 
+    def set_value_for_parameter(self, name, value, loc):
+        """Set the value for the parameter
+        :param name: Name of the parameter
+        :param loc: Either 'local' or 'global'
+        :return:
+        """
+        param = self.env.params[name]
+        location_config_dict = self.set_cache_value_for_parameter(param, value, loc)
+        if loc != 'global':
+            if param.private:
+                location_path = [loc, 'private']
+            else:
+                location_path = [loc, 'public']
+        else:
+            location_path = [loc]
+        location = self.env.location_at_path(location_path)
+        location_dir_path = self.location_resolver(location)
+        if not os.path.exists(location_dir_path):
+            print("Create {}".format(location_dir_path))
+            os.makedirs(location_dir_path)
+        config_path = os.path.join(location_dir_path, 'config.json')
+        with open(config_path, "w") as f:
+            json.dump(location_config_dict, f)
+
     def value_for_parameter(self, param, loc):
         config = self.location_cache[loc]
         if loc != 'global':
@@ -137,3 +167,13 @@ class ConfigResolver(object):
             else:
                 config = config['public']
         return config.get(param.name)
+
+    def set_cache_value_for_parameter(self, param, value, loc):
+        config = self.location_cache[loc]
+        if loc != 'global':
+            if param.private:
+                config = config['private']
+            else:
+                config = config['public']
+        config[param.name] = value
+        return config
