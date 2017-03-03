@@ -67,10 +67,12 @@ class ConfigEnv(object):
                 locations = locations[sub_desc]
 
     def initialize_params(self):
-        self.add_param(ConfigParam(name='openbis_url', private=True))
-        self.add_param(ConfigParam(name='user', private=False))
-        self.add_param(ConfigParam(name='data_set_type', private=True))
-        self.add_param(ConfigParam(name='data_set_properties', private=True))
+        self.add_param(ConfigParam(name='openbis_url', private=False))
+        self.add_param(ConfigParam(name='user', private=True))
+        self.add_param(ConfigParam(name='external_dms_id', private=True))
+        self.add_param(ConfigParam(name='data_set_id', private=False))
+        self.add_param(ConfigParam(name='data_set_type', private=False))
+        self.add_param(ConfigParam(name='data_set_properties', private=False))
 
     def add_param(self, param):
         self.params[param.name] = param
@@ -87,7 +89,7 @@ def default_location_resolver(location):
     if location.root == 'user_home':
         root = os.path.expanduser('~')
     else:
-        # The remaining case is data_set -- find the root of the data set we are in
+        # Use the current directory in the remaining case
         root = './'
     return os.path.join(root, location.basename)
 
