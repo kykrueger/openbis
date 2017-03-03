@@ -14,30 +14,44 @@ import os
 import shutil
 import subprocess
 from contextlib import contextmanager
+from . import config as dm_config
+import traceback
 
 import pybis
 
 
 # noinspection PyPep8Naming
-def DataMgmt(echo_func=None, openbis_config={}, git_config={}):
+def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config={}):
     """Factory method for DataMgmt instances"""
 
     echo_func = echo_func if echo_func is not None else default_echo
+    config_resolver = config_resolver if config_resolver is not None else dm_config.ConfigResolver()
 
-    complete_openbis_config(openbis_config)
+    complete_openbis_config(openbis_config, config_resolver)
     complete_git_config(git_config)
 
-    openbis = pybis.Openbis(**openbis_config)
+    openbis = None
+    if openbis_config['url'] is None:
+        echo_func(
+            {'level': 'warn', 'message': 'Please configure an openBIS url. Sync will not be possible until you do so.'})
+    else:
+        try:
+            openbis = pybis.Openbis(**openbis_config)
+        except ValueError:
+            echo_func({'level': 'error', 'message': 'Could not connect to openBIS.'})
+            traceback.print_exc()
+
     git_wrapper = GitWrapper(**git_config)
     if git_wrapper.can_run():
-        return GitDataMgmt(echo_func, openbis, git_wrapper)
-    return NoGitDataMgmt(echo_func, openbis, git_wrapper)
+        return GitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
+    return NoGitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
 
 
-def complete_openbis_config(config):
+def complete_openbis_config(config, resolver):
     """Add default values for empty entries in the config."""
+    config_dict = resolver.config_dict()
     if not config.get('url'):
-        config['url'] = 'https://localhost:8443'
+        config['url'] = config_dict['openbis_url']
     if not config.get('verify_certificates'):
         config['verify_certificates'] = True
     if not config.get('token'):
@@ -108,8 +122,9 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, echo_func, openbis, git_wrapper):
+    def __init__(self, echo_func, config_resolver, openbis, git_wrapper):
         self.echo_func = echo_func
+        self.config_resolver = config_resolver
         self.openbis = openbis
         self.git_wrapper = git_wrapper
 
