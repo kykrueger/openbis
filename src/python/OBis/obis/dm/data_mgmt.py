@@ -148,13 +148,14 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def commit(self, msg, auto_add=True):
+    def commit(self, msg, auto_add=True, sync=True):
         """
         Commit the current repo.
 
         This issues a git commit and connects to openBIS and creates a data set in openBIS.
         :param msg: Commit message.
         :param auto_add: Automatically add all files in the folder to the repo. Defaults to True.
+        :param sync: If true, sync with openBIS server.
         :return:
         """
         return
@@ -169,7 +170,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_analysis(self, path):
         self.error_raise("init analysis", "No git command found.")
 
-    def commit(self, msg, auto_add=True):
+    def commit(self, msg, auto_add=True, sync=True):
         self.error_raise("commit", "No git command found.")
 
 
@@ -205,7 +206,7 @@ class GitDataMgmt(AbstractDataMgmt):
         # - save the data set id to .git/obis/datasetid.
         return CommandResult(returncode=0, output="")
 
-    def commit(self, msg, auto_add=True):
+    def commit(self, msg, auto_add=True, sync=True):
         if auto_add:
             result = self.git_wrapper.get_top_level_path()
             if not self.check_result_ok(result):
@@ -216,9 +217,10 @@ class GitDataMgmt(AbstractDataMgmt):
         result = self.git_wrapper.git_commit(msg)
         if not self.check_result_ok(result):
             return result
-        result = self.sync()
-        if not self.check_result_ok(result):
-            return result
+        if sync:
+            result = self.sync()
+            if not self.check_result_ok(result):
+                return result
         return result
 
 
