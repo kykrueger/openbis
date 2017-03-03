@@ -256,6 +256,11 @@ class GitWrapper(object):
         if result.returncode != 0:
             return result
 
+        cmd = [self.git_path, "-C", path, "config", "annex.thin", "true"]
+        result = run_shell(cmd)
+        if result.returncode != 0:
+            return result
+
         attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
         attributes_dst = os.path.join(path, ".gitattributes")
         shutil.copyfile(attributes_src, attributes_dst)
@@ -278,3 +283,14 @@ class GitWrapper(object):
 
     def get_top_level_path(self):
         return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])
+
+
+class OpenbisSync(object):
+    """A command object for synchronizing with openBIS."""
+
+    def __init__(self, git_path=None, git_annex_path=None, find_git=None):
+        self.git_path = git_path
+        self.git_annex_path = git_annex_path
+
+    def run(self):
+        pass
