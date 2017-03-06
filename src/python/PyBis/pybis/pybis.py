@@ -1894,7 +1894,7 @@ class OpenBisObject():
     @property
     def sample(self):
         try:
-            return self.openbis.get_sample(self._sample['permId']['permId'])
+            return self.openbis.get_sample(self._sample['identifier'])
         except Exception:
             pass
 
