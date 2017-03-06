@@ -14,30 +14,44 @@ import os
 import shutil
 import subprocess
 from contextlib import contextmanager
+from . import config as dm_config
+import traceback
 
 import pybis
 
 
 # noinspection PyPep8Naming
-def DataMgmt(echo_func=None, openbis_config={}, git_config={}):
+def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config={}):
     """Factory method for DataMgmt instances"""
 
     echo_func = echo_func if echo_func is not None else default_echo
+    config_resolver = config_resolver if config_resolver is not None else dm_config.ConfigResolver()
 
-    complete_openbis_config(openbis_config)
+    complete_openbis_config(openbis_config, config_resolver)
     complete_git_config(git_config)
 
-    openbis = pybis.Openbis(**openbis_config)
+    openbis = None
+    if openbis_config['url'] is None:
+        echo_func(
+            {'level': 'warn', 'message': 'Please configure an openBIS url. Sync will not be possible until you do so.'})
+    else:
+        try:
+            openbis = pybis.Openbis(**openbis_config)
+        except ValueError:
+            echo_func({'level': 'error', 'message': 'Could not connect to openBIS.'})
+            traceback.print_exc()
+
     git_wrapper = GitWrapper(**git_config)
     if git_wrapper.can_run():
-        return GitDataMgmt(echo_func, openbis, git_wrapper)
-    return NoGitDataMgmt(echo_func, openbis, git_wrapper)
+        return GitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
+    return NoGitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
 
 
-def complete_openbis_config(config):
+def complete_openbis_config(config, resolver):
     """Add default values for empty entries in the config."""
+    config_dict = resolver.config_dict()
     if not config.get('url'):
-        config['url'] = 'https://localhost:8443'
+        config['url'] = config_dict['openbis_url']
     if not config.get('verify_certificates'):
         config['verify_certificates'] = True
     if not config.get('token'):
@@ -108,8 +122,9 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, echo_func, openbis, git_wrapper):
+    def __init__(self, echo_func, config_resolver, openbis, git_wrapper):
         self.echo_func = echo_func
+        self.config_resolver = config_resolver
         self.openbis = openbis
         self.git_wrapper = git_wrapper
 
@@ -148,13 +163,14 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def commit(self, msg, auto_add=True):
+    def commit(self, msg, auto_add=True, sync=True):
         """
         Commit the current repo.
 
         This issues a git commit and connects to openBIS and creates a data set in openBIS.
         :param msg: Commit message.
         :param auto_add: Automatically add all files in the folder to the repo. Defaults to True.
+        :param sync: If true, sync with openBIS server.
         :return:
         """
         return
@@ -169,7 +185,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_analysis(self, path):
         self.error_raise("init analysis", "No git command found.")
 
-    def commit(self, msg, auto_add=True):
+    def commit(self, msg, auto_add=True, sync=True):
         self.error_raise("commit", "No git command found.")
 
 
@@ -205,7 +221,7 @@ class GitDataMgmt(AbstractDataMgmt):
         # - save the data set id to .git/obis/datasetid.
         return CommandResult(returncode=0, output="")
 
-    def commit(self, msg, auto_add=True):
+    def commit(self, msg, auto_add=True, sync=True):
         if auto_add:
             result = self.git_wrapper.get_top_level_path()
             if not self.check_result_ok(result):
@@ -216,9 +232,10 @@ class GitDataMgmt(AbstractDataMgmt):
         result = self.git_wrapper.git_commit(msg)
         if not self.check_result_ok(result):
             return result
-        result = self.sync()
-        if not self.check_result_ok(result):
-            return result
+        if sync:
+            result = self.sync()
+            if not self.check_result_ok(result):
+                return result
         return result
 
 
@@ -254,6 +271,11 @@ class GitWrapper(object):
         if result.returncode != 0:
             return result
 
+        cmd = [self.git_path, "-C", path, "config", "annex.thin", "true"]
+        result = run_shell(cmd)
+        if result.returncode != 0:
+            return result
+
         attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
         attributes_dst = os.path.join(path, ".gitattributes")
         shutil.copyfile(attributes_src, attributes_dst)
@@ -276,3 +298,14 @@ class GitWrapper(object):
 
     def get_top_level_path(self):
         return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])
+
+
+class OpenbisSync(object):
+    """A command object for synchronizing with openBIS."""
+
+    def __init__(self, git_path=None, git_annex_path=None, find_git=None):
+        self.git_path = git_path
+        self.git_annex_path = git_annex_path
+
+    def run(self):
+        pass

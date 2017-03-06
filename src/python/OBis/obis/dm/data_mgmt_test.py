@@ -64,13 +64,21 @@ def test_data_use_case(shared_dm, tmpdir):
         present_p = result.output.split('\n')[-1]
         assert present_p == 'present: true'
 
+        # This file should be in the annex and a hardlink
+        stat = os.stat("snb-data.zip")
+        assert stat.st_nlink == 2
+
         # The txt files should be in git normally
-        result = data_mgmt.run_shell(['git', 'annex', 'info', 'test.txt'])
+        result = data_mgmt.run_shell(['git', 'annex', 'info', 'text-data.txt'])
         present_p = result.output.split(' ')[-1]
         assert present_p == 'failed'
-        result = data_mgmt.run_shell(['git', 'log', '--oneline', 'test.txt'])
+        result = data_mgmt.run_shell(['git', 'log', '--oneline', 'text-data.txt'])
         present_p = " ".join(result.output.split(' ')[1:])
         assert present_p == 'Added data.'
+
+        # This file is not in the annex and should not be a hardlink
+        stat = os.stat("text-data.txt")
+        assert stat.st_nlink == 1
 
 
 def copy_test_data(tmpdir):
@@ -81,7 +89,7 @@ def copy_test_data(tmpdir):
     shutil.copyfile(test_data_bin_src, test_data_bin_path)
 
     # Put some text content into our new repository
-    test_data_txt_src = os.path.join(test_data_folder, "test.txt")
+    test_data_txt_src = os.path.join(test_data_folder, "text-data.txt")
     test_data_txt_path = str(tmpdir.join(os.path.basename(test_data_txt_src)))
     shutil.copyfile(test_data_txt_src, test_data_txt_path)
 
