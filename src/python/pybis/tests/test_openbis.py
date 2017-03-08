@@ -62,7 +62,7 @@ def test_get_sample_parents(openbis_instance):
     assert sample.parents[0]['identifier']['identifier'] == '/TEST/TEST-SAMPLE-2-PARENT'
     parents = sample.get_parents()
     assert isinstance(parents, list)
-    assert parents[0].ident == '/TEST/TEST-SAMPLE-2-PARENT' 
+    assert parents[0].ident == '/TEST/TEST-SAMPLE-2-PARENT'
 
 
 def test_get_sample_children(openbis_instance):
@@ -73,7 +73,7 @@ def test_get_sample_children(openbis_instance):
     assert sample.children[0]['identifier']['identifier'] == '/TEST/TEST-SAMPLE-2-CHILD-1'
     children = sample.get_children()
     assert isinstance(children, list)
-    assert children[0].ident == '/TEST/TEST-SAMPLE-2-CHILD-1' 
+    assert children[0].ident == '/TEST/TEST-SAMPLE-2-CHILD-1'
 
 
 def test_get_dataset_parents(openbis_instance):
@@ -114,25 +114,22 @@ def test_get_dataset_by_permid(openbis_instance):
 def test_dataset_upload(openbis_instance):
     datastores = openbis_instance.get_datastores()
     assert datastores is not None
-#    assert isinstance(datastores, list)
-
-    #filename = 'testfile.txt'
-    #with open(filename, 'w') as f:
+    #    assert isinstance(datastores, list)
+    # filename = 'testfile.txt'
+    # with open(filename, 'w') as f:
     #    f.write('test-data')
 
-    #ds = openbis_instance.new_dataset(
+    # ds = openbis_instance.new_dataset(
     #    name        = "My Dataset",
     #    description = "description",
     #    type        = "UNKNOWN",
     #    sample      = sample,
     #    files       = ["testfile.txt"],
-    #)
+    # )
 
-
-
-    #analysis = openbis_instance.new_analysis(
+    # analysis = openbis_instance.new_analysis(
     #    name = "My analysis",                       # * name of the container
-    #    description = "a description",              # 
+    #    description = "a description",              #
     #    sample = sample,                            #   my_dataset.sample is the default
 
     #    # result files will be registered as JUPYTER_RESULT datatype
@@ -142,8 +139,6 @@ def test_dataset_upload(openbis_instance):
     #    notebook_files = ["notebook.ipynb"],        #   specify a specific notebook
     #    #notebook_files = "~/notebooks/",           #   path of notebooks
     #    parents = [parent_dataset],                 # other parents are optional, my_dataset is the default parent
-    #)
+    # )
 
-    #analysis.save     # start registering process
-
-
+    # analysis.save     # start registering process
