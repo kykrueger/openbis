@@ -4,16 +4,17 @@ import time
 from pybis import DataSet
 from pybis import Openbis
 
+
 def test_token(openbis_instance):
     assert openbis_instance.hostname is not None
-    new_instance = Openbis(openbis_instance.url)
+    new_instance = Openbis(openbis_instance.url, verify_certificates=openbis_instance.verify_certificates)
     new_instance.login('admin', 'any_test_password')
     assert new_instance.token is not None
     assert new_instance.is_token_valid() is True
     new_instance.logout()
     assert new_instance.is_token_valid() is False
 
-    invalid_connection = Openbis(openbis_instance.url)
+    invalid_connection = Openbis(openbis_instance.url, verify_certificates=openbis_instance.verify_certificates)
     with pytest.raises(Exception):
         invalid_connection.login('invalid_username', 'invalid_password')
     assert invalid_connection.token is None
@@ -28,16 +29,17 @@ def test_create_sample(openbis_instance):
     s2 = openbis_instance.get_sample(s.permid)
     assert s2 is not None
 
+
 def test_cached_token(openbis_instance):
     openbis_instance.save_token()
     assert openbis_instance.token_path is not None
-    assert openbis_instance.get_cached_token() is not None
+    assert openbis_instance._get_cached_token() is not None
 
-    another_instance = Openbis(openbis_instance.url)
+    another_instance = Openbis(openbis_instance.url, verify_certificates=openbis_instance.verify_certificates)
     assert another_instance.is_token_valid() is True
 
     openbis_instance.delete_token()
-    assert openbis_instance.get_cached_token() is None
+    assert openbis_instance._get_cached_token() is None
 
 
 def test_get_sample_by_id(openbis_instance):
