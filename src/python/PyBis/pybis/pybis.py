@@ -1102,6 +1102,32 @@ class Openbis:
         resp = self._post_request(self.as_v3, request)
         return self.get_sample(resp[0]['permId'])
 
+    def create_external_data_management_system(self, code, label, address_type, address):
+        """Create an external DMS.
+        :param code: An openBIS code for the external DMS.
+        :param label: A human-readable label.
+        :param address_type: One of OPENBIS, URL, or FILE_SYSTEM
+        :param address: The address for accessing the external DMS. E.g., a URL.
+        :return:
+        """
+        request = {
+            "method": "createExternalDataManagementSystems",
+            "params": [
+                self.token,
+                [
+                    {
+                        "code": code,
+                        "label": label,
+                        "addressType": address_type,
+                        "address": address,
+                        "@type": "as.dto.externaldms.create.ExternalDmsCreation",
+                    }
+                ]
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+        return self.get_external_data_management_system(resp[0]['permId'])
+
     def update_sample(self, sampleId, space=None, project=None, experiment=None,
                       parents=None, children=None, components=None, properties=None, tagIds=None, attachments=None):
         params = {
@@ -1548,6 +1574,36 @@ class Openbis:
                     return resp[sample_ident]
                 else:
                     return Sample(self, self.get_sample_type(resp[sample_ident]["type"]["code"]), resp[sample_ident])
+
+    def get_external_data_management_system(self, perm_id, only_data=False):
+        """Retrieve metadata for the external data management system.
+        :param perm_id: A permId for an external DMS.
+        :param only_data: Return the result data as a hash-map, not an object.
+        """
+
+        request = {
+            "method": "getExternalDataManagementSystems",
+            "params": [
+                self.token,
+                [{
+                    "@type": "as.dto.externaldms.id.ExternalDmsPermId",
+                    "permId": perm_id
+                }],
+                {},
+            ],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        parse_jackson(resp)
+
+        if resp is None or len(resp) == 0:
+            raise ValueError('no such external DMS found: ' + perm_id)
+        else:
+            for ident in resp:
+                if only_data:
+                    return resp[ident]
+                else:
+                    return ExternalDMS(self, resp[ident])
 
     def new_space(self, name, description=None):
         """ Creates a new space in the openBIS instance.
@@ -2786,6 +2842,33 @@ class Space(OpenBisObject):
 
     def delete(self, reason):
         self.openbis.delete_entity('Space', self.permId, reason)
+
+
+class ExternalDMS():
+    """ managing openBIS external data management systems
+    """
+
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['openbis'] = openbis_obj
+
+        if data is not None:
+            self.__dict__['data'] = data
+
+        if kwargs is not None:
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+    def __getattr__(self, name):
+        return self.__dict__['data'].get(name)
+
+    def __dir__(self):
+        """all the available methods and attributes that should be displayed
+        when using the autocompletion feature (TAB) in Jupyter
+        """
+        return ['code', 'label', 'urlTemplate', 'address', 'addressType', 'openbis']
+
+    def __str__(self):
+        return self.data.get('code', None)
 
 
 class Things():

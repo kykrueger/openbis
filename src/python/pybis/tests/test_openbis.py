@@ -1,4 +1,6 @@
 import json
+import random
+
 import pytest
 import time
 from pybis import DataSet
@@ -22,7 +24,7 @@ def test_token(openbis_instance):
 
 
 def test_create_sample(openbis_instance):
-    testname = time.strftime('%a_%y%m%d_%H%M%S').upper() 
+    testname = time.strftime('%a_%y%m%d_%H%M%S').upper()
     s = openbis_instance.new_sample(sample_name=testname, space_name='TEST', sample_type="UNKNOWN")
     assert s is not None
     assert s.ident == '/TEST/' + testname
@@ -144,3 +146,15 @@ def test_dataset_upload(openbis_instance):
     # )
 
     # analysis.save     # start registering process
+
+
+def test_create_external_data_management_system(openbis_instance):
+    code = "TEST-GIT-{:4d}".format(random.randint(0, 9999))
+    result = openbis_instance.create_external_data_management_system(code, 'Test git', 'FILE_SYSTEM',
+                                                                     'localhost:~openbis/repo')
+    assert result is not None
+    assert result is not None
+    assert result.code == code
+    assert result.label == 'Test git'
+    assert result.addressType == 'FILE_SYSTEM'
+    assert result.address == 'localhost:~openbis/repo'
