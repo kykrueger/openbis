@@ -779,7 +779,7 @@ class Openbis:
         return Space(self, None, resp[spaceId])
 
     def get_samples(self, code=None, permId=None, space=None, project=None, experiment=None, type=None,
-                    withParents=None, withChildren=None, tags=None, **properties):
+                    withParents=None, withChildren=None, tags=None, props=None, **properties):
         """ Get a list of all samples for a given space/project/experiment (or any combination)
         """
 
@@ -850,32 +850,35 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
-        if resp is not None:
-            objects = resp['objects']
-            parse_jackson(objects)
+        if len(resp['objects']) == 0:
+            raise valueerror("no samples found!")
 
-            samples = DataFrame(objects)
-            if len(samples) is 0:
-                raise ValueError("No samples found!")
+        objects = resp['objects']
+        parse_jackson(objects)
 
-            samples['registrationDate'] = samples['registrationDate'].map(format_timestamp)
-            samples['modificationDate'] = samples['modificationDate'].map(format_timestamp)
-            samples['registrator'] = samples['registrator'].map(extract_person)
-            samples['modifier'] = samples['modifier'].map(extract_person)
-            samples['identifier'] = samples['identifier'].map(extract_identifier)
-            samples['permId'] = samples['permId'].map(extract_permid)
-            samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
-            samples['sample_type'] = samples['type'].map(extract_nested_permid)
+        samples = dataframe(objects)
+        samples['registrationdate'] = samples['registrationdate'].map(format_timestamp)
+        samples['modificationdate'] = samples['modificationdate'].map(format_timestamp)
+        samples['registrator'] = samples['registrator'].map(extract_person)
+        samples['modifier'] = samples['modifier'].map(extract_person)
+        samples['identifier'] = samples['identifier'].map(extract_identifier)
+        samples['permid'] = samples['permid'].map(extract_permid)
+        samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
+        samples['sample_type'] = samples['type'].map(extract_nested_permid)
 
-            ss = samples[
-                ['identifier', 'permId', 'experiment', 'sample_type', 'registrator', 'registrationDate', 'modifier',
-                 'modificationDate']]
-            return Things(self, 'sample', ss, 'identifier')
-        else:
-            raise ValueError("No samples found!")
+        attrs = ['identifier', 'permid', 'experiment', 'sample_type', 
+                 'registrator', 'registrationdate', 'modifier', 'modificationdate']
 
-    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None,
-                        **properties):
+        if props is not none:
+            for prop in props:
+                samples[prop.upper()] = samples['properties'].map( lambda x: x.get(prop.upper(), '') )
+                attrs.append(prop.upper())
+
+        ss = samples[attrs]
+        return things(self, 'sample', ss, 'identifier')
+
+
+    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
         """ Get a list of all experiment for a given space or project (or any combination)
         """
 
@@ -929,9 +932,17 @@ class Openbis:
         experiments['permId'] = experiments['permId'].map(extract_permid)
         experiments['type'] = experiments['type'].map(extract_code)
 
-        exps = experiments[['identifier', 'permId', 'project', 'type', 'registrator',
-                            'registrationDate', 'modifier', 'modificationDate']]
+        attrs = ['identifier', 'permId', 'project', 'type', 
+                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
+
+        if props is not None:
+            for prop in props:
+                experiments[prop.upper()] = experiments['properties'].map( lambda x: x.get(prop.upper(), '') )
+                attrs.append(prop.upper())
+
+        exps = experiments[attrs]
         return Things(self, 'experiment', exps, 'identifier')
+
 
     def get_datasets(self,
                      code=None, type=None, withParents=None, withChildren=None, status=None,
@@ -2625,7 +2636,7 @@ class AttrHolder():
                            attachments=fetch_option['attachmentsWithContent'],
                            **fetch_option[entity]
                        )
-                       ]
+            ]
         }
         resp = self._openbis._post_request(self._openbis.as_v3, request)
         attachments = resp[self.permId]['attachments']
