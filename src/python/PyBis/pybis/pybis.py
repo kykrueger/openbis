@@ -986,7 +986,7 @@ class Openbis:
             "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"}
         }
 
-        for option in ['tags', 'properties', 'sample', 'experiment']:
+        for option in ['tags', 'properties', 'sample', 'experiment', 'physicalData']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1009,11 +1009,12 @@ class Openbis:
             datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
             datasets['type'] = datasets['type'].map(extract_code)
             datasets['permId'] = datasets['code']
+            datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
             ds = Things(
                 self,
                 'dataset',
                 datasets[
-                    ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate']],
+                    ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate', 'location']],
                 'permId'
             )
             return ds
