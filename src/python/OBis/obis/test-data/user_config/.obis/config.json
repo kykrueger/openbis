@@ -1,6 +1,6 @@
 {
   "user": "auser",
-  "openbis_url": "http://localhost",
+  "openbis_url": "https://localhost:8443",
   "data_set_type": "ds_type",
   "data_set_properties": {
     "prop1": "val1",
