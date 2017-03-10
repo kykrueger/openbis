@@ -1114,12 +1114,12 @@ class Openbis:
         resp = self._post_request(self.as_v3, request)
         return self.get_sample(resp[0]['permId'])
 
-    def create_external_data_management_system(self, code, label, address_type, address):
+    def create_external_data_management_system(self, code, label, address, address_type='FILE_SYSTEM'):
         """Create an external DMS.
         :param code: An openBIS code for the external DMS.
         :param label: A human-readable label.
-        :param address_type: One of OPENBIS, URL, or FILE_SYSTEM
         :param address: The address for accessing the external DMS. E.g., a URL.
+        :param address_type: One of OPENBIS, URL, or FILE_SYSTEM
         :return:
         """
         request = {
