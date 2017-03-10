@@ -104,7 +104,7 @@ class ConfigResolver(object):
         self.location_resolver = location_resolver if location_resolver is not None else LocationResolver()
         self.location_search_order = ['global', 'local']
         self.location_cache = {}
-        self.is_intialized = False
+        self.is_initialized = False
 
     def initialize_location_cache(self):
         env = self.env
@@ -124,9 +124,12 @@ class ConfigResolver(object):
                     config = json.load(f)
                     cache[key] = config
 
-    def config_dict(self):
-        """Return a configuration dictionary by applying the lookup/resolution rules."""
-        if not self.is_intialized:
+    def config_dict(self, local_only=False):
+        """Return a configuration dictionary by applying the lookup/resolution rules.
+        :param local_only: If true, do not check the global location.
+        :return: A dictionary with the configuration.
+        """
+        if not self.is_initialized:
             self.initialize_location_cache()
         env = self.env
         result = {}
@@ -135,6 +138,8 @@ class ConfigResolver(object):
         for name, param in env.params.items():
             result[name] = None
             for l in self.location_search_order:
+                if local_only and l == 'global':
+                    continue
                 val = self.value_for_parameter(param, l)
                 if val is not None:
                     result[name] = val
@@ -146,7 +151,7 @@ class ConfigResolver(object):
         :param loc: Either 'local' or 'global'
         :return:
         """
-        if not self.is_intialized:
+        if not self.is_initialized:
             self.initialize_location_cache()
 
         param = self.env.params[name]
