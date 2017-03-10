@@ -25,10 +25,18 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
     """Factory method for DataMgmt instances"""
 
     echo_func = echo_func if echo_func is not None else default_echo
-    config_resolver = config_resolver if config_resolver is not None else dm_config.ConfigResolver()
 
-    complete_openbis_config(openbis_config, config_resolver)
     complete_git_config(git_config)
+    git_wrapper = GitWrapper(**git_config)
+    if not git_wrapper.can_run():
+        return NoGitDataMgmt(echo_func, config_resolver, None, git_wrapper)
+
+    if config_resolver is None:
+        config_resolver = dm_config.ConfigResolver()
+        result = git_wrapper.get_top_level_path()
+        if result.returncode == 0:
+            config_resolver.location_resolver.location_roots['data_set'] = result.output
+    complete_openbis_config(openbis_config, config_resolver)
 
     openbis = None
     if openbis_config['url'] is None:
@@ -41,10 +49,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
             echo_func({'level': 'error', 'message': 'Could not connect to openBIS.'})
             traceback.print_exc()
 
-    git_wrapper = GitWrapper(**git_config)
-    if git_wrapper.can_run():
-        return GitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
-    return NoGitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
+    return GitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
 
 
 def complete_openbis_config(config, resolver):
