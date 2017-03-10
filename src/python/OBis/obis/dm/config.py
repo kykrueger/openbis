@@ -84,14 +84,16 @@ class ConfigEnv(object):
         return location
 
 
-def default_location_resolver(location):
-    """Given a location, return a path"""
-    if location.root == 'user_home':
-        root = os.path.expanduser('~')
-    else:
-        # Use the current directory in the remaining case
-        root = './'
-    return os.path.join(root, location.basename)
+class LocationResolver(object):
+    def __init__(self):
+        self.location_roots = {
+            'user_home': os.path.expanduser('~'),
+            'data_set': './'
+        }
+
+    def resolve_location(self, location):
+        root = self.location_roots[location.root]
+        return os.path.join(root, location.basename)
 
 
 class ConfigResolver(object):
@@ -99,10 +101,10 @@ class ConfigResolver(object):
 
     def __init__(self, env=None, location_resolver=None):
         self.env = env if env is not None else ConfigEnv()
-        self.location_resolver = location_resolver if location_resolver is not None else default_location_resolver
+        self.location_resolver = location_resolver if location_resolver is not None else LocationResolver()
         self.location_search_order = ['global', 'local']
         self.location_cache = {}
-        self.initialize_location_cache()
+        self.is_intialized = False
 
     def initialize_location_cache(self):
         env = self.env
@@ -115,7 +117,7 @@ class ConfigResolver(object):
             for k, v in loc.items():
                 self.initialize_location(k, v, cache[key])
         else:
-            root_path = self.location_resolver(loc)
+            root_path = self.location_resolver.resolve_location(loc)
             config_path = os.path.join(root_path, 'config.json')
             if os.path.exists(config_path):
                 with open(config_path) as f:
@@ -124,7 +126,8 @@ class ConfigResolver(object):
 
     def config_dict(self):
         """Return a configuration dictionary by applying the lookup/resolution rules."""
-
+        if not self.is_intialized:
+            self.initialize_location_cache()
         env = self.env
         result = {}
         # Iterate over the locations in the specified order searching for parameter values.
@@ -143,6 +146,9 @@ class ConfigResolver(object):
         :param loc: Either 'local' or 'global'
         :return:
         """
+        if not self.is_intialized:
+            self.initialize_location_cache()
+
         param = self.env.params[name]
         location_config_dict = self.set_cache_value_for_parameter(param, value, loc)
         if loc != 'global':
@@ -153,7 +159,7 @@ class ConfigResolver(object):
         else:
             location_path = [loc]
         location = self.env.location_at_path(location_path)
-        location_dir_path = self.location_resolver(location)
+        location_dir_path = self.location_resolver.resolve_location(location)
         if not os.path.exists(location_dir_path):
             print("Create {}".format(location_dir_path))
             os.makedirs(location_dir_path)

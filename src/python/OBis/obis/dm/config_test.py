@@ -17,7 +17,8 @@ from . import config
 
 def test_config_location_resolver():
     loc = config.ConfigLocation(['global'], 'user_home', '.obis')
-    assert config.default_location_resolver(loc) == os.path.join(os.path.expanduser("~"), '.obis')
+    location_resolver = config.LocationResolver()
+    assert location_resolver.resolve_location(loc) == os.path.join(os.path.expanduser("~"), '.obis')
 
 
 def user_config_test_data_path():
@@ -31,19 +32,14 @@ def copy_user_config_test_data(tmpdir):
     return config_test_data_src, config_test_data_dst
 
 
-def location_resolver_for_test(tmpdir):
-    def resolver(location):
-        if location.root == 'user_home':
-            return os.path.join(str(tmpdir), 'user_config', location.basename)
-        else:
-            return config.default_location_resolver(location)
-
-    return resolver
+def configure_resolver_for_test(resolver, tmpdir):
+    resolver.location_resolver.location_roots['user_home'] = os.path.join(str(tmpdir), 'user_config')
 
 
 def test_read_config(tmpdir):
     copy_user_config_test_data(tmpdir)
-    resolver = config.ConfigResolver(location_resolver=location_resolver_for_test(tmpdir))
+    resolver = config.ConfigResolver()
+    configure_resolver_for_test(resolver, tmpdir)
     config_dict = resolver.config_dict()
     assert config_dict is not None
     with open(os.path.join(user_config_test_data_path(), ".obis", "config.json")) as f:
@@ -53,7 +49,8 @@ def test_read_config(tmpdir):
 
 def test_write_config(tmpdir):
     copy_user_config_test_data(tmpdir)
-    resolver = config.ConfigResolver(location_resolver=location_resolver_for_test(tmpdir))
+    resolver = config.ConfigResolver()
+    configure_resolver_for_test(resolver, tmpdir)
     config_dict = resolver.config_dict()
     assert config_dict is not None
     with open(os.path.join(user_config_test_data_path(), ".obis", "config.json")) as f:
