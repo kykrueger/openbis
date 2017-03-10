@@ -856,26 +856,26 @@ class Openbis:
         objects = resp['objects']
         parse_jackson(objects)
 
-        samples = dataframe(objects)
-        samples['registrationdate'] = samples['registrationdate'].map(format_timestamp)
-        samples['modificationdate'] = samples['modificationdate'].map(format_timestamp)
+        samples = DataFrame(objects)
+        samples['registrationDate'] = samples['registrationDate'].map(format_timestamp)
+        samples['modificationDate'] = samples['modificationDate'].map(format_timestamp)
         samples['registrator'] = samples['registrator'].map(extract_person)
         samples['modifier'] = samples['modifier'].map(extract_person)
         samples['identifier'] = samples['identifier'].map(extract_identifier)
-        samples['permid'] = samples['permid'].map(extract_permid)
+        samples['permId'] = samples['permId'].map(extract_permid)
         samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
         samples['sample_type'] = samples['type'].map(extract_nested_permid)
 
-        attrs = ['identifier', 'permid', 'experiment', 'sample_type', 
-                 'registrator', 'registrationdate', 'modifier', 'modificationdate']
+        attrs = ['identifier', 'permId', 'experiment', 'sample_type', 
+                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
 
-        if props is not none:
+        if props is not None:
             for prop in props:
                 samples[prop.upper()] = samples['properties'].map( lambda x: x.get(prop.upper(), '') )
                 attrs.append(prop.upper())
 
         ss = samples[attrs]
-        return things(self, 'sample', ss, 'identifier')
+        return Things(self, 'sample', ss, 'identifier')
 
 
     def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
