@@ -148,13 +148,23 @@ def test_dataset_upload(openbis_instance):
     # analysis.save     # start registering process
 
 
-def test_create_external_data_management_system(openbis_instance):
+def create_external_data_management_system(openbis_instance):
     code = "TEST-GIT-{:4d}".format(random.randint(0, 9999))
     result = openbis_instance.create_external_data_management_system(code, 'Test git', 'FILE_SYSTEM',
                                                                      'localhost:~openbis/repo')
-    assert result is not None
+    return code, result
+
+
+def test_create_external_data_management_system(openbis_instance):
+    code, result = create_external_data_management_system(openbis_instance)
     assert result is not None
     assert result.code == code
     assert result.label == 'Test git'
     assert result.addressType == 'FILE_SYSTEM'
     assert result.address == 'localhost:~openbis/repo'
+
+
+def test_new_git_data_set(openbis_instance):
+    dms_code, dms = create_external_data_management_system(openbis_instance)
+    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT")
+    assert result is not None
