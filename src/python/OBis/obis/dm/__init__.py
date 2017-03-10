@@ -10,3 +10,4 @@ Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
 
 from .data_mgmt import *
+from .config import ConfigResolver
