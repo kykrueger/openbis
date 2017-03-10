@@ -866,19 +866,19 @@ class Openbis:
         samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
         samples['sample_type'] = samples['type'].map(extract_nested_permid)
 
-        attrs = ['identifier', 'permId', 'experiment', 'sample_type', 
+        attrs = ['identifier', 'permId', 'experiment', 'sample_type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
 
         if props is not None:
             for prop in props:
-                samples[prop.upper()] = samples['properties'].map( lambda x: x.get(prop.upper(), '') )
+                samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
         ss = samples[attrs]
         return Things(self, 'sample', ss, 'identifier')
 
-
-    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
+    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None,
+                        **properties):
         """ Get a list of all experiment for a given space or project (or any combination)
         """
 
@@ -932,17 +932,16 @@ class Openbis:
         experiments['permId'] = experiments['permId'].map(extract_permid)
         experiments['type'] = experiments['type'].map(extract_code)
 
-        attrs = ['identifier', 'permId', 'project', 'type', 
+        attrs = ['identifier', 'permId', 'project', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
 
         if props is not None:
             for prop in props:
-                experiments[prop.upper()] = experiments['properties'].map( lambda x: x.get(prop.upper(), '') )
+                experiments[prop.upper()] = experiments['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
         exps = experiments[attrs]
         return Things(self, 'experiment', exps, 'identifier')
-
 
     def get_datasets(self,
                      code=None, type=None, withParents=None, withChildren=None, status=None,
@@ -2720,7 +2719,7 @@ class AttrHolder():
                            attachments=fetch_option['attachmentsWithContent'],
                            **fetch_option[entity]
                        )
-            ]
+                       ]
         }
         resp = self._openbis._post_request(self._openbis.as_v3, request)
         attachments = resp[self.permId]['attachments']
