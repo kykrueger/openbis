@@ -307,6 +307,9 @@ class GitWrapper(object):
     def git_top_level_path(self):
         return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])
 
+    def git_commit_id(self):
+        return run_shell([self.git_path, 'rev-parse', '--short', 'HEAD'])
+
 
 class OpenbisSync(object):
     """A command object for synchronizing with openBIS."""
@@ -386,8 +389,10 @@ class OpenbisSync(object):
         if result.failure():
             return result
         top_level_path = result.output
-        # TODO Get commit id
-        commit_id = '12345'
+        result = self.git_wrapper.git_commit_id()
+        if result.failure():
+            return result
+        commit_id = result.output
         sample_id = self.sample_id()
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
