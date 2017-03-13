@@ -20,6 +20,7 @@ class DataRepo(object):
         """
         self.root = root
         self.dm_api = data_mgmt.DataMgmt(git_config={'find_git': True})
+        self.dm_api.config_resolver.location_resolver.location_roots['data_set'] = self.root
 
     def init(self, desc=None):
         return self.dm_api.init_data(self.root, desc)
