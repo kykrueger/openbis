@@ -32,9 +32,10 @@ def click_progress_no_ts(progress_data):
         click.echo("{}".format(progress_data['message']))
 
 
-def shared_data_mgmt():
+def shared_data_mgmt(verify_certificates=True):
     git_config = {'find_git': True}
-    return dm.DataMgmt(git_config=git_config)
+    openbis_config = {'verify_certificates': verify_certificates}
+    return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config)
 
 
 @click.group()
@@ -112,6 +113,17 @@ def commit(ctx, msg, auto_add):
     """
     data_mgmt = shared_data_mgmt()
     return data_mgmt.commit(msg, auto_add)
+
+
+@cli.command()
+@click.pass_context
+@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not veryify cerficiates')
+def sync(ctx, skip_verification):
+    """Sync the repository with openBIS.
+    """
+    verify_certificates = not skip_verification
+    data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
+    return data_mgmt.sync()
 
 
 @cli.command()

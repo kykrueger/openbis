@@ -187,6 +187,16 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         """
         return
 
+    @abc.abstractmethod
+    def sync(self):
+        """
+        Syc the current repo.
+
+        This connects to openBIS and creates a data set in openBIS.
+        :return:
+        """
+        return
+
 
 class NoGitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations when git is not available -- show error messages."""
