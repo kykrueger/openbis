@@ -351,12 +351,13 @@ class OpenbisSync(object):
         if self.openbis.is_session_active():
             return CommandResult(returncode=0, output="")
         user = self.user()
-        passwd = getpass.getpass("Password for {}".format(user))
+        passwd = getpass.getpass("Password for {}:".format(user))
         try:
             self.openbis.login(user, passwd)
         except ValueError:
             msg = "Could not log into openbis {}".format(self.config_dict['openbis_url'])
             return CommandResult(returncode=-1, output=msg)
+        return CommandResult(returncode=0, output='')
 
     def get_external_data_management_system(self):
         external_dms_id = self.external_dms_id()
