@@ -108,16 +108,18 @@ def analysis(ctx, folder):
 @click.pass_context
 @click.option('-m', '--msg', prompt=True, help='A message explaining what was done.')
 @click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.')
-def commit(ctx, msg, auto_add):
+@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
+def commit(ctx, msg, auto_add, skip_verification):
     """Commit the repository to git and inform openBIS.
     """
-    data_mgmt = shared_data_mgmt()
+    verify_certificates = not skip_verification
+    data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
     return data_mgmt.commit(msg, auto_add)
 
 
 @cli.command()
 @click.pass_context
-@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not veryify cerficiates')
+@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
 def sync(ctx, skip_verification):
     """Sync the repository with openBIS.
     """
