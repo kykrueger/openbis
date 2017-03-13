@@ -70,6 +70,7 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='openbis_url', private=False))
         self.add_param(ConfigParam(name='user', private=True))
         self.add_param(ConfigParam(name='external_dms_id', private=True))
+        self.add_param(ConfigParam(name='sample_id', private=False))
         self.add_param(ConfigParam(name='data_set_id', private=False))
         self.add_param(ConfigParam(name='data_set_type', private=False))
         self.add_param(ConfigParam(name='data_set_properties', private=False))
@@ -166,7 +167,6 @@ class ConfigResolver(object):
         location = self.env.location_at_path(location_path)
         location_dir_path = self.location_resolver.resolve_location(location)
         if not os.path.exists(location_dir_path):
-            print("Create {}".format(location_dir_path))
             os.makedirs(location_dir_path)
         config_path = os.path.join(location_dir_path, 'config.json')
         with open(config_path, "w") as f:
