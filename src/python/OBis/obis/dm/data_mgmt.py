@@ -34,7 +34,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
 
     if config_resolver is None:
         config_resolver = dm_config.ConfigResolver()
-        result = git_wrapper.get_top_level_path()
+        result = git_wrapper.git_top_level_path()
         if result.success():
             config_resolver.location_resolver.location_roots['data_set'] = result.output
     complete_openbis_config(openbis_config, config_resolver)
@@ -231,7 +231,7 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def commit(self, msg, auto_add=True, sync=True):
         if auto_add:
-            result = self.git_wrapper.get_top_level_path()
+            result = self.git_wrapper.git_top_level_path()
             if not self.check_result_ok(result):
                 return result
             result = self.add_content(result.output)
@@ -304,7 +304,7 @@ class GitWrapper(object):
     def git_commit(self, msg):
         return run_shell([self.git_path, "commit", '-m', msg])
 
-    def get_top_level_path(self):
+    def git_top_level_path(self):
         return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])
 
 
@@ -365,7 +365,7 @@ class OpenbisSync(object):
     def create_external_data_management_system(self):
         external_dms_id = self.external_dms_id()
         user = self.user()
-        result = self.git_wrapper.get_top_level_path()
+        result = self.git_wrapper.git_top_level_path()
         if result.failure():
             return result
         top_level_path = result.output
@@ -382,7 +382,7 @@ class OpenbisSync(object):
     def create_data_set(self, external_dms):
         # Get the commit id
         data_set_type = self.data_set_type()
-        result = self.git_wrapper.get_top_level_path()
+        result = self.git_wrapper.git_top_level_path()
         if result.failure():
             return result
         top_level_path = result.output
