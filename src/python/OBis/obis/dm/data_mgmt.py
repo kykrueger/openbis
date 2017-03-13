@@ -56,11 +56,11 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
 def complete_openbis_config(config, resolver):
     """Add default values for empty entries in the config."""
     config_dict = resolver.config_dict(local_only=True)
-    if not config.get('url'):
+    if config.get('url') is None:
         config['url'] = config_dict['openbis_url']
-    if not config.get('verify_certificates'):
+    if config.get('verify_certificates') is None:
         config['verify_certificates'] = True
-    if not config.get('token'):
+    if config.get('token') is None:
         config['token'] = None
 
 
