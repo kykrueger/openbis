@@ -34,12 +34,12 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
     if config_resolver is None:
         config_resolver = dm_config.ConfigResolver()
         result = git_wrapper.get_top_level_path()
-        if result.returncode == 0:
+        if result.success():
             config_resolver.location_resolver.location_roots['data_set'] = result.output
     complete_openbis_config(openbis_config, config_resolver)
 
     openbis = None
-    if openbis_config['url'] is None:
+    if openbis_config.get('url') is None:
         echo_func(
             {'level': 'warn', 'message': 'Please configure an openBIS url. Sync will not be possible until you do so.'})
     else:
@@ -69,11 +69,11 @@ def complete_git_config(config):
     find_git = config['find_git'] if config.get('find_git') else False
     if find_git:
         git_cmd = locate_command('git')
-        if git_cmd.returncode == 0:
+        if git_cmd.success():
             config['git_path'] = git_cmd.output
 
         git_annex_cmd = locate_command('git-annex')
-        if git_annex_cmd.returncode == 0:
+        if git_annex_cmd.success():
             config['git_annex_path'] = git_annex_cmd.output
 
 
@@ -99,6 +99,12 @@ class CommandResult(object):
 
     def __repr__(self):
         return "CommandResult({},{})".format(self.returncode, self.output)
+
+    def success(self):
+        return self.returncode == 0
+
+    def failure(self):
+        return not self.success()
 
 
 def run_shell(args):
@@ -152,7 +158,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         raise ValueError(reason)
 
     def check_result_ok(self, result):
-        if result.returncode != 0:
+        if result.failure():
             self.error(result.output)
             return False
         return True
@@ -257,10 +263,10 @@ class GitWrapper(object):
             return False
         if self.git_annex_path is None:
             return False
-        if run_shell([self.git_path, 'help']).returncode != 0:
+        if run_shell([self.git_path, 'help']).failure():
             # git help should have a returncode of 0
             return False
-        if run_shell([self.git_annex_path, 'help']).returncode != 0:
+        if run_shell([self.git_annex_path, 'help']).failure():
             # git help should have a returncode of 0
             return False
         return True
@@ -273,12 +279,12 @@ class GitWrapper(object):
         if desc is not None:
             cmd.append(desc)
         result = run_shell(cmd)
-        if result.returncode != 0:
+        if result.failure():
             return result
 
         cmd = [self.git_path, "-C", path, "config", "annex.thin", "true"]
         result = run_shell(cmd)
-        if result.returncode != 0:
+        if result.failure():
             return result
 
         attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
@@ -286,7 +292,7 @@ class GitWrapper(object):
         shutil.copyfile(attributes_src, attributes_dst)
         cmd = [self.git_path, "-C", path, "add", ".gitattributes"]
         result = run_shell(cmd)
-        if result.returncode != 0:
+        if result.failure():
             return result
 
         # TODO Create a .obis directory and add it to gitignore
