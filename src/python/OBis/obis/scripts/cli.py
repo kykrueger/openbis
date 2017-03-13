@@ -55,7 +55,11 @@ def config(ctx, is_global, property, value):
     Configure the openBIS server url, the data set type, and the data set properties.
     """
     ctx.obj['global'] = is_global
-    resolver = shared_data_mgmt().config_resolver
+    dm = shared_data_mgmt()
+    resolver = dm.config_resolver
+    top_level_path = dm.git_wrapper.git_top_level_path()
+    if top_level_path.success():
+        resolver.location_resolver.location_roots['data_set'] = top_level_path.output
     is_global = ctx.obj['global']
     if is_global:
         resolver.location_search_order = ['global']
