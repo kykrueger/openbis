@@ -45,14 +45,31 @@ def cli(ctx, quiet):
 
 
 @cli.command()
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
+@click.argument('property', default="")
+@click.argument('value', default="")
 @click.pass_context
-@click.option('-g', '--global', default=False, is_flag=True, help='Configure global or local.')
-def config(ctx):
+def config(ctx, is_global, property, value):
     """Configure the openBIS setup.
 
     Configure the openBIS server url, the data set type, and the data set properties.
     """
-    click_echo("config")
+    ctx.obj['global'] = is_global
+    resolver = shared_data_mgmt().config_resolver
+    is_global = ctx.obj['global']
+    if is_global:
+        resolver.location_search_order = ['global']
+    else:
+        resolver.location_search_order = ['local']
+
+    config_dict = resolver.config_dict()
+    if not property:
+        click.echo("{}".format(config_dict))
+    elif not value:
+        click.echo("{}".format(config_dict[property]))
+    else:
+        loc = 'global' if is_global else 'local'
+        resolver.set_value_for_parameter(property, value, loc)
 
 
 @cli.group()

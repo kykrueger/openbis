@@ -16,6 +16,7 @@ import subprocess
 from contextlib import contextmanager
 from . import config as dm_config
 import traceback
+import getpass
 
 import pybis
 
@@ -225,12 +226,8 @@ class GitDataMgmt(AbstractDataMgmt):
         return result
 
     def sync(self):
-        # TODO create a data set in openBIS
-        # - check if openBIS has been setup. If not, prompt the user to set up openbis.
-        # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
-        # - call openbis to create a data set, using the existing data set as a parent, if there is one
-        # - save the data set id to .git/obis/datasetid.
-        return CommandResult(returncode=0, output="")
+        cmd = OpenbisSync(self.openbis, self.git_wrapper, self.config_resolver)
+        return cmd.run()
 
     def commit(self, msg, auto_add=True, sync=True):
         if auto_add:
@@ -314,9 +311,112 @@ class GitWrapper(object):
 class OpenbisSync(object):
     """A command object for synchronizing with openBIS."""
 
-    def __init__(self, git_path=None, git_annex_path=None, find_git=None):
-        self.git_path = git_path
-        self.git_annex_path = git_annex_path
+    def __init__(self, openbis, git_wrapper, config_resolver):
+        self.openbis = openbis
+        self.git_wrapper = git_wrapper
+        self.config_resolver = config_resolver
+        self.config_dict = config_resolver.config_dict()
+
+    def user(self):
+        return self.config_dict.get('user')
+
+    def external_dms_id(self):
+        return self.config_dict.get('external_dms_id')
+
+    def data_set_type(self):
+        return self.config_dict.get('data_set_type')
+
+    def sample_id(self):
+        return self.config_dict.get('sample_id')
+
+    def check_configuration(self):
+        missing_config_settings = []
+        if self.openbis is None:
+            missing_config_settings.append('openbis_url')
+        if self.user() is None:
+            missing_config_settings.append('user')
+        if self.data_set_type() is None:
+            missing_config_settings.append('data_set_type')
+        if self.data_set_type() is None:
+            missing_config_settings.append('sample_id')
+        if len(missing_config_settings) > 0:
+            return CommandResult(returncode=-1,
+                                 output="Missing configuration settings for {}.".format(missing_config_settings))
+        return CommandResult(returncode=0, output="")
+
+    def login(self):
+        if self.openbis.is_session_active():
+            return CommandResult(returncode=0, output="")
+        user = self.user()
+        passwd = getpass.getpass("Password for {}".format(user))
+        try:
+            self.openbis.login(user, passwd)
+        except ValueError:
+            msg = "Could not log into openbis {}".format(self.config_dict['openbis_url'])
+            return CommandResult(returncode=-1, output=msg)
+
+    def get_external_data_management_system(self):
+        external_dms_id = self.external_dms_id()
+        if external_dms_id is None:
+            return None
+        external_dms = self.openbis.get_external_data_management_system(external_dms_id)
+        return external_dms
+
+    def create_external_data_management_system(self):
+        external_dms_id = self.external_dms_id()
+        user = self.user()
+        result = self.git_wrapper.get_top_level_path()
+        if result.failure():
+            return result
+        top_level_path = result.output
+        path_name = os.path.basename(top_level_path)
+        if external_dms_id is None:
+            external_dms_id = "{}-{}".format(user, path_name)
+        try:
+            edms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
+                                                                       "localhost:/{}".format(top_level_path))
+            return CommandResult(returncode=0, output=""), edms
+        except ValueError as e:
+            return CommandResult(returncode=-1, output=str(e)), None
+
+    def create_data_set(self, external_dms):
+        # Get the commit id
+        data_set_type = self.data_set_type()
+        result = self.git_wrapper.get_top_level_path()
+        if result.failure():
+            return result
+        top_level_path = result.output
+        # TODO Get commit id
+        commit_id = '12345'
+        sample_id = self.sample_id()
+        try:
+            data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
+                                                     sample_id)
+            return CommandResult(returncode=0, output=""), data_set
+        except ValueError as e:
+            return CommandResult(returncode=-1, output=str(e)), None
 
     def run(self):
-        pass
+        # TODO create a data set in openBIS
+        # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
+
+        result = self.check_configuration()
+        if result.failure():
+            return result
+        result = self.login()
+        if result.failure():
+            return result
+
+        # If there is no external data management system, create one.
+        external_dms = self.get_external_data_management_system()
+        if external_dms is None:
+            result, external_dms = self.create_external_data_management_system()
+            if result.failure():
+                return result
+
+            self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
+
+        # create a data set, using the existing data set as a parent, if there is one
+        result, data_set = self.create_data_set(external_dms)
+        # - save the data set id to .git/obis/datasetid.
+        return CommandResult(returncode=0, output="")

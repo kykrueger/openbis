@@ -8,10 +8,12 @@ repo_test.py
 Created by Chandrasekhar Ramakrishnan on 2017-03-03.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
+from unittest.mock import Mock, MagicMock
 
 from . import repo as dm_repo
 from . import data_mgmt
-from .data_mgmt_test import git_status, copy_test_data
+from .data_mgmt_test import git_status, copy_test_data, prepare_registration_expectations, \
+    set_registration_configuration
 
 
 def test_data_use_case(tmpdir):
@@ -19,6 +21,8 @@ def test_data_use_case(tmpdir):
     assert git_status(tmp_dir_path).returncode == 128  # The folder should not be a git repo at first.
 
     repo = dm_repo.DataRepo(tmp_dir_path)
+    prepare_registration_expectations(repo.dm_api)
+    set_registration_configuration(repo.dm_api)
 
     result = repo.init("test")
     assert result.returncode == 0

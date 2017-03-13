@@ -12,6 +12,14 @@ import os
 import shutil
 
 from . import data_mgmt
+from unittest.mock import Mock, MagicMock
+from pybis.pybis import ExternalDMS, DataSet
+
+
+def shared_dm():
+    git_config = {'find_git': True}
+    dm = data_mgmt.DataMgmt(git_config=git_config)
+    return dm
 
 
 def test_no_git(tmpdir):
@@ -43,11 +51,13 @@ def git_status(path=None, annex=False):
     return data_mgmt.run_shell(cmd)
 
 
-def test_data_use_case(shared_dm, tmpdir):
+def test_data_use_case(tmpdir):
+    dm = shared_dm()
+
     tmp_dir_path = str(tmpdir)
     assert git_status(tmp_dir_path).returncode == 128  # The folder should not be a git repo at first.
 
-    result = shared_dm.init_data(tmp_dir_path, "test")
+    result = dm.init_data(tmp_dir_path, "test")
     assert result.returncode == 0
 
     assert git_status(tmp_dir_path).returncode == 0  # The folder should be a git repo now
@@ -56,7 +66,11 @@ def test_data_use_case(shared_dm, tmpdir):
     copy_test_data(tmpdir)
 
     with data_mgmt.cd(tmp_dir_path):
-        result = shared_dm.commit("Added data.")
+        dm = shared_dm()
+        prepare_registration_expectations(dm)
+        set_registration_configuration(dm)
+
+        result = dm.commit("Added data.")
         assert result.returncode == 0
 
         # The zip should be in the annex
@@ -79,6 +93,27 @@ def test_data_use_case(shared_dm, tmpdir):
         # This file is not in the annex and should not be a hardlink
         stat = os.stat("text-data.txt")
         assert stat.st_nlink == 1
+
+
+def set_registration_configuration(dm):
+    resolver = dm.config_resolver
+    resolver.set_value_for_parameter('openbis_url', "https://localhost:8443", 'local')
+    resolver.set_value_for_parameter('user', "auser", 'local')
+    resolver.set_value_for_parameter('data_set_type', "DS_TYPE", 'local')
+    resolver.set_value_for_parameter('sample_id', "/SAMPLE/ID", 'local')
+
+
+def prepare_registration_expectations(dm):
+    dm.openbis = Mock()
+    dm.openbis.is_session_active = MagicMock(return_value=True)
+    edms = ExternalDMS(dm.openbis, {'code': 'AUSER-PATH', 'label': 'AUSER-PATH'})
+    dm.openbis.create_external_data_management_system = MagicMock(return_value=edms)
+
+    data_set = DataSet(dm.openbis, None,
+                       {'code': 'DS-1', 'properties': {},
+                        "parents": [], "children": [], "samples": [], 'tags': [],
+                        'physicalData': None})
+    dm.openbis.new_git_data_set = MagicMock(data_set)
 
 
 def copy_test_data(tmpdir):
