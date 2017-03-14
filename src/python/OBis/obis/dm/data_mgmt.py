@@ -434,5 +434,8 @@ class OpenbisSync(object):
 
         # create a data set, using the existing data set as a parent, if there is one
         result, data_set = self.create_data_set(external_dms)
-        # - save the data set id to .git/obis/datasetid.
+        if result.failure():
+            return result
+
+        self.config_resolver.set_value_for_parameter('data_set_id', data_set.code, 'local')
         return CommandResult(returncode=0, output="")
