@@ -302,8 +302,6 @@ class GitWrapper(object):
         if result.failure():
             return result
 
-        # TODO Create a .obis directory and add it to gitignore
-
         cmd = [self.git_path, "-C", path, "commit", "-m", "Initial commit."]
         result = run_shell(cmd)
         return result
@@ -391,10 +389,11 @@ class OpenbisSync(object):
                                                                        "localhost:/{}".format(top_level_path))
             return CommandResult(returncode=0, output=""), edms
         except ValueError as e:
+            # TODO If the error is edms already exists, retrieve it.
             return CommandResult(returncode=-1, output=str(e)), None
 
     def create_data_set(self, external_dms):
-        # Get the commit id
+        # TODO If there already is a data set, then make the new data set a child of the original
         data_set_type = self.data_set_type()
         result = self.git_wrapper.git_top_level_path()
         if result.failure():
@@ -413,7 +412,7 @@ class OpenbisSync(object):
             return CommandResult(returncode=-1, output=str(e)), None
 
     def run(self):
-        # TODO create a data set in openBIS
+        # TODO Write mementos in case openBIS is unreachable
         # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
 
         result = self.check_configuration()
