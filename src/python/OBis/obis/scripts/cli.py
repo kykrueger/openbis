@@ -46,6 +46,37 @@ def cli(ctx, quiet):
 
 
 @cli.command()
+@click.pass_context
+@click.argument('other', type=click.Path(exists=True))
+def addref(ctx, other):
+    """Add a reference to the other repository in this repository.
+    """
+    click_echo("addref {}".format(other))
+
+
+@cli.command()
+@click.pass_context
+@click.argument('url')
+def clone(ctx, url):
+    """Clone the repository found at url.
+    """
+    click_echo("clone {}".format(url))
+
+
+@cli.command()
+@click.pass_context
+@click.option('-m', '--msg', prompt=True, help='A message explaining what was done.')
+@click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.')
+@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
+def commit(ctx, msg, auto_add, skip_verification):
+    """Commit the repository to git and inform openBIS.
+    """
+    verify_certificates = not skip_verification
+    data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
+    return data_mgmt.commit(msg, auto_add)
+
+
+@cli.command()
 @click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
 @click.argument('property', default="")
 @click.argument('value', default="")
@@ -106,15 +137,11 @@ def analysis(ctx, folder):
 
 @cli.command()
 @click.pass_context
-@click.option('-m', '--msg', prompt=True, help='A message explaining what was done.')
-@click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.')
-@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
-def commit(ctx, msg, auto_add, skip_verification):
-    """Commit the repository to git and inform openBIS.
+@click.argument('file')
+def get(ctx, f):
+    """Get one or more files from a clone of this repository.
     """
-    verify_certificates = not skip_verification
-    data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
-    return data_mgmt.commit(msg, auto_add)
+    click_echo("get {}".format(f))
 
 
 @cli.command()
@@ -148,11 +175,13 @@ def clone(ctx, url):
 
 @cli.command()
 @click.pass_context
-@click.argument('file')
-def get(ctx, f):
-    """Get one or more files from a clone of this repository.
+@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
+def sync(ctx, skip_verification):
+    """Sync the repository with openBIS.
     """
-    click_echo("get {}".format(f))
+    verify_certificates = not skip_verification
+    data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
+    return data_mgmt.sync()
 
 
 def main():
