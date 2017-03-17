@@ -10,6 +10,8 @@ Work with openBIS from Python.
 
 from __future__ import print_function
 import os
+import random
+
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -35,6 +37,8 @@ from pandas import DataFrame, Series
 import threading
 from threading import Thread
 from queue import Queue
+
+from datetime import datetime
 
 DROPBOX_PLUGIN = "jupyter-uploader-api"
 
@@ -709,6 +713,14 @@ class Openbis:
                 self.save_token()
             return self.token
 
+    def create_perm_id(self):
+        """Have the server generate a new permId"""
+        # CR 2017-03-17 -- This is not yet available in the V3-API, so this is a stub impl.
+        # When the API offers this, switch to that version.
+        sequence = random.randrange(9999)
+        ts = datetime.now().strftime("%Y%m%d%H%M%S%f")
+        return "{}-{:4d}".format(ts, sequence)
+
     def get_datastores(self):
         """ Get a list of all available datastores. Usually there is only one, but in some cases
         there might be multiple servers. If you upload a file, you need to specifiy the datastore you want
@@ -1013,7 +1025,8 @@ class Openbis:
                 self,
                 'dataset',
                 datasets[
-                    ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate', 'location']],
+                    ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate',
+                     'location']],
                 'permId'
             )
             return ds
