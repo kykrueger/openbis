@@ -113,7 +113,7 @@ def prepare_registration_expectations(dm):
                        {'code': 'DS-1', 'properties': {},
                         "parents": [], "children": [], "samples": [], 'tags': [],
                         'physicalData': None})
-    dm.openbis.new_git_data_set = MagicMock(data_set)
+    dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
 
 
 def copy_test_data(tmpdir):
