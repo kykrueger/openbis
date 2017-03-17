@@ -167,6 +167,7 @@ def test_new_git_data_set(openbis_instance):
     dms_code, dms = create_external_data_management_system(openbis_instance)
     result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT")
     assert result is not None
+    openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
 
 
 def test_create_perm_id(openbis_instance):

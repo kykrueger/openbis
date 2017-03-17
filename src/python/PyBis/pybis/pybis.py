@@ -1181,13 +1181,18 @@ class Openbis:
         }
         self._post_request(self.as_v3, request)
 
-    def delete_entity(self, entity, permid, reason):
+    def delete_entity(self, entity, permid, reason, capitalize=True):
         """Deletes Spaces, Projects, Experiments, Samples and DataSets
         """
 
-        entity_type = "as.dto.{}.id.{}PermId".format(entity.lower(), entity.capitalize())
+        if capitalize:
+            entity_capitalized = entity.capitalize()
+        else:
+            entity_capitalized = entity
+
+        entity_type = "as.dto.{}.id.{}PermId".format(entity.lower(), entity_capitalized)
         request = {
-            "method": "delete" + entity.capitalize() + 's',
+            "method": "delete" + entity_capitalized + 's',
             "params": [
                 self.token,
                 [
@@ -1198,7 +1203,7 @@ class Openbis:
                 ],
                 {
                     "reason": reason,
-                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(entity.lower(), entity.capitalize())
+                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(entity.lower(), entity_capitalized)
                 }
             ]
         }
