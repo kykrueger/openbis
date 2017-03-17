@@ -190,7 +190,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def sync(self):
         """
-        Syc the current repo.
+        Sync the current repo.
 
         This connects to openBIS and creates a data set in openBIS.
         :return:
@@ -208,6 +208,9 @@ class NoGitDataMgmt(AbstractDataMgmt):
         self.error_raise("init analysis", "No git command found.")
 
     def commit(self, msg, auto_add=True, sync=True):
+        self.error_raise("commit", "No git command found.")
+
+    def sync(self):
         self.error_raise("commit", "No git command found.")
 
 
