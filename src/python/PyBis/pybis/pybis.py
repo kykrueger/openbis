@@ -719,7 +719,7 @@ class Openbis:
         # When the API offers this, switch to that version.
         sequence = random.randrange(9999)
         ts = datetime.now().strftime("%Y%m%d%H%M%S%f")
-        return "{}-{:4d}".format(ts, sequence)
+        return "{}-{:04d}".format(ts, sequence)
 
     def get_datastores(self):
         """ Get a list of all available datastores. Usually there is only one, but in some cases

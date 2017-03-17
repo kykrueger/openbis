@@ -149,7 +149,7 @@ def test_dataset_upload(openbis_instance):
 
 
 def create_external_data_management_system(openbis_instance):
-    code = "TEST-GIT-{:4d}".format(random.randint(0, 9999))
+    code = "TEST-GIT-{:04d}".format(random.randint(0, 9999))
     result = openbis_instance.create_external_data_management_system(code, 'Test git', 'localhost:~openbis/repo')
     return code, result
 
