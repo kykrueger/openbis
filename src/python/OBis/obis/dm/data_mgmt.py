@@ -416,7 +416,14 @@ class OpenbisSync(object):
             # TODO If the error is edms already exists, retrieve it.
             return CommandResult(returncode=-1, output=str(e)), None
 
-    def create_data_set(self, external_dms):
+    def create_data_set_code(self):
+        try:
+            data_set_code = self.openbis.create_perm_id()
+            return CommandResult(returncode=0, output=""), data_set_code
+        except ValueError as e:
+            return CommandResult(returncode=-1, output=str(e)), None
+
+    def create_data_set(self, data_set_code, external_dms):
         # TODO If there already is a data set, then make the new data set a child of the original
         data_set_type = self.data_set_type()
         result = self.git_wrapper.git_top_level_path()
@@ -430,10 +437,15 @@ class OpenbisSync(object):
         object_id = self.object_id()
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
-                                                     object_id)
+                                                     object_id, data_set_code=data_set_code)
             return CommandResult(returncode=0, output=""), data_set
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
+
+    def commit_metadata_updates(self):
+        folder = self.config_resolver.local_public_config_folder_path()
+        self.git_wrapper.git_add(folder)
+        self.git_wrapper.git_commit("OBIS: Update openBIS metadata cache.")
 
     def run(self):
         # TODO Write mementos in case openBIS is unreachable
@@ -455,10 +467,16 @@ class OpenbisSync(object):
 
             self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
 
-        # create a data set, using the existing data set as a parent, if there is one
-        result, data_set = self.create_data_set(external_dms)
+        result, data_set_code = self.create_data_set_code()
         if result.failure():
             return result
 
-        self.config_resolver.set_value_for_parameter('data_set_id', data_set.code, 'local')
+        self.config_resolver.set_value_for_parameter('data_set_id', data_set_code, 'local')
+        self.commit_metadata_updates()
+
+        # create a data set, using the existing data set as a parent, if there is one
+        result, data_set = self.create_data_set(data_set_code, external_dms)
+        if result.failure():
+            return result
+
         return CommandResult(returncode=0, output="")

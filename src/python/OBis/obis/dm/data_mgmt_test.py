@@ -9,11 +9,20 @@ Created by Chandrasekhar Ramakrishnan on 2017-02-02.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
 import os
+import random
 import shutil
+
+from datetime import datetime
 
 from . import data_mgmt
 from unittest.mock import Mock, MagicMock
 from pybis.pybis import ExternalDMS, DataSet
+
+
+def generate_perm_id():
+    sequence = random.randrange(9999)
+    ts = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    return "{}-{:04d}".format(ts, sequence)
 
 
 def shared_dm():
@@ -70,6 +79,12 @@ def test_data_use_case(tmpdir):
         prepare_registration_expectations(dm)
         set_registration_configuration(dm)
 
+        raw_status = git_status()
+        status = dm.status()
+        assert raw_status.returncode == status.returncode
+        assert raw_status.output == status.output
+        assert len(status.output) > 0
+
         result = dm.commit("Added data.")
         assert result.returncode == 0
 
@@ -94,11 +109,8 @@ def test_data_use_case(tmpdir):
         stat = os.stat("text-data.txt")
         assert stat.st_nlink == 1
 
-        raw_status = git_status()
         status = dm.status()
-        assert raw_status.returncode == status.returncode
-        assert raw_status.output == status.output
-        print(status.output)
+        assert len(status.output) == 0
 
 
 def set_registration_configuration(dm):
@@ -120,6 +132,7 @@ def prepare_registration_expectations(dm):
                         "parents": [], "children": [], "samples": [], 'tags': [],
                         'physicalData': None})
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
+    dm.openbis.create_perm_id = MagicMock(return_value=generate_perm_id())
 
 
 def copy_test_data(tmpdir):
