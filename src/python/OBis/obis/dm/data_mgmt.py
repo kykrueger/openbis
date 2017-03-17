@@ -166,12 +166,19 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def init_data(self, path, desc=None):
-        """Initialize a data repository at the path with the description."""
+        """Initialize a data repository at the path with the description.
+        :param path: Path for the repository.
+        :param desc: An optional short description of the repository (used by git-annex)
+        :return: A CommandResult.
+        """
         return
 
     @abc.abstractmethod
     def init_analysis(self, path):
-        """Initialize an analysis repository at the path."""
+        """Initialize an analysis repository at the path.
+        :param path: Path for the repository.
+        :return: A CommandResult.
+        """
         return
 
     @abc.abstractmethod
@@ -183,7 +190,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         :param msg: Commit message.
         :param auto_add: Automatically add all files in the folder to the repo. Defaults to True.
         :param sync: If true, sync with openBIS server.
-        :return:
+        :return: A CommandResult.
         """
         return
 
@@ -193,7 +200,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         Sync the current repo.
 
         This connects to openBIS and creates a data set in openBIS.
-        :return:
+        :return: A CommandResult.
         """
         return
 
