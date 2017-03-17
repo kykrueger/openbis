@@ -70,7 +70,7 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='openbis_url', private=False))
         self.add_param(ConfigParam(name='user', private=True))
         self.add_param(ConfigParam(name='external_dms_id', private=True))
-        self.add_param(ConfigParam(name='sample_id', private=False))
+        self.add_param(ConfigParam(name='object_id', private=False))
         self.add_param(ConfigParam(name='data_set_id', private=False))
         self.add_param(ConfigParam(name='data_set_type', private=False))
         self.add_param(ConfigParam(name='data_set_properties', private=False))

@@ -340,8 +340,8 @@ class OpenbisSync(object):
     def data_set_type(self):
         return self.config_dict.get('data_set_type')
 
-    def sample_id(self):
-        return self.config_dict.get('sample_id')
+    def object_id(self):
+        return self.config_dict.get('object_id')
 
     def check_configuration(self):
         missing_config_settings = []
@@ -352,7 +352,7 @@ class OpenbisSync(object):
         if self.data_set_type() is None:
             missing_config_settings.append('data_set_type')
         if self.data_set_type() is None:
-            missing_config_settings.append('sample_id')
+            missing_config_settings.append('object_id')
         if len(missing_config_settings) > 0:
             return CommandResult(returncode=-1,
                                  output="Missing configuration settings for {}.".format(missing_config_settings))
@@ -406,10 +406,10 @@ class OpenbisSync(object):
         if result.failure():
             return result
         commit_id = result.output
-        sample_id = self.sample_id()
+        object_id = self.object_id()
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
-                                                     sample_id)
+                                                     object_id)
             return CommandResult(returncode=0, output=""), data_set
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
