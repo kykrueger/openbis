@@ -94,6 +94,12 @@ def test_data_use_case(tmpdir):
         stat = os.stat("text-data.txt")
         assert stat.st_nlink == 1
 
+        raw_status = git_status()
+        status = dm.status()
+        assert raw_status.returncode == status.returncode
+        assert raw_status.output == status.output
+        print(status.output)
+
 
 def set_registration_configuration(dm):
     resolver = dm.config_resolver

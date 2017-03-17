@@ -183,8 +183,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def commit(self, msg, auto_add=True, sync=True):
-        """
-        Commit the current repo.
+        """Commit the current repo.
 
         This issues a git commit and connects to openBIS and creates a data set in openBIS.
         :param msg: Commit message.
@@ -196,10 +195,16 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def sync(self):
-        """
-        Sync the current repo.
+        """Sync the current repo.
 
         This connects to openBIS and creates a data set in openBIS.
+        :return: A CommandResult.
+        """
+        return
+
+    @abc.abstractmethod
+    def status(self):
+        """Return the status of the current repository.
         :return: A CommandResult.
         """
         return
@@ -218,6 +223,9 @@ class NoGitDataMgmt(AbstractDataMgmt):
         self.error_raise("commit", "No git command found.")
 
     def sync(self):
+        self.error_raise("commit", "No git command found.")
+
+    def status(self):
         self.error_raise("commit", "No git command found.")
 
 
@@ -266,6 +274,9 @@ class GitDataMgmt(AbstractDataMgmt):
                 return result
         return result
 
+    def status(self):
+        return self.git_wrapper.git_status()
+
 
 class GitWrapper(object):
     """A wrapper on commands to git."""
@@ -290,6 +301,9 @@ class GitWrapper(object):
 
     def git_init(self, path):
         return run_shell([self.git_path, "init", path])
+
+    def git_status(self):
+        return run_shell([self.git_path, "status", "--porcelain"])
 
     def git_annex_init(self, path, desc):
         cmd = [self.git_path, "-C", path, "annex", "init", "--version=6"]

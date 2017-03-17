@@ -146,31 +146,12 @@ def get(ctx, f):
 
 @cli.command()
 @click.pass_context
-@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
-def sync(ctx, skip_verification):
+def status(ctx):
     """Sync the repository with openBIS.
     """
-    verify_certificates = not skip_verification
-    data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
-    return data_mgmt.sync()
-
-
-@cli.command()
-@click.pass_context
-@click.argument('other', type=click.Path(exists=True))
-def addref(ctx, other):
-    """Add a reference to the other repository in this repository.
-    """
-    click_echo("addref {}".format(other))
-
-
-@cli.command()
-@click.pass_context
-@click.argument('url')
-def clone(ctx, url):
-    """Clone the repository found at url.
-    """
-    click_echo("clone {}".format(url))
+    data_mgmt = shared_data_mgmt()
+    result = data_mgmt.status()
+    click.echo(result.output)
 
 
 @cli.command()
