@@ -190,3 +190,7 @@ class ConfigResolver(object):
                 config = config['public']
         config[param.name] = value
         return config
+
+    def local_public_config_folder_path(self):
+        loc = self.env.location_at_path(['local', 'public'])
+        return self.location_resolver.resolve_location(loc)

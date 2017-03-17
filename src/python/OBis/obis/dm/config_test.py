@@ -46,6 +46,8 @@ def test_read_config(tmpdir):
         expected_dict = json.load(f)
     assert config_dict['user'] == expected_dict['user']
 
+    assert './.obis' == resolver.local_public_config_folder_path()
+
 
 def test_write_config(tmpdir):
     copy_user_config_test_data(tmpdir)
