@@ -1065,10 +1065,10 @@ class Openbis:
                           resp[expId]
                           )
 
-    def new_experiment(self, type, **kwargs):
+    def new_experiment(self, type, props=None, **kwargs):
         """ Creates a new experiment of a given experiment type.
         """
-        return Experiment(self, self.get_experiment_type(type), None, **kwargs)
+        return Experiment(self, self.get_experiment_type(type), None, props, **kwargs)
 
     def update_experiment(self, experimentId, properties=None, tagIds=None, attachments=None):
         params = {
@@ -1844,15 +1844,15 @@ class Openbis:
             }
         return dms_id
 
-    def new_sample(self, type, **kwargs):
+    def new_sample(self, type, props=None, **kwargs):
         """ Creates a new sample of a given sample type.
         """
-        return Sample(self, self.get_sample_type(type), None, **kwargs)
+        return Sample(self, self.get_sample_type(type), None, props, **kwargs)
 
-    def new_dataset(self, type, **kwargs):
+    def new_dataset(self, type, props=None, **kwargs):
         """ Creates a new dataset of a given sample type.
         """
-        return DataSet(self, self.get_dataset_type(type.upper()), None, **kwargs)
+        return DataSet(self, self.get_dataset_type(type.upper()), None, props, **kwargs)
 
     def _get_dss_url(self, dss_code=None):
         """ internal method to get the downloadURL of a datastore.
@@ -1992,7 +1992,7 @@ class DataSetDownloadQueue():
 
 
 class OpenBisObject():
-    def __init__(self, openbis_obj, type, data=None, **kwargs):
+    def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
@@ -2001,6 +2001,10 @@ class OpenBisObject():
         # existing OpenBIS object
         if data is not None:
             self._set_data(data)
+
+        if props is not None:
+            for key in props:
+                setattr(self.p, key, props[key])
 
         if kwargs is not None:
             for key in kwargs:
@@ -2129,8 +2133,9 @@ class DataSet(OpenBisObject):
     """ DataSet are openBIS objects that contain the actual files.
     """
 
-    def __init__(self, openbis_obj, type, data=None, **kwargs):
-        super(DataSet, self).__init__(openbis_obj, type, data, **kwargs)
+    def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
+        super(DataSet, self).__init__(openbis_obj, type, data, props, **kwargs)
+
 
         # existing DataSet
         if data is not None:
@@ -2815,7 +2820,7 @@ class Sample():
     """ A Sample is one of the most commonly used objects in openBIS.
     """
 
-    def __init__(self, openbis_obj, type, data=None, **kwargs):
+    def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
@@ -2823,6 +2828,10 @@ class Sample():
 
         if data is not None:
             self._set_data(data)
+
+        if props is not None:
+            for key in props:
+                setattr(self.p, key, props[key])
 
         if kwargs is not None:
             for key in kwargs:
@@ -3036,7 +3045,7 @@ class Experiment(OpenBisObject):
     """ 
     """
 
-    def __init__(self, openbis_obj, type, data=None, **kwargs):
+    def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
@@ -3044,6 +3053,10 @@ class Experiment(OpenBisObject):
 
         if data is not None:
             self._set_data(data)
+
+        if props is not None:
+            for key in props:
+                setattr(self.p, key, props[key])
 
         if kwargs is not None:
             for key in kwargs:
