@@ -39,7 +39,7 @@ class PropertyHolder():
 
     def __setattr__(self, name, value):
         if name not in self._property_names:
-            raise KeyError("No such property: {}".format(name)) 
+            raise KeyError("No such property: '{}'".format(name)+". Allowed properties are: {}".format(self._property_names)) 
         property_type = self._type.prop[name]['propertyType']
         data_type = property_type['dataType']
         if data_type == 'CONTROLLEDVOCABULARY':
