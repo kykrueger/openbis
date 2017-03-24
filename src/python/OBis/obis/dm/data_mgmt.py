@@ -41,8 +41,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
 
     openbis = None
     if openbis_config.get('url') is None:
-        echo_func(
-            {'level': 'warn', 'message': 'Please configure an openBIS url. Sync will not be possible until you do so.'})
+        pass
     else:
         try:
             openbis = pybis.Openbis(**openbis_config)
