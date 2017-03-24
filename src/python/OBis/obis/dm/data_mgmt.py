@@ -67,7 +67,7 @@ def complete_openbis_config(config, resolver):
 def complete_git_config(config):
     """Add default values for empty entries in the config."""
 
-    find_git = config['find_git'] if config.get('find_git') else False
+    find_git = config['find_git'] if config.get('find_git') is not None else True
     if find_git:
         git_cmd = locate_command('git')
         if git_cmd.success():

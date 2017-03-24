@@ -26,13 +26,13 @@ def generate_perm_id():
 
 
 def shared_dm():
-    git_config = {'find_git': True}
-    dm = data_mgmt.DataMgmt(git_config=git_config)
+    dm = data_mgmt.DataMgmt()
     return dm
 
 
 def test_no_git(tmpdir):
-    dm = data_mgmt.DataMgmt()
+    git_config = {'find_git': False}
+    dm = data_mgmt.DataMgmt(git_config=git_config)
     try:
         dm.init_data(str(tmpdir), "")
         assert False, "Command should have failed -- no git defined."
