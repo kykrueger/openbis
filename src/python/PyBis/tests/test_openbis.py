@@ -168,6 +168,8 @@ def test_new_git_data_set(openbis_instance):
     result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT")
     assert result is not None
     openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
+    # TODO Delete the externaldms (deleteExternalDataManagementSystems)
+    # see http://svnsis.ethz.ch/doc/openbis/S250.0/ch/ethz/sis/openbis/generic/asapi/v3/IApplicationServerApi.html
 
 
 def test_new_git_data_set_with_code(openbis_instance):
@@ -177,6 +179,20 @@ def test_new_git_data_set_with_code(openbis_instance):
                                                data_set_code=data_set_code)
     assert result is not None
     assert result.code == data_set_code
+    openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
+
+
+def test_new_git_data_set_with_parent(openbis_instance):
+    dms_code, dms = create_external_data_management_system(openbis_instance)
+    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT")
+    assert result is not None
+    parent_code = result.code
+    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '23456', dms_code, "/DEFAULT/DEFAULT",
+                                               parents=parent_code)
+    assert result.code != parent_code
+    assert len(result.parents) == 1
+    assert result.parents[0] == parent_code
+    openbis_instance.delete_entity('DataSet', parent_code, 'Testing.', capitalize=False)
     openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
 
 

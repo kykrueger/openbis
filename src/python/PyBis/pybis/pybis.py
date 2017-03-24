@@ -1765,8 +1765,7 @@ class Openbis:
         if parents is not None:
             if not isinstance(parents, list):
                 parents = [parents]
-            for parent in parents:
-                parentIds.append(parent.permId)
+            parentIds = [self.data_set_to_data_set_id(parent) for parent in parents]
 
         data_set_creation = {
             "linkedData": {
@@ -1789,6 +1788,7 @@ class Openbis:
                 "permId": dss_code,
                 "@type": "as.dto.datastore.id.DataStorePermId"
             },
+            "parentIds": parentIds,
             "measured": False,
             "@type": "as.dto.dataset.create.DataSetCreation"
         }
@@ -1810,7 +1810,8 @@ class Openbis:
         resp = self._post_request(self.as_v3, request)
         return self.get_dataset(resp[0]['permId'])
 
-    def sample_to_sample_id(self, sample):
+    @staticmethod
+    def sample_to_sample_id(sample):
         """Take sample which may be a string or object and return an identifier for it."""
         sampleId = None
         if isinstance(sample, str):
@@ -1830,6 +1831,17 @@ class Openbis:
                 "@type": "as.dto.sample.id.SampleIdentifier"
             }
         return sampleId
+
+    @staticmethod
+    def data_set_to_data_set_id(data_set):
+        if isinstance(data_set, str):
+            code = data_set
+        else:
+            code = data_set.permId
+        return {
+            "permId": code,
+            "@type": "as.dto.dataset.id.DataSetPermId"
+        }
 
     def external_data_managment_system_to_dms_id(self, dms):
         if isinstance(dms, str):
@@ -2135,7 +2147,6 @@ class DataSet(OpenBisObject):
 
     def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
         super(DataSet, self).__init__(openbis_obj, type, data, props, **kwargs)
-
 
         # existing DataSet
         if data is not None:
