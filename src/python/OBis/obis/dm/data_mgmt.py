@@ -108,13 +108,14 @@ class CommandResult(object):
         return not self.success()
 
 
-def run_shell(args):
-    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE))
+def run_shell(args, shell=False):
+    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE, shell=shell))
 
 
 def locate_command(command):
     """Return a tuple of (returncode, stdout)."""
-    return run_shell(['type', '-p', command])
+    # Need to call this command in shell mode... not entirely sure why.
+    return run_shell(['type -p {}'.format(command)], shell=True)
 
 
 @contextmanager
