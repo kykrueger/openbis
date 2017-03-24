@@ -361,6 +361,9 @@ class OpenbisSync(object):
     def data_set_type(self):
         return self.config_dict.get('data_set_type')
 
+    def data_set_id(self):
+        return self.config_dict.get('data_set_id')
+
     def object_id(self):
         return self.config_dict.get('object_id')
 
@@ -424,8 +427,8 @@ class OpenbisSync(object):
             return CommandResult(returncode=-1, output=str(e)), None
 
     def create_data_set(self, data_set_code, external_dms):
-        # TODO If there already is a data set, then make the new data set a child of the original
         data_set_type = self.data_set_type()
+        parent_data_set_id = self.data_set_id()
         result = self.git_wrapper.git_top_level_path()
         if result.failure():
             return result
@@ -437,7 +440,7 @@ class OpenbisSync(object):
         object_id = self.object_id()
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
-                                                     object_id, data_set_code=data_set_code)
+                                                     object_id, data_set_code=data_set_code, parents=parent_data_set_id)
             return CommandResult(returncode=0, output=""), data_set
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None

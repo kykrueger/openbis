@@ -15,7 +15,7 @@ import shutil
 from datetime import datetime
 
 from . import data_mgmt
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock, MagicMock, ANY
 from pybis.pybis import ExternalDMS, DataSet
 
 
@@ -113,6 +113,35 @@ def test_data_use_case(tmpdir):
         assert len(status.output) == 0
 
 
+def test_child_data_set(tmpdir):
+    dm = shared_dm()
+
+    tmp_dir_path = str(tmpdir)
+
+    result = dm.init_data(tmp_dir_path, "test")
+    assert result.returncode == 0
+
+    copy_test_data(tmpdir)
+
+    with data_mgmt.cd(tmp_dir_path):
+        dm = shared_dm()
+        prepare_registration_expectations(dm)
+        set_registration_configuration(dm)
+
+        result = dm.commit("Added data.")
+        assert result.returncode == 0
+        parent_ds_code = dm.config_resolver.config_dict()['data_set_id']
+
+        update_test_data(tmpdir)
+        prepare_new_data_set_expectations(dm)
+        result = dm.commit("Updated data.")
+        assert result.returncode == 0
+        child_ds_code = dm.config_resolver.config_dict()['data_set_id']
+        assert parent_ds_code != child_ds_code
+        commit_id = dm.git_wrapper.git_commit_id().output
+        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code)
+
+
 def set_registration_configuration(dm):
     resolver = dm.config_resolver
     resolver.set_value_for_parameter('openbis_url', "https://localhost:8443", 'local')
@@ -127,12 +156,22 @@ def prepare_registration_expectations(dm):
     edms = ExternalDMS(dm.openbis, {'code': 'AUSER-PATH', 'label': 'AUSER-PATH'})
     dm.openbis.create_external_data_management_system = MagicMock(return_value=edms)
 
+    prepare_new_data_set_expectations(dm)
+
+
+def prepare_new_data_set_expectations(dm):
+    perm_id = generate_perm_id()
+    dm.openbis.create_perm_id = MagicMock(return_value=perm_id)
     data_set = DataSet(dm.openbis, None,
-                       {'code': 'DS-1', 'properties': {},
+                       {'code': perm_id, 'properties': {},
                         "parents": [], "children": [], "samples": [], 'tags': [],
                         'physicalData': None})
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
-    dm.openbis.create_perm_id = MagicMock(return_value=generate_perm_id())
+
+
+def check_new_data_set_expectations(dm, tmp_dir_path, commit_id, external_dms, data_set_id, parent_id):
+    dm.openbis.new_git_data_set.assert_called_with('DS_TYPE', tmp_dir_path, commit_id, external_dms, "/SAMPLE/ID",
+                                                   data_set_code=data_set_id, parents=parent_id)
 
 
 def copy_test_data(tmpdir):
@@ -147,4 +186,15 @@ def copy_test_data(tmpdir):
     test_data_txt_path = str(tmpdir.join(os.path.basename(test_data_txt_src)))
     shutil.copyfile(test_data_txt_src, test_data_txt_path)
 
-    return test_data_bin_path, test_data_bin_path
+    return test_data_bin_path, test_data_txt_path
+
+
+def update_test_data(tmpdir):
+    # Put some (binary) content into our new repository
+    test_data_folder = os.path.join(os.path.dirname(__file__), '..', 'test-data')
+    # Put some text content into our new repository
+    test_data_txt_src = os.path.join(test_data_folder, "text-data-2.txt")
+    test_data_txt_path = str(tmpdir.join(os.path.basename(test_data_txt_src)))
+    shutil.copyfile(test_data_txt_src, test_data_txt_path)
+
+    return test_data_txt_path
