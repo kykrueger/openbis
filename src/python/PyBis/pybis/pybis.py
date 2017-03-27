@@ -66,8 +66,8 @@ def _definitions(entity):
             "identifier": "experimentId",
         },
         "Sample": {
-            "attrs_new": "code type space experiment tags attachments".split(),
-            "attrs_up": "space experiment tags attachments".split(),
+            "attrs_new": "code type parents children space experiment tags attachments".split(),
+            "attrs_up": "parents children space experiment tags attachments".split(),
             "attrs": "code permId identifier type space experiment tags attachments".split(),
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
@@ -76,11 +76,11 @@ def _definitions(entity):
             },
             "identifier": "sampleId",
             "cre_type": "as.dto.sample.create.SampleCreation",
-            "multi": "parents children components tags".split(),
+            "multi": "parents children components tags attachments".split(),
         },
         "DataSet": {
             "attrs_new": "type experiment sample parents children container components tags".split(),
-            "attrs_up": "experiment sample parents children container components tags".split(),
+            "attrs_up": "parents children experiment sample container components tags".split(),
             "attrs": "code permId type experiment sample parents children container components tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore measured".split(),
 
             "ids2type": {
@@ -89,7 +89,7 @@ def _definitions(entity):
                 'componentIds': {'permId': {'@type': 'as.dto.dataset.id.DataSetPermId'}},
                 'containerIds': {'permId': {'@type': 'as.dto.dataset.id.DataSetPermId'}},
             },
-            "multi": "".split(),
+            "multi": "parents children container".split(),
             "identifier": "dataSetId",
         },
         "Material": {
@@ -350,6 +350,13 @@ def _create_projectId(ident):
             "permId": ident,
             "@type": "as.dto.project.id.ProjectPermId"
         }
+
+
+def _create_experimentId(ident):
+    return {
+        "identifier": ident,
+        "@type": "as.dto.experiment.id.ExperimentIdentifier"
+    }
 
 
 def _common_search(search_type, value, comparison="StringEqualToValue"):
@@ -863,7 +870,7 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
         if len(resp['objects']) == 0:
-            raise valueerror("no samples found!")
+            raise ValueError("no samples found!")
 
         objects = resp['objects']
         parse_jackson(objects)
@@ -2373,6 +2380,20 @@ class AttrHolder():
         self.__dict__['_tags'] = []
 
     def __call__(self, data):
+        """This internal method is invoked when an existing object is loaded.
+        Instead of invoking a special method we «call» the object with the data
+           self(data)
+        which automatically invokes this method.
+        Since the data comes from openBIS, we do not have to check it (hence the
+        self.__dict__ statements to prevent invoking the __setattr__ method)
+        Internally data is stored with an underscore, e.g.
+            sample._space --> { '@id': 4,
+                                '@type': 'as.dto.space.id.SpacePermId',
+                                'permId': 'MATERIALS' }
+        but when fetching the attribute without the underscore, we only return
+        the relevant data for the user:
+            sample.space  --> 'MATERIALS'
+        """
         self.__dict__['_is_new'] = False
         for attr in self._allowed_attrs:
             if attr in ["code", "permId", "identifier",
@@ -2413,6 +2434,9 @@ class AttrHolder():
                 self.__dict__['_' + attr] = data.get(attr, None)
 
     def _new_attrs(self):
+        """Returns the Python-equivalent JSON request when a new object is created.
+        It is used internally by the save() method of a newly created object.
+        """
         defs = _definitions(self.entity)
         attr2ids = _definitions('attr2ids')
 
@@ -2435,6 +2459,7 @@ class AttrHolder():
                 items = atts_data
 
             elif attr in defs['multi']:
+                # parents, children, components, container, tags, attachments
                 items = getattr(self, '_' + attr)
                 if items is None:
                     items = []
@@ -2443,6 +2468,7 @@ class AttrHolder():
 
             key = None
             if attr in attr2ids:
+                # translate parents into parentIds, children into childIds etc.
                 key = attr2ids[attr]
             else:
                 key = attr
@@ -2608,21 +2634,32 @@ class AttrHolder():
             return None
 
     def __setattr__(self, name, value):
+        """This method is always invoked whenever we assign an attribute to an
+        object, e.g.
+            new_sample.space = 'MATERIALS'
+            new_sample.parents = ['/MATERIALS/YEAST747']
+        """
         if name in ["parents", "children", "components"]:
             if not isinstance(value, list):
                 value = [value]
             objs = []
             for val in value:
-                # fetch objects in openBIS, make sure they actually exists
-                obj = getattr(self._openbis, 'get_' + self._entity.lower())(val)
-                objs.append(obj)
-            self.__dict__['_' + name] = {
-                "@type": "as.dto.common.update.IdListUpdateValue",
-                "actions": [{
-                    "@type": "as.dto.common.update.ListUpdateActionSet",
-                    "items": [item._permId for item in objs]
-                }]
-            }
+                if isinstance(val, str):
+                    # fetch objects in openBIS, make sure they actually exists
+                    obj = getattr(self._openbis, 'get_' + self._entity.lower())(val)
+                    objs.append(obj)
+                elif getattr(val, '_permId'):
+                    # we got an existing object
+                    objs.append(val)
+
+            permids = []
+            for item in objs:
+                permid = item._permId
+                # remove any existing @id keys to prevent jackson parser errors
+                if '@id' in permid: permid.pop('@id') 
+                permids.append(permid)
+
+            self.__dict__['_' + name] = permids
         elif name in ["tags"]:
             self.set_tags(value)
 
