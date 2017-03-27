@@ -38,6 +38,7 @@ Vagrant.configure(2) do |config|
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
   config.vm.synced_folder "../../python", "/vagrant_python", type: "virtualbox"
+  config.vm.synced_folder "../../../", "/vagrant_repo", type: "virtualbox"
   config.vm.synced_folder "initialize", "/vagrant_initialize", type: "virtualbox"
   config.vm.synced_folder "./", "/vagrant", type: "virtualbox"
   config.vm.synced_folder "../../core-plugins", "/vagrant_core-plugins", type: "virtualbox"

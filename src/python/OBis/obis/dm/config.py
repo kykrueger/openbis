@@ -170,7 +170,7 @@ class ConfigResolver(object):
             os.makedirs(location_dir_path)
         config_path = os.path.join(location_dir_path, 'config.json')
         with open(config_path, "w") as f:
-            json.dump(location_config_dict, f)
+            json.dump(location_config_dict, f, sort_keys=True)
 
     def value_for_parameter(self, param, loc):
         config = self.location_cache[loc]

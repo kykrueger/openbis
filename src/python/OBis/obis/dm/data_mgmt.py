@@ -41,8 +41,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
 
     openbis = None
     if openbis_config.get('url') is None:
-        echo_func(
-            {'level': 'warn', 'message': 'Please configure an openBIS url. Sync will not be possible until you do so.'})
+        pass
     else:
         try:
             openbis = pybis.Openbis(**openbis_config)
@@ -67,7 +66,7 @@ def complete_openbis_config(config, resolver):
 def complete_git_config(config):
     """Add default values for empty entries in the config."""
 
-    find_git = config['find_git'] if config.get('find_git') else False
+    find_git = config['find_git'] if config.get('find_git') is not None else True
     if find_git:
         git_cmd = locate_command('git')
         if git_cmd.success():
@@ -108,13 +107,14 @@ class CommandResult(object):
         return not self.success()
 
 
-def run_shell(args):
-    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE))
+def run_shell(args, shell=False):
+    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE, shell=shell))
 
 
 def locate_command(command):
     """Return a tuple of (returncode, stdout)."""
-    return run_shell(['type', '-p', command])
+    # Need to call this command in shell mode... not entirely sure why.
+    return run_shell(['type -p {}'.format(command)], shell=True)
 
 
 @contextmanager
@@ -361,6 +361,9 @@ class OpenbisSync(object):
     def data_set_type(self):
         return self.config_dict.get('data_set_type')
 
+    def data_set_id(self):
+        return self.config_dict.get('data_set_id')
+
     def object_id(self):
         return self.config_dict.get('object_id')
 
@@ -424,8 +427,8 @@ class OpenbisSync(object):
             return CommandResult(returncode=-1, output=str(e)), None
 
     def create_data_set(self, data_set_code, external_dms):
-        # TODO If there already is a data set, then make the new data set a child of the original
         data_set_type = self.data_set_type()
+        parent_data_set_id = self.data_set_id()
         result = self.git_wrapper.git_top_level_path()
         if result.failure():
             return result
@@ -437,7 +440,7 @@ class OpenbisSync(object):
         object_id = self.object_id()
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
-                                                     object_id, data_set_code=data_set_code)
+                                                     object_id, data_set_code=data_set_code, parents=parent_data_set_id)
             return CommandResult(returncode=0, output=""), data_set
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
