@@ -2173,6 +2173,7 @@ class DataSet(OpenBisObject):
             'sample', 'experiment', 'physicalData',
             'tags', 'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
+            "get_files(start_folder='/')", 'file_list', 'download(files=None, destination=None, wait_until_finished=True)', 'status', 'archive()', 'unarchive()'
             'data'
         ]
 
@@ -2282,6 +2283,7 @@ class DataSet(OpenBisObject):
     def get_children(self):
         return self.openbis.get_datasets(withParents=self.permId)
 
+    @property
     def file_list(self):
         """returns the list of files including their directories as an array of strings. Just folders are not
         listed.
@@ -2720,13 +2722,13 @@ class AttrHolder():
     def get_type(self):
         return self._type
 
-    def get_parents(self):
+    def get_parents(self, **kwargs):
         # e.g. self._openbis.get_samples(withChildren=self.identifier)
-        return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withChildren=self.identifier)
+        return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withChildren=self.identifier, **kwargs)
 
-    def get_children(self):
+    def get_children(self, **kwargs):
         # e.g. self._openbis.get_samples(withParents=self.identifier)
-        return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withParents=self.identifier)
+        return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withParents=self.identifier, **kwargs)
 
     @property
     def tags(self):
@@ -3008,11 +3010,11 @@ class Space(OpenBisObject):
     def __str__(self):
         return self.data.get('code', None)
 
-    def get_samples(self):
-        return self.openbis.get_samples(space=self.code)
+    def get_samples(self, **kwargs):
+        return self.openbis.get_samples(space=self.code, **kwargs)
 
-    def get_projects(self):
-        return self.openbis.get_projects(space=self.code)
+    def get_projects(self, **kwargs):
+        return self.openbis.get_projects(space=self.code, **kwargs)
 
     def new_project(self, code, description=None, **kwargs):
         return self.openbis.new_project(self.code, code, description, **kwargs)
@@ -3065,7 +3067,7 @@ class Things():
     def _repr_html_(self):
         return self.df._repr_html_()
 
-    def get_parents(self):
+    def get_parents(self, **kwargs):
         if self.entity not in ['sample','dataset']:
             raise ValueError("{}s do not have parents".format(self.entity))
 
@@ -3074,7 +3076,7 @@ class Things():
             for ident in self.df[self.identifier_name]:
                 # get all objects that have this object as a child == parent
                 try:
-                    parents = getattr(self.openbis, 'get_' + self.entity.lower() + 's')(withChildren=ident)
+                    parents = getattr(self.openbis, 'get_' + self.entity.lower() + 's')(withChildren=ident, **kwargs)
                     dfs.append(parents.df)
                 except ValueError:
                     pass
@@ -3085,7 +3087,7 @@ class Things():
                 return Things(self.openbis, self.entity, DataFrame(), self.identifier_name)
 
 
-    def get_children(self):
+    def get_children(self, **kwargs):
         if self.entity not in ['sample','dataset']:
             raise ValueError("{}s do not have children".format(self.entity))
 
@@ -3094,7 +3096,7 @@ class Things():
             for ident in self.df[self.identifier_name]:
                 # get all objects that have this object as a child == parent
                 try:
-                    parents = getattr(self.openbis, 'get_' + self.entity.lower() + 's')(withParent=ident)
+                    parents = getattr(self.openbis, 'get_' + self.entity.lower() + 's')(withParent=ident, **kwargs)
                     dfs.append(parents.df)
                 except ValueError:
                     pass
@@ -3105,7 +3107,7 @@ class Things():
                 return Things(self.openbis, self.entity, DataFrame(), self.identifier_name)
 
 
-    def get_samples(self):
+    def get_samples(self, **kwargs):
         if self.entity not in ['space', 'project', 'experiment']:
             raise ValueError("{}s do not have samples".format(self.entity))
 
@@ -3115,7 +3117,7 @@ class Things():
                 args = {}
                 args[self.entity.lower()] = ident
                 try:
-                    samples = self.openbis.get_samples(**args)
+                    samples = self.openbis.get_samples(**args, **kwargs)
                     dfs.append(samples.df)
                 except ValueError:
                     pass
@@ -3126,7 +3128,7 @@ class Things():
                 return Things(self.openbis, 'sample', DataFrame(), 'identifier')
 
 
-    def get_datasets(self):
+    def get_datasets(self, **kwargs):
         if self.entity not in ['sample','experiment']:
             raise ValueError("{}s do not have datasets".format(self.entity))
 
@@ -3136,7 +3138,7 @@ class Things():
                 args = {}
                 args[self.entity.lower()] = ident
                 try:
-                    datasets = self.openbis.get_datasets(**args)
+                    datasets = self.openbis.get_datasets(**args, **kwargs)
                     dfs.append(datasets.df)
                 except ValueError:
                     pass
@@ -3264,14 +3266,14 @@ class Experiment(OpenBisObject):
     def delete(self, reason):
         self.openbis.delete_entity('experiment', self.permId, reason)
 
-    def get_datasets(self):
-        return self.openbis.get_datasets(experiment=self.permId)
+    def get_datasets(self, **kwargs):
+        return self.openbis.get_datasets(experiment=self.permId, **kwargs)
 
-    def get_projects(self):
-        return self.openbis.get_project(experiment=self.permId)
+    def get_projects(self, **kwargs):
+        return self.openbis.get_project(experiment=self.permId, **kwargs)
 
-    def get_samples(self):
-        return self.openbis.get_samples(experiment=self.permId)
+    def get_samples(self, **kwargs):
+        return self.openbis.get_samples(experiment=self.permId, **kwargs)
 
 
 class Attachment():
@@ -3329,8 +3331,8 @@ class Project(OpenBisObject):
                 'delete()'
                 ]
 
-    def get_samples(self):
-        return self.openbis.get_samples(project=self.permId)
+    def get_samples(self, **kwargs):
+        return self.openbis.get_samples(project=self.permId, **kwargs)
 
     def get_experiments(self):
         return self.openbis.get_experiments(project=self.permId)
