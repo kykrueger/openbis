@@ -964,7 +964,7 @@ class Openbis:
 
     def get_datasets(self,
                      code=None, type=None, withParents=None, withChildren=None, status=None,
-                     sample=None, experiment=None, project=None, tags=None
+                     sample=None, experiment=None, project=None, tags=None, props=None, **properties
                      ):
 
         sub_criteria = []
@@ -992,6 +992,9 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if status:
             sub_criteria.append(_subcriteria_for_status(status))
+        if properties is not None:
+            for prop in properties:
+                sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
 
         criteria = {
             "criteria": sub_criteria,
@@ -1015,28 +1018,29 @@ class Openbis:
                        ],
         }
         resp = self._post_request(self.as_v3, request)
-        objects = resp['objects']
-        if len(objects) == 0:
+        if len(resp['objects']) == 0:
             raise ValueError("no datasets found!")
-        else:
-            parse_jackson(objects)
-            datasets = DataFrame(objects)
-            datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
-            datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
-            datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
-            datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
-            datasets['type'] = datasets['type'].map(extract_code)
-            datasets['permId'] = datasets['code']
-            datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
-            ds = Things(
-                self,
-                'dataset',
-                datasets[
-                    ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate',
-                     'location']],
-                'permId'
-            )
-            return ds
+
+        objects = resp['objects']
+        parse_jackson(objects)
+
+        datasets = DataFrame(objects)
+        datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
+        datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
+        datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
+        datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
+        datasets['type'] = datasets['type'].map(extract_code)
+        datasets['permId'] = datasets['code']
+        datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
+
+        attrs = ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate', 'location']
+        if props is not None:
+            for prop in props:
+                datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
+                attrs.append(prop.upper())
+
+        return Things( self, 'dataset', datasets[attrs], 'permId')
+
 
     def get_experiment(self, expId, withAttachments=False):
         """ Returns an experiment object for a given identifier (expId).
@@ -2277,11 +2281,11 @@ class DataSet(OpenBisObject):
 
         print("Files downloaded to: %s" % os.path.join(destination, self.permId))
 
-    def get_parents(self):
-        return self.openbis.get_datasets(withChildren=self.permId)
+    def get_parents(self, **kwargs):
+        return self.openbis.get_datasets(withChildren=self.permId, **kwargs)
 
-    def get_children(self):
-        return self.openbis.get_datasets(withParents=self.permId)
+    def get_children(self, **kwargs):
+        return self.openbis.get_datasets(withParents=self.permId, **kwargs)
 
     @property
     def file_list(self):
@@ -2964,11 +2968,11 @@ class Sample():
     def delete(self, reason):
         self.openbis.delete_entity('sample', self.permId, reason)
 
-    def get_datasets(self):
-        return self.openbis.get_datasets(sample=self.permId)
+    def get_datasets(self, **kwargs):
+        return self.openbis.get_datasets(sample=self.permId, **kwargs)
 
-    def get_projects(self):
-        return self.openbis.get_project(withSamples=[self.permId])
+    def get_projects(self, **kwargs):
+        return self.openbis.get_project(withSamples=[self.permId], **kwargs)
 
     def get_experiment(self):
         try:
