@@ -133,21 +133,25 @@ def test_child_data_set(tmpdir):
         parent_ds_code = dm.config_resolver.config_dict()['data_set_id']
 
         update_test_data(tmpdir)
-        prepare_new_data_set_expectations(dm)
+        properties = {'DESCRIPTION': 'Updated content.'}
+        set_registration_configuration(dm, properties)
+        prepare_new_data_set_expectations(dm, properties)
         result = dm.commit("Updated data.")
         assert result.returncode == 0
         child_ds_code = dm.config_resolver.config_dict()['data_set_id']
         assert parent_ds_code != child_ds_code
         commit_id = dm.git_wrapper.git_commit_id().output
-        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code)
+        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code, properties)
 
 
-def set_registration_configuration(dm):
+def set_registration_configuration(dm, properties=None):
     resolver = dm.config_resolver
     resolver.set_value_for_parameter('openbis_url', "https://localhost:8443", 'local')
     resolver.set_value_for_parameter('user', "auser", 'local')
     resolver.set_value_for_parameter('data_set_type', "DS_TYPE", 'local')
     resolver.set_value_for_parameter('object_id', "/SAMPLE/ID", 'local')
+    if properties is not None:
+        resolver.set_value_for_parameter('data_set_properties', properties, 'local')
 
 
 def prepare_registration_expectations(dm):
@@ -159,19 +163,19 @@ def prepare_registration_expectations(dm):
     prepare_new_data_set_expectations(dm)
 
 
-def prepare_new_data_set_expectations(dm):
+def prepare_new_data_set_expectations(dm, properties={}):
     perm_id = generate_perm_id()
     dm.openbis.create_perm_id = MagicMock(return_value=perm_id)
     data_set = DataSet(dm.openbis, None,
-                       {'code': perm_id, 'properties': {},
+                       {'code': perm_id, 'properties': properties,
                         "parents": [], "children": [], "samples": [], 'tags': [],
                         'physicalData': None})
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
 
 
-def check_new_data_set_expectations(dm, tmp_dir_path, commit_id, external_dms, data_set_id, parent_id):
+def check_new_data_set_expectations(dm, tmp_dir_path, commit_id, external_dms, data_set_id, parent_id, properties):
     dm.openbis.new_git_data_set.assert_called_with('DS_TYPE', tmp_dir_path, commit_id, external_dms, "/SAMPLE/ID",
-                                                   data_set_code=data_set_id, parents=parent_id)
+                                                   data_set_code=data_set_id, parents=parent_id, properties=properties)
 
 
 def copy_test_data(tmpdir):

@@ -1748,7 +1748,7 @@ class Openbis:
         except:
             return resp
 
-    def new_git_data_set(self, data_set_type, path, commit_id, dms, sample=None, properties=None,
+    def new_git_data_set(self, data_set_type, path, commit_id, dms, sample=None, properties={},
                          dss_code=None, parents=None, data_set_code=None):
         """ Create a link data set.
         :param data_set_type: The type of the data set
@@ -1801,6 +1801,7 @@ class Openbis:
             },
             "parentIds": parentIds,
             "measured": False,
+            "properties": properties,
             "@type": "as.dto.dataset.create.DataSetCreation"
         }
         if data_set_code is not None:
