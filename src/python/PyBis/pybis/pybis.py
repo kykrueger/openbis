@@ -1033,14 +1033,14 @@ class Openbis:
         datasets['permId'] = datasets['code']
         datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
 
-        attrs = ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate', 'location']
+        attrs = ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate',
+                 'location']
         if props is not None:
             for prop in props:
                 datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        return Things( self, 'dataset', datasets[attrs], 'permId')
-
+        return Things(self, 'dataset', datasets[attrs], 'permId')
 
     def get_experiment(self, expId, withAttachments=False):
         """ Returns an experiment object for a given identifier (expId).
@@ -2177,8 +2177,9 @@ class DataSet(OpenBisObject):
             'sample', 'experiment', 'physicalData',
             'tags', 'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
-            "get_files(start_folder='/')", 'file_list', 'download(files=None, destination=None, wait_until_finished=True)', 'status', 'archive()', 'unarchive()'
-            'data'
+            "get_files(start_folder='/')", 'file_list',
+            'download(files=None, destination=None, wait_until_finished=True)', 'status', 'archive()', 'unarchive()'
+                                                                                                       'data'
         ]
 
     @property
@@ -2673,7 +2674,7 @@ class AttrHolder():
             for item in objs:
                 permid = item._permId
                 # remove any existing @id keys to prevent jackson parser errors
-                if '@id' in permid: permid.pop('@id') 
+                if '@id' in permid: permid.pop('@id')
                 permids.append(permid)
 
             self.__dict__['_' + name] = permids
@@ -3072,7 +3073,7 @@ class Things():
         return self.df._repr_html_()
 
     def get_parents(self, **kwargs):
-        if self.entity not in ['sample','dataset']:
+        if self.entity not in ['sample', 'dataset']:
             raise ValueError("{}s do not have parents".format(self.entity))
 
         if self.df is not None and len(self.df) > 0:
@@ -3090,9 +3091,8 @@ class Things():
             else:
                 return Things(self.openbis, self.entity, DataFrame(), self.identifier_name)
 
-
     def get_children(self, **kwargs):
-        if self.entity not in ['sample','dataset']:
+        if self.entity not in ['sample', 'dataset']:
             raise ValueError("{}s do not have children".format(self.entity))
 
         if self.df is not None and len(self.df) > 0:
@@ -3109,7 +3109,6 @@ class Things():
                 return Things(self.openbis, self.entity, pd.concat(dfs), self.identifier_name)
             else:
                 return Things(self.openbis, self.entity, DataFrame(), self.identifier_name)
-
 
     def get_samples(self, **kwargs):
         if self.entity not in ['space', 'project', 'experiment']:
@@ -3131,9 +3130,8 @@ class Things():
             else:
                 return Things(self.openbis, 'sample', DataFrame(), 'identifier')
 
-
     def get_datasets(self, **kwargs):
-        if self.entity not in ['sample','experiment']:
+        if self.entity not in ['sample', 'experiment']:
             raise ValueError("{}s do not have datasets".format(self.entity))
 
         if self.df is not None and len(self.df) > 0:
@@ -3151,7 +3149,6 @@ class Things():
                 return Things(self.openbis, 'dataset', pd.concat(dfs), 'permId')
             else:
                 return Things(self.openbis, 'dataset', DataFrame(), 'permId')
-
 
     def __getitem__(self, key):
         if self.df is not None and len(self.df) > 0:
