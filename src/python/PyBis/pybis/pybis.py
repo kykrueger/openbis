@@ -1767,8 +1767,8 @@ class Openbis:
         :param data_set_code: A data set code -- used if provided, otherwise generated on the server
         :return: A DataSet object
         """
-        return pbds.GitDataSetCreation(self).new_git_data_set(data_set_type, path, commit_id, dms, sample,
-                                                              properties, dss_code, parents, data_set_code)
+        return pbds.GitDataSetCreation(self, data_set_type, path, commit_id, dms, sample,
+                                       properties, dss_code, parents, data_set_code).new_git_data_set()
 
     @staticmethod
     def sample_to_sample_id(sample):
