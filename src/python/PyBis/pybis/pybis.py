@@ -1556,7 +1556,9 @@ class Openbis:
             "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
         }
 
-        for option in ['tags', 'properties', 'dataStore', 'physicalData', 'linkedData',
+        # 2017-04-05 CR Needed to remove the linkedData option as this does not seem to work in S251.
+        # for option in ['tags', 'properties', 'dataStore', 'physicalData', 'linkedData',
+        for option in ['tags', 'properties', 'dataStore', 'physicalData',
                        'experiment', 'sample']:
             fetchopts[option] = fetch_option[option]
 
