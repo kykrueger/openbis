@@ -196,6 +196,17 @@ def test_new_git_data_set_with_parent(openbis_instance):
     openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
 
 
+def test_new_git_data_set_with_property(openbis_instance):
+    dms_code, dms = create_external_data_management_system(openbis_instance)
+    data_set_code = openbis_instance.create_perm_id()
+    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT",
+                                               data_set_code=data_set_code,
+                                               properties={"DESCRIPTION": 'This is a description'})
+    assert result is not None
+    assert result.code == data_set_code
+    openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
+
+
 def test_create_perm_id(openbis_instance):
     perm_id = openbis_instance.create_perm_id()
     assert perm_id is not None
