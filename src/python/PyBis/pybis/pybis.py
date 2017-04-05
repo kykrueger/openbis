@@ -661,6 +661,12 @@ class Openbis:
         """ internal method, used to handle all post requests and serializing / deserializing
         data
         """
+        return self._post_request_full_url(self.url + resource, request)
+
+    def _post_request_full_url(self, full_url, request):
+        """ internal method, used to handle all post requests and serializing / deserializing
+        data
+        """
         if "id" not in request:
             request["id"] = "1"
         if "jsonrpc" not in request:
@@ -668,7 +674,7 @@ class Openbis:
         if request["params"][0] is None:
             raise ValueError("Your session expired, please log in again")
         resp = requests.post(
-            self.url + resource,
+            full_url,
             json.dumps(request),
             verify=self.verify_certificates
         )
@@ -1753,7 +1759,7 @@ class Openbis:
             return resp
 
     def new_git_data_set(self, data_set_type, path, commit_id, dms, sample=None, properties={},
-                         dss_code=None, parents=None, data_set_code=None):
+                         dss_code=None, parents=None, data_set_code=None, contents=[]):
         """ Create a link data set.
         :param data_set_type: The type of the data set
         :param data_set_type: The type of the data set
@@ -1765,10 +1771,15 @@ class Openbis:
         :param properties: Properties for the data set.
         :param parents: Parents for the data set.
         :param data_set_code: A data set code -- used if provided, otherwise generated on the server
+        :param contents: A list of dicts that describe the contents:
+            {'file_length': [file length],
+             'crc32': [crc32 checksum],
+             'directory': [is path a directory?]
+             'path': [the relative path string]}
         :return: A DataSet object
         """
         return pbds.GitDataSetCreation(self, data_set_type, path, commit_id, dms, sample,
-                                       properties, dss_code, parents, data_set_code).new_git_data_set()
+                                       properties, dss_code, parents, data_set_code, contents).new_git_data_set()
 
     @staticmethod
     def sample_to_sample_id(sample):
