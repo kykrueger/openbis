@@ -267,6 +267,7 @@ class GitDataMgmt(AbstractDataMgmt):
                 return result
         result = self.git_wrapper.git_commit(msg)
         if not self.check_result_ok(result):
+            # TODO If no changes were made check if the data set is in openbis. If not, just sync.
             return result
         if sync:
             result = self.sync()
