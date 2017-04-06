@@ -197,3 +197,12 @@ class ConfigResolver(object):
     def local_public_config_folder_path(self):
         loc = self.env.location_at_path(['local', 'public'])
         return self.location_resolver.resolve_location(loc)
+
+    def copy_global_to_local(self):
+        config = self.config_dict(False)
+        local_config = self.config_dict(True)
+        for k, v in config.items():
+            # Do not overwrite existing values
+            if local_config.get(k) is not None:
+                continue
+            self.set_value_for_parameter(k, v, 'local')

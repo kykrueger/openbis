@@ -240,6 +240,9 @@ class GitDataMgmt(AbstractDataMgmt):
         result = self.git_wrapper.git_annex_init(path, desc)
         if not self.check_result_ok(result):
             return result
+        with cd(path):
+            self.config_resolver.copy_global_to_local()
+            self.commit_metadata_updates('local with global')
         return result
 
     def init_analysis(self, path):
