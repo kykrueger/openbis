@@ -38,6 +38,12 @@ def shared_data_mgmt(verify_certificates=True):
     return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config)
 
 
+def check_result(command, result):
+    if result.failure():
+        click_echo("Could not {}:\n{}".format(command, result.output))
+    return result.returncode
+
+
 @click.group()
 @click.option('-q', '--quiet', default=False, is_flag=True, help='Suppress status reporting.')
 @click.pass_context
@@ -73,7 +79,7 @@ def commit(ctx, msg, auto_add, skip_verification):
     """
     verify_certificates = not skip_verification
     data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
-    return data_mgmt.commit(msg, auto_add)
+    return check_result("commit", data_mgmt.commit(msg, auto_add))
 
 
 @cli.command()
@@ -124,7 +130,7 @@ def data(ctx, folder, name):
     click_echo("init data {}".format(folder))
     data_mgmt = shared_data_mgmt()
     name = name if name != "" else None
-    return data_mgmt.init_data(folder, name)
+    return check_result("init data", data_mgmt.init_data(folder, name))
 
 
 @init.command()
@@ -162,7 +168,7 @@ def sync(ctx, skip_verification):
     """
     verify_certificates = not skip_verification
     data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
-    return data_mgmt.sync()
+    return check_result("sync", data_mgmt.sync())
 
 
 def main():
