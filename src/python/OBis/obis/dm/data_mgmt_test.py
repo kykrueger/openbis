@@ -144,6 +144,8 @@ def test_child_data_set(tmpdir):
         check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code, properties)
 
 
+# TODO Test that if the data set registration fails, the data_set_id is reverted
+
 def set_registration_configuration(dm, properties=None):
     resolver = dm.config_resolver
     resolver.set_value_for_parameter('openbis_url', "https://localhost:8443", 'local')

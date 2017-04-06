@@ -420,6 +420,7 @@ class OpenbisSync(object):
             return CommandResult(returncode=0, output=""), edms
         except ValueError as e:
             # TODO If the error is edms already exists, retrieve it.
+            # edms = self.openbis.get_external_data_management_system(external_dms_id)
             return CommandResult(returncode=-1, output=str(e)), None
 
     def create_data_set_code(self):
@@ -450,22 +451,25 @@ class OpenbisSync(object):
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
 
-    def commit_metadata_updates(self):
+    def commit_metadata_updates(self, msg_fragment=None):
         folder = self.config_resolver.local_public_config_folder_path()
         self.git_wrapper.git_add(folder)
-        self.git_wrapper.git_commit("OBIS: Update openBIS metadata cache.")
+        if msg_fragment is None:
+            msg = "OBIS: Update openBIS metadata cache."
+        else:
+            msg = "OBIS: {}".format(msg_fragment)
+        self.git_wrapper.git_commit(msg)
 
-    def run(self):
-        # TODO Write mementos in case openBIS is unreachable
-        # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
-
+    def prepare_run(self):
         result = self.check_configuration()
         if result.failure():
             return result
         result = self.login()
         if result.failure():
             return result
+        return CommandResult(returncode=0, output="")
 
+    def prepare_external_dms(self):
         # If there is no external data management system, create one.
         external_dms = self.get_external_data_management_system()
         if external_dms is None:
@@ -474,17 +478,63 @@ class OpenbisSync(object):
                 return result
 
             self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
+        return CommandResult(returncode=0, output=external_dms)
+
+    def run_workaround(self):
+        # Do not create the data set code, since it is ignored due to a bug.
+
+        result = self.prepare_run()
+        if result.failure():
+            return result
+
+        result = self.prepare_external_dms()
+        if result.failure():
+            return result
+        external_dms = result.output
+
+        self.commit_metadata_updates()
+
+        # create a data set, using the existing data set as a parent, if there is one
+        result, data_set = self.create_data_set(None, external_dms)
+        if result.failure():
+            return result
+
+        self.config_resolver.set_value_for_parameter('data_set_id', data_set.code, 'local')
+
+        return CommandResult(returncode=0, output="")
+
+    def run_correct(self):
+        # These are the correct semantics -- get a data set code, register the data set, but
+        #   a bug prevents this from working at the moment
+
+        # TODO Write mementos in case openBIS is unreachable
+        # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
+
+        result = self.prepare_run()
+        if result.failure():
+            return result
+
+        result = self.prepare_external_dms()
+        if result.failure():
+            return result
+        external_dms = result.output
 
         result, data_set_code = self.create_data_set_code()
         if result.failure():
             return result
 
-        self.config_resolver.set_value_for_parameter('data_set_id', data_set_code, 'local')
         self.commit_metadata_updates()
+
+        self.config_resolver.set_value_for_parameter('data_set_id', data_set_code, 'local')
+        self.commit_metadata_updates("Update data set code.")
 
         # create a data set, using the existing data set as a parent, if there is one
         result, data_set = self.create_data_set(data_set_code, external_dms)
         if result.failure():
+            # TODO Revert the last commit to revert the data set id.
             return result
 
         return CommandResult(returncode=0, output="")
+
+    def run(self):
+        return self.run_correct()
