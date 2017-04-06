@@ -254,7 +254,7 @@ class GitDataMgmt(AbstractDataMgmt):
         return result
 
     def sync(self):
-        cmd = OpenbisSync(self.openbis, self.git_wrapper, self.config_resolver)
+        cmd = OpenbisSync(self)
         return cmd.run()
 
     def commit(self, msg, auto_add=True, sync=True):
@@ -277,6 +277,19 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def status(self):
         return self.git_wrapper.git_status()
+
+    def commit_metadata_updates(self, msg_fragment=None):
+        folder = self.config_resolver.local_public_config_folder_path()
+        status = self.git_wrapper.git_status(folder)
+        if len(status.output.strip()) < 1:
+            # Nothing to commit
+            return
+        self.git_wrapper.git_add(folder)
+        if msg_fragment is None:
+            msg = "OBIS: Update openBIS metadata cache."
+        else:
+            msg = "OBIS: Update {}.".format(msg_fragment)
+        self.git_wrapper.git_commit(msg)
 
 
 class GitWrapper(object):
@@ -303,8 +316,11 @@ class GitWrapper(object):
     def git_init(self, path):
         return run_shell([self.git_path, "init", path])
 
-    def git_status(self):
-        return run_shell([self.git_path, "status", "--porcelain"])
+    def git_status(self, path=None):
+        if path is None:
+            return run_shell([self.git_path, "status", "--porcelain"])
+        else:
+            return run_shell([self.git_path, "status", "--porcelain", path])
 
     def git_annex_init(self, path, desc):
         cmd = [self.git_path, "-C", path, "annex", "init", "--version=6"]
@@ -350,11 +366,12 @@ class GitWrapper(object):
 class OpenbisSync(object):
     """A command object for synchronizing with openBIS."""
 
-    def __init__(self, openbis, git_wrapper, config_resolver):
-        self.openbis = openbis
-        self.git_wrapper = git_wrapper
-        self.config_resolver = config_resolver
-        self.config_dict = config_resolver.config_dict()
+    def __init__(self, dm):
+        self.data_mgmt = dm
+        self.openbis = dm.openbis
+        self.git_wrapper = dm.git_wrapper
+        self.config_resolver = dm.config_resolver
+        self.config_dict = dm.config_resolver.config_dict()
 
     def user(self):
         return self.config_dict.get('user')
@@ -457,13 +474,7 @@ class OpenbisSync(object):
             return CommandResult(returncode=-1, output=str(e)), None
 
     def commit_metadata_updates(self, msg_fragment=None):
-        folder = self.config_resolver.local_public_config_folder_path()
-        self.git_wrapper.git_add(folder)
-        if msg_fragment is None:
-            msg = "OBIS: Update openBIS metadata cache."
-        else:
-            msg = "OBIS: {}".format(msg_fragment)
-        self.git_wrapper.git_commit(msg)
+        self.data_mgmt.commit_metadata_updates(msg_fragment)
 
     def prepare_run(self):
         result = self.check_configuration()
@@ -531,7 +542,7 @@ class OpenbisSync(object):
         self.commit_metadata_updates()
 
         self.config_resolver.set_value_for_parameter('data_set_id', data_set_code, 'local')
-        self.commit_metadata_updates("Update data set code.")
+        self.commit_metadata_updates("data set code")
 
         # create a data set, using the existing data set as a parent, if there is one
         result, data_set = self.create_data_set(data_set_code, external_dms)
