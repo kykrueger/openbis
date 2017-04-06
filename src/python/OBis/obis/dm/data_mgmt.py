@@ -537,4 +537,4 @@ class OpenbisSync(object):
         return CommandResult(returncode=0, output="")
 
     def run(self):
-        return self.run_correct()
+        return self.run_workaround()

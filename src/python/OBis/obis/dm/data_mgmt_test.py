@@ -8,6 +8,7 @@ data_mgmt_test.py
 Created by Chandrasekhar Ramakrishnan on 2017-02-02.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
+import json
 import os
 import random
 import shutil
@@ -58,6 +59,20 @@ def git_status(path=None, annex=False):
     else:
         cmd.extend(['status', '--porcelain'])
     return data_mgmt.run_shell(cmd)
+
+
+def check_correct_config_semantics():
+    # This how things should work
+    with open('.obis/config.json') as f:
+        config_local = json.load(f)
+    assert config_local.get('data_set_id') is not None
+
+
+def check_workaround_config_semantics():
+    # This how things should work
+    with open('.obis/config.json') as f:
+        config_local = json.load(f)
+    assert config_local.get('data_set_id') is None
 
 
 def test_data_use_case(tmpdir):
@@ -112,6 +127,11 @@ def test_data_use_case(tmpdir):
         status = dm.status()
         assert len(status.output) == 0
 
+        # TODO Fix when the workaround is no longer needed.
+        #  (see OpenbisSync.run_correct)
+        # check_correct_config_semantics()
+        check_workaround_config_semantics()
+
 
 def test_child_data_set(tmpdir):
     dm = shared_dm()
@@ -141,7 +161,10 @@ def test_child_data_set(tmpdir):
         child_ds_code = dm.config_resolver.config_dict()['data_set_id']
         assert parent_ds_code != child_ds_code
         commit_id = dm.git_wrapper.git_commit_id().output
-        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code, properties)
+        # TODO Fix when the workaround is no longer needed.
+        #  (see OpenbisSync.run_correct)
+        # check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code, properties)
+        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, None, parent_ds_code, properties)
 
 
 # TODO Test that if the data set registration fails, the data_set_id is reverted
