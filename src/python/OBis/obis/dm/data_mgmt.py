@@ -407,6 +407,14 @@ class OpenbisSync(object):
                                  output="Missing configuration settings for {}.".format(missing_config_settings))
         return CommandResult(returncode=0, output="")
 
+    def check_data_set_status(self):
+        """If we are in sync with the data set on the server, there is nothing to do."""
+        # TODO Get the DataSet from the server
+        #  - Find the content copy that refers to this repo
+        #  - Check if the commit id is the current commit id
+        #  - If so, skip sync.
+        return CommandResult(returncode=0, output="")
+
     def login(self):
         if self.openbis.is_session_active():
             return CommandResult(returncode=0, output="")
