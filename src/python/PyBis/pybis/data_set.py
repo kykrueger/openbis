@@ -81,9 +81,8 @@ class GitDataSetCreation(object):
     def create_mixed_data_set(self, metadata_creation, file_metadata):
         data_set_creation = {
             "fileMetadata": file_metadata,
-            "metadataCreation": metadata_creation
-            # The DSS objects do not use the type annotation
-            # "@type": "dss.dto.dataset.create.FullDataSetCreation"
+            "metadataCreation": metadata_creation,
+            "@type": "dss.dto.dataset.create.FullDataSetCreation"
         }
 
         # register the files in openBIS
