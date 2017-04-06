@@ -17,6 +17,7 @@ from contextlib import contextmanager
 from . import config as dm_config
 import traceback
 import getpass
+import socket
 
 import pybis
 
@@ -436,8 +437,9 @@ class OpenbisSync(object):
         if external_dms_id is None:
             external_dms_id = "{}-{}".format(user, path_name).upper()
         try:
+            hostname = socket.gethostname()
             edms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
-                                                                       "localhost:/{}".format(top_level_path))
+                                                                       "{}:/{}".format(hostname, top_level_path))
             return CommandResult(returncode=0, output=""), edms
         except ValueError as e:
             # The EDMS might already be in the system. Try to get it.
