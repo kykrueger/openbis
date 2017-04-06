@@ -157,7 +157,10 @@ fetch_option = {
         "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
     },
     "physicalData": {"@type": "as.dto.dataset.fetchoptions.PhysicalDataFetchOptions"},
-    "linkedData": {"@type": "as.dto.dataset.fetchoptions.LinkedDataFetchOptions"},
+    "linkedData": {
+        "externalDms": {"@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions"},
+        "@type": "as.dto.dataset.fetchoptions.LinkedDataFetchOptions"
+    },
 
     "properties": {"@type": "as.dto.property.fetchoptions.PropertyFetchOptions"},
     "propertyAssignments": {
@@ -1563,9 +1566,7 @@ class Openbis:
             "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
         }
 
-        # 2017-04-05 CR Needed to remove the linkedData option as this does not seem to work in S251.
-        # for option in ['tags', 'properties', 'dataStore', 'physicalData', 'linkedData',
-        for option in ['tags', 'properties', 'dataStore', 'physicalData',
+        for option in ['tags', 'properties', 'dataStore', 'physicalData', 'linkedData',
                        'experiment', 'sample']:
             fetchopts[option] = fetch_option[option]
 
