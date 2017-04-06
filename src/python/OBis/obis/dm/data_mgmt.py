@@ -342,6 +342,9 @@ class GitWrapper(object):
     def git_commit_id(self):
         return run_shell([self.git_path, 'rev-parse', '--short', 'HEAD'])
 
+    def git_ls_tree(self):
+        return run_shell([self.git_path, 'ls-tree', '--full-tree', '-r', 'HEAD'])
+
 
 class OpenbisSync(object):
     """A command object for synchronizing with openBIS."""
@@ -443,10 +446,11 @@ class OpenbisSync(object):
             return result
         commit_id = result.output
         object_id = self.object_id()
+        contents = GitRepoFileInfo(self.git_wrapper).contents()
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
                                                      object_id, data_set_code=data_set_code, parents=parent_data_set_id,
-                                                     properties=properties)
+                                                     properties=properties, contents=contents)
             return CommandResult(returncode=0, output=""), data_set
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
@@ -495,7 +499,7 @@ class OpenbisSync(object):
         self.commit_metadata_updates()
 
         # create a data set, using the existing data set as a parent, if there is one
-        result, data_set = self.create_data_set(None, external_dms)
+        result, data_set = self.create_data_set("DUMMY", external_dms)
         if result.failure():
             return result
 
@@ -538,3 +542,48 @@ class OpenbisSync(object):
 
     def run(self):
         return self.run_workaround()
+
+
+class GitRepoFileInfo(object):
+    """Class that gathers checksums and file lengths for all files in the repo."""
+
+    def __init__(self, git_wrapper):
+        self.git_wrapper = git_wrapper
+
+    def contents(self):
+        """Return a list of dicts describing the contents of the repo.
+        :return: A list of dictionaries
+          {'crc32': checksum,
+           'fileLength': size of the file,
+           'path': path relative to repo root.
+           'directory': False
+          }"""
+        files = self.file_list()
+        cksum = self.cksum(files)
+        return cksum
+
+    def file_list(self):
+        tree = self.git_wrapper.git_ls_tree()
+        if tree.failure():
+            return []
+        lines = tree.output.split("\n")
+        files = [line.split("\t")[-1].strip() for line in lines]
+        return files
+
+    def cksum(self, files):
+        cmd = ['cksum']
+        cmd.extend(files)
+        result = run_shell(cmd)
+        if result.failure():
+            return []
+        lines = result.output.split("\n")
+        return [self.checksum_line_to_dict(line) for line in lines]
+
+    @staticmethod
+    def checksum_line_to_dict(line):
+        fields = line.split(" ")
+        return {
+            'crc32': int(fields[0]),
+            'fileLength': int(fields[1]),
+            'path': fields[2]
+        }
