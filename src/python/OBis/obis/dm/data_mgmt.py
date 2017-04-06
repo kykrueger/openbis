@@ -413,7 +413,7 @@ class OpenbisSync(object):
         user = self.user()
         passwd = getpass.getpass("Password for {}:".format(user))
         try:
-            self.openbis.login(user, passwd)
+            self.openbis.login(user, passwd, save_token=True)
         except ValueError:
             msg = "Could not log into openbis {}".format(self.config_dict['openbis_url'])
             return CommandResult(returncode=-1, output=msg)
