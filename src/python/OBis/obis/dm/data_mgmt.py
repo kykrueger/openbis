@@ -422,7 +422,7 @@ class OpenbisSync(object):
         external_dms_id = self.external_dms_id()
         if external_dms_id is None:
             return None
-        external_dms = self.openbis.get_external_data_management_system(external_dms_id)
+        external_dms = self.openbis.get_external_data_management_system(external_dms_id.upper())
         return external_dms
 
     def create_external_data_management_system(self):
@@ -434,15 +434,18 @@ class OpenbisSync(object):
         top_level_path = result.output
         path_name = os.path.basename(top_level_path)
         if external_dms_id is None:
-            external_dms_id = "{}-{}".format(user, path_name)
+            external_dms_id = "{}-{}".format(user, path_name).upper()
         try:
             edms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
                                                                        "localhost:/{}".format(top_level_path))
             return CommandResult(returncode=0, output=""), edms
         except ValueError as e:
-            # TODO If the error is edms already exists, retrieve it.
-            # edms = self.openbis.get_external_data_management_system(external_dms_id)
-            return CommandResult(returncode=-1, output=str(e)), None
+            # The EDMS might already be in the system. Try to get it.
+            try:
+                edms = self.openbis.get_external_data_management_system(external_dms_id)
+                return CommandResult(returncode=0, output=""), edms
+            except ValueError:
+                return CommandResult(returncode=-1, output=str(e)), None
 
     def create_data_set_code(self):
         try:
@@ -492,7 +495,6 @@ class OpenbisSync(object):
             result, external_dms = self.create_external_data_management_system()
             if result.failure():
                 return result
-
             self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
         return CommandResult(returncode=0, output=external_dms)
 
