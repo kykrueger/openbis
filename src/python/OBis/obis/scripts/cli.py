@@ -46,9 +46,11 @@ def check_result(command, result):
 
 @click.group()
 @click.option('-q', '--quiet', default=False, is_flag=True, help='Suppress status reporting.')
+@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
 @click.pass_context
-def cli(ctx, quiet):
+def cli(ctx, quiet, skip_verification):
     ctx.obj['quiet'] = quiet
+    ctx.obj['verify_certificates'] = not skip_verification
 
 
 @cli.command()
@@ -73,12 +75,10 @@ def clone(ctx, url):
 @click.pass_context
 @click.option('-m', '--msg', prompt=True, help='A message explaining what was done.')
 @click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.')
-@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
-def commit(ctx, msg, auto_add, skip_verification):
+def commit(ctx, msg, auto_add):
     """Commit the repository to git and inform openBIS.
     """
-    verify_certificates = not skip_verification
-    data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
+    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
     return check_result("commit", data_mgmt.commit(msg, auto_add))
 
 
@@ -92,9 +92,9 @@ def config(ctx, is_global, property, value):
 
     Configure the openBIS server url, the data set type, and the data set properties.
     """
-    dm = shared_data_mgmt()
-    resolver = dm.config_resolver
-    top_level_path = dm.git_wrapper.git_top_level_path()
+    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
+    resolver = data_mgmt.config_resolver
+    top_level_path = data_mgmt.git_wrapper.git_top_level_path()
     if top_level_path.success():
         resolver.location_resolver.location_roots['data_set'] = top_level_path.output
     if is_global:
@@ -111,7 +111,7 @@ def config(ctx, is_global, property, value):
         loc = 'global' if is_global else 'local'
         resolver.set_value_for_parameter(property, value, loc)
         if not is_global:
-            dm.commit_metadata_updates(property)
+            data_mgmt.commit_metadata_updates(property)
 
 
 @cli.group()
@@ -128,7 +128,7 @@ def init(ctx):
 def data(ctx, folder, name):
     """Initialize the folder as a data folder."""
     click_echo("init data {}".format(folder))
-    data_mgmt = shared_data_mgmt()
+    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
     name = name if name != "" else None
     return check_result("init data", data_mgmt.init_data(folder, name))
 
@@ -155,19 +155,17 @@ def get(ctx, f):
 def status(ctx):
     """Sync the repository with openBIS.
     """
-    data_mgmt = shared_data_mgmt()
+    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
     result = data_mgmt.status()
     click.echo(result.output)
 
 
 @cli.command()
 @click.pass_context
-@click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
-def sync(ctx, skip_verification):
+def sync(ctx):
     """Sync the repository with openBIS.
     """
-    verify_certificates = not skip_verification
-    data_mgmt = shared_data_mgmt(verify_certificates=verify_certificates)
+    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
     return check_result("sync", data_mgmt.sync())
 
 
