@@ -32,10 +32,10 @@ def click_progress_no_ts(progress_data):
         click.echo("{}".format(progress_data['message']))
 
 
-def shared_data_mgmt(context={}, verify_certificates=True):
+def shared_data_mgmt(context={}):
     git_config = {'find_git': True}
     openbis_config = {}
-    if context.get('verify_certificates'):
+    if context.get('verify_certificates') is not None:
         openbis_config['verify_certificates'] = context['verify_certificates']
     return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config)
 
@@ -97,13 +97,15 @@ def config(ctx, is_global, property, value):
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
     resolver = data_mgmt.config_resolver
-    top_level_path = data_mgmt.git_wrapper.git_top_level_path()
-    if top_level_path.success():
-        resolver.location_resolver.location_roots['data_set'] = top_level_path.output
     if is_global:
         resolver.location_search_order = ['global']
     else:
-        resolver.location_search_order = ['local']
+        top_level_path = data_mgmt.git_wrapper.git_top_level_path()
+        if top_level_path.success():
+            resolver.location_resolver.location_roots['data_set'] = top_level_path.output
+            resolver.location_search_order = ['local']
+        else:
+            resolver.location_search_order = ['global']
 
     config_dict = resolver.config_dict()
     if not property:
