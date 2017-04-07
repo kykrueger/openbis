@@ -301,6 +301,11 @@ class GitDataMgmt(AbstractDataMgmt):
             msg = "OBIS: Update {}.".format(msg_fragment)
         self.git_wrapper.git_commit(msg)
 
+    def revert_last_metadata_update(self):
+        self.git_wrapper.git_reset_prev()
+        folder = self.config_resolver.local_public_config_folder_path()
+        self.git_wrapper.git_checkout(folder)
+
 
 class GitWrapper(object):
     """A wrapper on commands to git."""
@@ -371,6 +376,12 @@ class GitWrapper(object):
 
     def git_ls_tree(self):
         return run_shell([self.git_path, 'ls-tree', '--full-tree', '-r', 'HEAD'])
+
+    def git_reset_prev(self):
+        return run_shell([self.git_path, 'reset', 'HEAD^'])
+
+    def git_checkout(self, path):
+        return run_shell([self.git_path, "checkout", path])
 
 
 class OpenbisSync(object):
@@ -498,6 +509,9 @@ class OpenbisSync(object):
     def commit_metadata_updates(self, msg_fragment=None):
         self.data_mgmt.commit_metadata_updates(msg_fragment)
 
+    def revert_last_metadata_update(self):
+        self.data_mgmt.revert_last_metadata_update()
+
     def prepare_run(self):
         result = self.check_configuration()
         if result.failure():
@@ -517,33 +531,7 @@ class OpenbisSync(object):
             self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
         return CommandResult(returncode=0, output=external_dms)
 
-    def run_workaround(self):
-        # Do not create the data set code, since it is ignored due to a bug.
-
-        result = self.prepare_run()
-        if result.failure():
-            return result
-
-        result = self.prepare_external_dms()
-        if result.failure():
-            return result
-        external_dms = result.output
-
-        self.commit_metadata_updates()
-
-        # create a data set, using the existing data set as a parent, if there is one
-        result, data_set = self.create_data_set("DUMMY", external_dms)
-        if result.failure():
-            return result
-
-        self.config_resolver.set_value_for_parameter('data_set_id', data_set.code, 'local')
-
-        return CommandResult(returncode=0, output="")
-
-    def run_correct(self):
-        # These are the correct semantics -- get a data set code, register the data set, but
-        #   a bug prevents this from working at the moment
-
+    def run(self):
         # TODO Write mementos in case openBIS is unreachable
         # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
 
@@ -562,19 +550,17 @@ class OpenbisSync(object):
 
         self.commit_metadata_updates()
 
+        # Update data set id as last commit so we can easily revert it on failure
         self.config_resolver.set_value_for_parameter('data_set_id', data_set_code, 'local')
-        self.commit_metadata_updates("data set code")
+        self.commit_metadata_updates("data set id")
 
         # create a data set, using the existing data set as a parent, if there is one
         result, data_set = self.create_data_set(data_set_code, external_dms)
         if result.failure():
-            # TODO Revert the last commit to revert the data set id.
+            self.revert_last_metadata_update()
             return result
 
         return CommandResult(returncode=0, output="")
-
-    def run(self):
-        return self.run_workaround()
 
 
 class GitRepoFileInfo(object):

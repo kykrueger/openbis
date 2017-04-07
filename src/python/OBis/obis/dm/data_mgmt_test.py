@@ -127,10 +127,7 @@ def test_data_use_case(tmpdir):
         status = dm.status()
         assert len(status.output) == 0
 
-        # TODO Fix when the workaround is no longer needed.
-        #  (see OpenbisSync.run_correct)
-        # check_correct_config_semantics()
-        check_workaround_config_semantics()
+        check_correct_config_semantics()
 
 
 def test_child_data_set(tmpdir):
@@ -163,10 +160,8 @@ def test_child_data_set(tmpdir):
         commit_id = dm.git_wrapper.git_commit_id().output
 
         contents = data_mgmt.GitRepoFileInfo(dm.git_wrapper).contents()
-        # TODO Fix when the workaround is no longer needed.
-        #  (see OpenbisSync.run_correct)
-        # check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code, properties, contents)
-        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, "DUMMY", parent_ds_code, properties, contents)
+        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code, properties,
+                                        contents)
 
 
 # TODO Test that if the data set registration fails, the data_set_id is reverted

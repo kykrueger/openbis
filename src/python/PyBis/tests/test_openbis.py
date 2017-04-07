@@ -217,8 +217,7 @@ def test_new_git_data_set_with_contents(openbis_instance):
                                                properties={"DESCRIPTION": 'This is a description'},
                                                contents=contents)
     assert result is not None
-    # TODO Turn this on again once the bug in registration is fixed.
-    # assert result.code == data_set_code
+    assert result.code == data_set_code
     openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
 
 

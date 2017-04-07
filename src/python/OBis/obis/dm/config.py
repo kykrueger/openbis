@@ -88,10 +88,7 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='verify_certificates', private=True, is_json=True))
         self.add_param(ConfigParam(name='external_dms_id', private=True))
         self.add_param(ConfigParam(name='object_id', private=False))
-        # TODO Revert to commented out line -- making data_set_id private is a workaround
-        #  (see OpenbisSync.run_correct)
-        # self.add_param(ConfigParam(name='data_set_id', private=False))
-        self.add_param(ConfigParam(name='data_set_id', private=True))
+        self.add_param(ConfigParam(name='data_set_id', private=False))
         self.add_param(ConfigParam(name='data_set_type', private=False))
         self.add_param(ConfigParam(name='data_set_properties', private=False, is_json=True))
 
