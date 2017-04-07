@@ -32,9 +32,11 @@ def click_progress_no_ts(progress_data):
         click.echo("{}".format(progress_data['message']))
 
 
-def shared_data_mgmt(verify_certificates=True):
+def shared_data_mgmt(context={}, verify_certificates=True):
     git_config = {'find_git': True}
-    openbis_config = {'verify_certificates': verify_certificates}
+    openbis_config = {}
+    if context.get('verify_certificates'):
+        openbis_config['verify_certificates'] = context['verify_certificates']
     return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config)
 
 
@@ -50,7 +52,8 @@ def check_result(command, result):
 @click.pass_context
 def cli(ctx, quiet, skip_verification):
     ctx.obj['quiet'] = quiet
-    ctx.obj['verify_certificates'] = not skip_verification
+    if skip_verification:
+        ctx.obj['verify_certificates'] = False
 
 
 @cli.command()
@@ -78,7 +81,7 @@ def clone(ctx, url):
 def commit(ctx, msg, auto_add):
     """Commit the repository to git and inform openBIS.
     """
-    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
+    data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("commit", data_mgmt.commit(msg, auto_add))
 
 
@@ -92,7 +95,7 @@ def config(ctx, is_global, property, value):
 
     Configure the openBIS server url, the data set type, and the data set properties.
     """
-    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
+    data_mgmt = shared_data_mgmt(ctx.obj)
     resolver = data_mgmt.config_resolver
     top_level_path = data_mgmt.git_wrapper.git_top_level_path()
     if top_level_path.success():
@@ -128,7 +131,7 @@ def init(ctx):
 def data(ctx, folder, name):
     """Initialize the folder as a data folder."""
     click_echo("init data {}".format(folder))
-    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
+    data_mgmt = shared_data_mgmt(ctx.obj)
     name = name if name != "" else None
     return check_result("init data", data_mgmt.init_data(folder, name))
 
@@ -155,7 +158,7 @@ def get(ctx, f):
 def status(ctx):
     """Sync the repository with openBIS.
     """
-    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
+    data_mgmt = shared_data_mgmt(ctx.obj)
     result = data_mgmt.status()
     click.echo(result.output)
 
@@ -165,7 +168,7 @@ def status(ctx):
 def sync(ctx):
     """Sync the repository with openBIS.
     """
-    data_mgmt = shared_data_mgmt(verify_certificates=ctx.obj['verify_certificates'])
+    data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("sync", data_mgmt.sync())
 
 

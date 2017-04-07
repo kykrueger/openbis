@@ -30,15 +30,15 @@ class ConfigLocation(object):
 class ConfigParam(object):
     """Class for configuration parameters."""
 
-    def __init__(self, name, private, is_dict=False):
+    def __init__(self, name, private, is_json=False):
         """
         :param name: Name of the parameter.
         :param private: Should the parameter be private to the repo or visible in the data set?
-        :param json: Is the parameter json? Default false
+        :param is_json: Is the parameter json? Default false
         """
         self.name = name
         self.private = private
-        self.is_dict = is_dict
+        self.is_json = is_json
 
     def location_path(self, loc):
         if loc == 'global':
@@ -49,7 +49,7 @@ class ConfigParam(object):
             return [loc, 'public']
 
     def parse_value(self, value):
-        if not self.is_dict:
+        if not self.is_json:
             return value
         if isinstance(value, str):
             return json.loads(value)
@@ -85,6 +85,7 @@ class ConfigEnv(object):
     def initialize_params(self):
         self.add_param(ConfigParam(name='openbis_url', private=False))
         self.add_param(ConfigParam(name='user', private=True))
+        self.add_param(ConfigParam(name='verify_certificates', private=True, is_json=True))
         self.add_param(ConfigParam(name='external_dms_id', private=True))
         self.add_param(ConfigParam(name='object_id', private=False))
         # TODO Revert to commented out line -- making data_set_id private is a workaround
@@ -92,7 +93,7 @@ class ConfigEnv(object):
         # self.add_param(ConfigParam(name='data_set_id', private=False))
         self.add_param(ConfigParam(name='data_set_id', private=True))
         self.add_param(ConfigParam(name='data_set_type', private=False))
-        self.add_param(ConfigParam(name='data_set_properties', private=False, is_dict=True))
+        self.add_param(ConfigParam(name='data_set_properties', private=False, is_json=True))
 
     def add_param(self, param):
         self.params[param.name] = param

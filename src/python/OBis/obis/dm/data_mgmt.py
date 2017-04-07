@@ -59,7 +59,10 @@ def complete_openbis_config(config, resolver):
     if config.get('url') is None:
         config['url'] = config_dict['openbis_url']
     if config.get('verify_certificates') is None:
-        config['verify_certificates'] = True
+        if config_dict.get('verify_certificates') is not None:
+            config['verify_certificates'] = config_dict['verify_certificates']
+        else:
+            config['verify_certificates'] = True
     if config.get('token') is None:
         config['token'] = None
 
