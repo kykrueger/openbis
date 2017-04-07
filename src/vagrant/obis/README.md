@@ -16,11 +16,80 @@ To help users interested in trying out _obis_, we provide a vagrant setup that c
    - enter a password for the **admin** and the **etlserver** user when asked
 7. Edit the file `/home/openbis/servers/datastore_server/etc/service.properties`
    - look for the `etlserver` user and enter its password
+   - set the hostname to localhost
 8. `exit` -- log off the virtual machine
 
-### Extra steps [these should be automated]
 
-0. Create the GIT_REPO Link data set type.
+## obis/EasyBD Demo
+
+### Preflight
+
+First, make sure the environment is set up as expected.
+
+We will use the screening server, https://sprint-openbis.ethz.ch:8446. Make sure that it has the following data set type configured:
+
+    name: GIT_REPO
+    kind: LINK
+    properties: DESCRIPTION
+
+Also make sure that there is a sample with the identifier /DEMO/BIGDATA. The type does not matter.
+
+Check the obis configuration.
+
+    obis config -g
+
+The following should be configured:
+
+    openbis_url: https://sprint-openbis.ethz.ch:8446
+    user: adamsr
+    data_set_type: GIT_REPO
+    verify_certificates: False
+
+This is probably the case, but if it is not, you need to execute the following commands. We will set this environment globally, so it is not necessary for every single data set.
+
+    obis config -g openbis_url https://sprint-openbis.ethz.ch:8446
+    obis config -g user adamsr
+    obis config -g data_set_type GIT_REPO
+    obis config -g verify_certificates false
+
+### Demo
+
+Here, we will create a data set and then go look at it.
+
+    mkdir example_data
+    cd example_data
+    obis init data .
+
+Now create a file and put some content into it. E.g.,
+
+    vi info.txt
+
+When finished, we need to set the object_id this data set should be associated with. Then we can commit it.
+
+    obis config object_id /DEMO/BIGDATA
+    obis commit -m"Initial data commit."
+
+Log into the sprint server https://sprint-openbis.ethz.ch:8446 and go to the sample /DEMO/BIGDATA. You should see the newly registered data set there. You can take a look at it and see file metadata for its contents.
+
+Now edit the file again:
+
+    vi info.txt
+
+If you run
+
+    obis status
+
+You should see that the file is dirty. Now, before we commit, we will set some data set metadata.
+
+    obis config data_set_properties '{"DESCRIPTION": "Version 1"}'
+
+And now we commit:
+
+    obis commit
+
+You will be prompted for a commit message. Provide one.
+
+In openBIS, you will find a new data set associated with the sample /DEMO/BIGDATA. The previous data set its parent. It will have a property _Description_ set to "Version 1".
 
 
 # How this folder is organized
