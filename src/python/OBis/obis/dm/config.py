@@ -30,14 +30,30 @@ class ConfigLocation(object):
 class ConfigParam(object):
     """Class for configuration parameters."""
 
-    def __init__(self, name, private):
+    def __init__(self, name, private, is_dict=False):
         """
-
         :param name: Name of the parameter.
         :param private: Should the parameter be private to the repo or visible in the data set?
+        :param json: Is the parameter json? Default false
         """
         self.name = name
         self.private = private
+        self.is_dict = is_dict
+
+    def location_path(self, loc):
+        if loc == 'global':
+            return [loc]
+        if self.private:
+            return [loc, 'private']
+        else:
+            return [loc, 'public']
+
+    def parse_value(self, value):
+        if not self.is_dict:
+            return value
+        if isinstance(value, str):
+            return json.loads(value)
+        return value
 
 
 class ConfigEnv(object):
@@ -76,7 +92,7 @@ class ConfigEnv(object):
         # self.add_param(ConfigParam(name='data_set_id', private=False))
         self.add_param(ConfigParam(name='data_set_id', private=True))
         self.add_param(ConfigParam(name='data_set_type', private=False))
-        self.add_param(ConfigParam(name='data_set_properties', private=False))
+        self.add_param(ConfigParam(name='data_set_properties', private=False, is_dict=True))
 
     def add_param(self, param):
         self.params[param.name] = param
@@ -159,14 +175,9 @@ class ConfigResolver(object):
             self.initialize_location_cache()
 
         param = self.env.params[name]
+        value = param.parse_value(value)
         location_config_dict = self.set_cache_value_for_parameter(param, value, loc)
-        if loc != 'global':
-            if param.private:
-                location_path = [loc, 'private']
-            else:
-                location_path = [loc, 'public']
-        else:
-            location_path = [loc]
+        location_path = param.location_path(loc)
         location = self.env.location_at_path(location_path)
         location_dir_path = self.location_resolver.resolve_location(location)
         if not os.path.exists(location_dir_path):
