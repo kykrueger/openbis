@@ -109,7 +109,7 @@ class CommandResult(object):
 
 
 def run_shell(args, shell=False):
-    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE, shell=shell))
+    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell))
 
 
 def locate_command(command):
