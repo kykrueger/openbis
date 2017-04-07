@@ -237,6 +237,9 @@ class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
     def init_data(self, path, desc=None):
+        # Update the resolvers location
+        self.config_resolver.location_resolver.location_roots['data_set'] = path
+
         result = self.git_wrapper.git_init(path)
         if not self.check_result_ok(result):
             return result
