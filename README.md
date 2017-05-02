@@ -32,6 +32,7 @@ p.add_attachment(fileName='testfile', description= 'another file', title= 'one m
 p.save()
 
 # Experiments
+o.new_experiment(type='DEFAULT_EXPERIMENT', space='MY_SPACE', project='YEASTS')
 o.get_experiments(
     project='YEASTS',
     space='MY_SPACE', 
@@ -44,7 +45,6 @@ exp = o.get_experiment('/MY_SPACE/MY_PROJECT/MY_EXPERIMENT')
 exp.props
 exp.p     # same as exp.props
 exp.p.finished_flag=True
-
 exp.attrs
 exp.a     # same as exp.attrs
 exp.attrs.tags = ['some', 'extra', 'tags']
