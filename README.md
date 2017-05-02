@@ -20,6 +20,7 @@ o.get_terms()
 o.get_terms('MATING_TYPE')
 o.get_tags()
 
+# Spaces and Projects
 o.get_spaces()
 o.get_space('MY_SPACE')
 o.get_projects(space='MY_SPACE')
@@ -30,7 +31,8 @@ project.download_attachments()
 p.add_attachment(fileName='testfile', description= 'another file', title= 'one more attachment')
 p.save()
 
-exp = o.get_experiments(
+# Experiments
+o.get_experiments(
     project='YEASTS',
     space='MY_SPACE', 
     type='DEFAULT_EXPERIMENT',
@@ -38,6 +40,7 @@ exp = o.get_experiments(
     finished_flag=False,
     props=['name', 'finished_flag']
 )
+exp = o.get_experiment('/MY_SPACE/MY_PROJECT/MY_EXPERIMENT')
 exp.props
 exp.p     # same as exp.props
 exp.p.finished_flag=True
@@ -48,7 +51,23 @@ exp.attrs.tags = ['some', 'extra', 'tags']
 exp.tags = ['some', 'extra', 'tags']          # same thing
 exp.save()
 
-
+# Datasets
+sample.get_datasets()
+ds = o.get_dataset('20160719143426517-259')
+ds.get_parents()
+ds.get_children()
+sample = ds.sample
+experiment = ds.experiment
+ds.physicalData
+ds.status        # AVAILABLE LOCKED ARCHIVED UNARCHIVE_PENDING ARCHIVE_PENDING BACKUP_PENDING
+ds.archive()
+ds.unarchive()
+ds.get_files(start_folder="/")
+ds.file_list
+ds.add_attachment()
+ds.get_attachments()
+ds.download_attachments()
+ds.download(destination='/tmp', wait_until_finished=False)
 
 ```
 
