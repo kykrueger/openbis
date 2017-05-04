@@ -17,6 +17,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+import copy
 import time
 import json
 import re
@@ -60,9 +61,9 @@ def _definitions(entity):
             "identifier": "projectId",
         },
         "Experiment": {
-            "attrs_new": "code type project tags attachments".split(),
-            "attrs_up": "project tags attachments".split(),
-            "attrs": "code permId identifier type project tags attachments".split(),
+            "attrs_new": "code type project samples tags attachments".split(),
+            "attrs_up": "project samples tags attachments".split(),
+            "attrs": "code permId identifier type project samples tags attachments".split(),
             "multi": "tags attachments".split(),
             "identifier": "experimentId",
         },
@@ -562,10 +563,10 @@ def _subcriteria_for_code(code, object_type):
 
 
 class Openbis:
-    """Interface for communicating with openBIS. A current version of openBIS is needed.
-    (minimum version 16.05).
+    """Interface for communicating with openBIS. 
+    A recent version of openBIS is required (minimum 16.05.2).
     """
-    __version__ = '1.1.4'
+    __version__ = '1.1.5'
 
     def __init__(self, url, verify_certificates=True, token=None):
         """Initialize a new connection to an openBIS server.
@@ -1286,6 +1287,8 @@ class Openbis:
                 "params": [self.token, search_criteria, fo]
             }
             resp = self._post_request(self.as_v3, request)
+            if len(resp['objects']) == 0:
+                raise ValueError("No such project: %s" % projectId)
             return Project(self, resp['objects'][0])
 
     def get_projects(self, space=None):
@@ -2011,6 +2014,10 @@ class OpenBisObject():
             self.p.__dict__[key.lower()] = value
 
     @property
+    def attrs(self):
+        return self.__dict__['a']
+
+    @property
     def space(self):
         try:
             return self.openbis.get_space(self._space['permId'])
@@ -2407,7 +2414,6 @@ class AttrHolder():
                         "@type": "as.dto.tag.id.TagCode"
                     })
                 self.__dict__['_tags'] = tags
-                import copy
                 self.__dict__['_prev_tags'] = copy.deepcopy(tags)
             else:
                 self.__dict__['_' + attr] = data.get(attr, None)
@@ -2464,7 +2470,11 @@ class AttrHolder():
         }
         return request
 
+
     def _up_attrs(self):
+        """Returns the Python-equivalent JSON request when a new object is updated.
+        It is used internally by the save() method of an object to be updated.
+        """
         defs = _definitions(self._entity)
         attr2ids = _definitions('attr2ids')
 
@@ -2485,16 +2495,13 @@ class AttrHolder():
                     continue
                 atts_data = [attachment.get_data() for attachment in attachments]
 
-                if self._is_new:
-                    up_obj['attachments'] = atts_data
-                else:
-                    up_obj['attachments'] = {
-                        "actions": [{
-                            "items": atts_data,
-                            "@type": "as.dto.common.update.ListUpdateActionAdd"
-                        }],
-                        "@type": "as.dto.attachment.update.AttachmentListUpdateValue"
-                    }
+                up_obj['attachments'] = {
+                    "actions": [{
+                        "items": atts_data,
+                        "@type": "as.dto.common.update.ListUpdateActionAdd"
+                    }],
+                    "@type": "as.dto.attachment.update.AttachmentListUpdateValue"
+                }
 
             elif attr == 'tags':
                 # look which tags have been added or removed and update them
@@ -2542,16 +2549,23 @@ class AttrHolder():
                     value = self.__dict__.get('_' + attr, {})
                     if value is None:
                         pass
-                    else:
-                        isModified = False
-                        if 'isModified' in value:
-                            isModified = True
-                            del value['isModified']
+                    elif len(value) == 0:
+                        # value is {}: it means that we want this attribute to be
+                        # deleted, not updated.
+                        up_obj[attr2ids[attr]] = {
+                            "@type": "as.dto.common.update.FieldUpdateValue",
+                            "isModified": True,
+                        }
+                    elif 'isModified' in value and value['isModified'] == True:
+                        val = {}
+                        for x in ['identifier','permId','@type']:
+                            if x in value:
+                                val[x] = value[x]
 
                         up_obj[attr2ids[attr]] = {
                             "@type": "as.dto.common.update.FieldUpdateValue",
-                            "isModified": isModified,
-                            "value": value,
+                            "isModified": True,
+                            "value": val
                         }
 
         # update a new entity
@@ -2653,7 +2667,7 @@ class AttrHolder():
             else:
                 self.add_attachment(value)
 
-        elif name in ["sample", "experiment", "space", "project"]:
+        elif name in ["space"]:
             obj = None
             if isinstance(value, str):
                 # fetch object in openBIS, make sure it actually exists
@@ -2668,6 +2682,26 @@ class AttrHolder():
                 pass
             else:
                 self.__dict__['_' + name]['isModified'] = True
+
+        elif name in ["sample", "experiment", "project"]:
+            obj = None
+            if isinstance(value, str):
+                # fetch object in openBIS, make sure it actually exists
+                obj = getattr(self._openbis, "get_" + name)(value)
+            elif value is None:
+                self.__dict__['_'+name] = {}
+                return
+            else:
+                obj = value
+
+            self.__dict__['_' + name] = obj.data['identifier']
+
+            # mark attribute as modified, if it's an existing entity
+            if self.is_new:
+                pass
+            else:
+                self.__dict__['_' + name]['isModified'] = True
+
 
         elif name in ["identifier"]:
             raise KeyError("you can not modify the {}".format(name))
@@ -2869,7 +2903,8 @@ class Sample():
             'get_datasets()', 'get_experiment()',
             'space', 'project', 'experiment', 'project', 'tags',
             'set_tags()', 'add_tags()', 'del_tags()',
-            'add_attachment()', 'get_attachments()', 'download_attachments()'
+            'add_attachment()', 'get_attachments()', 'download_attachments()',
+            'save()', 'delete()'
         ]
 
     @property
@@ -2906,12 +2941,9 @@ class Sample():
 
     def save(self):
         props = self.p._all_props()
-        attrs = self.a._up_attrs()
-        attrs["properties"] = props
 
-        if self.identifier is None:
+        if self.is_new:
             request = self._new_attrs()
-            props = self.p._all_props()
             request["params"][1][0]["properties"] = props
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
@@ -2922,10 +2954,10 @@ class Sample():
 
         else:
             request = self._up_attrs()
-            props = self.p._all_props()
-            request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Sample successfully updated.")
+            new_sample_data = self.openbis.get_sample(self.permId, only_data=True)
+            self._set_data(new_sample_data)
 
     def delete(self, reason):
         self.openbis.delete_entity('sample', self.permId, reason)
@@ -3139,7 +3171,7 @@ class Experiment(OpenBisObject):
     """ 
     """
 
-    def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
+    def __init__(self, openbis_obj, type, data=None, props=None, code=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
@@ -3153,8 +3185,13 @@ class Experiment(OpenBisObject):
                 setattr(self.p, key, props[key])
 
         if kwargs is not None:
+            defs = _definitions('Experiment')
             for key in kwargs:
-                setattr(self, key, kwargs[key])
+                if key in defs['attrs']:
+                    setattr(self, key, kwargs[key])
+                else:
+                    raise ValueError("{attr} is not a known attribute for an Experiment".format(attr=key))
+
 
     def _set_data(self, data):
         # assign the attribute data to self.a by calling it
@@ -3177,7 +3214,8 @@ class Experiment(OpenBisObject):
             'project', 'tags', 'attachments', 'data',
             'get_datasets()', 'get_samples()',
             'set_tags()', 'add_tags()', 'del_tags()',
-            'add_attachment()', 'get_attachments()', 'download_attachments()'
+            'add_attachment()', 'get_attachments()', 'download_attachments()',
+            'save()'
         ]
 
     @property
@@ -3237,6 +3275,46 @@ class Experiment(OpenBisObject):
     def get_samples(self, **kwargs):
         return self.openbis.get_samples(experiment=self.permId, **kwargs)
 
+    def add_samples(self, *samples):
+
+        for sample in samples:
+            if isinstance(sample, str):
+                obj = self.openbis.get_sample(sample)
+            else:
+                # we assume we got a sample object
+                obj = sample
+
+            # a sample can only belong to exactly one experiment
+            if obj.experiment is not None:
+                raise ValueError(
+                    "sample {} already belongs to experiment {}".format(
+                        obj.code, obj.experiment
+                    )
+                )
+            else:
+                if self.is_new:
+                    raise ValueError("You need to save this experiment first before you can assign any samples to it")
+                else:
+                    # update the sample directly
+                    obj.experiment = self.identifier
+                    obj.save()
+                    self.a.__dict__['_samples'].append(obj._identifier)
+
+
+    def del_samples(self, samples):
+        if not isinstance(samples, list):
+            samples = [samples]
+
+        
+        for sample in samples:
+            if isinstance(sample, str):
+                obj = self.openbis.get_sample(sample)
+                objects.append(obj)
+            else:
+                # we assume we got an object
+                objects.append(obj)
+        
+        self.samples = objects
 
 class Attachment():
     def __init__(self, filename, title=None, description=None):
@@ -3290,7 +3368,7 @@ class Project(OpenBisObject):
                 'registrationDate', 'modifier', 'modificationDate', 'add_attachment()',
                 'get_attachments()', 'download_attachments()',
                 'get_experiments()', 'get_samples()', 'get_datasets()',
-                'delete()'
+                'save()', 'delete()'
                 ]
 
     def get_samples(self, **kwargs):
