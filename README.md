@@ -4,9 +4,12 @@
 from pybis import Openbis
 o = Openbis('https://example.com:8443', verify_certificates=False)
 o.login('username', 'password', save_token=True)   # saves the session token in ~/.pybis/example.com.token
-o.get_datastores()
+o.token
 o.is_session_active()
+o.get_datastores()
 o.logout()
+
+
 
 # Masterdata
 o.get_experiment_types()
@@ -20,6 +23,8 @@ o.get_terms()
 o.get_terms('MATING_TYPE')
 o.get_tags()
 
+
+
 # Spaces and Projects
 o.get_spaces()
 o.get_space('MY_SPACE')
@@ -31,8 +36,50 @@ project.download_attachments()
 p.add_attachment(fileName='testfile', description= 'another file', title= 'one more attachment')
 p.save()
 
+
+# Samples
+sample = o.new_sample(
+    type='YEAST', 
+    space='MY_SPACE', 
+    parents=[parent_sample, '/MY_SPACE/YEA66'], 
+    children=[child_sample]
+)
+sample.space
+sample.code
+sample.permId
+sample.identifier
+sample.type  # once the sample type is defined, you cannot modify it
+sample.space
+sample.space = 'MY_OTHER_SPACE'
+sample.experiment    # a sample can belong to one experiment only
+sample.experiment = 'MY_SPACE/MY_PROJECT/MY_EXPERIMENT'
+sample.tags
+sample.tags = ['guten_tag', 'zahl_tag' ]
+sample.get_parents()
+sample.get_childeren()
+sample.props, sample.p
+sample.get_attachments()
+sample.download_attachments()
+sample.add_attachment('testfile.xls')
+samples = o.get_samples(
+    space='MY_SPACE',
+    type='YEAST'
+    tags=['*']  # tags must be present
+    NAME = 'some name'   # properties are all uppercase
+    props=['name', 'mating_type','show_in_project_overview']    # properties to be displayed in the dataFrame
+)
+samples.df  # returns a pandas dataframe object
+samples.get_datasets(type='ANALYZED_DATA')  # for all found samples get all datasets
+# Note: Project samples are not implemented yet.
+
+
+
 # Experiments
-o.new_experiment(type='DEFAULT_EXPERIMENT', space='MY_SPACE', project='YEASTS')
+o.new_experiment
+    type='DEFAULT_EXPERIMENT',
+    space='MY_SPACE',
+    project='YEASTS'
+)
 o.get_experiments(
     project='YEASTS',
     space='MY_SPACE', 
@@ -50,6 +97,8 @@ exp.a     # same as exp.attrs
 exp.attrs.tags = ['some', 'extra', 'tags']
 exp.tags = ['some', 'extra', 'tags']          # same thing
 exp.save()
+
+
 
 # Datasets
 sample.get_datasets()
