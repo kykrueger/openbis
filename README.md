@@ -1,3 +1,7 @@
+# Welcome to pyBIS!
+pyBIS is a Python module for interacting with openBIS. It can be used completely independent from Jupyter or JupyterHub. However, in combination with Jupyter it offers a sort of IDE for openBIS, making the life of a normal user with moderate programming skills very easy.
+
+
 # SYNOPSIS
 
 ```
@@ -8,7 +12,6 @@ o.token
 o.is_session_active()
 o.get_datastores()
 o.logout()
-
 
 
 # Masterdata
@@ -22,7 +25,6 @@ o.get_dataset_type('RAW_DATA')
 o.get_terms()
 o.get_terms('MATING_TYPE')
 o.get_tags()
-
 
 
 # Spaces and Projects
@@ -73,7 +75,6 @@ samples.get_datasets(type='ANALYZED_DATA')  # for all found samples get all data
 # Note: Project samples are not implemented yet.
 
 
-
 # Experiments
 o.new_experiment
     type='DEFAULT_EXPERIMENT',
@@ -99,7 +100,6 @@ exp.tags = ['some', 'extra', 'tags']          # same thing
 exp.save()
 
 
-
 # Datasets
 sample.get_datasets()
 ds = o.get_dataset('20160719143426517-259')
@@ -119,11 +119,6 @@ ds.download_attachments()
 ds.download(destination='/tmp', wait_until_finished=False)
 
 ```
-
-
-# pyBIS
-
-pyBIS is a Python module for interacting with openBIS. It can be used completely independent from Jupyter or JupyterHub. However, in combination with Jupyter it offers a sort of IDE for openBIS, making the life of a normal user with moderate programming skills very easy.
 
 # Requirements and organization
 
