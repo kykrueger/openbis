@@ -1,5 +1,5 @@
 # Welcome to pyBIS!
-pyBIS is a Python module for interacting with openBIS. It can be used completely independent from Jupyter or JupyterHub. However, in combination with Jupyter it offers a sort of IDE for openBIS, making the life of a normal user with moderate programming skills very easy.
+pyBIS is a Python module for interacting with openBIS, designed to be used in Jupyter. It offers a sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
 
 
 # SYNOPSIS
