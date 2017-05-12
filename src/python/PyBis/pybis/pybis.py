@@ -43,6 +43,7 @@ from queue import Queue
 from datetime import datetime
 
 DROPBOX_PLUGIN = "jupyter-uploader-api"
+ELN_PLUGIN = "eln-lims-api"
 
 
 def _definitions(entity):
@@ -565,8 +566,9 @@ def _subcriteria_for_code(code, object_type):
 class Openbis:
     """Interface for communicating with openBIS. 
     A recent version of openBIS is required (minimum 16.05.2).
+    For creation of datasets, ELN-LIMS needs to be installed.
     """
-    __version__ = '1.1.5'
+    __version__ = '1.2.0'
 
     def __init__(self, url, verify_certificates=True, token=None):
         """Initialize a new connection to an openBIS server.
@@ -1586,7 +1588,7 @@ class Openbis:
             raise ValueError('no such dataset found: ' + permid)
         if resp is not None:
             for permid in resp:
-                return DataSet(self, self.get_dataset_type(resp[permid]["type"]["code"]), resp[permid])
+                return DataSet(self, type=self.get_dataset_type(resp[permid]["type"]["code"]), data=resp[permid])
 
     def get_sample(self, sample_ident, only_data=False, withAttachments=False):
         """Retrieve metadata for the sample.
@@ -1836,10 +1838,14 @@ class Openbis:
         """
         return Sample(self, self.get_sample_type(type), None, props, **kwargs)
 
-    def new_dataset(self, type, props=None, **kwargs):
+    def new_dataset(self, type=type, files=None, props=None, **kwargs):
         """ Creates a new dataset of a given sample type.
         """
-        return DataSet(self, self.get_dataset_type(type.upper()), None, props, **kwargs)
+        if files is None:
+            raise ValueError('please provide at least one file')
+        elif isinstance(files, str):
+            files = [files]
+        return DataSet(self, type=self.get_dataset_type(type.upper()), files=files, props=props, **kwargs)
 
     def _get_dss_url(self, dss_code=None):
         """ internal method to get the downloadURL of a datastore.
@@ -2124,7 +2130,7 @@ class DataSet(OpenBisObject):
     """ DataSet are openBIS objects that contain the actual files.
     """
 
-    def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
+    def __init__(self, openbis_obj, type=type, data=None, files=None, props=None, **kwargs):
         super(DataSet, self).__init__(openbis_obj, type, data, props, **kwargs)
 
         # existing DataSet
@@ -2135,6 +2141,11 @@ class DataSet(OpenBisObject):
             else:
                 self.__dict__['shareId'] = data['physicalData']['shareId']
                 self.__dict__['location'] = data['physicalData']['location']
+        
+        # new DataSet
+        if files is not None:
+            self.__dict__['files'] = files
+
 
     def __str__(self):
         return self.data['code']
@@ -2225,7 +2236,7 @@ class DataSet(OpenBisObject):
         """
 
         if files == None:
-            files = self.file_list()
+            files = self.file_list
         elif isinstance(files, str):
             files = [files]
 
@@ -2319,7 +2330,7 @@ class DataSet(OpenBisObject):
         if resp.ok:
             data = resp.json()
             if 'error' in data:
-                raise ValueError('Error from openBIS: ' + data['error'])
+                raise ValueError('Error from openBIS: ' + data['error']['message'])
             elif 'result' in data:
                 return data['result']
             else:
@@ -2327,9 +2338,80 @@ class DataSet(OpenBisObject):
         else:
             raise ValueError('internal error while performing post request')
 
+
+    def _generate_plugin_request(self, dss):
+        """generates a request to activate the eln-lims ingestion plugin to
+        register our files as a new dataset
+        """
+
+        sample_identifier = None
+        if self.sample is not None:
+            sample_identifier = self.sample.identifier
+
+        experiment_identifier = None
+        if self.experiment is not None:
+            experiment_identifier = self.experiment.identifier
+
+        dataset_type = self.type.code
+        metadata = self.props.all_nonempty()
+
+
+        request = {
+	    "method": "createReportFromAggregationService",
+	    "params": [
+                self.openbis.token,
+                dss,
+                ELN_PLUGIN,
+		{
+                    "method": "insertDataSet",
+                    "dataSetCode": None,
+                    "sampleIdentifier": sample_identifier,
+                    "experimentIdentifier": experiment_identifier,
+                    "dataSetType": dataset_type,
+                    "filenames": self.files,
+                    "folderName": "DEFAULT",
+                    "isZipDirectoryUpload": False,
+                    "metadata": metadata,
+                    "sessionID": self.openbis.token,
+                    "sessionToken": self.openbis.token
+		}
+	    ],
+	}
+        return request
+
+
     def save(self):
         if self.is_new:
-            raise ValueError('not implemented yet.')
+            if self.files is None or len(self.files) == 0:
+                raise ValueError('Cannot register a dataset without a file. Please provide at least one file')
+
+            if self.sample is None and self.experiment is None:
+                raise ValueError('A DataSet must be either connected to a Sample or an Experiment')
+
+            # upload the data to the user session workspace
+            datastores = self.openbis.get_datastores()
+
+            self.openbis.upload_files(
+                datastore_url= datastores['downloadUrl'][0],
+                files=self.files,
+                folder='',
+                wait_until_finished=True
+            )
+
+            # activate the ingestion plugin, as soon as the data is uploaded
+            request = self._generate_plugin_request(dss=datastores['code'][0])
+
+            resp = self.openbis._post_request(self.openbis.reg_v1, request)
+
+            if resp['rows'][0][0]['value'] == 'OK':
+                print("DataSet successfully created.")
+                self
+            else:
+                raise ValueError('Error while creating the DataSet: ' + resp['rows'][0][1]['value'])
+
+            self.__dict__['_is_new'] = False
+
+            
         else:
             request = self._up_attrs()
             props = self.p._all_props()
