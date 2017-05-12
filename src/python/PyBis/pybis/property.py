@@ -21,6 +21,21 @@ class PropertyHolder():
             props[code] = getattr(self, code)
         return props
 
+    def all(self):
+        props = {}
+        for code in self._type.codes():
+            props[code] = getattr(self, code)
+        return props
+
+    def all_nonempty(self):
+        props = {}
+        for code in self._type.codes():
+            value = getattr(self, code)
+            if value is not None:
+                props[code] = value
+
+        return props
+
     def __getattr__(self, name):
         """ attribute syntax can be found out by
             adding an underscore at the end of the property name
@@ -123,6 +138,14 @@ class PropertyAssignments():
         """String representation of this entity type
         """
         return self.data['code']
+
+    @property
+    def code(self):
+        return self.data['code']
+
+    @property
+    def description(self):
+        return self.data['description']
 
     def __eq__(self, other):
         return str(self) == str(other)
