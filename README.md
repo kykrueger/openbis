@@ -118,6 +118,15 @@ ds.get_attachments()
 ds.download_attachments()
 ds.download(destination='/tmp', wait_until_finished=False)
 
+ds_new = o.new_dataset(
+    type='ANALYZED_DATA', 
+    experiment=exp, 
+    sample= samp,
+    files = ['my_analyzed_data.dat'], 
+    props={'name': 'we give this dataset a name', 'notes': 'and we might need some notes, too'})
+)
+ds_new.save()
+
 ```
 
 # Requirements and organization
