@@ -43,7 +43,7 @@ from queue import Queue
 from datetime import datetime
 
 DROPBOX_PLUGIN = "jupyter-uploader-api"
-ELN_PLUGIN = "eln-lims-api"
+DATASET_UPLOADER_PLUGIN = "dataset-uploader-api"
 
 
 def _definitions(entity):
@@ -566,7 +566,7 @@ def _subcriteria_for_code(code, object_type):
 class Openbis:
     """Interface for communicating with openBIS. 
     A recent version of openBIS is required (minimum 16.05.2).
-    For creation of datasets, ELN-LIMS needs to be installed.
+    For creation of datasets, dataset-uploader-api needs to be installed.
     """
     __version__ = '1.2.0'
 
@@ -1546,7 +1546,7 @@ class Openbis:
         resp = self._post_request(self.as_v1, request)
         return resp
 
-    def get_dataset(self, permid):
+    def get_dataset(self, permid, only_data=False):
         """fetch a dataset and some metadata attached to it:
         - properties
         - sample
@@ -1588,7 +1588,14 @@ class Openbis:
             raise ValueError('no such dataset found: ' + permid)
         if resp is not None:
             for permid in resp:
-                return DataSet(self, type=self.get_dataset_type(resp[permid]["type"]["code"]), data=resp[permid])
+                if only_data:
+                    return resp[permid]
+                else:
+                    return DataSet(
+                        self, 
+                        type=self.get_dataset_type(resp[permid]["type"]["code"]),
+                        data=resp[permid]
+                    )
 
     def get_sample(self, sample_ident, only_data=False, withAttachments=False):
         """Retrieve metadata for the sample.
@@ -1840,6 +1847,10 @@ class Openbis:
 
     def new_dataset(self, type=type, files=None, props=None, **kwargs):
         """ Creates a new dataset of a given sample type.
+        When working with OpenBIS releases before 16.05.04, updates to the
+        dataset object after newly creating them might not work correctly,
+        because the uploader plugin (for new dataSets) doesn't return the
+        new permId of that object.
         """
         if files is None:
             raise ValueError('please provide at least one file')
@@ -2340,7 +2351,7 @@ class DataSet(OpenBisObject):
 
 
     def _generate_plugin_request(self, dss):
-        """generates a request to activate the eln-lims ingestion plugin to
+        """generates a request to activate the dataset-uploader ingestion plugin to
         register our files as a new dataset
         """
 
@@ -2361,10 +2372,9 @@ class DataSet(OpenBisObject):
 	    "params": [
                 self.openbis.token,
                 dss,
-                ELN_PLUGIN,
+                DATASET_UPLOADER_PLUGIN,
 		{
                     "method": "insertDataSet",
-                    "dataSetCode": None,
                     "sampleIdentifier": sample_identifier,
                     "experimentIdentifier": experiment_identifier,
                     "dataSetType": dataset_type,
@@ -2404,8 +2414,14 @@ class DataSet(OpenBisObject):
             resp = self.openbis._post_request(self.openbis.reg_v1, request)
 
             if resp['rows'][0][0]['value'] == 'OK':
-                print("DataSet successfully created.")
-                self
+                permId = resp['rows'][0][2]['value']
+                if permId is None or permId == '': 
+                    self.__dict__['is_new'] = False
+                    print("DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object.")
+                else:
+                    new_dataset_data = self.openbis.get_dataset(permId, only_data=True)
+                    self._set_data(new_dataset_data)
+                    print("DataSet successfully created.")
             else:
                 raise ValueError('Error while creating the DataSet: ' + resp['rows'][0][1]['value'])
 
