@@ -131,8 +131,18 @@ ds_new.save()
 
 # Requirements and organization
 
-### Requirements
-pyBIS uses the openBIS API v3. Because of some compatibility problems, openBIS version 16.05.1 is the minimal requirement. On the Python side, pyBIS uses Python 3.5 and pandas.
+### Dependencies and Requirements
+- pyBIS relies the openBIS API v3; openBIS version 16.05.2 or newer 
+- pyBIS uses Python 3.3 and pandas
+- pyBIS needs the jupyter-uploader-api to be installed, in order to register new datasets
+
+### Installation
+
+- locate the `jupyter-api` folder found in `pybis/src/coreplugins`
+- copy this folder to `openbis/servers/core-plugins` in your openBIS installation
+- register the plugin by editing `openbis/servers/core-plugins/core-plugins.properties:
+- enabled-modules = jupyter-api
+
 
 ### Organization
 pyBIS is devided in several parts:
