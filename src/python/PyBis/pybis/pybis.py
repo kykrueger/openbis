@@ -42,8 +42,7 @@ from queue import Queue
 
 from datetime import datetime
 
-DROPBOX_PLUGIN = "jupyter-uploader-api"
-DATASET_UPLOADER_PLUGIN = "dataset-uploader-api"
+PYBIS_PLUGIN = "jupyter-uploader-api"
 
 
 def _definitions(entity):
@@ -71,7 +70,7 @@ def _definitions(entity):
         "Sample": {
             "attrs_new": "code type parents children space experiment tags attachments".split(),
             "attrs_up": "parents children space experiment tags attachments".split(),
-            "attrs": "code permId identifier type space experiment tags attachments".split(),
+            "attrs": "code permId identifier type parents children components space experiment tags attachments".split(),
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
                 'childIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
@@ -870,7 +869,9 @@ class Openbis:
             "operator": "AND"
         }
 
+        # build the various fetch options
         fetchopts = fetch_option['sample']
+
         for option in ['tags', 'properties', 'registrator', 'modifier', 'experiment']:
             fetchopts[option] = fetch_option[option]
 
@@ -1604,18 +1605,17 @@ class Openbis:
         :param sample_identifiers: A list of sample identifiers to retrieve.
         """
 
-        fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
-
         search_request = search_request_for_identifier(sample_ident, 'sample')
 
+        fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
         for option in ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets']:
             fetchopts[option] = fetch_option[option]
 
         if withAttachments:
             fetchopts['attachments'] = fetch_option['attachmentsWithContent']
 
-        # fetchopts["parents"]  = { "@type": "as.dto.sample.fetchoptions.SampleFetchOptions" }
-        # fetchopts["children"] = { "@type": "as.dto.sample.fetchoptions.SampleFetchOptions" }
+        for key in ['parents','children','container','components']:
+            fetchopts[key] = {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"}
 
         sample_request = {
             "method": "getSamples",
@@ -1747,9 +1747,8 @@ class Openbis:
             "params": [
                 self.token,
                 dss_code,
-                DROPBOX_PLUGIN,
+                PYBIS_PLUGIN,
                 {
-                    "sample": {"identifier": sampleId['identifier']},
                     "sampleId": sampleId,
                     "parentIds": parentIds,
                     "containers": [{
@@ -2272,12 +2271,6 @@ class DataSet(OpenBisObject):
 
         print("Files downloaded to: %s" % os.path.join(destination, self.permId))
 
-    def get_parents(self, **kwargs):
-        return self.openbis.get_datasets(withChildren=self.permId, **kwargs)
-
-    def get_children(self, **kwargs):
-        return self.openbis.get_datasets(withParents=self.permId, **kwargs)
-
     @property
     def file_list(self):
         """returns the list of files including their directories as an array of strings. Just folders are not
@@ -2363,30 +2356,30 @@ class DataSet(OpenBisObject):
         if self.experiment is not None:
             experiment_identifier = self.experiment.identifier
 
+        parentIds = self.parents
+
         dataset_type = self.type.code
         metadata = self.props.all_nonempty()
 
-
         request = {
-	    "method": "createReportFromAggregationService",
-	    "params": [
+            "method": "createReportFromAggregationService",
+            "params": [
                 self.openbis.token,
                 dss,
-                DATASET_UPLOADER_PLUGIN,
-		{
-                    "method": "insertDataSet",
-                    "sampleIdentifier": sample_identifier,
-                    "experimentIdentifier": experiment_identifier,
-                    "dataSetType": dataset_type,
-                    "filenames": self.files,
-                    "folderName": "DEFAULT",
-                    "isZipDirectoryUpload": False,
-                    "metadata": metadata,
-                    "sessionID": self.openbis.token,
-                    "sessionToken": self.openbis.token
-		}
-	    ],
-	}
+                PYBIS_PLUGIN,
+                {
+                    "sampleId": sample_identifier,
+                    "experimentId": experiment_identifier,
+                    "dataSets": [ {
+                        "dataSetType": dataset_type,
+                        "sessionWorkspaceFolder": "",
+                        "fileNames": self.files,
+                        "properties": metadata,
+                        "parentIds": parentIds
+                    } ]
+                }
+            ],
+        }
         return request
 
 
@@ -2821,12 +2814,27 @@ class AttrHolder():
         return self._type
 
     def get_parents(self, **kwargs):
-        # e.g. self._openbis.get_samples(withChildren=self.identifier)
-        return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withChildren=self.identifier, **kwargs)
+        identifier = self.identifer
+        if identifier is None:
+            identifier = self.permId
+
+        if identifier is None:
+            # TODO: if this is a new object, return the list of the parents which have been assigned
+            pass
+        else:
+            return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withChildren=identifier, **kwargs)
 
     def get_children(self, **kwargs):
-        # e.g. self._openbis.get_samples(withParents=self.identifier)
-        return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withParents=self.identifier, **kwargs)
+        identifier = self.identifer
+        if identifier is None:
+            identifier = self.permId
+
+        if identifier is None:
+            # TODO: if this is a new object, return the list of the children which have been assigned
+            pass
+        else:
+            # e.g. self._openbis.get_samples(withParents=self.identifier)
+            return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withParents=identifier, **kwargs)
 
     @property
     def tags(self):

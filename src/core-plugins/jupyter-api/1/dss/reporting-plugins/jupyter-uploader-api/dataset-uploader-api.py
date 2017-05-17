@@ -37,7 +37,16 @@ import errno
 
 def getSampleByIdentifier(transaction, identifier):
     sample = transaction.getSampleForUpdate(identifier)
+    if sample is None:
+        raise UserFailureException("no sample found with this identifier: {}".format(identifier))
     return sample
+
+def getExperimentByIdentifier(transaction, identifier):
+    experiment = transaction.getExperimentForUpdate(identifier)
+    if experiment is None:
+        raise UserFailureException("no experiment found with this identifier: {}".format(identifier))
+
+    return experiment
 
 def get_dataset_for_name(transaction, dataset_name):
 
@@ -46,9 +55,8 @@ def get_dataset_for_name(transaction, dataset_name):
     criteria.addMatchClause(MatchClause.createPropertyMatch('NAME', dataset_name))
     found = list(search_service.searchForDataSets(criteria))
     if len(found) == 1:
-        print("DataSetCode of found dataset = " + found[0].getDataSetCode())
+        #print("DataSetCode of found dataset = " + found[0].getDataSetCode())
         return transaction.getDataSetForUpdate(found[0].getDataSetCode())
-        #return found[0]
     else:
         return None
 
@@ -87,42 +95,46 @@ def process(transaction, parameters, tableBuilder):
 
     '''
     transaction.setUserId(userId)
-    print(dir())
-    # check for mandatory parameters
-    for param in ['sample']:
-        if parameters.get(param) is None:
-            raise UserFailureException("mandatory parameter " + param + " is missing")
+    #print(dir())
+    ## any print statements is written to openbis/servers/datastore_server/log/startup_log.txt
+    #print('userSessionToken: ' + userSessionToken)
 
-    # all print statements are written to openbis/servers/datastore_server/log/startup_log.txt
-    print('userSessionToken: ' + userSessionToken)
 
-    # get mandatory sample to connect the container to
+    # get sample to connect the container to
     sample = None
     sampleId = parameters.get("sampleId")
-    if sampleId is None:
-        raise UserFailureException('mandatory parameter sampleId is missing')
-    print(sampleId)
-    if "identifier" in sampleId:
-        print('looking for sample with identifier: ' + sampleId['identifier'])
-        sample = getSampleByIdentifier(transaction, sampleId['identifier'])
-        if sample == None: 
-            raise Exception("no sample found with this identifier: " + sampleId['identifier'])
+    if sampleId is not None:
+        #print('looking for sample with identifier: ' + sampleId['identifier'])
+        sample = getSampleByIdentifier(transaction, sampleId)
+
+    experiment = None
+    experimentId = parameters.get("experimentId")
+    if experimentId is not None:
+        #print('looking for experiment with identifier: ' + sampleId['identifier'])
+        experiment = getExperimentByIdentifier(transaction, experimentId)
+
+    if sample is None and experiment is None:
+        raise UserFailureException("to create a DataSet, either a sampleId or an experimentId must be present")
 
     parent_datasets = []
     if parameters.get('parentIds') is not None:
         for parentId in parameters.get('parentIds'):
             parent_datasets.append(parentId)
-    print("parent_datasets = " + str(parent_datasets))
+    #print("parent_datasets = " + str(parent_datasets))
 
     everything_ok = True
 
+    permId = None
     dataset_codes= []
+
     if parameters.get("dataSets") is not None:
         for ds in parameters.get("dataSets"):
             dataset_code = register_dataset(
                 transaction, 
                 ds.get("dataSetType"),
                 sample, 
+                experiment,
+                ds.get("parentIds"),
                 ds.get("properties"),
                 ds.get("sessionWorkspaceFolder"),
                 ds.get("fileNames")
@@ -130,22 +142,28 @@ def process(transaction, parameters, tableBuilder):
             dataset_codes.append(dataset_code)
 
 
+    # put the newly created dataset into a container
     if parameters.get("containers") is not None:
-        print("...creating container...")
+        #print("...creating container...")
         for container in parameters.get("containers"):
             #print("transaction = " + str(transaction))
             #print("dataSetType = " + container.get("dataSetType"))
             #print("sample = " + str(sample))
             #print("properties = " + str(container.get("properties")) )
             #print("dataset_codes: " + str(dataset_codes))
-            container_code = register_container(
+            new_cont = register_container(
                 transaction,
                 container.get("dataSetType"),
                 sample,
+                experiment,
                 parent_datasets,
                 container.get("properties"),
                 dataset_codes
             )
+            # just return the permId of the container, not of all created dataSets
+            dataset_codes = [new_cont.getDataSetCode()]
+
+    permId = dataset_codes[0]
 
     # create the dataset
     if everything_ok:
@@ -156,7 +174,7 @@ def process(transaction, parameters, tableBuilder):
         row = tableBuilder.addRow()
         row.setCell("STATUS","OK")
         row.setCell("MESSAGE", "Dataset registration successful")
-        row.setCell("RESULT", None)
+        row.setCell("RESULT", permId)
 
     else:
         # Error message
@@ -167,27 +185,28 @@ def process(transaction, parameters, tableBuilder):
         row.setCell("MESSAGE", "Dataset registration failed")
 
 
-def register_container(transaction, dataset_type, sample, parent_datasets, properties, contained_dataset_codes ):
+def register_container(transaction, dataset_type, sample, experiment, parent_datasets, properties, contained_dataset_codes ):
 
     container_name = properties.get("NAME")
-    print("check if the JUPYTER_CONTAINER already exists with name: "+ container_name)
+    #print("check if the JUPYTER_CONTAINER already exists with name: "+ container_name)
     # make sure container dataset doesn't exist yet
     container = get_dataset_for_name(transaction, container_name)
 
     if container is None:
-        print("creating new JUPYTER_CONTAINER dataset... with name: " + container_name)
+        #print("creating new JUPYTER_CONTAINER dataset... with name: " + container_name)
         # Create new container (a dataset of type "JUPYTER_CONTAINER")
         container = transaction.createNewDataSet(dataset_type)
         container.setSample(sample)
+        container.setExperiment(experiment)
         container.setParentDatasets(parent_datasets)
         #container.setRegistrator(userId)
     else:
         print("JUPYTER_CONTAINER already exists: " + container_name)
     
-    print("setting properties...")
+    #print("setting properties...")
     for key in properties.keySet():
         propertyValue = unicode(properties[key])
-        print("container: setting "+key+"="+propertyValue)
+        #print("container: setting "+key+"="+propertyValue)
 
         if propertyValue == "":
             propertyValue = None
@@ -199,7 +218,7 @@ def register_container(transaction, dataset_type, sample, parent_datasets, prope
     return container
 
 
-def register_dataset(transaction, dataset_type, sample, properties, ws_folder, file_names):
+def register_dataset(transaction, dataset_type, sample, experiment, parentIds, properties, ws_folder, file_names):
     """ creates a new dataset of a given type.
     - the result files are copied from the session workspace
       to a temp dir close to the DSS: prepareFilesForRegistration()
@@ -210,6 +229,13 @@ def register_dataset(transaction, dataset_type, sample, properties, ws_folder, f
     print("creating dataset of type: " + dataset_type)
     dataset = transaction.createNewDataSet(dataset_type)
     dataset.setSample(sample)
+    dataset.setExperiment(experiment)
+
+    parents = []
+    if parentIds is not None:
+        for parentId in parentIds:
+            parents.append(parentId)
+    dataset.setParentDatasets(parents)
 
     # setting any given properties
     for key in properties.keySet():
