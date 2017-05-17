@@ -148,8 +148,8 @@ ds_new.save()
 ### Project Organization
 This project is devided in several parts:
 
-- src/python/**PyBis** Python module which holds all the method to interact with openBIS
-- src/python/**OBis** Register large datasets in OpenBIS without copying the data. Uses git annex for version control and OpenBIS linkedDataSet objects
+- src/python/**PyBis** Python module which holds all the method to interact with OpenBIS
+- src/python/**OBis** a command-line tool to register large datasets in OpenBIS without actually copying the data. Uses git annex for version control and OpenBIS linkedDataSet objects to register the metadata.
 - src/python/**JupyterBis** a JupyterHub authenticator module which uses pyBIS for authenticating against openBIS, validating and storing the session token
 - src/core-plugins/**jupyter-api**, an ingestion plug-in for openBIS, allowing people to upload new datasets
 - src/vagrant/**jupyter-bis/Vagrantfile** to set up JupyterHub on a virtual machine (CentOS 7), which uses the JupyterBis authenticator module
