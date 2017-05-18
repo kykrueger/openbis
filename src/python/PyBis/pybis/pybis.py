@@ -1844,18 +1844,17 @@ class Openbis:
         """
         return Sample(self, self.get_sample_type(type), None, props, **kwargs)
 
-    def new_dataset(self, type=type, files=None, props=None, **kwargs):
+    def new_dataset(self, type=None, files=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given sample type.
-        When working with OpenBIS releases before 16.05.04, updates to the
-        dataset object after newly creating them might not work correctly,
-        because the uploader plugin (for new dataSets) doesn't return the
-        new permId of that object.
         """
         if files is None:
             raise ValueError('please provide at least one file')
         elif isinstance(files, str):
             files = [files]
-        return DataSet(self, type=self.get_dataset_type(type.upper()), files=files, props=props, **kwargs)
+
+        type_obj = self.get_dataset_type(type.upper())
+
+        return DataSet(self, type=type_obj, files=files, folder=folder, props=props, **kwargs)
 
     def _get_dss_url(self, dss_code=None):
         """ internal method to get the downloadURL of a datastore.
@@ -2140,7 +2139,7 @@ class DataSet(OpenBisObject):
     """ DataSet are openBIS objects that contain the actual files.
     """
 
-    def __init__(self, openbis_obj, type=type, data=None, files=None, props=None, **kwargs):
+    def __init__(self, openbis_obj, type=type, data=None, files=None, folder=None, props=None, **kwargs):
         super(DataSet, self).__init__(openbis_obj, type, data, props, **kwargs)
 
         # existing DataSet
@@ -2156,6 +2155,8 @@ class DataSet(OpenBisObject):
         if files is not None:
             self.__dict__['files'] = files
 
+        self.__dict__['folder'] = folder
+
 
     def __str__(self):
         return self.data['code']
@@ -2167,9 +2168,15 @@ class DataSet(OpenBisObject):
             'tags', 'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files(start_folder='/')", 'file_list',
-            'download(files=None, destination=None, wait_until_finished=True)', 'status', 'archive()', 'unarchive()'
-                                                                                                       'data'
+            'download(files=None, destination=None, wait_until_finished=True)', 
+            'status', 'archive()', 'unarchive()', 'data'
         ]
+
+    def __setattr__(self, name, value):
+        if name in ['folder']:
+            self.__dict__[name] = value
+        else:
+            super(DataSet, self).__setattr__(name, value)
 
     @property
     def props(self):
@@ -2272,6 +2279,10 @@ class DataSet(OpenBisObject):
         print("Files downloaded to: %s" % os.path.join(destination, self.permId))
 
     @property
+    def folder(self):
+        return self.__dict__['folder']
+
+    @property
     def file_list(self):
         """returns the list of files including their directories as an array of strings. Just folders are not
         listed.
@@ -2372,6 +2383,7 @@ class DataSet(OpenBisObject):
                     "experimentId": experiment_identifier,
                     "dataSets": [ {
                         "dataSetType": dataset_type,
+                        "folder": self.folder,
                         "sessionWorkspaceFolder": "",
                         "fileNames": self.files,
                         "properties": metadata,

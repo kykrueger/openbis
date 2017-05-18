@@ -137,7 +137,8 @@ def process(transaction, parameters, tableBuilder):
                 ds.get("parentIds"),
                 ds.get("properties"),
                 ds.get("sessionWorkspaceFolder"),
-                ds.get("fileNames")
+                ds.get("fileNames"),
+                ds.get("folder")
             )
             dataset_codes.append(dataset_code)
 
@@ -146,11 +147,6 @@ def process(transaction, parameters, tableBuilder):
     if parameters.get("containers") is not None:
         #print("...creating container...")
         for container in parameters.get("containers"):
-            #print("transaction = " + str(transaction))
-            #print("dataSetType = " + container.get("dataSetType"))
-            #print("sample = " + str(sample))
-            #print("properties = " + str(container.get("properties")) )
-            #print("dataset_codes: " + str(dataset_codes))
             new_cont = register_container(
                 transaction,
                 container.get("dataSetType"),
@@ -218,7 +214,7 @@ def register_container(transaction, dataset_type, sample, experiment, parent_dat
     return container
 
 
-def register_dataset(transaction, dataset_type, sample, experiment, parentIds, properties, ws_folder, file_names):
+def register_dataset(transaction, dataset_type, sample, experiment, parentIds, properties, ws_folder, file_names, folder):
     """ creates a new dataset of a given type.
     - the result files are copied from the session workspace
       to a temp dir close to the DSS: prepareFilesForRegistration()
@@ -251,7 +247,9 @@ def register_dataset(transaction, dataset_type, sample, experiment, parentIds, p
     # create temporary folder in incoming-dir ( openbis/servers/datastore_server/data/incoming )
     threadProperties = getThreadProperties(transaction)
     #incoming_dir =  os.path.join( threadProperties[u'incoming-dir'], str(time.time()) )
-    incoming_dir =  os.path.join( threadProperties[u'incoming-dir'], dataset_type )
+    if folder is None:
+        folder = dataset_type
+    incoming_dir =  os.path.join( threadProperties[u'incoming-dir'], folder )
     print("incoming folder is: " + incoming_dir)
 
     dss_service = ServiceProvider.getDssServiceRpcGeneric().getService()
@@ -260,6 +258,7 @@ def register_dataset(transaction, dataset_type, sample, experiment, parentIds, p
     for file_name in file_names:
         ws_file_path = os.path.join(ws_folder, file_name)
         print("copying file from session workspace: " + ws_file_path)
+        # JUPYTER_RESULT/file_name
         incoming_file_path = os.path.join(incoming_dir, file_name)
         print("to incoming: "+incoming_file_path)
 
@@ -271,16 +270,19 @@ def register_dataset(transaction, dataset_type, sample, experiment, parentIds, p
             pass
 
 
-        # create input and output stream
+        # copy files from session user workspace
+        # to incoming path, because they might
+        # not be on the same drive.
         inputStream = dss_service.getFileFromSessionWorkspace(userSessionToken, ws_file_path)
         outputStream = FileOutputStream(File(incoming_file_path))
         IOUtils.copyLarge(inputStream, outputStream)
         IOUtils.closeQuietly(inputStream)
         IOUtils.closeQuietly(outputStream)
 
-    print("transaction.move from incoming folder: " + incoming_dir)
-    transaction.moveFile(File(incoming_dir).getAbsolutePath(), dataset);
-#    temp_dir = prepareFilesForRegistration(transaction, file_names)
+
+    # there is only one transation move per dataset.
+    print("transaction.moveFile from incoming folder: " + incoming_dir)
+    transaction.moveFile(File(incoming_dir).getAbsolutePath(), dataset, folder);
 
     # ...and delete all files from the session workspace
     # TODO: delete it later
