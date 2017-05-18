@@ -131,13 +131,26 @@ ds_new.save()
 
 # Requirements and organization
 
-### Requirements
-pyBIS uses the openBIS API v3. Because of some compatibility problems, openBIS version 16.05.1 is the minimal requirement. On the Python side, pyBIS uses Python 3.5 and pandas.
+### Dependencies and Requirements
+- pyBIS relies the openBIS API v3; openBIS version 16.05.2 or newer 
+- pyBIS uses Python 3.3 and pandas
+- pyBIS needs the jupyter-api to be installed, in order to register new datasets
 
-### Organization
-pyBIS is devided in several parts:
+### Installation
 
-- the **pyBIS module** which holds all the method to interact with openBIS
-- the **JupyterHub authenticator** which uses pyBIS for authenticating against openBIS, validating and storing the session token
-- the **Vagrantfile** to set up a complete virtual machine, based on Cent OS 7, including JupyterHub
-- the **dataset-uploader-api.py**, an ingestion plug-in for openBIS, allowing people to upload new datasets
+- locate the `jupyter-api` folder found in `pybis/src/coreplugins`
+- copy this folder to `openbis/servers/core-plugins` in your openBIS installation
+- register the plugin by editing `openbis/servers/core-plugins/core-plugins.properties` :
+- `enabled-modules = jupyter-api` (separate multiple plugins with comma)
+- restart your DSS to activate the plugin
+
+
+### Project Organization
+This project is devided in several parts:
+
+- src/python/**PyBis** Python module which holds all the method to interact with OpenBIS
+- src/python/**OBis** a command-line tool to register large datasets in OpenBIS without actually copying the data. Uses git annex for version control and OpenBIS linkedDataSet objects to register the metadata.
+- src/python/**JupyterBis** a JupyterHub authenticator module which uses pyBIS for authenticating against openBIS, validating and storing the session token
+- src/core-plugins/**jupyter-api**, an ingestion plug-in for openBIS, allowing people to upload new datasets
+- src/vagrant/**jupyter-bis/Vagrantfile** to set up JupyterHub on a virtual machine (CentOS 7), which uses the JupyterBis authenticator module
+- src/vagrant/**obis/Vagrantfile** to set up a complete OpenBIS instance on a virtual machine (CentOS 7)
