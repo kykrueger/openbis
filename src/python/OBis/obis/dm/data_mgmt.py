@@ -295,13 +295,13 @@ class GitDataMgmt(AbstractDataMgmt):
         status = self.git_wrapper.git_status(folder)
         if len(status.output.strip()) < 1:
             # Nothing to commit
-            return
+            return CommandResult(returncode=0, output="")
         self.git_wrapper.git_add(folder)
         if msg_fragment is None:
             msg = "OBIS: Update openBIS metadata cache."
         else:
             msg = "OBIS: Update {}.".format(msg_fragment)
-        self.git_wrapper.git_commit(msg)
+        return self.git_wrapper.git_commit(msg)
 
     def revert_last_metadata_update(self):
         self.git_wrapper.git_reset_prev()
@@ -509,7 +509,7 @@ class OpenbisSync(object):
             return CommandResult(returncode=-1, output=str(e)), None
 
     def commit_metadata_updates(self, msg_fragment=None):
-        self.data_mgmt.commit_metadata_updates(msg_fragment)
+        return self.data_mgmt.commit_metadata_updates(msg_fragment)
 
     def revert_last_metadata_update(self):
         self.data_mgmt.revert_last_metadata_update()
