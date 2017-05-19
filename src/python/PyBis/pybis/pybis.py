@@ -1800,20 +1800,20 @@ class Openbis:
     @staticmethod
     def sample_to_sample_id(sample):
         """Take sample which may be a string or object and return an identifier for it."""
-        sampleId = None
+        sample_id = None
         if isinstance(sample, str):
             if (is_identifier(sample)):
-                sampleId = {
+                sample_id = {
                     "identifier": sample,
                     "@type": "as.dto.sample.id.SampleIdentifier"
                 }
             else:
-                sampleId = {
+                sample_id = {
                     "permId": sample,
                     "@type": "as.dto.sample.id.SamplePermId"
                 }
         else:
-            sampleId = {
+            sample_id = {
                 "identifier": sample.identifier,
                 "@type": "as.dto.sample.id.SampleIdentifier"
             }
