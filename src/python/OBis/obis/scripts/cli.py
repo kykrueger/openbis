@@ -119,29 +119,36 @@ def config(ctx, is_global, property, value):
             data_mgmt.commit_metadata_updates(property)
 
 
-@cli.group()
-@click.pass_context
-def init(ctx):
-    """Group for the various init subcommands"""
-    pass
-
-
-@init.command()
-@click.pass_context
-@click.argument('folder', type=click.Path(exists=True))
-@click.argument('name', default="")
-def data(ctx, folder, name):
-    """Initialize the folder as a data folder."""
-    click_echo("init data {}".format(folder))
+def init_data_impl(ctx, folder, name):
+    """Shared implementation for the init_data command."""
+    click_echo("init_data {}".format(folder))
     data_mgmt = shared_data_mgmt(ctx.obj)
     name = name if name != "" else None
     return check_result("init data", data_mgmt.init_data(folder, name))
 
 
-@init.command()
+@cli.command()
 @click.pass_context
 @click.argument('folder', type=click.Path(exists=True))
-def analysis(ctx, folder):
+@click.argument('name', default="")
+def init(ctx, folder, name):
+    """Initialize the folder as a data folder (alias for init_data)."""
+    return init_data_impl(ctx, folder, name)
+
+
+@cli.command()
+@click.pass_context
+@click.argument('folder', type=click.Path(exists=True))
+@click.argument('name', default="")
+def init_data(ctx, folder, name):
+    """Initialize the folder as a data folder."""
+    return init_data_impl(ctx, folder, name)
+
+
+@cli.command()
+@click.pass_context
+@click.argument('folder', type=click.Path(exists=True))
+def init_analysis(ctx, folder):
     """Initialize the folder as an analysis folder."""
     click_echo("init analysis {}".format(folder))
 
