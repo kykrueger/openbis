@@ -11,10 +11,11 @@ Created by Chandrasekhar Ramakrishnan on 2017-01-27.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
 import json
-import os
 from datetime import datetime
-from .. import dm
+
 import click
+
+from .. import dm, CommandResult
 
 
 def click_echo(message):
@@ -116,36 +117,50 @@ def config(ctx, is_global, prop, value):
         config_str = json.dumps(little_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
     else:
-        loc = 'global' if is_global else 'local'
-        resolver.set_value_for_parameter(prop, value, loc)
-        if not is_global:
-            data_mgmt.commit_metadata_updates(prop)
+        return check_result("config", set_property(data_mgmt, prop, value, is_global))
 
 
-def init_data_impl(ctx, folder, name):
+def set_property(data_mgmt, prop, value, is_global):
+    """Helper function to implement the property setting semantics."""
+    loc = 'global' if is_global else 'local'
+    resolver = data_mgmt.config_resolver
+    resolver.set_value_for_parameter(prop, value, loc)
+    if not is_global:
+        return data_mgmt.commit_metadata_updates(prop)
+    else:
+        return CommandResult(returncode=0, output="")
+
+
+def init_data_impl(ctx, object_id, folder, name):
     """Shared implementation for the init_data command."""
     click_echo("init_data {}".format(folder))
     data_mgmt = shared_data_mgmt(ctx.obj)
     name = name if name != "" else None
-    return check_result("init data", data_mgmt.init_data(folder, name, create=True))
+    result = data_mgmt.init_data(folder, name, create=True)
+    if not object_id or result.failure():
+        return check_result("init_data", result)
+    with dm.cd(folder):
+        return check_result("init_data", set_property(data_mgmt, 'object_id', object_id, False))
 
 
 @cli.command()
 @click.pass_context
+@click.option('-o', '--object_id', help='Set the id of the owning object.')
 @click.argument('folder', type=click.Path(exists=False, file_okay=False))
 @click.argument('name', default="")
-def init(ctx, folder, name):
+def init(ctx, object_id, folder, name):
     """Initialize the folder as a data folder (alias for init_data)."""
-    return init_data_impl(ctx, folder, name)
+    return init_data_impl(ctx, object_id, folder, name)
 
 
 @cli.command()
 @click.pass_context
+@click.option('-o', '--object_id', help='Set the id of the owning object.')
 @click.argument('folder', type=click.Path(exists=False, file_okay=False))
 @click.argument('name', default="")
-def init_data(ctx, folder, name):
+def init_data(ctx, object_id, folder, name):
     """Initialize the folder as a data folder."""
-    return init_data_impl(ctx, folder, name)
+    return init_data_impl(ctx, object_id, folder, name)
 
 
 @cli.command()
