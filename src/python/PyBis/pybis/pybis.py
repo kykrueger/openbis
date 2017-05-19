@@ -734,12 +734,16 @@ class Openbis:
 
     def create_perm_id(self):
         """Have the server generate a new permId"""
-        # CR 2017-03-17 -- This is not yet available in the V3-API, so this is a stub impl.
-        # When the API offers this, switch to that version.
-        # TODO Switch to createPermIdStrings
-        sequence = random.randrange(9999)
-        ts = datetime.now().strftime("%Y%m%d%H%M%S%f")
-        return "{}-{:04d}".format(ts, sequence)
+        # Request just 1 permId
+        request = {
+            "method": "createPermIdStrings",
+            "params": [self.token, 1],
+        }
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            return resp[0]
+        else:
+            raise ValueError("Could not create permId")
 
     def get_datastores(self):
         """ Get a list of all available datastores. Usually there is only one, but in some cases
