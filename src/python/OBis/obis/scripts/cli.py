@@ -10,7 +10,7 @@ The module that implements the CLI for obis.
 Created by Chandrasekhar Ramakrishnan on 2017-01-27.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
-
+import json
 import os
 from datetime import datetime
 from .. import dm
@@ -109,9 +109,12 @@ def config(ctx, is_global, property, value):
 
     config_dict = resolver.config_dict()
     if not property:
-        click.echo("{}".format(config_dict))
+        config_str = json.dumps(config_dict, indent=4, sort_keys=True)
+        click.echo("{}".format(config_str))
     elif not value:
-        click.echo("{}".format(config_dict[property]))
+        little_dict = {property: config_dict[property]}
+        config_str = json.dumps(little_dict, indent=4, sort_keys=True)
+        click.echo("{}".format(config_str))
     else:
         loc = 'global' if is_global else 'local'
         resolver.set_value_for_parameter(property, value, loc)
