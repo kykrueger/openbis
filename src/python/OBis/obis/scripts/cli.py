@@ -87,10 +87,10 @@ def commit(ctx, msg, auto_add):
 
 @cli.command()
 @click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
-@click.argument('property', default="")
+@click.argument('prop', default="")
 @click.argument('value', default="")
 @click.pass_context
-def config(ctx, is_global, property, value):
+def config(ctx, is_global, prop, value):
     """Configure the openBIS setup.
 
     Configure the openBIS server url, the data set type, and the data set properties.
@@ -108,18 +108,18 @@ def config(ctx, is_global, property, value):
             resolver.location_search_order = ['global']
 
     config_dict = resolver.config_dict()
-    if not property:
+    if not prop:
         config_str = json.dumps(config_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
     elif not value:
-        little_dict = {property: config_dict[property]}
+        little_dict = {prop: config_dict[prop]}
         config_str = json.dumps(little_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
     else:
         loc = 'global' if is_global else 'local'
-        resolver.set_value_for_parameter(property, value, loc)
+        resolver.set_value_for_parameter(prop, value, loc)
         if not is_global:
-            data_mgmt.commit_metadata_updates(property)
+            data_mgmt.commit_metadata_updates(prop)
 
 
 def init_data_impl(ctx, folder, name):
