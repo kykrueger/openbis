@@ -124,12 +124,12 @@ def init_data_impl(ctx, folder, name):
     click_echo("init_data {}".format(folder))
     data_mgmt = shared_data_mgmt(ctx.obj)
     name = name if name != "" else None
-    return check_result("init data", data_mgmt.init_data(folder, name))
+    return check_result("init data", data_mgmt.init_data(folder, name, create=True))
 
 
 @cli.command()
 @click.pass_context
-@click.argument('folder', type=click.Path(exists=True))
+@click.argument('folder', type=click.Path(exists=False, file_okay=False))
 @click.argument('name', default="")
 def init(ctx, folder, name):
     """Initialize the folder as a data folder (alias for init_data)."""
@@ -138,7 +138,7 @@ def init(ctx, folder, name):
 
 @cli.command()
 @click.pass_context
-@click.argument('folder', type=click.Path(exists=True))
+@click.argument('folder', type=click.Path(exists=False, file_okay=False))
 @click.argument('name', default="")
 def init_data(ctx, folder, name):
     """Initialize the folder as a data folder."""
@@ -147,7 +147,7 @@ def init_data(ctx, folder, name):
 
 @cli.command()
 @click.pass_context
-@click.argument('folder', type=click.Path(exists=True))
+@click.argument('folder', type=click.Path(exists=False, file_okay=False))
 def init_analysis(ctx, folder):
     """Initialize the folder as an analysis folder."""
     click_echo("init analysis {}".format(folder))
