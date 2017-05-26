@@ -169,10 +169,11 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return True
 
     @abc.abstractmethod
-    def init_data(self, path, desc=None):
+    def init_data(self, path, desc=None, create=True):
         """Initialize a data repository at the path with the description.
         :param path: Path for the repository.
         :param desc: An optional short description of the repository (used by git-annex)
+        :param create: If True and the folder does not exist, create it. Defaults to true.
         :return: A CommandResult.
         """
         return
@@ -217,7 +218,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
 class NoGitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations when git is not available -- show error messages."""
 
-    def init_data(self, path, desc=None):
+    def init_data(self, path, desc=None, create=True):
         self.error_raise("init data", "No git command found.")
 
     def init_analysis(self, path):
@@ -236,7 +237,9 @@ class NoGitDataMgmt(AbstractDataMgmt):
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
-    def init_data(self, path, desc=None):
+    def init_data(self, path, desc=None, create=True):
+        if not os.path.exists(path) and create:
+            os.mkdir(path)
         result = self.git_wrapper.git_init(path)
         if not self.check_result_ok(result):
             return result
@@ -292,13 +295,13 @@ class GitDataMgmt(AbstractDataMgmt):
         status = self.git_wrapper.git_status(folder)
         if len(status.output.strip()) < 1:
             # Nothing to commit
-            return
+            return CommandResult(returncode=0, output="")
         self.git_wrapper.git_add(folder)
         if msg_fragment is None:
             msg = "OBIS: Update openBIS metadata cache."
         else:
             msg = "OBIS: Update {}.".format(msg_fragment)
-        self.git_wrapper.git_commit(msg)
+        return self.git_wrapper.git_commit(msg)
 
     def revert_last_metadata_update(self):
         self.git_wrapper.git_reset_prev()
@@ -506,7 +509,7 @@ class OpenbisSync(object):
             return CommandResult(returncode=-1, output=str(e)), None
 
     def commit_metadata_updates(self, msg_fragment=None):
-        self.data_mgmt.commit_metadata_updates(msg_fragment)
+        return self.data_mgmt.commit_metadata_updates(msg_fragment)
 
     def revert_last_metadata_update(self):
         self.data_mgmt.revert_last_metadata_update()

@@ -1,5 +1,6 @@
 import json
 import random
+import re
 
 import pytest
 import time
@@ -224,3 +225,8 @@ def test_new_git_data_set_with_contents(openbis_instance):
 def test_create_perm_id(openbis_instance):
     perm_id = openbis_instance.create_perm_id()
     assert perm_id is not None
+    m = re.search('([0-9]){17}-([0-9]*)', perm_id)
+    ts = m.group(0)
+    assert ts is not None
+    count = m.group(1)
+    assert count is not None
