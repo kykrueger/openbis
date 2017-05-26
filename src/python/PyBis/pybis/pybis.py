@@ -61,9 +61,9 @@ def _definitions(entity):
             "identifier": "projectId",
         },
         "Experiment": {
-            "attrs_new": "code type project samples tags attachments".split(),
-            "attrs_up": "project samples tags attachments".split(),
-            "attrs": "code permId identifier type project samples tags attachments".split(),
+            "attrs_new": "code type project tags attachments".split(),
+            "attrs_up": "project tags attachments".split(),
+            "attrs": "code permId identifier type project tags attachments".split(),
             "multi": "tags attachments".split(),
             "identifier": "experimentId",
         },
@@ -1057,7 +1057,7 @@ class Openbis:
 
         return Things(self, 'dataset', datasets[attrs], 'permId')
 
-    def get_experiment(self, expId, withAttachments=False):
+    def get_experiment(self, expId, withAttachments=False, only_data=False):
         """ Returns an experiment object for a given identifier (expId).
         """
 
@@ -1086,15 +1086,28 @@ class Openbis:
         resp = self._post_request(self.as_v3, request)
         if len(resp) == 0:
             raise ValueError("No such experiment: %s" % expId)
-        return Experiment(self,
-                          self.get_experiment_type(resp[expId]["type"]["code"]),
-                          resp[expId]
-                          )
 
-    def new_experiment(self, type, props=None, **kwargs):
+        for id in resp:
+            if only_data:
+                return resp[id]
+            else:
+                return Experiment(
+                    openbis_obj = self,
+                    type = self.get_experiment_type(resp[expId]["type"]["code"]),
+                    data = resp[id]
+                )
+
+    def new_experiment(self, type, code, props=None, **kwargs):
         """ Creates a new experiment of a given experiment type.
         """
-        return Experiment(self, self.get_experiment_type(type), None, props, **kwargs)
+        return Experiment(
+            openbis_obj = self, 
+            type = self.get_experiment_type(type), 
+            data = None,
+            props = props,
+            code = code, 
+            **kwargs
+        )
 
     def update_experiment(self, experimentId, properties=None, tagIds=None, attachments=None):
         params = {
@@ -1587,16 +1600,16 @@ class Openbis:
         resp = self._post_request(self.as_v3, request)
         if resp is None or len(resp) == 0:
             raise ValueError('no such dataset found: ' + permid)
-        if resp is not None:
-            for permid in resp:
-                if only_data:
-                    return resp[permid]
-                else:
-                    return DataSet(
-                        self, 
-                        type=self.get_dataset_type(resp[permid]["type"]["code"]),
-                        data=resp[permid]
-                    )
+
+        for permid in resp:
+            if only_data:
+                return resp[permid]
+            else:
+                return DataSet(
+                    self, 
+                    type=self.get_dataset_type(resp[permid]["type"]["code"]),
+                    data=resp[permid]
+                )
 
     def get_sample(self, sample_ident, only_data=False, withAttachments=False):
         """Retrieve metadata for the sample.
@@ -3302,6 +3315,9 @@ class Experiment(OpenBisObject):
             for key in props:
                 setattr(self.p, key, props[key])
 
+        if code is not None:
+            self.code = code
+
         if kwargs is not None:
             defs = _definitions('Experiment')
             for key in kwargs:
@@ -3371,26 +3387,39 @@ class Experiment(OpenBisObject):
             request = self._new_attrs()
             props = self.p._all_props()
             request["params"][1][0]["properties"] = props
-            self.openbis._post_request(self.openbis.as_v3, request)
-            self.a.__dict__['_is_new'] = False
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+
             print("Experiment successfully created.")
+            new_exp_data = self.openbis.get_experiment(resp[0]['permId'], only_data=True)
+            self._set_data(new_exp_data)
+            return self
         else:
             request = self._up_attrs()
             props = self.p._all_props()
             request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Experiment successfully updated.")
+            new_exp_data = self.openbis.get_experiment(resp[0]['permId'], only_data=True)
+            self._set_data(new_exp_data)
 
     def delete(self, reason):
+        if self.permId is None:
+            return None
         self.openbis.delete_entity('experiment', self.permId, reason)
 
     def get_datasets(self, **kwargs):
+        if self.permId is None:
+            return None
         return self.openbis.get_datasets(experiment=self.permId, **kwargs)
 
     def get_projects(self, **kwargs):
+        if self.permId is None:
+            return None
         return self.openbis.get_project(experiment=self.permId, **kwargs)
 
     def get_samples(self, **kwargs):
+        if self.permId is None:
+            return None
         return self.openbis.get_samples(experiment=self.permId, **kwargs)
 
     def add_samples(self, *samples):
