@@ -74,7 +74,11 @@ sample.del_children('/MY_SPACE/CHILD_SAMPLE_NAME')
 sample.get_childeren()
 
 sample.props
-sample.p   # same thing
+sample.p                              # same thing as .props
+sample.p.my_property = "some value"   # set the value of a property (value is checked)
+sample.p + TAB                        # in IPython or Jupyter: show list of available properties
+sample.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
+
 sample.get_attachments()
 sample.download_attachments()
 sample.add_attachment('testfile.xls')
@@ -107,9 +111,14 @@ o.get_experiments(
     props=['name', 'finished_flag']
 )
 exp = o.get_experiment('/MY_SPACE/MY_PROJECT/MY_EXPERIMENT')
+
 exp.props
-exp.p     # same as exp.props
+exp.p                              # same thing as .props
 exp.p.finished_flag=True
+exp.p.my_property = "some value"   # set the value of a property (value is checked)
+exp.p + TAB                        # in IPython or Jupyter: show list of available properties
+exp.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
+
 exp.attrs
 exp.a     # same as exp.attrs
 exp.attrs.tags = ['some', 'extra', 'tags']
@@ -144,6 +153,12 @@ ds_new = o.new_dataset(
     props={'name': 'we give this dataset a name', 'notes': 'and we might need some notes, too'})
 )
 ds_new.save()
+
+ds.props
+ds.p                              # same thing as .props
+ds.p.my_property = "some value"   # set the value of a property (value is checked)
+ds.p + TAB                        # in IPython or Jupyter: show list of available properties
+ds.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 ```
 
 # Requirements and organization
