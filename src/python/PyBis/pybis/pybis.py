@@ -2187,7 +2187,8 @@ class DataSet(OpenBisObject):
 
     def __dir__(self):
         return [
-            'props', 'get_parents()', 'get_children()',
+            'props', 'get_parents()', 'get_children()', 
+            'add_parents()', 'add_children()', 'del_parents()', 'del_children()',
             'sample', 'experiment', 'physicalData',
             'tags', 'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
@@ -3104,7 +3105,8 @@ class Sample():
 
     def __dir__(self):
         return [
-            'props', 'get_parents()', 'get_children()',
+            'props', 'get_parents()', 'get_children()', 
+            'add_parents()', 'add_children()', 'del_parents()', 'del_children()',
             'get_datasets()', 'get_experiment()',
             'space', 'project', 'experiment', 'project', 'tags',
             'set_tags()', 'add_tags()', 'del_tags()',
