@@ -159,6 +159,19 @@ ds.p                              # same thing as .props
 ds.p.my_property = "some value"   # set the value of a property (value is checked)
 ds.p + TAB                        # in IPython or Jupyter: show list of available properties
 ds.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
+
+# complex query with chaining. props adds a "name" column. To filter for some property, the name of the property must be in UPPERCASE
+datasets = o.get_experiments(project='YEASTS').get_samples(type='FLY').get_datasets(type='ANALYZED_DATA', props=['MY_PROPERTY'],MY_PROPERTY='some analyzed data')
+
+# another example
+datasets = o.get_experiment('/MY_NEW_SPACE/VERMEUL_PROJECT/MY_EXPERIMENT4').get_samples(type='UNKNOWN').get_parents().get_datasets(type='RAW_DATA')
+
+# get a pandas dataFrame object
+datasets.df
+
+# use it in a for-loop:
+for dataset in datasets:
+    print(ds.permID)
 ```
 
 # Requirements and organization
