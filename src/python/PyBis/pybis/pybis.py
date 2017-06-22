@@ -431,26 +431,33 @@ def _gen_search_criteria(req):
             sreq["criteria"] = [_common_search(
                 "as.dto.common.search.CodeSearchCriteria", val.upper()
             )]
-        elif key == "permid":
-            sreq["criteria"] = [_common_search(
-                "as.dto.common.search.PermIdSearchCriteria", val
-            )]
         elif key == "identifier":
-            si = split_identifier(val)
-            sreq["criteria"] = []
-            if "space" in si:
-                sreq["criteria"].append(
-                    _gen_search_criteria({"space": "Space", "code": si["space"]})
-                )
-            if "experiment" in si:
-                pass
-
-            if "code" in si:
-                sreq["criteria"].append(
-                    _common_search(
-                        "as.dto.common.search.CodeSearchCriteria", si["code"].upper()
+            if is_identifier(val):
+                # if we have an identifier, we need to search in Space and Code separately
+                si = split_identifier(val)
+                sreq["criteria"] = []
+                if "space" in si:
+                    sreq["criteria"].append(
+                        _gen_search_criteria({"space": "Space", "code": si["space"]})
                     )
-                )
+                if "experiment" in si:
+                    pass
+
+                if "code" in si:
+                    sreq["criteria"].append(
+                        _common_search(
+                            "as.dto.common.search.CodeSearchCriteria", si["code"].upper()
+                        )
+                    )
+            elif is_permid(val):
+                sreq["criteria"] = [_common_search(
+                    "as.dto.common.search.PermIdSearchCriteria", val
+                )]
+            else:
+                # we assume we just got a code
+                sreq["criteria"] = [_common_search(
+                    "as.dto.common.search.CodeSearchCriteria", val.upper()
+                )]
 
         elif key == "operator":
             sreq["operator"] = val.upper()
