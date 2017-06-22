@@ -4,6 +4,7 @@ pyBIS is a Python module for interacting with openBIS, designed to be used in Ju
 
 # SYNOPSIS
 
+## connecting to OpenBIS
 ```
 from pybis import Openbis
 o = Openbis('https://example.com:8443', verify_certificates=False)
@@ -12,9 +13,10 @@ o.token
 o.is_session_active()
 o.get_datastores()
 o.logout()
+```
 
-
-# Masterdata
+## Masterdata
+```
 o.get_experiment_types()
 o.get_sample_types()
 o.get_sample_type('YEAST')
@@ -25,9 +27,11 @@ o.get_dataset_type('RAW_DATA')
 o.get_terms()
 o.get_terms('MATING_TYPE')
 o.get_tags()
+```
 
 
-# Spaces and Projects
+## Spaces and Projects
+```
 o.get_spaces()
 o.get_space('MY_SPACE')
 o.get_projects(space='MY_SPACE')
@@ -37,9 +41,10 @@ project.get_attachments()
 project.download_attachments()
 p.add_attachment(fileName='testfile', description= 'another file', title= 'one more attachment')
 p.save()
+```
 
-
-# Samples
+## Samples
+```
 sample = o.new_sample(
     type='YEAST', 
     space='MY_SPACE', 
@@ -58,8 +63,18 @@ sample.experiment = 'MY_SPACE/MY_PROJECT/MY_EXPERIMENT'
 sample.tags
 sample.tags = ['guten_tag', 'zahl_tag' ]
 sample.get_parents()
+sample.parents = ['/MY_SPACE/PARENT_SAMPLE_NAME']
+sample.add_parents('/MY_SPACE/PARENT_SAMPLE_NAME')
+sample.del_parents('/MY_SPACE/PARENT_SAMPLE_NAME')
+
 sample.get_childeren()
-sample.props, sample.p
+sample.children = ['/MY_SPACE/CHILD_SAMPLE_NAME']
+sample.add_children('/MY_SPACE/CHILD_SAMPLE_NAME')
+sample.del_children('/MY_SPACE/CHILD_SAMPLE_NAME')
+sample.get_childeren()
+
+sample.props
+sample.p   # same thing
 sample.get_attachments()
 sample.download_attachments()
 sample.add_attachment('testfile.xls')
@@ -72,10 +87,12 @@ samples = o.get_samples(
 )
 samples.df  # returns a pandas dataframe object
 samples.get_datasets(type='ANALYZED_DATA')  # for all found samples get all datasets
-# Note: Project samples are not implemented yet.
+```
+Note: Project samples are not implemented yet.
 
 
-# Experiments
+## Experiments
+```
 o.new_experiment
     type='DEFAULT_EXPERIMENT',
     space='MY_SPACE',
@@ -98,9 +115,10 @@ exp.a     # same as exp.attrs
 exp.attrs.tags = ['some', 'extra', 'tags']
 exp.tags = ['some', 'extra', 'tags']          # same thing
 exp.save()
+```
 
-
-# Datasets
+## Datasets
+```
 sample.get_datasets()
 ds = o.get_dataset('20160719143426517-259')
 ds.get_parents()
@@ -126,7 +144,6 @@ ds_new = o.new_dataset(
     props={'name': 'we give this dataset a name', 'notes': 'and we might need some notes, too'})
 )
 ds_new.save()
-
 ```
 
 # Requirements and organization
