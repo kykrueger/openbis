@@ -2772,6 +2772,10 @@ class AttrHolder():
                 if '@id' in permid: permid.pop('@id')
                 permids.append(permid)
 
+            # setting self._parents = [{ 
+            #    '@type': 'as.dto.sample.id.SampleIdentifier',
+            #    'identifier': '/SPACE_NAME/SAMPLE_NAME'
+            # }]
             self.__dict__['_' + name] = permids
         elif name in ["tags"]:
             self.set_tags(value)
@@ -2842,8 +2846,25 @@ class AttrHolder():
     def get_type(self):
         return self._type
 
+    def _ident_for_whatever(self, whatever):
+        if isinstance(whatever, str):
+            # fetch parent in openBIS, we are given an identifier
+            obj = getattr(self._openbis, 'get_'+self._entity.lower())(whatever)
+        else:
+            # we assume we got an object
+            obj = whatever
+
+        ident = None
+        if getattr(obj, '_identifier'):
+            ident = obj._identifier
+        elif getattr(obj, '_permId'):
+            ident = obj._permId
+
+        if '@id' in ident: ident.pop('@id')
+        return ident
+
     def get_parents(self, **kwargs):
-        identifier = self.identifer
+        identifier = self.identifier
         if identifier is None:
             identifier = self.permId
 
@@ -2853,8 +2874,29 @@ class AttrHolder():
         else:
             return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withChildren=identifier, **kwargs)
 
+    def add_parents(self, parents):
+        if getattr(self, '_parents') is None:
+            self.__dict__['_parents'] = []
+        if not isinstance(parents, list):
+            parents = [parents]
+        for parent in parents:
+            self.__dict__['_parents'].append(self._ident_for_whatever(parent))
+
+    def del_parents(self, parents):
+        if getattr(self, '_parents') is None:
+            return
+        if not isinstance(parents, list):
+            parents = [parents]
+        for parent in parents:
+            ident = self._ident_for_whatever(parent)
+            for i, item in enumerate(self.__dict__['_parents']):
+                if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
+                    self.__dict__['_parents'].pop(i)
+                elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
+                    self.__dict__['_parents'].pop(i)
+
     def get_children(self, **kwargs):
-        identifier = self.identifer
+        identifier = self.identifier
         if identifier is None:
             identifier = self.permId
 
@@ -2864,6 +2906,27 @@ class AttrHolder():
         else:
             # e.g. self._openbis.get_samples(withParents=self.identifier)
             return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withParents=identifier, **kwargs)
+
+    def add_children(self, children):
+        if getattr(self, '_children') is None:
+            self.__dict__['_children'] = []
+        if not isinstance(children, list):
+            children = [children]
+        for child in children:
+            self.__dict__['_children'].append(self._ident_for_whatever(child))
+
+    def del_children(self, children):
+        if getattr(self, '_children') is None:
+            return
+        if not isinstance(children, list):
+            children = [children]
+        for child in children:
+            ident = self._ident_for_whatever(child)
+            for i, item in enumerate(self.__dict__['_children']):
+                if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
+                    self.__dict__['_children'].pop(i)
+                elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
+                    self.__dict__['_children'].pop(i)
 
     @property
     def tags(self):
