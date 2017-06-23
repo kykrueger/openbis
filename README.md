@@ -85,12 +85,12 @@ sample.add_attachment('testfile.xls')
 samples = o.get_samples(
     space='MY_SPACE',
     type='YEAST'
-    tags=['*']  # tags must be present
-    NAME = 'some name'   # properties are all uppercase
-    props=['name', 'mating_type','show_in_project_overview']    # properties to be displayed in the dataFrame
+    tags=['*']                        # tags must be present
+    NAME = 'some name'                # properties are always uppercase to distinguish them from attributes
+    props=['NAME', 'MATING_TYPE','SHOW_IN_PROJECT_OVERVIEW'] # show these properties in the results
 )
-samples.df  # returns a pandas dataframe object
-samples.get_datasets(type='ANALYZED_DATA')  # for all found samples get all datasets
+samples.df                            # returns a pandas dataframe object
+samples.get_datasets(type='ANALYZED_DATA')
 ```
 Note: Project samples are not implemented yet.
 
