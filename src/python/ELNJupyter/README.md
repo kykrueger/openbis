@@ -16,7 +16,7 @@ This is a small webservice which is running on a server and allows to write Jupy
 
 ```
 POST
-https://servername:8123?token=[openBIS token]&folder=my_folder_name&filename=20160929145446460-369.ipynb
+https://servername:8123?token=[openBIS token]&folder=my_folder&filename=20160929145446460-369.ipynb
 
 {
   "cells": [
@@ -68,3 +68,13 @@ https://servername:8123?token=[openBIS token]&folder=my_folder_name&filename=201
 }
 
 ```
+
+## Response from server (not yet implemented)
+```
+{
+    "link": "http://servername:8000/home/testuser/notebooks/my_folder/20160929145446460-369.ipynb"
+}
+```
+
+Using this link, the user should be directly routed to the notebook we just created.
+If the user never used JupyterHub before or is logged out, he is asked for his password before being redirected to the notebook.
