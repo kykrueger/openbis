@@ -10,7 +10,7 @@ This is a small webservice which is running on a server and allows to write Jupy
 - the openBIS token is always tested for validity against the openBIS server
 - the user is extracted from the token
 - the user must exist on the server (no automatic user creation)
-- if folder or file exists on the system, it is being overwritten
+- if folder or file exists on the system, a new folder is added with a sequence number, to prevent previous work from being overwritten
 
 ## Usage
 
