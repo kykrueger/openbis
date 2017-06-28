@@ -1318,13 +1318,15 @@ class Openbis:
                 raise ValueError("No such project: %s" % projectId)
             return Project(self, resp['objects'][0])
 
-    def get_projects(self, space=None):
+    def get_projects(self, space=None, code=None):
         """ Get a list of all available projects (DataFrame object).
         """
 
         sub_criteria = []
         if space:
             sub_criteria.append(_subcriteria_for_code(space, 'space'))
+        if code:
+            sub_criteria.append(_criteria_for_code(code))
 
         criteria = {
             "criteria": sub_criteria,
