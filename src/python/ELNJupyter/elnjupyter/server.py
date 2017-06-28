@@ -29,7 +29,8 @@ class CreateNotebook(tornado.web.RequestHandler):
         try:
             user = pwd.getpwnam(username)
         except KeyError:
-            self.send_error(401, message="User {} does not exist on host system".format(username))
+            self.create_user(username)
+            #self.send_error(401, message="User {} does not exist on host system".format(username))
 
         notebook_file = os.path.join(
             user.pw_dir, 
@@ -57,6 +58,9 @@ class CreateNotebook(tornado.web.RequestHandler):
             "url": "http://localhost:8888/notebooks/" +  os.path.join(folder, os.path.basename(notebook_file))
         }
         self.write(json.dumps(link_to_notebook))
+
+    def create_user(self, username):
+        os.system("useradd " + username)
 
     def send_error(self, status_code=500, **kwargs):
         self.set_status(status_code)
