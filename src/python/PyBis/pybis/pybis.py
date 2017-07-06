@@ -893,7 +893,6 @@ class Openbis:
                        fetchopts,
                        ],
         }
-
         resp = self._post_request(self.as_v3, request)
         if len(resp['objects']) == 0:
             raise ValueError("no samples found!")
@@ -3270,6 +3269,9 @@ class Things():
 
     def __repr__(self):
         return tabulate(self.df, headers=list(self.df))
+
+    def __len__(self):
+        return len(self.df)
 
     def _repr_html_(self):
         return self.df._repr_html_()
