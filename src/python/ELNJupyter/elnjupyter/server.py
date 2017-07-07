@@ -1,9 +1,12 @@
+#!/usr/bin/env python
 import tornado.web
 import tornado.ioloop
 import json
 import os
 import pwd
 import ssl
+import sys
+import click
 from pybis import Openbis
 
 
@@ -78,15 +81,24 @@ def make_app(openbis):
     ])
     return app
 
+@click.command()
+@click.option('--port', default=8123, help='Port where this server listens to')
+@click.option('--cert', default='cert.pem', help='Path to your cert-file in PEM format')
+@click.option('--key',  default='key.pem', help='Path to your key-file in PEM format')
+@click.option('--openbis', default='https://localhost:8443', help='URL and port of your openBIS installation')
+def start_server(port, cert, key, openbis):
+    o = Openbis(url=openbis, verify_certificates=False)
 
-if __name__ == "__main__":
-    openbis = Openbis(url='https://localhost:8443', verify_certificates=False)
-    application = make_app(openbis)
+    application = make_app(o)
     application.listen(
-        8123,
+        port,
         ssl_options={
-            "certfile": "/Users/vermeul/tmp/cert.pem",
-            "keyfile": "/Users/vermeul/tmp/key.pem",
+            "certfile": cert,
+            "keyfile":  key
         }
     )
     tornado.ioloop.IOLoop.current().start()
+
+
+if __name__ == "__main__":
+    start_server()
