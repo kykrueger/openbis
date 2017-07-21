@@ -1838,7 +1838,7 @@ class Openbis:
                 "identifier": sample.identifier,
                 "@type": "as.dto.sample.id.SampleIdentifier"
             }
-        return sampleId
+        return sample_id
 
     @staticmethod
     def data_set_to_data_set_id(data_set):
