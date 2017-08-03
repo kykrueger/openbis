@@ -574,7 +574,6 @@ class Openbis:
     A recent version of openBIS is required (minimum 16.05.2).
     For creation of datasets, dataset-uploader-api needs to be installed.
     """
-    __version__ = '1.2.0'
 
     def __init__(self, url, verify_certificates=True, token=None):
         """Initialize a new connection to an openBIS server.
@@ -725,6 +724,10 @@ class Openbis:
         Clients may want to store the credentials object in a credentials store after successful login.
         Throw a ValueError with the error message if login failed.
         """
+
+        if password is None:
+            import getpass
+            password = getpass.getpass()
 
         login_request = {
             "method": "login",
