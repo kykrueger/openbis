@@ -25,12 +25,16 @@ def test_token(openbis_instance):
 
 
 def test_create_sample(openbis_instance):
-    testname = time.strftime('%a_%y%m%d_%H%M%S').upper()
-    s = openbis_instance.new_sample(sample_name=testname, space_name='TEST', sample_type="UNKNOWN")
-    assert s is not None
-    assert s.ident == '/TEST/' + testname
-    s2 = openbis_instance.get_sample(s.permid)
-    assert s2 is not None
+    # given
+    sample_code = 'test_create_' + time.strftime('%a_%y%m%d_%H%M%S').upper()
+    sample_type = 'UNKNOWN'
+    space = 'DEFAULT'
+    # when
+    sample = openbis_instance.new_sample(code=sample_code, type=sample_type, space=space)
+    # then
+    assert sample is not None
+    assert sample.space == space
+    assert sample.code == sample_code
 
 
 def test_cached_token(openbis_instance):
@@ -46,17 +50,28 @@ def test_cached_token(openbis_instance):
 
 
 def test_get_sample_by_id(openbis_instance):
-    ident = '/TEST/TEST-SAMPLE-2-CHILD-1'
-    sample = openbis_instance.get_sample(ident)
-    assert sample is not None
-    assert sample.ident == ident
-    assert sample.permid == '20130415095823341-405'
-
+    # given
+    sample_code = 'test_get_by_id_' + time.strftime('%a_%y%m%d_%H%M%S').upper()
+    sample = openbis_instance.new_sample(code=sample_code, type='UNKNOWN', space='DEFAULT')
+    sample.save()
+    # when
+    persisted_sample = openbis_instance.get_sample('/DEFAULT/' + sample_code)
+    # then
+    assert persisted_sample is not None
+    assert persisted_sample.permId is not None    
 
 def test_get_sample_by_permid(openbis_instance):
-    response = openbis_instance.get_sample('20130415091923485-402')
-    assert response is not None
-    assert response.permid == '20130415091923485-402'
+    # given
+    sample_code = 'test_get_by_permId_' + time.strftime('%a_%y%m%d_%H%M%S').upper()
+    sample = openbis_instance.new_sample(code=sample_code, type='UNKNOWN', space='DEFAULT')
+    sample.save()
+    persisted_sample = openbis_instance.get_sample('/DEFAULT/' + sample_code)
+    permId = persisted_sample.permId
+    # when
+    sample_by_permId = openbis_instance.get_sample(permId)
+    # then
+    assert sample_by_permId is not None
+    assert sample_by_permId.permId == permId
 
 
 def test_get_sample_parents(openbis_instance):
