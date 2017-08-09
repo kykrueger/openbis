@@ -8,3 +8,7 @@ __pycache__
 .cache
 .vagrant
 .env
+src/python/OBis/build/
+src/python/OBis/dist/
+src/python/PyBis/build/
+src/python/PyBis/dist/
