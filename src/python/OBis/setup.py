@@ -9,7 +9,8 @@ setup(name='obis',
       author='SIS | ID | ETH Zuerich',
       author_email='chandrasekhar.ramakrishnan@id.ethz.ch',
       license='BSD',
-      packages=['obis'],
+      packages=['obis', 'obis.dm', 'obis.scripts'],
+      package_data={'obis' : ['dm/git-annex-attributes']},
       install_requires=[
           'pytest',
           'pybis',
@@ -19,4 +20,4 @@ setup(name='obis',
         [console_scripts]
         obis=obis.scripts.cli:main
       ''',
-      zip_safe=True)
+      zip_safe=False)
