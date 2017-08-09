@@ -5,6 +5,7 @@ src/python/sandbox/
 *.egg-info
 __pycache__
 .idea
+.vscode
 .cache
 .vagrant
 .env
