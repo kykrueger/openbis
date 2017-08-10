@@ -19,6 +19,7 @@ import traceback
 import getpass
 import socket
 import uuid
+import hashlib
 
 import pybis
 
@@ -460,20 +461,24 @@ class OpenbisSync(object):
         external_dms = self.openbis.get_external_data_management_system(external_dms_id.upper())
         return external_dms
 
+    def generate_external_data_management_system_code(self, user, hostname, edms_path):
+        path_hash = hashlib.sha1(edms_path.encode("utf-8")).hexdigest()[0:8]
+        return "{}-{}-{}".format(user, hostname, path_hash).upper()
+
     def create_external_data_management_system(self):
         external_dms_id = self.external_dms_id()
         user = self.user()
+        hostname = socket.gethostname()
         result = self.git_wrapper.git_top_level_path()
         if result.failure():
             return result
         top_level_path = result.output
-        path_name = os.path.basename(top_level_path)
+        edms_path, path_name = os.path.split(result.output)
         if external_dms_id is None:
-            external_dms_id = "{}-{}".format(user, path_name).upper()
+            external_dms_id = self.generate_external_data_management_system_code(user, hostname, edms_path)
         try:
-            hostname = socket.gethostname()
             edms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
-                                                                       "{}:/{}".format(hostname, top_level_path))
+                                                                       "{}:/{}".format(hostname, edms_path))
             return CommandResult(returncode=0, output=""), edms
         except ValueError as e:
             # The EDMS might already be in the system. Try to get it.

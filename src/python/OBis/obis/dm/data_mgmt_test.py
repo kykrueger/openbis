@@ -12,6 +12,8 @@ import json
 import os
 import random
 import shutil
+import socket
+import hashlib
 
 from datetime import datetime
 
@@ -162,8 +164,30 @@ def test_child_data_set(tmpdir):
         assert repository_id is not None
 
         contents = data_mgmt.GitRepoFileInfo(dm.git_wrapper).contents()
-        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, properties,
-                                        contents)
+        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, 
+                                        properties, contents)
+
+
+def test_external_dms_code_and_address():
+    # given
+    dm = shared_dm()
+    prepare_registration_expectations(dm)
+    obis_sync = data_mgmt.OpenbisSync(dm)
+    set_registration_configuration(dm)
+    user = obis_sync.user()
+    hostname = socket.gethostname()
+    result = obis_sync.git_wrapper.git_top_level_path()
+    assert result.failure() == False
+    edms_path, folder = os.path.split(result.output)
+    # when
+    result, edms = external_data_management_system = obis_sync.create_external_data_management_system();
+    # then
+    assert result.failure() == False
+    path_hash = hashlib.sha1(edms_path.encode("utf-8")).hexdigest()[0:8]
+    expected_edms_id = "{}-{}-{}".format(user, hostname, path_hash).upper()
+    expected_edms_address = "{}:/{}".format(hostname, edms_path)
+    dm.openbis.create_external_data_management_system.assert_called_with(expected_edms_id, expected_edms_id, 
+                                                                         expected_edms_address)
 
 
 # TODO Test that if the data set registration fails, the data_set_id is reverted
@@ -181,7 +205,7 @@ def set_registration_configuration(dm, properties=None):
 def prepare_registration_expectations(dm):
     dm.openbis = Mock()
     dm.openbis.is_session_active = MagicMock(return_value=True)
-    edms = ExternalDMS(dm.openbis, {'code': 'AUSER-PATH', 'label': 'AUSER-PATH'})
+    edms = ExternalDMS(dm.openbis, {'code': 'AUSER-MACHINE-ffffffff', 'label': 'AUSER-MACHINE-ffffffff'})
     dm.openbis.create_external_data_management_system = MagicMock(return_value=edms)
 
     prepare_new_data_set_expectations(dm)
