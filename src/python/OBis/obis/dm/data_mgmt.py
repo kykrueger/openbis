@@ -18,6 +18,7 @@ from . import config as dm_config
 import traceback
 import getpass
 import socket
+import uuid
 
 import pybis
 
@@ -402,6 +403,9 @@ class OpenbisSync(object):
     def external_dms_id(self):
         return self.config_dict.get('external_dms_id')
 
+    def repository_id(self):
+        return self.config_dict.get('repository_id')
+
     def data_set_type(self):
         return self.config_dict.get('data_set_type')
 
@@ -486,7 +490,7 @@ class OpenbisSync(object):
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
 
-    def create_data_set(self, data_set_code, external_dms):
+    def create_data_set(self, data_set_code, external_dms, repository_id):
         data_set_type = self.data_set_type()
         parent_data_set_id = self.data_set_id()
         properties = self.data_set_properties()
@@ -501,7 +505,7 @@ class OpenbisSync(object):
         object_id = self.object_id()
         contents = GitRepoFileInfo(self.git_wrapper).contents()
         try:
-            data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
+            data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,
                                                      object_id, data_set_code=data_set_code, parents=parent_data_set_id,
                                                      properties=properties, contents=contents)
             return CommandResult(returncode=0, output=""), data_set
@@ -523,6 +527,14 @@ class OpenbisSync(object):
             return result
         return CommandResult(returncode=0, output="")
 
+    def prepare_repository_id(self):
+        repository_id = self.repository_id()
+        if self.repository_id() is None:
+            repository_id = str(uuid.uuid4())
+            self.config_resolver.set_value_for_parameter('repository_id', repository_id, 'local')
+        return CommandResult(returncode=0, output=repository_id)
+
+
     def prepare_external_dms(self):
         # If there is no external data management system, create one.
         external_dms = self.get_external_data_management_system()
@@ -541,6 +553,11 @@ class OpenbisSync(object):
         if result.failure():
             return result
 
+        result = self.prepare_repository_id()
+        if result.failure():
+            return result
+        repository_id = result.output
+
         result = self.prepare_external_dms()
         if result.failure():
             return result
@@ -557,7 +574,7 @@ class OpenbisSync(object):
         self.commit_metadata_updates("data set id")
 
         # create a data set, using the existing data set as a parent, if there is one
-        result, data_set = self.create_data_set(data_set_code, external_dms)
+        result, data_set = self.create_data_set(data_set_code, external_dms, repository_id)
         if result.failure():
             self.revert_last_metadata_update()
             return result

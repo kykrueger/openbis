@@ -158,9 +158,11 @@ def test_child_data_set(tmpdir):
         child_ds_code = dm.config_resolver.config_dict()['data_set_id']
         assert parent_ds_code != child_ds_code
         commit_id = dm.git_wrapper.git_commit_id().output
+        repository_id = dm.config_resolver.config_dict()['repository_id']
+        assert repository_id is not None
 
         contents = data_mgmt.GitRepoFileInfo(dm.git_wrapper).contents()
-        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code, properties,
+        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, properties,
                                         contents)
 
 
@@ -195,9 +197,9 @@ def prepare_new_data_set_expectations(dm, properties={}):
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
 
 
-def check_new_data_set_expectations(dm, tmp_dir_path, commit_id, external_dms, data_set_id, parent_id, properties,
+def check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, external_dms, data_set_id, parent_id, properties,
                                     contents):
-    dm.openbis.new_git_data_set.assert_called_with('DS_TYPE', tmp_dir_path, commit_id, external_dms, "/SAMPLE/ID",
+    dm.openbis.new_git_data_set.assert_called_with('DS_TYPE', tmp_dir_path, commit_id, repository_id, external_dms, "/SAMPLE/ID",
                                                    data_set_code=data_set_id, parents=parent_id, properties=properties,
                                                    contents=contents)
 
