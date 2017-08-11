@@ -119,8 +119,12 @@ def run_shell(args, shell=False):
 
 def locate_command(command):
     """Return a tuple of (returncode, stdout)."""
-    # Need to call this command in shell mode... not entirely sure why.
-    return run_shell(['type -p {}'.format(command)], shell=True)
+    # Need to call this command in shell mode so we have the system PATH
+    result = run_shell(['type {}'.format(command)], shell=True)
+    # 'type -p' not supported by all shells, so we do it manually
+    if result.success():
+        result.output = result.output.split(" ")[-1]
+    return result
 
 
 @contextmanager
