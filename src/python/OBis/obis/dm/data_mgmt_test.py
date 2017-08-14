@@ -18,6 +18,7 @@ import hashlib
 from datetime import datetime
 
 from . import data_mgmt
+from . import CommandResult
 from unittest.mock import Mock, MagicMock, ANY
 from pybis.pybis import ExternalDMS, DataSet
 
@@ -191,15 +192,18 @@ def test_external_dms_code_and_address():
 
 
 def test_undo_commit_when_sync_fails(tmpdir):
+    # given
     dm = shared_dm()
-    tmp_dir_path = str(tmpdir)
-    result = dm.init_data(tmp_dir_path, "test")
-    assert result.returncode == 0
-    # prepare_registration_expectations(dm)
-    # set_registration_configuration(dm)
-    copy_test_data(tmpdir)
+    dm.git_wrapper = Mock()
+    dm.git_wrapper.git_top_level_path = MagicMock(return_value = CommandResult(returncode=0, output=None))
+    dm.git_wrapper.git_add = MagicMock(return_value = CommandResult(returncode=0, output=None))
+    dm.git_wrapper.git_commit = MagicMock(return_value = CommandResult(returncode=0, output=None))
+    dm.sync = lambda: CommandResult(returncode=-1, output="dummy error")
+    # when
     result = dm.commit("Added data.")
-    assert result.returncode == -1 # fails due to object_id which is not set
+    # then
+    assert result.returncode == -1
+    dm.git_wrapper.git_undo_commit.assert_called_once()
 
 
 # TODO Test that if the data set registration fails, the data_set_id is reverted
