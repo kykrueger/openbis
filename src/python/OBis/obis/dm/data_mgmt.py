@@ -52,7 +52,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
             echo_func({'level': 'error', 'message': 'Could not connect to openBIS.'})
             traceback.print_exc()
 
-    return GitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
+    return GitDataMgmt(config_resolver, openbis, git_wrapper)
 
 
 def complete_openbis_config(config, resolver):
@@ -144,35 +144,15 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, echo_func, config_resolver, openbis, git_wrapper):
-        self.echo_func = echo_func
+    def __init__(self, config_resolver, openbis, git_wrapper):
         self.config_resolver = config_resolver
         self.openbis = openbis
         self.git_wrapper = git_wrapper
 
-    def echo(self, level, message):
-        details = {'level': level, 'message': message}
-        self.echo_func(details)
-
-    def info(self, message):
-        """Print info to the user."""
-        self.echo('info', message)
-
-    def error(self, message):
-        """Print an error to the user"""
-        self.echo('error', message)
-
     def error_raise(self, command, reason):
-        """Print an error to the user and raise an exception."""
+        """Raise an exception."""
         message = "'{}' failed. {}".format(command, reason)
-        self.echo('error', message)
         raise ValueError(reason)
-
-    def check_result_ok(self, result):
-        if result.failure():
-            self.error(result.output)
-            return False
-        return True
 
     @abc.abstractmethod
     def init_data(self, path, desc=None, create=True):
@@ -247,10 +227,10 @@ class GitDataMgmt(AbstractDataMgmt):
         if not os.path.exists(path) and create:
             os.mkdir(path)
         result = self.git_wrapper.git_init(path)
-        if not self.check_result_ok(result):
+        if result.failure():
             return result
         result = self.git_wrapper.git_annex_init(path, desc)
-        if not self.check_result_ok(result):
+        if result.failure():
             return result
         with cd(path):
             # Update the resolvers location
@@ -260,16 +240,10 @@ class GitDataMgmt(AbstractDataMgmt):
         return result
 
     def init_analysis(self, path):
-        result = self.git_wrapper.git_init(path)
-        if not self.check_result_ok(result):
-            return result
-        return result
+        return self.git_wrapper.git_init(path)
 
     def add_content(self, path):
-        result = self.git_wrapper.git_add(path)
-        if not self.check_result_ok(result):
-            return result
-        return result
+        return self.git_wrapper.git_add(path)
 
     def sync(self):
         cmd = OpenbisSync(self)
@@ -278,19 +252,17 @@ class GitDataMgmt(AbstractDataMgmt):
     def commit(self, msg, auto_add=True, sync=True):
         if auto_add:
             result = self.git_wrapper.git_top_level_path()
-            if not self.check_result_ok(result):
+            if result.failure():
                 return result
             result = self.add_content(result.output)
-            if not self.check_result_ok(result):
+            if result.failure():
                 return result
         result = self.git_wrapper.git_commit(msg)
-        if not self.check_result_ok(result):
+        if result.failure():
             # TODO If no changes were made check if the data set is in openbis. If not, just sync.
             return result
         if sync:
             result = self.sync()
-            if not self.check_result_ok(result):
-                return result
         return result
 
     def status(self):
