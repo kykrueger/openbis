@@ -431,7 +431,7 @@ class OpenbisSync(object):
             missing_config_settings.append('user')
         if self.data_set_type() is None:
             missing_config_settings.append('data_set_type')
-        if self.data_set_type() is None:
+        if self.object_id() is None:
             missing_config_settings.append('object_id')
         if len(missing_config_settings) > 0:
             return CommandResult(returncode=-1,
