@@ -25,12 +25,16 @@ def test_token(openbis_instance):
 
 
 def test_create_sample(openbis_instance):
-    testname = time.strftime('%a_%y%m%d_%H%M%S').upper()
-    s = openbis_instance.new_sample(sample_name=testname, space_name='TEST', sample_type="UNKNOWN")
-    assert s is not None
-    assert s.ident == '/TEST/' + testname
-    s2 = openbis_instance.get_sample(s.permid)
-    assert s2 is not None
+    # given
+    sample_code = 'test_create_' + time.strftime('%a_%y%m%d_%H%M%S').upper()
+    sample_type = 'UNKNOWN'
+    space = 'DEFAULT'
+    # when
+    sample = openbis_instance.new_sample(code=sample_code, type=sample_type, space=space)
+    # then
+    assert sample is not None
+    assert sample.space == space
+    assert sample.code == sample_code
 
 
 def test_cached_token(openbis_instance):
@@ -46,17 +50,28 @@ def test_cached_token(openbis_instance):
 
 
 def test_get_sample_by_id(openbis_instance):
-    ident = '/TEST/TEST-SAMPLE-2-CHILD-1'
-    sample = openbis_instance.get_sample(ident)
-    assert sample is not None
-    assert sample.ident == ident
-    assert sample.permid == '20130415095823341-405'
-
+    # given
+    sample_code = 'test_get_by_id_' + time.strftime('%a_%y%m%d_%H%M%S').upper()
+    sample = openbis_instance.new_sample(code=sample_code, type='UNKNOWN', space='DEFAULT')
+    sample.save()
+    # when
+    persisted_sample = openbis_instance.get_sample('/DEFAULT/' + sample_code)
+    # then
+    assert persisted_sample is not None
+    assert persisted_sample.permId is not None    
 
 def test_get_sample_by_permid(openbis_instance):
-    response = openbis_instance.get_sample('20130415091923485-402')
-    assert response is not None
-    assert response.permid == '20130415091923485-402'
+    # given
+    sample_code = 'test_get_by_permId_' + time.strftime('%a_%y%m%d_%H%M%S').upper()
+    sample = openbis_instance.new_sample(code=sample_code, type='UNKNOWN', space='DEFAULT')
+    sample.save()
+    persisted_sample = openbis_instance.get_sample('/DEFAULT/' + sample_code)
+    permId = persisted_sample.permId
+    # when
+    sample_by_permId = openbis_instance.get_sample(permId)
+    # then
+    assert sample_by_permId is not None
+    assert sample_by_permId.permId == permId
 
 
 def test_get_sample_parents(openbis_instance):
@@ -147,79 +162,6 @@ def test_dataset_upload(openbis_instance):
     # )
 
     # analysis.save     # start registering process
-
-
-def create_external_data_management_system(openbis_instance):
-    code = "TEST-GIT-{:04d}".format(random.randint(0, 9999))
-    result = openbis_instance.create_external_data_management_system(code, 'Test git', 'localhost:~openbis/repo')
-    return code, result
-
-
-def test_create_external_data_management_system(openbis_instance):
-    code, result = create_external_data_management_system(openbis_instance)
-    assert result is not None
-    assert result.code == code
-    assert result.label == 'Test git'
-    assert result.addressType == 'FILE_SYSTEM'
-    assert result.address == 'localhost:~openbis/repo'
-
-
-def test_new_git_data_set(openbis_instance):
-    dms_code, dms = create_external_data_management_system(openbis_instance)
-    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT")
-    assert result is not None
-    openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
-    # TODO Delete the externaldms (deleteExternalDataManagementSystems)
-    # see http://svnsis.ethz.ch/doc/openbis/S250.0/ch/ethz/sis/openbis/generic/asapi/v3/IApplicationServerApi.html
-
-
-def test_new_git_data_set_with_code(openbis_instance):
-    dms_code, dms = create_external_data_management_system(openbis_instance)
-    data_set_code = openbis_instance.create_perm_id()
-    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT",
-                                               data_set_code=data_set_code)
-    assert result is not None
-    assert result.code == data_set_code
-    openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
-
-
-def test_new_git_data_set_with_parent(openbis_instance):
-    dms_code, dms = create_external_data_management_system(openbis_instance)
-    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT")
-    assert result is not None
-    parent_code = result.code
-    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '23456', dms_code, "/DEFAULT/DEFAULT",
-                                               parents=parent_code)
-    assert result.code != parent_code
-    assert len(result.parents) == 1
-    assert result.parents[0] == parent_code
-    openbis_instance.delete_entity('DataSet', parent_code, 'Testing.', capitalize=False)
-    openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
-
-
-def test_new_git_data_set_with_property(openbis_instance):
-    dms_code, dms = create_external_data_management_system(openbis_instance)
-    data_set_code = openbis_instance.create_perm_id()
-    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT",
-                                               data_set_code=data_set_code,
-                                               properties={"DESCRIPTION": 'This is a description'})
-    assert result is not None
-    assert result.code == data_set_code
-    openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
-
-
-def test_new_git_data_set_with_contents(openbis_instance):
-    dms_code, dms = create_external_data_management_system(openbis_instance)
-    data_set_code = openbis_instance.create_perm_id()
-    contents = [{'crc32': 1234, 'directory': False, 'fileLength': 4321, 'path': 'path/to/the/file.txt'},
-                {'directory': True, 'path': 'path/to/empty/directory'}]
-    result = openbis_instance.new_git_data_set("GIT_REPO", "./", '12345', dms_code, "/DEFAULT/DEFAULT",
-                                               data_set_code=data_set_code,
-                                               properties={"DESCRIPTION": 'This is a description'},
-                                               contents=contents)
-    assert result is not None
-    assert result.code == data_set_code
-    openbis_instance.delete_entity('DataSet', result.code, 'Testing.', capitalize=False)
 
 
 def test_create_perm_id(openbis_instance):
