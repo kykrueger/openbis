@@ -9,9 +9,8 @@ setup(name='elnjupyter',
       author='SIS | ID | ETH Zuerich',
       author_email='swen@ethz.ch',
       license='BSD',
-      packages=['pybis'],
+      packages=['elnjupyter'],
       install_requires=[
           'tornado',
-          'ssl',
       ],
       zip_safe=True)
