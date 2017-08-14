@@ -195,11 +195,11 @@ def test_undo_commit_when_sync_fails(tmpdir):
     tmp_dir_path = str(tmpdir)
     result = dm.init_data(tmp_dir_path, "test")
     assert result.returncode == 0
-    prepare_registration_expectations(dm)
-    set_registration_configuration(dm)
+    # prepare_registration_expectations(dm)
+    # set_registration_configuration(dm)
     copy_test_data(tmpdir)
     result = dm.commit("Added data.")
-    assert result.returncode == 0
+    assert result.returncode == -1 # fails due to object_id which is not set
 
 
 # TODO Test that if the data set registration fails, the data_set_id is reverted
