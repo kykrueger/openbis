@@ -263,6 +263,8 @@ class GitDataMgmt(AbstractDataMgmt):
             return result
         if sync:
             result = self.sync()
+            if result.failure():
+                self.git_wrapper.git_undo_commit()
         return result
 
     def status(self):
@@ -347,6 +349,9 @@ class GitWrapper(object):
 
     def git_commit(self, msg):
         return run_shell([self.git_path, "commit", '-m', msg])
+
+    def git_undo_commit(self):
+        return run_shell([self.git_path, "reset", 'HEAD~'])
 
     def git_top_level_path(self):
         return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])
