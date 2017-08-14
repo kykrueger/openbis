@@ -33,7 +33,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
     complete_git_config(git_config)
     git_wrapper = GitWrapper(**git_config)
     if not git_wrapper.can_run():
-        return NoGitDataMgmt(echo_func, config_resolver, None, git_wrapper)
+        return NoGitDataMgmt(config_resolver, None, git_wrapper)
 
     if config_resolver is None:
         config_resolver = dm_config.ConfigResolver()
