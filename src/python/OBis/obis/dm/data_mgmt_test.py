@@ -190,11 +190,23 @@ def test_external_dms_code_and_address():
                                                                          expected_edms_address)
 
 
+def test_undo_commit_when_sync_fails(tmpdir):
+    dm = shared_dm()
+    tmp_dir_path = str(tmpdir)
+    result = dm.init_data(tmp_dir_path, "test")
+    assert result.returncode == 0
+    prepare_registration_expectations(dm)
+    set_registration_configuration(dm)
+    copy_test_data(tmpdir)
+    result = dm.commit("Added data.")
+    assert result.returncode == 0
+
+
 # TODO Test that if the data set registration fails, the data_set_id is reverted
 
 def set_registration_configuration(dm, properties=None):
     resolver = dm.config_resolver
-    resolver.set_value_for_parameter('openbis_url', "https://localhost:8443", 'local')
+    resolver.set_value_for_parameter('openbis_url', "http://localhost:8888", 'local')
     resolver.set_value_for_parameter('user', "auser", 'local')
     resolver.set_value_for_parameter('data_set_type', "DS_TYPE", 'local')
     resolver.set_value_for_parameter('object_id', "/SAMPLE/ID", 'local')
