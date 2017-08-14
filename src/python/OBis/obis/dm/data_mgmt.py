@@ -242,9 +242,6 @@ class GitDataMgmt(AbstractDataMgmt):
     def init_analysis(self, path):
         return self.git_wrapper.git_init(path)
 
-    def add_content(self, path):
-        return self.git_wrapper.git_add(path)
-
     def sync(self):
         cmd = OpenbisSync(self)
         return cmd.run()
@@ -254,7 +251,7 @@ class GitDataMgmt(AbstractDataMgmt):
             result = self.git_wrapper.git_top_level_path()
             if result.failure():
                 return result
-            result = self.add_content(result.output)
+            result = self.git_wrapper.git_add(result.output)
             if result.failure():
                 return result
         result = self.git_wrapper.git_commit(msg)
