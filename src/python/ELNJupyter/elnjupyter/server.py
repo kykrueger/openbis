@@ -11,8 +11,19 @@ from pybis import Openbis
 
 
 class CreateNotebook(tornado.web.RequestHandler):
-    def get(self, msg):
-        self.write(self.msg)
+
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+
+    def get(self):
+        self.write('some get')
+
+    def options(self):
+        # no body
+        self.set_status(204)
+        self.finish()
 
     def post(self, whatever):
         token = self.get_argument(name='token')
