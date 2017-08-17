@@ -42,17 +42,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
             config_resolver.location_resolver.location_roots['data_set'] = result.output
     complete_openbis_config(openbis_config, config_resolver)
 
-    openbis = None
-    if openbis_config.get('url') is None:
-        pass
-    else:
-        try:
-            openbis = pybis.Openbis(**openbis_config)
-        except ValueError:
-            echo_func({'level': 'error', 'message': 'Could not connect to openBIS.'})
-            traceback.print_exc()
-
-    return GitDataMgmt(config_resolver, openbis, git_wrapper)
+    return GitDataMgmt(config_resolver, openbis_config, git_wrapper)
 
 
 def complete_openbis_config(config, resolver):
@@ -144,9 +134,9 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, config_resolver, openbis, git_wrapper):
+    def __init__(self, config_resolver, openbis_config, git_wrapper):
         self.config_resolver = config_resolver
-        self.openbis = openbis
+        self.openbis_config = openbis_config
         self.git_wrapper = git_wrapper
 
     def error_raise(self, command, reason):
@@ -243,8 +233,12 @@ class GitDataMgmt(AbstractDataMgmt):
         return self.git_wrapper.git_init(path)
 
     def sync(self):
-        cmd = OpenbisSync(self)
-        return cmd.run()
+        try:
+            cmd = OpenbisSync(self)
+            return cmd.run()
+        except Exception:
+            traceback.print_exc()
+            return CommandResult(returncode=-1, output="Could not synchronize with openBIS.")
 
     def commit(self, msg, auto_add=True, sync=True):
         if auto_add:
@@ -371,10 +365,15 @@ class OpenbisSync(object):
 
     def __init__(self, dm):
         self.data_mgmt = dm
-        self.openbis = dm.openbis
         self.git_wrapper = dm.git_wrapper
         self.config_resolver = dm.config_resolver
         self.config_dict = dm.config_resolver.config_dict()
+
+        self.openbis = None
+        if dm.openbis_config.get('url') is None:
+            pass
+        else:
+            self.openbis = pybis.Openbis(**dm.openbis_config)
 
     def user(self):
         return self.config_dict.get('user')
