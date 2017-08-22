@@ -1798,13 +1798,14 @@ class Openbis:
         except:
             return resp
 
-    def new_git_data_set(self, data_set_type, path, commit_id, dms, sample=None, properties={},
+    def new_git_data_set(self, data_set_type, path, commit_id, repository_id, dms, sample=None, properties={},
                          dss_code=None, parents=None, data_set_code=None, contents=[]):
         """ Create a link data set.
         :param data_set_type: The type of the data set
         :param data_set_type: The type of the data set
         :param path: The path to the git repository
         :param commit_id: The git commit id
+        :param repository_id: The git repository id - same for copies
         :param dms: An external data managment system object or external_dms_id
         :param sample: A sample object or sample id.
         :param dss_code: Code for the DSS -- defaults to the first dss if none is supplied.
@@ -1818,7 +1819,7 @@ class Openbis:
              'path': [the relative path string]}
         :return: A DataSet object
         """
-        return pbds.GitDataSetCreation(self, data_set_type, path, commit_id, dms, sample,
+        return pbds.GitDataSetCreation(self, data_set_type, path, commit_id, repository_id, dms, sample,
                                        properties, dss_code, parents, data_set_code, contents).new_git_data_set()
 
     @staticmethod
@@ -1841,7 +1842,7 @@ class Openbis:
                 "identifier": sample.identifier,
                 "@type": "as.dto.sample.id.SampleIdentifier"
             }
-        return sampleId
+        return sample_id
 
     @staticmethod
     def data_set_to_data_set_id(data_set):

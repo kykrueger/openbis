@@ -7,7 +7,7 @@ from pybis import Openbis
 def openbis_instance():
     # instance = Openbis("http://localhost:20000")
     # Test against a real instance
-    instance = Openbis("https://localhost:8443", verify_certificates=False)
+    instance = Openbis("http://localhost:8888", verify_certificates=False)
     print("\nLOGGING IN...")
     instance.login('admin', 'anypassword')
     yield instance

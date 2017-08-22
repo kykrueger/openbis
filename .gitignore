@@ -5,6 +5,11 @@ src/python/sandbox/
 *.egg-info
 __pycache__
 .idea
+.vscode
 .cache
 .vagrant
 .env
+src/python/OBis/build/
+src/python/OBis/dist/
+src/python/PyBis/build/
+src/python/PyBis/dist/

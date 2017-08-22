@@ -12,10 +12,13 @@ import json
 import os
 import random
 import shutil
+import socket
+import hashlib
 
 from datetime import datetime
 
 from . import data_mgmt
+from . import CommandResult
 from unittest.mock import Mock, MagicMock, ANY
 from pybis.pybis import ExternalDMS, DataSet
 
@@ -158,17 +161,56 @@ def test_child_data_set(tmpdir):
         child_ds_code = dm.config_resolver.config_dict()['data_set_id']
         assert parent_ds_code != child_ds_code
         commit_id = dm.git_wrapper.git_commit_id().output
+        repository_id = dm.config_resolver.config_dict()['repository_id']
+        assert repository_id is not None
 
         contents = data_mgmt.GitRepoFileInfo(dm.git_wrapper).contents()
-        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, ANY, child_ds_code, parent_ds_code, properties,
-                                        contents)
+        check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, 
+                                        properties, contents)
+
+
+def test_external_dms_code_and_address():
+    # given
+    dm = shared_dm()
+    prepare_registration_expectations(dm)
+    obis_sync = data_mgmt.OpenbisSync(dm)
+    set_registration_configuration(dm)
+    user = obis_sync.user()
+    hostname = socket.gethostname()
+    result = obis_sync.git_wrapper.git_top_level_path()
+    assert result.failure() == False
+    edms_path, folder = os.path.split(result.output)
+    # when
+    result, edms = external_data_management_system = obis_sync.create_external_data_management_system();
+    # then
+    assert result.failure() == False
+    path_hash = hashlib.sha1(edms_path.encode("utf-8")).hexdigest()[0:8]
+    expected_edms_id = "{}-{}-{}".format(user, hostname, path_hash).upper()
+    expected_edms_address = "{}:/{}".format(hostname, edms_path)
+    dm.openbis.create_external_data_management_system.assert_called_with(expected_edms_id, expected_edms_id, 
+                                                                         expected_edms_address)
+
+
+def test_undo_commit_when_sync_fails(tmpdir):
+    # given
+    dm = shared_dm()
+    dm.git_wrapper = Mock()
+    dm.git_wrapper.git_top_level_path = MagicMock(return_value = CommandResult(returncode=0, output=None))
+    dm.git_wrapper.git_add = MagicMock(return_value = CommandResult(returncode=0, output=None))
+    dm.git_wrapper.git_commit = MagicMock(return_value = CommandResult(returncode=0, output=None))
+    dm.sync = lambda: CommandResult(returncode=-1, output="dummy error")
+    # when
+    result = dm.commit("Added data.")
+    # then
+    assert result.returncode == -1
+    dm.git_wrapper.git_undo_commit.assert_called_once()
 
 
 # TODO Test that if the data set registration fails, the data_set_id is reverted
 
 def set_registration_configuration(dm, properties=None):
     resolver = dm.config_resolver
-    resolver.set_value_for_parameter('openbis_url', "https://localhost:8443", 'local')
+    resolver.set_value_for_parameter('openbis_url', "http://localhost:8888", 'local')
     resolver.set_value_for_parameter('user', "auser", 'local')
     resolver.set_value_for_parameter('data_set_type', "DS_TYPE", 'local')
     resolver.set_value_for_parameter('object_id', "/SAMPLE/ID", 'local')
@@ -179,7 +221,7 @@ def set_registration_configuration(dm, properties=None):
 def prepare_registration_expectations(dm):
     dm.openbis = Mock()
     dm.openbis.is_session_active = MagicMock(return_value=True)
-    edms = ExternalDMS(dm.openbis, {'code': 'AUSER-PATH', 'label': 'AUSER-PATH'})
+    edms = ExternalDMS(dm.openbis, {'code': 'AUSER-MACHINE-ffffffff', 'label': 'AUSER-MACHINE-ffffffff'})
     dm.openbis.create_external_data_management_system = MagicMock(return_value=edms)
 
     prepare_new_data_set_expectations(dm)
@@ -195,9 +237,9 @@ def prepare_new_data_set_expectations(dm, properties={}):
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
 
 
-def check_new_data_set_expectations(dm, tmp_dir_path, commit_id, external_dms, data_set_id, parent_id, properties,
+def check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, external_dms, data_set_id, parent_id, properties,
                                     contents):
-    dm.openbis.new_git_data_set.assert_called_with('DS_TYPE', tmp_dir_path, commit_id, external_dms, "/SAMPLE/ID",
+    dm.openbis.new_git_data_set.assert_called_with('DS_TYPE', tmp_dir_path, commit_id, repository_id, external_dms, "/SAMPLE/ID",
                                                    data_set_code=data_set_id, parents=parent_id, properties=properties,
                                                    contents=contents)
 

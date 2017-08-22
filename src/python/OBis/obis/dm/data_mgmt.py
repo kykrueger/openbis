@@ -18,6 +18,8 @@ from . import config as dm_config
 import traceback
 import getpass
 import socket
+import uuid
+import hashlib
 
 import pybis
 
@@ -31,7 +33,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
     complete_git_config(git_config)
     git_wrapper = GitWrapper(**git_config)
     if not git_wrapper.can_run():
-        return NoGitDataMgmt(echo_func, config_resolver, None, git_wrapper)
+        return NoGitDataMgmt(config_resolver, None, git_wrapper)
 
     if config_resolver is None:
         config_resolver = dm_config.ConfigResolver()
@@ -40,17 +42,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
             config_resolver.location_resolver.location_roots['data_set'] = result.output
     complete_openbis_config(openbis_config, config_resolver)
 
-    openbis = None
-    if openbis_config.get('url') is None:
-        pass
-    else:
-        try:
-            openbis = pybis.Openbis(**openbis_config)
-        except ValueError:
-            echo_func({'level': 'error', 'message': 'Could not connect to openBIS.'})
-            traceback.print_exc()
-
-    return GitDataMgmt(echo_func, config_resolver, openbis, git_wrapper)
+    return GitDataMgmt(config_resolver, openbis_config, git_wrapper)
 
 
 def complete_openbis_config(config, resolver):
@@ -117,8 +109,12 @@ def run_shell(args, shell=False):
 
 def locate_command(command):
     """Return a tuple of (returncode, stdout)."""
-    # Need to call this command in shell mode... not entirely sure why.
-    return run_shell(['type -p {}'.format(command)], shell=True)
+    # Need to call this command in shell mode so we have the system PATH
+    result = run_shell(['type {}'.format(command)], shell=True)
+    # 'type -p' not supported by all shells, so we do it manually
+    if result.success():
+        result.output = result.output.split(" ")[-1]
+    return result
 
 
 @contextmanager
@@ -138,35 +134,15 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, echo_func, config_resolver, openbis, git_wrapper):
-        self.echo_func = echo_func
+    def __init__(self, config_resolver, openbis_config, git_wrapper):
         self.config_resolver = config_resolver
-        self.openbis = openbis
+        self.openbis_config = openbis_config
         self.git_wrapper = git_wrapper
 
-    def echo(self, level, message):
-        details = {'level': level, 'message': message}
-        self.echo_func(details)
-
-    def info(self, message):
-        """Print info to the user."""
-        self.echo('info', message)
-
-    def error(self, message):
-        """Print an error to the user"""
-        self.echo('error', message)
-
     def error_raise(self, command, reason):
-        """Print an error to the user and raise an exception."""
+        """Raise an exception."""
         message = "'{}' failed. {}".format(command, reason)
-        self.echo('error', message)
         raise ValueError(reason)
-
-    def check_result_ok(self, result):
-        if result.failure():
-            self.error(result.output)
-            return False
-        return True
 
     @abc.abstractmethod
     def init_data(self, path, desc=None, create=True):
@@ -241,10 +217,10 @@ class GitDataMgmt(AbstractDataMgmt):
         if not os.path.exists(path) and create:
             os.mkdir(path)
         result = self.git_wrapper.git_init(path)
-        if not self.check_result_ok(result):
+        if result.failure():
             return result
         result = self.git_wrapper.git_annex_init(path, desc)
-        if not self.check_result_ok(result):
+        if result.failure():
             return result
         with cd(path):
             # Update the resolvers location
@@ -254,37 +230,32 @@ class GitDataMgmt(AbstractDataMgmt):
         return result
 
     def init_analysis(self, path):
-        result = self.git_wrapper.git_init(path)
-        if not self.check_result_ok(result):
-            return result
-        return result
-
-    def add_content(self, path):
-        result = self.git_wrapper.git_add(path)
-        if not self.check_result_ok(result):
-            return result
-        return result
+        return self.git_wrapper.git_init(path)
 
     def sync(self):
-        cmd = OpenbisSync(self)
-        return cmd.run()
+        try:
+            cmd = OpenbisSync(self)
+            return cmd.run()
+        except Exception:
+            traceback.print_exc()
+            return CommandResult(returncode=-1, output="Could not synchronize with openBIS.")
 
     def commit(self, msg, auto_add=True, sync=True):
         if auto_add:
             result = self.git_wrapper.git_top_level_path()
-            if not self.check_result_ok(result):
+            if result.failure():
                 return result
-            result = self.add_content(result.output)
-            if not self.check_result_ok(result):
+            result = self.git_wrapper.git_add(result.output)
+            if result.failure():
                 return result
         result = self.git_wrapper.git_commit(msg)
-        if not self.check_result_ok(result):
+        if result.failure():
             # TODO If no changes were made check if the data set is in openbis. If not, just sync.
             return result
         if sync:
             result = self.sync()
-            if not self.check_result_ok(result):
-                return result
+            if result.failure():
+                self.git_wrapper.git_undo_commit()
         return result
 
     def status(self):
@@ -370,6 +341,9 @@ class GitWrapper(object):
     def git_commit(self, msg):
         return run_shell([self.git_path, "commit", '-m', msg])
 
+    def git_undo_commit(self):
+        return run_shell([self.git_path, "reset", 'HEAD~'])
+
     def git_top_level_path(self):
         return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])
 
@@ -391,16 +365,24 @@ class OpenbisSync(object):
 
     def __init__(self, dm):
         self.data_mgmt = dm
-        self.openbis = dm.openbis
         self.git_wrapper = dm.git_wrapper
         self.config_resolver = dm.config_resolver
         self.config_dict = dm.config_resolver.config_dict()
+
+        self.openbis = None
+        if dm.openbis_config.get('url') is None:
+            pass
+        else:
+            self.openbis = pybis.Openbis(**dm.openbis_config)
 
     def user(self):
         return self.config_dict.get('user')
 
     def external_dms_id(self):
         return self.config_dict.get('external_dms_id')
+
+    def repository_id(self):
+        return self.config_dict.get('repository_id')
 
     def data_set_type(self):
         return self.config_dict.get('data_set_type')
@@ -422,7 +404,7 @@ class OpenbisSync(object):
             missing_config_settings.append('user')
         if self.data_set_type() is None:
             missing_config_settings.append('data_set_type')
-        if self.data_set_type() is None:
+        if self.object_id() is None:
             missing_config_settings.append('object_id')
         if len(missing_config_settings) > 0:
             return CommandResult(returncode=-1,
@@ -456,20 +438,24 @@ class OpenbisSync(object):
         external_dms = self.openbis.get_external_data_management_system(external_dms_id.upper())
         return external_dms
 
+    def generate_external_data_management_system_code(self, user, hostname, edms_path):
+        path_hash = hashlib.sha1(edms_path.encode("utf-8")).hexdigest()[0:8]
+        return "{}-{}-{}".format(user, hostname, path_hash).upper()
+
     def create_external_data_management_system(self):
         external_dms_id = self.external_dms_id()
         user = self.user()
+        hostname = socket.gethostname()
         result = self.git_wrapper.git_top_level_path()
         if result.failure():
             return result
         top_level_path = result.output
-        path_name = os.path.basename(top_level_path)
+        edms_path, path_name = os.path.split(result.output)
         if external_dms_id is None:
-            external_dms_id = "{}-{}".format(user, path_name).upper()
+            external_dms_id = self.generate_external_data_management_system_code(user, hostname, edms_path)
         try:
-            hostname = socket.gethostname()
             edms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
-                                                                       "{}:/{}".format(hostname, top_level_path))
+                                                                       "{}:/{}".format(hostname, edms_path))
             return CommandResult(returncode=0, output=""), edms
         except ValueError as e:
             # The EDMS might already be in the system. Try to get it.
@@ -486,7 +472,7 @@ class OpenbisSync(object):
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
 
-    def create_data_set(self, data_set_code, external_dms):
+    def create_data_set(self, data_set_code, external_dms, repository_id):
         data_set_type = self.data_set_type()
         parent_data_set_id = self.data_set_id()
         properties = self.data_set_properties()
@@ -501,7 +487,7 @@ class OpenbisSync(object):
         object_id = self.object_id()
         contents = GitRepoFileInfo(self.git_wrapper).contents()
         try:
-            data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, external_dms.code,
+            data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,
                                                      object_id, data_set_code=data_set_code, parents=parent_data_set_id,
                                                      properties=properties, contents=contents)
             return CommandResult(returncode=0, output=""), data_set
@@ -523,6 +509,14 @@ class OpenbisSync(object):
             return result
         return CommandResult(returncode=0, output="")
 
+    def prepare_repository_id(self):
+        repository_id = self.repository_id()
+        if self.repository_id() is None:
+            repository_id = str(uuid.uuid4())
+            self.config_resolver.set_value_for_parameter('repository_id', repository_id, 'local')
+        return CommandResult(returncode=0, output=repository_id)
+
+
     def prepare_external_dms(self):
         # If there is no external data management system, create one.
         external_dms = self.get_external_data_management_system()
@@ -541,6 +535,11 @@ class OpenbisSync(object):
         if result.failure():
             return result
 
+        result = self.prepare_repository_id()
+        if result.failure():
+            return result
+        repository_id = result.output
+
         result = self.prepare_external_dms()
         if result.failure():
             return result
@@ -557,7 +556,7 @@ class OpenbisSync(object):
         self.commit_metadata_updates("data set id")
 
         # create a data set, using the existing data set as a parent, if there is one
-        result, data_set = self.create_data_set(data_set_code, external_dms)
+        result, data_set = self.create_data_set(data_set_code, external_dms, repository_id)
         if result.failure():
             self.revert_last_metadata_update()
             return result

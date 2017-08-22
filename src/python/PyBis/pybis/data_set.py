@@ -20,7 +20,7 @@ def transfer_to_file_creation(content, file_creation, key, file_creation_key=Non
 
 
 class GitDataSetCreation(object):
-    def __init__(self, openbis, data_set_type, path, commit_id, dms, sample=None, properties={},
+    def __init__(self, openbis, data_set_type, path, commit_id, repository_id, dms, sample=None, properties={},
                  dss_code=None, parents=None, data_set_code=None, contents=[]):
         """Initialize the command object with the necessary parameters.
         :param openbis: The openBIS API object.
@@ -28,6 +28,7 @@ class GitDataSetCreation(object):
         :param data_set_type: The type of the data set
         :param path: The path to the git repository
         :param commit_id: The git commit id
+        :param repository_id: The git repository id - same for copies
         :param dms: An external data managment system object or external_dms_id
         :param sample: A sample object or sample id.
         :param properties: Properties for the data set.
@@ -45,6 +46,7 @@ class GitDataSetCreation(object):
         self.data_set_type = data_set_type
         self.path = path
         self.commit_id = commit_id
+        self.repository_id = repository_id
         self.dms = dms
         self.sample = sample
         self.properties = properties
@@ -128,6 +130,7 @@ class GitDataSetCreation(object):
                         "@type": "as.dto.dataset.create.ContentCopyCreation",
                         "path": self.path,
                         "gitCommitHash": self.commit_id,
+                        "gitRepositoryId" : self.repository_id,
                         "externalDmsId": dms_id
                     }
                 ]
