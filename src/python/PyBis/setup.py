@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name='PyBIS',
-    version= '1.2.1',
+    version= '1.2.3',
     description='openBIS connection and interaction, optimized for using with Jupyter',
     url='https://sissource.ethz.ch/sispub/pybis/',
     author='Swen Vermeul |  ID SIS | ETH Zürich',
