@@ -81,9 +81,9 @@ def _definitions(entity):
             "multi": "parents children components tags attachments".split(),
         },
         "DataSet": {
-            "attrs_new": "type experiment sample parents children container components tags".split(),
-            "attrs_up": "parents children experiment sample container components tags".split(),
-            "attrs": "code permId type experiment sample parents children container components tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore measured".split(),
+            "attrs_new": "type experiment sample parents children components tags".split(),
+            "attrs_up": "parents children experiment sample components tags".split(),
+            "attrs": "code permId type experiment sample parents children components tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore measured".split(),
 
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.dataset.id.DataSetPermId'}},
