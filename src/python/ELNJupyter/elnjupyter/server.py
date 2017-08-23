@@ -46,30 +46,45 @@ class CreateNotebook(tornado.web.RequestHandler):
             self.create_user(username)
             #self.send_error(401, message="User {} does not exist on host system".format(username))
 
-        notebook_file = os.path.join(
+        path_to_notebook = os.path.join(
             user.pw_dir, 
             folder,
             filename
         )
 
         # create necessary directories
-        os.makedirs(os.path.dirname(notebook_file), exist_ok=True)
+        os.makedirs(os.path.dirname(path_to_notebook), exist_ok=True)
         
         # add sequence to the filename if file already exists
-        notebook_file_new = notebook_file
-        i = 1
-        while os.path.isfile(notebook_file_new):
-            i += 1
-            notebook_file_new = "{} {}".format(notebook_file, i)
-        notebook_file = notebook_file_new
+        filename_name_end = filename.rfind('.')
+        filename_name = filename[:filename_name_end]
+        filename_extension = filename[filename_name_end:]
+        filename_new = filename_name + filename_extension
 
-        with open(notebook_file, 'wb') as f:
+        path_to_notebook_new = os.path.join(
+            user.pw_dir, 
+            folder,
+            filename_new
+        )
+
+        i = 1
+        while os.path.isfile(path_to_notebook_new):
+            i += 1
+            filename_new = filename_name + " " + str(i) + filename_extension
+            path_to_notebook_new = os.path.join(
+                user.pw_dir, 
+                folder,
+                filename_new
+            )
+        path_to_notebook = path_to_notebook_new
+
+        with open(path_to_notebook, 'wb') as f:
             f.write(content)
-        os.chown(notebook_file, user.pw_uid, user.pw_gid)
-        print(notebook_file)
+        os.chown(path_to_notebook, user.pw_uid, user.pw_gid)
+        print(path_to_notebook)
         
         link_to_notebook = {
-            "url": "http://localhost:8888/notebooks/" +  os.path.join(folder, os.path.basename(notebook_file))
+            "fileName": filename_new
         }
         self.write(json.dumps(link_to_notebook))
 
