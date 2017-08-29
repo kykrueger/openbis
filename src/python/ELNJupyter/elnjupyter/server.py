@@ -81,6 +81,12 @@ class CreateNotebook(tornado.web.RequestHandler):
         with open(path_to_notebook, 'wb') as f:
             f.write(content)
         os.chown(path_to_notebook, user.pw_uid, user.pw_gid)
+        os.chmod(path_to_notebook, 0o777)
+        path_to_notebook_folder = os.path.join(
+            user.pw_dir, 
+            folder
+        )
+        os.chmod(path_to_notebook_folder, 0o777)
         print(path_to_notebook)
         
         link_to_notebook = {
@@ -93,7 +99,7 @@ class CreateNotebook(tornado.web.RequestHandler):
 
     def send_error(self, status_code=500, **kwargs):
         self.set_status(status_code)
-        self.write(json.dumps(kwargs) )
+        self.write(json.dumps(kwargs))
 
     def initialize(self, openbis):
         self.openbis = openbis
