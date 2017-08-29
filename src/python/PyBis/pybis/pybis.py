@@ -21,7 +21,7 @@ import copy
 import time
 import json
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import zlib
 import base64
 from collections import namedtuple
@@ -672,7 +672,7 @@ class Openbis:
         """ internal method, used to handle all post requests and serializing / deserializing
         data
         """
-        return self._post_request_full_url(self.url + resource, request)
+        return self._post_request_full_url(urljoin(self.url,resource), request)
 
     def _post_request_full_url(self, full_url, request):
         """ internal method, used to handle all post requests and serializing / deserializing
