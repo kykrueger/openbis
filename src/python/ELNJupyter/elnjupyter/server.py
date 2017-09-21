@@ -117,8 +117,8 @@ def make_app(openbis):
 
 @click.command()
 @click.option('--port', default=8123, help='Port where this server listens to')
-@click.option('--cert', default='cert.pem', help='Path to your cert-file in PEM format')
-@click.option('--key',  default='key.pem', help='Path to your key-file in PEM format')
+@click.option('--ssl-cert', '--cert', default='cert.pem', help='Path to your cert-file in PEM format')
+@click.option('--ssl-key', '--key', default='key.pem', help='Path to your key-file in PEM format')
 @click.option('--openbis', default='https://localhost:8443', help='URL and port of your openBIS installation')
 def start_server(port, cert, key, openbis):
     o = Openbis(url=openbis, verify_certificates=False)
