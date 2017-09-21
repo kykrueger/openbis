@@ -26,6 +26,7 @@ class CreateNotebook(tornado.web.RequestHandler):
         self.finish()
 
     def post(self, whatever):
+        test = self.get_argument(name='test')
         token = self.get_argument(name='token')
         folder = self.get_argument(name='folder')
         filename = self.get_argument(name='filename')
@@ -77,17 +78,18 @@ class CreateNotebook(tornado.web.RequestHandler):
                 filename_new
             )
         path_to_notebook = path_to_notebook_new
-
-        with open(path_to_notebook, 'wb') as f:
-            f.write(content)
-        os.chown(path_to_notebook, user.pw_uid, user.pw_gid)
-        os.chmod(path_to_notebook, 0o777)
-        path_to_notebook_folder = os.path.join(
-            user.pw_dir, 
-            folder
-        )
-        os.chmod(path_to_notebook_folder, 0o777)
-        print(path_to_notebook)
+        
+        if (test == None) or (test == 'False'):
+            with open(path_to_notebook, 'wb') as f:
+                f.write(content)
+            os.chown(path_to_notebook, user.pw_uid, user.pw_gid)
+            os.chmod(path_to_notebook, 0o777)
+            path_to_notebook_folder = os.path.join(
+                user.pw_dir, 
+                folder
+            )
+            os.chmod(path_to_notebook_folder, 0o777)
+            print(path_to_notebook)
         
         link_to_notebook = {
             "fileName": filename_new
