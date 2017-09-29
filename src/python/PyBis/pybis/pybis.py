@@ -603,6 +603,40 @@ class Openbis:
         if self.token is None:
             self.token = self._get_cached_token()
 
+    def __dir__(self):
+        return [
+            'url', 'port', 'hostname',
+            'login()', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
+            "get_dataset('permId')",
+            "get_datasets()",
+            "get_dataset_type('raw_data')",
+            "get_dataset_types()",
+            "get_datastores()",
+            "get_deletions()",
+            "get_experiment('permId', withAttachments=False)",
+            "get_experiments()",
+            "get_experiment_type('type')",
+            "get_experiment_types()",
+            "get_external_data_management_system('permId')",
+            "get_material_type('type')",
+            "get_material_types()",
+            "get_project('project')",
+            "get_projects(space=None, code=None)",
+            "get_sample('id')",
+            "get_samples()",
+            "get_sample_type('type'))",
+            "get_sample_types()",
+            "get_space('spaceId')",
+            "get_spaces()",
+            "get_tags()",
+            "get_terms()",
+            'new_space(name, description)',
+            'new_project(space, code, description)',
+            'new_experiment(type, code, project, props={})',
+            'new_sample(type, space, project, experiment)',
+            'new_dataset(type, parent, experiment, sample, files=[], folder, props={})',
+        ]
+
     @property
     def spaces(self):
         return self.get_spaces()
@@ -1666,9 +1700,9 @@ class Openbis:
                 else:
                     return Sample(self, self.get_sample_type(resp[sample_ident]["type"]["code"]), resp[sample_ident])
 
-    def get_external_data_management_system(self, perm_id, only_data=False):
+    def get_external_data_management_system(self, permId, only_data=False):
         """Retrieve metadata for the external data management system.
-        :param perm_id: A permId for an external DMS.
+        :param permId: A permId for an external DMS.
         :param only_data: Return the result data as a hash-map, not an object.
         """
 
@@ -1678,7 +1712,7 @@ class Openbis:
                 self.token,
                 [{
                     "@type": "as.dto.externaldms.id.ExternalDmsPermId",
-                    "permId": perm_id
+                    "permId": permId
                 }],
                 {},
             ],
@@ -1688,7 +1722,7 @@ class Openbis:
         parse_jackson(resp)
 
         if resp is None or len(resp) == 0:
-            raise ValueError('no such external DMS found: ' + perm_id)
+            raise ValueError('no such external DMS found: ' + permId)
         else:
             for ident in resp:
                 if only_data:
@@ -1696,7 +1730,7 @@ class Openbis:
                 else:
                     return ExternalDMS(self, resp[ident])
 
-    def new_space(self, name, description=None):
+    def new_space(self, code, description=None):
         """ Creates a new space in the openBIS instance.
         """
         request = {
@@ -1704,14 +1738,14 @@ class Openbis:
             "params": [
                 self.token,
                 [{
-                    "code": name,
+                    "code": code,
                     "description": description,
                     "@type": "as.dto.space.create.SpaceCreation"
                 }]
             ],
         }
         resp = self._post_request(self.as_v3, request)
-        return self.get_space(name)
+        return self.get_space(code)
 
     def new_analysis(self, name, description=None, sample=None, dss_code=None, result_files=None,
                      notebook_files=None, parents=None):
@@ -3065,7 +3099,7 @@ class AttrHolder():
 
     def __repr__(self):
 
-        headers = ['property', 'value']
+        headers = ['attribute', 'value']
         lines = []
         for attr in self._allowed_attrs:
             if attr == 'attachments':
@@ -3113,7 +3147,7 @@ class Sample():
             'props', 'get_parents()', 'get_children()', 
             'add_parents()', 'add_children()', 'del_parents()', 'del_children()',
             'get_datasets()', 'get_experiment()',
-            'space', 'project', 'experiment', 'project', 'tags',
+            'space', 'project', 'experiment', 'tags',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'save()', 'delete()'
@@ -3214,8 +3248,13 @@ class Space(OpenBisObject):
         """all the available methods and attributes that should be displayed
         when using the autocompletion feature (TAB) in Jupyter
         """
-        return ['code', 'permId', 'description', 'registrator', 'registrationDate',
-                'modificationDate', 'get_projects()', 'new_project()', 'get_samples()', 'delete()']
+        return [
+            'code', 'permId', 'description', 'registrator', 'registrationDate', 'modificationDate', 
+            'get_projects()', 
+            "new_project(code='', description='')", 
+            'get_samples()', 
+            'delete()'
+        ]
 
     def __str__(self):
         return self.data.get('code', None)
