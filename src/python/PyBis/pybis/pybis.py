@@ -1532,22 +1532,18 @@ class Openbis:
     def get_dataset_types(self, type=None):
         """ Returns a list (DataFrame object) of all currently available dataset types
         """
-        return self._get_types_of("searchDataSetTypes", "DataSet", type, ['kind'])
+        return self._get_types_of("searchDataSetTypes", "DataSet", type, optional_attributes=['kind'])
 
     def get_dataset_type(self, type):
         try:
-            return self._get_types_of("searchDataSetTypes", "DataSet", type, ['kind'])
+            return self._get_types_of("searchDataSetTypes", "DataSet", type, optional_attributes=['kind'])
         except Exception:
             raise ValueError("No such dataSet type: {}".format(type))
 
-    def _get_types_of(self, method_name, entity, type_name=None, additional_attributes=None):
+    def _get_types_of(self, method_name, entity, type_name=None, additional_attributes=[], optional_attributes=[]):
         """ Returns a list of all available types of an entity.
         If the name of the entity-type is given, it returns a PropertyAssignments object
         """
-        if additional_attributes is None:
-            additional_attributes = []
-
-        attributes = ['code', 'description'] + additional_attributes + ['modificationDate']
 
         search_request = {}
         fetch_options = {}
@@ -1565,7 +1561,6 @@ class Openbis:
                 )
             }
             fetch_options['propertyAssignments'] = fetch_option['propertyAssignments']
-            attributes.append('propertyAssignments')
 
         request = {
             "method": method_name,
@@ -1579,11 +1574,19 @@ class Openbis:
         if len(resp['objects']) >= 1:
             types = DataFrame(resp['objects'])
             types['modificationDate'] = types['modificationDate'].map(format_timestamp)
+            attributes = self._get_attributes(type_name, types, additional_attributes, optional_attributes)
             return Things(self, entity.lower() + '_type', types[attributes])
-            return types[attributes]
 
         else:
             raise ValueError("Nothing found!")
+
+    def _get_attributes(self, type_name, types, additional_attributes, optional_attributes):
+        attributes = ['code', 'description'] + additional_attributes
+        attributes += [attribute for attribute in optional_attributes if attribute in types]
+        attributes += ['modificationDate']
+        if type_name is not None:
+            attributes += ['propertyAssignments']
+        return attributes
 
     def is_session_active(self):
         """ checks whether a session is still active. Returns true or false.

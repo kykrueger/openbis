@@ -172,3 +172,10 @@ def test_create_perm_id(openbis_instance):
     assert ts is not None
     count = m.group(1)
     assert count is not None
+
+def test_get_dataset_types(openbis_instance):
+    dataset_types = openbis_instance.get_dataset_types();
+    dataset_type_unknown = dataset_types['UNKNOWN']
+    assert dataset_type_unknown is not None 
+    assert dataset_type_unknown.code is not None 
+    assert dataset_type_unknown.description is not None 
