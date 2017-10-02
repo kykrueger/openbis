@@ -241,6 +241,7 @@ class GitDataMgmt(AbstractDataMgmt):
             return CommandResult(returncode=-1, output="Could not synchronize with openBIS.")
 
     def commit(self, msg, auto_add=True, sync=True):
+        self.set_restorepoint()
         if auto_add:
             result = self.git_wrapper.git_top_level_path()
             if result.failure():
@@ -255,7 +256,7 @@ class GitDataMgmt(AbstractDataMgmt):
         if sync:
             result = self.sync()
             if result.failure():
-                self.git_wrapper.git_undo_commit()
+                self.restore()
         return result
 
     def status(self):
@@ -274,8 +275,11 @@ class GitDataMgmt(AbstractDataMgmt):
             msg = "OBIS: Update {}.".format(msg_fragment)
         return self.git_wrapper.git_commit(msg)
 
-    def revert_last_metadata_update(self):
-        self.git_wrapper.git_reset_prev()
+    def set_restorepoint(self):
+        self.previous_git_commit_hash = self.git_wrapper.git_commit_hash().output
+
+    def restore(self):
+        self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
         folder = self.config_resolver.local_public_config_folder_path()
         self.git_wrapper.git_checkout(folder)
 
@@ -341,23 +345,20 @@ class GitWrapper(object):
     def git_commit(self, msg):
         return run_shell([self.git_path, "commit", '-m', msg])
 
-    def git_undo_commit(self):
-        return run_shell([self.git_path, "reset", 'HEAD~'])
-
     def git_top_level_path(self):
         return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])
 
-    def git_commit_id(self):
+    def git_commit_hash(self):
         return run_shell([self.git_path, 'rev-parse', '--short', 'HEAD'])
 
     def git_ls_tree(self):
         return run_shell([self.git_path, 'ls-tree', '--full-tree', '-r', 'HEAD'])
 
-    def git_reset_prev(self):
-        return run_shell([self.git_path, 'reset', 'HEAD^'])
-
     def git_checkout(self, path):
         return run_shell([self.git_path, "checkout", path])
+
+    def git_reset_to(self, commit_hash):
+        return run_shell([self.git_path, 'reset', commit_hash])
 
 
 class OpenbisSync(object):
@@ -480,7 +481,7 @@ class OpenbisSync(object):
         if result.failure():
             return result
         top_level_path = result.output
-        result = self.git_wrapper.git_commit_id()
+        result = self.git_wrapper.git_commit_hash()
         if result.failure():
             return result
         commit_id = result.output
@@ -496,9 +497,6 @@ class OpenbisSync(object):
 
     def commit_metadata_updates(self, msg_fragment=None):
         return self.data_mgmt.commit_metadata_updates(msg_fragment)
-
-    def revert_last_metadata_update(self):
-        self.data_mgmt.revert_last_metadata_update()
 
     def prepare_run(self):
         result = self.check_configuration()
@@ -557,11 +555,7 @@ class OpenbisSync(object):
 
         # create a data set, using the existing data set as a parent, if there is one
         result, data_set = self.create_data_set(data_set_code, external_dms, repository_id)
-        if result.failure():
-            self.revert_last_metadata_update()
-            return result
-
-        return CommandResult(returncode=0, output="")
+        return result
 
 
 class GitRepoFileInfo(object):
