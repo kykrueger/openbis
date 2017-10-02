@@ -17,8 +17,8 @@ class CreateNotebook(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Headers", "x-requested-with")
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
 
-    def get(self):
-        self.write('some get')
+    def get(self, whatever):
+        self.send_error(401, message='this webservice does not allow any GET requests.')
 
     def options(self):
         # no body
@@ -45,6 +45,7 @@ class CreateNotebook(tornado.web.RequestHandler):
             user = pwd.getpwnam(username)
         except KeyError:
             self.create_user(username)
+            user = pwd.getpwname(username)
             #self.send_error(401, message="User {} does not exist on host system".format(username))
 
         path_to_notebook = os.path.join(
@@ -99,9 +100,9 @@ class CreateNotebook(tornado.web.RequestHandler):
     def create_user(self, username):
         os.system("useradd " + username)
 
-    def send_error(self, status_code=500, **kwargs):
+    def send_error(self, status_code=500, message=""):
         self.set_status(status_code)
-        self.write(json.dumps(kwargs))
+        self.write(message)
 
     def initialize(self, openbis):
         self.openbis = openbis
@@ -117,9 +118,9 @@ def make_app(openbis):
 
 @click.command()
 @click.option('--port', default=8123, help='Port where this server listens to')
-@click.option('--ssl-cert', '--cert', default='cert.pem', help='Path to your cert-file in PEM format')
-@click.option('--ssl-key', '--key', default='key.pem', help='Path to your key-file in PEM format')
-@click.option('--openbis', default='https://localhost:8443', help='URL and port of your openBIS installation')
+@click.option('--ssl-cert', '--cert', default='/etc/ssl/certs/cert.pem', help='Path to your cert-file in PEM format')
+@click.option('--ssl-key', '--key', default='/etc/ssl/certs/key.pem', help='Path to your key-file in PEM format')
+@click.option('--openbis', help='URL and port of your openBIS installation')
 def start_server(port, cert, key, openbis):
     o = Openbis(url=openbis, verify_certificates=False)
 
