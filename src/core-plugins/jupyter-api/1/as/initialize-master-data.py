@@ -35,9 +35,8 @@ tr = service.transaction();
 ##
 	
 	
-def createDataSetTypeWithProperties(dataSetCode, kind, description, properties):
+def createDataSetTypeWithProperties(dataSetCode, description, properties):
 	newDataSet = tr.getOrCreateNewDataSetType(dataSetCode);
-	newDataSet.setDataSetKind(kind);
 	newDataSet.setDescription(description);
 	addProperties(newDataSet, properties);
 	
@@ -83,13 +82,13 @@ def initJupyterMasterData():
 	##
 	## DataSet Types
 	##
-	createDataSetTypeWithProperties("JUPYTER_CONTAINER", "CONTAINER", "Jupyter Analysis Results", [
+	createDataSetTypeWithProperties("JUPYTER_CONTAINER", "Jupyter Analysis Results", [
 		["NAME", None, "Name", DataType.VARCHAR, None,	"Name", None, None],
 		["DESCRIPTION", None, "Description", DataType.MULTILINE_VARCHAR, None, "A Description", None, None],
 	]);
 	
-	createDataSetTypeWithProperties("JUPYTER_RESULT", "PHYSICAL", "Analysis Results Files", []);
-	createDataSetTypeWithProperties("JUPYTER_NOTEBOOK", "PHYSICAL", "Analysis Notebook Files", []);
+	createDataSetTypeWithProperties("JUPYTER_RESULT", "Analysis Results Files", []);
+	createDataSetTypeWithProperties("JUPYTER_NOTEBOOK", "Analysis Notebook Files", []);
 	
 	
 initJupyterMasterData();
