@@ -45,7 +45,7 @@ class CreateNotebook(tornado.web.RequestHandler):
             user = pwd.getpwnam(username)
         except KeyError:
             self.create_user(username)
-            user = pwd.getpwname(username)
+            user = pwd.getpwnam(username)
             #self.send_error(401, message="User {} does not exist on host system".format(username))
 
         path_to_notebook = os.path.join(
