@@ -51,6 +51,7 @@ def _definitions(entity):
             "attrs_new": "code description".split(),
             "attrs_up": "description".split(),
             "attrs": "code permId description registrator registrationDate modificationDate".split(),
+            "multi": "".split(),
             "identifier": "spaceId",
         },
         "Project": {
@@ -617,16 +618,16 @@ class Openbis:
             "get_experiments()",
             "get_experiment_type('type')",
             "get_experiment_types()",
-            "get_external_data_management_system('permId')",
+            "get_external_data_management_system(permId)",
             "get_material_type('type')",
             "get_material_types()",
             "get_project('project')",
             "get_projects(space=None, code=None)",
             "get_sample('id')",
             "get_samples()",
-            "get_sample_type('type'))",
+            "get_sample_type(type))",
             "get_sample_types()",
-            "get_space('spaceId')",
+            "get_space(code)",
             "get_spaces()",
             "get_tags()",
             "get_terms()",
@@ -655,6 +656,8 @@ class Openbis:
         try:
             with open(token_path) as f:
                 token = f.read()
+                if token == "":
+                    return None
                 if not self.is_token_valid(token):
                     os.remove(token_path)
                     return None
@@ -776,7 +779,7 @@ class Openbis:
                 self.save_token()
             return self.token
 
-    def create_perm_id(self):
+    def create_permId(self):
         """Have the server generate a new permId"""
         # Request just 1 permId
         request = {
@@ -833,11 +836,11 @@ class Openbis:
         else:
             raise ValueError("No spaces found!")
 
-    def get_space(self, spaceId):
-        """ Returns a Space object for a given identifier (spaceId).
+    def get_space(self, code, only_data=False):
+        """ Returns a Space object for a given identifier.
         """
 
-        spaceId = str(spaceId).upper()
+        code = str(code).upper()
         fetchopts = {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"}
         for option in ['registrator']:
             fetchopts[option] = fetch_option[option]
@@ -847,7 +850,7 @@ class Openbis:
             "params": [
                 self.token,
                 [{
-                    "permId": spaceId,
+                    "permId": code,
                     "@type": "as.dto.space.id.SpacePermId"
                 }],
                 fetchopts
@@ -855,8 +858,13 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
         if len(resp) == 0:
-            raise ValueError("No such space: %s" % spaceId)
-        return Space(self, None, resp[spaceId])
+            raise ValueError("No such space: %s" % code)
+
+        for permid in resp:
+            if only_data:
+                return resp[permid]
+            else:
+                return Space(self, data=resp[permid])
 
     def get_samples(self, code=None, permId=None, space=None, project=None, experiment=None, type=None,
                     withParents=None, withChildren=None, tags=None, props=None, **properties):
@@ -1733,22 +1741,11 @@ class Openbis:
                 else:
                     return ExternalDMS(self, resp[ident])
 
-    def new_space(self, code, description=None):
+    def new_space(self, **kwargs):
         """ Creates a new space in the openBIS instance.
         """
-        request = {
-            "method": "createSpaces",
-            "params": [
-                self.token,
-                [{
-                    "code": code,
-                    "description": description,
-                    "@type": "as.dto.space.create.SpaceCreation"
-                }]
-            ],
-        }
-        resp = self._post_request(self.as_v3, request)
-        return self.get_space(code)
+        return Space(self, None, **kwargs)
+
 
     def new_analysis(self, name, description=None, sample=None, dss_code=None, result_files=None,
                      notebook_files=None, parents=None):
@@ -2091,8 +2088,9 @@ class OpenBisObject():
         self.__dict__['data'] = data
 
         # put the properties in the self.p namespace (without checking them)
-        for key, value in data['properties'].items():
-            self.p.__dict__[key.lower()] = value
+        if 'properties' in data:
+            for key, value in data['properties'].items():
+                self.p.__dict__[key.lower()] = value
 
     @property
     def attrs(self):
@@ -3235,9 +3233,9 @@ class Space(OpenBisObject):
     """ managing openBIS spaces
     """
 
-    def __init__(self, openbis_obj, type=None, data=None, **kwargs):
+    def __init__(self, openbis_obj, data=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Space', type)
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'Space' )
 
         if data is not None:
             self.a(data)
@@ -3273,6 +3271,22 @@ class Space(OpenBisObject):
 
     def delete(self, reason):
         self.openbis.delete_entity('Space', self.permId, reason)
+
+    def save(self):
+        if self.is_new:
+            request = self._new_attrs()
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+            print("Space successfully created.")
+            new_space_data = self.openbis.get_space(resp[0]['permId'], only_data=True)
+            self._set_data(new_space_data)
+            return self
+
+        else:
+            request = self._up_attrs()
+            self.openbis._post_request(self.openbis.as_v3, request)
+            print("Space successfully updated.")
+            new_space_data = self.openbis.get_space(self.permId, only_data=True)
+            self._set_data(new_space_data)
 
 
 class ExternalDMS():
