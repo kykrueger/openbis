@@ -32,6 +32,8 @@ o.get_tags()
 
 ## Spaces and Projects
 ```
+space = o.new_space(code='space_name', description='')
+space.save()
 o.get_spaces()
 o.get_space('MY_SPACE')
 o.get_projects(space='MY_SPACE')
