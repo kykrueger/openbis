@@ -468,7 +468,7 @@ class OpenbisSync(object):
 
     def create_data_set_code(self):
         try:
-            data_set_code = self.openbis.create_perm_id()
+            data_set_code = self.openbis.create_permId()
             return CommandResult(returncode=0, output=""), data_set_code
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
