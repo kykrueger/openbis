@@ -168,7 +168,10 @@ fetch_option = {
     "propertyAssignments": {
         "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
         "propertyType": {
-            "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions"
+            "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
+            "vocabulary": {
+                "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
+            }
         }
     },
     "tags": {"@type": "as.dto.tag.fetchoptions.TagFetchOptions"},
