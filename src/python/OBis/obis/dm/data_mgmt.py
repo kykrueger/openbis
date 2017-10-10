@@ -25,7 +25,7 @@ import pybis
 
 
 # noinspection PyPep8Naming
-def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config={}):
+def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config={}, openbis=None):
     """Factory method for DataMgmt instances"""
 
     echo_func = echo_func if echo_func is not None else default_echo
@@ -33,7 +33,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
     complete_git_config(git_config)
     git_wrapper = GitWrapper(**git_config)
     if not git_wrapper.can_run():
-        return NoGitDataMgmt(config_resolver, None, git_wrapper)
+        return NoGitDataMgmt(config_resolver, None, git_wrapper, openbis)
 
     if config_resolver is None:
         config_resolver = dm_config.ConfigResolver()
@@ -42,7 +42,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
             config_resolver.location_resolver.location_roots['data_set'] = result.output
     complete_openbis_config(openbis_config, config_resolver)
 
-    return GitDataMgmt(config_resolver, openbis_config, git_wrapper)
+    return GitDataMgmt(config_resolver, openbis_config, git_wrapper, openbis)
 
 
 def complete_openbis_config(config, resolver):
@@ -134,10 +134,11 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, config_resolver, openbis_config, git_wrapper):
+    def __init__(self, config_resolver, openbis_config, git_wrapper, openbis):
         self.config_resolver = config_resolver
         self.openbis_config = openbis_config
         self.git_wrapper = git_wrapper
+        self.openbis = openbis
 
     def error_raise(self, command, reason):
         """Raise an exception."""
@@ -213,7 +214,14 @@ class NoGitDataMgmt(AbstractDataMgmt):
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
-    def init_data(self, path, desc=None, create=True):
+    def setup_local_config(self, config, path):
+        with cd(path):
+            self.config_resolver.location_resolver.location_roots['data_set'] = '.'
+            for key, value in config.items():
+                self.config_resolver.set_value_for_parameter(key, value, 'local')
+
+
+    def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:
             os.mkdir(path)
         result = self.git_wrapper.git_init(path)
@@ -225,7 +233,7 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(path):
             # Update the resolvers location
             self.config_resolver.location_resolver.location_roots['data_set'] = '.'
-            self.config_resolver.copy_global_to_local()
+            self.config_resolver.copy_global_to_local() # TODO yn use config provided to data_mgmt
             self.commit_metadata_updates('local with global')
         return result
 
@@ -240,7 +248,16 @@ class GitDataMgmt(AbstractDataMgmt):
             traceback.print_exc()
             return CommandResult(returncode=-1, output="Could not synchronize with openBIS.")
 
-    def commit(self, msg, auto_add=True, sync=True):
+
+    def commit(self, msg, auto_add=True, sync=True, path=None):
+        if path is not None:
+            with cd(path):
+                self._commit(msg, auto_add, sync);
+        else:
+            self._commit(msg, auto_add, sync);
+
+
+    def _commit(self, msg, auto_add=True, sync=True):
         self.set_restorepoint()
         if auto_add:
             result = self.git_wrapper.git_top_level_path()
@@ -364,16 +381,14 @@ class GitWrapper(object):
 class OpenbisSync(object):
     """A command object for synchronizing with openBIS."""
 
-    def __init__(self, dm):
+    def __init__(self, dm, openbis=None):
         self.data_mgmt = dm
         self.git_wrapper = dm.git_wrapper
         self.config_resolver = dm.config_resolver
         self.config_dict = dm.config_resolver.config_dict()
+        self.openbis = dm.openbis
 
-        self.openbis = None
-        if dm.openbis_config.get('url') is None:
-            pass
-        else:
+        if self.openbis is None and dm.openbis_config.get('url') is not None:
             self.openbis = pybis.Openbis(**dm.openbis_config)
 
     def user(self):
