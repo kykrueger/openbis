@@ -221,6 +221,11 @@ class GitDataMgmt(AbstractDataMgmt):
                 self.config_resolver.set_value_for_parameter(key, value, 'local')
 
 
+    def get_data_set_id(self, path):
+        with cd(path):
+            return self.config_resolver.config_dict().get('data_set_id')
+
+
     def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:
             os.mkdir(path)
@@ -252,9 +257,9 @@ class GitDataMgmt(AbstractDataMgmt):
     def commit(self, msg, auto_add=True, sync=True, path=None):
         if path is not None:
             with cd(path):
-                self._commit(msg, auto_add, sync);
+                return self._commit(msg, auto_add, sync);
         else:
-            self._commit(msg, auto_add, sync);
+            return self._commit(msg, auto_add, sync);
 
 
     def _commit(self, msg, auto_add=True, sync=True):
@@ -447,18 +452,11 @@ class OpenbisSync(object):
             return CommandResult(returncode=-1, output=msg)
         return CommandResult(returncode=0, output='')
 
-    def get_external_data_management_system(self):
-        external_dms_id = self.external_dms_id()
-        if external_dms_id is None:
-            return None
-        external_dms = self.openbis.get_external_data_management_system(external_dms_id.upper())
-        return external_dms
-
     def generate_external_data_management_system_code(self, user, hostname, edms_path):
         path_hash = hashlib.sha1(edms_path.encode("utf-8")).hexdigest()[0:8]
         return "{}-{}-{}".format(user, hostname, path_hash).upper()
 
-    def create_external_data_management_system(self):
+    def get_or_create_external_data_management_system(self):
         external_dms_id = self.external_dms_id()
         user = self.user()
         hostname = socket.gethostname()
@@ -470,16 +468,15 @@ class OpenbisSync(object):
         if external_dms_id is None:
             external_dms_id = self.generate_external_data_management_system_code(user, hostname, edms_path)
         try:
-            edms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
-                                                                       "{}:/{}".format(hostname, edms_path))
-            return CommandResult(returncode=0, output=""), edms
+            external_dms = self.openbis.get_external_data_management_system(external_dms_id.upper())
         except ValueError as e:
-            # The EDMS might already be in the system. Try to get it.
+            # external dms does not exist - create it
             try:
-                edms = self.openbis.get_external_data_management_system(external_dms_id)
-                return CommandResult(returncode=0, output=""), edms
-            except ValueError:
-                return CommandResult(returncode=-1, output=str(e)), None
+                external_dms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
+                                                                    "{}:/{}".format(hostname, edms_path))
+            except ValueError as e:
+                return CommandResult(returncode=-1, output=str(e))
+        return CommandResult(returncode=0, output=external_dms)
 
     def create_data_set_code(self):
         try:
@@ -532,13 +529,12 @@ class OpenbisSync(object):
 
     def prepare_external_dms(self):
         # If there is no external data management system, create one.
-        external_dms = self.get_external_data_management_system()
-        if external_dms is None:
-            result, external_dms = self.create_external_data_management_system()
-            if result.failure():
-                return result
-            self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
-        return CommandResult(returncode=0, output=external_dms)
+        result = self.get_or_create_external_data_management_system()
+        if result.failure():
+            return result
+        external_dms = result.output
+        self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
+        return result
 
     def run(self):
         # TODO Write mementos in case openBIS is unreachable
