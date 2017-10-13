@@ -64,9 +64,9 @@ Now create a file and put some content into it. E.g.,
 
     vi info.txt
 
-When finished, we need to set the object_id this data set should be associated with. Then we can commit it.
+When finished, we need to set the sample_id this data set should be associated with. Then we can commit it.
 
-    obis config object_id /DEMO/BIGDATA
+    obis config sample_id /DEMO/BIGDATA
     obis commit -m"Initial data commit."
 
 Log into the sprint server https://sprint-openbis.ethz.ch:8446 and go to the sample /DEMO/BIGDATA. You should see the newly registered data set there. You can take a look at it and see file metadata for its contents.
