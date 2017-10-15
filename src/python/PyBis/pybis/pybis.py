@@ -630,6 +630,8 @@ class Openbis:
             "get_samples()",
             "get_sample_type(type))",
             "get_sample_types()",
+            "get_semantic_annotations()",
+            "get_semantic_annotation(permId, only_data = False)",
             "get_space(code)",
             "get_spaces()",
             "get_tags()",
@@ -639,6 +641,7 @@ class Openbis:
             'new_experiment(type, code, project, props={})',
             'new_sample(type, space, project, experiment)',
             'new_dataset(type, parent, experiment, sample, files=[], folder, props={})',
+            'new_semantic_annotation(entityType, propertyType)',
         ]
 
     @property
@@ -1488,7 +1491,84 @@ class Openbis:
         objects = DataFrame(resp['objects'])
         objects['registrationDate'] = objects['registrationDate'].map(format_timestamp)
         return objects[['code', 'registrationDate']]
+    
+    def _search_semantic_annotations(self, criteria):
 
+        fetch_options = {
+            "@type": "as.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions",
+            "entityType": {"@type": "as.dto.entitytype.fetchoptions.EntityTypeFetchOptions"},
+            "propertyType": {"@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions"},
+            "propertyAssignment": {
+                "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
+                "entityType" : {
+                    "@type" : "as.dto.entitytype.fetchoptions.EntityTypeFetchOptions"
+                },
+                "propertyType" : {
+                    "@type" : "as.dto.property.fetchoptions.PropertyTypeFetchOptions"
+                }
+            }
+        }
+
+        request = {
+            "method": "searchSemanticAnnotations",
+            "params": [self.token, criteria, fetch_options]
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        
+        if resp is not None:
+            objects = resp['objects']
+            
+            if len(objects) is 0:
+                raise ValueError("No semantic annotations found!")
+            
+            parse_jackson(objects)
+            
+            for object in objects:
+                object['permId'] = object['permId']['permId']
+                if object.get('entityType') is not None:
+                    object['entityType'] = object['entityType']['code']
+                elif object.get('propertyType') is not None:
+                    object['propertyType'] = object['propertyType']['code']
+                elif object.get('propertyAssignment') is not None:
+                    object['entityType'] = object['propertyAssignment']['entityType']['code']
+                    object['propertyType'] = object['propertyAssignment']['propertyType']['code']
+                object['creationDate'] = format_timestamp(object['creationDate'])
+                
+            return objects
+        else:
+            raise ValueError("No semantic annotations found!")
+
+    def get_semantic_annotations(self):
+        """ Get a list of all available semantic annotations (DataFrame object).
+        """
+
+        objects = self._search_semantic_annotations({})
+        attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
+        annotations = DataFrame(objects)
+        return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+    
+    def get_semantic_annotation(self, permId, only_data = False):
+
+        criteria = {
+            "@type" : "as.dto.semanticannotation.search.SemanticAnnotationSearchCriteria",
+            "criteria" : [{
+                "@type" : "as.dto.common.search.PermIdSearchCriteria",
+                "fieldValue" : {
+                    "@type" : "as.dto.common.search.StringEqualToValue",
+                    "value" : permId
+                }
+            }]
+        }
+
+        objects = self._search_semantic_annotations(criteria)
+        object = objects[0]
+
+        if only_data:
+            return object
+        else:
+            return SemanticAnnotation(self, isNew=False, **object)    
+    
     def get_sample_types(self, type=None):
         """ Returns a list of all available sample types
         """
@@ -1921,6 +2001,9 @@ class Openbis:
         type_obj = self.get_dataset_type(type.upper())
 
         return DataSet(self, type=type_obj, files=files, folder=folder, props=props, **kwargs)
+    
+    def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):
+        return SemanticAnnotation(openbis_obj=self, isNew=True, entityType=entityType, propertyType=propertyType, **kwargs)    
 
     def _get_dss_url(self, dss_code=None):
         """ internal method to get the downloadURL of a datastore.
@@ -3683,3 +3766,108 @@ class Project(OpenBisObject):
             request = self._up_attrs()
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Project successfully updated.")
+
+
+class SemanticAnnotation():
+    def __init__(self, openbis_obj, isNew=True, **kwargs):
+        self._openbis = openbis_obj
+        self._isNew = isNew;
+        
+        self.permId = kwargs.get('permId')
+        self.entityType = kwargs.get('entityType')
+        self.propertyType = kwargs.get('propertyType')
+        self.predicateOntologyId = kwargs.get('predicateOntologyId')
+        self.predicateOntologyVersion = kwargs.get('predicateOntologyVersion')
+        self.predicateAccessionId = kwargs.get('predicateAccessionId')
+        self.descriptorOntologyId = kwargs.get('descriptorOntologyId')
+        self.descriptorOntologyVersion = kwargs.get('descriptorOntologyVersion')
+        self.descriptorAccessionId = kwargs.get('descriptorAccessionId')
+        self.creationDate = kwargs.get('creationDate')
+
+    def __dir__(self):
+        return ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate', 'save()', 'delete()' ]
+
+    def save(self):
+        if self._isNew:
+            self._create()
+        else:
+            self._update()
+            
+    def _create(self):
+        
+        creation = {
+            "@type": "as.dto.semanticannotation.create.SemanticAnnotationCreation"
+        }
+
+        if self.entityType is not None and self.propertyType is not None:
+            creation["propertyAssignmentId"] = {
+                "@type": "as.dto.property.id.PropertyAssignmentPermId",
+                "entityTypeId" : {
+                    "@type": "as.dto.entitytype.id.EntityTypePermId",
+                    "permId" : self.entityType,
+                    "entityKind" : "SAMPLE"
+                },
+                "propertyTypeId" : {
+                    "@type" : "as.dto.property.id.PropertyTypePermId",
+                    "permId" : self.propertyType
+                }
+            }
+        elif self.entityType is not None:
+            creation["entityTypeId"] = {
+                "@type": "as.dto.entitytype.id.EntityTypePermId",
+                "permId" : self.entityType,
+                "entityKind" : "SAMPLE"
+            }
+        elif self.propertyType is not None:
+            creation["propertyTypeId"] = {
+                "@type" : "as.dto.property.id.PropertyTypePermId",
+                "permId" : self.propertyType
+            }
+            
+        for attr in ['predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId']:
+            creation[attr] = getattr(self, attr)
+
+        request = {
+            "method": "createSemanticAnnotations",
+            "params": [
+                self._openbis.token,
+                [creation]
+            ]
+        }
+        
+        self._openbis._post_request(self._openbis.as_v3, request)
+        self._isNew = False
+        
+        print("Semantic annotation successfully created.")
+    
+    def _update(self):
+        
+        update = {
+            "@type": "as.dto.semanticannotation.update.SemanticAnnotationUpdate",
+            "semanticAnnotationId" : {
+                "@type" : "as.dto.semanticannotation.id.SemanticAnnotationPermId",
+                "permId" : self.permId
+            }
+        }
+        
+        for attr in ['predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId']:
+            update[attr] = {
+                "@type" : "as.dto.common.update.FieldUpdateValue",
+                "isModified" : True,
+                "value" : getattr(self, attr)
+            }
+            
+        request = {
+            "method": "updateSemanticAnnotations",
+            "params": [
+                self._openbis.token,
+                [update]
+            ]
+        }
+        
+        self._openbis._post_request(self._openbis.as_v3, request)
+        print("Semantic annotation successfully updated.")
+    
+    def delete(self, reason):
+        self._openbis.delete_entity('SemanticAnnotation', self.permId, reason, False)
+        print("Semantic annotation successfully deleted.")
