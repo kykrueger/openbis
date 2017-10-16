@@ -59,9 +59,9 @@ Samples
 ::
 
     sample = o.new_sample(
-        type='YEAST', 
-        space='MY_SPACE', 
-        parents=[parent_sample, '/MY_SPACE/YEA66'], 
+        type='YEAST',
+        space='MY_SPACE',
+        parents=[parent_sample, '/MY_SPACE/YEA66'],
         children=[child_sample]
     )
     sample.space
@@ -119,9 +119,9 @@ Experiments
     )
     o.get_experiments(
         project='YEASTS',
-        space='MY_SPACE', 
+        space='MY_SPACE',
         type='DEFAULT_EXPERIMENT',
-        tags='*', 
+        tags='*',
         finished_flag=False,
         props=['name', 'finished_flag']
     )
@@ -163,11 +163,11 @@ Datasets
     ds.download(destination='/tmp', wait_until_finished=False)
 
     ds_new = o.new_dataset(
-        type='ANALYZED_DATA', 
-        experiment=exp, 
+        type='ANALYZED_DATA',
+        experiment=exp,
         sample= samp,
         parents=[my_dataset, '20160713173002405-212'],
-        files = ['my_analyzed_data.dat'], 
+        files = ['my_analyzed_data.dat'],
         props={'name': 'we give this dataset a name', 'notes': 'and we might need some notes, too'})
     )
     ds_new.save()
@@ -190,6 +190,44 @@ Datasets
     # use it in a for-loop:
     for dataset in datasets:
         print(ds.permID)
+
+Semantic Annotations
+--------------------
+
+::
+
+    # create semantic annotation for sample type
+    o.new_semantic_annotation(entityType = 'UNKNOWN')
+
+    # create sementic annotation for property type
+    o.new_semantic_annotation(propertyType = 'DESCRIPTION')
+
+    # create semantic annotation for sample property assignment
+    o.new_semantic_annotation(entityType = 'UNKNOWN', propertyType = 'DESCRIPTION')
+
+    # create semantic annotation with additional fields
+    o.new_semantic_annotation(entityType = 'UNKNOWN',
+                          predicateOntologyId = 'po_id',
+                          predicateOntologyVersion = 'po_version',
+                          predicateAccessionId = 'pa_id',
+                          descriptorOntologyId = 'do_id',
+                          descriptorOntologyVersion = 'do_version',
+                          descriptorAccessionId = 'da_id')
+
+    # get all semantic annotations
+    o.get_semantic_annotations()
+
+    # get semantic annotation by perm id
+    sa = o.get_semantic_annotation("20171015135637955-30")
+
+    # update semantic annotation
+    sa.predicateOntologyId = 'new_po_id'
+    sa.descriptorOntologyId = 'new_do_id'
+    sa.save()
+
+    # delete semantic annotation
+    sa.delete('reason')
+
 
 Requirements and organization
 =============================
