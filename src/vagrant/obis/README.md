@@ -64,7 +64,7 @@ Now create a file and put some content into it. E.g.,
 
     vi info.txt
 
-When finished, we need to set the sample_id this data set should be associated with. Then we can commit it.
+When finished, we need to set the sample_id or experiment_id this data set should be associated with. Then we can commit it.
 
     obis config sample_id /DEMO/BIGDATA
     obis commit -m"Initial data commit."

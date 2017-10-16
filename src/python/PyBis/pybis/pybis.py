@@ -1835,7 +1835,7 @@ class Openbis:
         except:
             return resp
 
-    def new_git_data_set(self, data_set_type, path, commit_id, repository_id, dms, sample=None, properties={},
+    def new_git_data_set(self, data_set_type, path, commit_id, repository_id, dms, sample=None, experiment=None, properties={},
                          dss_code=None, parents=None, data_set_code=None, contents=[]):
         """ Create a link data set.
         :param data_set_type: The type of the data set
@@ -1856,30 +1856,39 @@ class Openbis:
              'path': [the relative path string]}
         :return: A DataSet object
         """
-        return pbds.GitDataSetCreation(self, data_set_type, path, commit_id, repository_id, dms, sample,
+        return pbds.GitDataSetCreation(self, data_set_type, path, commit_id, repository_id, dms, sample, experiment,
                                        properties, dss_code, parents, data_set_code, contents).new_git_data_set()
 
     @staticmethod
     def sample_to_sample_id(sample):
         """Take sample which may be a string or object and return an identifier for it."""
-        sample_id = None
-        if isinstance(sample, str):
-            if (is_identifier(sample)):
-                sample_id = {
-                    "identifier": sample,
-                    "@type": "as.dto.sample.id.SampleIdentifier"
+        return Openbis._object_to_object_id(sample, "as.dto.sample.id.SampleIdentifier", "as.dto.sample.id.SamplePermId");
+
+    @staticmethod
+    def experiment_to_experiment_id(experiment):
+        """Take experiment which may be a string or object and return an identifier for it."""
+        return Openbis._object_to_object_id(experiment, "as.dto.experiment.id.ExperimentIdentifier", "as.dto.experiment.id.SamplePermId");
+
+    @staticmethod
+    def _object_to_object_id(obj, identifierType, permIdType):
+        object_id = None
+        if isinstance(obj, str):
+            if (is_identifier(obj)):
+                object_id = {
+                    "identifier": obj,
+                    "@type": identifierType
                 }
             else:
-                sample_id = {
-                    "permId": sample,
-                    "@type": "as.dto.sample.id.SamplePermId"
+                object_id = {
+                    "permId": obj,
+                    "@type": permIdType
                 }
         else:
-            sample_id = {
-                "identifier": sample.identifier,
-                "@type": "as.dto.sample.id.SampleIdentifier"
+            object_id = {
+                "identifier": obj.identifier,
+                "@type": identifierType
             }
-        return sample_id
+        return object_id
 
     @staticmethod
     def data_set_to_data_set_id(data_set):

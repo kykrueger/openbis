@@ -142,7 +142,7 @@ def init_data_impl(ctx, sample_id, folder, name):
     with dm.cd(folder):
         return check_result("init_data", set_property(data_mgmt, 'sample_id', sample_id, False))
 
-
+# TODO test and add param for experiment
 @cli.command()
 @click.pass_context
 @click.option('-o', '--sample_id', help='Set the id of the owning object.')
@@ -153,6 +153,7 @@ def init(ctx, sample_id, folder, name):
     return init_data_impl(ctx, sample_id, folder, name)
 
 
+# TODO test and add param for experiment
 @cli.command()
 @click.pass_context
 @click.option('-o', '--sample_id', help='Set the id of the owning object.')
