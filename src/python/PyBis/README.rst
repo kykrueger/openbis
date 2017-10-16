@@ -199,7 +199,7 @@ Semantic Annotations
     # create semantic annotation for sample type
     o.new_semantic_annotation(entityType = 'UNKNOWN')
 
-    # create sementic annotation for property type
+    # create semantic annotation for property type
     o.new_semantic_annotation(propertyType = 'DESCRIPTION')
 
     # create semantic annotation for sample property assignment

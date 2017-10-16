@@ -176,6 +176,41 @@ for dataset in datasets:
     print(ds.permID)
 ```
 
+## Semantic Annotations
+```
+# create semantic annotation for sample type
+o.new_semantic_annotation(entityType = 'UNKNOWN')
+
+# create semantic annotation for property type
+o.new_semantic_annotation(propertyType = 'DESCRIPTION')
+
+# create semantic annotation for sample property assignment
+o.new_semantic_annotation(entityType = 'UNKNOWN', propertyType = 'DESCRIPTION')
+
+# create semantic annotation with additional fields
+o.new_semantic_annotation(entityType = 'UNKNOWN',
+                      predicateOntologyId = 'po_id',
+                      predicateOntologyVersion = 'po_version',
+                      predicateAccessionId = 'pa_id',
+                      descriptorOntologyId = 'do_id',
+                      descriptorOntologyVersion = 'do_version',
+                      descriptorAccessionId = 'da_id')
+
+# get all semantic annotations
+o.get_semantic_annotations()
+
+# get semantic annotation by perm id
+sa = o.get_semantic_annotation("20171015135637955-30")
+
+# update semantic annotation
+sa.predicateOntologyId = 'new_po_id'
+sa.descriptorOntologyId = 'new_do_id'
+sa.save()
+
+# delete semantic annotation
+sa.delete('reason')
+```
+
 # Requirements and organization
 
 ### Dependencies and Requirements
