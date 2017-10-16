@@ -30,7 +30,7 @@ class ConfigLocation(object):
 class ConfigParam(object):
     """Class for configuration parameters."""
 
-    def __init__(self, name, private, is_json=False):
+    def __init__(self, name, private, is_json=False, ignore_global=False):
         """
         :param name: Name of the parameter.
         :param private: Should the parameter be private to the repo or visible in the data set?
@@ -39,6 +39,7 @@ class ConfigParam(object):
         self.name = name
         self.private = private
         self.is_json = is_json
+        self.ignore_global = ignore_global
 
     def location_path(self, loc):
         if loc == 'global':
@@ -88,7 +89,8 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='verify_certificates', private=True, is_json=True))
         self.add_param(ConfigParam(name='external_dms_id', private=True))
         self.add_param(ConfigParam(name='repository_id', private=True))
-        self.add_param(ConfigParam(name='sample_id', private=False))
+        self.add_param(ConfigParam(name='sample_id', private=False, ignore_global=True))
+        self.add_param(ConfigParam(name='experiment_id', private=False, ignore_global=True))
         self.add_param(ConfigParam(name='data_set_id', private=False))
         self.add_param(ConfigParam(name='data_set_type', private=False))
         self.add_param(ConfigParam(name='data_set_properties', private=False, is_json=True))
@@ -157,7 +159,7 @@ class ConfigResolver(object):
         for name, param in env.params.items():
             result[name] = None
             for l in self.location_search_order:
-                if local_only and l == 'global':
+                if l == 'global' and (local_only or param.ignore_global):
                     continue
                 val = self.value_for_parameter(param, l)
                 if val is not None:
@@ -214,5 +216,9 @@ class ConfigResolver(object):
         for k, v in config.items():
             # Do not overwrite existing values
             if local_config.get(k) is not None:
+                continue
+            # Do not copy params which should not be taken from global
+            param = self.env.params[k]
+            if param.ignore_global:
                 continue
             self.set_value_for_parameter(k, v, 'local')
