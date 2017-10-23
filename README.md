@@ -179,22 +179,26 @@ for dataset in datasets:
 ## Semantic Annotations
 ```
 # create semantic annotation for sample type
-o.new_semantic_annotation(entityType = 'UNKNOWN')
+sa = o.new_semantic_annotation(entityType = 'UNKNOWN')
+sa.save()
 
 # create semantic annotation for property type
-o.new_semantic_annotation(propertyType = 'DESCRIPTION')
+sa = o.new_semantic_annotation(propertyType = 'DESCRIPTION')
+sa.save()
 
 # create semantic annotation for sample property assignment
-o.new_semantic_annotation(entityType = 'UNKNOWN', propertyType = 'DESCRIPTION')
+sa = o.new_semantic_annotation(entityType = 'UNKNOWN', propertyType = 'DESCRIPTION')
+sa.save()
 
 # create semantic annotation with additional fields
-o.new_semantic_annotation(entityType = 'UNKNOWN',
+sa = o.new_semantic_annotation(entityType = 'UNKNOWN',
                       predicateOntologyId = 'po_id',
                       predicateOntologyVersion = 'po_version',
                       predicateAccessionId = 'pa_id',
                       descriptorOntologyId = 'do_id',
                       descriptorOntologyVersion = 'do_version',
                       descriptorAccessionId = 'da_id')
+sa.save()
 
 # get all semantic annotations
 o.get_semantic_annotations()
