@@ -221,6 +221,17 @@ class GitDataMgmt(AbstractDataMgmt):
                 self.config_resolver.set_value_for_parameter(key, value, 'local')
 
 
+    def check_repository_state(self, path):
+        """Checks if the repo already exists and has uncommitted files."""
+        with cd(path):
+            git_status = self.git_wrapper.git_status()
+            if git_status.failure():
+                return 'NOT_INITIALIZED'
+            if git_status.output is not None and len(git_status.output) > 0:
+                return 'PENDING_CHANGES'
+            return 'SYNCHRONIZED'
+
+
     def get_data_set_id(self, path):
         with cd(path):
             return self.config_resolver.config_dict().get('data_set_id')
