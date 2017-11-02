@@ -21,7 +21,7 @@ import copy
 import time
 import json
 import re
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, quote
 import zlib
 import base64
 from collections import namedtuple
@@ -2059,7 +2059,7 @@ class Openbis:
             self.files_in_wsp.append(file_in_wsp)
             upload_url = (
                 datastore_url + '/session_workspace_file_upload'
-                + '?filename=' + os.path.join(folder, filename)
+                + '?filename=' + os.path.join(folder, quote(filename))
                 + '&id=1'
                 + '&startByte=0&endByte=0'
                 + '&sessionID=' + self.token
