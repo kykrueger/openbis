@@ -2,14 +2,15 @@ import pytest
 
 from pybis import Openbis
 
+openbis_url = 'https://localhost:8443'
+admin_username = 'admin'
+admin_password = '*****'
 
 @pytest.yield_fixture(scope="module")
 def openbis_instance():
-    # instance = Openbis("http://localhost:20000")
-    # Test against a real instance
-    instance = Openbis("http://localhost:8888", verify_certificates=False)
+    instance = Openbis(url=openbis_url, verify_certificates=False)
     print("\nLOGGING IN...")
-    instance.login('admin', 'anypassword')
+    instance.login(admin_username, admin_password)
     yield instance
     instance.logout()
     print("LOGGED OUT...")

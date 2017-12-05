@@ -9,19 +9,41 @@ from pybis import Openbis
 
 
 def test_token(openbis_instance):
-    assert openbis_instance.hostname is not None
-    new_instance = Openbis(openbis_instance.url, verify_certificates=openbis_instance.verify_certificates)
-    new_instance.login('admin', 'any_test_password')
-    assert new_instance.token is not None
-    assert new_instance.is_token_valid() is True
-    new_instance.logout()
-    assert new_instance.is_token_valid() is False
+    assert openbis_instance.token is not None
+    assert openbis_instance.is_token_valid(openbis_instance.token) is True
+    assert openbis_instance.is_session_active() is True
 
-    invalid_connection = Openbis(openbis_instance.url, verify_certificates=openbis_instance.verify_certificates)
-    with pytest.raises(Exception):
-        invalid_connection.login('invalid_username', 'invalid_password')
-    assert invalid_connection.token is None
-    assert invalid_connection.is_token_valid() is False
+
+def test_wrong_login(openbis_instance):
+    new_instance = Openbis(openbis_instance.url, verify_certificates=openbis_instance.verify_certificates)
+    with pytest.raises(ValueError):
+        new_instance.login('anyuser', 'any_test_password')
+
+    assert new_instance.token is None
+    assert new_instance.is_session_active() is False
+
+def test_create_delete_space(openbis_instance):
+    space_name = 'test_space_' + time.strftime('%a_%y%m%d_%H%M%S').upper()
+    space = openbis_instance.new_space(code=space_name)
+    space.save()
+    space_exists = openbis_instance.get_space(code=space_name)
+    assert space_exists is not None
+
+    space.delete()
+    with pytest.raises(ValueError):
+        space_not_exists = openbis_instance.get_space(code=space_name)
+
+
+def test_cached_token(openbis_instance):
+    openbis_instance.save_token()
+    assert openbis_instance.token_path is not None
+    assert openbis_instance._get_cached_token() is not None
+
+    another_instance = Openbis(openbis_instance.url, verify_certificates=openbis_instance.verify_certificates)
+    assert another_instance.is_token_valid() is True
+
+    openbis_instance.delete_token()
+    assert openbis_instance._get_cached_token() is None
 
 
 def test_create_sample(openbis_instance):
@@ -35,18 +57,6 @@ def test_create_sample(openbis_instance):
     assert sample is not None
     assert sample.space == space
     assert sample.code == sample_code
-
-
-def test_cached_token(openbis_instance):
-    openbis_instance.save_token()
-    assert openbis_instance.token_path is not None
-    assert openbis_instance._get_cached_token() is not None
-
-    another_instance = Openbis(openbis_instance.url, verify_certificates=openbis_instance.verify_certificates)
-    assert another_instance.is_token_valid() is True
-
-    openbis_instance.delete_token()
-    assert openbis_instance._get_cached_token() is None
 
 
 def test_get_sample_by_id(openbis_instance):
@@ -164,10 +174,10 @@ def test_dataset_upload(openbis_instance):
     # analysis.save     # start registering process
 
 
-def test_create_perm_id(openbis_instance):
-    perm_id = openbis_instance.create_perm_id()
-    assert perm_id is not None
-    m = re.search('([0-9]){17}-([0-9]*)', perm_id)
+def test_create_permId(openbis_instance):
+    permId = openbis_instance.create_permId()
+    assert permId is not None
+    m = re.search('([0-9]){17}-([0-9]*)', permId)
     ts = m.group(0)
     assert ts is not None
     count = m.group(1)
