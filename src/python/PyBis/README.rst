@@ -196,15 +196,15 @@ Semantic Annotations
 
 ::
 
-    # create semantic annotation for sample type
+    # create semantic annotation for sample type (predicate and descriptor values omitted for brevity)
     sa = o.new_semantic_annotation(entityType = 'UNKNOWN')
     sa.save()
 
-    # create semantic annotation for property type
+    # create semantic annotation for property type (predicate and descriptor values omitted for brevity)
     sa = o.new_semantic_annotation(propertyType = 'DESCRIPTION')
     sa.save()
 
-    # create semantic annotation for sample property assignment
+    # create semantic annotation for sample property assignment (predicate and descriptor values omitted for brevity)
     sa = o.new_semantic_annotation(entityType = 'UNKNOWN', propertyType = 'DESCRIPTION')
     sa.save()
 

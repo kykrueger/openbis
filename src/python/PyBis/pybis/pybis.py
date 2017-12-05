@@ -42,7 +42,7 @@ from queue import Queue
 
 from datetime import datetime
 
-PYBIS_PLUGIN = "jupyter-uploader-api"
+PYBIS_PLUGIN = "dataset-uploader-api"
 
 
 def _definitions(entity):
@@ -627,9 +627,13 @@ class Openbis:
             "get_project('project')",
             "get_projects(space=None, code=None)",
             "get_sample('id')",
+            "get_object('id')", # "get_sample('id')" alias
             "get_samples()",
+            "get_objects()", # "get_samples()" alias
             "get_sample_type(type))",
+            "get_object_type(type))", # "get_sample_type(type))" alias
             "get_sample_types()",
+            "get_object_types()", # "get_sample_types()" alias
             "get_semantic_annotations()",
             "get_semantic_annotation(permId, only_data = False)",
             "get_space(code)",
@@ -640,8 +644,11 @@ class Openbis:
             'new_project(space, code, description)',
             'new_experiment(type, code, project, props={})',
             'new_sample(type, space, project, experiment)',
+            'new_object(type, space, project, experiment)', # 'new_sample(type, space, project, experiment)' alias
             'new_dataset(type, parent, experiment, sample, files=[], folder, props={})',
             'new_semantic_annotation(entityType, propertyType)',
+            'update_sample(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)',
+            'update_object(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)', # 'update_sample(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)' alias
         ]
 
     @property
@@ -972,6 +979,8 @@ class Openbis:
         ss = samples[attrs]
         return Things(self, 'sample', ss, 'identifier')
 
+    get_objects = get_samples # Alias
+
     def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None,
                         **properties):
         """ Get a list of all experiment for a given space or project (or any combination)
@@ -1226,6 +1235,8 @@ class Openbis:
         resp = self._post_request(self.as_v3, request)
         return self.get_sample(resp[0]['permId'])
 
+    create_object = create_sample # Alias
+
     def create_external_data_management_system(self, code, label, address, address_type='FILE_SYSTEM'):
         """Create an external DMS.
         :param code: An openBIS code for the external DMS.
@@ -1280,6 +1291,8 @@ class Openbis:
             ]
         }
         self._post_request(self.as_v3, request)
+
+    update_object = update_sample # Alias
 
     def delete_entity(self, entity, permid, reason, capitalize=True):
         """Deletes Spaces, Projects, Experiments, Samples and DataSets
@@ -1579,6 +1592,8 @@ class Openbis:
             ["generatedCodePrefix"]
         )
 
+    get_object_types = get_sample_types # Alias
+
     def get_sample_type(self, type):
         try:
             return self._get_types_of(
@@ -1589,6 +1604,8 @@ class Openbis:
             )
         except Exception:
             raise ValueError("no such sample type: {}".format(type))
+
+    get_object_type = get_sample_type # Alias
 
     def get_experiment_types(self, type=None):
         """ Returns a list of all available experiment types
@@ -1794,6 +1811,8 @@ class Openbis:
                 else:
                     return Sample(self, self.get_sample_type(resp[sample_ident]["type"]["code"]), resp[sample_ident])
 
+    get_object = get_sample # Alias
+
     def get_external_data_management_system(self, permId, only_data=False):
         """Retrieve metadata for the external data management system.
         :param permId: A permId for an external DMS.
@@ -1998,6 +2017,8 @@ class Openbis:
         """ Creates a new sample of a given sample type.
         """
         return Sample(self, self.get_sample_type(type), None, props, **kwargs)
+
+    new_object = new_sample # Alias
 
     def new_dataset(self, type=None, files=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given sample type.
@@ -2218,6 +2239,8 @@ class OpenBisObject():
             return self.openbis.get_sample(self._sample['identifier'])
         except Exception:
             pass
+
+    object = sample # Alias
 
     def __getattr__(self, name):
         return getattr(self.__dict__['a'], name)
@@ -2530,7 +2553,7 @@ class DataSet(OpenBisObject):
         parentIds = self.parents
 
         dataset_type = self.type.code
-        metadata = self.props.all_nonempty()
+        properties = self.props.all_nonempty()
 
         request = {
             "method": "createReportFromAggregationService",
@@ -2539,16 +2562,15 @@ class DataSet(OpenBisObject):
                 dss,
                 PYBIS_PLUGIN,
                 {
-                    "sampleId": sample_identifier,
-                    "experimentId": experiment_identifier,
-                    "dataSets": [ {
-                        "dataSetType": dataset_type,
-                        "folder": self.folder,
-                        "sessionWorkspaceFolder": "",
-                        "fileNames": self.files,
-                        "properties": metadata,
-                        "parentIds": parentIds
-                    } ]
+                    "method" : "insertDataSet",
+                    "sampleIdentifier" : sample_identifier,
+                    "experimentIdentifier" : experiment_identifier,
+                    "dataSetType" : dataset_type,
+                    "folderName" : self.folder,
+                    "fileNames" : self.files,
+                    "isZipDirectoryUpload" : False,
+                    "properties" : properties,
+                    "parentIdentifiers": parentIds
                 }
             ],
         }
@@ -3358,6 +3380,8 @@ class Space(OpenBisObject):
     def get_samples(self, **kwargs):
         return self.openbis.get_samples(space=self.code, **kwargs)
 
+    get_objects = get_samples #Alias
+
     def get_projects(self, **kwargs):
         return self.openbis.get_projects(space=self.code, **kwargs)
 
@@ -3488,6 +3512,8 @@ class Things():
                 return Things(self.openbis, 'sample', pd.concat(dfs), 'identifier')
             else:
                 return Things(self.openbis, 'sample', DataFrame(), 'identifier')
+
+    get_objects = get_samples # Alias
 
     def get_datasets(self, **kwargs):
         if self.entity not in ['sample', 'experiment']:
@@ -3657,6 +3683,8 @@ class Experiment(OpenBisObject):
             return None
         return self.openbis.get_samples(experiment=self.permId, **kwargs)
 
+    get_objects = get_samples # Alias
+
     def add_samples(self, *samples):
 
         for sample in samples:
@@ -3682,6 +3710,7 @@ class Experiment(OpenBisObject):
                     obj.save()
                     self.a.__dict__['_samples'].append(obj._identifier)
 
+    add_objects = add_samples # Alias
 
     def del_samples(self, samples):
         if not isinstance(samples, list):
@@ -3697,6 +3726,8 @@ class Experiment(OpenBisObject):
                 objects.append(obj)
         
         self.samples = objects
+
+    del_objects = del_samples # Alias
 
 class Attachment():
     def __init__(self, filename, title=None, description=None):
@@ -3755,6 +3786,8 @@ class Project(OpenBisObject):
 
     def get_samples(self, **kwargs):
         return self.openbis.get_samples(project=self.permId, **kwargs)
+
+    get_objects = get_samples # Alias
 
     def get_experiments(self):
         return self.openbis.get_experiments(project=self.permId)

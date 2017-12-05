@@ -15,7 +15,7 @@ Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 def transfer_to_file_creation(content, file_creation, key, file_creation_key=None):
     if file_creation_key is None:
         file_creation_key = key
-    if content.get(key):
+    if content.get(key) is not None:
         file_creation[file_creation_key] = content[key]
 
 
