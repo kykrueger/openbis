@@ -3390,6 +3390,7 @@ class Space(OpenBisObject):
 
     def delete(self, reason):
         self.openbis.delete_entity('Space', self.permId, reason)
+        print("Space {} has been sucessfully deleted.".format(self.permId))
 
     def save(self):
         if self.is_new:
