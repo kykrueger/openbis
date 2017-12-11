@@ -67,6 +67,18 @@ ame` ``
 10. copy the output and add it to /etc/hosts: `sudo vi /etc/hosts` so that Java is happy
 11. `exit` -- log off the virtual machine
 
+## upgrading openBIS
+
+Before upgrading, make sure your openBIS instance is not running.
+
+1. download [latest openBIS Sprint release](https://wiki-bsse.ethz.ch/display/bis/Sprint+Releases)
+2. make sure your OS is not automatically unzipping it
+3. move *.gz file from ~/Download to pybis/src/vagrant/jupyter-bis
+4. cd pybis/src/vagrant/jupyter-bis
+5. vagrant ssh
+6. sudo su - openbis
+7. cp /vagrant/openBIS-installation-standard-technologies-S267.0-r39027.tar.gz ~/servers
+8. bin/upgrade.sh
 
 ## start openBIS and JupyterHub
 

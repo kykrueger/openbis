@@ -643,8 +643,8 @@ class Openbis:
             'new_space(name, description)',
             'new_project(space, code, description)',
             'new_experiment(type, code, project, props={})',
-            'new_sample(type, space, project, experiment)',
-            'new_object(type, space, project, experiment)', # 'new_sample(type, space, project, experiment)' alias
+            'new_sample(type, space, project, experiment, parents)',
+            'new_object(type, space, project, experiment, parents)', # 'new_sample(type, space, project, experiment)' alias
             'new_dataset(type, parent, experiment, sample, files=[], folder, props={})',
             'new_semantic_annotation(entityType, propertyType)',
             'update_sample(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)',
@@ -2917,7 +2917,12 @@ class AttrHolder():
             new_sample.space = 'MATERIALS'
             new_sample.parents = ['/MATERIALS/YEAST747']
         """
-        if name in ["parents", "children", "components"]:
+        if name in ["parents", "parent", "children", "child", "components"]:
+            if name == "parent":
+                name = "parents"
+            if name == "child":
+                name = "children"
+
             if not isinstance(value, list):
                 value = [value]
             objs = []
@@ -3381,6 +3386,14 @@ class Space(OpenBisObject):
         return self.openbis.get_samples(space=self.code, **kwargs)
 
     get_objects = get_samples #Alias
+
+    def get_sample(self, sample_code):
+        if is_identifier(sample_code) or is_permid(sample_code):
+            return self.openbis.get_sample(sample_code)
+        else:
+            # we assume we just got the code
+            return self.openbis.get_sample('/{}/{}'.format(self.code,sample_code) )
+
 
     def get_projects(self, **kwargs):
         return self.openbis.get_projects(space=self.code, **kwargs)
