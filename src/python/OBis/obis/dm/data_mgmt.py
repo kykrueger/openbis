@@ -517,8 +517,8 @@ class OpenbisSync(object):
         contents = GitRepoFileInfo(self.git_wrapper).contents()
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,
-                                                     sample_id, experiment_id, data_set_code=data_set_code, parents=parent_data_set_id,
-                                                     properties=properties, contents=contents)
+                                                     sample=sample_id, experiment=experiment_id, properties=properties, parents=parent_data_set_id,
+                                                     data_set_code=data_set_code, contents=contents)
             return CommandResult(returncode=0, output=""), data_set
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
