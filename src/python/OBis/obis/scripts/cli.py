@@ -15,7 +15,9 @@ from datetime import datetime
 
 import click
 
-from .. import dm, CommandResult
+from .. import dm
+from ..dm.command_result import CommandResult
+from ..dm.utils import cd
 
 
 def click_echo(message):
@@ -59,20 +61,25 @@ def cli(ctx, quiet, skip_verification):
 
 @cli.command()
 @click.pass_context
-@click.argument('other', type=click.Path(exists=True))
-def addref(ctx, other):
+@click.argument('repository', type=click.Path(exists=True))
+def addref(ctx, repository):
     """Add a reference to the other repository in this repository.
     """
-    click_echo("addref {}".format(other))
+    with cd(repository):
+        data_mgmt = shared_data_mgmt(ctx.obj)
+        return check_result("addref", data_mgmt.addref())
 
 
 @cli.command()
 @click.pass_context
-@click.argument('url')
-def clone(ctx, url):
-    """Clone the repository found at url.
+@click.option('-u', '--ssh_user', default=None, help='User to connect to remote systems via ssh')
+@click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to clone from in case there are multiple copies')
+@click.argument('data_set_id')
+def clone(ctx, ssh_user, content_copy_index, data_set_id):
+    """Clone the repository found in the given data set id.
     """
-    click_echo("clone {}".format(url))
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    return check_result("clone", data_mgmt.clone(data_set_id, ssh_user, content_copy_index))
 
 
 @cli.command()
