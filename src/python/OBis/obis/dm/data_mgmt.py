@@ -261,14 +261,12 @@ class GitDataMgmt(AbstractDataMgmt):
         try:
             cmd = Clone(self, data_set_id, ssh_user, content_copy_index)
             return cmd.run()
-        except Exception:
-            traceback.print_exc()
-            return CommandResult(returncode=-1, output="Could not clone repository.")
+        except Exception as e:
+            return CommandResult(returncode=-1, output="Error: " + str(e))
 
     def addref(self):
         try:
             cmd = Addref(self)
             return cmd.run()
-        except Exception:
-            traceback.print_exc()
-            return CommandResult(returncode=-1, output="Could not add reference.")
+        except Exception as e:
+            return CommandResult(returncode=-1, output="Error: " + str(e))
