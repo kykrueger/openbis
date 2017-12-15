@@ -744,7 +744,7 @@ class Openbis:
             resp = resp.json()
             if 'error' in resp:
                 print(json.dumps(request))
-                raise ValueError('an error has occured: ' + resp['error']['message'])
+                raise ValueError(resp['error']['message'])
             elif 'result' in resp:
                 return resp['result']
             else:
@@ -1761,6 +1761,8 @@ class Openbis:
         if resp is None or len(resp) == 0:
             raise ValueError('no such dataset found: ' + permid)
 
+        parse_jackson(resp)
+
         for permid in resp:
             if only_data:
                 return resp[permid]
@@ -1957,6 +1959,17 @@ class Openbis:
         """
         return pbds.GitDataSetCreation(self, data_set_type, path, commit_id, repository_id, dms, sample, experiment,
                                        properties, dss_code, parents, data_set_code, contents).new_git_data_set()
+
+    def new_content_copy(self, path, commit_id, repository_id, edms_id, data_set_id):
+        """
+        Create a content copy in an existing link data set.
+        :param path: path of the new content copy
+        "param commit_id: commit id of the new content copy
+        "param repository_id: repository id of the content copy
+        "param edms_id: Id of the external data managment system of the content copy
+        "param data_set_id: Id of the data set to which the new content copy belongs
+        """
+        return pbds.GitDataSetUpdate(self, path, commit_id, repository_id, edms_id, data_set_id).new_content_copy()
 
     @staticmethod
     def sample_to_sample_id(sample):
@@ -2263,6 +2276,22 @@ class OpenBisObject():
         return self.a.__repr__()
 
 
+class LinkedData():
+    def __init__(self, data=None):
+        self.data = data if data is not None else []
+        self.attrs = ['externalCode', 'contentCopies']
+
+    def __dir__(self):
+        return self.attrs
+
+    def __getattr__(self, name):
+        if name in self.attrs:
+            if name in self.data:
+                return self.data[name]
+        else:
+            return ''
+
+
 class PhysicalData():
     def __init__(self, data=None):
         if data is None:
@@ -2347,7 +2376,7 @@ class DataSet(OpenBisObject):
         return [
             'props', 'get_parents()', 'get_children()', 
             'add_parents()', 'add_children()', 'del_parents()', 'del_children()',
-            'sample', 'experiment', 'physicalData',
+            'sample', 'experiment', 'physicalData', 'linkedData',
             'tags', 'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files(start_folder='/')", 'file_list',
@@ -2379,7 +2408,11 @@ class DataSet(OpenBisObject):
     def physicalData(self):
         if 'physicalData' in self.data:
             return PhysicalData(self.data['physicalData'])
-            # return self.data['physicalData']
+
+    @property
+    def linkedData(self):
+        if 'linkedData' in self.data:
+            return LinkedData(self.data['linkedData'])
 
     @property
     def status(self):
