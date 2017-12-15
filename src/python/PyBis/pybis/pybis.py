@@ -744,7 +744,7 @@ class Openbis:
             resp = resp.json()
             if 'error' in resp:
                 print(json.dumps(request))
-                raise ValueError('an error has occured: ' + resp['error']['message'])
+                raise ValueError(resp['error']['message'])
             elif 'result' in resp:
                 return resp['result']
             else:
