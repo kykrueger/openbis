@@ -3623,8 +3623,9 @@ class Experiment(OpenBisObject):
         # the list of possible methods/attributes displayed
         # when invoking TAB-completition
         return [
-            'permId', 'identifier',
-            'props', 'space', 'project',
+            'code', 'permId', 'identifier',
+            'type', 'project',
+            'props.', 
             'project', 'tags', 'attachments', 'data',
             'get_datasets()', 'get_samples()',
             'set_tags()', 'add_tags()', 'del_tags()',

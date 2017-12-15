@@ -26,26 +26,20 @@ def test_create_delete_project(space):
         type='DEFAULT_EXPERIMENT',
     )
     assert e_new.project is not None
+    assert e_new.permId is None
+
     e_new.save()
 
     assert e_new.permId is not None
-    assert e_new.code == new_code
-    assert e_identifier == '/DEFAULT/DEFAULT/'+new_code
+    assert e_new.code == new_code.upper()
+    assert e_new.identifier == '/DEFAULT/DEFAULT/'+new_code.upper()
+
+    e_exists = o.get_experiment('/DEFAULT/DEFAULT/'+new_code.upper())
+    assert e_exists is not None
+
+    e_new.delete('delete test experiment '+new_code.upper())
+
+    with pytest.raises(ValueError):
+        e_no_longer_exists = o.get_experiment('/DEFAULT/DEFAULT/'+new_code.upper())
 
 
-    #project=o.new_project(space=space, code='illegal title contains spaces')
-    #with pytest.raises(ValueError):
-    #    project.save()
-    #    assert "should not have been created" is None
-
-    #project_name = 'project_'+timestamp
-    #project=o.new_project(space=space, code=project_name)
-    #project.save()
-
-    #project_exists=o.get_project(project_name)
-    #assert project_exists is not None
-    #project_exists.delete('test project on '+timestamp)
-    #
-    #with pytest.raises(ValueError):
-    #    project_no_longer_exists=o.get_project(project_name)
-    #    assert "project {} should have been deleted".format(project_name) is None
