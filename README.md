@@ -30,19 +30,33 @@ o.get_tags()
 ```
 
 
-## Spaces and Projects
+## Spaces
 ```
 space = o.new_space(code='space_name', description='')
 space.save()
+space.delete('reason for deletion')
 o.get_spaces()
 o.get_space('MY_SPACE')
+```
+
+## Projects
+```
+project = o.new_project(
+    space=space, 
+    code='project_name',
+    description='some project description'
+)
+project = space.new_project( code='project_code', description='project description')
+project.save()
+
+o.get_projects()
 o.get_projects(space='MY_SPACE')
 space.get_projects()
+
 project.get_experiments()
 project.get_attachments()
-project.download_attachments()
 p.add_attachment(fileName='testfile', description= 'another file', title= 'one more attachment')
-p.save()
+project.download_attachments()
 ```
 
 ## Samples
