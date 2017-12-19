@@ -641,7 +641,7 @@ class Openbis:
             "get_tags()",
             "get_terms()",
             'new_space(name, description)',
-            'new_project(space, code, description)',
+            'new_project(space, code, description, attachments)',
             'new_experiment(type, code, project, props={})',
             'new_sample(type, space, project, experiment, parents)',
             'new_object(type, space, project, experiment, parents)', # 'new_sample(type, space, project, experiment)' alias
@@ -1357,13 +1357,16 @@ class Openbis:
             fo[option] = fetch_option[option]
         return fo
 
-    def get_project(self, projectId):
+    def get_project(self, projectId, only_data=False):
         options = ['space', 'registrator', 'modifier', 'attachments']
-        if is_identifier(projectId):
+        if is_identifier(projectId) or is_permid(projectId):
             request = self._create_get_request(
                 'getProjects', 'project', projectId, options
             )
             resp = self._post_request(self.as_v3, request)
+            if only_data:
+                return resp[projectId]
+
             return Project(self, resp[projectId])
 
         else:
@@ -1380,6 +1383,9 @@ class Openbis:
             resp = self._post_request(self.as_v3, request)
             if len(resp['objects']) == 0:
                 raise ValueError("No such project: %s" % projectId)
+            if only_data:
+                return resp['objects'][0]
+
             return Project(self, resp['objects'][0])
 
     def get_projects(self, space=None, code=None):
@@ -3410,7 +3416,7 @@ class Space(OpenBisObject):
         return [
             'code', 'permId', 'description', 'registrator', 'registrationDate', 'modificationDate', 
             'get_projects()', 
-            "new_project(code='', description='')", 
+            "new_project(code='', description='', attachments)", 
             'get_samples()', 
             'delete()'
         ]
@@ -3866,9 +3872,12 @@ class Project(OpenBisObject):
     def save(self):
         if self.is_new:
             request = self._new_attrs()
-            self.openbis._post_request(self.openbis.as_v3, request)
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
             self.a.__dict__['_is_new'] = False
             print("Project successfully created.")
+            new_project_data = self.openbis.get_project(resp[0]['permId'], only_data=True)
+            self._set_data(new_project_data)
+            return self
         else:
             request = self._up_attrs()
             self.openbis._post_request(self.openbis.as_v3, request)
