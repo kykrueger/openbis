@@ -46,6 +46,9 @@ def test_create_delete_sample(space):
 
     sample.delete('sample creation test on '+timestamp)
 
+def test_create_delete_sample(space):
+    o=space.openbis
+
 
 def test_parent_child(space):
     o=space.openbis

@@ -3039,6 +3039,8 @@ class AttrHolder():
                     raise KeyError("This {}Type has auto-generated code. You cannot set a code".format(self.entity))
             except KeyError:
                 pass
+            except TypeError:
+                pass
 
             self.__dict__['_code'] = value
 
@@ -3434,6 +3436,9 @@ class Space(OpenBisObject):
 
     def new_project(self, code, description=None, **kwargs):
         return self.openbis.new_project(self.code, code, description, **kwargs)
+
+    def new_sample(self, **kwargs):
+        return self.openbis.new_sample(space=self, **kwargs)
 
     def delete(self, reason):
         self.openbis.delete_entity('Space', self.permId, reason)
