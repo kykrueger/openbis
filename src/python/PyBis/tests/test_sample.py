@@ -46,9 +46,19 @@ def test_create_delete_sample(space):
 
     sample.delete('sample creation test on '+timestamp)
 
-def test_create_delete_sample(space):
+def test_create_delete_sample_space(space):
     o=space.openbis
+    sample_type = 'UNKNOWN'
+    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
+    sample_code = 'test_sample_'+timestamp
 
+    sample = space.new_sample(code=sample_code, type=sample_type)
+    assert sample is not None
+    assert sample.space == space
+    assert sample.code == sample_code
+    sample.save()
+    assert sample.permId is not None
+    sample.delete('sample space creation test on '+timestamp)
 
 def test_parent_child(space):
     o=space.openbis
