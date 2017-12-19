@@ -30,22 +30,37 @@ o.get_tags()
 ```
 
 
-## Spaces and Projects
+## Spaces
 ```
 space = o.new_space(code='space_name', description='')
 space.save()
+space.delete('reason for deletion')
 o.get_spaces()
 o.get_space('MY_SPACE')
+```
+
+## Projects
+```
+project = o.new_project(
+    space=space, 
+    code='project_name',
+    description='some project description'
+)
+project = space.new_project( code='project_code', description='project description')
+project.save()
+
+o.get_projects()
 o.get_projects(space='MY_SPACE')
 space.get_projects()
+
 project.get_experiments()
 project.get_attachments()
-project.download_attachments()
 p.add_attachment(fileName='testfile', description= 'another file', title= 'one more attachment')
-p.save()
+project.download_attachments()
 ```
 
 ## Samples
+Samples are nowadays called **Objects** in openBIS. pyBIS is not yet thoroughly supporting this term in all methods where «sample» occurs.
 ```
 sample = o.new_sample(
     type='YEAST', 
@@ -53,6 +68,12 @@ sample = o.new_sample(
     parents=[parent_sample, '/MY_SPACE/YEA66'], 
     children=[child_sample]
 )
+sample = space.new_sample( type='YEAST' )
+sample.save()
+
+sample = o.get_sample('/MY_SPACE/MY_SAMPLE_CODE')
+sample = o.get_sample('20170518112808649-52')
+
 sample.space
 sample.code
 sample.permId
@@ -84,6 +105,7 @@ sample.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or 
 sample.get_attachments()
 sample.download_attachments()
 sample.add_attachment('testfile.xls')
+
 samples = o.get_samples(
     space='MY_SPACE',
     type='YEAST'
