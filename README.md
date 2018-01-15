@@ -108,9 +108,10 @@ sample.add_attachment('testfile.xls')
 
 samples = o.get_samples(
     space='MY_SPACE',
-    type='YEAST'
-    tags=['*']                        # tags must be present
-    NAME = 'some name'                # properties are always uppercase to distinguish them from attributes
+    type='YEAST',
+    tags=['*'],                          # tags must be present
+    NAME = 'some name',                  # properties are always uppercase to distinguish them from attributes
+    **{ "SOME.WEIRD:PROPERTY": "value"}  # in case your property name contains a dot or a colon which cannot be passed as an argument name 
     props=['NAME', 'MATING_TYPE','SHOW_IN_PROJECT_OVERVIEW'] # show these properties in the results
 )
 samples.df                            # returns a pandas dataframe object
