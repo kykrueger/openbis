@@ -94,6 +94,7 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='data_set_id', private=False))
         self.add_param(ConfigParam(name='data_set_type', private=False))
         self.add_param(ConfigParam(name='data_set_properties', private=False, is_json=True))
+        self.add_param(ConfigParam(name='hostname', private=False))
 
     def add_param(self, param):
         self.params[param.name] = param

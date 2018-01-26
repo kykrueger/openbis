@@ -104,6 +104,10 @@ def config(ctx, is_global, prop, value):
     Configure the openBIS server url, the data set type, and the data set properties.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
+    config_internal(data_mgmt, is_global, prop, value)
+
+
+def config_internal(data_mgmt, is_global, prop, value):
     resolver = data_mgmt.config_resolver
     if is_global:
         resolver.location_search_order = ['global']
