@@ -190,7 +190,7 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(path):
             # Update the resolvers location
             self.config_resolver.location_resolver.location_roots['data_set'] = '.'
-            self.config_resolver.copy_global_to_local() # TODO yn use config provided to data_mgmt
+            self.config_resolver.copy_global_to_local()
             self.commit_metadata_updates('local with global')
         return result
 
