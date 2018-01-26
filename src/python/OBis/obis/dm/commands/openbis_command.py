@@ -125,7 +125,7 @@ class OpenbisCommand(object):
 
     def ask_for_hostname(self, hostname):
         """ Asks the user to confirm the suggestes hostname or choose a custom one. """
-        hostname_input = input('Enter hostname or press [enter] to confirm default (\'' + str(hostname) + '\'): ')
+        hostname_input = input('Enter hostname (empty to confirm \'' + str(hostname) + '\'): ')
         if hostname_input:
             return hostname_input
         else:
