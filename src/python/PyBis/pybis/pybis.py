@@ -81,6 +81,22 @@ def _definitions(entity):
             "cre_type": "as.dto.sample.create.SampleCreation",
             "multi": "parents children components tags attachments".split(),
         },
+        "SemanticAnnotation": {
+            "attrs_new": "permId entityType propertyType predicateOntologyId predicateOntologyVersion predicateAccessionId descriptorOntologyId descriptorOntologyVersion descriptorAccessionId".split(),
+            "attrs_up": "entityType propertyType predicateOntologyId predicateOntologyVersion predicateAccessionId descriptorOntologyId descriptorOntologyVersion descriptorAccessionId ".split(),
+            "attrs": "permId entityType propertyType predicateOntologyId predicateOntologyVersion predicateAccessionId descriptorOntologyId descriptorOntologyVersion descriptorAccessionId creationDate".split(),
+            "ids2type": {
+                "propertyTypeId": { 
+                    "permId": "as.dto.property.id.PropertyTypePermId"
+                },
+                "entityTypeId": { 
+                    "permId": "as.dto.entity.id.EntityTypePermId"
+                },
+            },
+            "identifier": "permId",
+            "cre_type": "as.dto.sample.create.SampleCreation",
+            "multi": "parents children components tags attachments".split(),
+        },
         "DataSet": {
             "attrs_new": "type experiment sample parents children components tags".split(),
             "attrs_up": "parents children experiment sample components tags".split(),
@@ -103,6 +119,19 @@ def _definitions(entity):
             "attrs_new": "code description experiments samples dataSets materials".split(),
             "attrs": "code description experiments samples dataSets materials registrationDate".split(),
         },
+        "Person": {
+            "attrs_new": "userId space".split(),
+            "attrs_up": "space".split(),
+            "attrs": "permId userId firstName lastName email roleAssignments space registrationDate ".split(),
+            "multi": "".split(),
+            "identifier": "userId",
+        },
+        "AuthorizationGroup" : {
+            "attrs": "code description users roleAssignments registrator registrationDate modificationDate".split(),
+            "attrs_new": "code description userIds".split(),
+            "multi": "users".split()
+
+        },
         "attr2ids": {
             "space": "spaceId",
             "project": "projectId",
@@ -120,6 +149,8 @@ def _definitions(entity):
             "parents": "parentIds",
             "children": "childIds",
             "tags": "tagIds",
+            "userId": "userId",
+            "users": "userIds",
         },
         "ids2type": {
             'spaceId': {'permId': {'@type': 'as.dto.space.id.SpacePermId'}},
@@ -130,20 +161,48 @@ def _definitions(entity):
     }
     return entities[entity]
 
-
-search_criteria = {
-    "space": "as.dto.space.search.SpaceSearchCriteria",
-    "project": "as.dto.project.search.ProjectSearchCriteria",
-    "experiment": "as.dto.experiment.search.ExperimentSearchCriteria",
-    "sample": "as.dto.sample.search.SampleSearchCriteria",
-    "dataset": "as.dto.dataset.search.DataSetSearchCriteria",
-    "code": "as.dto.common.search.CodeSearchCriteria",
-    "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
-}
+def get_search_criteria_for_entity(entity):
+    """ Creates a basic search object for a given entity. Returns a dictionary.
+    Example::
+        get_search_criteria_for_entity('space')
+        {'@type': 'as.dto.space.search.SpaceSearchCriteria'}
+    """
+    search_criteria = {
+        "space": "as.dto.space.search.SpaceSearchCriteria",
+        "userId": "as.dto.person.search.UserIdSearchCriteria",
+        "email": "as.dto.person.search.EmailSearchCriteria",
+        "firstName": "as.dto.person.search.FirstNameSearchCriteria",
+        "lastName": "as.dto.person.search.LastNameSearchCriteria",
+        "project": "as.dto.project.search.ProjectSearchCriteria",
+        "experiment": "as.dto.experiment.search.ExperimentSearchCriteria",
+        "experiment_type": "as.dto.experiment.search.ExperimentTypeSearchCriteria",
+        "sample": "as.dto.sample.search.SampleSearchCriteria",
+        "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
+        "dataset": "as.dto.dataset.search.DataSetSearchCriteria",
+        "dataset_type": "as.dto.dataset.search.DataSetTypeSearchCriteria",
+        "external_dms": "as.dto.externaldms.search.ExternalDmsSearchCriteria",
+        "material": "as.dto.material.search.MaterialSearchCriteria",
+        "material_type": "as.dto.material.search.MaterialTypeSearchCriteria",
+        "vocabulary_term": "as.dto.vocabulary.search.VocabularyTermSearchCriteria",
+        "tag": "as.dto.tag.search.TagSearchCriteria",
+        "authorization_group": "as.dto.authorizationgroup.search.AuthorizationGroupSearchCriteria",
+        "role_assignment": "as.dto.roleassignment.search.RoleAssignmentSearchCriteria",
+        "person": "as.dto.person.search.PersonSearchCriteria",
+        "code": "as.dto.common.search.CodeSearchCriteria",
+        "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
+        "global": "as.dto.global.GlobalSearchObject",
+    }
+    if entity in search_criteria:
+        return {
+            "@type": search_criteria[entity]
+        }
+    else:
+        return {}
 
 fetch_option = {
     "space": {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
     "project": {"@type": "as.dto.project.fetchoptions.ProjectFetchOptions"},
+    "person": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
     "experiment": {
         "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions",
         "type": {"@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions"}
@@ -163,7 +222,12 @@ fetch_option = {
         "externalDms": {"@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions"},
         "@type": "as.dto.dataset.fetchoptions.LinkedDataFetchOptions"
     },
-
+    "roleAssignments": {
+        "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions",
+        "space": {
+            "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"
+        }
+    },
     "properties": {"@type": "as.dto.property.fetchoptions.PropertyFetchOptions"},
     "propertyAssignments": {
         "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
@@ -189,6 +253,7 @@ fetch_option = {
     },
     "history": {"@type": "as.dto.history.fetchoptions.HistoryEntryFetchOptions"},
     "dataStore": {"@type": "as.dto.datastore.fetchoptions.DataStoreFetchOptions"},
+    "authorizationGroup": {"@type": "as.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions"},
 }
 
 
@@ -257,6 +322,17 @@ def extract_property_assignments(pas):
         else:
             pa_strings.append(pa['propertyType']['label'])
     return pa_strings
+
+
+def extract_role_assignments(ras):
+    ra_strings = []
+    for ra in ras:
+        ra_strings.append({
+            "role": ra['role'],
+            "roleLevel": ra['roleLevel'],
+            "space": ra['space']['code'] if ra['space'] else None
+        })
+    return ra_strings
 
 
 def extract_person(person):
@@ -367,6 +443,11 @@ def _create_experimentId(ident):
         "@type": "as.dto.experiment.id.ExperimentIdentifier"
     }
 
+def get_field_value_search(field, value, comparison="StringEqualToValue"):
+    return {
+        "value": value,
+        "@type": "as.dto.common.search.{}".format(comparison)
+    }
 
 def _common_search(search_type, value, comparison="StringEqualToValue"):
     sreq = {
@@ -544,6 +625,27 @@ def _subcriteria_for_permid(permids, entity, parents_or_children=''):
 
 
 def _subcriteria_for_code(code, object_type):
+    """ Creates the often used search criteria for code values. Returns a dictionary.
+
+    Example::
+        _subcriteria_for_code("username", "space")
+
+	{
+	    "criteria": [
+		{
+		    "fieldType": "ATTRIBUTE",
+		    "@type": "as.dto.common.search.CodeSearchCriteria",
+		    "fieldName": "code",
+		    "fieldValue": {
+			"@type": "as.dto.common.search.StringEqualToValue",
+			"value": "USERNAME"
+		    }
+		}
+	    ],
+	    "operator": "AND",
+	    "@type": "as.dto.space.search.SpaceSearchCriteria"
+	}
+    """
     if code is not None:
         if is_permid(code):
             fieldname = "permId"
@@ -552,25 +654,22 @@ def _subcriteria_for_code(code, object_type):
             fieldname = "code"
             fieldtype = "as.dto.common.search.CodeSearchCriteria"
 
-        criteria = {
-            "criteria": [
-                {
-                    "fieldName": fieldname,
-                    "fieldType": "ATTRIBUTE",
-                    "fieldValue": {
-                        "value": code.upper(),
-                        "@type": "as.dto.common.search.StringEqualToValue"
-                    },
-                    "@type": fieldtype
-                }
-            ],
-            "@type": search_criteria[object_type.lower()],
-            "operator": "AND"
-        }
-        return criteria
+          
+        search_criteria = get_search_criteria_for_entity(object_type.lower())
+        search_criteria['criteria'] = [{
+            "fieldName": fieldname,
+            "fieldType": "ATTRIBUTE",
+            "fieldValue": {
+                "value": code.upper(),
+                "@type": "as.dto.common.search.StringEqualToValue"
+            },
+            "@type": fieldtype
+        }]
+        
+        search_criteria["operator"] = "AND"
+        return search_criteria
     else:
-        criteria = {"@type": search_criteria[object_type.lower()]}
-        return criteria
+        return get_search_criteria_for_entity(object_type.lower())
 
 
 class Openbis:
@@ -640,6 +739,10 @@ class Openbis:
             "get_spaces()",
             "get_tags()",
             "get_terms()",
+            "get_persons()",
+            "get_person(userId=None)",
+            "new_person(userId, firstName, lastName, email)",
+            "new_group(code, description, userIds)",
             'new_space(name, description)',
             'new_project(space, code, description, attachments)',
             'new_experiment(type, code, project, props={})',
@@ -739,6 +842,7 @@ class Openbis:
             json.dumps(request),
             verify=self.verify_certificates
         )
+        #print(json.dumps(request))
 
         if resp.ok:
             resp = resp.json()
@@ -821,18 +925,156 @@ class Openbis:
         else:
             raise ValueError("No datastore found!")
 
+
+    def new_person(self, userId, space=None):
+        """ creates an openBIS person
+        """
+        return Person(self, userId=userId, space=space) 
+
+
+    def new_group(self, code, description=None, users=None):
+        """ creates an openBIS person
+        """
+        return Group(self, code=code, description=description, users=users)
+
+    def get_groups(self, code=None):
+        """ Get openBIS AuthorizationGroups
+        """
+
+        criterias = []
+        if code:
+            criterias.append(_subcriteria_for_code(code))
+        criteria = get_search_criteria_for_entity('authorizationGroup')
+        criteria['criteria'] = criterias
+                
+        fetchopts = fetch_option['authorizationGroup']
+        for option in ['roleAssignments']:
+            fetchopts[option] = fetch_option[option]
+        request = {
+            "method": "searchAuthorizationGroups",
+            "params": [
+                self.token,
+                criteria,
+                fetchopts
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+        if len(resp['objects']) == 0:
+            raise ValueError("No persons found!")
+
+        objects = resp['objects']
+        parse_jackson(objects)
+
+        persons = DataFrame(resp['objects'])
+        persons['permId'] = persons['permId'].map(extract_permid)
+        persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
+        persons['space'] = persons['space'].map(extract_nested_permid)
+        p = Things(
+            self, entity='person', 
+            df=persons[['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']],
+            identifier_name='permId'
+        )
+        return p
+
+
+    def get_persons(self, **search_args):
+        """ Get openBIS users
+        """
+
+        criteria = []
+        for search_arg in ['userId','firstName','lastName','email']:
+            if search_arg in search_args:
+                sub_crit = get_search_criteria_for_entity(search_arg)
+                sub_crit['fieldValue'] = get_field_value_search(search_arg, search_args[search_arg])
+                #sub_crit['fieldValue'] = {
+                #    "value": search_args[search_arg],
+                #    "@type": "as.dto.common.search.StringEqualToValue"
+                #}
+                criteria.append(sub_crit)
+
+        search_criteria = get_search_criteria_for_entity('person')
+        search_criteria['criteria'] = criteria
+        search_criteria['operator'] = "AND"
+                
+        fetchopts = {}
+        for option in ['space']:
+            fetchopts[option] = fetch_option[option]
+        request = {
+            "method": "searchPersons",
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+        if len(resp['objects']) == 0:
+            raise ValueError("No persons found!")
+
+        objects = resp['objects']
+        parse_jackson(objects)
+
+        persons = DataFrame(resp['objects'])
+        persons['permId'] = persons['permId'].map(extract_permid)
+        persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
+        persons['space'] = persons['space'].map(extract_nested_permid)
+        p = Things(
+            self, entity='person', 
+            df=persons[['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']],
+            identifier_name='permId'
+        )
+        return p
+
+    def get_person(self, userId, only_data=False):
+        """ Get a person (user)
+        """
+         
+        ids = [{
+            "@type": "as.dto.person.id.PersonPermId",
+            "permId": userId
+        }]
+
+        fetchopts = {}
+        for option in ['space', 'roleAssignments', 'project']:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "getPersons",
+            "params": [
+                self.token,
+                ids,
+                fetchopts,
+            ],
+        }
+        
+        resp = self._post_request(self.as_v3, request)
+        if len(resp) == 0:
+            raise ValueError("No person found!")
+
+
+        #persons['roleAssignments'] = persons['roleAssignments'].map(extract_role_assignments)
+        for permid in resp:
+            person = resp[permid]
+            parse_jackson(person)
+
+            if only_data:
+                return person
+            else:
+                return Person(self, data=person)
+
+
     def get_spaces(self, code=None):
         """ Get a list of all available spaces (DataFrame object). To create a sample or a
         dataset, you need to specify in which space it should live.
         """
 
-        criteria = {}
-        options = {}
+        search_criteria = _subcriteria_for_code(code, 'space')
+        fetchopts = {}
         request = {
             "method": "searchSpaces",
             "params": [self.token,
-                       criteria,
-                       options,
+                       search_criteria,
+                       fetchopts,
                        ],
         }
         resp = self._post_request(self.as_v3, request)
@@ -981,9 +1223,19 @@ class Openbis:
 
     get_objects = get_samples # Alias
 
-    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None,
-                        **properties):
-        """ Get a list of all experiment for a given space or project (or any combination)
+    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
+        """ Searches for all experiment which match the search criteria. Returns a
+        «Things» object which can be used in many different situations.
+
+        Usage::
+            experiments = get_experiments(project='PROJECT_NAME', props=['NAME','FINISHED_FLAG'])
+            experiments[0]  # returns first experiment
+            experiments['/MATERIALS/REAGENTS/ANTIBODY_COLLECTION']
+            for experiment in experiment:
+                # handle every experiment
+                ...
+            experiments.df      # returns DataFrame object of the experiment list
+            print(experiments)  # prints a nice ASCII table
         """
 
         sub_criteria = []
@@ -1003,21 +1255,21 @@ class Openbis:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
 
-        criteria = {
-            "criteria": sub_criteria,
-            "@type": "as.dto.experiment.search.ExperimentSearchCriteria",
-            "operator": "AND"
-        }
+        search_criteria = get_search_criteria_for_entity('experiment')
+        search_criteria['criteria'] = sub_criteria
+        search_criteria['operator'] = 'AND'
+
         fetchopts = fetch_option['experiment']
         for option in ['tags', 'properties', 'registrator', 'modifier', 'project']:
             fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchExperiments",
-            "params": [self.token,
-                       criteria,
-                       fetchopts,
-                       ],
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts,
+            ],
         }
         resp = self._post_request(self.as_v3, request)
         if len(resp['objects']) == 0:
@@ -1081,11 +1333,9 @@ class Openbis:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
 
-        criteria = {
-            "criteria": sub_criteria,
-            "@type": "as.dto.dataset.search.DataSetSearchCriteria",
-            "operator": "AND"
-        }
+        search_criteria = get_search_criteria_for_entity('dataset')
+        search_criteria['criteria'] = sub_criteria
+        search_criteria['operator'] = 'AND'
 
         fetchopts = {
             "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
@@ -1098,7 +1348,7 @@ class Openbis:
         request = {
             "method": "searchDataSets",
             "params": [self.token,
-                       criteria,
+                       search_criteria,
                        fetchopts,
                        ],
         }
@@ -1417,27 +1667,27 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
-        if resp is not None:
-            objects = resp['objects']
-            parse_jackson(objects)
-
-            projects = DataFrame(objects)
-            if len(projects) is 0:
-                raise ValueError("No projects found!")
-
-            projects['registrationDate'] = projects['registrationDate'].map(format_timestamp)
-            projects['modificationDate'] = projects['modificationDate'].map(format_timestamp)
-            projects['leader'] = projects['leader'].map(extract_person)
-            projects['registrator'] = projects['registrator'].map(extract_person)
-            projects['modifier'] = projects['modifier'].map(extract_person)
-            projects['permId'] = projects['permId'].map(extract_permid)
-            projects['identifier'] = projects['identifier'].map(extract_identifier)
-
-            pros = projects[['identifier', 'permId', 'leader', 'registrator', 'registrationDate',
-                             'modifier', 'modificationDate']]
-            return Things(self, 'project', pros, 'identifier')
-        else:
+        objects = resp['objects']
+        if len(objects) == 0:
             raise ValueError("No projects found!")
+            
+        parse_jackson(objects)
+
+        projects = DataFrame(objects)
+        if len(projects) is 0:
+            raise ValueError("No projects found!")
+
+        projects['registrationDate'] = projects['registrationDate'].map(format_timestamp)
+        projects['modificationDate'] = projects['modificationDate'].map(format_timestamp)
+        projects['leader'] = projects['leader'].map(extract_person)
+        projects['registrator'] = projects['registrator'].map(extract_person)
+        projects['modifier'] = projects['modifier'].map(extract_person)
+        projects['permId'] = projects['permId'].map(extract_permid)
+        projects['identifier'] = projects['identifier'].map(extract_identifier)
+
+        pros = projects[['identifier', 'permId', 'leader', 'registrator', 'registrationDate',
+                            'modifier', 'modificationDate']]
+        return Things(self, 'project', pros, 'identifier')
 
     def _create_get_request(self, method_name, entity, permids, options):
 
@@ -1758,10 +2008,11 @@ class Openbis:
 
         request = {
             "method": "getDataSets",
-            "params": [self.token,
-                       criteria,
-                       fetchopts,
-                       ],
+            "params": [
+                self.token,
+                criteria,
+                fetchopts,
+            ],
         }
 
         resp = self._post_request(self.as_v3, request)
@@ -2053,7 +2304,10 @@ class Openbis:
         return DataSet(self, type=type_obj, files=files, folder=folder, props=props, **kwargs)
     
     def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):
-        return SemanticAnnotation(openbis_obj=self, isNew=True, entityType=entityType, propertyType=propertyType, **kwargs)    
+        return SemanticAnnotation(
+            openbis_obj=self, isNew=True, 
+            entityType=entityType, propertyType=propertyType, **kwargs
+        )    
 
     def _get_dss_url(self, dss_code=None):
         """ internal method to get the downloadURL of a datastore.
@@ -2268,7 +2522,6 @@ class OpenBisObject():
     def __setattr__(self, name, value):
         if name in ['set_properties', 'set_tags', 'add_tags']:
             raise ValueError("These are methods which should not be overwritten")
-
         setattr(self.__dict__['a'], name, value)
 
     def _repr_html_(self):
@@ -2743,7 +2996,7 @@ class AttrHolder():
             else:
                 self.__dict__['_' + attr] = data.get(attr, None)
 
-    def _new_attrs(self):
+    def _new_attrs(self, method_name=None):
         """Returns the Python-equivalent JSON request when a new object is created.
         It is used internally by the save() method of a newly created object.
         """
@@ -2786,8 +3039,10 @@ class AttrHolder():
             new_obj[key] = items
 
         # create a new entity
+        if method_name is None:
+            method_name = "create{}s".format(self.entity)
         request = {
-            "method": "create{}s".format(self.entity),
+            "method": method_name,
             "params": [
                 self.openbis.token,
                 [new_obj]
@@ -2796,7 +3051,7 @@ class AttrHolder():
         return request
 
 
-    def _up_attrs(self):
+    def _up_attrs(self, method_name=None):
         """Returns the Python-equivalent JSON request when a new object is updated.
         It is used internally by the save() method of an object to be updated.
         """
@@ -2893,15 +3148,18 @@ class AttrHolder():
                             "value": val
                         }
 
-        # update a new entity
+        # update an existing entity
+        if method_name is None:
+            method_name = "update{}s".format(self.entity)
         request = {
-            "method": "update{}s".format(self.entity),
+            "method": method_name,
             "params": [
                 self.openbis.token,
                 [up_obj]
             ]
         }
         return request
+
 
     def __getattr__(self, name):
         """ handles all attribute requests dynamically. Values are returned in a sensible way,
@@ -3003,6 +3261,10 @@ class AttrHolder():
 
         elif name in ["space"]:
             obj = None
+            if value is None:
+                self.__dict__['_'+name] = None
+                return
+
             if isinstance(value, str):
                 # fetch object in openBIS, make sure it actually exists
                 obj = getattr(self._openbis, "get_" + name)(value)
@@ -3050,8 +3312,8 @@ class AttrHolder():
 
             self.__dict__['_code'] = value
 
-        elif name == "description":
-            self.__dict__['_description'] = value
+        elif name in [ "description", "userId" ]:
+            self.__dict__['-'+name] = value
         else:
             raise KeyError("no such attribute: {}".format(name))
 
@@ -3204,13 +3466,14 @@ class AttrHolder():
         entity = self.entity.lower()
         request = {
             "method": method,
-            "params": [self._openbis.token,
-                       [self._permId],
-                       dict(
-                           attachments=fetch_option['attachmentsWithContent'],
-                           **fetch_option[entity]
-                       )
-                       ]
+            "params": [
+                self._openbis.token,
+                [self._permId],
+                dict(
+                    attachments=fetch_option['attachmentsWithContent'],
+                    **fetch_option[entity]
+                )
+            ]
         }
         resp = self._openbis._post_request(self._openbis.as_v3, request)
         attachments = resp[self.permId]['attachments']
@@ -3365,6 +3628,7 @@ class Sample():
 
         else:
             request = self._up_attrs()
+            request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Sample successfully updated.")
             new_sample_data = self.openbis.get_sample(self.permId, only_data=True)
@@ -3391,6 +3655,109 @@ class Sample():
             return self.openbis.get_experiment(self._experiment['identifier'])
         except Exception:
             pass
+
+
+class Person(OpenBisObject):
+    """ managing openBIS persons
+    """
+
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['openbis'] = openbis_obj
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'Person' )
+
+        if data is not None:
+            self.a(data)
+            self.__dict__['data'] = data
+
+        if kwargs is not None:
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+
+    def __dir__(self):
+        """all the available methods and attributes that should be displayed
+        when using the autocompletion feature (TAB) in Jupyter
+        """
+        return [
+            'permId', 'userId', 'firstName', 'lastName', 'email',
+            'registrator', 'registrationDate','roleAssignments','space'
+        ]
+
+    def __str__(self):
+        return "{} {}".format(self.get('firstName'), self.get('lastName'))
+
+    def delete(self, reason):
+        raise ValueError("Persons cannot be deleted")
+
+    def save(self):
+        if self.is_new:
+            request = self._new_attrs()
+            # for new and updated objects, the parameter is
+            # unfortunately called homeSpaceId, spaceId throws no error
+            # but makes no change either
+            if "spaceId" in request['params'][1][0]:
+                request['params'][1][0]['homeSpaceId'] =  request['params'][1][0]['spaceId']
+                del(request['params'][1][0]['spaceId'])
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+            print("Person successfully created.")
+            new_person_data = self.openbis.get_person(resp[0]['permId'], only_data=True)
+            self._set_data(new_person_data)
+            return self
+
+        else:
+            request = self._up_attrs()
+            # for new and updated objects, the parameter is
+            # unfortunately called homeSpaceId, spaceId throws no error
+            # but makes no change either
+            if "spaceId" in request['params'][1][0]:
+                request['params'][1][0]['homeSpaceId'] =  request['params'][1][0]['spaceId']
+                del(request['params'][1][0]['spaceId'])
+
+            self.openbis._post_request(self.openbis.as_v3, request)
+            print("Person successfully updated.")
+            new_person_data = self.openbis.get_person(self.permId, only_data=True)
+            self._set_data(new_person_data)
+
+
+class Group(OpenBisObject):
+    """ Managing openBIS authorization groups
+    """
+    
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['openbis'] = openbis_obj
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'AuthorizationGroup')
+
+        if data is not None:
+            self.a(data)
+            self.__dict__['data'] = data
+
+        if kwargs is not None:
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+    def __dir__(self):
+        return [
+            'get_users()', 'add_users()', 'del_users()',
+            'get_roles()', 'add_roles()', 'del_roles()'
+        ]
+
+    def save(self):
+        if self.is_new:
+            request = self._new_attrs()
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+            print("Group successfully created.")
+            # re-fetch group from openBIS
+            new_data = self.openbis.get_person(resp[0]['permId'], only_data=True)
+            self._set_data(new_data)
+            return self
+
+        else:
+            request = self._up_attrs()
+            self.openbis._post_request(self.openbis.as_v3, request)
+            print("Group successfully updated.")
+            # re-fetch group from openBIS
+            new_data = self.openbis.get_group(self.permId, only_data=True)
+            self._set_data(new_data)
 
 
 class Space(OpenBisObject):
@@ -3608,7 +3975,7 @@ class Things():
                 row = self.df[self.df[self.identifier_name] == key.upper()]
 
             if row is not None:
-                # invoke the openbis.get_entity() method
+                # invoke the openbis.get_<entity>() method
                 return getattr(self.openbis, 'get_' + self.entity)(row[self.identifier_name].values[0])
 
     def __iter__(self):
@@ -3901,7 +4268,14 @@ class SemanticAnnotation():
         self.creationDate = kwargs.get('creationDate')
 
     def __dir__(self):
-        return ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate', 'save()', 'delete()' ]
+        return [
+            'permId', 'entityType', 'propertyType', 
+            'predicateOntologyId', 'predicateOntologyVersion', 
+            'predicateAccessionId', 'descriptorOntologyId',
+            'descriptorOntologyVersion', 'descriptorAccessionId', 
+            'creationDate', 
+            'save()', 'delete()' 
+        ]
 
     def save(self):
         if self._isNew:
