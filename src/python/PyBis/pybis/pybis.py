@@ -3365,6 +3365,7 @@ class Sample():
 
         else:
             request = self._up_attrs()
+            request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Sample successfully updated.")
             new_sample_data = self.openbis.get_sample(self.permId, only_data=True)
