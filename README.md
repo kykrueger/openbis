@@ -16,7 +16,7 @@ o.logout()
 ```
 
 ## Masterdata
-```
+```python
 o.get_experiment_types()
 o.get_sample_types()
 o.get_sample_type('YEAST')
