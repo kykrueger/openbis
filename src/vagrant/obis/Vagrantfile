@@ -57,10 +57,16 @@ Vagrant.configure(2) do |config|
     obisserver.vm.network "private_network", ip: "172.28.128.3"
 
     obisserver.vm.provision :shell do |sh|
-     sh.inline = "echo '127.0.0.1 obisserver' >> /etc/hosts
-     echo '172.28.128.3 obisclient' >> /etc/hosts
-     echo 'obisserver' > /etc/hostname
-     hostname `cat /etc/hostname`"
+      # set password for obis user to 'obis' for ssh and enable password authentication
+      # set hostnames
+      sh.inline = "usermod --password $(echo obis | openssl passwd -1 -stdin) obis
+      sed -e \"s/PasswordAuthentication no/PasswordAuthentication yes/\" /etc/ssh/sshd_config > /etc/ssh/sshd_config_tmp
+      mv /etc/ssh/sshd_config_tmp /etc/ssh/sshd_config
+      systemctl restart sshd.service
+      echo '127.0.0.1 obisserver' >> /etc/hosts
+      echo '172.28.128.4 obisclient' >> /etc/hosts
+      echo 'obisserver' > /etc/hostname
+      hostname `cat /etc/hostname`"
     end
 
   end
@@ -87,7 +93,13 @@ Vagrant.configure(2) do |config|
     obisclient.vm.network "private_network", ip: "172.28.128.4"
 
     obisclient.vm.provision :shell do |sh|
-      sh.inline = "echo '127.0.0.1 obisclient' >> /etc/hosts
+      # set password for obis user to 'obis' for ssh and enable password authentication
+      # set hostnames
+      sh.inline = "sudo usermod --password $(echo obis | openssl passwd -1 -stdin) obis
+      sed -e \"s/PasswordAuthentication no/PasswordAuthentication yes/\" /etc/ssh/sshd_config > /etc/ssh/sshd_config_tmp
+      mv /etc/ssh/sshd_config_tmp /etc/ssh/sshd_config
+      systemctl restart sshd.service
+      echo '127.0.0.1 obisclient' >> /etc/hosts
       echo '172.28.128.3 obisserver' >> /etc/hosts
       echo 'obisclient' > /etc/hostname
       hostname `cat /etc/hostname`"
