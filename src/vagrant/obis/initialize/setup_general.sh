@@ -9,3 +9,6 @@ sudo yum -y install wget
 sudo yum -y install epel-release
 sudo yum -y install unzip
 sudo yum -y install vim
+sudo yum -y install nano
+sudo yum -y install nmap
+sudo yum -y install net-tools

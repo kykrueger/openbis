@@ -4,8 +4,7 @@
 # NB openbis must be downloaded an installed separately because it is not available anonymously
 
 # Install Java
-wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u92-b14/jdk-8u92-linux-x64.rpm"
-sudo rpm -ivh jdk-8u92-linux-x64.rpm
+sudo yum -y install java-1.8.0-openjdk.x86_64
 
 # Install postgresql
 sudo yum -y install postgresql-server postgresql-contrib

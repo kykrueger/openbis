@@ -5,7 +5,10 @@ class CommandResult(object):
         """Convert a completed_process object into a ShellResult."""
         if completed_process:
             self.returncode = completed_process.returncode
-            self.output = completed_process.stdout.decode('utf-8').strip()
+            if completed_process.stderr:
+                self.output = completed_process.stderr.decode('utf-8').strip()
+            else:
+                self.output = completed_process.stdout.decode('utf-8').strip()
         else:
             self.returncode = returncode
             self.output = output

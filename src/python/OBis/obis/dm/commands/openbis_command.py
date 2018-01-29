@@ -4,6 +4,7 @@ import os
 import socket
 import pybis
 from ..command_result import CommandResult
+from ...scripts import cli
 
 
 class OpenbisCommand(object):
@@ -42,6 +43,8 @@ class OpenbisCommand(object):
     def user(self):
         return self.config_dict.get('user')
 
+    def hostname(self):
+        return self.config_dict.get('hostname')
 
     def prepare_run(self):
         result = self.check_configuration()
@@ -87,7 +90,7 @@ class OpenbisCommand(object):
     def get_or_create_external_data_management_system(self):
         external_dms_id = self.external_dms_id()
         user = self.user()
-        hostname = socket.gethostname()
+        hostname = self.determine_hostname()
         result = self.git_wrapper.git_top_level_path()
         if result.failure():
             return result
@@ -105,3 +108,25 @@ class OpenbisCommand(object):
             except ValueError as e:
                 return CommandResult(returncode=-1, output=str(e))
         return CommandResult(returncode=0, output=external_dms)
+
+    def determine_hostname(self):
+        """ Returns globally defined hostname if available.
+            Otherwies, lets the user choose one and stores that globally. """
+        # from global config
+        hostname = self.hostname()
+        if hostname is not None:
+            return hostname
+        # ask user
+        hostname = self.ask_for_hostname(socket.gethostname());
+        # store
+        cli.config_internal(self.data_mgmt, True, 'hostname', hostname)
+        # self.config_resolver.set_value_for_parameter('hostname', hostname, 'global')
+        return hostname
+
+    def ask_for_hostname(self, hostname):
+        """ Asks the user to confirm the suggestes hostname or choose a custom one. """
+        hostname_input = input('Enter hostname (empty to confirm \'' + str(hostname) + '\'): ')
+        if hostname_input:
+            return hostname_input
+        else:
+            return hostname
