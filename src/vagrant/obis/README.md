@@ -10,21 +10,22 @@ To help users interested in trying out _obis_, we provide a vagrant setup that c
 3. `vagrant up --provision --provider virtualbox` -- initialize the virtual machine
 4. `vagrant ssh obisserver`  -- log into the virtual machine
 5. install openBIS (inside the vagrant machine) `/vagrant_initialize/install_openbis.sh`. The admin password will be 'admin'.
-6. To use obis, switch to the obis user with `sudo su obis` and `cd ~obis`. Configure the openbis_url: `obis config -g openbis_url https://obisserver:8443`.
-7. `exit` -- log off the virtual machine
+6. `exit` -- log off the virtual machine
 
 When openBIS is running it can be accessed on the host machine from `https://localhost:8443/openbis`.
 
-obis can be used as the user `obis`.
+## Using obis
 
-There is a second VM in case a second obis client is needed:
+obis can be used on both vagrant machines.
 
-1. `vagrant ssh obisclient`
+1. `vagrant ssh obisserver` (or `obisclient`)
 2. `sudo su obis`
 3. `cd ~obis`
 4. Configure the openbis_url: `obis config -g openbis_url https://obisserver:8443`
-5. Use obis. Note: If you clone a dataset on the other server, the password of the obis user is obis.
+5. Use obis.
 6. `exit` -- log off the virtual machine
+
+If you clone a dataset on the other server, the password of the obis user is obis.
 
 ## obis/EasyBD Demo
 
