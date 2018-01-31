@@ -161,10 +161,14 @@ def _definitions(entity):
     }
     return entities[entity]
 
-def get_search_criteria_for_entity(entity):
-    """ Creates a basic search object for a given entity. Returns a dictionary.
+
+def get_search_type_for_entity(entity):
+    """ Returns a dictionary containing the correct search criteria type
+    for a given entity.
+
     Example::
-        get_search_criteria_for_entity('space')
+        get_search_type_for_entity('space')
+        # returns:
         {'@type': 'as.dto.space.search.SpaceSearchCriteria'}
     """
     search_criteria = {
@@ -185,24 +189,33 @@ def get_search_criteria_for_entity(entity):
         "material_type": "as.dto.material.search.MaterialTypeSearchCriteria",
         "vocabulary_term": "as.dto.vocabulary.search.VocabularyTermSearchCriteria",
         "tag": "as.dto.tag.search.TagSearchCriteria",
-        "authorization_group": "as.dto.authorizationgroup.search.AuthorizationGroupSearchCriteria",
+        "authorizationGroup": "as.dto.authorizationgroup.search.AuthorizationGroupSearchCriteria",
         "role_assignment": "as.dto.roleassignment.search.RoleAssignmentSearchCriteria",
         "person": "as.dto.person.search.PersonSearchCriteria",
         "code": "as.dto.common.search.CodeSearchCriteria",
         "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
         "global": "as.dto.global.GlobalSearchObject",
     }
-    if entity in search_criteria:
-        return {
-            "@type": search_criteria[entity]
-        }
-    else:
-        return {}
+    return {
+        "@type": search_criteria[entity]
+    }
+
+def get_attrs_for_entity(entity):
+    """ For a given entity this method returns an iterator for all searchable
+    attributes.
+    """
+    search_args = {
+        "person": ['firstName','lastName','email','userId']
+    }
+    for search_arg in search_args[entity]:
+        yield search_arg
+
 
 fetch_option = {
     "space": {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
     "project": {"@type": "as.dto.project.fetchoptions.ProjectFetchOptions"},
     "person": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
+    "users": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
     "experiment": {
         "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions",
         "type": {"@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions"}
@@ -272,6 +285,21 @@ def search_request_for_identifier(ident, entity):
         }
     return search_request
 
+def get_search_criteria(entity, **search_args):
+    search_criteria = get_search_type_for_entity(entity)
+
+    criteria = []
+    for attr in get_attrs_for_entity(entity):
+        if attr in search_args:
+            sub_crit = get_search_type_for_entity(attr)
+            sub_crit['fieldValue'] = get_field_value_search(attr, search_args[attr])
+            criteria.append(sub_crit)
+
+    search_criteria['criteria'] = criteria
+    search_criteria['operator'] = "AND"
+
+    return search_criteria
+
 
 def extract_code(obj):
     if not isinstance(obj, dict):
@@ -339,6 +367,11 @@ def extract_person(person):
     if not isinstance(person, dict):
         return str(person)
     return person['userId']
+
+
+def extract_users(users):
+    if not isinstance(users, dict):
+        return str(users)
 
 
 def crc32(fileName):
@@ -655,7 +688,7 @@ def _subcriteria_for_code(code, object_type):
             fieldtype = "as.dto.common.search.CodeSearchCriteria"
 
           
-        search_criteria = get_search_criteria_for_entity(object_type.lower())
+        search_criteria = get_search_type_for_entity(object_type.lower())
         search_criteria['criteria'] = [{
             "fieldName": fieldname,
             "fieldType": "ATTRIBUTE",
@@ -669,7 +702,7 @@ def _subcriteria_for_code(code, object_type):
         search_criteria["operator"] = "AND"
         return search_criteria
     else:
-        return get_search_criteria_for_entity(object_type.lower())
+        return get_search_type_for_entity(object_type.lower())
 
 
 class Openbis:
@@ -739,9 +772,11 @@ class Openbis:
             "get_spaces()",
             "get_tags()",
             "get_terms()",
+            "new_person(userId, space)",
             "get_persons()",
-            "get_person(userId=None)",
-            "new_person(userId, firstName, lastName, email)",
+            "get_person(userId)",
+            "get_groups()",
+            "get_group(code)",
             "new_group(code, description, userIds)",
             'new_space(name, description)',
             'new_project(space, code, description, attachments)',
@@ -832,7 +867,7 @@ class Openbis:
         data
         """
         if "id" not in request:
-            request["id"] = "1"
+            request["id"] = "2"
         if "jsonrpc" not in request:
             request["jsonrpc"] = "2.0"
         if request["params"][0] is None:
@@ -929,7 +964,14 @@ class Openbis:
     def new_person(self, userId, space=None):
         """ creates an openBIS person
         """
-        return Person(self, userId=userId, space=space) 
+        try:
+            person = self.get_person(userId=userId)
+        except Exception:
+            return Person(self, userId=userId, space=space) 
+
+        raise ValueError(
+            "There already exists a user with userId={}".format(userId)
+        )
 
 
     def new_group(self, code, description=None, users=None):
@@ -937,41 +979,96 @@ class Openbis:
         """
         return Group(self, code=code, description=description, users=users)
 
-    def get_groups(self, code=None):
-        """ Get openBIS AuthorizationGroups
+
+    def get_group(self, groupId, only_data=False):
+        """ Get an openBIS AuthorizationGroup. Returns a Group object.
         """
 
-        criterias = []
-        if code:
-            criterias.append(_subcriteria_for_code(code))
-        criteria = get_search_criteria_for_entity('authorizationGroup')
-        criteria['criteria'] = criterias
+        ids = [{
+            "@type": "as.dto.authorizationgroup.id.AuthorizationGroupPermId",
+            "permId": groupId
+        }]
+
+        fetchopts = {}
+        for option in ['roleAssignments', 'users', 'registrator']:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "getAuthorizationGroups",
+            "params": [
+                self.token,
+                ids,
+                fetchopts
+            ]
+        }
+        resp = self._post_request(self.as_v3, request)
+        if len(resp) == 0:
+            raise ValueError("No group found!")
+
+        for permid in resp:
+            group = resp[permid]
+            parse_jackson(group)
+
+            if only_data:
+                return group
+            else:
+                return Group(self, data=group)
+        
+
+
+    def get_groups(self, **search_args):
+        """ Get openBIS AuthorizationGroups. Returns a «Things» object.
+
+        Usage::
+            groups = e.get.groups()
+            groups[0]             # select first group
+            groups['GROUP_NAME']  # select group with this code
+            for group in groups:
+                ...               # a Group object
+            groups.df             # get a DataFrame object of the group list
+            print(groups)         # print a nice ASCII table (eg. in IPython)
+            groups                # HTML table (in a Jupyter notebook)
+
+        """
+
+        criteria = []
+        for search_arg in ['code', 'description', 'registrator']:
+            if search_arg in search_args:
+                pass
+                #sub_crit = get_search_type_for_entity(search_arg)
+                #criteria.append(sub_crit)
+
+        search_criteria = get_search_type_for_entity('authorizationGroup')
+        search_criteria['criteria'] = criteria
                 
         fetchopts = fetch_option['authorizationGroup']
-        for option in ['roleAssignments']:
+        for option in ['roleAssignments', 'registrator', 'users']:
             fetchopts[option] = fetch_option[option]
         request = {
             "method": "searchAuthorizationGroups",
             "params": [
                 self.token,
-                criteria,
+                search_criteria,
                 fetchopts
             ],
         }
         resp = self._post_request(self.as_v3, request)
         if len(resp['objects']) == 0:
-            raise ValueError("No persons found!")
+            raise ValueError("No groups found!")
 
         objects = resp['objects']
         parse_jackson(objects)
 
-        persons = DataFrame(resp['objects'])
-        persons['permId'] = persons['permId'].map(extract_permid)
-        persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
-        persons['space'] = persons['space'].map(extract_nested_permid)
+        groups = DataFrame(resp['objects'])
+
+        groups['permId'] = groups['permId'].map(extract_permid)
+        groups['registrator'] = groups['registrator'].map(extract_person)
+        groups['users'] = groups['users'].map(extract_users)
+        groups['registrationDate'] = groups['registrationDate'].map(format_timestamp)
+        groups['modificationDate'] = groups['modificationDate'].map(format_timestamp)
         p = Things(
-            self, entity='person', 
-            df=persons[['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']],
+            self, entity='group', 
+            df=groups[['permId', 'code', 'description', 'users', 'registrator', 'registrationDate', 'modificationDate']],
             identifier_name='permId'
         )
         return p
@@ -981,21 +1078,7 @@ class Openbis:
         """ Get openBIS users
         """
 
-        criteria = []
-        for search_arg in ['userId','firstName','lastName','email']:
-            if search_arg in search_args:
-                sub_crit = get_search_criteria_for_entity(search_arg)
-                sub_crit['fieldValue'] = get_field_value_search(search_arg, search_args[search_arg])
-                #sub_crit['fieldValue'] = {
-                #    "value": search_args[search_arg],
-                #    "@type": "as.dto.common.search.StringEqualToValue"
-                #}
-                criteria.append(sub_crit)
-
-        search_criteria = get_search_criteria_for_entity('person')
-        search_criteria['criteria'] = criteria
-        search_criteria['operator'] = "AND"
-                
+        search_criteria = get_search_criteria('person', **search_args)
         fetchopts = {}
         for option in ['space']:
             fetchopts[option] = fetch_option[option]
@@ -1255,7 +1338,7 @@ class Openbis:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
 
-        search_criteria = get_search_criteria_for_entity('experiment')
+        search_criteria = get_search_type_for_entity('experiment')
         search_criteria['criteria'] = sub_criteria
         search_criteria['operator'] = 'AND'
 
@@ -1333,7 +1416,7 @@ class Openbis:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
 
-        search_criteria = get_search_criteria_for_entity('dataset')
+        search_criteria = get_search_type_for_entity('dataset')
         search_criteria['criteria'] = sub_criteria
         search_criteria['operator'] = 'AND'
 
@@ -3298,7 +3381,6 @@ class AttrHolder():
             else:
                 self.__dict__['_' + name]['isModified'] = True
 
-
         elif name in ["identifier"]:
             raise KeyError("you can not modify the {}".format(name))
         elif name == "code":
@@ -3313,7 +3395,7 @@ class AttrHolder():
             self.__dict__['_code'] = value
 
         elif name in [ "description", "userId" ]:
-            self.__dict__['-'+name] = value
+            self.__dict__['_'+name] = value
         else:
             raise KeyError("no such attribute: {}".format(name))
 
@@ -3713,6 +3795,7 @@ class Person(OpenBisObject):
                 request['params'][1][0]['homeSpaceId'] =  request['params'][1][0]['spaceId']
                 del(request['params'][1][0]['spaceId'])
 
+            return json.dumps(request)
             self.openbis._post_request(self.openbis.as_v3, request)
             print("Person successfully updated.")
             new_person_data = self.openbis.get_person(self.permId, only_data=True)
@@ -3740,6 +3823,67 @@ class Group(OpenBisObject):
             'get_users()', 'add_users()', 'del_users()',
             'get_roles()', 'add_roles()', 'del_roles()'
         ]
+
+    def _repr_html_(self):
+        def nvl(val, string=''):
+            if val is None:
+                return string
+            return val
+
+        html = """
+            <table border="1" class="dataframe">
+            <thead>
+                <tr style="text-align: right;">
+                <th>attribute</th>
+                <th>value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        for attr in self._allowed_attrs:
+            if attr in ['users','roleAssignments']:
+                continue
+            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
+                attr, nvl(getattr(self, attr, ''), '')
+            )
+
+        if getattr(self, '_users') is not None:
+            html += "<tr><td>Users</td><td>"
+            html += ", ".join(att['userId'] for att in self._users)
+            html += "</td></tr>"
+
+        html += """
+            </tbody>
+            </table>
+        """
+
+        if getattr(self, '_roleAssignments') is not None:
+            html += """
+                <br/>
+                <b>Role Assignments</b>
+                <table border="1" class="dataframe">
+                <thead>
+                    <tr style="text-align: right;">
+                    <th>Role</th>
+                    <th>Role Level</th>
+                    <th>Space</th>
+                    </tr>
+                </thead>
+                <tbody>
+            """
+            for roleAssignment in self._roleAssignments:
+                html += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                    roleAssignment.get('role'),
+                    roleAssignment.get('roleLevel'),
+                    roleAssignment.get('space').get('code'),
+                )
+            html += """
+                </tbody>
+                </table>
+            """
+        return html
+
 
     def save(self):
         if self.is_new:
