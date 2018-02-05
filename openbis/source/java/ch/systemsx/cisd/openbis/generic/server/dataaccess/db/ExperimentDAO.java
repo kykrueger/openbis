@@ -22,10 +22,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.lemnik.eodsql.BaseQuery;
-import net.lemnik.eodsql.QueryTool;
-import net.lemnik.eodsql.Select;
-
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
@@ -33,7 +29,7 @@ import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -56,6 +52,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
+import net.lemnik.eodsql.BaseQuery;
+import net.lemnik.eodsql.QueryTool;
+import net.lemnik.eodsql.Select;
 
 /**
  * Data access object for {@link ExperimentPE}.
@@ -338,7 +337,7 @@ public class ExperimentDAO extends AbstractGenericEntityWithPropertiesDAO<Experi
                         + " as s where s.id in (select p.space.id from "
                         + ProjectPE.class.getSimpleName()
                         + " as p where p.id in (select e.projectInternal.id from "
-                        + ExperimentPE.class.getSimpleName() + " as e where e.id in (:ids))))";
+                        + ExperimentPE.class.getSimpleName() + " as e where e.id in (:ids)))";
         final List<SpacePE> result = new ArrayList<SpacePE>();
         BatchOperationExecutor.executeInBatches(new IBatchOperation<Long>()
             {

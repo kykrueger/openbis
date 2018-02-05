@@ -29,14 +29,13 @@ import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
-import org.hibernate.StatelessSession;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate4.HibernateCallback;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -368,7 +367,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         executeStatelessAction(new StatelessHibernateCallback()
             {
                 @Override
-                public Object doInStatelessSession(StatelessSession session)
+                public Object doInStatelessSession(Session session)
                 {
                     final SQLQuery sqlQuery = session.createSQLQuery(sql);
                     sqlQuery.setParameter("registratorId", registratorId);

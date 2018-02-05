@@ -30,8 +30,8 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcOperations;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -50,7 +50,7 @@ public class MigrationStepFrom002To003 extends MigrationStepAdapter
             LogFactory.getLogger(LogCategory.OPERATION, MigrationStepFrom002To003.class);
 
     @Override
-    public void performPostMigration(SimpleJdbcTemplate simpleJdbcTemplate, DataSource dataSource)
+    public void performPostMigration(JdbcTemplate simpleJdbcTemplate, DataSource dataSource)
             throws DataAccessException
     {
         List<Object[]> coverageValues = calculateCoverageValues(simpleJdbcTemplate);
@@ -59,10 +59,10 @@ public class MigrationStepFrom002To003 extends MigrationStepAdapter
                 coverageValues);
     }
 
-    private List<Object[]> calculateCoverageValues(SimpleJdbcTemplate simpleJdbcTemplate)
+    private List<Object[]> calculateCoverageValues(JdbcTemplate simpleJdbcTemplate)
     {
         logMemory();
-        JdbcOperations jdbcOperations = simpleJdbcTemplate.getJdbcOperations();
+        JdbcOperations jdbcOperations = simpleJdbcTemplate;
         final Map<Long, List<String>> peptides = getPeptides(jdbcOperations);
         logMemory();
         final List<Object[]> values = new ArrayList<Object[]>();
@@ -82,8 +82,7 @@ public class MigrationStepFrom002To003 extends MigrationStepAdapter
                                 String sequence = rs.getString(3);
                                 List<String> peptideSequences = peptides.get(proteinID);
                                 double coverage = calculateCoverage(sequence, peptideSequences);
-                                values.add(new Object[]
-                                { coverage, id });
+                                values.add(new Object[] { coverage, id });
                             }
                             return null;
                         }

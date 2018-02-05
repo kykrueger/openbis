@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -43,7 +43,8 @@ import ch.systemsx.cisd.openbis.systemtest.base.builder.SessionBuilder;
  *
  * @author Franz-Josef Elmer
  */
-@TransactionConfiguration(transactionManager = "transaction-manager", defaultRollback = false)
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 public abstract class AbstractEntityDeletionTestCase extends BaseTest
 {
     @Test
@@ -52,8 +53,7 @@ public abstract class AbstractEntityDeletionTestCase extends BaseTest
         EntityGraphGenerator g = parseAndCreateGraph(
                 "E1, samples: S50, data sets: DS60 DS61\n"
                         + "E2, samples: S51\n"
-                        + "E3\n"
-                );
+                        + "E3\n");
 
         deleteExperiments(g.e(1), g.e(2), g.e(3));
 
@@ -71,8 +71,7 @@ public abstract class AbstractEntityDeletionTestCase extends BaseTest
                 + "E2, samples: S51\n"
                 + "E3\n"
                 + "S50, components: S52, data sets: DS70 DS71\n"
-                + "S51, components: S53\n"
-                );
+                + "S51, components: S53\n");
 
         deleteExperiments(g.e(1), g.e(2), g.e(3));
 
@@ -208,8 +207,7 @@ public abstract class AbstractEntityDeletionTestCase extends BaseTest
                 + "E2, data sets: DS1\n"
                 + "S1, data sets: DS2 DS3\n"
                 + "DS1, components: DS2\n"
-                + "DS2, components: DS3\n"
-                );
+                + "DS2, components: DS3\n");
 
         deleteExperiments(g.e(2));
 

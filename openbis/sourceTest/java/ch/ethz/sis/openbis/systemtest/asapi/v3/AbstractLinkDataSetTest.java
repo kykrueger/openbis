@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -402,7 +403,8 @@ public abstract class AbstractLinkDataSetTest extends AbstractExternalDmsTest
 
     protected String stringify(ContentCopy c)
     {
-    	return c.getExternalCode() + " / " + c.getPath() + " / " + c.getGitCommitHash() + " / " + c.getGitRepositoryId() + " / " + c.getExternalDms().getCode();
+        return c.getExternalCode() + " / " + c.getPath() + " / " + c.getGitCommitHash() + " / " + c.getGitRepositoryId() + " / "
+                + c.getExternalDms().getCode();
     }
 
     @DataProvider(name = "InvalidLocationCombinations")
@@ -436,6 +438,8 @@ public abstract class AbstractLinkDataSetTest extends AbstractExternalDmsTest
 
     protected List<DataSetHistoryPE> historyOf(DataSetPermId id)
     {
+        TestTransaction.end();
+
         Session session = daoFactory.getSessionFactory().openSession();
         Query query = session.createQuery(
                 "FROM DataSetHistoryPE as entry "

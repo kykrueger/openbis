@@ -16,8 +16,9 @@
 
 package ch.systemsx.cisd.openbis.plugin.screening.server.dataaccess;
 
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAOWithoutContextTest;
 
@@ -27,7 +28,8 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAOWithoutC
  * @author Kaloyan Enimanev
  */
 @ContextConfiguration(locations = "classpath:screening-applicationContext.xml")
-@TransactionConfiguration(transactionManager = "transaction-manager")
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 public class AbstractScreeningDAOTest extends AbstractDAOWithoutContextTest
 {
 

@@ -23,7 +23,7 @@ import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -47,7 +47,8 @@ final class VocabularyDAO extends AbstractGenericEntityDAO<VocabularyPE> impleme
 
     /**
      * This logger does not output any SQL statement. If you want to do so, you had better set an appropriate debugging level for class
-     * {@link JdbcAccessor}. </p>
+     * {@link JdbcAccessor}.
+     * </p>
      */
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, VocabularyDAO.class);

@@ -16,7 +16,6 @@
 
 package ch.systemsx.cisd.openbis.common.spring;
 
-import java.util.HashSet;
 import java.util.Properties;
 
 import org.springframework.beans.BeansException;
@@ -79,8 +78,7 @@ public class PropertyPlaceholderConfigurer extends
             {
                 // Default working mode of 'parseStringValue' is 'SYSTEM_PROPERTIES_MODE_FALLBACK'.
                 resolvedPlaceholder =
-                        parseStringValue(systemPropertiesModePlaceholder, props,
-                                new HashSet<String>());
+                        resolvePlaceholder(systemPropertiesModePlaceholder, props);
             } catch (final BeanDefinitionStoreException ex)
             {
                 // Does nothing. Rest of code can handle this.

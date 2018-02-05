@@ -25,18 +25,18 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.dbmigration.java.MigrationStepAdapter;
-import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator.TimestampValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DisplaySettings;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import ch.systemsx.cisd.openbis.generic.shared.util.DisplaySettingsSerializationUtils;
+import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator.TimestampValidator;
 
 /**
  * A migration step from database version <code>v46</code> to version <code>v47</code>.
@@ -56,8 +56,8 @@ public final class MigrationStepFrom046To047 extends MigrationStepAdapter
     private static final String SELECT_PERSON_WITH_DISPLAY_SETTINGS_QUERY =
             "SELECT id, user_id, display_settings FROM %s;";
 
-    private final static ParameterizedRowMapper<PersonWithDisplaySettings> PERSON_WITH_DISPLAY_SETTINGS_ROW_MAPPER =
-            new ParameterizedRowMapper<PersonWithDisplaySettings>()
+    private final static RowMapper<PersonWithDisplaySettings> PERSON_WITH_DISPLAY_SETTINGS_ROW_MAPPER =
+            new RowMapper<PersonWithDisplaySettings>()
                 {
                     @Override
                     public final PersonWithDisplaySettings mapRow(final ResultSet rs,
@@ -80,7 +80,7 @@ public final class MigrationStepFrom046To047 extends MigrationStepAdapter
     //
 
     @Override
-    public final void performPreMigration(final SimpleJdbcTemplate simpleJdbcTemplate,
+    public final void performPreMigration(final JdbcTemplate simpleJdbcTemplate,
             DataSource dataSource) throws DataAccessException
     {
         final List<PersonWithDisplaySettings> persons =

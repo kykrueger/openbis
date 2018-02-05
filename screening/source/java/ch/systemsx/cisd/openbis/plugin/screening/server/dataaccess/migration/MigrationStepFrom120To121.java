@@ -25,8 +25,8 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import ch.systemsx.cisd.dbmigration.java.MigrationStepAdapter;
 
@@ -39,11 +39,11 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
 
     private static final String NEW_CONTAINER_TYPE = "HCS_ANALYSIS_CONTAINER_WELL_FEATURES";
 
-    private final static ParameterizedRowMapper<Long> ID_ROW_MAPPER =
-            new ParameterizedRowMapper<Long>()
+    private final static RowMapper<Long> ID_ROW_MAPPER =
+            new RowMapper<Long>()
                 {
                     //
-                    // ParameterizedRowMapper
+                    // RowMapper
                     //
                     @Override
                     public final Long mapRow(final ResultSet rs, final int rowNum)
@@ -66,8 +66,8 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
         }
     }
 
-    private final static ParameterizedRowMapper<DataSetTypePropertyType> DSTPRT_ROW_MAPPER =
-            new ParameterizedRowMapper<DataSetTypePropertyType>()
+    private final static RowMapper<DataSetTypePropertyType> DSTPRT_ROW_MAPPER =
+            new RowMapper<DataSetTypePropertyType>()
                 {
                     @Override
                     public final DataSetTypePropertyType mapRow(final ResultSet rs, final int rowNum)
@@ -77,7 +77,7 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
                     }
                 };
 
-    private Long getDataSetTypeId(SimpleJdbcTemplate simpleJdbcTemplate, String code)
+    private Long getDataSetTypeId(JdbcTemplate simpleJdbcTemplate, String code)
     {
         List<Long> list =
                 simpleJdbcTemplate.query("SELECT id from data_set_types where code = ?",
@@ -88,7 +88,7 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
     /**
      * The map from keys in the new type data_set_types_property_types, to identical in the old ones.
      */
-    Map<Long, Long> getNewPropertiesToOldProperties(SimpleJdbcTemplate simpleJdbcTemplate,
+    Map<Long, Long> getNewPropertiesToOldProperties(JdbcTemplate simpleJdbcTemplate,
             long newTypeId, long oldTypeId)
     {
         String sql = "select id, prty_id from data_set_type_property_types where dsty_id = ?";
@@ -120,7 +120,7 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
      * type. The sql migration will take care of the renaming itself.
      */
     @Override
-    public void performPreMigration(SimpleJdbcTemplate simpleJdbcTemplate, DataSource dataSource)
+    public void performPreMigration(JdbcTemplate simpleJdbcTemplate, DataSource dataSource)
             throws DataAccessException
     {
         Long newTypeId = getDataSetTypeId(simpleJdbcTemplate, NEW_CONTAINER_TYPE);
@@ -140,7 +140,7 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
         }
     }
 
-    private void deleteNewType(SimpleJdbcTemplate simpleJdbcTemplate, Long newTypeId)
+    private void deleteNewType(JdbcTemplate simpleJdbcTemplate, Long newTypeId)
     {
         simpleJdbcTemplate.update("delete from data_set_type_property_types where dsty_id = ?",
                 newTypeId);
@@ -148,7 +148,7 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
         simpleJdbcTemplate.update("delete from data_set_types where id = ?", newTypeId);
     }
 
-    private void movePropertiesFromNewTypeToOld(SimpleJdbcTemplate simpleJdbcTemplate,
+    private void movePropertiesFromNewTypeToOld(JdbcTemplate simpleJdbcTemplate,
             Map<Long, Long> propertyTypesMap)
     {
         for (Map.Entry<Long, Long> entry : propertyTypesMap.entrySet())
@@ -159,7 +159,7 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
         }
     }
 
-    private void moveDatasetsFromNewTypeToOld(SimpleJdbcTemplate simpleJdbcTemplate,
+    private void moveDatasetsFromNewTypeToOld(JdbcTemplate simpleJdbcTemplate,
             Long newTypeId, Long oldTypeId)
     {
         simpleJdbcTemplate.update("update data_all set dsty_id = ? where dsty_id = ?", oldTypeId,

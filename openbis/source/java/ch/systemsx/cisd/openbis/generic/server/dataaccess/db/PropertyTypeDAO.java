@@ -26,7 +26,7 @@ import org.hibernate.criterion.CriteriaSpecification;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -155,7 +155,8 @@ final class PropertyTypeDAO extends AbstractGenericEntityDAO<PropertyTypePE> imp
         final List<DataTypePE> list =
                 cast(getHibernateTemplate().find(
                         String.format("from %s dt where dt.code = ?", DataTypePE.class
-                                .getSimpleName()), toArray(code)));
+                                .getSimpleName()),
+                        toArray(code)));
         final DataTypePE entity = getEntity(list);
         if (operationLog.isDebugEnabled())
         {

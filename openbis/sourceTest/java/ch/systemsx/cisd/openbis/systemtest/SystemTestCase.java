@@ -30,9 +30,10 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -79,7 +80,8 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServer;
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 // In 'commonContext.xml', our transaction manager is called 'transaction-manager' (by default
 // Spring looks for 'transactionManager').
-@TransactionConfiguration(transactionManager = "transaction-manager")
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringContextTests
 {
     private static final String SOURCE_TEST_CORE_PLUGINS = "sourceTest/core-plugins";

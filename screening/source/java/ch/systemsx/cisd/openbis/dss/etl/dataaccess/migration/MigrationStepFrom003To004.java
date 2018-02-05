@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.dss.etl.dataaccess.migration;
 import javax.sql.DataSource;
 
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import ch.systemsx.cisd.dbmigration.java.IMigrationStep;
 
@@ -35,13 +35,13 @@ public class MigrationStepFrom003To004 implements IMigrationStep
 {
 
     @Override
-    public void performPostMigration(SimpleJdbcTemplate jdbc, DataSource dataSource)
+    public void performPostMigration(JdbcTemplate jdbc, DataSource dataSource)
             throws DataAccessException
     {
     }
 
     @Override
-    public void performPreMigration(SimpleJdbcTemplate simpleJdbcTemplate, DataSource dataSource)
+    public void performPreMigration(JdbcTemplate simpleJdbcTemplate, DataSource dataSource)
             throws DataAccessException
     {
         // do nothing

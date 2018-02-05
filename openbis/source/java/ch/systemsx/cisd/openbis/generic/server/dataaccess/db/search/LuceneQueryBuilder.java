@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.FieldInfo.DocValuesType;
+import org.apache.lucene.index.DocValuesType;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
@@ -74,7 +74,7 @@ public class LuceneQueryBuilder
     //
 
     private static final char[] CHARS_ESCAPED_IN_WILCARD_MODE =
-    { FIELD_SEPARATOR, '/' };
+            { FIELD_SEPARATOR, '/' };
 
     // For now both wildcard and basic modes escape the same characters. If we decide
     // to escape wildcard characters in basic mode unescape the following code.
@@ -134,8 +134,7 @@ public class LuceneQueryBuilder
             miniTokens = StringUtils.split(token, StringUtils.join(tokenSeparators, ""));
         } else
         {
-            miniTokens = new String[]
-            { token };
+            miniTokens = new String[] { token };
         }
 
         List<String> transformedMiniTokens = new ArrayList<String>();

@@ -24,7 +24,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.search.FullTextSession;
@@ -34,7 +33,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.indexes.spi.DirectoryBasedIndexManager;
 import org.hibernate.search.spi.SearchIntegrator;
 import org.hibernate.search.store.DirectoryProvider;
-import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
+import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import ch.systemsx.cisd.common.filesystem.FileConstants;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -111,7 +110,7 @@ public final class FullTextIndexerRunnable extends HibernateDaoSupport implement
         try
         {
             // timeout exceptions were observed for the default timeout when database was bigger
-            IndexWriterConfig.setDefaultWriteLockTimeout(3000);
+            // IndexWriterConfig.setDefaultWriteLockTimeout(3000);
             final File indexBase = new File(context.getIndexBase());
             final File markerFile = new File(indexBase, FULL_TEXT_INDEX_MARKER_FILENAME);
             final Session session = getSessionFactory().openSession();
@@ -167,7 +166,7 @@ public final class FullTextIndexerRunnable extends HibernateDaoSupport implement
             DirectoryBasedIndexManager indexManager =
                     (DirectoryBasedIndexManager) searchIntegrator.getIndexManager(indexedEntity.getSimpleName());
             DirectoryProvider<?> provider = indexManager.getDirectoryProvider();
-            IndexWriter.unlock(provider.getDirectory());
+            // IndexWriter.unlock(provider.getDirectory());
         }
     }
 }

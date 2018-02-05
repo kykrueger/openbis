@@ -18,7 +18,6 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
 import java.util.List;
 
-import org.apache.lucene.index.FieldInfo.DocValuesType;
 import org.springframework.dao.DataAccessException;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.HibernateSearchDataProvider;

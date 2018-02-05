@@ -31,13 +31,12 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
-import org.hibernate.StatelessSession;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -287,7 +286,7 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
         executeStatelessAction(new StatelessHibernateCallback()
             {
                 @Override
-                public Object doInStatelessSession(StatelessSession session)
+                public Object doInStatelessSession(Session session)
                 {
                     final SQLQuery sqlQueryCodeAndType = session.createSQLQuery(sqlCodeAndType);
                     final SQLQuery sqlQueryDeleteProperties =

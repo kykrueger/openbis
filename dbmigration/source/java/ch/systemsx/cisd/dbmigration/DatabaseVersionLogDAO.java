@@ -32,10 +32,9 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.AbstractLobCreatingPreparedStatementCallback;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.support.lob.LobCreator;
 import org.springframework.jdbc.support.lob.LobHandler;
 
@@ -47,7 +46,7 @@ import ch.systemsx.cisd.common.db.Script;
  * 
  * @author Franz-Josef Elmer
  */
-public class DatabaseVersionLogDAO extends SimpleJdbcDaoSupport implements IDatabaseVersionLogDAO
+public class DatabaseVersionLogDAO extends JdbcDaoSupport implements IDatabaseVersionLogDAO
 {
     public static final String DB_VERSION_LOG = "database_version_logs";
 
@@ -69,7 +68,7 @@ public class DatabaseVersionLogDAO extends SimpleJdbcDaoSupport implements IData
             "select * from " + DB_VERSION_LOG + " where " + RUN_STATUS_TIMESTAMP
                     + " in (select max(" + RUN_STATUS_TIMESTAMP + ") from " + DB_VERSION_LOG + ")";
 
-    private static final class LogEntryRowMapper implements ParameterizedRowMapper<LogEntry>
+    private static final class LogEntryRowMapper implements RowMapper<LogEntry>
     {
         private final LobHandler lobHandler;
 
@@ -146,7 +145,7 @@ public class DatabaseVersionLogDAO extends SimpleJdbcDaoSupport implements IData
     @Override
     public LogEntry getLastEntry()
     {
-        SimpleJdbcTemplate template = getSimpleJdbcTemplate();
+        JdbcTemplate template = getJdbcTemplate();
         List<LogEntry> entries =
                 template.query(SELECT_LAST_ENTRY, new LogEntryRowMapper(lobHandler));
 
@@ -190,11 +189,12 @@ public class DatabaseVersionLogDAO extends SimpleJdbcDaoSupport implements IData
     @Override
     public void logSuccess(final Script moduleScript)
     {
-        SimpleJdbcTemplate template = getSimpleJdbcTemplate();
+        JdbcTemplate template = getJdbcTemplate();
         template.update("update " + DB_VERSION_LOG + " SET " + RUN_STATUS + " = ? , "
                 + RUN_STATUS_TIMESTAMP + " = ? " + "where " + DB_VERSION + " = ? and "
                 + MODULE_NAME + " = ?", LogEntry.RunStatus.SUCCESS.toString(), new Date(System
-                .currentTimeMillis()), moduleScript.getVersion(), moduleScript.getName());
+                        .currentTimeMillis()),
+                moduleScript.getVersion(), moduleScript.getName());
     }
 
     /**

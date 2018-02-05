@@ -12,7 +12,7 @@
     -->
 
     <bean id="hibernate-session-factory"
-        class="org.springframework.orm.hibernate4.LocalSessionFactoryBean"
+        class="org.springframework.orm.hibernate5.LocalSessionFactoryBean"
         depends-on="sql-script-provider, hibernate-search-context">
         <property name="dataSource">
             <ref bean="data-source" />
@@ -117,7 +117,7 @@
         <property name="hibernateProperties">
             <props>
 
-                <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate4.SpringSessionContext</prop>
+                <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate5.SpringSessionContext</prop>
             
             
                 <!-- Set this to "true" in order to enable the second-level cache. --> 

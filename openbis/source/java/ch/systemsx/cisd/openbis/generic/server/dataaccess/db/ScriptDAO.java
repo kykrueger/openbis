@@ -25,7 +25,7 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -46,7 +46,8 @@ final class ScriptDAO extends AbstractGenericEntityDAO<ScriptPE> implements IScr
 
     /**
      * This logger does not output any SQL statement. If you want to do so, you had better set an appropriate debugging level for class
-     * {@link JdbcAccessor}. </p>
+     * {@link JdbcAccessor}.
+     * </p>
      */
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             ScriptDAO.class);

@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
-import org.hibernate.StatelessSession;
+import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
 
 import ch.systemsx.cisd.common.collection.CollectionStyle;
@@ -238,7 +238,7 @@ public abstract class AbstractGenericEntityWithPropertiesDAO<T extends IEntityIn
             }
 
             @Override
-            public Object doInStatelessSession(StatelessSession session)
+            public Object doInStatelessSession(Session session)
             {
                 final SQLQuery sqlQuerySelectPermIds = session.createSQLQuery(sqlSelectPermIds);
                 final SQLQuery sqlQueryDeleteProperties =

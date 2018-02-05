@@ -17,7 +17,6 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -46,11 +45,6 @@ public final class SearchAnalyzer extends Analyzer
      */
     private static class WordAndCodeTokenizer extends CharTokenizer
     {
-
-        public WordAndCodeTokenizer(Reader input)
-        {
-            super(input);
-        }
 
         @Override
         protected boolean isTokenChar(int c)
@@ -141,9 +135,9 @@ public final class SearchAnalyzer extends Analyzer
     }
 
     @Override
-    protected TokenStreamComponents createComponents(String fieldName, Reader reader)
+    protected TokenStreamComponents createComponents(String fieldName)
     {
-        Tokenizer source = new WordAndCodeTokenizer(reader);
+        Tokenizer source = new WordAndCodeTokenizer();
         TokenStream filter = new TrimSpecialCharsFilter(source);
         return new TokenStreamComponents(source, filter);
     }

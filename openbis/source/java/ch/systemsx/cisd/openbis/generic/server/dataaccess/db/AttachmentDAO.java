@@ -29,7 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -54,7 +54,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
  * @author Franz-Josef Elmer
  * @author Tomasz Pylak
  */
-final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE>implements IAttachmentDAO
+final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE> implements IAttachmentDAO
 {
 
     private final static Class<AttachmentPE> ATTACHMENT_CLASS = AttachmentPE.class;
@@ -280,7 +280,7 @@ final class AttachmentDAO extends AbstractGenericEntityDAO<AttachmentPE>implemen
     @Override
     public final AttachmentPE tryFindAttachmentByOwnerAndFileNameAndVersion(
             final AttachmentHolderPE owner, final String fileName, final int version)
-                    throws DataAccessException
+            throws DataAccessException
     {
         assert owner != null : "Unspecified attachment holder.";
         assert fileName != null : "Unspecified file name.";

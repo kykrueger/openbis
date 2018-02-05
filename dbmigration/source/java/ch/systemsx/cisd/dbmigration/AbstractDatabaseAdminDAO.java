@@ -24,7 +24,7 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
@@ -34,7 +34,7 @@ import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
  * 
  * @author Franz-Josef Elmer
  */
-public abstract class AbstractDatabaseAdminDAO extends SimpleJdbcDaoSupport implements
+public abstract class AbstractDatabaseAdminDAO extends JdbcDaoSupport implements
         IDatabaseAdminDAO
 {
     protected final ISqlScriptExecutor scriptExecutor;
@@ -98,8 +98,7 @@ public abstract class AbstractDatabaseAdminDAO extends SimpleJdbcDaoSupport impl
             Connection connection = getDataSource().getConnection();
             Statement statement = connection.createStatement();
             DatabaseMetaData metaData = connection.getMetaData();
-            ResultSet rs = metaData.getTables(null, null, null, new String[]
-            { "TABLE" });
+            ResultSet rs = metaData.getTables(null, null, null, new String[] { "TABLE" });
             while (rs.next())
             {
                 databaseDefinition.add(new TableDefinition(rs.getString("TABLE_NAME")));

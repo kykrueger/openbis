@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -35,7 +35,7 @@ public class MigrationStepFrom004To005 extends MigrationStepAdapter
             LogFactory.getLogger(LogCategory.OPERATION, MigrationStepFrom004To005.class);
 
     @Override
-    public void performPostMigration(SimpleJdbcTemplate simpleJdbcTemplate, DataSource dataSource)
+    public void performPostMigration(JdbcTemplate simpleJdbcTemplate, DataSource dataSource)
             throws DataAccessException
     {
         operationLog.warn("!!!!!!!! METABOL DATABASE MIGRATED WITH OUT MIGRATING TABLE MZ_PEAKS. "

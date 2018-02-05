@@ -42,7 +42,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.support.JdbcUtils;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -64,7 +64,7 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.basic.dto.QueryParameterBind
 /**
  * @author Franz-Josef Elmer
  */
-class DAO extends SimpleJdbcDaoSupport implements IDAO
+class DAO extends JdbcDaoSupport implements IDAO
 {
 
     private static final int FETCH_SIZE = 1000;

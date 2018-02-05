@@ -21,7 +21,6 @@ import java.util.Collection;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.SubtypeResolver;
 
@@ -56,17 +55,16 @@ public class JsonReflectionsSubTypeResolver extends SubtypeResolver
     }
 
     @Override
-    public Collection<NamedType> collectAndResolveSubtypes(AnnotatedMember property,
-            MapperConfig<?> config, AnnotationIntrospector ai)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Collection<NamedType> collectAndResolveSubtypes(AnnotatedClass basetype,
             MapperConfig<?> config, AnnotationIntrospector ai)
     {
         return typeToSubTypesMapping.getSubTypes(basetype.getRawType());
+    }
+
+    @Override
+    public void registerSubtypes(Collection<Class<?>> subtypes)
+    {
+        throw new UnsupportedOperationException();
     }
 
 }

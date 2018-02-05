@@ -18,9 +18,9 @@ package ch.systemsx.cisd.openbis.systemtest;
 
 import java.sql.SQLException;
 
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.RowMapper;
 
-final class HistoryRowMapper implements ParameterizedRowMapper<PropertyHistory>
+final class HistoryRowMapper implements RowMapper<PropertyHistory>
 {
 
     @Override

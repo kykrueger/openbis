@@ -28,11 +28,12 @@ import org.hamcrest.Matcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.context.transaction.AfterTransaction;
 import org.springframework.test.context.transaction.TestTransaction;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -116,9 +117,9 @@ import ch.systemsx.cisd.openbis.systemtest.entitygraph.EntityGraphManager;
  * @author anttil
  */
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
-@TransactionConfiguration(transactionManager = "transaction-manager")
-@Test(groups =
-{ "system-cleandb" })
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
+@Test(groups = { "system-cleandb" })
 public abstract class BaseTest extends AbstractTransactionalTestNGSpringContextTests
 {
 

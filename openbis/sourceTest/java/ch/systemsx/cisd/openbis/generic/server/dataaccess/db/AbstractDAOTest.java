@@ -17,7 +17,7 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * {@link AbstractDAOTest} extension setting configuration context.
@@ -27,7 +27,8 @@ import org.springframework.test.context.transaction.TransactionConfiguration;
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 // In 'commonContext.xml', our transaction manager is called 'transaction-manager' (by default
 // Spring looks for 'transactionManager').
-@TransactionConfiguration(transactionManager = "transaction-manager")
+// @TransactionConfiguration(transactionManager = "transaction-manager")
+@Transactional(transactionManager = "transaction-manager")
 public abstract class AbstractDAOTest extends AbstractDAOWithoutContextTest
 {
 }

@@ -23,9 +23,10 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
@@ -42,7 +43,8 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.basic.dto.QueryParameterBind
  * @author Franz-Josef Elmer
  */
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
-@TransactionConfiguration(transactionManager = "transaction-manager")
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 @Test(groups = "db")
 public class DAOTest extends AbstractTransactionalTestNGSpringContextTests
 {

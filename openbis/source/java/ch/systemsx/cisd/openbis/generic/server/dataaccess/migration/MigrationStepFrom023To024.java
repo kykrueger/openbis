@@ -25,8 +25,8 @@ import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -51,8 +51,8 @@ public final class MigrationStepFrom023To024 extends MigrationStepAdapter
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, MigrationStepFrom023To024.class);
 
-    private final static ParameterizedRowMapper<DatabaseInstance> DATABASE_ROW_MAPPER =
-            new ParameterizedRowMapper<DatabaseInstance>()
+    private final static RowMapper<DatabaseInstance> DATABASE_ROW_MAPPER =
+            new RowMapper<DatabaseInstance>()
                 {
 
                     //
@@ -69,8 +69,8 @@ public final class MigrationStepFrom023To024 extends MigrationStepAdapter
                     }
                 };
 
-    private final static ParameterizedRowMapper<ExternalData> EXTERNAL_DATA_ROW_MAPPER =
-            new ParameterizedRowMapper<ExternalData>()
+    private final static RowMapper<ExternalData> EXTERNAL_DATA_ROW_MAPPER =
+            new RowMapper<ExternalData>()
                 {
                     //
                     // ParameterizedRowMapper
@@ -86,7 +86,7 @@ public final class MigrationStepFrom023To024 extends MigrationStepAdapter
                 };
 
     private final static DatabaseInstance getDatabaseInstance(
-            final SimpleJdbcTemplate simpleJdbcTemplate)
+            final JdbcTemplate simpleJdbcTemplate)
     {
         final DatabaseInstance databaseInstance =
                 simpleJdbcTemplate.queryForObject(String.format(
@@ -114,7 +114,7 @@ public final class MigrationStepFrom023To024 extends MigrationStepAdapter
     //
 
     @Override
-    public final void performPostMigration(final SimpleJdbcTemplate simpleJdbcTemplate,
+    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate,
             javax.sql.DataSource dataSource) throws DataAccessException
     {
         final DatabaseInstance databaseInstance = getDatabaseInstance(simpleJdbcTemplate);
@@ -134,7 +134,8 @@ public final class MigrationStepFrom023To024 extends MigrationStepAdapter
                         simpleJdbcTemplate.update(String.format(
                                 "update %s set location = ? where data_id = ?",
                                 TableNames.EXTERNAL_DATA_TABLE), getNewLocation(externalData,
-                                databaseInstance), externalData.id);
+                                        databaseInstance),
+                                externalData.id);
                 if (updated != 1)
                 {
                     throw new IncorrectResultSizeDataAccessException(1, updated);

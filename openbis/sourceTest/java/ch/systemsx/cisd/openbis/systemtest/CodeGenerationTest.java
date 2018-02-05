@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -35,6 +33,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
+import junit.framework.Assert;
 
 /**
  * Tests various service methode which generates new unique IDs.
@@ -54,17 +53,17 @@ public class CodeGenerationTest extends SystemTestCase
 
     private void setCodeSequence(int value)
     {
-        jdbcTemplate.queryForLong("select setval('code_seq', " + value + ")");
+        jdbcTemplate.queryForObject("select setval('code_seq', " + value + ")", Long.class);
     }
 
     private void setExperimentCodeSequence(int value)
     {
-        jdbcTemplate.queryForLong("select setval('experiment_code_seq', " + value + ")");
+        jdbcTemplate.queryForObject("select setval('experiment_code_seq', " + value + ")", Long.class);
     }
 
     private void setSampleCodeSequence(int value)
     {
-        jdbcTemplate.queryForLong("select setval('sample_code_seq', " + value + ")");
+        jdbcTemplate.queryForObject("select setval('sample_code_seq', " + value + ")", Long.class);
     }
 
     @Test

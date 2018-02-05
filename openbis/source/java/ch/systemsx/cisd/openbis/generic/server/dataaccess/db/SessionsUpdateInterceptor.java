@@ -48,6 +48,15 @@ public class SessionsUpdateInterceptor extends EmptyInterceptor
         this.daoFactory = daoFactory;
     }
 
+    private static ThreadLocal<Boolean> wasCommited = new ThreadLocal<Boolean>();
+
+    @Override
+    public void beforeTransactionCompletion(Transaction tx)
+    {
+        // not called for rollback
+        wasCommited.set(Boolean.TRUE);
+    }
+
     @Override
     public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState, String[] propertyNames, Type[] types)
     {
@@ -89,9 +98,15 @@ public class SessionsUpdateInterceptor extends EmptyInterceptor
     @Override
     public void afterTransactionCompletion(Transaction tx)
     {
-        if (sessionsUpdateNeeded && tx.wasCommitted())
+        if (sessionsUpdateNeeded && !Boolean.TRUE.equals(wasCommited.get()))
         {
-            openBisSessionManager.updateAllSessions();
+            try
+            {
+                openBisSessionManager.updateAllSessions();
+            } finally
+            {
+                wasCommited.set(null);
+            }
         }
     }
 

@@ -11,6 +11,7 @@ import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.springframework.test.annotation.Commit;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ContentCopyPermId;
@@ -20,6 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetHistoryPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemPE;
 
+@Commit
 public class ContentCopyHistoryTest extends AbstractLinkDataSetTest
 {
 

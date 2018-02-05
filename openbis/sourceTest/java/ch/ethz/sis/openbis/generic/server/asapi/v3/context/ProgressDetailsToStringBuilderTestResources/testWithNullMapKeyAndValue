@@ -4,6 +4,6 @@
   "primitive" : 0,
   "stringMap" : {
     "k1" : "v1",
-    "null" : null
+    "null" : "v2"
   }
 }
