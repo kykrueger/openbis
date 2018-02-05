@@ -136,10 +136,14 @@ def _definitions(entity):
             "identifier": "userId",
         },
         "AuthorizationGroup" : {
-            "attrs": "code description users roleAssignments registrator registrationDate modificationDate".split(),
+            "attrs": "permId code description users roleAssignments registrator registrationDate modificationDate".split(),
             "attrs_new": "code description userIds".split(),
             "multi": "users".split()
 
+        },
+        "RoleAssignment" : {
+            "attrs": "id user authorizationGroup role roleLevel space project registrator registrationDate".split(),
+            "attrs_new": "role roleLevel user authorizationGroup role space project".split(),
         },
         "attr2ids": {
             "space": "spaceId",
@@ -829,6 +833,7 @@ class Openbis:
             "get_groups()",
             "get_group(code)",
             "get_assigned_roles()",
+            "get_assigned_role(techId)",
             "new_group(code, description, userIds)",
             'new_space(name, description)',
             'new_project(space, code, description, attachments)',
@@ -1045,6 +1050,8 @@ class Openbis:
         for option in ['roleAssignments', 'users', 'registrator']:
             fetchopts[option] = fetch_option[option]
 
+        fetchopts['users']['space'] = fetch_option['space']
+
         request = {
             "method": "getAuthorizationGroups",
             "params": [
@@ -1090,8 +1097,13 @@ class Openbis:
                         _subcriteria_for_userId(userId)    
                     )
                 elif attr == 'group':
+                    groupId = ''
+                    if isinstance(search_args[attr], str):
+                        groupId = search_args[attr]
+                    else:
+                        groupId = search_args[attr].code
                     sub_crit.append(
-                        _subcriteria_for_permid(search_args[attr], 'AuthorizationGroup')
+                        _subcriteria_for_permid(groupId, 'AuthorizationGroup')
                     )
                 elif attr == 'role':
                     # TODO
@@ -1107,7 +1119,7 @@ class Openbis:
         search_criteria['criteria'] = sub_crit
 
         fetchopts = {}
-        for option in ['roleAssignments', 'space', 'user', 'authorizationGroup','registrator']:
+        for option in ['roleAssignments', 'space', 'project', 'user', 'authorizationGroup','registrator']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1133,11 +1145,103 @@ class Openbis:
         roles['space'] = roles['space'].map(extract_code)
         p = Things(
             self, entity='role', 
-            df=roles[['id', 'role', 'roleLevel', 'user', 'group', 'space']],
+            df=roles[['id', 'role', 'roleLevel', 'user', 'group', 'space', 'project']],
             identifier_name='permId'
         )
         return p
+
+    def get_assigned_role(self, techId, only_data=False):
+        """ Fetches one assigned role by its techId.
+        """
+
+        fetchopts = {}
+        for option in ['roleAssignments', 'space', 'project', 'user', 'authorizationGroup','registrator']:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "getRoleAssignments",
+            "params": [
+                self.token,
+                [{
+                    "techId": techId,
+                    "@type": "as.dto.roleassignment.id.RoleAssignmentTechId"
+                }],
+                fetchopts
+            ]
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if len(resp) == 0:
+            raise ValueError("No assigned role found for techId={}".format(techId))
         
+        for id in resp:
+            data = resp[id]
+            parse_jackson(data)
+
+            if only_data:
+                return data
+            else:
+                return RoleAssignment(self, data=data)
+
+
+    def assign_role(self, role, **args):
+        """ general method to assign a role to either
+            - a person
+            - a group
+        The scope is either
+            - the whole instance
+            - a space
+            - a project
+        """
+         
+        userId = None
+        groupId = None
+        spaceId = None
+        projectId = None
+
+        for arg in args:
+            if arg in ['person', 'group', 'space', 'project']:
+                permId = args[arg] if isinstance(args[arg],str) else args[arg].permId
+                if arg == 'person':
+                    userId = {
+                        "permId": permId,
+                        "@type": "as.dto.person.id.PersonPermId"
+                    }
+                elif arg == 'group':
+                    groupId = {
+                        "permId": permId,
+                        "@type": "as.dto.authorizationgroup.id.AuthorizationGroupPermId"
+                    }
+                elif arg == 'space':
+                    spaceId = {
+                        "permId": permId,
+                        "@type": "as.dto.space.id.SpacePermId"
+                    }
+                elif arg == 'project':
+                    projectId = {
+                        "permId": permId,
+                        "@type": "as.dto.project.id.ProjectPermId"
+                    }
+
+        request = {
+            "method": "createRoleAssignments",
+            "params": [
+                self.token, 
+                [
+	            {
+                        "role": role,
+                        "userId": userId,
+		        "authorizationGroupId": groupId,
+                        "spaceId": spaceId,
+		        "projectId": projectId,
+		        "@type": "as.dto.roleassignment.create.RoleAssignmentCreation",
+	            }
+	        ]
+	    ]
+	}
+        resp = self._post_request(self.as_v3, request)
+        return
+
 
     def get_groups(self, **search_args):
         """ Get openBIS AuthorizationGroups. Returns a «Things» object.
@@ -1752,33 +1856,34 @@ class Openbis:
 
     update_object = update_sample # Alias
 
-    def delete_entity(self, entity, permid, reason, capitalize=True):
+
+    def delete_entity(self, entity, id, reason, id_name='PermId'):
         """Deletes Spaces, Projects, Experiments, Samples and DataSets
         """
 
-        if capitalize:
-            entity_capitalized = entity.capitalize()
-        else:
-            entity_capitalized = entity
-
-        entity_type = "as.dto.{}.id.{}PermId".format(entity.lower(), entity_capitalized)
+        entity_type = "as.dto.{}.id.{}{}{}".format(
+            entity.lower(), entity, 
+            id_name[0].upper(), id_name[1:]
+        )
         request = {
-            "method": "delete" + entity_capitalized + 's',
+            "method": "delete{}s".format(entity),
             "params": [
                 self.token,
                 [
                     {
-                        "permId": permid,
+                        id_name: id,
                         "@type": entity_type
                     }
                 ],
                 {
                     "reason": reason,
-                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(entity.lower(), entity_capitalized)
+                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(
+                        entity.lower(), entity)
                 }
             ]
         }
         self._post_request(self.as_v3, request)
+
 
     def get_deletions(self):
         request = {
@@ -3376,6 +3481,9 @@ class AttrHolder():
             roleAssignments are returned as an array of dictionaries.
         """
 
+        if name == 'group':
+            name = 'authorizationGroup'
+
         int_name = '_' + name
         if int_name in self.__dict__:
             if int_name == '_attachments':
@@ -3397,6 +3505,7 @@ class AttrHolder():
                         "lastName" : user.get('lastName'),
                         "email"    : user.get('email'),
                         "userId"   : user.get('userId'),
+                        "space"    : user.get('space').get('code') if user.get('space') is not None else None,
                     })
                 return users
 
@@ -3441,6 +3550,8 @@ class AttrHolder():
                     return self.__dict__[int_name]['code']
                 elif "permId" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['permId']
+                elif "id" in self.__dict__[int_name]:
+                    return self.__dict__[int_name]['id']
 
             else:
                 return self.__dict__[int_name]
@@ -3897,7 +4008,8 @@ class Sample():
             self._set_data(new_sample_data)
 
     def delete(self, reason):
-        self.openbis.delete_entity('sample', self.permId, reason)
+        self.openbis.delete_entity(entity='Sample',id=self.permId, reason=reason)
+        if VERBOSE: print("Sample {} has been sucessfully deleted.".format(self.permId))
 
     def get_datasets(self, **kwargs):
         return self.openbis.get_datasets(sample=self.permId, **kwargs)
@@ -3917,6 +4029,42 @@ class Sample():
             return self.openbis.get_experiment(self._experiment['identifier'])
         except Exception:
             pass
+
+
+class RoleAssignment(OpenBisObject):
+    """ managing openBIS role assignments
+    """
+
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['openbis'] = openbis_obj
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'RoleAssignment' )
+
+        if data is not None:
+            self.a(data)
+            self.__dict__['data'] = data
+
+        if kwargs is not None:
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+
+    def __dir__(self):
+        """all the available methods and attributes that should be displayed
+        when using the autocompletion feature (TAB) in Jupyter
+        """
+        return [
+            'id', 'role', 'roleLevel', 'space', 'project','group'
+        ]
+
+    def __str__(self):
+        return "{}".format(self.get('role'))
+
+    def delete(self, reason):
+        self.openbis.delete_entity(
+            entity='RoleAssignment', id=self.id, 
+            reason=reason, id_name='techId'
+        ) 
+        if VERBOSE: print("RoleAssignment has been sucessfully deleted.".format(self.permId))
 
 
 class Person(OpenBisObject):
@@ -3949,15 +4097,15 @@ class Person(OpenBisObject):
     def get_roles(self):
         return self.openbis.get_roles(person=self)
 
-    def assign_role(self, role):
-        self.openbis.assign_role(person=self, role=role)
+    def assign_role(self, role, **kwargs):
+        self.openbis.assign_role(role=role, person=self, **kwargs)
         if VERBOSE:
             print(
                 "Role {} successfully assigned to person {}".format(role, self.userId)
             ) 
 
-    def revoke_role(self, role):
-        self.openbis.revoke_role(person=self, role=role)
+    def revoke_role(self, role, **kwargs):
+        self.openbis.revoke_role(role=role, person=self, **kwargs)
         if VERBOSE:
             print(
                 "Role {} successfully revoked from person {}".format(role, self.userId)
@@ -4023,18 +4171,80 @@ class Group(OpenBisObject):
             'get_roles()', 'assgin_role()', 'revoke_role()'
         ]
 
-    def get_roles(self):
-        return self.openbis.get_roles(group=self)
+    def get_persons(self):
+        # TODO
+        persons = DataFrame(self._users)
+        persons['permId'] = persons['permId'].map(extract_permid)
+        persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
+        persons['space'] = persons['space'].map(extract_nested_permid)
+        p = Things(
+            self.openbis, entity='person', 
+            df=persons[['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']],
+            identifier_name='permId'
+        )
+        return p
 
-    def assign_role(self, role):
-        self.openbis.assign_role(group=self, role=role)
+
+    get_users = get_persons  # Alias
+
+    def add_person(self, userId):
+        # TODO
+        pass
+    add_user = add_person # Alias
+
+    def del_person(self, userId):
+        # TODO
+        pass
+
+    def get_groups(self):
+        # TODO
+        pass
+
+    def add_group(self, group):
+        # TODO
+        pass
+
+    def del_group(self, group):
+        # TODO
+        pass
+
+    def get_roles(self, **search_args):
+        """ Get all roles that are assigned to this group.
+        Provide additional search arguments to refine your search.
+
+        Usage::
+            group.get_roles()
+            group.get_roles(space='TEST_SPACE')
+        """
+        return self.openbis.get_assigned_roles(group=self, **search_args)
+
+    def assign_role(self, role, **kwargs):
+        """ Assign a role to this group. If no additional attribute is provided,
+        roleLevel will default to INSTANCE. If a space attribute is provided,
+        the roleLevel will be SPACE. If a project attribute is provided,
+        roleLevel will be PROJECT.
+
+        Usage::
+            group.assign_role(role='ADMIN')
+            group.assign_role(role='ADMIN', space='TEST_SPACE')
+
+        """
+
+        self.openbis.assign_role(role=role, group=self, **kwargs)
         if VERBOSE:
             print(
                 "Role {} successfully assigned to group {}".format(role, self.code)
             ) 
 
-    def revoke_role(self, role):
-        self.openbis.revoke_role(group=self, role=role)
+    def revoke_role(self, role, **kwargs):
+        """ Revoke a role from this group. 
+        If no additional attribute is provided,
+        roleLevel will default to INSTANCE. If a space attribute is provided,
+        the roleLevel will be SPACE. If a project attribute is provided,
+        roleLevel will be PROJECT.
+        """
+
+        self.openbis.revoke_role(role=role, person=self, **kwargs)
         if VERBOSE:
             print(
                 "Role {} successfully revoked from group {}".format(role, self.code)
@@ -4066,11 +4276,6 @@ class Group(OpenBisObject):
                 attr, nvl(getattr(self, attr, ''), '')
             )
 
-        if getattr(self, '_users') is not None:
-            html += "<tr><td>Users</td><td>"
-            html += ", ".join(att['userId'] for att in self._users)
-            html += "</td></tr>"
-
         html += """
             </tbody>
             </table>
@@ -4095,6 +4300,37 @@ class Group(OpenBisObject):
                     roleAssignment.get('role'),
                     roleAssignment.get('roleLevel'),
                     roleAssignment.get('space').get('code'),
+                )
+            html += """
+                </tbody>
+                </table>
+            """
+
+        if getattr(self, '_users') is not None:
+            html += """
+                <br/>
+                <b>Users</b>
+                <table border="1" class="dataframe">
+                <thead>
+                    <tr style="text-align: right;">
+                    <th>userId</th>
+                    <th>FirstName</th>
+                    <th>LastName</th>
+                    <th>Email</th>
+                    <th>Space</th>
+                    <th>active</th>
+                    </tr>
+                </thead>
+                <tbody>
+            """
+            for user in self._users:
+                html += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                    user.get('userId'),
+                    user.get('firstName'),
+                    user.get('lastName'),
+                    user.get('email'),
+                    user.get('space').get('code') if user.get('space') is not None else '',
+                    user.get('active'),
                 )
             html += """
                 </tbody>
@@ -4459,7 +4695,8 @@ class Experiment(OpenBisObject):
     def delete(self, reason):
         if self.permId is None:
             return None
-        self.openbis.delete_entity('experiment', self.permId, reason)
+        self.openbis.delete_entity(entity='Experiment', id=self.permId, reason=reason)
+        if VERBOSE: print("Experiment {} has been sucessfully deleted.".format(self.permId))
 
     def get_datasets(self, **kwargs):
         if self.permId is None:
@@ -4596,7 +4833,8 @@ class Project(OpenBisObject):
         return self.openbis.get_datasets(project=self.permId)
 
     def delete(self, reason):
-        self.openbis.delete_entity('project', self.permId, reason)
+        self.openbis.delete_entity(entity='Project', id=self.permId, reason=reason)
+        if VERBOSE: print("Project {} has been sucessfully deleted.".format(self.permId))
 
     def save(self):
         if self.is_new:
@@ -4721,5 +4959,5 @@ class SemanticAnnotation():
         if VERBOSE: print("Semantic annotation successfully updated.")
     
     def delete(self, reason):
-        self._openbis.delete_entity('SemanticAnnotation', self.permId, reason, False)
+        self._openbis.delete_entity(entity='SemanticAnnotation', id=self.permId, reason=reason)
         if VERBOSE: print("Semantic annotation successfully deleted.")
