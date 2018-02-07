@@ -131,12 +131,12 @@ def _definitions(entity):
         "Person": {
             "attrs_new": "userId space".split(),
             "attrs_up": "space".split(),
-            "attrs": "permId userId firstName lastName email roleAssignments space registrationDate ".split(),
+            "attrs": "permId userId firstName lastName email space registrationDate ".split(),
             "multi": "".split(),
             "identifier": "userId",
         },
         "AuthorizationGroup" : {
-            "attrs": "permId code description users roleAssignments registrator registrationDate modificationDate".split(),
+            "attrs": "permId code description users registrator registrationDate modificationDate".split(),
             "attrs_new": "code description userIds".split(),
             "multi": "users".split()
 
@@ -428,12 +428,29 @@ def _create_tagIds(tags=None):
         tags = [tags]
     tagIds = []
     for tag in tags:
-        tagIds.append({"code": tag, "@type": "as.dto.tag.id.TagCode"})
+        tagIds.append({
+            "code": tag, 
+            "@type": "as.dto.tag.id.TagCode"
+        })
     return tagIds
+    
+def _create_userIds(users=None):
+    if users is None:
+        return None
+    if not isinstance(users, list):
+        users = [users]
+    userIds = []
+    for user in users:
+        userIds.append({
+            "permId": user, 
+            "@type": "as.dto.person.id.PersonPermId"
+        })
+    return userIds
 
 
 def _tagIds_for_tags(tags=None, action='Add'):
-    """creates an action item to add or remove tags. Action is either 'Add', 'Remove' or 'Set'
+    """creates an action item to add or remove tags. 
+    Action is either 'Add', 'Remove' or 'Set'
     """
     if tags is None:
         return
@@ -832,9 +849,9 @@ class Openbis:
             "get_person(userId)",
             "get_groups()",
             "get_group(code)",
-            "get_assigned_roles()",
-            "get_assigned_role(techId)",
-            "new_group(code, description, userIds)",
+            "get_role_assignments()",
+            "get_role_assignment(techId)",
+            "new_group(code, description, users)",
             'new_space(name, description)',
             'new_project(space, code, description, attachments)',
             'new_experiment(type, code, project, props={})',
@@ -934,7 +951,7 @@ class Openbis:
             json.dumps(request),
             verify=self.verify_certificates
         )
-        #print(json.dumps(request))
+
 
         if resp.ok:
             resp = resp.json()
@@ -1073,11 +1090,11 @@ class Openbis:
             else:
                 return Group(self, data=group)
 
-    def get_assigned_roles(self, **search_args):
+    def get_role_assignments(self, **search_args):
         """ Get the assigned roles for a given group, person or space
         """
         search_criteria = get_search_type_for_entity('roleAssignment', 'AND')
-        allowed_search_attrs = ['role', 'roleLevel', 'user', 'group', 'space']
+        allowed_search_attrs = ['role', 'roleLevel', 'user', 'group', 'person', 'space']
 
         sub_crit = []
         for attr in search_args:
@@ -1086,7 +1103,7 @@ class Openbis:
                     sub_crit.append(
                         _subcriteria_for_code(search_args[attr], 'space')
                     )
-                elif attr == 'user':
+                elif attr == 'person':
                     userId = ''
                     if isinstance(search_args[attr], str):
                         userId = search_args[attr]
@@ -1114,7 +1131,7 @@ class Openbis:
                 else:
                     pass
             else:
-                raise ValueError("unknown search argument {}".format(search_arg))
+                raise ValueError("unknown search argument {}".format(attr))
 
         search_criteria['criteria'] = sub_crit
 
@@ -1139,18 +1156,18 @@ class Openbis:
         parse_jackson(objects)
         roles = DataFrame(objects)
 
-        roles['id'] = roles['id'].map(extract_id)
+        roles['techId'] = roles['id'].map(extract_id)
         roles['user'] = roles['user'].map(extract_userId)
         roles['group'] = roles['authorizationGroup'].map(extract_code)
         roles['space'] = roles['space'].map(extract_code)
         p = Things(
-            self, entity='role', 
-            df=roles[['id', 'role', 'roleLevel', 'user', 'group', 'space', 'project']],
-            identifier_name='permId'
+            self, entity='role_assignment', 
+            df=roles[['techId', 'role', 'roleLevel', 'user', 'group', 'space', 'project']],
+            identifier_name='techId'
         )
         return p
 
-    def get_assigned_role(self, techId, only_data=False):
+    def get_role_assignment(self, techId, only_data=False):
         """ Fetches one assigned role by its techId.
         """
 
@@ -1346,7 +1363,7 @@ class Openbis:
         }]
 
         fetchopts = {}
-        for option in ['space', 'roleAssignments', 'project']:
+        for option in ['space', 'project']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1363,7 +1380,6 @@ class Openbis:
             raise ValueError("No person found!")
 
 
-        #persons['roleAssignments'] = persons['roleAssignments'].map(extract_role_assignments)
         for permid in resp:
             person = resp[permid]
             parse_jackson(person)
@@ -3395,26 +3411,28 @@ class AttrHolder():
                     "@type": "as.dto.attachment.update.AttachmentListUpdateValue"
                 }
 
-            elif attr == 'tags':
-                # look which tags have been added or removed and update them
-                if getattr(self, '_prev_tags') is None:
-                    self.__dict__['_prev_tags'] = []
+            elif attr in ['tags','users']:
+                # look which tags/users have been added or removed and update them
+                id_name = _definitions(attr)['attr2ids'] # tagIds, userIds
+
+                if getattr(self, '_prev_'+attr) is None:
+                    self.__dict__['_prev_'+attr] = []
                 actions = []
-                for tagId in self._prev_tags:
-                    if tagId not in self._tags:
+                for id in self.get('_prev_'+attr):
+                    if id not in self.get('_'+attr):
                         actions.append({
-                            "items": [tagId],
+                            "items": [id],
                             "@type": "as.dto.common.update.ListUpdateActionRemove"
                         })
 
-                for tagId in self._tags:
-                    if tagId not in self._prev_tags:
+                for id in self.get('_'+attr):
+                    if id not in self.get('_prev_'+attr):
                         actions.append({
-                            "items": [tagId],
+                            "items": [id],
                             "@type": "as.dto.common.update.ListUpdateActionAdd"
                         })
 
-                up_obj['tagIds'] = {
+                up_obj[id_name] = {
                     "@type": "as.dto.common.update.IdListUpdateValue",
                     "actions": actions
                 }
@@ -3481,8 +3499,12 @@ class AttrHolder():
             roleAssignments are returned as an array of dictionaries.
         """
 
-        if name == 'group':
-            name = 'authorizationGroup'
+        name_map = {
+            'group': 'authorizationGroup',
+            'roles': 'roleAssignments'
+        }
+        if name in name_map:
+            name = name_map[name]
 
         int_name = '_' + name
         if int_name in self.__dict__:
@@ -3513,6 +3535,7 @@ class AttrHolder():
                 ras = []
                 for ra in self._roleAssignments:
                     ras.append({
+                        "techId":        ra.get('id').get('techId'),
                         "role":      ra.get('role'),
                         "roleLevel": ra.get('roleLevel'),
                         "space":     ra.get('space').get('code'),
@@ -3596,6 +3619,9 @@ class AttrHolder():
             self.__dict__['_' + name] = permids
         elif name in ["tags"]:
             self.set_tags(value)
+
+        elif name in ["users"]:
+            self.set_users(value)
 
         elif name in ["attachments"]:
             if isinstance(value, list):
@@ -3770,6 +3796,39 @@ class AttrHolder():
         for tagId in tagIds:
             if tagId not in self.__dict__['_tags']:
                 self.__dict__['_tags'].append(tagId)
+
+    def set_users(self, users):
+        if getattr(self, '_users') is None:
+            self.__dict__['_users'] = []
+        if not isinstance(users, list):
+            users = [users]
+        for user in users:
+            # TODO
+            person = self.openbis.get_person(userId=user, only_data=True)
+        
+
+    def add_users(self, users):
+        if getattr(self, '_users') is None:
+            self.__dict__['_users'] = []
+
+        # add the new users to the _users and _new_users list,
+        # if not listed yet
+        userIds = _create_userIds(users)
+        for userId in userIds:
+            if not userId in self.__dict__['_users']:
+                self.__dict__['_users'].append(userId)
+
+    def del_users(self, users):
+        if getattr(self, '_users') is None:
+            self.__dict__['_users'] = []
+
+        # remove the users from the _users and _del_users list,
+        # if listed there
+        userIds = _create_userIds(users)
+        for userId in userIds:
+            if userId in self.__dict__['_users']:
+                self.__dict__['_users'].remove(userId)
+
 
     def add_tags(self, tags):
         if getattr(self, '_tags') is None:
@@ -4090,12 +4149,21 @@ class Person(OpenBisObject):
         """
         return [
             'permId', 'userId', 'firstName', 'lastName', 'email',
-            'registrator', 'registrationDate','roleAssignments','space',
-            'get_roles()', 'assign_role()', 'revoke_role()',
+            'registrator', 'registrationDate','space',
+            'get_roles()', 'assign_role()', 'revoke_role(techId)',
         ]
 
-    def get_roles(self):
-        return self.openbis.get_roles(person=self)
+
+    def get_roles(self, **search_args):
+        """ Get all roles that are assigned to this person.
+        Provide additional search arguments to refine your search.
+
+        Usage::
+            person.get_roles()
+            person.get_roles(space='TEST_SPACE')
+        """
+        return self.openbis.get_role_assignments(person=self, **search_args)
+
 
     def assign_role(self, role, **kwargs):
         self.openbis.assign_role(role=role, person=self, **kwargs)
@@ -4104,12 +4172,19 @@ class Person(OpenBisObject):
                 "Role {} successfully assigned to person {}".format(role, self.userId)
             ) 
 
-    def revoke_role(self, role, **kwargs):
-        self.openbis.revoke_role(role=role, person=self, **kwargs)
-        if VERBOSE:
-            print(
-                "Role {} successfully revoked from person {}".format(role, self.userId)
-            ) 
+    def revoke_role(self, role, reason='no specific reason'):
+        """ Revoke a role from this person. 
+        """
+        if isinstance(role, int):
+            ra = self.openbis.get_role_assignment(role)
+            ra.delete(reason)
+            if VERBOSE:
+                print(
+                    "Role {} successfully revoked from person {}".format(role, self.code)
+                ) 
+            return
+        else:
+            raise ValueError("Please provide the techId of the role assignment you want to revoke")
 
     def __str__(self):
         return "{} {}".format(self.get('firstName'), self.get('lastName'))
@@ -4168,11 +4243,13 @@ class Group(OpenBisObject):
         return [
             'code','description','users','roleAssignments',
             'get_users()', 'set_users()', 'add_users()', 'del_users()',
-            'get_roles()', 'assgin_role()', 'revoke_role()'
+            'get_roles()', 'assign_role()', 'revoke_role(techId)'
         ]
 
     def get_persons(self):
-        # TODO
+        """ Returns a Things object wich contains all Persons (Users)
+        that belong to this group.
+        """
         persons = DataFrame(self._users)
         persons['permId'] = persons['permId'].map(extract_permid)
         persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
@@ -4184,29 +4261,8 @@ class Group(OpenBisObject):
         )
         return p
 
-
     get_users = get_persons  # Alias
 
-    def add_person(self, userId):
-        # TODO
-        pass
-    add_user = add_person # Alias
-
-    def del_person(self, userId):
-        # TODO
-        pass
-
-    def get_groups(self):
-        # TODO
-        pass
-
-    def add_group(self, group):
-        # TODO
-        pass
-
-    def del_group(self, group):
-        # TODO
-        pass
 
     def get_roles(self, **search_args):
         """ Get all roles that are assigned to this group.
@@ -4216,7 +4272,7 @@ class Group(OpenBisObject):
             group.get_roles()
             group.get_roles(space='TEST_SPACE')
         """
-        return self.openbis.get_assigned_roles(group=self, **search_args)
+        return self.openbis.get_role_assignments(group=self, **search_args)
 
     def assign_role(self, role, **kwargs):
         """ Assign a role to this group. If no additional attribute is provided,
@@ -4236,19 +4292,20 @@ class Group(OpenBisObject):
                 "Role {} successfully assigned to group {}".format(role, self.code)
             ) 
 
-    def revoke_role(self, role, **kwargs):
+    def revoke_role(self, role, reason='no specific reason'):
         """ Revoke a role from this group. 
-        If no additional attribute is provided,
-        roleLevel will default to INSTANCE. If a space attribute is provided,
-        the roleLevel will be SPACE. If a project attribute is provided,
-        roleLevel will be PROJECT.
         """
-
-        self.openbis.revoke_role(role=role, person=self, **kwargs)
-        if VERBOSE:
-            print(
-                "Role {} successfully revoked from group {}".format(role, self.code)
-            ) 
+        if isinstance(role, int):
+            ra = self.openbis.get_role_assignment(role)
+            ra.delete(reason)
+            if VERBOSE:
+                print(
+                    "Role {} successfully revoked from group {}".format(role, self.code)
+                ) 
+            return
+        else:
+            raise ValueError("Please provide the techId of the role assignment you want to revoke")
+        
 
     def _repr_html_(self):
         """ creates a nice table in Jupyter notebooks when the object itself displayed
@@ -4280,31 +4337,6 @@ class Group(OpenBisObject):
             </tbody>
             </table>
         """
-
-        if getattr(self, '_roleAssignments') is not None:
-            html += """
-                <br/>
-                <b>Role Assignments</b>
-                <table border="1" class="dataframe">
-                <thead>
-                    <tr style="text-align: right;">
-                    <th>Role</th>
-                    <th>Role Level</th>
-                    <th>Space</th>
-                    </tr>
-                </thead>
-                <tbody>
-            """
-            for roleAssignment in self._roleAssignments:
-                html += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                    roleAssignment.get('role'),
-                    roleAssignment.get('roleLevel'),
-                    roleAssignment.get('space').get('code'),
-                )
-            html += """
-                </tbody>
-                </table>
-            """
 
         if getattr(self, '_users') is not None:
             html += """
