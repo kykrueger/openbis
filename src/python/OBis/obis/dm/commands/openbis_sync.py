@@ -17,9 +17,9 @@ class OpenbisSync(OpenbisCommand):
             missing_config_settings.append('user')
         if self.data_set_type() is None:
             missing_config_settings.append('data_set_type')
-        if self.sample_id() is None and self.experiment_id() is None:
-            missing_config_settings.append('sample_id')
-            missing_config_settings.append('experiment_id')
+        if self.object_id() is None and self.collection_id() is None:
+            missing_config_settings.append('object_id')
+            missing_config_settings.append('collection_id')
         if len(missing_config_settings) > 0:
             return CommandResult(returncode=-1,
                                  output="Missing configuration settings for {}.".format(missing_config_settings))
@@ -52,8 +52,8 @@ class OpenbisSync(OpenbisCommand):
         if result.failure():
             return result
         commit_id = result.output
-        sample_id = self.sample_id()
-        experiment_id = self.experiment_id()
+        sample_id = self.object_id()
+        experiment_id = self.collection_id()
         contents = GitRepoFileInfo(self.git_wrapper).contents()
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,

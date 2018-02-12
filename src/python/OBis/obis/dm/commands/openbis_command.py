@@ -34,11 +34,11 @@ class OpenbisCommand(object):
     def data_set_properties(self):
         return self.config_dict.get('data_set_properties')
 
-    def sample_id(self):
-        return self.config_dict.get('sample_id')
+    def object_id(self):
+        return self.config_dict.get('object_id')
 
-    def experiment_id(self):
-        return self.config_dict.get('experiment_id')
+    def collection_id(self):
+        return self.config_dict.get('collection_id')
 
     def user(self):
         return self.config_dict.get('user')

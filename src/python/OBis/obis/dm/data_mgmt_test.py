@@ -213,7 +213,7 @@ def set_registration_configuration(dm, properties=None):
     resolver.set_value_for_parameter('openbis_url', "http://localhost:8888", 'local')
     resolver.set_value_for_parameter('user', "auser", 'local')
     resolver.set_value_for_parameter('data_set_type', "DS_TYPE", 'local')
-    resolver.set_value_for_parameter('sample_id', "/SAMPLE/ID", 'local')
+    resolver.set_value_for_parameter('object_id', "/SAMPLE/ID", 'local')
     if properties is not None:
         resolver.set_value_for_parameter('data_set_properties', properties, 'local')
 
