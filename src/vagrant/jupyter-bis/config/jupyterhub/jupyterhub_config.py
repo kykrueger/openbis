@@ -448,3 +448,7 @@ c.LocalAuthenticator.create_system_users = True
 #------------------------------------------------------------------------------
 c.OpenbisAuthenticator.server_url = "https://localhost:8443"
 c.OpenbisAuthenticator.verify_certificates = False
+
+# enable persisting auth_state:
+c.Authenticator.enable_auth_state = True
+

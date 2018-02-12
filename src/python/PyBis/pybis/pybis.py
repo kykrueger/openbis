@@ -44,6 +44,26 @@ from datetime import datetime
 
 PYBIS_PLUGIN = "dataset-uploader-api"
 
+# display messages when in a interactive context (IPython or Jupyter)
+try:
+    get_ipython()
+except Exception:
+    VERBOSE = False
+else:
+    VERBOSE = True
+
+LOG_NONE    = 0
+LOG_SEVERE  = 1
+LOG_ERROR   = 2
+LOG_WARNING = 3
+LOG_INFO    = 4
+LOG_ENTRY   = 5
+LOG_PARM    = 6
+LOG_DEBUG   = 7
+
+DEBUG_LEVEL = LOG_NONE
+
+
 
 def _definitions(entity):
     entities = {
@@ -81,6 +101,22 @@ def _definitions(entity):
             "cre_type": "as.dto.sample.create.SampleCreation",
             "multi": "parents children components tags attachments".split(),
         },
+        "SemanticAnnotation": {
+            "attrs_new": "permId entityType propertyType predicateOntologyId predicateOntologyVersion predicateAccessionId descriptorOntologyId descriptorOntologyVersion descriptorAccessionId".split(),
+            "attrs_up": "entityType propertyType predicateOntologyId predicateOntologyVersion predicateAccessionId descriptorOntologyId descriptorOntologyVersion descriptorAccessionId ".split(),
+            "attrs": "permId entityType propertyType predicateOntologyId predicateOntologyVersion predicateAccessionId descriptorOntologyId descriptorOntologyVersion descriptorAccessionId creationDate".split(),
+            "ids2type": {
+                "propertyTypeId": { 
+                    "permId": "as.dto.property.id.PropertyTypePermId"
+                },
+                "entityTypeId": { 
+                    "permId": "as.dto.entity.id.EntityTypePermId"
+                },
+            },
+            "identifier": "permId",
+            "cre_type": "as.dto.sample.create.SampleCreation",
+            "multi": "parents children components tags attachments".split(),
+        },
         "DataSet": {
             "attrs_new": "type experiment sample parents children components tags".split(),
             "attrs_up": "parents children experiment sample components tags".split(),
@@ -103,6 +139,24 @@ def _definitions(entity):
             "attrs_new": "code description experiments samples dataSets materials".split(),
             "attrs": "code description experiments samples dataSets materials registrationDate".split(),
         },
+        "Person": {
+            "attrs_new": "userId space".split(),
+            "attrs_up": "space".split(),
+            "attrs": "permId userId firstName lastName email space registrationDate ".split(),
+            "multi": "".split(),
+            "identifier": "userId",
+        },
+        "AuthorizationGroup" : {
+            "attrs_new": "code description userIds".split(),
+            "attrs_up": "code description userIds".split(),
+            "attrs": "permId code description registrator registrationDate modificationDate users".split(),
+            "multi": "users".split(),
+            "identifier": "groupId",
+        },
+        "RoleAssignment" : {
+            "attrs": "id user authorizationGroup role roleLevel space project registrator registrationDate".split(),
+            "attrs_new": "role roleLevel user authorizationGroup role space project".split(),
+        },
         "attr2ids": {
             "space": "spaceId",
             "project": "projectId",
@@ -120,6 +174,8 @@ def _definitions(entity):
             "parents": "parentIds",
             "children": "childIds",
             "tags": "tagIds",
+            "userId": "userId",
+            "users": "userIds",
         },
         "ids2type": {
             'spaceId': {'permId': {'@type': 'as.dto.space.id.SpacePermId'}},
@@ -131,19 +187,65 @@ def _definitions(entity):
     return entities[entity]
 
 
-search_criteria = {
-    "space": "as.dto.space.search.SpaceSearchCriteria",
-    "project": "as.dto.project.search.ProjectSearchCriteria",
-    "experiment": "as.dto.experiment.search.ExperimentSearchCriteria",
-    "sample": "as.dto.sample.search.SampleSearchCriteria",
-    "dataset": "as.dto.dataset.search.DataSetSearchCriteria",
-    "code": "as.dto.common.search.CodeSearchCriteria",
-    "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
-}
+def get_search_type_for_entity(entity, operator=None):
+    """ Returns a dictionary containing the correct search criteria type
+    for a given entity.
+
+    Example::
+        get_search_type_for_entity('space')
+        # returns:
+        {'@type': 'as.dto.space.search.SpaceSearchCriteria'}
+    """
+    search_criteria = {
+        "space": "as.dto.space.search.SpaceSearchCriteria",
+        "userId": "as.dto.person.search.UserIdSearchCriteria",
+        "email": "as.dto.person.search.EmailSearchCriteria",
+        "firstName": "as.dto.person.search.FirstNameSearchCriteria",
+        "lastName": "as.dto.person.search.LastNameSearchCriteria",
+        "project": "as.dto.project.search.ProjectSearchCriteria",
+        "experiment": "as.dto.experiment.search.ExperimentSearchCriteria",
+        "experiment_type": "as.dto.experiment.search.ExperimentTypeSearchCriteria",
+        "sample": "as.dto.sample.search.SampleSearchCriteria",
+        "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
+        "dataset": "as.dto.dataset.search.DataSetSearchCriteria",
+        "dataset_type": "as.dto.dataset.search.DataSetTypeSearchCriteria",
+        "external_dms": "as.dto.externaldms.search.ExternalDmsSearchCriteria",
+        "material": "as.dto.material.search.MaterialSearchCriteria",
+        "material_type": "as.dto.material.search.MaterialTypeSearchCriteria",
+        "vocabulary_term": "as.dto.vocabulary.search.VocabularyTermSearchCriteria",
+        "tag": "as.dto.tag.search.TagSearchCriteria",
+        "authorizationGroup": "as.dto.authorizationgroup.search.AuthorizationGroupSearchCriteria",
+        "roleAssignment": "as.dto.roleassignment.search.RoleAssignmentSearchCriteria",
+        "person": "as.dto.person.search.PersonSearchCriteria",
+        "code": "as.dto.common.search.CodeSearchCriteria",
+        "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
+        "global": "as.dto.global.GlobalSearchObject",
+    }
+
+    sc = { "@type": search_criteria[entity] }
+    if operator is not None:
+        sc["operator"] = operator
+
+    return sc
+
+def get_attrs_for_entity(entity):
+    """ For a given entity this method returns an iterator for all searchable
+    attributes.
+    """
+    search_args = {
+        "person": ['firstName','lastName','email','userId']
+    }
+    for search_arg in search_args[entity]:
+        yield search_arg
+
 
 fetch_option = {
     "space": {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
     "project": {"@type": "as.dto.project.fetchoptions.ProjectFetchOptions"},
+    "person": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
+    "users": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
+    "user": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
+    "authorizationGroup": {"@type": "as.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions"},
     "experiment": {
         "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions",
         "type": {"@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions"}
@@ -163,7 +265,12 @@ fetch_option = {
         "externalDms": {"@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions"},
         "@type": "as.dto.dataset.fetchoptions.LinkedDataFetchOptions"
     },
-
+    "roleAssignments": {
+        "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions",
+        "space": {
+            "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"
+        }
+    },
     "properties": {"@type": "as.dto.property.fetchoptions.PropertyFetchOptions"},
     "propertyAssignments": {
         "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
@@ -207,11 +314,26 @@ def search_request_for_identifier(ident, entity):
         }
     return search_request
 
+def get_search_criteria(entity, **search_args):
+    search_criteria = get_search_type_for_entity(entity)
+
+    criteria = []
+    for attr in get_attrs_for_entity(entity):
+        if attr in search_args:
+            sub_crit = get_search_type_for_entity(attr)
+            sub_crit['fieldValue'] = get_field_value_search(attr, search_args[attr])
+            criteria.append(sub_crit)
+
+    search_criteria['criteria'] = criteria
+    search_criteria['operator'] = "AND"
+
+    return search_criteria
+
 
 def extract_code(obj):
     if not isinstance(obj, dict):
-        return str(obj)
-    return obj['code']
+        return '' if obj is None else str(obj)
+    return '' if obj['code'] is None else obj['code']
 
 
 def extract_deletion(obj):
@@ -245,8 +367,8 @@ def extract_permid(permid):
 
 def extract_nested_permid(permid):
     if not isinstance(permid, dict):
-        return str(permid)
-    return permid['permId']['permId']
+        return '' if permid is None else str(permid)
+    return '' if permid['permId']['permId'] is None else permid['permId']['permId'] 
 
 
 def extract_property_assignments(pas):
@@ -259,10 +381,46 @@ def extract_property_assignments(pas):
     return pa_strings
 
 
+def extract_role_assignments(ras):
+    ra_strings = []
+    for ra in ras:
+        ra_strings.append({
+            "role": ra['role'],
+            "roleLevel": ra['roleLevel'],
+            "space": ra['space']['code'] if ra['space'] else None
+        })
+    return ra_strings
+
+
 def extract_person(person):
     if not isinstance(person, dict):
         return str(person)
     return person['userId']
+
+def extract_person_details(person):
+    if not isinstance(person, dict):
+        return str(person)
+    return "{} {} <{}>".format(
+        person['firstName'],
+        person['lastName'],
+        person['email']
+    )
+
+def extract_id(id):
+    if not isinstance(id, dict):
+        return str(id)
+    else:
+        return id['techId']
+
+def extract_userId(user):
+    if isinstance(user, list):
+        return ", ".join([
+            u['userId'] for u in user
+        ])
+    elif isinstance(user, dict):
+        return user['userId']
+    else:
+        return str(user)
 
 
 def crc32(fileName):
@@ -282,12 +440,16 @@ def _create_tagIds(tags=None):
         tags = [tags]
     tagIds = []
     for tag in tags:
-        tagIds.append({"code": tag, "@type": "as.dto.tag.id.TagCode"})
+        tagIds.append({
+            "code": tag, 
+            "@type": "as.dto.tag.id.TagCode"
+        })
     return tagIds
-
+    
 
 def _tagIds_for_tags(tags=None, action='Add'):
-    """creates an action item to add or remove tags. Action is either 'Add', 'Remove' or 'Set'
+    """creates an action item to add or remove tags. 
+    Action is either 'Add', 'Remove' or 'Set'
     """
     if tags is None:
         return
@@ -367,6 +529,11 @@ def _create_experimentId(ident):
         "@type": "as.dto.experiment.id.ExperimentIdentifier"
     }
 
+def get_field_value_search(field, value, comparison="StringEqualToValue"):
+    return {
+        "value": value,
+        "@type": "as.dto.common.search.{}".format(comparison)
+    }
 
 def _common_search(search_type, value, comparison="StringEqualToValue"):
     sreq = {
@@ -387,6 +554,23 @@ def _criteria_for_code(code):
         },
         "@type": "as.dto.common.search.CodeSearchCriteria"
     }
+
+def _subcriteria_for_userId(userId):
+    return {
+          "criteria": [
+            {
+              "fieldName": "userId",
+              "fieldType": "ATTRIBUTE",
+              "fieldValue": {
+                "value": userId,
+                "@type": "as.dto.common.search.StringEqualToValue"
+              },
+              "@type": "as.dto.person.search.UserIdSearchCriteria"
+            }
+          ],
+          "@type": "as.dto.person.search.PersonSearchCriteria",
+          "operator": "AND"
+        }
 
 
 def _subcriteria_for_type(code, entity):
@@ -517,7 +701,7 @@ def _subcriteria_for_properties(prop, val):
     }
 
 
-def _subcriteria_for_permid(permids, entity, parents_or_children=''):
+def _subcriteria_for_permid(permids, entity, parents_or_children='', operator='AND'):
     if not isinstance(permids, list):
         permids = [permids]
 
@@ -538,12 +722,33 @@ def _subcriteria_for_permid(permids, entity, parents_or_children=''):
         "@type": "as.dto.{}.search.{}{}SearchCriteria".format(
             entity.lower(), entity, parents_or_children
         ),
-        "operator": "OR"
+        "operator": operator
     }
     return criteria
 
 
 def _subcriteria_for_code(code, object_type):
+    """ Creates the often used search criteria for code values. Returns a dictionary.
+
+    Example::
+        _subcriteria_for_code("username", "space")
+
+	{
+	    "criteria": [
+		{
+		    "fieldType": "ATTRIBUTE",
+		    "@type": "as.dto.common.search.CodeSearchCriteria",
+		    "fieldName": "code",
+		    "fieldValue": {
+			"@type": "as.dto.common.search.StringEqualToValue",
+			"value": "USERNAME"
+		    }
+		}
+	    ],
+	    "operator": "AND",
+	    "@type": "as.dto.space.search.SpaceSearchCriteria"
+	}
+    """
     if code is not None:
         if is_permid(code):
             fieldname = "permId"
@@ -552,25 +757,22 @@ def _subcriteria_for_code(code, object_type):
             fieldname = "code"
             fieldtype = "as.dto.common.search.CodeSearchCriteria"
 
-        criteria = {
-            "criteria": [
-                {
-                    "fieldName": fieldname,
-                    "fieldType": "ATTRIBUTE",
-                    "fieldValue": {
-                        "value": code.upper(),
-                        "@type": "as.dto.common.search.StringEqualToValue"
-                    },
-                    "@type": fieldtype
-                }
-            ],
-            "@type": search_criteria[object_type.lower()],
-            "operator": "AND"
-        }
-        return criteria
+          
+        search_criteria = get_search_type_for_entity(object_type.lower())
+        search_criteria['criteria'] = [{
+            "fieldName": fieldname,
+            "fieldType": "ATTRIBUTE",
+            "fieldValue": {
+                "value": code.upper(),
+                "@type": "as.dto.common.search.StringEqualToValue"
+            },
+            "@type": fieldtype
+        }]
+        
+        search_criteria["operator"] = "AND"
+        return search_criteria
     else:
-        criteria = {"@type": search_criteria[object_type.lower()]}
-        return criteria
+        return get_search_type_for_entity(object_type.lower())
 
 
 class Openbis:
@@ -579,15 +781,24 @@ class Openbis:
     For creation of datasets, dataset-uploader-api needs to be installed.
     """
 
-    def __init__(self, url, verify_certificates=True, token=None):
+    def __init__(self, url=None, verify_certificates=True, token=None):
         """Initialize a new connection to an openBIS server.
         :param host:
         """
+
+        if url is None:
+            try:
+                url = os.environ["OPENBIS_URL"]
+                token = os.environ["OPENBIS_TOKEN"] if "OPENBIS_TOKEN" in os.environ else None
+            except KeyError:
+                raise ValueError("please provide a URL you want to connect to.")
+
         url_obj = urlparse(url)
         if url_obj.netloc is None:
             raise ValueError("please provide the url in this format: https://openbis.host.ch:8443")
         if url_obj.hostname is None:
             raise ValueError("hostname is missing")
+
 
         self.url = url_obj.geturl()
         self.port = url_obj.port
@@ -606,6 +817,11 @@ class Openbis:
         # use an existing token, if available
         if self.token is None:
             self.token = self._get_cached_token()
+        elif self.is_token_valid(token):
+            pass
+        else:
+            print("Session is no longer valid. Please log in again.")
+
 
     def __dir__(self):
         return [
@@ -640,6 +856,14 @@ class Openbis:
             "get_spaces()",
             "get_tags()",
             "get_terms()",
+            "new_person(userId, space)",
+            "get_persons()",
+            "get_person(userId)",
+            "get_groups()",
+            "get_group(code)",
+            "get_role_assignments()",
+            "get_role_assignment(techId)",
+            "new_group(code, description, userIds)",
             'new_space(name, description)',
             'new_project(space, code, description, attachments)',
             'new_experiment(type, code, project, props={})',
@@ -729,11 +953,13 @@ class Openbis:
         data
         """
         if "id" not in request:
-            request["id"] = "1"
+            request["id"] = "2"
         if "jsonrpc" not in request:
             request["jsonrpc"] = "2.0"
         if request["params"][0] is None:
             raise ValueError("Your session expired, please log in again")
+
+        if DEBUG_LEVEL >=LOG_DEBUG: print(json.dumps(request))
         resp = requests.post(
             full_url,
             json.dumps(request),
@@ -743,7 +969,7 @@ class Openbis:
         if resp.ok:
             resp = resp.json()
             if 'error' in resp:
-                print(json.dumps(request))
+                if DEBUG_LEVEL >= LOG_ERROR: print(json.dumps(request))
                 raise ValueError(resp['error']['message'])
             elif 'result' in resp:
                 return resp['result']
@@ -821,18 +1047,379 @@ class Openbis:
         else:
             raise ValueError("No datastore found!")
 
+
+    def new_person(self, userId, space=None):
+        """ creates an openBIS person
+        """
+        try:
+            person = self.get_person(userId=userId)
+        except Exception:
+            return Person(self, userId=userId, space=space) 
+
+        raise ValueError(
+            "There already exists a user with userId={}".format(userId)
+        )
+
+
+    def new_group(self, code, description=None, userIds=None):
+        """ creates an openBIS person
+        """
+        return Group(self, code=code, description=description, userIds=userIds)
+
+
+    def get_group(self, groupId, only_data=False):
+        """ Get an openBIS AuthorizationGroup. Returns a Group object.
+        """
+
+        ids = [{
+            "@type": "as.dto.authorizationgroup.id.AuthorizationGroupPermId",
+            "permId": groupId
+        }]
+
+        fetchopts = {}
+        for option in ['roleAssignments', 'users', 'registrator']:
+            fetchopts[option] = fetch_option[option]
+
+        fetchopts['users']['space'] = fetch_option['space']
+
+        request = {
+            "method": "getAuthorizationGroups",
+            "params": [
+                self.token,
+                ids,
+                fetchopts
+            ]
+        }
+        resp = self._post_request(self.as_v3, request)
+        if len(resp) == 0:
+            raise ValueError("No group found!")
+
+        for permid in resp:
+            group = resp[permid]
+            parse_jackson(group)
+
+            if only_data:
+                return group
+            else:
+                return Group(self, data=group)
+
+    def get_role_assignments(self, **search_args):
+        """ Get the assigned roles for a given group, person or space
+        """
+        search_criteria = get_search_type_for_entity('roleAssignment', 'AND')
+        allowed_search_attrs = ['role', 'roleLevel', 'user', 'group', 'person', 'space']
+
+        sub_crit = []
+        for attr in search_args:
+            if attr in allowed_search_attrs:
+                if attr == 'space':
+                    sub_crit.append(
+                        _subcriteria_for_code(search_args[attr], 'space')
+                    )
+                elif attr == 'person':
+                    userId = ''
+                    if isinstance(search_args[attr], str):
+                        userId = search_args[attr]
+                    else:
+                        userId = search_args[attr].userId
+
+                    sub_crit.append(
+                        _subcriteria_for_userId(userId)    
+                    )
+                elif attr == 'group':
+                    groupId = ''
+                    if isinstance(search_args[attr], str):
+                        groupId = search_args[attr]
+                    else:
+                        groupId = search_args[attr].code
+                    sub_crit.append(
+                        _subcriteria_for_permid(groupId, 'AuthorizationGroup')
+                    )
+                elif attr == 'role':
+                    # TODO
+                    raise ValueError("not yet implemented")
+                elif attr == 'roleLevel':
+                    # TODO
+                    raise ValueError("not yet implemented")
+                else:
+                    pass
+            else:
+                raise ValueError("unknown search argument {}".format(attr))
+
+        search_criteria['criteria'] = sub_crit
+
+        fetchopts = {}
+        for option in ['roleAssignments', 'space', 'project', 'user', 'authorizationGroup','registrator']:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "searchRoleAssignments",
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts
+            ]
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if len(resp['objects']) == 0:
+            raise ValueError("No assigned roles found!")
+
+        objects = resp['objects']
+        parse_jackson(objects)
+        roles = DataFrame(objects)
+
+        roles['techId'] = roles['id'].map(extract_id)
+        roles['user'] = roles['user'].map(extract_userId)
+        roles['group'] = roles['authorizationGroup'].map(extract_code)
+        roles['space'] = roles['space'].map(extract_code)
+        p = Things(
+            self, entity='role_assignment', 
+            df=roles[['techId', 'role', 'roleLevel', 'user', 'group', 'space', 'project']],
+            identifier_name='techId'
+        )
+        return p
+
+    def get_role_assignment(self, techId, only_data=False):
+        """ Fetches one assigned role by its techId.
+        """
+
+        fetchopts = {}
+        for option in ['roleAssignments', 'space', 'project', 'user', 'authorizationGroup','registrator']:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "getRoleAssignments",
+            "params": [
+                self.token,
+                [{
+                    "techId": techId,
+                    "@type": "as.dto.roleassignment.id.RoleAssignmentTechId"
+                }],
+                fetchopts
+            ]
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if len(resp) == 0:
+            raise ValueError("No assigned role found for techId={}".format(techId))
+        
+        for id in resp:
+            data = resp[id]
+            parse_jackson(data)
+
+            if only_data:
+                return data
+            else:
+                return RoleAssignment(self, data=data)
+
+
+    def assign_role(self, role, **args):
+        """ general method to assign a role to either
+            - a person
+            - a group
+        The scope is either
+            - the whole instance
+            - a space
+            - a project
+        """
+         
+        userId = None
+        groupId = None
+        spaceId = None
+        projectId = None
+
+        for arg in args:
+            if arg in ['person', 'group', 'space', 'project']:
+                permId = args[arg] if isinstance(args[arg],str) else args[arg].permId
+                if arg == 'person':
+                    userId = {
+                        "permId": permId,
+                        "@type": "as.dto.person.id.PersonPermId"
+                    }
+                elif arg == 'group':
+                    groupId = {
+                        "permId": permId,
+                        "@type": "as.dto.authorizationgroup.id.AuthorizationGroupPermId"
+                    }
+                elif arg == 'space':
+                    spaceId = {
+                        "permId": permId,
+                        "@type": "as.dto.space.id.SpacePermId"
+                    }
+                elif arg == 'project':
+                    projectId = {
+                        "permId": permId,
+                        "@type": "as.dto.project.id.ProjectPermId"
+                    }
+
+        request = {
+            "method": "createRoleAssignments",
+            "params": [
+                self.token, 
+                [
+	            {
+                        "role": role,
+                        "userId": userId,
+		        "authorizationGroupId": groupId,
+                        "spaceId": spaceId,
+		        "projectId": projectId,
+		        "@type": "as.dto.roleassignment.create.RoleAssignmentCreation",
+	            }
+	        ]
+	    ]
+	}
+        resp = self._post_request(self.as_v3, request)
+        return
+
+
+    def get_groups(self, **search_args):
+        """ Get openBIS AuthorizationGroups. Returns a «Things» object.
+
+        Usage::
+            groups = e.get.groups()
+            groups[0]             # select first group
+            groups['GROUP_NAME']  # select group with this code
+            for group in groups:
+                ...               # a Group object
+            groups.df             # get a DataFrame object of the group list
+            print(groups)         # print a nice ASCII table (eg. in IPython)
+            groups                # HTML table (in a Jupyter notebook)
+
+        """
+
+        criteria = []
+        for search_arg in ['code', 'description', 'registrator']:
+            if search_arg in search_args:
+                pass
+                #sub_crit = get_search_type_for_entity(search_arg)
+                #criteria.append(sub_crit)
+
+        search_criteria = get_search_type_for_entity('authorizationGroup')
+        search_criteria['criteria'] = criteria
+        search_criteria['operator'] = 'AND'
+                
+        fetchopts = fetch_option['authorizationGroup']
+        for option in ['roleAssignments', 'registrator', 'users']:
+            fetchopts[option] = fetch_option[option]
+        request = {
+            "method": "searchAuthorizationGroups",
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+        if len(resp['objects']) == 0:
+            raise ValueError("No groups found!")
+
+        objects = resp['objects']
+        parse_jackson(objects)
+
+        groups = DataFrame(objects)
+
+        groups['permId'] = groups['permId'].map(extract_permid)
+        groups['registrator'] = groups['registrator'].map(extract_person)
+        groups['users'] = groups['users'].map(extract_userId)
+        groups['registrationDate'] = groups['registrationDate'].map(format_timestamp)
+        groups['modificationDate'] = groups['modificationDate'].map(format_timestamp)
+        p = Things(
+            self, entity='group', 
+            df=groups[['permId', 'code', 'description', 'users', 'registrator', 'registrationDate', 'modificationDate']],
+            identifier_name='permId'
+        )
+        return p
+
+
+    def get_persons(self, **search_args):
+        """ Get openBIS users
+        """
+
+        search_criteria = get_search_criteria('person', **search_args)
+        fetchopts = {}
+        for option in ['space']:
+            fetchopts[option] = fetch_option[option]
+        request = {
+            "method": "searchPersons",
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+        if len(resp['objects']) == 0:
+            raise ValueError("No persons found!")
+
+        objects = resp['objects']
+        parse_jackson(objects)
+
+        persons = DataFrame(resp['objects'])
+        persons['permId'] = persons['permId'].map(extract_permid)
+        persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
+        persons['space'] = persons['space'].map(extract_nested_permid)
+        p = Things(
+            self, entity='person', 
+            df=persons[['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']],
+            identifier_name='permId'
+        )
+        return p
+
+    get_users = get_persons # Alias
+
+
+    def get_person(self, userId, only_data=False):
+        """ Get a person (user)
+        """
+         
+        ids = [{
+            "@type": "as.dto.person.id.PersonPermId",
+            "permId": userId
+        }]
+
+        fetchopts = {}
+        for option in ['space', 'project']:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "getPersons",
+            "params": [
+                self.token,
+                ids,
+                fetchopts,
+            ],
+        }
+        
+        resp = self._post_request(self.as_v3, request)
+        if len(resp) == 0:
+            raise ValueError("No person found!")
+
+
+        for permid in resp:
+            person = resp[permid]
+            parse_jackson(person)
+
+            if only_data:
+                return person
+            else:
+                return Person(self, data=person)
+
+    get_user = get_person # Alias
+
+
     def get_spaces(self, code=None):
         """ Get a list of all available spaces (DataFrame object). To create a sample or a
         dataset, you need to specify in which space it should live.
         """
 
-        criteria = {}
-        options = {}
+        search_criteria = _subcriteria_for_code(code, 'space')
+        fetchopts = {}
         request = {
             "method": "searchSpaces",
             "params": [self.token,
-                       criteria,
-                       options,
+                       search_criteria,
+                       fetchopts,
                        ],
         }
         resp = self._post_request(self.as_v3, request)
@@ -981,9 +1568,19 @@ class Openbis:
 
     get_objects = get_samples # Alias
 
-    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None,
-                        **properties):
-        """ Get a list of all experiment for a given space or project (or any combination)
+    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
+        """ Searches for all experiment which match the search criteria. Returns a
+        «Things» object which can be used in many different situations.
+
+        Usage::
+            experiments = get_experiments(project='PROJECT_NAME', props=['NAME','FINISHED_FLAG'])
+            experiments[0]  # returns first experiment
+            experiments['/MATERIALS/REAGENTS/ANTIBODY_COLLECTION']
+            for experiment in experiment:
+                # handle every experiment
+                ...
+            experiments.df      # returns DataFrame object of the experiment list
+            print(experiments)  # prints a nice ASCII table
         """
 
         sub_criteria = []
@@ -1003,21 +1600,21 @@ class Openbis:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
 
-        criteria = {
-            "criteria": sub_criteria,
-            "@type": "as.dto.experiment.search.ExperimentSearchCriteria",
-            "operator": "AND"
-        }
+        search_criteria = get_search_type_for_entity('experiment')
+        search_criteria['criteria'] = sub_criteria
+        search_criteria['operator'] = 'AND'
+
         fetchopts = fetch_option['experiment']
         for option in ['tags', 'properties', 'registrator', 'modifier', 'project']:
             fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchExperiments",
-            "params": [self.token,
-                       criteria,
-                       fetchopts,
-                       ],
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts,
+            ],
         }
         resp = self._post_request(self.as_v3, request)
         if len(resp['objects']) == 0:
@@ -1081,11 +1678,9 @@ class Openbis:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
 
-        criteria = {
-            "criteria": sub_criteria,
-            "@type": "as.dto.dataset.search.DataSetSearchCriteria",
-            "operator": "AND"
-        }
+        search_criteria = get_search_type_for_entity('dataset')
+        search_criteria['criteria'] = sub_criteria
+        search_criteria['operator'] = 'AND'
 
         fetchopts = {
             "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
@@ -1098,7 +1693,7 @@ class Openbis:
         request = {
             "method": "searchDataSets",
             "params": [self.token,
-                       criteria,
+                       search_criteria,
                        fetchopts,
                        ],
         }
@@ -1295,33 +1890,34 @@ class Openbis:
 
     update_object = update_sample # Alias
 
-    def delete_entity(self, entity, permid, reason, capitalize=True):
+
+    def delete_entity(self, entity, id, reason, id_name='permId'):
         """Deletes Spaces, Projects, Experiments, Samples and DataSets
         """
 
-        if capitalize:
-            entity_capitalized = entity.capitalize()
-        else:
-            entity_capitalized = entity
-
-        entity_type = "as.dto.{}.id.{}PermId".format(entity.lower(), entity_capitalized)
+        entity_type = "as.dto.{}.id.{}{}{}".format(
+            entity.lower(), entity, 
+            id_name[0].upper(), id_name[1:]
+        )
         request = {
-            "method": "delete" + entity_capitalized + 's',
+            "method": "delete{}s".format(entity),
             "params": [
                 self.token,
                 [
                     {
-                        "permId": permid,
+                        id_name: id,
                         "@type": entity_type
                     }
                 ],
                 {
                     "reason": reason,
-                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(entity.lower(), entity_capitalized)
+                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(
+                        entity.lower(), entity)
                 }
             ]
         }
         self._post_request(self.as_v3, request)
+
 
     def get_deletions(self):
         request = {
@@ -1417,27 +2013,27 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
-        if resp is not None:
-            objects = resp['objects']
-            parse_jackson(objects)
-
-            projects = DataFrame(objects)
-            if len(projects) is 0:
-                raise ValueError("No projects found!")
-
-            projects['registrationDate'] = projects['registrationDate'].map(format_timestamp)
-            projects['modificationDate'] = projects['modificationDate'].map(format_timestamp)
-            projects['leader'] = projects['leader'].map(extract_person)
-            projects['registrator'] = projects['registrator'].map(extract_person)
-            projects['modifier'] = projects['modifier'].map(extract_person)
-            projects['permId'] = projects['permId'].map(extract_permid)
-            projects['identifier'] = projects['identifier'].map(extract_identifier)
-
-            pros = projects[['identifier', 'permId', 'leader', 'registrator', 'registrationDate',
-                             'modifier', 'modificationDate']]
-            return Things(self, 'project', pros, 'identifier')
-        else:
+        objects = resp['objects']
+        if len(objects) == 0:
             raise ValueError("No projects found!")
+            
+        parse_jackson(objects)
+
+        projects = DataFrame(objects)
+        if len(projects) is 0:
+            raise ValueError("No projects found!")
+
+        projects['registrationDate'] = projects['registrationDate'].map(format_timestamp)
+        projects['modificationDate'] = projects['modificationDate'].map(format_timestamp)
+        projects['leader'] = projects['leader'].map(extract_person)
+        projects['registrator'] = projects['registrator'].map(extract_person)
+        projects['modifier'] = projects['modifier'].map(extract_person)
+        projects['permId'] = projects['permId'].map(extract_permid)
+        projects['identifier'] = projects['identifier'].map(extract_identifier)
+
+        pros = projects[['identifier', 'permId', 'leader', 'registrator', 'registrationDate',
+                            'modifier', 'modificationDate']]
+        return Things(self, 'project', pros, 'identifier')
 
     def _create_get_request(self, method_name, entity, permids, options):
 
@@ -1758,10 +2354,11 @@ class Openbis:
 
         request = {
             "method": "getDataSets",
-            "params": [self.token,
-                       criteria,
-                       fetchopts,
-                       ],
+            "params": [
+                self.token,
+                criteria,
+                fetchopts,
+            ],
         }
 
         resp = self._post_request(self.as_v3, request)
@@ -2053,7 +2650,10 @@ class Openbis:
         return DataSet(self, type=type_obj, files=files, folder=folder, props=props, **kwargs)
     
     def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):
-        return SemanticAnnotation(openbis_obj=self, isNew=True, entityType=entityType, propertyType=propertyType, **kwargs)    
+        return SemanticAnnotation(
+            openbis_obj=self, isNew=True, 
+            entityType=entityType, propertyType=propertyType, **kwargs
+        )    
 
     def _get_dss_url(self, dss_code=None):
         """ internal method to get the downloadURL of a datastore.
@@ -2227,6 +2827,9 @@ class OpenBisObject():
         if 'properties' in data:
             for key, value in data['properties'].items():
                 self.p.__dict__[key.lower()] = value
+            
+        # object is already saved to openBIS, so it is not new anymore
+        self.a.__dict__['_is_new'] = False
 
     @property
     def attrs(self):
@@ -2268,7 +2871,6 @@ class OpenBisObject():
     def __setattr__(self, name, value):
         if name in ['set_properties', 'set_tags', 'add_tags']:
             raise ValueError("These are methods which should not be overwritten")
-
         setattr(self.__dict__['a'], name, value)
 
     def _repr_html_(self):
@@ -2436,14 +3038,14 @@ class DataSet(OpenBisObject):
             "@type": "as.dto.dataset.archive.DataSetArchiveOptions"
         }
         self.archive_unarchive('archiveDataSets', fetchopts)
-        print("DataSet {} archived".format(self.permId))
+        if VERBOSE: print("DataSet {} archived".format(self.permId))
 
     def unarchive(self):
         fetchopts = {
             "@type": "as.dto.dataset.unarchive.DataSetUnarchiveOptions"
         }
         self.archive_unarchive('unarchiveDataSets', fetchopts)
-        print("DataSet {} unarchived".format(self.permId))
+        if VERBOSE: print("DataSet {} unarchived".format(self.permId))
 
     def archive_unarchive(self, method, fetchopts):
         dss = self.get_datastore
@@ -2499,7 +3101,7 @@ class DataSet(OpenBisObject):
         if wait_until_finished:
             queue.join()
 
-        print("Files downloaded to: %s" % os.path.join(destination, self.permId))
+        if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
 
     @property
     def folder(self):
@@ -2644,15 +3246,13 @@ class DataSet(OpenBisObject):
                 permId = resp['rows'][0][2]['value']
                 if permId is None or permId == '': 
                     self.__dict__['is_new'] = False
-                    print("DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object.")
+                    if VERBOSE: print("DataSet successfully created. Because you connected to an openBIS version older than 16.05.04, you cannot update the object.")
                 else:
                     new_dataset_data = self.openbis.get_dataset(permId, only_data=True)
                     self._set_data(new_dataset_data)
-                    print("DataSet successfully created.")
+                    if VERBOSE: print("DataSet successfully created.")
             else:
                 raise ValueError('Error while creating the DataSet: ' + resp['rows'][0][1]['value'])
-
-            self.__dict__['_is_new'] = False
 
             
         else:
@@ -2663,7 +3263,7 @@ class DataSet(OpenBisObject):
             request["params"][1][0].pop('childIds')
 
             self.openbis._post_request(self.openbis.as_v3, request)
-            print("DataSet successfully updated.")
+            if VERBOSE: print("DataSet successfully updated.")
 
 
 class AttrHolder():
@@ -2698,18 +3298,24 @@ class AttrHolder():
         Since the data comes from openBIS, we do not have to check it (hence the
         self.__dict__ statements to prevent invoking the __setattr__ method)
         Internally data is stored with an underscore, e.g.
-            sample._space --> { '@id': 4,
-                                '@type': 'as.dto.space.id.SpacePermId',
-                                'permId': 'MATERIALS' }
+            sample._space = { 
+                '@type': 'as.dto.space.id.SpacePermId',
+                'permId': 'MATERIALS' 
+            }
         but when fetching the attribute without the underscore, we only return
         the relevant data for the user:
-            sample.space  --> 'MATERIALS'
+            sample.space    # MATERIALS
         """
+        # entity is read from openBIS, so it is not new anymore
         self.__dict__['_is_new'] = False
+
         for attr in self._allowed_attrs:
             if attr in ["code", "permId", "identifier",
                         "type", "container", "components"]:
                 self.__dict__['_' + attr] = data.get(attr, None)
+                # remove the @id attribute
+                if isinstance(self.__dict__['_' + attr], dict):
+                    self.__dict__['_' + attr].pop('@id')
 
             elif attr in ["space"]:
                 d = data.get(attr, None)
@@ -2743,7 +3349,7 @@ class AttrHolder():
             else:
                 self.__dict__['_' + attr] = data.get(attr, None)
 
-    def _new_attrs(self):
+    def _new_attrs(self, method_name=None):
         """Returns the Python-equivalent JSON request when a new object is created.
         It is used internally by the save() method of a newly created object.
         """
@@ -2773,21 +3379,39 @@ class AttrHolder():
                 items = getattr(self, '_' + attr)
                 if items is None:
                     items = []
+
+            elif attr == 'userIds':
+                if '_changed_users' not in self.__dict__:
+                    continue
+
+                new_obj[attr]=[]
+                for userId in self.__dict__['_changed_users']:
+                    if self.__dict__['_changed_users'][userId]['action'] == 'Add':
+                        new_obj[attr].append({
+                            "permId": userId,
+                            "@type": "as.dto.person.id.PersonPermId"
+                        })
+
+            elif attr == 'description':
+                new_obj[attr] = self.__dict__['_description'].get('value')
+
             else:
                 items = getattr(self, '_' + attr)
 
-            key = None
-            if attr in attr2ids:
-                # translate parents into parentIds, children into childIds etc.
-                key = attr2ids[attr]
-            else:
-                key = attr
+                key = None
+                if attr in attr2ids:
+                    # translate parents into parentIds, children into childIds etc.
+                    key = attr2ids[attr]
+                else:
+                    key = attr
 
-            new_obj[key] = items
+                new_obj[key] = items
 
-        # create a new entity
+        # guess the method name for creating a new entity and build the request
+        if method_name is None:
+            method_name = "create{}s".format(self.entity)
         request = {
-            "method": "create{}s".format(self.entity),
+            "method": method_name,
             "params": [
                 self.openbis.token,
                 [new_obj]
@@ -2796,7 +3420,7 @@ class AttrHolder():
         return request
 
 
-    def _up_attrs(self):
+    def _up_attrs(self, method_name=None):
         """Returns the Python-equivalent JSON request when a new object is updated.
         It is used internally by the save() method of an object to be updated.
         """
@@ -2829,27 +3453,50 @@ class AttrHolder():
                 }
 
             elif attr == 'tags':
-                # look which tags have been added or removed and update them
-                if getattr(self, '_prev_tags') is None:
-                    self.__dict__['_prev_tags'] = []
+                # look which tags/users have been added or removed and update them
+
+                if getattr(self, '_prev_'+attr) is None:
+                    self.__dict__['_prev_'+attr] = []
                 actions = []
-                for tagId in self._prev_tags:
-                    if tagId not in self._tags:
+                for id in self.get('_prev_'+attr):
+                    if id not in self.get('_'+attr):
                         actions.append({
-                            "items": [tagId],
+                            "items": [id],
                             "@type": "as.dto.common.update.ListUpdateActionRemove"
                         })
 
-                for tagId in self._tags:
-                    if tagId not in self._prev_tags:
+                for id in self.get('_'+attr):
+                    if id not in self.get('_prev_'+attr):
                         actions.append({
-                            "items": [tagId],
+                            "items": [id],
                             "@type": "as.dto.common.update.ListUpdateActionAdd"
                         })
 
                 up_obj['tagIds'] = {
                     "@type": "as.dto.common.update.IdListUpdateValue",
                     "actions": actions
+                }
+
+            elif attr == 'userIds':
+                actions = []
+                if '_changed_users' not in self.__dict__:
+                    continue
+                for userId in self.__dict__['_changed_users']:
+                    actions.append({
+		        "items": [
+                            {
+                                "permId": userId,
+                                "@type": "as.dto.person.id.PersonPermId"
+			    }
+                        ],
+		        "@type": "as.dto.common.update.ListUpdateAction{}".format(
+                            self.__dict__['_changed_users'][userId]['action']
+                        )
+		    })
+
+                up_obj['userIds'] = {
+                    "actions": actions,
+                    "@type": "as.dto.common.update.IdListUpdateValue" 
                 }
 
             elif '_' + attr in self.__dict__:
@@ -2886,6 +3533,8 @@ class AttrHolder():
                         for x in ['identifier','permId','@type']:
                             if x in value:
                                 val[x] = value[x]
+                        if attr in ['description']:
+                            val = value['value']
 
                         up_obj[attr2ids[attr]] = {
                             "@type": "as.dto.common.update.FieldUpdateValue",
@@ -2893,9 +3542,11 @@ class AttrHolder():
                             "value": val
                         }
 
-        # update a new entity
+        # update an existing entity
+        if method_name is None:
+            method_name = "update{}s".format(self.entity)
         request = {
-            "method": "update{}s".format(self.entity),
+            "method": method_name,
             "params": [
                 self.openbis.token,
                 [up_obj]
@@ -2903,26 +3554,65 @@ class AttrHolder():
         }
         return request
 
+
     def __getattr__(self, name):
-        """ handles all attribute requests dynamically. Values are returned in a sensible way,
-            for example the identifiers of parents, children and components are returned
-            as an array of values.
+        """ handles all attribute requests dynamically.
+        Values are returned in a sensible way, for example:
+            the identifiers of parents, children and components are returned as an
+            array of values, whereas attachments, users (of groups) and
+            roleAssignments are returned as an array of dictionaries.
         """
+
+        name_map = {
+            'group': 'authorizationGroup',
+            'roles': 'roleAssignments'
+        }
+        if name in name_map:
+            name = name_map[name]
 
         int_name = '_' + name
         if int_name in self.__dict__:
-            if int_name in ['_attachments']:
-                return [
-                    {
-                        "fileName": x['fileName'],
-                        "title": x['title'],
-                        "description": x['description']
-                    } for x in self._attachments
-                    ]
-            if int_name in ['_registrator', '_modifier', '_dataProducer']:
+            if int_name == '_attachments':
+                attachments = []
+                for att in self._attachments:
+                    attachments.append({
+                        "fileName":    att.get('fileName'),
+                        "title":       att.get('title'),
+                        "description": att.get('description'),
+                        "version":     att.get('version'),
+                    })
+                return attachments
+
+            elif int_name == '_users':
+                users = []
+                for user in self._users:
+                    users.append({
+                        "firstName": user.get('firstName'),
+                        "lastName" : user.get('lastName'),
+                        "email"    : user.get('email'),
+                        "userId"   : user.get('userId'),
+                        "space"    : user.get('space').get('code') if user.get('space') is not None else None,
+                    })
+                return users
+
+            elif int_name == '_roleAssignments':
+                ras = []
+                for ra in self._roleAssignments:
+                    ras.append({
+                        "techId":        ra.get('id').get('techId'),
+                        "role":      ra.get('role'),
+                        "roleLevel": ra.get('roleLevel'),
+                        "space":     ra.get('space').get('code'),
+                        "project":   ra.get('role'),
+                    })
+                return ras
+
+            elif int_name in ['_registrator', '_modifier', '_dataProducer']:
                 return self.__dict__[int_name].get('userId', None)
+
             elif int_name in ['_registrationDate', '_modificationDate', '_accessDate', '_dataProductionDate']:
                 return format_timestamp(self.__dict__[int_name])
+
             # if the attribute contains a list, 
             # return a list of either identifiers, codes or
             # permIds (whatever is available first)
@@ -2938,6 +3628,7 @@ class AttrHolder():
                     else:
                         pass
                 return values
+
             # attribute contains a dictionary: same procedure as above.
             elif isinstance(self.__dict__[int_name], dict):
                 if "identifier" in self.__dict__[int_name]:
@@ -2946,6 +3637,9 @@ class AttrHolder():
                     return self.__dict__[int_name]['code']
                 elif "permId" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['permId']
+                elif "id" in self.__dict__[int_name]:
+                    return self.__dict__[int_name]['id']
+
             else:
                 return self.__dict__[int_name]
         else:
@@ -2957,6 +3651,15 @@ class AttrHolder():
             new_sample.space = 'MATERIALS'
             new_sample.parents = ['/MATERIALS/YEAST747']
         """
+        #allowed_attrs = []
+        #if self.is_new:
+        #    allowed_attrs = _definitions(self.entity)['attrs_new']
+        #else:
+        #    allowed_attrs = _definitions(self.entity)['attrs_up']
+
+        #if name not in allowed_attrs:
+        #    raise ValueError("{} is not in the list of changeable attributes ({})".format(name, ", ".join(allowed_attrs) ) )
+
         if name in ["parents", "parent", "children", "child", "components"]:
             if name == "parent":
                 name = "parents"
@@ -2982,13 +3685,12 @@ class AttrHolder():
                 if '@id' in permid: permid.pop('@id')
                 permids.append(permid)
 
-            # setting self._parents = [{ 
-            #    '@type': 'as.dto.sample.id.SampleIdentifier',
-            #    'identifier': '/SPACE_NAME/SAMPLE_NAME'
-            # }]
             self.__dict__['_' + name] = permids
         elif name in ["tags"]:
             self.set_tags(value)
+
+        elif name in ["users"]:
+            self.set_users(value)
 
         elif name in ["attachments"]:
             if isinstance(value, list):
@@ -3003,6 +3705,10 @@ class AttrHolder():
 
         elif name in ["space"]:
             obj = None
+            if value is None:
+                self.__dict__['_'+name] = None
+                return
+
             if isinstance(value, str):
                 # fetch object in openBIS, make sure it actually exists
                 obj = getattr(self._openbis, "get_" + name)(value)
@@ -3036,7 +3742,6 @@ class AttrHolder():
             else:
                 self.__dict__['_' + name]['isModified'] = True
 
-
         elif name in ["identifier"]:
             raise KeyError("you can not modify the {}".format(name))
         elif name == "code":
@@ -3050,8 +3755,20 @@ class AttrHolder():
 
             self.__dict__['_code'] = value
 
-        elif name == "description":
-            self.__dict__['_description'] = value
+        elif name in [ "description" ]:
+            self.__dict__['_'+name] = {
+                "value": value,
+            }
+            if not self.is_new:
+                self.__dict__['_' + name]['isModified'] = True
+                
+        elif name in ["userId"]:
+            # values that are directly assigned
+            self.__dict__['_' + name] = value
+
+        elif name in ["userIds"]:
+            self.add_users(value)
+
         else:
             raise KeyError("no such attribute: {}".format(name))
 
@@ -3161,6 +3878,47 @@ class AttrHolder():
             if tagId not in self.__dict__['_tags']:
                 self.__dict__['_tags'].append(tagId)
 
+    def set_users(self, userIds):
+        if userIds is None:
+            return
+        if getattr(self, '_userIds') is None:
+            self.__dict__['_userIds'] = []
+        if not isinstance(userIds, list):
+            userIds = [userIds]
+        for userId in userIds:
+            person = self.openbis.get_person(userId=user, only_data=True)
+            self.__dict__['_userIds'].append({
+                "permId": userId,
+                "@type": "as.dto.person.id.PersonPermId"
+            })
+
+        
+    def add_users(self, userIds):
+        if userIds is None:
+            return
+        if getattr(self, '_changed_users') is None:
+            self.__dict__['_changed_users'] = {}
+
+        if not isinstance(userIds, list):
+            userIds = [userIds]
+        for userId in userIds:
+            self.__dict__['_changed_users'][userId] = {
+                "action": "Add"
+            }
+
+    def del_users(self, userIds):
+        if userIds is None:
+            return
+        if getattr(self, '_changed_users') is None:
+            self.__dict__['_changed_users'] = {}
+
+        if not isinstance(userIds, list):
+            userIds = [userIds]
+        for userId in userIds:
+            self.__dict__['_changed_users'][userId] = {
+                "action": "Remove"
+            }
+
     def add_tags(self, tags):
         if getattr(self, '_tags') is None:
             self.__dict__['_tags'] = []
@@ -3204,13 +3962,14 @@ class AttrHolder():
         entity = self.entity.lower()
         request = {
             "method": method,
-            "params": [self._openbis.token,
-                       [self._permId],
-                       dict(
-                           attachments=fetch_option['attachmentsWithContent'],
-                           **fetch_option[entity]
-                       )
-                       ]
+            "params": [
+                self._openbis.token,
+                [self._permId],
+                dict(
+                    attachments=fetch_option['attachmentsWithContent'],
+                    **fetch_option[entity]
+                )
+            ]
         }
         resp = self._openbis._post_request(self._openbis.as_v3, request)
         attachments = resp[self.permId]['attachments']
@@ -3263,16 +4022,41 @@ class AttrHolder():
         return html
 
     def __repr__(self):
+        """ When using iPython, this method displays a nice table
+        of all attributes and their values when the object is printed.
+        """
 
         headers = ['attribute', 'value']
         lines = []
         for attr in self._allowed_attrs:
             if attr == 'attachments':
                 continue
-            lines.append([
-                attr,
-                nvl(getattr(self, attr, ''))
-            ])
+            elif attr == 'users' and '_users' in self.__dict__:
+                lines.append([
+                    attr,
+                    ", ".join(att['userId'] for att in self._users)
+                ])
+            elif attr == 'roleAssignments' and '_roleAssignments' in self.__dict__:
+                roles = []
+                for role in self._roleAssignments:
+                    if role.get('space') is not None:
+                        roles.append("{} ({})".format(
+                            role.get('role'),
+                            role.get('space').get('code')
+                        ))
+                    else:
+                        roles.append(role.get('role'))
+
+                lines.append([
+                    attr,
+                    ", ".join(roles)
+                ])
+                
+            else:
+                lines.append([
+                    attr,
+                    nvl(getattr(self, attr, ''))
+                ])
         return tabulate(lines, headers=headers)
 
 
@@ -3306,6 +4090,7 @@ class Sample():
         # put the properties in the self.p namespace (without checking them)
         for key, value in data['properties'].items():
             self.p.__dict__[key.lower()] = value
+
 
     def __dir__(self):
         return [
@@ -3358,7 +4143,7 @@ class Sample():
             request["params"][1][0]["properties"] = props
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
-            print("Sample successfully created.")
+            if VERBOSE: print("Sample successfully created.")
             new_sample_data = self.openbis.get_sample(resp[0]['permId'], only_data=True)
             self._set_data(new_sample_data)
             return self
@@ -3367,12 +4152,13 @@ class Sample():
             request = self._up_attrs()
             request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
-            print("Sample successfully updated.")
+            if VERBOSE: print("Sample successfully updated.")
             new_sample_data = self.openbis.get_sample(self.permId, only_data=True)
             self._set_data(new_sample_data)
 
     def delete(self, reason):
-        self.openbis.delete_entity('sample', self.permId, reason)
+        self.openbis.delete_entity(entity='Sample',id=self.permId, reason=reason)
+        if VERBOSE: print("Sample {} successfully deleted.".format(self.permId))
 
     def get_datasets(self, **kwargs):
         return self.openbis.get_datasets(sample=self.permId, **kwargs)
@@ -3392,6 +4178,347 @@ class Sample():
             return self.openbis.get_experiment(self._experiment['identifier'])
         except Exception:
             pass
+
+
+class RoleAssignment(OpenBisObject):
+    """ managing openBIS role assignments
+    """
+
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['openbis'] = openbis_obj
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'RoleAssignment' )
+
+        if data is not None:
+            self.a(data)
+            self.__dict__['data'] = data
+
+        if kwargs is not None:
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+
+    def __dir__(self):
+        """all the available methods and attributes that should be displayed
+        when using the autocompletion feature (TAB) in Jupyter
+        """
+        return [
+            'id', 'role', 'roleLevel', 'space', 'project','group'
+        ]
+
+    def __str__(self):
+        return "{}".format(self.get('role'))
+
+    def delete(self, reason):
+        self.openbis.delete_entity(
+            entity='RoleAssignment', id=self.id, 
+            reason=reason, id_name='techId'
+        ) 
+        if VERBOSE: print("RoleAssignment successfully deleted.".format(self.permId))
+
+
+class Person(OpenBisObject):
+    """ managing openBIS persons
+    """
+
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['openbis'] = openbis_obj
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'Person' )
+
+        if data is not None:
+            self.a(data)
+            self.__dict__['data'] = data
+
+        if kwargs is not None:
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+
+    def __dir__(self):
+        """all the available methods and attributes that should be displayed
+        when using the autocompletion feature (TAB) in Jupyter
+        """
+        return [
+            'permId', 'userId', 'firstName', 'lastName', 'email',
+            'registrator', 'registrationDate','space',
+            'get_roles()', 'assign_role(role, space)', 'revoke_role(techId)',
+        ]
+
+
+    def get_roles(self, **search_args):
+        """ Get all roles that are assigned to this person.
+        Provide additional search arguments to refine your search.
+
+        Usage::
+            person.get_roles()
+            person.get_roles(space='TEST_SPACE')
+        """
+        return self.openbis.get_role_assignments(person=self, **search_args)
+
+
+    def assign_role(self, role, **kwargs):
+        try:
+            self.openbis.assign_role(role=role, person=self, **kwargs)
+            if VERBOSE:
+                print(
+                    "Role {} successfully assigned to person {}".format(role, self.userId)
+                ) 
+        except ValueError as e:
+            if 'exists' in str(e):
+                if VERBOSE:
+                    print(
+                        "Role {} already assigned to person {}".format(role, self.userId)
+                    )
+            else:
+                raise ValueError(str(e))
+
+
+    def revoke_role(self, role, space=None, project=None, reason='no specific reason'):
+        """ Revoke a role from this person. 
+        """
+
+        techId = None
+        if isinstance(role, int):
+            techId = role
+        else:
+            query = { "role": role }
+            if space is None:
+                query['space'] = ''
+            else:
+                query['space'] = space.upper()
+
+            if project is None:
+                query['project'] = ''
+            else:
+                query['project'] = project.upper()
+
+            querystr = " & ".join( 
+                    '{} == "{}"'.format(key, value) for key, value in query.items()
+                    )
+            return querystr
+             
+            roles = self.get_roles().df
+            techId = roles.query(querystr)['techId'].values[0]
+
+        # finally delete the role assignment
+        ra = self.openbis.get_role_assignment(techId)
+        ra.delete(reason)
+        if VERBOSE:
+            print(
+                "Role {} successfully revoked from person {}".format(role, self.code)
+                ) 
+            return
+
+    def __str__(self):
+        return "{} {}".format(self.get('firstName'), self.get('lastName'))
+
+    def delete(self, reason):
+        raise ValueError("Persons cannot be deleted")
+
+    def save(self):
+        if self.is_new:
+            request = self._new_attrs()
+            # for new and updated objects, the parameter is
+            # unfortunately called homeSpaceId, spaceId throws no error
+            # but makes no change either
+            if "spaceId" in request['params'][1][0]:
+                request['params'][1][0]['homeSpaceId'] =  request['params'][1][0]['spaceId']
+                del(request['params'][1][0]['spaceId'])
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+            if VERBOSE: print("Person successfully created.")
+            new_person_data = self.openbis.get_person(resp[0]['permId'], only_data=True)
+            self._set_data(new_person_data)
+            return self
+
+        else:
+            request = self._up_attrs()
+            # for new and updated objects, the parameter is
+            # unfortunately called homeSpaceId, spaceId throws no error
+            # but makes no change either
+            if "spaceId" in request['params'][1][0]:
+                request['params'][1][0]['homeSpaceId'] =  request['params'][1][0]['spaceId']
+                del(request['params'][1][0]['spaceId'])
+            self.openbis._post_request(self.openbis.as_v3, request)
+            if VERBOSE: print("Person successfully updated.")
+            new_person_data = self.openbis.get_person(self.permId, only_data=True)
+            self._set_data(new_person_data)
+
+
+class Group(OpenBisObject):
+    """ Managing openBIS authorization groups
+    """
+    
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['openbis'] = openbis_obj
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'AuthorizationGroup')
+
+        if data is not None:
+            self.a(data)
+            self.__dict__['data'] = data
+
+        if kwargs is not None:
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
+    def __dir__(self):
+        return [
+            'code','description','users','roleAssignments',
+            'get_users()', 'set_users()', 'add_users()', 'del_users()',
+            'get_roles()', 'assign_role()', 'revoke_role(techId)'
+        ]
+
+    def get_persons(self):
+        """ Returns a Things object wich contains all Persons (Users)
+        that belong to this group.
+        """
+
+        persons = DataFrame(self._users)
+        persons['permId'] = persons['permId'].map(extract_permid)
+        persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
+        persons['space'] = persons['space'].map(extract_nested_permid)
+        p = Things(
+            self.openbis, entity='person', 
+            df=persons[['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']],
+            identifier_name='permId'
+        )
+        return p
+
+    get_users = get_persons  # Alias
+
+
+    def get_roles(self, **search_args):
+        """ Get all roles that are assigned to this group.
+        Provide additional search arguments to refine your search.
+
+        Usage::
+            group.get_roles()
+            group.get_roles(space='TEST_SPACE')
+        """
+        return self.openbis.get_role_assignments(group=self, **search_args)
+
+    def assign_role(self, role, **kwargs):
+        """ Assign a role to this group. If no additional attribute is provided,
+        roleLevel will default to INSTANCE. If a space attribute is provided,
+        the roleLevel will be SPACE. If a project attribute is provided,
+        roleLevel will be PROJECT.
+
+        Usage::
+            group.assign_role(role='ADMIN')
+            group.assign_role(role='ADMIN', space='TEST_SPACE')
+
+        """
+
+        self.openbis.assign_role(role=role, group=self, **kwargs)
+        if VERBOSE:
+            print(
+                "Role {} successfully assigned to group {}".format(role, self.code)
+            ) 
+
+    def revoke_role(self, role, reason='no specific reason'):
+        """ Revoke a role from this group. 
+        """
+        if isinstance(role, int):
+            ra = self.openbis.get_role_assignment(role)
+            ra.delete(reason)
+            if VERBOSE:
+                print(
+                    "Role {} successfully revoked from group {}".format(role, self.code)
+                ) 
+            return
+        else:
+            raise ValueError("Please provide the techId of the role assignment you want to revoke")
+        
+
+    def _repr_html_(self):
+        """ creates a nice table in Jupyter notebooks when the object itself displayed
+        """
+        def nvl(val, string=''):
+            if val is None:
+                return string
+            return val
+
+        html = """
+            <table border="1" class="dataframe">
+            <thead>
+                <tr style="text-align: right;">
+                <th>attribute</th>
+                <th>value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        for attr in self._allowed_attrs:
+            if attr in ['users','roleAssignments']:
+                continue
+            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
+                attr, nvl(getattr(self, attr, ''), '')
+            )
+
+        html += """
+            </tbody>
+            </table>
+        """
+
+        if getattr(self, '_users') is not None:
+            html += """
+                <br/>
+                <b>Users</b>
+                <table border="1" class="dataframe">
+                <thead>
+                    <tr style="text-align: right;">
+                    <th>userId</th>
+                    <th>FirstName</th>
+                    <th>LastName</th>
+                    <th>Email</th>
+                    <th>Space</th>
+                    <th>active</th>
+                    </tr>
+                </thead>
+                <tbody>
+            """
+            for user in self._users:
+                html += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                    user.get('userId'),
+                    user.get('firstName'),
+                    user.get('lastName'),
+                    user.get('email'),
+                    user.get('space').get('code') if user.get('space') is not None else '',
+                    user.get('active'),
+                )
+            html += """
+                </tbody>
+                </table>
+            """
+        return html
+
+    def delete(self, reason='unknown'):
+        self.openbis.delete_entity(
+            entity = "AuthorizationGroup",
+            id = self.permId, 
+            reason = reason
+        )
+        if VERBOSE:
+            print("Authorization group {} successfully deleted".format(
+                self.permId
+            ))
+
+    def save(self):
+        if self.is_new:
+            request = self._new_attrs()
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+            if VERBOSE: print("Group successfully created.")
+            # re-fetch group from openBIS
+            new_data = self.openbis.get_person(resp[0]['permId'], only_data=True)
+            self._set_data(new_data)
+            return self
+
+        else:
+            request = self._up_attrs()
+            self.openbis._post_request(self.openbis.as_v3, request)
+            if VERBOSE: print("Group successfully updated.")
+            # re-fetch group from openBIS
+            new_data = self.openbis.get_group(self.permId, only_data=True)
+            self._set_data(new_data)
 
 
 class Space(OpenBisObject):
@@ -3449,13 +4576,13 @@ class Space(OpenBisObject):
 
     def delete(self, reason):
         self.openbis.delete_entity('Space', self.permId, reason)
-        print("Space {} has been sucessfully deleted.".format(self.permId))
+        if VERBOSE: print("Space {} has been sucsessfully deleted.".format(self.permId))
 
     def save(self):
         if self.is_new:
             request = self._new_attrs()
             resp = self.openbis._post_request(self.openbis.as_v3, request)
-            print("Space successfully created.")
+            if VERBOSE: print("Space successfully created.")
             new_space_data = self.openbis.get_space(resp[0]['permId'], only_data=True)
             self._set_data(new_space_data)
             return self
@@ -3463,7 +4590,7 @@ class Space(OpenBisObject):
         else:
             request = self._up_attrs()
             self.openbis._post_request(self.openbis.as_v3, request)
-            print("Space successfully updated.")
+            if VERBOSE: print("Space successfully updated.")
             new_space_data = self.openbis.get_space(self.permId, only_data=True)
             self._set_data(new_space_data)
 
@@ -3609,7 +4736,7 @@ class Things():
                 row = self.df[self.df[self.identifier_name] == key.upper()]
 
             if row is not None:
-                # invoke the openbis.get_entity() method
+                # invoke the openbis.get_<entity>() method
                 return getattr(self.openbis, 'get_' + self.entity)(row[self.identifier_name].values[0])
 
     def __iter__(self):
@@ -3715,7 +4842,7 @@ class Experiment(OpenBisObject):
             request["params"][1][0]["properties"] = props
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
-            print("Experiment successfully created.")
+            if VERBOSE: print("Experiment successfully created.")
             new_exp_data = self.openbis.get_experiment(resp[0]['permId'], only_data=True)
             self._set_data(new_exp_data)
             return self
@@ -3724,14 +4851,15 @@ class Experiment(OpenBisObject):
             props = self.p._all_props()
             request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
-            print("Experiment successfully updated.")
+            if VERBOSE: print("Experiment successfully updated.")
             new_exp_data = self.openbis.get_experiment(resp[0]['permId'], only_data=True)
             self._set_data(new_exp_data)
 
     def delete(self, reason):
         if self.permId is None:
             return None
-        self.openbis.delete_entity('experiment', self.permId, reason)
+        self.openbis.delete_entity(entity='Experiment', id=self.permId, reason=reason)
+        if VERBOSE: print("Experiment {} successfully deleted.".format(self.permId))
 
     def get_datasets(self, **kwargs):
         if self.permId is None:
@@ -3868,21 +4996,21 @@ class Project(OpenBisObject):
         return self.openbis.get_datasets(project=self.permId)
 
     def delete(self, reason):
-        self.openbis.delete_entity('project', self.permId, reason)
+        self.openbis.delete_entity(entity='Project', id=self.permId, reason=reason)
+        if VERBOSE: print("Project {} successfully deleted.".format(self.permId))
 
     def save(self):
         if self.is_new:
             request = self._new_attrs()
             resp = self.openbis._post_request(self.openbis.as_v3, request)
-            self.a.__dict__['_is_new'] = False
-            print("Project successfully created.")
+            if VERBOSE: print("Project successfully created.")
             new_project_data = self.openbis.get_project(resp[0]['permId'], only_data=True)
             self._set_data(new_project_data)
             return self
         else:
             request = self._up_attrs()
             self.openbis._post_request(self.openbis.as_v3, request)
-            print("Project successfully updated.")
+            if VERBOSE: print("Project successfully updated.")
 
 
 class SemanticAnnotation():
@@ -3902,7 +5030,14 @@ class SemanticAnnotation():
         self.creationDate = kwargs.get('creationDate')
 
     def __dir__(self):
-        return ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate', 'save()', 'delete()' ]
+        return [
+            'permId', 'entityType', 'propertyType', 
+            'predicateOntologyId', 'predicateOntologyVersion', 
+            'predicateAccessionId', 'descriptorOntologyId',
+            'descriptorOntologyVersion', 'descriptorAccessionId', 
+            'creationDate', 
+            'save()', 'delete()' 
+        ]
 
     def save(self):
         if self._isNew:
@@ -3955,7 +5090,7 @@ class SemanticAnnotation():
         self._openbis._post_request(self._openbis.as_v3, request)
         self._isNew = False
         
-        print("Semantic annotation successfully created.")
+        if VERBOSE: print("Semantic annotation successfully created.")
     
     def _update(self):
         
@@ -3983,8 +5118,8 @@ class SemanticAnnotation():
         }
         
         self._openbis._post_request(self._openbis.as_v3, request)
-        print("Semantic annotation successfully updated.")
+        if VERBOSE: print("Semantic annotation successfully updated.")
     
     def delete(self, reason):
-        self._openbis.delete_entity('SemanticAnnotation', self.permId, reason, False)
-        print("Semantic annotation successfully deleted.")
+        self._openbis.delete_entity(entity='SemanticAnnotation', id=self.permId, reason=reason)
+        if VERBOSE: print("Semantic annotation successfully deleted.")

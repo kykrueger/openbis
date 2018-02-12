@@ -72,8 +72,9 @@ ame` ``
 Before upgrading, make sure your openBIS instance is not running.
 
 1. download [latest openBIS Sprint release](https://wiki-bsse.ethz.ch/display/bis/Sprint+Releases)
-2. make sure your OS is not automatically unzipping it
-3. move *.gz file from ~/Download to pybis/src/vagrant/jupyter-bis
+2. make sure your OS is not automatically unzipping it (Safari: hold alt button while clicking on
+   the download link or disable opening «safe» files after downloading in preferences). Otherwise, the original .gz file can be found in the trash instead.
+3. move *.gz file from ~/Downloads to pybis/src/vagrant/jupyter-bis
 4. cd pybis/src/vagrant/jupyter-bis
 5. vagrant ssh
 6. sudo su - openbis
