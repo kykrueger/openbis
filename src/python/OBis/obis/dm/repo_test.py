@@ -10,8 +10,11 @@ Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
 from unittest.mock import Mock, MagicMock
 
+from unittest.mock import Mock, MagicMock, ANY
+from . import CommandResult
 from . import repo as dm_repo
 from . import data_mgmt
+from . import utils
 from .data_mgmt_test import git_status, copy_test_data, prepare_registration_expectations, \
     set_registration_configuration
 
@@ -23,6 +26,9 @@ def test_data_use_case(tmpdir):
     repo = dm_repo.DataRepo(tmp_dir_path)
     prepare_registration_expectations(repo.dm_api)
     set_registration_configuration(repo.dm_api)
+
+    # repo.dm_api.commit = MagicMock(return_value = CommandResult(returncode=0, output=None))
+    print(repo.dm_api.openbis)
 
     result = repo.init("test")
     assert result.returncode == 0
@@ -37,14 +43,13 @@ def test_data_use_case(tmpdir):
 
     with data_mgmt.cd(tmp_dir_path):
         # The zip should be in the annex
-        result = data_mgmt.run_shell(['git', 'annex', 'info', 'snb-data.zip'])
+        result = utils.run_shell(['git', 'annex', 'info', 'snb-data.zip'])
         present_p = result.output.split('\n')[-1]
         assert present_p == 'present: true'
 
         # The txt files should be in git normally
-        result = data_mgmt.run_shell(['git', 'annex', 'info', 'text-data.txt'])
-        present_p = result.output.split(' ')[-1]
-        assert present_p == 'failed'
-        result = data_mgmt.run_shell(['git', 'log', '--oneline', 'text-data.txt'])
+        result = utils.run_shell(['git', 'annex', 'info', 'text-data.txt'])
+        assert 'Not a valid object name' in str(result)
+        result = utils.run_shell(['git', 'log', '--oneline', 'text-data.txt'])
         present_p = " ".join(result.output.split(' ')[1:])
         assert present_p == 'Added data.'

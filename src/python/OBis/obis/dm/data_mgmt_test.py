@@ -18,6 +18,7 @@ import hashlib
 from datetime import datetime
 
 from . import data_mgmt
+from . import utils
 from . import CommandResult
 from unittest.mock import Mock, MagicMock, ANY
 from pybis.pybis import ExternalDMS, DataSet
@@ -52,7 +53,7 @@ def git_status(path=None, annex=False):
         cmd.extend(['annex', 'status'])
     else:
         cmd.extend(['status', '--porcelain'])
-    return data_mgmt.run_shell(cmd)
+    return utils.run_shell(cmd)
 
 
 def check_correct_config_semantics():
@@ -98,7 +99,7 @@ def test_data_use_case(tmpdir):
         assert result.returncode == 0
 
         # The zip should be in the annex
-        result = data_mgmt.run_shell(['git', 'annex', 'info', 'snb-data.zip'])
+        result = utils.run_shell(['git', 'annex', 'info', 'snb-data.zip'])
         present_p = result.output.split('\n')[-1]
         assert present_p == 'present: true'
 
@@ -107,10 +108,10 @@ def test_data_use_case(tmpdir):
         assert stat.st_nlink == 2
 
         # The txt files should be in git normally
-        result = data_mgmt.run_shell(['git', 'annex', 'info', 'text-data.txt'])
+        result = utils.run_shell(['git', 'annex', 'info', 'text-data.txt'])
         present_p = result.output.split(' ')[-1]
         assert present_p == 'failed'
-        result = data_mgmt.run_shell(['git', 'log', '--oneline', 'text-data.txt'])
+        result = utils.run_shell(['git', 'log', '--oneline', 'text-data.txt'])
         present_p = " ".join(result.output.split(' ')[1:])
         assert present_p == 'Added data.'
 
@@ -214,7 +215,8 @@ def prepare_registration_expectations(dm):
     dm.openbis.is_session_active = MagicMock(return_value=True)
     edms = ExternalDMS(dm.openbis, {'code': 'AUSER-MACHINE-ffffffff', 'label': 'AUSER-MACHINE-ffffffff'})
     dm.openbis.create_external_data_management_system = MagicMock(return_value=edms)
-
+    dm.openbis.get_external_data_management_system = MagicMock(return_value=edms)
+    dm.openbis.create_permId = MagicMock(return_value='DUMMY_DATA_SET_CODE')
     prepare_new_data_set_expectations(dm)
 
 
