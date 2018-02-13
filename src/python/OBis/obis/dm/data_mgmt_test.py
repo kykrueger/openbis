@@ -44,15 +44,6 @@ def test_no_git(tmpdir):
         pass
 
 
-def test_locate_command():
-    result = data_mgmt.locate_command("bash")
-    assert result.returncode == 0
-    assert result.output == "/bin/bash"
-
-    result = data_mgmt.locate_command("this_is_not_a_real_command")
-    assert result.returncode == 1
-
-
 def git_status(path=None, annex=False):
     cmd = ['git']
     if path:
