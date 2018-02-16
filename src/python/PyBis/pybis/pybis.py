@@ -1162,22 +1162,23 @@ class Openbis:
             ]
         }
 
+        columns=['techId', 'role', 'roleLevel', 'user', 'group', 'space', 'project']
         resp = self._post_request(self.as_v3, request)
         if len(resp['objects']) == 0:
-            raise ValueError("No assigned roles found!")
+            roles = DataFrame(columns=columns)
+        else: 
+            objects = resp['objects']
+            parse_jackson(objects)
+            roles = DataFrame(objects)
+            roles['techId'] = roles['id'].map(extract_id)
+            roles['user'] = roles['user'].map(extract_userId)
+            roles['group'] = roles['authorizationGroup'].map(extract_code)
+            roles['space'] = roles['space'].map(extract_code)
+            roles['project'] = roles['project'].map(extract_code)
 
-        objects = resp['objects']
-        parse_jackson(objects)
-        roles = DataFrame(objects)
-
-        roles['techId'] = roles['id'].map(extract_id)
-        roles['user'] = roles['user'].map(extract_userId)
-        roles['group'] = roles['authorizationGroup'].map(extract_code)
-        roles['space'] = roles['space'].map(extract_code)
-        roles['project'] = roles['project'].map(extract_code)
         p = Things(
             self, entity='role_assignment', 
-            df=roles[['techId', 'role', 'roleLevel', 'user', 'group', 'space', 'project']],
+            df=roles[columns],
             identifier_name='techId'
         )
         return p
@@ -4210,7 +4211,7 @@ class RoleAssignment(OpenBisObject):
     def __str__(self):
         return "{}".format(self.get('role'))
 
-    def delete(self, reason):
+    def delete(self, reason='no reason specified'):
         self.openbis.delete_entity(
             entity='RoleAssignment', id=self.id, 
             reason=reason, id_name='techId'
@@ -4273,7 +4274,7 @@ class Person(OpenBisObject):
                 raise ValueError(str(e))
 
 
-    def revoke_role(self, role, space=None, project=None, reason='no specific reason'):
+    def revoke_role(self, role, space=None, project=None, reason='no reason specified'):
         """ Revoke a role from this person. 
         """
 
@@ -4297,6 +4298,10 @@ class Person(OpenBisObject):
                     '{} == "{}"'.format(key, value) for key, value in query.items()
                     )
             roles = self.get_roles().df
+            if len(roles) == 0:
+                if VERBOSE:
+                    print("Role has already been revoked from person {}".format(role, self.code))
+                return
             techId = roles.query(querystr)['techId'].values[0]
 
         # finally delete the role assignment
@@ -4424,7 +4429,7 @@ class Group(OpenBisObject):
                 raise ValueError(str(e))
 
 
-    def revoke_role(self, role, space=None, project=None, reason='no specific reason'):
+    def revoke_role(self, role, space=None, project=None, reason='no reason specified'):
         """ Revoke a role from this group. 
         """
 
@@ -4448,6 +4453,10 @@ class Group(OpenBisObject):
                     '{} == "{}"'.format(key, value) for key, value in query.items()
                     )
             roles = self.get_roles().df
+            if len(roles) == 0:
+                if VERBOSE:
+                    print("Role has already been revoked from group {}".format(role, self.code))
+                return
             techId = roles.query(querystr)['techId'].values[0]
 
         # finally delete the role assignment

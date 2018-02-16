@@ -22,9 +22,7 @@ def test_crud_group(openbis_instance):
     group_changed = openbis_instance.get_group(code=group_name)
     assert group_changed.description == changed_description
 
-    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
-    group.delete("test on {}".format(timestamp))
-
+    group.delete("test")
     with pytest.raises(ValueError):
         group_not_exists = openbis_instance.get_group(code=group_name)
         assert group_not_exists is None
@@ -32,23 +30,22 @@ def test_crud_group(openbis_instance):
 
 def test_role_assignments(openbis_instance):
     group_name = 'test_group_{}'.format(randint(0,1000)).upper()
-    group = openbis_instance.new_group(code=group_name, description='description of group ' + group_name)
+    group = openbis_instance.new_group(
+        code=group_name, 
+        description='description of group ' + group_name
+    )
     group.save()
 
-    with pytest.raises(ValueError):
-        roles_not_exist = group.get_roles()
-        assert roles_not_exist is None
+    roles_not_exist = group.get_roles()
+    assert len(roles_not_exist) == 0
 
     group.assign_role('ADMIN')
     roles_exist = group.get_roles()
-    assert roles_exist is not None
+    assert len(roles_exist) == 1
 
     group.revoke_role('ADMIN')
-    with pytest.raises(ValueError):
-        roles_not_exist = group.get_roles()
-        assert roles_not_exist is None
+    roles_not_exist = group.get_roles()
+    assert len(roles_not_exist) == 0
         
-    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
-    group.delete("text on {}".format(timestamp))
-
+    group.delete("test")
     
