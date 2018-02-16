@@ -176,6 +176,7 @@ def _definitions(entity):
             "tags": "tagIds",
             "userId": "userId",
             "users": "userIds",
+            "description": "description",
         },
         "ids2type": {
             'spaceId': {'permId': {'@type': 'as.dto.space.id.SpacePermId'}},
@@ -1067,13 +1068,13 @@ class Openbis:
         return Group(self, code=code, description=description, userIds=userIds)
 
 
-    def get_group(self, groupId, only_data=False):
+    def get_group(self, code, only_data=False):
         """ Get an openBIS AuthorizationGroup. Returns a Group object.
         """
 
         ids = [{
             "@type": "as.dto.authorizationgroup.id.AuthorizationGroupPermId",
-            "permId": groupId
+            "permId": code
         }]
 
         fetchopts = {}
@@ -1161,21 +1162,23 @@ class Openbis:
             ]
         }
 
+        columns=['techId', 'role', 'roleLevel', 'user', 'group', 'space', 'project']
         resp = self._post_request(self.as_v3, request)
         if len(resp['objects']) == 0:
-            raise ValueError("No assigned roles found!")
+            roles = DataFrame(columns=columns)
+        else: 
+            objects = resp['objects']
+            parse_jackson(objects)
+            roles = DataFrame(objects)
+            roles['techId'] = roles['id'].map(extract_id)
+            roles['user'] = roles['user'].map(extract_userId)
+            roles['group'] = roles['authorizationGroup'].map(extract_code)
+            roles['space'] = roles['space'].map(extract_code)
+            roles['project'] = roles['project'].map(extract_code)
 
-        objects = resp['objects']
-        parse_jackson(objects)
-        roles = DataFrame(objects)
-
-        roles['techId'] = roles['id'].map(extract_id)
-        roles['user'] = roles['user'].map(extract_userId)
-        roles['group'] = roles['authorizationGroup'].map(extract_code)
-        roles['space'] = roles['space'].map(extract_code)
         p = Things(
             self, entity='role_assignment', 
-            df=roles[['techId', 'role', 'roleLevel', 'user', 'group', 'space', 'project']],
+            df=roles[columns],
             identifier_name='techId'
         )
         return p
@@ -1193,7 +1196,7 @@ class Openbis:
             "params": [
                 self.token,
                 [{
-                    "techId": techId,
+                    "techId": str(techId),
                     "@type": "as.dto.roleassignment.id.RoleAssignmentTechId"
                 }],
                 fetchopts
@@ -4208,12 +4211,11 @@ class RoleAssignment(OpenBisObject):
     def __str__(self):
         return "{}".format(self.get('role'))
 
-    def delete(self, reason):
+    def delete(self, reason='no reason specified'):
         self.openbis.delete_entity(
             entity='RoleAssignment', id=self.id, 
             reason=reason, id_name='techId'
         ) 
-        if VERBOSE: print("RoleAssignment successfully deleted.".format(self.permId))
 
 
 class Person(OpenBisObject):
@@ -4240,7 +4242,7 @@ class Person(OpenBisObject):
         return [
             'permId', 'userId', 'firstName', 'lastName', 'email',
             'registrator', 'registrationDate','space',
-            'get_roles()', 'assign_role(role, space)', 'revoke_role(techId)',
+            'get_roles()', 'assign_role(role, space)', 'revoke_role(role)',
         ]
 
 
@@ -4272,7 +4274,7 @@ class Person(OpenBisObject):
                 raise ValueError(str(e))
 
 
-    def revoke_role(self, role, space=None, project=None, reason='no specific reason'):
+    def revoke_role(self, role, space=None, project=None, reason='no reason specified'):
         """ Revoke a role from this person. 
         """
 
@@ -4291,12 +4293,15 @@ class Person(OpenBisObject):
             else:
                 query['project'] = project.upper()
 
+            # build a query string for dataframe
             querystr = " & ".join( 
                     '{} == "{}"'.format(key, value) for key, value in query.items()
                     )
-            return querystr
-             
             roles = self.get_roles().df
+            if len(roles) == 0:
+                if VERBOSE:
+                    print("Role has already been revoked from person {}".format(role, self.code))
+                return
             techId = roles.query(querystr)['techId'].values[0]
 
         # finally delete the role assignment
@@ -4305,8 +4310,9 @@ class Person(OpenBisObject):
         if VERBOSE:
             print(
                 "Role {} successfully revoked from person {}".format(role, self.code)
-                ) 
-            return
+            ) 
+        return
+
 
     def __str__(self):
         return "{} {}".format(self.get('firstName'), self.get('lastName'))
@@ -4407,26 +4413,61 @@ class Group(OpenBisObject):
 
         """
 
-        self.openbis.assign_role(role=role, group=self, **kwargs)
-        if VERBOSE:
-            print(
-                "Role {} successfully assigned to group {}".format(role, self.code)
-            ) 
-
-    def revoke_role(self, role, reason='no specific reason'):
-        """ Revoke a role from this group. 
-        """
-        if isinstance(role, int):
-            ra = self.openbis.get_role_assignment(role)
-            ra.delete(reason)
+        try:
+            self.openbis.assign_role(role=role, group=self, **kwargs)
             if VERBOSE:
                 print(
-                    "Role {} successfully revoked from group {}".format(role, self.code)
+                    "Role {} successfully assigned to group {}".format(role, self.code)
                 ) 
-            return
+        except ValueError as e:
+            if 'exists' in str(e):
+                if VERBOSE:
+                    print(
+                        "Role {} already assigned to group {}".format(role, self.code)
+                    )
+            else:
+                raise ValueError(str(e))
+
+
+    def revoke_role(self, role, space=None, project=None, reason='no reason specified'):
+        """ Revoke a role from this group. 
+        """
+
+        techId = None
+        if isinstance(role, int):
+            techId = role
         else:
-            raise ValueError("Please provide the techId of the role assignment you want to revoke")
-        
+            query = { "role": role }
+            if space is None:
+                query['space'] = ''
+            else:
+                query['space'] = space.upper()
+
+            if project is None:
+                query['project'] = ''
+            else:
+                query['project'] = project.upper()
+
+            # build a query string for dataframe
+            querystr = " & ".join( 
+                    '{} == "{}"'.format(key, value) for key, value in query.items()
+                    )
+            roles = self.get_roles().df
+            if len(roles) == 0:
+                if VERBOSE:
+                    print("Role has already been revoked from group {}".format(role, self.code))
+                return
+            techId = roles.query(querystr)['techId'].values[0]
+
+        # finally delete the role assignment
+        ra = self.openbis.get_role_assignment(techId)
+        ra.delete(reason)
+        if VERBOSE:
+            print(
+                "Role {} successfully revoked from group {}".format(role, self.code)
+            ) 
+        return
+
 
     def _repr_html_(self):
         """ creates a nice table in Jupyter notebooks when the object itself displayed
@@ -4508,7 +4549,7 @@ class Group(OpenBisObject):
             resp = self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE: print("Group successfully created.")
             # re-fetch group from openBIS
-            new_data = self.openbis.get_person(resp[0]['permId'], only_data=True)
+            new_data = self.openbis.get_group(resp[0]['permId'], only_data=True)
             self._set_data(new_data)
             return self
 
