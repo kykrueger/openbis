@@ -104,6 +104,10 @@ def config(ctx, is_global, prop, value):
     Configure the openBIS server url, the data set type, and the data set properties.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
+    config_internal(data_mgmt, is_global, prop, value)
+
+
+def config_internal(data_mgmt, is_global, prop, value):
     resolver = data_mgmt.config_resolver
     if is_global:
         resolver.location_search_order = ['global']
@@ -138,41 +142,41 @@ def set_property(data_mgmt, prop, value, is_global):
         return CommandResult(returncode=0, output="")
 
 
-def init_data_impl(ctx, sample_id, experiment_id, folder, name):
+def init_data_impl(ctx, object_id, collection_id, folder, name):
     """Shared implementation for the init_data command."""
     click_echo("init_data {}".format(folder))
     data_mgmt = shared_data_mgmt(ctx.obj)
     name = name if name != "" else None
     result = data_mgmt.init_data(folder, name, create=True)
-    if (not sample_id and not experiment_id) or result.failure():
+    if (not object_id and not collection_id) or result.failure():
         return check_result("init_data", result)
     with dm.cd(folder):
-        if sample_id:
-            return check_result("init_data", set_property(data_mgmt, 'sample_id', sample_id, False))
-        if experiment_id:
-            return check_result("init_data", set_property(data_mgmt, 'experiment_id', experiment_id, False))
+        if object_id:
+            return check_result("init_data", set_property(data_mgmt, 'object_id', object_id, False))
+        if collection_id:
+            return check_result("init_data", set_property(data_mgmt, 'collection_id', collection_id, False))
 
 
 @cli.command()
 @click.pass_context
-@click.option('-si', '--sample_id', help='Set the id of the owning sample.')
-@click.option('-ei', '--experiment_id', help='Set the id of the owning experiment.')
+@click.option('-oi', '--object_id', help='Set the id of the owning sample.')
+@click.option('-ci', '--collection_id', help='Set the id of the owning experiment.')
 @click.argument('folder', type=click.Path(exists=False, file_okay=False))
 @click.argument('name', default="")
-def init(ctx, sample_id, experiment_id, folder, name):
+def init(ctx, object_id, collection_id, folder, name):
     """Initialize the folder as a data folder (alias for init_data)."""
-    return init_data_impl(ctx, sample_id, experiment_id, folder, name)
+    return init_data_impl(ctx, object_id, collection_id, folder, name)
 
 
 @cli.command()
 @click.pass_context
-@click.option('-si', '--sample_id', help='Set the id of the owning sample.')
-@click.option('-ei', '--experiment_id', help='Set the id of the owning experiment.')
+@click.option('-oi', '--object_id', help='Set the id of the owning sample.')
+@click.option('-ci', '--collection_id', help='Set the id of the owning experiment.')
 @click.argument('folder', type=click.Path(exists=False, file_okay=False))
 @click.argument('name', default="")
-def init_data(ctx, sample_id, experiment_id, folder, name):
+def init_data(ctx, object_id, collection_id, folder, name):
     """Initialize the folder as a data folder."""
-    return init_data_impl(ctx, sample_id, experiment_id, folder, name)
+    return init_data_impl(ctx, object_id, collection_id, folder, name)
 
 
 @cli.command()

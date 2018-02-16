@@ -1,16 +1,20 @@
 #!/bin/env bash
 
-# Install prerequisites from obis.tar.xz (not from the yum repo)
+sudo pip3 install -e /vagrant_python/PyBis/
+sudo pip3 install -e /vagrant_python/OBis/
 
-pushd .  $@ > /dev/null
-cd ~
-tar -xf /vagrant/initialize/obis_tools.tar.xz -C ./
-echo export PATH=\"/home/vagrant/obis_tools/bin:/home/vagrant/obis_tools/bin\$PATH\" >> .bashrc
-export PATH=/home/vagrant/obis_tools/bin:$PATH
-pip install -e /vagrant_python/PyBis/
-pip install -e /vagrant_python/OBis/
+sudo pip3 install pyOpenSSL
 
-cd obis_tools/bin
-ln -s ../Python-3.6/bin/obis ./
+if [ ! -L /usr/bin/git ]; then
 
-popd  $@ > /dev/null
+    pushd ~obis $@ > /dev/null
+
+    wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+    tar -xvvf git-annex-standalone-amd64.tar.gz
+
+    sudo ln -s /home/obis/git-annex.linux/git /usr/bin/git
+    sudo ln -s /home/obis/git-annex.linux/git-annex /usr/bin/git-annex
+
+    popd $@ > /dev/null
+
+fi

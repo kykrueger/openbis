@@ -89,11 +89,12 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='verify_certificates', private=True, is_json=True))
         self.add_param(ConfigParam(name='external_dms_id', private=True))
         self.add_param(ConfigParam(name='repository_id', private=True))
-        self.add_param(ConfigParam(name='sample_id', private=False, ignore_global=True))
-        self.add_param(ConfigParam(name='experiment_id', private=False, ignore_global=True))
+        self.add_param(ConfigParam(name='object_id', private=False, ignore_global=True))
+        self.add_param(ConfigParam(name='collection_id', private=False, ignore_global=True))
         self.add_param(ConfigParam(name='data_set_id', private=False))
         self.add_param(ConfigParam(name='data_set_type', private=False))
         self.add_param(ConfigParam(name='data_set_properties', private=False, is_json=True))
+        self.add_param(ConfigParam(name='hostname', private=False))
 
     def add_param(self, param):
         self.params[param.name] = param

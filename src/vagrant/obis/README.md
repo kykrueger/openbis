@@ -6,19 +6,26 @@ To help users interested in trying out _obis_, we provide a vagrant setup that c
 
 0. Download openbis from the https://wiki-bsse.ethz.ch/display/bis/Production+Releases
 1. Put the extract the openbis installer to the src/vagrant/initialize folder
-2. cd to `src/vagrant`
-3. `vagrant up` -- initialize the virtual machine
-4. `vagrant ssh`  -- log into the virtual machine
-6. install openBIS (inside the vagrant machine)
-   - `/vagrant_initialize/install_openbis.sh`
-   - wait until `/home/openbis/bin/post-install/0-create-initial-users.sh` appears. This script does not automatically run for some reason. Terminate it by pressing CTRL-C
-   - run `sudo -u openbis /home/openbis/bin/post-install/0-create-initial-users.sh` manually
-   - enter a password for the **admin** and the **etlserver** user when asked
-7. Edit the file `/home/openbis/servers/datastore_server/etc/service.properties`
-   - look for the `etlserver` user and enter its password
-   - set the hostname to localhost
-8. `exit` -- log off the virtual machine
+2. cd to `src/vagrant/obis_with_openbis`
+3. `vagrant up --provision --provider virtualbox` -- initialize the virtual machine
+4. `vagrant ssh obisserver`  -- log into the virtual machine
+5. install openBIS (inside the vagrant machine) `/vagrant_initialize/install_openbis.sh`. The admin password will be 'admin'.
+6. `exit` -- log off the virtual machine
 
+When openBIS is running it can be accessed on the host machine from `https://localhost:8443/openbis`.
+
+## Using obis
+
+obis can be used on both vagrant machines.
+
+1. `vagrant ssh obisserver` (or `obisclient`)
+2. `sudo su obis`
+3. `cd ~obis`
+4. Configure the openbis_url: `obis config -g openbis_url https://obisserver:8443`
+5. Use obis.
+6. `exit` -- log off the virtual machine
+
+If you clone a dataset on the other server, the password of the obis user is obis.
 
 ## obis/EasyBD Demo
 
@@ -127,14 +134,15 @@ When setting up a machine the first time, Vagrant reads a file called «Vagrantf
 ## start openBIS
 
 1. `vagrant ssh` -- to log into the virtual machine
-1. `/vagrant_initialize/start_services.sh` -- start openBIS and any other services
-1. point your browser to `https://localhost:8443/openbis/` and check whether your server is up and running. Try logging in as an admin user, for example.
-1. check the AS and DSS logs if you encounter any problems
+2. `/vagrant_initialize/start_services.sh` -- start openBIS and any other services
+3. point your browser to `https://localhost:8443/openbis/` and check whether your server is up and running. Try logging in as an admin user, for example.
+4. check the AS and DSS logs if you encounter any problems
    * `/home/openbis/bin/bislog.sh` -- openbis AS logfile
    * `/home/openbis/bin/dsslog.sh` -- datastore server DSS logfile
+5. You can access the openBIS instance at https://localhost:8443/openbis/.
 
 ## create a new user in openBIS
 
 1. point your browser to the ELN-LIMS Lab notebook running at `https://localhost:8443/openbis/webapp/eln-lims/` and log in as admin
-1. go to Utilities -> User Manager, click on the Operations dropdown and choose "ceate User"
-1. enter a username (User ID) and a password to create a new user in openBIS (this may a while)
+2. go to Utilities -> User Manager, click on the Operations dropdown and choose "ceate User"
+3. enter a username (User ID) and a password to create a new user in openBIS (this may a while)

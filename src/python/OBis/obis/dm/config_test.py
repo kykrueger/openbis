@@ -60,7 +60,7 @@ def test_write_config(tmpdir):
     assert config_dict['openbis_url'] == expected_dict['openbis_url']
     assert config_dict['user'] == expected_dict['user']
 
-    resolver.set_value_for_parameter('user', 'new_user', 'global')
+    resolver.set_value_for_parameter('user', 'new_user', 'local')
     config_dict = resolver.config_dict()
     assert config_dict['openbis_url'] == expected_dict['openbis_url']
     assert config_dict['user'] == 'new_user'

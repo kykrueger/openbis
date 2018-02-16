@@ -167,10 +167,10 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(path):
             git_status = self.git_wrapper.git_status()
             if git_status.failure():
-                return 'NOT_INITIALIZED'
+                return ('NOT_INITIALIZED', None)
             if git_status.output is not None and len(git_status.output) > 0:
-                return 'PENDING_CHANGES'
-            return 'SYNCHRONIZED'
+                return ('PENDING_CHANGES', git_status.output)
+            return ('SYNCHRONIZED', None)
 
 
     def get_data_set_id(self, path):
@@ -190,7 +190,7 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(path):
             # Update the resolvers location
             self.config_resolver.location_resolver.location_roots['data_set'] = '.'
-            self.config_resolver.copy_global_to_local() # TODO yn use config provided to data_mgmt
+            self.config_resolver.copy_global_to_local()
             self.commit_metadata_updates('local with global')
         return result
 
