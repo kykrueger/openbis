@@ -167,10 +167,10 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(path):
             git_status = self.git_wrapper.git_status()
             if git_status.failure():
-                return 'NOT_INITIALIZED'
+                return ('NOT_INITIALIZED', None)
             if git_status.output is not None and len(git_status.output) > 0:
-                return 'PENDING_CHANGES'
-            return 'SYNCHRONIZED'
+                return ('PENDING_CHANGES', git_status.output)
+            return ('SYNCHRONIZED', None)
 
 
     def get_data_set_id(self, path):

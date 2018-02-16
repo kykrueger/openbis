@@ -34,11 +34,11 @@ class OpenbisCommand(object):
     def data_set_properties(self):
         return self.config_dict.get('data_set_properties')
 
-    def sample_id(self):
-        return self.config_dict.get('sample_id')
+    def object_id(self):
+        return self.config_dict.get('object_id')
 
-    def experiment_id(self):
-        return self.config_dict.get('experiment_id')
+    def collection_id(self):
+        return self.config_dict.get('collection_id')
 
     def user(self):
         return self.config_dict.get('user')
@@ -105,8 +105,8 @@ class OpenbisCommand(object):
             try:
                 external_dms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
                                                                     "{}:/{}".format(hostname, edms_path))
-            except ValueError as e:
-                return CommandResult(returncode=-1, output=str(e))
+            except ValueError as error:
+                return CommandResult(returncode=-1, output=str(error))
         return CommandResult(returncode=0, output=external_dms)
 
     def determine_hostname(self):
@@ -117,10 +117,9 @@ class OpenbisCommand(object):
         if hostname is not None:
             return hostname
         # ask user
-        hostname = self.ask_for_hostname(socket.gethostname());
+        hostname = self.ask_for_hostname(socket.gethostname())
         # store
         cli.config_internal(self.data_mgmt, True, 'hostname', hostname)
-        # self.config_resolver.set_value_for_parameter('hostname', hostname, 'global')
         return hostname
 
     def ask_for_hostname(self, hostname):
