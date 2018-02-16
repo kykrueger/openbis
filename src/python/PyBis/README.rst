@@ -38,32 +38,59 @@ Masterdata
     o.get_terms('MATING_TYPE')
     o.get_tags()
 
-Spaces and Projects
--------------------
+Spaces
+------
 
 ::
 
+    space = o.new_space(code='space_name', description='')
+    space.save()
+    space.delete('reason for deletion')
     o.get_spaces()
     o.get_space('MY_SPACE')
+
+Projects
+--------
+
+::
+
+    project = o.new_project(
+        space=space, 
+        code='project_name',
+        description='some project description'
+    )
+    project = space.new_project( code='project_code', description='project description')
+    project.save()
+
+    o.get_projects()
     o.get_projects(space='MY_SPACE')
     space.get_projects()
+
     project.get_experiments()
     project.get_attachments()
-    project.download_attachments()
     p.add_attachment(fileName='testfile', description= 'another file', title= 'one more attachment')
-    p.save()
+    project.download_attachments()
 
 Samples
 -------
 
+Samples are nowadays called **Objects** in openBIS. pyBIS is not yet
+thoroughly supporting this term in all methods where «sample» occurs.
+
 ::
 
     sample = o.new_sample(
-        type='YEAST',
-        space='MY_SPACE',
-        parents=[parent_sample, '/MY_SPACE/YEA66'],
+        type='YEAST', 
+        space='MY_SPACE', 
+        parents=[parent_sample, '/MY_SPACE/YEA66'], 
         children=[child_sample]
     )
+    sample = space.new_sample( type='YEAST' )
+    sample.save()
+
+    sample = o.get_sample('/MY_SPACE/MY_SAMPLE_CODE')
+    sample = o.get_sample('20170518112808649-52')
+
     sample.space
     sample.code
     sample.permId
@@ -95,11 +122,13 @@ Samples
     sample.get_attachments()
     sample.download_attachments()
     sample.add_attachment('testfile.xls')
+
     samples = o.get_samples(
         space='MY_SPACE',
-        type='YEAST'
-        tags=['*']                        # tags must be present
-        NAME = 'some name'                # properties are always uppercase to distinguish them from attributes
+        type='YEAST',
+        tags=['*'],                          # tags must be present
+        NAME = 'some name',                  # properties are always uppercase to distinguish them from attributes
+        **{ "SOME.WEIRD:PROPERTY": "value"}  # in case your property name contains a dot or a colon which cannot be passed as an argument name 
         props=['NAME', 'MATING_TYPE','SHOW_IN_PROJECT_OVERVIEW'] # show these properties in the results
     )
     samples.df                            # returns a pandas dataframe object
@@ -119,9 +148,9 @@ Experiments
     )
     o.get_experiments(
         project='YEASTS',
-        space='MY_SPACE',
+        space='MY_SPACE', 
         type='DEFAULT_EXPERIMENT',
-        tags='*',
+        tags='*', 
         finished_flag=False,
         props=['name', 'finished_flag']
     )
@@ -163,11 +192,10 @@ Datasets
     ds.download(destination='/tmp', wait_until_finished=False)
 
     ds_new = o.new_dataset(
-        type='ANALYZED_DATA',
-        experiment=exp,
+        type='ANALYZED_DATA', 
+        experiment=exp, 
         sample= samp,
-        parents=[my_dataset, '20160713173002405-212'],
-        files = ['my_analyzed_data.dat'],
+        files = ['my_analyzed_data.dat'], 
         props={'name': 'we give this dataset a name', 'notes': 'and we might need some notes, too'})
     )
     ds_new.save()
@@ -232,7 +260,6 @@ Semantic Annotations
     # delete semantic annotation
     sa.delete('reason')
 
-
 Requirements and organization
 =============================
 
@@ -277,3 +304,4 @@ This project is devided in several parts:
    module
 -  src/vagrant/\ **obis/Vagrantfile** to set up a complete OpenBIS
    instance on a virtual machine (CentOS 7)
+-  

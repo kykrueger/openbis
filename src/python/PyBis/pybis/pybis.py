@@ -4377,13 +4377,16 @@ class Group(OpenBisObject):
         that belong to this group.
         """
 
+        columns = ['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']
         persons = DataFrame(self._users)
+        if len(persons) == 0:
+            persons = DataFrame(columns=columns)
         persons['permId'] = persons['permId'].map(extract_permid)
         persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
         persons['space'] = persons['space'].map(extract_nested_permid)
         p = Things(
             self.openbis, entity='person', 
-            df=persons[['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']],
+            df=persons[columns],
             identifier_name='permId'
         )
         return p
