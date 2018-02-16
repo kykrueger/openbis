@@ -69,16 +69,20 @@ ame` ``
 
 ## upgrading openBIS
 
-Before upgrading, make sure your openBIS instance is not running.
+This process describes how to upgrade your openBIS instance in your virtual machine (Vagrant). 
 
-1. download [latest openBIS Sprint release](https://wiki-bsse.ethz.ch/display/bis/Sprint+Releases)
-2. make sure your OS is not automatically unzipping it
-3. move *.gz file from ~/Download to pybis/src/vagrant/jupyter-bis
-4. cd pybis/src/vagrant/jupyter-bis
-5. vagrant ssh
-6. sudo su - openbis
-7. cp /vagrant/openBIS-installation-standard-technologies-S267.0-r39027.tar.gz ~/servers
-8. bin/upgrade.sh
+1. download [latest openBIS Sprint release](https://wiki-bsse.ethz.ch/display/bis/Sprint+Releases) (Download link is available only after logging in)
+2. make sure your OS is not automatically unzipping it (Safari: hold alt button while clicking on
+   the download link or disable opening «safe» files after downloading in preferences). If this doesn't work, the original .gz file can be found in the trashcan instead.
+3. move *.gz file from ~/Downloads to pybis/src/vagrant/jupyter-bis
+4. go to the location of the vagrant machine: `cd pybis/src/vagrant/jupyter-bis/initalize`
+5. log into vagrant: `vagrant ssh`
+6. stop all services: `sync/initialize/stop_services.sh`
+7. switch to openbis user: `sudo su - openbis`
+9. copy the downloaded gz-file (change the filename accordingly): `cp /vagrant_initialize/openBIS-installation-standard-technologies-S267.0-r39027.tar.gz ~/servers`
+10. do the openBIS upgrade: `bin/upgrade.sh`
+11. switch back to vagrant user: `logout` or CTRL-D
+11. start openBIS: `sync/initialize/start_services`
 
 ## start openBIS and JupyterHub
 
