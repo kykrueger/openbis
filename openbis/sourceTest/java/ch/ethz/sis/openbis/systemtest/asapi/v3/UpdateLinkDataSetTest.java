@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.hamcrest.Matchers;
 import org.junit.internal.matchers.IsCollectionContaining;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
@@ -126,7 +127,8 @@ public class UpdateLinkDataSetTest extends AbstractLinkDataSetTest
     }
 
     @Test(dataProvider = "InvalidLocationCombinations", expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Invalid arguments.*")
-    void cannotLinkToExternalDmsOfWrongType(ExternalDmsAddressType dmsType, String externalCode, String path, String gitCommitHash, String gitRepositoryId)
+    void cannotLinkToExternalDmsOfWrongType(ExternalDmsAddressType dmsType, String externalCode, String path, String gitCommitHash,
+            String gitRepositoryId)
     {
         ExternalDmsPermId edms = create(externalDms().withType(dmsType));
 
@@ -292,6 +294,10 @@ public class UpdateLinkDataSetTest extends AbstractLinkDataSetTest
         DataSetPermId id = create(linkDataSet().with(copyAt(dms)));
         Date mod1 = get(id).getModificationDate();
 
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
+
         update(dataset(id).withNewCopies(copyAt(dms)));
 
         Date mod2 = get(id).getModificationDate();
@@ -312,6 +318,11 @@ public class UpdateLinkDataSetTest extends AbstractLinkDataSetTest
         List<ContentCopy> contentCopies = dataSet.getLinkedData().getContentCopies();
         ContentCopyPermId removedId =
                 contentCopies.get(0).getExternalCode().equals(removed) ? contentCopies.get(0).getId() : contentCopies.get(1).getId();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
+
         update(dataset(id).without(removedId));
 
         Date mod2 = get(id).getModificationDate();
@@ -324,6 +335,10 @@ public class UpdateLinkDataSetTest extends AbstractLinkDataSetTest
         ExternalDmsPermId dms = create(externalDms().withType(ExternalDmsAddressType.URL));
         DataSetPermId id = create(linkDataSet().with(copyAt(dms)));
         Date mod1 = get(id).getModificationDate();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
 
         String code = uuid();
         update(dataset(id).withExternalCode(code));
@@ -340,6 +355,10 @@ public class UpdateLinkDataSetTest extends AbstractLinkDataSetTest
 
         DataSetPermId id = create(linkDataSet().with(copyAt(dms1)));
         Date mod1 = get(id).getModificationDate();
+
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+        TestTransaction.start();
 
         update(dataset(id).withExternalDms(dms2));
 
