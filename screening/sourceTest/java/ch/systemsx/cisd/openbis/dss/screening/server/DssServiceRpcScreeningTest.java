@@ -40,8 +40,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.googlecode.jsonrpc4j.Base64;
-
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import ch.systemsx.cisd.base.convert.NativeTaggedArray;
 import ch.systemsx.cisd.base.image.IImageTransformer;
@@ -113,6 +111,7 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgIm
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgImageTransformationDTO;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgImageZoomLevelDTO;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgImageZoomLevelTransformationEnrichedDTO;
+import net.iharder.Base64;
 
 /**
  * Test cases for the {@link DssServiceRpcScreening}.
@@ -286,10 +285,8 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareLockDataSet("ds1", DATASET_CODE2);
         prepareListDatasets("ds1", DATASET_CODE2);
 
-        long[] dataSetIDs = new long[]
-        { 1, 2 };
-        String[][] featureCodesPerDataset = new String[][]
-        {
+        long[] dataSetIDs = new long[] { 1, 2 };
+        String[][] featureCodesPerDataset = new String[][] {
                 { "f1", "f2" },
                 { "f2", "f3" } };
         prepareListAnalysisDatasets(dataSetIDs);
@@ -311,11 +308,9 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareLockDataSet("ds1", DATASET_CODE2);
         prepareListDatasets("ds1", DATASET_CODE2);
 
-        long[] dataSetIDs = new long[]
-        { 1, 2 };
+        long[] dataSetIDs = new long[] { 1, 2 };
         FeatureInformation[][] featureCodesPerDataset =
-                new FeatureInformation[][]
-                {
+                new FeatureInformation[][] {
                         {
                                 new FeatureInformation("f1", "Feature 1",
                                         "The first feature."),
@@ -345,8 +340,7 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
     @Test
     public void testLoadFeatures()
     {
-        prepareFeatureVectorContainedDatasets(new long[]
-        { 1, 2 });
+        prepareFeatureVectorContainedDatasets(new long[] { 1, 2 });
 
         prepareAssetDataSetsAreAccessible();
         prepareLockDataSet("ds1", DATASET_CODE2);
@@ -356,16 +350,12 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareListAnalysisDatasets(1, 2);
         prepareListContainers(true, 1, 2);
 
-        String[][] featureCodesPerDataset = new String[][]
-        {
+        String[][] featureCodesPerDataset = new String[][] {
                 { "F1", "F2" } };
-        prepareLoadFeatures(new long[]
-        { 1 }, featureCodesPerDataset);
-        featureCodesPerDataset = new String[][]
-        {
+        prepareLoadFeatures(new long[] { 1 }, featureCodesPerDataset);
+        featureCodesPerDataset = new String[][] {
                 { "F2" } };
-        prepareLoadFeatures(new long[]
-        { 2 }, featureCodesPerDataset);
+        prepareLoadFeatures(new long[] { 2 }, featureCodesPerDataset);
 
         List<FeatureVectorDataset> dataSets =
                 screeningService.loadFeatures(SESSION_TOKEN, Arrays.asList(r1, r2),
@@ -468,14 +458,16 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
                     one(imageLoader).tryGetImage(
                             CHANNEL_CODE,
                             ImageChannelStackReference.createHCSFromLocations(new Location(3, 1),
-                                    new Location(1, 1)), thumbnailSize, null);
+                                    new Location(1, 1)),
+                            thumbnailSize, null);
                     will(returnValue(new AbsoluteImageReference(image("img1.jpg"), "img1", null,
                             null, thumbnailSize, createBlueColor(),
                             new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
                     one(imageLoader).tryGetImage(
                             CHANNEL_CODE,
                             ImageChannelStackReference.createHCSFromLocations(new Location(3, 1),
-                                    new Location(2, 1)), thumbnailSize, null);
+                                    new Location(2, 1)),
+                            thumbnailSize, null);
                     will(returnValue(new AbsoluteImageReference(image("img1.gif"), "img1", null,
                             null, thumbnailSize, createBlueColor(),
                             new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
@@ -517,11 +509,9 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
                             new ImgImageDatasetDTO(DATASET_CODE, null, null, null, false, null,
                                     null);
                     ds1.setId(42);
-                    allowing(dao).listImageDatasetsByPermId(new String[]
-                    { DATASET_CODE, DATASET_CODE2 });
+                    allowing(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE, DATASET_CODE2 });
                     will(returnValue(Arrays.asList(ds1)));
-                    allowing(dao).listImageDatasetsByPermId(new String[]
-                    { DATASET_CODE2, DATASET_CODE });
+                    allowing(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE2, DATASET_CODE });
                     will(returnValue(Arrays.asList(ds1)));
 
                     one(dao).listImageZoomLevels(42L);
@@ -573,8 +563,7 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         context.checking(new Expectations()
             {
                 {
-                    one(dao).listImageDatasetsByPermId(new String[]
-                    { DATASET_CODE });
+                    one(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE });
                     ImgImageDatasetDTO ds1 =
                             new ImgImageDatasetDTO(DATASET_CODE, null, null, null, false, null,
                                     null);
@@ -605,7 +594,8 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
                     one(imageLoader).tryGetImage(
                             CHANNEL_CODE,
                             ImageChannelStackReference.createHCSFromLocations(new Location(1, 1),
-                                    new Location(1, 1)), thumbnailSize, null);
+                                    new Location(1, 1)),
+                            thumbnailSize, null);
                     will(returnValue(new AbsoluteImageReference(image("img1.jpg"), "img1", null,
                             null, thumbnailSize, createBlueColor(),
                             new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
@@ -613,7 +603,8 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
                     one(imageLoader).tryGetImage(
                             CHANNEL_CODE,
                             ImageChannelStackReference.createHCSFromLocations(new Location(2, 1),
-                                    new Location(2, 1)), thumbnailSize, null);
+                                    new Location(2, 1)),
+                            thumbnailSize, null);
                     will(returnValue(new AbsoluteImageReference(image("img1.png"), "img1", null,
                             null, thumbnailSize, createBlueColor(),
                             new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
@@ -891,8 +882,7 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
                             int offset = getFeatureDefId(featureCode);
                             PlateFeatureValues matrixValues =
                                     new PlateFeatureValues(NativeTaggedArray
-                                            .toByteArray(new MDFloatArray(new float[][]
-                                            {
+                                            .toByteArray(new MDFloatArray(new float[][] {
                                                     { 3.5f * dataSetId + offset },
                                                     { 1.25f * dataSetId + offset } })));
                             ImgFeatureValuesDTO value =

@@ -45,8 +45,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
  * 
  * @author Kaloyan Enimanev
  */
-@Test(groups =
-{ "slow" })
+@Test(groups = { "slow" })
 public class JsonDssServiceRpcGenericTest extends SystemTestCase
 {
     private static final String DATA_SET_CODE = "20081105092159111-1";
@@ -174,7 +173,7 @@ public class JsonDssServiceRpcGenericTest extends SystemTestCase
             JsonRpcHttpClient client =
                     new JsonRpcHttpClient(new GenericObjectMapper(), new URL(OPENBIS_URL),
                             new HashMap<String, String>());
-            return ProxyUtil.createProxy(JsonDssServiceRpcGenericTest.class.getClassLoader(),
+            return ProxyUtil.createClientProxy(JsonDssServiceRpcGenericTest.class.getClassLoader(),
                     IGeneralInformationService.class, client);
         } catch (MalformedURLException ex)
         {
@@ -190,7 +189,7 @@ public class JsonDssServiceRpcGenericTest extends SystemTestCase
             JsonRpcHttpClient client =
                     new JsonRpcHttpClient(new GenericObjectMapper(), new URL(DSS_URL),
                             new HashMap<String, String>());
-            return ProxyUtil.createProxy(JsonDssServiceRpcGenericTest.class.getClassLoader(),
+            return ProxyUtil.createClientProxy(JsonDssServiceRpcGenericTest.class.getClassLoader(),
                     IDssServiceRpcGeneric.class, client);
         } catch (MalformedURLException ex)
         {

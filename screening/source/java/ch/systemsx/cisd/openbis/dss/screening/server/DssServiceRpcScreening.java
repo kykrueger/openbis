@@ -36,8 +36,6 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 
-import com.googlecode.jsonrpc4j.Base64;
-
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.image.IImageTransformerFactory;
 import ch.systemsx.cisd.common.api.RpcServiceInterfaceVersionDTO;
@@ -115,6 +113,7 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgFe
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgImageDatasetDTO;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgImageTransformationDTO;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.imaging.dataaccess.ImgImageZoomLevelDTO;
+import net.iharder.Base64;
 
 /**
  * Implementation of the screening API interface using RPC. The instance will be created in spring and published as a HTTP invoker servlet configured

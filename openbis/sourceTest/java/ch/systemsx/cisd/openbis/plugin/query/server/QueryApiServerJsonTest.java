@@ -23,8 +23,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 
-import jline.ConsoleReader;
-
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import com.googlecode.jsonrpc4j.ProxyUtil;
 
@@ -34,6 +32,7 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.IQueryApiServer;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryDescription;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableColumn;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
+import jline.ConsoleReader;
 
 /**
  * @author Chandrasekhar Ramakrishnan
@@ -52,7 +51,7 @@ public class QueryApiServerJsonTest
             JsonRpcHttpClient client =
                     new JsonRpcHttpClient(new GenericObjectMapper(), new URL(serverUrl
                             + IQueryApiServer.JSON_SERVICE_URL), new HashMap<String, String>());
-            return ProxyUtil.createProxy(QueryApiServerJsonTest.class.getClassLoader(),
+            return ProxyUtil.createClientProxy(QueryApiServerJsonTest.class.getClassLoader(),
                     IQueryApiServer.class, client);
         } catch (MalformedURLException ex)
         {
