@@ -46,7 +46,7 @@ def test_create_delete_sample(space):
 
     sample.delete('sample creation test on '+timestamp)
 
-def test_create_delete_sample_space(space):
+def test_create_delete_space_sample(space):
     o=space.openbis
     sample_type = 'UNKNOWN'
     timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()

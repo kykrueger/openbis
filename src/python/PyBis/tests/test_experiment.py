@@ -8,7 +8,7 @@ from pybis import DataSet
 from pybis import Openbis
 
 
-def test_create_delete_project(space):
+def test_create_delete_experiment(space):
     o=space.openbis
     timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
     new_code='test_experiment_'+timestamp

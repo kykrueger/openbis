@@ -1,6 +1,14 @@
 from datetime import datetime
 import re
 
+# display messages when in a interactive context (IPython or Jupyter)
+try:
+    get_ipython()
+except Exception:
+    VERBOSE = False
+else:
+    VERBOSE = True
+
 def parse_jackson(input_json):
     """openBIS uses a library called «jackson» to automatically generate the JSON RPC output.
        Objects that are found the first time are added an attribute «@id».
