@@ -1,6 +1,7 @@
 from .attribute import AttrHolder
 from .openbis_object import OpenBisObject 
 from .utils import VERBOSE
+from pandas import DataFrame
 
 class Group(OpenBisObject):
     """ Managing openBIS authorization groups

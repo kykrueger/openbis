@@ -53,8 +53,7 @@ class DataSet(OpenBisObject):
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files(start_folder='/')", 'file_list',
             'download(files=None, destination=None, wait_until_finished=True)', 
-            'status', 'archive()', 'unarchive()', 
-            'data'
+            'status', 'archive()', 'unarchive()' 
         ]
 
     def __setattr__(self, name, value):
@@ -166,6 +165,7 @@ class DataSet(OpenBisObject):
             queue.join()
 
         if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
+        return destination
 
     @property
     def folder(self):
@@ -261,6 +261,8 @@ class DataSet(OpenBisObject):
             experiment_identifier = self.experiment.identifier
 
         parentIds = self.parents
+        if parentIds is None:
+            parentIds = []
 
         dataset_type = self.type.code
         properties = self.props.all_nonempty()
@@ -308,7 +310,6 @@ class DataSet(OpenBisObject):
             # activate the ingestion plugin, as soon as the data is uploaded
             request = self._generate_plugin_request(dss=datastores['code'][0])
 
-            print(json.dumps(request))
             resp = self.openbis._post_request(self.openbis.reg_v1, request)
 
             if resp['rows'][0][0]['value'] == 'OK':

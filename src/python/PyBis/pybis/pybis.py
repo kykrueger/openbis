@@ -1106,11 +1106,11 @@ class Openbis:
         """
 
         criteria = []
-        for search_arg in ['code', 'description', 'registrator']:
+        for search_arg in ['code']:
+            # unfortunately, there aren't many search possibilities yet...
             if search_arg in search_args:
-                pass
-                #sub_crit = get_search_type_for_entity(search_arg)
-                #criteria.append(sub_crit)
+                if search_arg == 'code':
+                    criteria.append(_criteria_for_code(search_args[search_arg]))
 
         search_criteria = get_search_type_for_entity('authorizationGroup')
         search_criteria['criteria'] = criteria
@@ -1128,25 +1128,21 @@ class Openbis:
             ],
         }
         resp = self._post_request(self.as_v3, request)
+
+        attrs = ['permId', 'code', 'description', 'users', 'registrator', 'registrationDate', 'modificationDate']
         if len(resp['objects']) == 0:
-            raise ValueError("No groups found!")
+            groups = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
+            groups = DataFrame(objects)
 
-        objects = resp['objects']
-        parse_jackson(objects)
-
-        groups = DataFrame(objects)
-
-        groups['permId'] = groups['permId'].map(extract_permid)
-        groups['registrator'] = groups['registrator'].map(extract_person)
-        groups['users'] = groups['users'].map(extract_userId)
-        groups['registrationDate'] = groups['registrationDate'].map(format_timestamp)
-        groups['modificationDate'] = groups['modificationDate'].map(format_timestamp)
-        p = Things(
-            self, entity='group', 
-            df=groups[['permId', 'code', 'description', 'users', 'registrator', 'registrationDate', 'modificationDate']],
-            identifier_name='permId'
-        )
-        return p
+            groups['permId'] = groups['permId'].map(extract_permid)
+            groups['registrator'] = groups['registrator'].map(extract_person)
+            groups['users'] = groups['users'].map(extract_userId)
+            groups['registrationDate'] = groups['registrationDate'].map(format_timestamp)
+            groups['modificationDate'] = groups['modificationDate'].map(format_timestamp)
+        return Things(self, entity='group', df=groups[attrs], identifier_name='permId')
 
 
     def get_persons(self, **search_args):
@@ -1166,22 +1162,23 @@ class Openbis:
             ],
         }
         resp = self._post_request(self.as_v3, request)
+
+        attrs = ['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']
         if len(resp['objects']) == 0:
-            raise ValueError("No persons found!")
+            persons = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
 
-        objects = resp['objects']
-        parse_jackson(objects)
+            persons = DataFrame(resp['objects'])
+            persons['permId'] = persons['permId'].map(extract_permid)
+            persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
+            persons['space'] = persons['space'].map(extract_nested_permid)
 
-        persons = DataFrame(resp['objects'])
-        persons['permId'] = persons['permId'].map(extract_permid)
-        persons['registrationDate'] = persons['registrationDate'].map(format_timestamp)
-        persons['space'] = persons['space'].map(extract_nested_permid)
-        p = Things(
-            self, entity='person', 
-            df=persons[['permId', 'userId', 'firstName', 'lastName', 'email', 'space', 'registrationDate', 'active']],
-            identifier_name='permId'
+        return Things(
+            self, entity='person', df=persons[attrs], identifier_name='permId'
         )
-        return p
+
 
     get_users = get_persons # Alias
 
@@ -1240,18 +1237,16 @@ class Openbis:
                        ],
         }
         resp = self._post_request(self.as_v3, request)
-        if resp is not None:
+
+        attrs = ['code', 'description', 'registrationDate', 'modificationDate']
+        if len(resp['objects']) == 0:
+            spaces = DataFrame(columns=attrs)
+        else:
             spaces = DataFrame(resp['objects'])
             spaces['registrationDate'] = spaces['registrationDate'].map(format_timestamp)
             spaces['modificationDate'] = spaces['modificationDate'].map(format_timestamp)
-            sp = Things(
-                self,
-                'space',
-                spaces[['code', 'description', 'registrationDate', 'modificationDate']]
-            )
-            return sp
-        else:
-            raise ValueError("No spaces found!")
+        return Things(self, 'space', spaces[attrs])
+
 
     def get_space(self, code, only_data=False):
         """ Returns a Space object for a given identifier.
@@ -1356,8 +1351,8 @@ class Openbis:
                        fetchopts,
                        ],
         }
-
         resp = self._post_request(self.as_v3, request)
+
         attrs = ['identifier', 'permId', 'experiment', 'sample_type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
         if len(resp['objects']) == 0:
@@ -1381,8 +1376,7 @@ class Openbis:
                 samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        ss = samples[attrs]
-        return Things(self, 'sample', ss, 'identifier')
+        return Things(self, 'sample', samples[attrs], 'identifier')
 
     get_objects = get_samples # Alias
 
@@ -1436,32 +1430,31 @@ class Openbis:
             ],
         }
         resp = self._post_request(self.as_v3, request)
-        if len(resp['objects']) == 0:
-            raise ValueError("No experiments found!")
-
-        objects = resp['objects']
-        parse_jackson(objects)
-
-        experiments = DataFrame(objects)
-        experiments['registrationDate'] = experiments['registrationDate'].map(format_timestamp)
-        experiments['modificationDate'] = experiments['modificationDate'].map(format_timestamp)
-        experiments['project'] = experiments['project'].map(extract_code)
-        experiments['registrator'] = experiments['registrator'].map(extract_person)
-        experiments['modifier'] = experiments['modifier'].map(extract_person)
-        experiments['identifier'] = experiments['identifier'].map(extract_identifier)
-        experiments['permId'] = experiments['permId'].map(extract_permid)
-        experiments['type'] = experiments['type'].map(extract_code)
-
         attrs = ['identifier', 'permId', 'project', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        if len(resp['objects']) == 0:
+            experiments = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
+
+            experiments = DataFrame(objects)
+            experiments['registrationDate'] = experiments['registrationDate'].map(format_timestamp)
+            experiments['modificationDate'] = experiments['modificationDate'].map(format_timestamp)
+            experiments['project'] = experiments['project'].map(extract_code)
+            experiments['registrator'] = experiments['registrator'].map(extract_person)
+            experiments['modifier'] = experiments['modifier'].map(extract_person)
+            experiments['identifier'] = experiments['identifier'].map(extract_identifier)
+            experiments['permId'] = experiments['permId'].map(extract_permid)
+            experiments['type'] = experiments['type'].map(extract_code)
 
         if props is not None:
             for prop in props:
                 experiments[prop.upper()] = experiments['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        exps = experiments[attrs]
-        return Things(self, 'experiment', exps, 'identifier')
+        return Things(self, 'experiment', experiments[attrs], 'identifier')
+
 
     def get_datasets(self,
                      code=None, type=None, withParents=None, withChildren=None, status=None,
@@ -1517,29 +1510,31 @@ class Openbis:
                        ],
         }
         resp = self._post_request(self.as_v3, request)
+
+        attrs = ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate', 'location']
+
         if len(resp['objects']) == 0:
-            raise ValueError("no datasets found!")
+            datasets = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
 
-        objects = resp['objects']
-        parse_jackson(objects)
+            datasets = DataFrame(objects)
+            datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
+            datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
+            datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
+            datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
+            datasets['type'] = datasets['type'].map(extract_code)
+            datasets['permId'] = datasets['code']
+            datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
 
-        datasets = DataFrame(objects)
-        datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
-        datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
-        datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
-        datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
-        datasets['type'] = datasets['type'].map(extract_code)
-        datasets['permId'] = datasets['code']
-        datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
-
-        attrs = ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate',
-                 'location']
         if props is not None:
             for prop in props:
                 datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
         return Things(self, 'dataset', datasets[attrs], 'permId')
+
 
     def get_experiment(self, expId, withAttachments=False, only_data=False):
         """ Returns an experiment object for a given identifier (expId).
@@ -1830,29 +1825,27 @@ class Openbis:
                        fetchopts,
                        ],
         }
-
         resp = self._post_request(self.as_v3, request)
-        objects = resp['objects']
-        if len(objects) == 0:
-            raise ValueError("No projects found!")
-            
-        parse_jackson(objects)
 
-        projects = DataFrame(objects)
-        if len(projects) is 0:
-            raise ValueError("No projects found!")
+        attrs = ['identifier', 'permId', 'leader', 'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        if len(resp['objects']) == 0:
+            projects = DataFrame(columns=attrs)        
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
 
-        projects['registrationDate'] = projects['registrationDate'].map(format_timestamp)
-        projects['modificationDate'] = projects['modificationDate'].map(format_timestamp)
-        projects['leader'] = projects['leader'].map(extract_person)
-        projects['registrator'] = projects['registrator'].map(extract_person)
-        projects['modifier'] = projects['modifier'].map(extract_person)
-        projects['permId'] = projects['permId'].map(extract_permid)
-        projects['identifier'] = projects['identifier'].map(extract_identifier)
+            projects = DataFrame(objects)
 
-        pros = projects[['identifier', 'permId', 'leader', 'registrator', 'registrationDate',
-                            'modifier', 'modificationDate']]
-        return Things(self, 'project', pros, 'identifier')
+            projects['registrationDate'] = projects['registrationDate'].map(format_timestamp)
+            projects['modificationDate'] = projects['modificationDate'].map(format_timestamp)
+            projects['leader'] = projects['leader'].map(extract_person)
+            projects['registrator'] = projects['registrator'].map(extract_person)
+            projects['modifier'] = projects['modifier'].map(extract_person)
+            projects['permId'] = projects['permId'].map(extract_permid)
+            projects['identifier'] = projects['identifier'].map(extract_identifier)
+
+        return Things(self, 'project', projects[attrs], 'identifier')
+
 
     def _create_get_request(self, method_name, entity, permids, options):
 
