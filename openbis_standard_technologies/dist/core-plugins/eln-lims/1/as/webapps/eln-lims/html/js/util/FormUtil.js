@@ -1145,7 +1145,7 @@ var FormUtil = new function() {
 	}
 
     //
-    // Dropbox folder name dialog
+    // DSS disk space usage dialog
     //
 
 	this.showDiskSpaceDialog = function() {
@@ -1243,7 +1243,6 @@ var FormUtil = new function() {
 
 				// events
 				$("#dropboxFolderNameClose").on("click", function(event) {
-					console.log('close');
 					Util.unblockUI();
 				});
 
