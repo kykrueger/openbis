@@ -120,7 +120,7 @@ public class UnlockDataSetTest extends AbstractArchiveUnarchiveDataSetTest
         v3.unlockDataSets(sessionToken, Arrays.asList(dataSetId), options);
     }
 
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)
+    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
     public void testUnlockWithProjectAuthorization(ProjectAuthorizationUser user)
     {
         // Given

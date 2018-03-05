@@ -30,8 +30,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.NameSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginKindSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginTypeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.ScriptTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
@@ -72,12 +72,12 @@ public class SearchPluginExecutor
         } else if (criteria instanceof NameSearchCriteria)
         {
             return new NameMatcher();
+        } else if (criteria instanceof PluginKindSearchCriteria)
+        {
+            return new PluginKindMatcher();
         } else if (criteria instanceof PluginTypeSearchCriteria)
         {
             return new PluginTypeMatcher();
-        } else if (criteria instanceof ScriptTypeSearchCriteria)
-        {
-            return new ScriptTypeMatcher();
         } else
         {
             throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());
@@ -135,23 +135,23 @@ public class SearchPluginExecutor
         
     }
     
-    private static final class PluginTypeMatcher extends SimpleFieldMatcher<ScriptPE>
+    private static final class PluginKindMatcher extends SimpleFieldMatcher<ScriptPE>
     {
         @Override
         protected boolean isMatching(IOperationContext context, ScriptPE script, ISearchCriteria criteria)
         {
             return script.getPluginType().name()
-                    .equals(((PluginTypeSearchCriteria) criteria).getFieldValue().name());
+                    .equals(((PluginKindSearchCriteria) criteria).getFieldValue().name());
         }
     }
     
-    private static final class ScriptTypeMatcher extends SimpleFieldMatcher<ScriptPE>
+    private static final class PluginTypeMatcher extends SimpleFieldMatcher<ScriptPE>
     {
         @Override
         protected boolean isMatching(IOperationContext context, ScriptPE script, ISearchCriteria criteria)
         {
             return script.getScriptType().name()
-                    .equals(((ScriptTypeSearchCriteria) criteria).getFieldValue().name());
+                    .equals(((PluginTypeSearchCriteria) criteria).getFieldValue().name());
         }
     }
 }

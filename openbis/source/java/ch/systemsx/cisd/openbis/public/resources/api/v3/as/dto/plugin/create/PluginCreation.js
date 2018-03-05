@@ -7,8 +7,8 @@ define([ "stjs" ], function(stjs) {
 		prototype.name = null;
 		prototype.description = null;
 		prototype.script = null;
+		prototype.pluginKind = null;
 		prototype.pluginType = null;
-		prototype.scriptType = null;
 		prototype.available = true;
 		prototype.entityKind = null;
 
@@ -30,17 +30,17 @@ define([ "stjs" ], function(stjs) {
 		prototype.setScript = function(script) {
 			this.script = script;
 		};
+		prototype.getPluginKind = function() {
+			return this.pluginKind;
+		};
+		prototype.setPluginKind = function(pluginKind) {
+			this.pluginKind = pluginKind;
+		};
 		prototype.getPluginType = function() {
 			return this.pluginType;
 		};
 		prototype.setPluginType = function(pluginType) {
 			this.pluginType = pluginType;
-		};
-		prototype.getScriptType = function() {
-			return this.scriptType;
-		};
-		prototype.setScriptType = function(scriptType) {
-			this.scriptType = scriptType;
 		};
 		prototype.isAvailable = function() {
 			return this.available;
@@ -55,8 +55,8 @@ define([ "stjs" ], function(stjs) {
 			this.entityKind = entityKind;
 		};
 	}, {
+		pluginKind : "PluginKind",
 		pluginType : "PluginType",
-		scriptType : "ScriptType",
 		entityKind : "EntityKind"
 	});
 	return PluginCreation;

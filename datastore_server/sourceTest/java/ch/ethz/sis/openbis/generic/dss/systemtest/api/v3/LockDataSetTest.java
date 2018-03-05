@@ -115,7 +115,7 @@ public class LockDataSetTest extends AbstractArchiveUnarchiveDataSetTest
         v3.lockDataSets(sessionToken, Arrays.asList(dataSetId), options);
     }
 
-    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER_WITH_ETL)
+    @Test(dataProviderClass = ProjectAuthorizationUser.class, dataProvider = ProjectAuthorizationUser.PROVIDER)
     public void testLockWithProjectAuthorization(ProjectAuthorizationUser user)
     {
         // Given

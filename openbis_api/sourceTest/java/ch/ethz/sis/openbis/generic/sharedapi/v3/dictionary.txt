@@ -1913,7 +1913,7 @@ get Name
 get Plugins
 Get Plugins Operation
 Get Plugins Operation Result
-get Plugin Type
+get Plugin Kind
 get Script
 get Script Type
 is Available
@@ -1931,7 +1931,7 @@ Plugin Type
 Script Type
 set Available
 set Entity Kinds
-set Plugin Type
+set Plugin Kind
 set Script
 set Script Type
 get Available
@@ -1946,9 +1946,9 @@ Search Plugins Operation Result
 Name Search Criteria
 with Name
 name
-Plugin Type Search Criteria
+Plugin Kind Search Criteria
 Script Type Search Criteria
-with Plugin Type
+with Plugin Kind
 with Script Type
 is With Script
 with Script

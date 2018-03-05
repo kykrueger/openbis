@@ -437,6 +437,29 @@ public class SearchSampleTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithValidationPlugin()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleTypeSearchCriteria searchCriteria = new SampleTypeSearchCriteria();
+        searchCriteria.withCode().thatEquals("IMPOSSIBLE_TO_UPDATE");
+        SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
+        fetchOptions.withValidationPlugin().withScript();
+        
+        // When
+        SampleType type = v3api.searchSampleTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
+        
+        // Then
+        assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
+        assertEquals(type.getValidationPlugin().getFetchOptions().isWithScript(), true);
+        assertEquals(type.getValidationPlugin().getName(), "validateUpdateFAIL");
+        assertEquals(type.getValidationPlugin().getScript(), "def validate(entity, isNew):\n  if (not isNew):\n"
+                + "    return \"Cannot update this entity\"\n ");
+        
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithSemanticAnnotationsWithIdThatEquals()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

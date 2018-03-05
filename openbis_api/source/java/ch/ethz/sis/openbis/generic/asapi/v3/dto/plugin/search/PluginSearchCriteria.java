@@ -43,14 +43,14 @@ public class PluginSearchCriteria extends AbstractObjectSearchCriteria<IPluginId
         return with(new NameSearchCriteria());
     }
     
-    public ScriptTypeSearchCriteria withScriptType()
-    {
-        return with(new ScriptTypeSearchCriteria());
-    }
-    
     public PluginTypeSearchCriteria withPluginType()
     {
         return with(new PluginTypeSearchCriteria());
+    }
+    
+    public PluginKindSearchCriteria withPluginKind()
+    {
+        return with(new PluginKindSearchCriteria());
     }
     
     public PluginSearchCriteria withOrOperator()

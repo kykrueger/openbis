@@ -24,8 +24,8 @@ import java.util.stream.Collectors;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.ScriptType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
 
@@ -50,8 +50,8 @@ public class SearchPluginTest extends AbstractTest
         // Then
         assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(),
                 "[validateUpdateFAIL, validateOK, validateFAIL, validateChildren]");
-        assertEquals(plugins.get(0).getScriptType(), ScriptType.ENTITY_VALIDATION);
-        assertEquals(plugins.get(0).getPluginType(), PluginType.JYTHON);
+        assertEquals(plugins.get(0).getPluginType(), PluginType.ENTITY_VALIDATION);
+        assertEquals(plugins.get(0).getPluginKind(), PluginKind.JYTHON);
         assertEquals(plugins.get(0).getFetchOptions().isWithScript(), false);
         assertEquals(plugins.get(0).getScript(), null);
 
@@ -65,7 +65,7 @@ public class SearchPluginTest extends AbstractTest
         String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
         PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
         searchCriteria.withName().thatContains("date");
-        searchCriteria.withScriptType().thatEquals(ScriptType.DYNAMIC_PROPERTY);
+        searchCriteria.withPluginType().thatEquals(PluginType.DYNAMIC_PROPERTY);
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         fetchOptions.withScript().sortBy().name().asc();
 
@@ -75,8 +75,8 @@ public class SearchPluginTest extends AbstractTest
         // Then
         assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(),
                 "[code_date, date]");
-        assertEquals(plugins.get(0).getScriptType(), ScriptType.DYNAMIC_PROPERTY);
-        assertEquals(plugins.get(0).getPluginType(), PluginType.JYTHON);
+        assertEquals(plugins.get(0).getPluginType(), PluginType.DYNAMIC_PROPERTY);
+        assertEquals(plugins.get(0).getPluginKind(), PluginKind.JYTHON);
         assertEquals(plugins.get(0).getFetchOptions().isWithScript(), true);
         assertEquals(plugins.get(0).getScript(), "\"%s %s\" % (entity.code(), str(currentDate().getTime()))");
 
@@ -89,7 +89,7 @@ public class SearchPluginTest extends AbstractTest
         // Given
         String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
         PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
-        searchCriteria.withPluginType().thatEquals(PluginType.PREDEPLOYED);
+        searchCriteria.withPluginKind().thatEquals(PluginKind.PREDEPLOYED);
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         
         // When

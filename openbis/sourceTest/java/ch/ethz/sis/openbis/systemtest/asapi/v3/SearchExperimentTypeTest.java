@@ -19,15 +19,19 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.CodeComparator;
 
@@ -115,6 +119,32 @@ public class SearchExperimentTypeTest extends AbstractTest
         assertEquals(types.get(0).getFetchOptions().hasPropertyAssignments(), true);
         List<PropertyAssignment> propertyAssignments = types.get(0).getPropertyAssignments();
         assertOrder(propertyAssignments, "ORGANISM", "DESCRIPTION", "BACTERIUM");
+        v3api.logout(sessionToken);
+    }
+    
+    @Test
+    public void testSearchWithValidationPlugin()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentTypeCreation creation = new ExperimentTypeCreation();
+        creation.setCode("MY-TYPE-" + System.currentTimeMillis());
+        creation.setValidationPluginId(new PluginPermId("testEXPERIMENT"));
+        EntityTypePermId typePermId = v3api.createExperimentTypes(sessionToken, Arrays.asList(creation)).get(0);
+        ExperimentTypeSearchCriteria searchCriteria = new ExperimentTypeSearchCriteria();
+        searchCriteria.withId().thatEquals(typePermId);
+        ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
+        fetchOptions.withValidationPlugin().withScript();
+        
+        // When
+        ExperimentType type = v3api.searchExperimentTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
+        
+        // Then
+        assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
+        assertEquals(type.getValidationPlugin().getFetchOptions().isWithScript(), true);
+        assertEquals(type.getValidationPlugin().getName(), "testEXPERIMENT");
+        assertEquals(type.getValidationPlugin().getScript(), "import time;\ndef validate(entity, isNew):\n  pass\n ");
+        
         v3api.logout(sessionToken);
     }
 

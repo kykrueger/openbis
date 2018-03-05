@@ -1319,7 +1319,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fSearch = function(facade) {
 				var criteria = new c.PluginSearchCriteria();
 				criteria.withName().thatContains("e");
-				criteria.withScriptType().thatEquals(c.ScriptType.ENTITY_VALIDATION);
+				criteria.withPluginType().thatEquals(c.PluginType.ENTITY_VALIDATION);
 				var fo = c.createPluginFetchOptions();
 				fo.withScript().sortBy().name().desc();
 				return facade.searchPlugins(criteria, fo);
@@ -1330,8 +1330,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var plugin = plugins[0];
 				c.assertEqual(plugin.getName(), "Has_Parents", "Name");
 				c.assertEqual(plugin.getDescription(), "Check if the Entity has a parent", "Description");
-				c.assertEqual(plugin.getPluginType(), c.PluginType.JYTHON, "Plugin type");
-				c.assertEqual(plugin.getScriptType(), c.ScriptType.ENTITY_VALIDATION, "Script type");
+				c.assertEqual(plugin.getPluginKind(), c.PluginKind.JYTHON, "Plugin kind");
+				c.assertEqual(plugin.getPluginType(), c.PluginType.ENTITY_VALIDATION, "Plugin type");
 				c.assertEqual(plugin.getFetchOptions().isWithScript(), true, "With script");
 				c.assertEqual(plugin.getScript(), 'def validate(entity, isNew):\n'
 						+ '  parents = entity.entityPE().parents\n'

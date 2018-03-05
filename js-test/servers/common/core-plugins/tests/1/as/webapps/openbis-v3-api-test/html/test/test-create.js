@@ -483,8 +483,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var creation = new c.PluginCreation();
 				creation.setName(name);
 				creation.setDescription("hello");
-				creation.setPluginType(c.PluginType.JYTHON);
-				creation.setScriptType(c.ScriptType.ENTITY_VALIDATION);
+				creation.setPluginKind(c.PluginKind.JYTHON);
+				creation.setPluginType(c.PluginType.ENTITY_VALIDATION);
 				creation.setScript("def a():\n  pass");
 				return facade.createPlugins([ creation ]);
 			}
@@ -493,8 +493,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(plugin.getName(), name, "Name");
 				c.assertEqual(plugin.getPermId().getPermId(), name, "Perm id");
 				c.assertEqual(plugin.getDescription(), "hello", "Description");
-				c.assertEqual(plugin.getPluginType(), c.PluginType.JYTHON, "Plugin type");
-				c.assertEqual(plugin.getScriptType(), c.ScriptType.ENTITY_VALIDATION, "Script type");
+				c.assertEqual(plugin.getPluginKind(), c.PluginKind.JYTHON, "Plugin kind");
+				c.assertEqual(plugin.getPluginType(), c.PluginType.ENTITY_VALIDATION, "Plugin type");
 				c.assertEqual(plugin.getScript(), "def a():\n  pass", "Script");
 				c.assertEqual(plugin.isAvailable(), true, "Available?");
 			}

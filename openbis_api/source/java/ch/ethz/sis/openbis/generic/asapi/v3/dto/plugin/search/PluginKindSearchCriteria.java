@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.EnumFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.plugin.ScriptType")
-public enum ScriptType
+@JsonObject("as.dto.plugin.search.PluginKindSearchCriteria")
+public class PluginKindSearchCriteria extends EnumFieldSearchCriteria<PluginKind>
 {
-    DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION;
+    private static final long serialVersionUID = 1L;
+
+    public PluginKindSearchCriteria()
+    {
+        super("plugin kind", SearchFieldType.ATTRIBUTE);
+    }
+
 }

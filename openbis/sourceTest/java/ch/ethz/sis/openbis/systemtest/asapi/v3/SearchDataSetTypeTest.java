@@ -207,4 +207,25 @@ public class SearchDataSetTypeTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testSearchWithValidationPlugin()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetTypeSearchCriteria searchCriteria = new DataSetTypeSearchCriteria();
+        searchCriteria.withCode().thatEquals("VALIDATED_NORMAL_TYPE");
+        DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
+        fetchOptions.withValidationPlugin().withScript();
+        
+        // When
+        DataSetType type = v3api.searchDataSetTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
+        
+        // Then
+        assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
+        assertEquals(type.getValidationPlugin().getFetchOptions().isWithScript(), true);
+        assertEquals(type.getValidationPlugin().getName(), "test");
+        assertEquals(type.getValidationPlugin().getScript(), "import time;\ndef validate(entity, isNew):\n  pass\n ");
+        
+        v3api.logout(sessionToken);
+    }
 }

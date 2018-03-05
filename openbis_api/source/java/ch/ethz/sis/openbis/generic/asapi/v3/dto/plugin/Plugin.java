@@ -61,13 +61,13 @@ public class Plugin implements Serializable, IDescriptionHolder, IPermIdHolder, 
     private Date registrationDate;
     
     @JsonProperty
-    private PluginType pluginType;
+    private PluginKind pluginKind;
     
     @JsonProperty
     private Set<EntityKind> entityKinds;
     
     @JsonProperty
-    private ScriptType scriptType;
+    private PluginType pluginType;
     
     @JsonProperty
     private String script;
@@ -152,14 +152,14 @@ public class Plugin implements Serializable, IDescriptionHolder, IPermIdHolder, 
     }
 
     @JsonIgnore
-    public PluginType getPluginType()
+    public PluginKind getPluginKind()
     {
-        return pluginType;
+        return pluginKind;
     }
 
-    public void setPluginType(PluginType pluginType)
+    public void setPluginKind(PluginKind pluginType)
     {
-        this.pluginType = pluginType;
+        this.pluginKind = pluginType;
     }
 
     @JsonIgnore
@@ -174,14 +174,14 @@ public class Plugin implements Serializable, IDescriptionHolder, IPermIdHolder, 
     }
 
     @JsonIgnore
-    public ScriptType getScriptType()
+    public PluginType getPluginType()
     {
-        return scriptType;
+        return pluginType;
     }
 
-    public void setScriptType(ScriptType scriptType)
+    public void setPluginType(PluginType pluginType)
     {
-        this.scriptType = scriptType;
+        this.pluginType = pluginType;
     }
 
     @JsonIgnore

@@ -1,5 +1,5 @@
 define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/IdsSearchCriteria", 
-         "as/dto/plugin/search/NameSearchCriteria", "as/dto/plugin/search/PluginTypeSearchCriteria", "as/dto/plugin/search/ScriptTypeSearchCriteria" ],
+         "as/dto/plugin/search/NameSearchCriteria", "as/dto/plugin/search/PluginKindSearchCriteria", "as/dto/plugin/search/PluginTypeSearchCriteria" ],
 		function(require, stjs, AbstractObjectSearchCriteria, CodeSearchCriteria, SemanticAnnotationSearchCriteria) {
 			var PluginSearchCriteria = function() {
 				AbstractObjectSearchCriteria.call(this);
@@ -15,13 +15,13 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 					var NameSearchCriteria = require("as/dto/plugin/search/NameSearchCriteria");
 					return this.addCriteria(new NameSearchCriteria());
 				};
-				prototype.withScriptType = function() {
-					var ScriptTypeSearchCriteria = require("as/dto/plugin/search/ScriptTypeSearchCriteria");
-					return this.addCriteria(new ScriptTypeSearchCriteria());
-				};
 				prototype.withPluginType = function() {
 					var PluginTypeSearchCriteria = require("as/dto/plugin/search/PluginTypeSearchCriteria");
 					return this.addCriteria(new PluginTypeSearchCriteria());
+				};
+				prototype.withPluginKind = function() {
+					var PluginKindSearchCriteria = require("as/dto/plugin/search/PluginKindSearchCriteria");
+					return this.addCriteria(new PluginKindSearchCriteria());
 				};
 			}, {});
 
