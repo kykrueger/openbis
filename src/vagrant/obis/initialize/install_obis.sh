@@ -15,6 +15,8 @@ if [ ! -L /usr/bin/git ]; then
     sudo ln -s /home/obis/git-annex.linux/git /usr/bin/git
     sudo ln -s /home/obis/git-annex.linux/git-annex /usr/bin/git-annex
 
+    sudo chown -R obis:obis /home/obis/git-annex.linux
+
     popd $@ > /dev/null
 
 fi
