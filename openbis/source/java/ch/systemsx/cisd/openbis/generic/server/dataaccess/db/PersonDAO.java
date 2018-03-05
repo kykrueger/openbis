@@ -25,8 +25,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.LockMode;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.StatelessSession;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
@@ -257,7 +257,7 @@ public final class PersonDAO extends AbstractGenericEntityDAO<PersonPE> implemen
         return ((BigInteger) executeStatelessAction(new StatelessHibernateCallback()
             {
                 @Override
-                public Object doInStatelessSession(Session session)
+                public Object doInStatelessSession(StatelessSession session)
                 {
                     return session.createSQLQuery(ACTIVE_PERSONS_QUERY).uniqueResult();
                 }

@@ -31,6 +31,7 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.StatelessSession;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
@@ -286,7 +287,7 @@ public class MaterialDAO extends AbstractGenericEntityWithPropertiesDAO<Material
         executeStatelessAction(new StatelessHibernateCallback()
             {
                 @Override
-                public Object doInStatelessSession(Session session)
+                public Object doInStatelessSession(StatelessSession session)
                 {
                     final SQLQuery sqlQueryCodeAndType = session.createSQLQuery(sqlCodeAndType);
                     final SQLQuery sqlQueryDeleteProperties =

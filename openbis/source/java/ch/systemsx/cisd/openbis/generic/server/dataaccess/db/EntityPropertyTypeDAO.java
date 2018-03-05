@@ -29,6 +29,7 @@ import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.StatelessSession;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
@@ -367,7 +368,7 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         executeStatelessAction(new StatelessHibernateCallback()
             {
                 @Override
-                public Object doInStatelessSession(Session session)
+                public Object doInStatelessSession(StatelessSession session)
                 {
                     final SQLQuery sqlQuery = session.createSQLQuery(sql);
                     sqlQuery.setParameter("registratorId", registratorId);
@@ -500,7 +501,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
 
         String query =
                 String.format("UPDATE %s etpt SET etpt.ordinal = etpt.ordinal + ? "
-                        + "WHERE etpt.entityTypeInternal = ? AND etpt.ordinal >= ?", entityKind
+                        + "WHERE etpt.entityTypeInternal = ? AND etpt.ordinal >= ?",
+                        entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
         final int updatedRows =
                 hibernateTemplate.bulkUpdate(query,
@@ -523,7 +525,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         final HibernateTemplate hibernateTemplate = getHibernateTemplate();
         String query =
                 String.format("select max(etpt.ordinal) from %s etpt "
-                        + "WHERE etpt.entityTypeInternal = ?", entityKind
+                        + "WHERE etpt.entityTypeInternal = ?",
+                        entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
 
         List<Long> resultList = cast(hibernateTemplate.find(query, entityType));
@@ -549,7 +552,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         String query =
                 String.format("SELECT count(pv) FROM %s pa join pa.propertyValues pv "
                         + "WHERE pa.propertyTypeInternal.simpleCode = ? "
-                        + "AND pa.entityTypeInternal.code = ?", entityKind
+                        + "AND pa.entityTypeInternal.code = ?",
+                        entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
         return ((Long) (getHibernateTemplate().find(query,
                 toArray(propertyTypeCode, entityTypeCode)).get(0))).intValue();

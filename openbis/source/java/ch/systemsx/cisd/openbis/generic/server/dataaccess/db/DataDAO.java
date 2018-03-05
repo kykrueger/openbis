@@ -34,6 +34,7 @@ import org.hibernate.FetchMode;
 import org.hibernate.HibernateException;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.hibernate.StatelessSession;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
@@ -1051,7 +1052,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             }
 
             @Override
-            public Object doInStatelessSession(Session session)
+            public Object doInStatelessSession(StatelessSession session)
             {
                 final NativeQuery<?> selectPermIds = session.createNativeQuery(sqls.selectPermIds);
                 final NativeQuery<?> selectLocations = session.createNativeQuery(sqls.selectLocations);

@@ -25,6 +25,7 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.StatelessSession;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
@@ -156,7 +157,7 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
             {
 
                 @Override
-                public Object doInStatelessSession(Session session)
+                public Object doInStatelessSession(StatelessSession session)
                 {
 
                     String query =
@@ -202,7 +203,7 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements 
             {
 
                 @Override
-                public Object doInStatelessSession(Session session)
+                public Object doInStatelessSession(StatelessSession session)
                 {
                     String query =
                             String.format("UPDATE %s SET del_id = NULL WHERE del_id = :deletionId",

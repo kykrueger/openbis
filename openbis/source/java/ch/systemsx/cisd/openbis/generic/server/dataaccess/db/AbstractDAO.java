@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +39,9 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.StatelessSession;
+import org.hibernate.internal.StatelessSessionImpl;
+import org.hibernate.jdbc.ReturningWork;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -46,6 +50,7 @@ import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.HibernateTemplate;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
 import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import ch.systemsx.cisd.common.exceptions.ExceptionUtils;
@@ -286,23 +291,22 @@ public abstract class AbstractDAO extends HibernateDaoSupport
                 @Override
                 public final Object doInHibernate(final Session session) throws HibernateException
                 {
-                    return action.doInStatelessSession(session);
-                    // return session.doReturningWork(new ReturningWork<Object>()
-                    // {
-                    // @Override
-                    // public Object execute(Connection connection) throws SQLException
-                    // {
-                    // StatelessSessionImpl sls = null;
-                    // try
-                    // {
-                    // sls = (StatelessSessionImpl) getSessionFactory().openStatelessSession(connection);
-                    // return action.doInStatelessSession(sls);
-                    // } catch (HibernateException ex)
-                    // {
-                    // throw SessionFactoryUtils.convertHibernateAccessException(ex);
-                    // }
-                    // }
-                    // });
+                    return session.doReturningWork(new ReturningWork<Object>()
+                        {
+                            @Override
+                            public Object execute(Connection connection) throws SQLException
+                            {
+                                StatelessSessionImpl sls = null;
+                                try
+                                {
+                                    sls = (StatelessSessionImpl) getSessionFactory().openStatelessSession(connection);
+                                    return action.doInStatelessSession(sls);
+                                } catch (HibernateException ex)
+                                {
+                                    throw SessionFactoryUtils.convertHibernateAccessException(ex);
+                                }
+                            }
+                        });
                 }
             });
     }
@@ -319,6 +323,7 @@ public abstract class AbstractDAO extends HibernateDaoSupport
      * .getDataSource(getSessionFactory())); } private void releaseConnection(Connection connection) { DataSourceUtils.releaseConnection(connection,
      * SessionFactoryUtils.getDataSource(getSessionFactory())); } }); }
      */
+
     protected void lockEntities(Collection<? extends IIdHolder> entitiesOrNull)
     {
         if (entitiesOrNull == null)
@@ -346,7 +351,7 @@ public abstract class AbstractDAO extends HibernateDaoSupport
      */
     protected interface StatelessHibernateCallback
     {
-        Object doInStatelessSession(Session sls);
+        Object doInStatelessSession(StatelessSession sls);
     }
 
     protected static void flushWithSqlExceptionHandling(HibernateTemplate hibernateTemplate)
