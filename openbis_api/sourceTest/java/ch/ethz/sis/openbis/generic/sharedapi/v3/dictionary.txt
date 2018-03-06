@@ -1950,8 +1950,9 @@ Plugin Kind Search Criteria
 Script Type Search Criteria
 with Plugin Kind
 with Script Type
-is With Script
 with Script
+has Script
+with Script Using
 delete Plugins
 Delete Plugins Operation
 Delete Plugins Operation Result
