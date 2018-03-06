@@ -538,8 +538,8 @@ define(
 					var c = this;
 					var creation = new dtos.PluginCreation();
 					creation.setName(c.generateId("PLUGIN"));
-					creation.setPluginKind(c.PluginKind.PREDEPLOYED);
 					creation.setPluginType(c.PluginType.DYNAMIC_PROPERTY);
+					creation.setScript("42");
 					creation.setEntityKind(c.EntityKind.SAMPLE);
 					return facade.createPlugins([ creation ]).then(
 							function(permIds) {

@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.create.PluginCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
@@ -89,17 +88,9 @@ public class CreatePluginExecutor
         {
             throw new UserFailureException("Plugin type cannot be unspecified.");
         }
-        if (creation.getPluginKind() == null)
+        if (StringUtils.isEmpty(creation.getScript()))
         {
-            throw new UserFailureException("Plugin type cannot be unspecified.");
-        }
-        if (creation.getPluginKind() == PluginKind.JYTHON && creation.getScript() == null)
-        {
-            throw new UserFailureException("Script unspecified for plugin of kind " + PluginKind.JYTHON + ".");
-        }
-        if (creation.getPluginKind() == PluginKind.PREDEPLOYED && creation.getScript() != null)
-        {
-            throw new UserFailureException("Script specified for plugin of type " + PluginKind.PREDEPLOYED + ".");
+            throw new UserFailureException("Script cannot be empty.");
         }
     }
 
@@ -136,10 +127,7 @@ public class CreatePluginExecutor
                 {
                     script.setScriptType(translate(creation.getPluginType()));
                 }
-                if (creation.getPluginKind() != null)
-                {
-                    script.setPluginType(translate(creation.getPluginKind()));
-                }
+                script.setPluginType(ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType.JYTHON);
                 script.setScript(creation.getScript());
                 PluginUtils.checkScriptCompilation(script, evaluatorPool);
                 script.setAvailable(creation.isAvailable());
@@ -164,11 +152,6 @@ public class CreatePluginExecutor
     private ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType translate(PluginType scriptType)
     {
         return ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType.valueOf(scriptType.name());
-    }
-
-    private ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType translate(PluginKind pluginType)
-    {
-        return ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType.valueOf(pluginType.name());
     }
 
     @Override

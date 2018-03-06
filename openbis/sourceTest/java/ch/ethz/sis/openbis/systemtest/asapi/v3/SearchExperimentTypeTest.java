@@ -141,7 +141,7 @@ public class SearchExperimentTypeTest extends AbstractTest
         
         // Then
         assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
-        assertEquals(type.getValidationPlugin().getFetchOptions().isWithScript(), true);
+        assertEquals(type.getValidationPlugin().getFetchOptions().hasScript(), true);
         assertEquals(type.getValidationPlugin().getName(), "testEXPERIMENT");
         assertEquals(type.getValidationPlugin().getScript(), "import time;\ndef validate(entity, isNew):\n  pass\n ");
         

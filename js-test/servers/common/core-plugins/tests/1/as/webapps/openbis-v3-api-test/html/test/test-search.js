@@ -1321,7 +1321,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				criteria.withName().thatContains("e");
 				criteria.withPluginType().thatEquals(c.PluginType.ENTITY_VALIDATION);
 				var fo = c.createPluginFetchOptions();
-				fo.withScript().sortBy().name().desc();
+				fo.withScript();
+				fo.sortBy().name().desc();
 				return facade.searchPlugins(criteria, fo);
 			}
 
@@ -1332,7 +1333,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(plugin.getDescription(), "Check if the Entity has a parent", "Description");
 				c.assertEqual(plugin.getPluginKind(), c.PluginKind.JYTHON, "Plugin kind");
 				c.assertEqual(plugin.getPluginType(), c.PluginType.ENTITY_VALIDATION, "Plugin type");
-				c.assertEqual(plugin.getFetchOptions().isWithScript(), true, "With script");
+				c.assertEqual(plugin.getFetchOptions().hasScript(), true, "Has script");
 				c.assertEqual(plugin.getScript(), 'def validate(entity, isNew):\n'
 						+ '  parents = entity.entityPE().parents\n'
 						+ '  if parents:\n'

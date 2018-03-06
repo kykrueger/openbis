@@ -41,7 +41,8 @@ public class GetPluginTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PluginPermId id = new PluginPermId("properties");
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        fetchOptions.withScript().withRegistrator();
+        fetchOptions.withScript();
+        fetchOptions.withRegistrator();
         
         // When
         Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);
@@ -68,7 +69,8 @@ public class GetPluginTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PluginPermId id = new PluginPermId("testEXPERIMENT");
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        fetchOptions.withScript().withRegistrator();
+        fetchOptions.withScript();
+        fetchOptions.withRegistrator();
         
         // When
         Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);

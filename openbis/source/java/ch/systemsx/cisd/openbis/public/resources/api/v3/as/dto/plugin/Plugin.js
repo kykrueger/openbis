@@ -59,7 +59,11 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 			this.entityKinds = entityKinds;
 		};
 		prototype.getScript = function() {
-			return this.script;
+			if (this.getFetchOptions() && this.getFetchOptions().hasScript()) {
+				return this.script;
+			} else {
+				throw new exceptions.NotFetchedException("Script has not been fetched.");
+			}
 		};
 		prototype.setScript = function(script) {
 			this.script = script;

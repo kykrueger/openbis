@@ -749,7 +749,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				creation.setScript("pass");
 				creation.setDescription("old description");
 				creation.setAvailable(false);
-				creation.setPluginKind(c.PluginKind.JYTHON);
 				creation.setPluginType(c.PluginType.MANAGED_PROPERTY);
 				return facade.createPlugins([ creation ]);
 			}

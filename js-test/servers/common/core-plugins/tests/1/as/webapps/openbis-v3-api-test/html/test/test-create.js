@@ -483,7 +483,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var creation = new c.PluginCreation();
 				creation.setName(name);
 				creation.setDescription("hello");
-				creation.setPluginKind(c.PluginKind.JYTHON);
 				creation.setPluginType(c.PluginType.ENTITY_VALIDATION);
 				creation.setScript("def a():\n  pass");
 				return facade.createPlugins([ creation ]);

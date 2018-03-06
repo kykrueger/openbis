@@ -102,13 +102,17 @@ public class PluginTranslator
         if (baseRecord.entity_kind != null)
         {
             plugin.setEntityKinds(EnumSet.of(EntityKind.valueOf(baseRecord.entity_kind)));
+        } else
+        {
+            plugin.setEntityKinds(EnumSet.allOf(EntityKind.class));
         }
-        injectEntityKindsFromPredeployed(plugin);
         plugin.setPluginKind(PluginKind.valueOf(baseRecord.plugin_type));
         plugin.setPluginType(PluginType.valueOf(baseRecord.script_type));
-        if (fetchOptions.isWithScript())
+        injectEntityKindsFromPredeployed(plugin);
+        if (fetchOptions.hasScript())
         {
             plugin.setScript(baseRecord.script);
+            plugin.getFetchOptions().withScriptUsing(fetchOptions.withScript());
         }
         
         if (fetchOptions.hasRegistrator())
@@ -154,10 +158,6 @@ public class PluginTranslator
             EnumSet<ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.ICommonPropertyBasedHotDeployPlugin.EntityKind> entityKinds)
     {
         if (entityKinds == null)
-        {
-            return null;
-        } else if (entityKinds.size() == ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.ICommonPropertyBasedHotDeployPlugin.EntityKind
-                .values().length)
         {
             return null;
         }

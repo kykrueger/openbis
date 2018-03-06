@@ -16,23 +16,26 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.NameSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginKindSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractIdMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractIdsMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SimpleFieldMatcher;
@@ -66,7 +69,10 @@ public class SearchPluginExecutor
     @Override
     protected Matcher<ScriptPE> getMatcher(ISearchCriteria criteria)
     {
-        if (criteria instanceof IdsSearchCriteria)
+        if (criteria instanceof IdSearchCriteria<?>)
+        {
+            return new IdMatcher();
+        } else if (criteria instanceof IdsSearchCriteria)
         {
             return new IdsMatcher();
         } else if (criteria instanceof NameSearchCriteria)
@@ -84,44 +90,26 @@ public class SearchPluginExecutor
         }
     }
 
-    private class IdsMatcher extends Matcher<ScriptPE>
+    private class IdMatcher extends AbstractIdMatcher<ScriptPE>
     {
-        @SuppressWarnings("unchecked")
         @Override
-        public List<ScriptPE> getMatching(IOperationContext context, List<ScriptPE> objects, ISearchCriteria criteria)
+        protected AbstractIdsMatcher<ScriptPE> createIdsMatcher()
         {
-            Collection<IPluginId> ids = ((IdsSearchCriteria<IPluginId>) criteria).getFieldValue();
-
-            if (ids != null && false == ids.isEmpty())
+            return new IdsMatcher();
+        }
+    }
+    
+    private class IdsMatcher extends AbstractIdsMatcher<ScriptPE>
+    {
+        @Override
+        protected boolean addPermIdIfPossible(Collection<String> permIds, IObjectId id)
+        {
+            if (id instanceof PluginPermId == false)
             {
-                Collection<String> names = new HashSet<String>();
-
-                for (IPluginId id : ids)
-                {
-                    if (id instanceof PluginPermId)
-                    {
-                        names.add(((PluginPermId) id).getPermId());
-                    } else
-                    {
-                        throw new IllegalArgumentException("Unknown id: " + id.getClass());
-                    }
-                }
-
-                List<ScriptPE> matches = new ArrayList<ScriptPE>();
-
-                for (ScriptPE object : objects)
-                {
-                    if (names.contains(object.getName()))
-                    {
-                        matches.add(object);
-                    }
-                }
-                
-                return matches;
-            } else
-            {
-                return new ArrayList<ScriptPE>();
+                return false;
             }
+            permIds.add(((PluginPermId) id).getPermId());
+            return true;
         }
     }
     
@@ -132,7 +120,6 @@ public class SearchPluginExecutor
         {
             return plugin.getName();
         }
-        
     }
     
     private static final class PluginKindMatcher extends SimpleFieldMatcher<ScriptPE>
@@ -140,8 +127,8 @@ public class SearchPluginExecutor
         @Override
         protected boolean isMatching(IOperationContext context, ScriptPE script, ISearchCriteria criteria)
         {
-            return script.getPluginType().name()
-                    .equals(((PluginKindSearchCriteria) criteria).getFieldValue().name());
+            PluginKind fieldValue = ((PluginKindSearchCriteria) criteria).getFieldValue();
+            return fieldValue == null ? true : script.getPluginType().name().equals(fieldValue.name());
         }
     }
     
@@ -150,8 +137,8 @@ public class SearchPluginExecutor
         @Override
         protected boolean isMatching(IOperationContext context, ScriptPE script, ISearchCriteria criteria)
         {
-            return script.getScriptType().name()
-                    .equals(((PluginTypeSearchCriteria) criteria).getFieldValue().name());
+            PluginType fieldValue = ((PluginTypeSearchCriteria) criteria).getFieldValue();
+            return fieldValue == null ? true : script.getScriptType().name().equals(fieldValue.name());
         }
     }
 }

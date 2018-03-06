@@ -29,6 +29,7 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
@@ -37,6 +38,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCr
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.id.SemanticAnnotationPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.CodeComparator;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
  * @author Franz-Josef Elmer
@@ -125,6 +127,29 @@ public class SearchSampleTypeTest extends AbstractTest
 
         SampleType type = searchResult.getObjects().get(0);
         assertEquals(type.getCode(), "CELL_PLATE");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithUnknownIdClass()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeSearchCriteria searchCriteria = new SampleTypeSearchCriteria();
+        searchCriteria.withId().thatEquals(new IEntityTypeId()
+            {
+                private static final long serialVersionUID = 1L;
+            });
+
+        assertRuntimeException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.searchSampleTypes(sessionToken, searchCriteria, new SampleTypeFetchOptions());
+                }
+            }, "Unknown id: class ");
 
         v3api.logout(sessionToken);
     }
@@ -451,7 +476,7 @@ public class SearchSampleTypeTest extends AbstractTest
         
         // Then
         assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
-        assertEquals(type.getValidationPlugin().getFetchOptions().isWithScript(), true);
+        assertEquals(type.getValidationPlugin().getFetchOptions().hasScript(), true);
         assertEquals(type.getValidationPlugin().getName(), "validateUpdateFAIL");
         assertEquals(type.getValidationPlugin().getScript(), "def validate(entity, isNew):\n  if (not isNew):\n"
                 + "    return \"Cannot update this entity\"\n ");

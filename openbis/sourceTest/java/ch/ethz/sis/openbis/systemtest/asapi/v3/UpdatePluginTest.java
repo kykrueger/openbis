@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.update.PluginUpdate;
+import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
@@ -50,12 +51,42 @@ public class UpdatePluginTest extends AbstractTest
         v3api.updatePlugins(sessionToken, Arrays.asList(update));
 
         // Then
-        PluginFetchOptions fetchOptions = new PluginFetchOptions().withScript();
+        PluginFetchOptions fetchOptions = new PluginFetchOptions();
+        fetchOptions.withScript();
         Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);
         assertEquals(plugin.getName(), "properties");
         assertEquals(plugin.getScript(), update.getScript().getValue());
         assertEquals(plugin.isAvailable(), false);
 
+        v3api.logout(sessionToken);
+    }
+    
+    @Test
+    public void testUpdateAndCheckReindexing()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PluginPermId id = new PluginPermId("code");
+        PluginUpdate update = new PluginUpdate();
+        update.setPluginId(id);
+        update.setDescription("test");
+        update.setAvailable(true);
+        update.setScript("42");
+        ReindexingState state = new ReindexingState();
+
+        
+        // When
+        v3api.updatePlugins(sessionToken, Arrays.asList(update));
+        
+        // Then
+        PluginFetchOptions fetchOptions = new PluginFetchOptions();
+        fetchOptions.withScript();
+        Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);
+        assertEquals(plugin.getName(), "code");
+        assertEquals(plugin.getScript(), update.getScript().getValue());
+        assertEquals(plugin.isAvailable(), true);
+        assertSamplesReindexed(state, "200902091219327-1053");
+        
         v3api.logout(sessionToken);
     }
 

@@ -1956,6 +1956,16 @@ delete Plugins
 Delete Plugins Operation
 Delete Plugins Operation Result
 Plugin Deletion Options
+get Plugin Type
+get Validation Plugin
+has Validation Plugin
+Plugin Kind
+Plugin Type Search Criteria
+set Plugin Type
+set Validation Plugin
+with Plugin Type
+with Validation Plugin
+with Validation Plugin Using
 
 FETCHED_FIELDS_SCORE
 fetchedFieldsScore

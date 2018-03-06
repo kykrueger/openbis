@@ -47,7 +47,6 @@ public class CreatePluginTest extends AbstractTest
         PluginCreation creation = new PluginCreation();
         creation.setName("test " + System.currentTimeMillis());
         creation.setPluginType(PluginType.MANAGED_PROPERTY);
-        creation.setPluginKind(PluginKind.JYTHON);
         creation.setScript("pass");
 
         // When
@@ -56,7 +55,8 @@ public class CreatePluginTest extends AbstractTest
         // Then
         assertEquals(ids.size(), 1);
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        fetchOptions.withScript().withRegistrator();
+        fetchOptions.withScript();
+        fetchOptions.withRegistrator();
         Plugin plugin = v3api.getPlugins(sessionToken, ids, fetchOptions).get(ids.get(0));
         assertEquals(plugin.getName(), creation.getName());
         assertEquals(plugin.getPermId().getPermId(), creation.getName());
@@ -79,7 +79,6 @@ public class CreatePluginTest extends AbstractTest
         PluginCreation creation = new PluginCreation();
         creation.setName("test " + System.currentTimeMillis());
         creation.setPluginType(PluginType.DYNAMIC_PROPERTY);
-        creation.setPluginKind(PluginKind.JYTHON);
         creation.setScript("42");
         
         // When
@@ -96,8 +95,7 @@ public class CreatePluginTest extends AbstractTest
         assertEquals(plugin.getEntityKinds(), null);
         assertEquals(plugin.getPluginType(), PluginType.DYNAMIC_PROPERTY);
         assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
-        assertEquals(plugin.getFetchOptions().isWithScript(), false);
-        assertEquals(plugin.getScript(), null);
+        assertEquals(plugin.getFetchOptions().hasScript(), false);
         assertEquals(plugin.getRegistrator().getUserId(), TEST_USER);
         assertEquals(plugin.isAvailable(), true);
         
@@ -112,7 +110,6 @@ public class CreatePluginTest extends AbstractTest
         PluginCreation creation = new PluginCreation();
         creation.setName("test " + System.currentTimeMillis());
         creation.setPluginType(PluginType.ENTITY_VALIDATION);
-        creation.setPluginKind(PluginKind.JYTHON);
         creation.setScript("42");
         creation.setEntityKind(EntityKind.DATA_SET);
         
@@ -122,7 +119,8 @@ public class CreatePluginTest extends AbstractTest
         // Then
         assertEquals(ids.size(), 1);
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        fetchOptions.withScript().withRegistrator();
+        fetchOptions.withScript();
+        fetchOptions.withRegistrator();
         Plugin plugin = v3api.getPlugins(sessionToken, ids, fetchOptions).get(ids.get(0));
         assertEquals(plugin.getName(), creation.getName());
         assertEquals(plugin.getPermId().getPermId(), creation.getName());
@@ -133,40 +131,6 @@ public class CreatePluginTest extends AbstractTest
         assertEquals(plugin.getScript(), creation.getScript());
         assertEquals(plugin.getRegistrator().getUserId(), TEST_USER);
         assertEquals(plugin.isAvailable(), true);
-        
-        v3api.logout(sessionToken);
-    }
-    
-    @Test
-    public void testCreatePredeployedPlugin()
-    {
-        // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        PluginCreation creation = new PluginCreation();
-        creation.setName("test " + System.currentTimeMillis());
-        creation.setPluginType(PluginType.DYNAMIC_PROPERTY);
-        creation.setPluginKind(PluginKind.PREDEPLOYED);
-        creation.setDescription("a test");
-        creation.setAvailable(false);
-        creation.setEntityKind(EntityKind.SAMPLE);
-        PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        fetchOptions.withRegistrator();
-        
-        // When
-        List<PluginPermId> ids = v3api.createPlugins(sessionToken, Arrays.asList(creation));
-        
-        // Then
-        assertEquals(ids.size(), 1);
-        Plugin plugin = v3api.getPlugins(sessionToken, ids, fetchOptions).get(ids.get(0));
-        assertEquals(plugin.getName(), creation.getName());
-        assertEquals(plugin.getPermId().getPermId(), creation.getName());
-        assertEquals(plugin.getDescription(), creation.getDescription());
-        assertEquals(plugin.getEntityKinds(), EnumSet.of(creation.getEntityKind()));
-        assertEquals(plugin.getPluginType(), PluginType.DYNAMIC_PROPERTY);
-        assertEquals(plugin.getPluginKind(), PluginKind.PREDEPLOYED);
-        assertEquals(plugin.getScript(), null);
-        assertEquals(plugin.getRegistrator().getUserId(), TEST_USER);
-        assertEquals(plugin.isAvailable(), false);
         
         v3api.logout(sessionToken);
     }
@@ -192,40 +156,29 @@ public class CreatePluginTest extends AbstractTest
     {
         PluginCreation creation = createBasic();
         creation.setPluginType(null);
-        assertUserFailureException(creation, "Script type cannot be unspecified.");
-    }
-    
-    @Test
-    public void testMissingScriptForPluginKindJython()
-    {
-        PluginCreation creation = createBasic();
-        creation.setPluginKind(PluginKind.JYTHON);
-        creation.setScript(null);
-        assertUserFailureException(creation, "Script unspecified for plugin of kind JYTHON.");
-    }
-    
-    @Test
-    public void testScriptForPluginTypePredeployed()
-    {
-        PluginCreation creation = createBasic();
-        creation.setPluginKind(PluginKind.PREDEPLOYED);
-        creation.setScript("pass");
-        assertUserFailureException(creation, "Script specified for plugin of type PREDEPLOYED.");
-    }
-    
-    @Test
-    public void testPluginTypeMissing()
-    {
-        PluginCreation creation = createBasic();
-        creation.setPluginKind(null);
         assertUserFailureException(creation, "Plugin type cannot be unspecified.");
+    }
+    
+    @Test
+    public void testMissingScript()
+    {
+        PluginCreation creation = createBasic();
+        creation.setScript(null);
+        assertUserFailureException(creation, "Script cannot be empty.");
+    }
+    
+    @Test
+    public void testScriptIsAnEmptyString()
+    {
+        PluginCreation creation = createBasic();
+        creation.setScript("");
+        assertUserFailureException(creation, "Script cannot be empty.");
     }
     
     @Test(dataProvider = "scriptTypes")
     public void testScriptCanNotCompile(PluginType scriptType)
     {
         PluginCreation creation = createBasic();
-        creation.setPluginKind(PluginKind.JYTHON);
         creation.setPluginType(scriptType);
         creation.setScript("d:\n");
         assertUserFailureException(creation, "SyntaxError");
@@ -271,7 +224,6 @@ public class CreatePluginTest extends AbstractTest
         PluginCreation creation = new PluginCreation();
         creation.setName("test " + System.currentTimeMillis());
         creation.setPluginType(PluginType.DYNAMIC_PROPERTY);
-        creation.setPluginKind(PluginKind.JYTHON);
         creation.setDescription("a test");
         creation.setScript("pass");
         creation.setAvailable(false);

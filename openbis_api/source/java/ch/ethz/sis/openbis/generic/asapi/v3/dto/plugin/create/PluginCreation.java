@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -40,9 +39,6 @@ public class PluginCreation implements ICreation, IObjectCreation
     
     @JsonProperty
     private String description;
-    
-    @JsonProperty
-    private PluginKind pluginKind;
     
     @JsonProperty
     private EntityKind entityKind;
@@ -76,17 +72,6 @@ public class PluginCreation implements ICreation, IObjectCreation
     public void setDescription(String description)
     {
         this.description = description;
-    }
-
-    @JsonIgnore
-    public PluginKind getPluginKind()
-    {
-        return pluginKind;
-    }
-
-    public void setPluginKind(PluginKind pluginKind)
-    {
-        this.pluginKind = pluginKind;
     }
 
     @JsonIgnore

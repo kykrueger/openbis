@@ -187,7 +187,13 @@ public class Plugin implements Serializable, IDescriptionHolder, IPermIdHolder, 
     @JsonIgnore
     public String getScript()
     {
-        return script;
+        if (getFetchOptions() != null && getFetchOptions().hasScript())
+        {
+            return script;
+        } else
+        {
+            throw new NotFetchedException("Script has not been fetched.");
+        }
     }
 
     public void setScript(String script)
