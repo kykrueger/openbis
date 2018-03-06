@@ -129,3 +129,96 @@ def nvl(val, string=''):
     if val is None:
         return string
     return val
+
+def extract_permid(permid):
+    if not isinstance(permid, dict):
+        return str(permid)
+    return permid['permId']
+
+def extract_code(obj):
+    if not isinstance(obj, dict):
+        return '' if obj is None else str(obj)
+    return '' if obj['code'] is None else obj['code']
+
+
+def extract_deletion(obj):
+    del_objs = []
+    for deleted_object in obj['deletedObjects']:
+        del_objs.append({
+            "reason": obj['reason'],
+            "permId": deleted_object["id"]["permId"],
+            "type": deleted_object["id"]["@type"]
+        })
+    return del_objs
+
+
+def extract_identifier(ident):
+    if not isinstance(ident, dict):
+        return str(ident)
+    return ident['identifier']
+
+
+def extract_nested_identifier(ident):
+    if not isinstance(ident, dict):
+        return str(ident)
+    return ident['identifier']['identifier']
+
+
+def extract_nested_permid(permid):
+    if not isinstance(permid, dict):
+        return '' if permid is None else str(permid)
+    return '' if permid['permId']['permId'] is None else permid['permId']['permId'] 
+
+
+def extract_property_assignments(pas):
+    pa_strings = []
+    for pa in pas:
+        if not isinstance(pa['propertyType'], dict):
+            pa_strings.append(pa['propertyType'])
+        else:
+            pa_strings.append(pa['propertyType']['label'])
+    return pa_strings
+
+
+def extract_role_assignments(ras):
+    ra_strings = []
+    for ra in ras:
+        ra_strings.append({
+            "role": ra['role'],
+            "roleLevel": ra['roleLevel'],
+            "space": ra['space']['code'] if ra['space'] else None
+        })
+    return ra_strings
+
+
+def extract_person(person):
+    if not isinstance(person, dict):
+        return str(person)
+    return person['userId']
+
+def extract_person_details(person):
+    if not isinstance(person, dict):
+        return str(person)
+    return "{} {} <{}>".format(
+        person['firstName'],
+        person['lastName'],
+        person['email']
+    )
+
+def extract_id(id):
+    if not isinstance(id, dict):
+        return str(id)
+    else:
+        return id['techId']
+
+def extract_userId(user):
+    if isinstance(user, list):
+        return ", ".join([
+            u['userId'] for u in user
+        ])
+    elif isinstance(user, dict):
+        return user['userId']
+    else:
+        return str(user)
+
+

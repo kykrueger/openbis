@@ -1,35 +1,62 @@
 from .openbis_object import OpenBisObject 
 from .utils import VERBOSE
+from .property import PropertyHolder, PropertyAssignments
+from .attribute import AttrHolder
+import json
 
 class Tag(OpenBisObject):
     """ 
     """
 
-    def __init__(self, openbis_obj, type, project=None, data=None, props=None, code=None, **kwargs):
+    def __init__(self, openbis_obj, data=None, **kwargs):
+        self.__dict__['entity'] = 'Tag'
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['type'] = type
-        self.__dict__['p'] = PropertyHolder(openbis_obj, type)
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Experiment', type)
+        self.__dict__['a'] = AttrHolder(openbis_obj, self.entity)
 
         if data is not None:
             self._set_data(data)
 
-        if project is not None:
-            setattr(self, 'project', project)
-
-        if props is not None:
-            for key in props:
-                setattr(self.p, key, props[key])
-
-        if code is not None:
-            self.code = code
-
         if kwargs is not None:
-            defs = _definitions('Experiment')
             for key in kwargs:
-                if key in defs['attrs']:
-                    setattr(self, key, kwargs[key])
-                else:
-                    raise ValueError("{attr} is not a known attribute for an Experiment".format(attr=key))
+                setattr(self, key, kwargs[key])
 
+    def __dir__(self):
+        return [
+            'code','description',
+            'get_samples()',
+            'get_experiments()',
+            'get_materials()',
+            'owner()',
+        ]
+
+    def delete(self, reason='no reason'):
+        self.openbis.delete_entity(entity=self.entity,id=self.permId, reason=reason)
+        if VERBOSE: print("Tag {} successfully deleted.".format(self.permId))
+
+    def save(self):
+
+        if self.is_new:
+            request = self._new_attrs()
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+
+            if VERBOSE: print("Tag successfully created.")
+            new_tag_data = self.openbis.get_tag(resp[0]['permId'], only_data=True)
+            self._set_data(new_tag_data)
+            return self
+
+        else:
+            request = self._up_attrs()
+            self.openbis._post_request(self.openbis.as_v3, request)
+            if VERBOSE: print("Tag successfully updated.")
+            new_tag_data = self.openbis.get_tag(self.permId, only_data=True)
+            self._set_data(new_tag_data)
+
+    def get_samples(self):
+        raise ValueError('not yet implemented')
+
+    def get_experiments(self):
+        raise ValueError('not yet implemented')
+
+    def get_materials(self):
+        raise ValueError('not yet implemented')
 

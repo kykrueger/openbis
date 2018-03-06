@@ -66,11 +66,16 @@ def openbis_definitions(entity):
         },
         "Material": {
             "attrs_new": "code description type creation tags".split(),
-            "attrs": "code description type creation registrator tags".split()
+            "attrs": "code description type creation registrator tags".split(),
+            "multi": "".split(),
+            "identifier": "permId",
         },
         "Tag": {
-            "attrs_new": "code description experiments samples dataSets materials".split(),
-            "attrs": "code description experiments samples dataSets materials registrationDate".split(),
+            "attrs_new": "code description".split(),
+            "attrs_up": "description".split(),
+            "attrs": "permId code description registrationDate".split(),
+            "multi": "".split(),
+            "identifier": "tagId",
         },
         "Person": {
             "attrs_new": "userId space".split(),

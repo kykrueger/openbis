@@ -1,6 +1,7 @@
 from .attribute import AttrHolder
 from .openbis_object import OpenBisObject 
-from .utils import VERBOSE
+from .utils import VERBOSE, extract_permid, extract_nested_permid,format_timestamp
+from .things import Things
 from pandas import DataFrame
 
 class Group(OpenBisObject):
@@ -46,6 +47,7 @@ class Group(OpenBisObject):
         return p
 
     get_users = get_persons  # Alias
+    get_members = get_persons  # Alias
 
 
     def get_roles(self, **search_args):

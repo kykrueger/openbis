@@ -28,12 +28,14 @@ from tabulate import tabulate
 
 from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
+from .utils import extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
 from .property import PropertyHolder, PropertyAssignments
 from .masterdata import Vocabulary
 from .openbis_object import OpenBisObject 
 from .definitions import fetch_option
 
 # import the various openBIS entities
+from .things import Things
 from .space import Space
 from .project import Project
 from .experiment import Experiment
@@ -143,100 +145,6 @@ def get_search_criteria(entity, **search_args):
     search_criteria['operator'] = "AND"
 
     return search_criteria
-
-
-def extract_code(obj):
-    if not isinstance(obj, dict):
-        return '' if obj is None else str(obj)
-    return '' if obj['code'] is None else obj['code']
-
-
-def extract_deletion(obj):
-    del_objs = []
-    for deleted_object in obj['deletedObjects']:
-        del_objs.append({
-            "reason": obj['reason'],
-            "permId": deleted_object["id"]["permId"],
-            "type": deleted_object["id"]["@type"]
-        })
-    return del_objs
-
-
-def extract_identifier(ident):
-    if not isinstance(ident, dict):
-        return str(ident)
-    return ident['identifier']
-
-
-def extract_nested_identifier(ident):
-    if not isinstance(ident, dict):
-        return str(ident)
-    return ident['identifier']['identifier']
-
-
-def extract_permid(permid):
-    if not isinstance(permid, dict):
-        return str(permid)
-    return permid['permId']
-
-
-def extract_nested_permid(permid):
-    if not isinstance(permid, dict):
-        return '' if permid is None else str(permid)
-    return '' if permid['permId']['permId'] is None else permid['permId']['permId'] 
-
-
-def extract_property_assignments(pas):
-    pa_strings = []
-    for pa in pas:
-        if not isinstance(pa['propertyType'], dict):
-            pa_strings.append(pa['propertyType'])
-        else:
-            pa_strings.append(pa['propertyType']['label'])
-    return pa_strings
-
-
-def extract_role_assignments(ras):
-    ra_strings = []
-    for ra in ras:
-        ra_strings.append({
-            "role": ra['role'],
-            "roleLevel": ra['roleLevel'],
-            "space": ra['space']['code'] if ra['space'] else None
-        })
-    return ra_strings
-
-
-def extract_person(person):
-    if not isinstance(person, dict):
-        return str(person)
-    return person['userId']
-
-def extract_person_details(person):
-    if not isinstance(person, dict):
-        return str(person)
-    return "{} {} <{}>".format(
-        person['firstName'],
-        person['lastName'],
-        person['email']
-    )
-
-def extract_id(id):
-    if not isinstance(id, dict):
-        return str(id)
-    else:
-        return id['techId']
-
-def extract_userId(user):
-    if isinstance(user, list):
-        return ", ".join([
-            u['userId'] for u in user
-        ])
-    elif isinstance(user, dict):
-        return user['userId']
-    else:
-        return str(user)
-
 
 def crc32(fileName):
     """since Python3 the zlib module returns unsigned integers (2.7: signed int)
@@ -670,6 +578,8 @@ class Openbis:
             "get_space(code)",
             "get_spaces()",
             "get_tags()",
+            "get_tag(tagId)",
+            "new_tag(code, description)",
             "get_terms()",
             "new_person(userId, space)",
             "get_persons()",
@@ -931,7 +841,7 @@ class Openbis:
                     sub_crit.append(
                         _subcriteria_for_code(search_args[attr], 'space')
                     )
-                elif attr == 'person':
+                elif attr in ['user','person']:
                     userId = ''
                     if isinstance(search_args[attr], str):
                         userId = search_args[attr]
@@ -1907,21 +1817,47 @@ class Openbis:
         parse_jackson(resp)
         return Vocabulary(resp)
 
-    def get_tags(self):
+    def new_tag(self, code, description=None):
+        """ Creates a new tag (for this user)
+        """
+        return Tag(self, code=code, description=description)
+
+
+    def get_tags(self, code=None):
         """ Returns a DataFrame of all tags
         """
+
+        search_criteria = get_search_type_for_entity('tag', 'AND')
+
+        criteria = []
+        fetchopts = {}
+        if code:
+            criteria.append(_criteria_for_code(code))
+        search_criteria['criteria'] = criteria
         request = {
             "method": "searchTags",
-            "params": [self.token, {}, {}]
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts
+            ]
         }
+
         resp = self._post_request(self.as_v3, request)
-        parse_jackson(resp)
-        objects = DataFrame(resp['objects'])
-        objects['registrationDate'] = objects['registrationDate'].map(format_timestamp)
-        return objects[['code', 'registrationDate']]
+        attrs = ['permId', 'code', 'owner', 'private', 'registrationDate']
+        if len(resp['objects']) == 0:
+            tags = DataFrame(columns = attrs)
+        else: 
+            objects = resp['objects']
+            parse_jackson(resp)
+            tags = DataFrame(objects)
+            tags['registrationDate'] = tags['registrationDate'].map(format_timestamp)
+            tags['permId'] = tags['permId'].map(extract_permid)
+
+        return Things(self, 'tag', tags[attrs], 'permId')
 
 
-    def get_tag(self, permId):
+    def get_tag(self, permId, only_data=False):
         """ Returns a specific tag
         """
         fetchopts = {}
@@ -1937,6 +1873,18 @@ class Openbis:
                 fetchopts
             ],
         }
+
+        resp = self._post_request(self.as_v3, request)
+
+        if resp is None or len(resp) == 0:
+            raise ValueError('no such tag: ' + permId)
+        else:
+            parse_jackson(resp)
+            for permId in resp:
+                if only_data:
+                    return resp[permId]
+                else:
+                    return Tag(self, data=resp[permId])
 
     
     def _search_semantic_annotations(self, criteria):
@@ -2510,127 +2458,4 @@ class ExternalDMS():
     def __str__(self):
         return self.data.get('code', None)
 
-
-class Things():
-    """An object that contains a DataFrame object about an entity  available in openBIS.
-       
-    """
-
-    def __init__(self, openbis_obj, entity, df, identifier_name='code'):
-        self.openbis = openbis_obj
-        self.entity = entity
-        self.df = df
-        self.identifier_name = identifier_name
-
-    def __repr__(self):
-        return tabulate(self.df, headers=list(self.df))
-
-    def __len__(self):
-        return len(self.df)
-
-    def _repr_html_(self):
-        return self.df._repr_html_()
-
-    def get_parents(self, **kwargs):
-        if self.entity not in ['sample', 'dataset']:
-            raise ValueError("{}s do not have parents".format(self.entity))
-
-        if self.df is not None and len(self.df) > 0:
-            dfs = []
-            for ident in self.df[self.identifier_name]:
-                # get all objects that have this object as a child == parent
-                try:
-                    parents = getattr(self.openbis, 'get_' + self.entity.lower() + 's')(withChildren=ident, **kwargs)
-                    dfs.append(parents.df)
-                except ValueError:
-                    pass
-
-            if len(dfs) > 0:
-                return Things(self.openbis, self.entity, pd.concat(dfs), self.identifier_name)
-            else:
-                return Things(self.openbis, self.entity, DataFrame(), self.identifier_name)
-
-    def get_children(self, **kwargs):
-        if self.entity not in ['sample', 'dataset']:
-            raise ValueError("{}s do not have children".format(self.entity))
-
-        if self.df is not None and len(self.df) > 0:
-            dfs = []
-            for ident in self.df[self.identifier_name]:
-                # get all objects that have this object as a child == parent
-                try:
-                    parents = getattr(self.openbis, 'get_' + self.entity.lower() + 's')(withParent=ident, **kwargs)
-                    dfs.append(parents.df)
-                except ValueError:
-                    pass
-
-            if len(dfs) > 0:
-                return Things(self.openbis, self.entity, pd.concat(dfs), self.identifier_name)
-            else:
-                return Things(self.openbis, self.entity, DataFrame(), self.identifier_name)
-
-    def get_samples(self, **kwargs):
-        if self.entity not in ['space', 'project', 'experiment']:
-            raise ValueError("{}s do not have samples".format(self.entity))
-
-        if self.df is not None and len(self.df) > 0:
-            dfs = []
-            for ident in self.df[self.identifier_name]:
-                args = {}
-                args[self.entity.lower()] = ident
-                try:
-                    samples = self.openbis.get_samples(**args, **kwargs)
-                    dfs.append(samples.df)
-                except ValueError:
-                    pass
-
-            if len(dfs) > 0:
-                return Things(self.openbis, 'sample', pd.concat(dfs), 'identifier')
-            else:
-                return Things(self.openbis, 'sample', DataFrame(), 'identifier')
-
-    get_objects = get_samples # Alias
-
-    def get_datasets(self, **kwargs):
-        if self.entity not in ['sample', 'experiment']:
-            raise ValueError("{}s do not have datasets".format(self.entity))
-
-        if self.df is not None and len(self.df) > 0:
-            dfs = []
-            for ident in self.df[self.identifier_name]:
-                args = {}
-                args[self.entity.lower()] = ident
-                try:
-                    datasets = self.openbis.get_datasets(**args, **kwargs)
-                    dfs.append(datasets.df)
-                except ValueError:
-                    pass
-
-            if len(dfs) > 0:
-                return Things(self.openbis, 'dataset', pd.concat(dfs), 'permId')
-            else:
-                return Things(self.openbis, 'dataset', DataFrame(), 'permId')
-
-    def __getitem__(self, key):
-        if self.df is not None and len(self.df) > 0:
-            row = None
-            if isinstance(key, int):
-                # get thing by rowid
-                row = self.df.loc[[key]]
-            elif isinstance(key, list):
-                # treat it as a normal dataframe
-                return self.df[key]
-            else:
-                # get thing by code
-                row = self.df[self.df[self.identifier_name] == key.upper()]
-
-            if row is not None:
-                # invoke the openbis.get_<entity>() method
-                return getattr(self.openbis, 'get_' + self.entity)(row[self.identifier_name].values[0])
-
-    def __iter__(self):
-        for item in self.df[[self.identifier_name]][self.identifier_name].iteritems():
-            yield getattr(self.openbis, 'get_' + self.entity)(item[1])
-
-            # return self.df[[self.identifier_name]].to_dict()[self.identifier_name]
 

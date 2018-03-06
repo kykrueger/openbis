@@ -73,11 +73,12 @@ class AttrHolder():
 
             elif attr in ["parents", "children", "samples"]:
                 self.__dict__['_' + attr] = []
-                for item in data[attr]:
-                    if 'identifier' in item:
-                        self.__dict__['_' + attr].append(item['identifier'])
-                    elif 'permId' in item:
-                        self.__dict__['_' + attr].append(item['permId'])
+                if data[attr] is not None:
+                    for item in data[attr]:
+                        if 'identifier' in item:
+                            self.__dict__['_' + attr].append(item['identifier'])
+                        elif 'permId' in item:
+                            self.__dict__['_' + attr].append(item['permId'])
 
             elif attr in ["tags"]:
                 tags = []
@@ -629,6 +630,7 @@ class AttrHolder():
                 "permId": userId,
                 "@type": "as.dto.person.id.PersonPermId"
             })
+    set_members = set_users  # Alias
 
         
     def add_users(self, userIds):
@@ -643,6 +645,8 @@ class AttrHolder():
             self.__dict__['_changed_users'][userId] = {
                 "action": "Add"
             }
+    add_members = add_users # Alias
+
 
     def del_users(self, userIds):
         if userIds is None:
@@ -656,6 +660,7 @@ class AttrHolder():
             self.__dict__['_changed_users'][userId] = {
                 "action": "Remove"
             }
+    del_members = del_users  # Alias
 
     def add_tags(self, tags):
         if getattr(self, '_tags') is None:
