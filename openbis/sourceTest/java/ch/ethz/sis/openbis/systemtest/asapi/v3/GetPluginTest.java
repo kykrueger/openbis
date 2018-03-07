@@ -111,7 +111,6 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
         assertEquals(plugin.getPluginType(), PluginType.MANAGED_PROPERTY);
         assertEquals(plugin.isAvailable(), true);
-        assertEquals(plugin.getScript(), null);
         assertEqualsDate(plugin.getRegistrationDate(), "2010-10-27 15:16:48");
         assertEquals(plugin.getFetchOptions().hasRegistrator(), false);
         
