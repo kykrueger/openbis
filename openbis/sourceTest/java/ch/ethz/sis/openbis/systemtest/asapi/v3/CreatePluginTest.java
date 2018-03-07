@@ -61,7 +61,7 @@ public class CreatePluginTest extends AbstractTest
         assertEquals(plugin.getName(), creation.getName());
         assertEquals(plugin.getPermId().getPermId(), creation.getName());
         assertEquals(plugin.getDescription(), null);
-        assertEquals(plugin.getEntityKinds(), null);
+        assertEquals(plugin.getEntityKinds(), EnumSet.allOf(EntityKind.class));
         assertEquals(plugin.getPluginType(), PluginType.MANAGED_PROPERTY);
         assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
         assertEquals(plugin.getScript(), creation.getScript());
@@ -92,7 +92,7 @@ public class CreatePluginTest extends AbstractTest
         assertEquals(plugin.getName(), creation.getName());
         assertEquals(plugin.getPermId().getPermId(), creation.getName());
         assertEquals(plugin.getDescription(), null);
-        assertEquals(plugin.getEntityKinds(), null);
+        assertEquals(plugin.getEntityKinds(), EnumSet.allOf(EntityKind.class));
         assertEquals(plugin.getPluginType(), PluginType.DYNAMIC_PROPERTY);
         assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
         assertEquals(plugin.getFetchOptions().hasScript(), false);

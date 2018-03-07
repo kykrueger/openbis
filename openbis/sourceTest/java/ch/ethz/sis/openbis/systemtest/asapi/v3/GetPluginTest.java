@@ -19,9 +19,11 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
@@ -51,7 +53,7 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.getName(), id.getPermId());
         assertEquals(plugin.getPermId(), id);
         assertEquals(plugin.getDescription(), "number of properties");
-        assertEquals(plugin.getEntityKinds(), null);
+        assertEquals(plugin.getEntityKinds(), EnumSet.allOf(EntityKind.class));
         assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
         assertEquals(plugin.getPluginType(), PluginType.DYNAMIC_PROPERTY);
         assertEquals(plugin.isAvailable(), true);
@@ -105,7 +107,7 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.getName(), id.getPermId());
         assertEquals(plugin.getPermId(), id);
         assertEquals(plugin.getDescription(), null);
-        assertEquals(plugin.getEntityKinds(), null);
+        assertEquals(plugin.getEntityKinds(), EnumSet.allOf(EntityKind.class));
         assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
         assertEquals(plugin.getPluginType(), PluginType.MANAGED_PROPERTY);
         assertEquals(plugin.isAvailable(), true);

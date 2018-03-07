@@ -32,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 
 /**
  * @author Franz-Josef Elmer
@@ -172,9 +173,9 @@ public class SearchPluginTest extends AbstractTest
         List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
         
         // Then
-        assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(), 
-                "[code, code_date, date, managed list, properties, propertiesEXPERIMENT, propertiesSAMPLE, test, "
-                + "testEXPERIMENT, testSAMPLE, validateChildren, validateFAIL, validateOK, validateUpdateFAIL, waitOK]");
+        AssertionUtil.assertCollectionContainsAtLeast(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()),
+                "code", "code_date", "date", "managed list", "properties", "propertiesEXPERIMENT", "propertiesSAMPLE", "test", ""
+                + "testEXPERIMENT", "testSAMPLE", "validateChildren", "validateFAIL", "validateOK", "validateUpdateFAIL", "waitOK");
         
         v3api.logout(sessionToken);
     }
@@ -193,9 +194,9 @@ public class SearchPluginTest extends AbstractTest
         List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
         
         // Then
-        assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(), 
-                "[code, code_date, date, managed list, properties, propertiesEXPERIMENT, propertiesSAMPLE, test, "
-                + "testEXPERIMENT, testSAMPLE, validateChildren, validateFAIL, validateOK, validateUpdateFAIL, waitOK]");
+        AssertionUtil.assertCollectionContainsAtLeast(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()),
+                "code", "code_date", "date", "managed list", "properties", "propertiesEXPERIMENT", "propertiesSAMPLE", "test", ""
+                + "testEXPERIMENT", "testSAMPLE", "validateChildren", "validateFAIL", "validateOK", "validateUpdateFAIL", "waitOK");
         
         v3api.logout(sessionToken);
     }
