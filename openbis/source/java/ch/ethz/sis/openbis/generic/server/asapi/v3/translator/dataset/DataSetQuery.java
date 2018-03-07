@@ -189,4 +189,8 @@ public interface DataSetQuery extends ObjectQuery
     @Select(sql = "select id, external_code as externalCode, path, git_commit_hash as gitCommitHash, git_repository_id as gitRepositoryId from content_copies where id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ContentCopyRecord> getContentCopies(LongOpenHashSet longOpenHashSet);
+
+    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from data_set_types t where t.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    public List<ObjectRelationRecord> getValidationPluginIds(LongSet dataSetTypeIds);
+
 }

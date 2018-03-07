@@ -19,12 +19,14 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.ScriptType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 
@@ -41,7 +43,8 @@ public class GetPluginTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PluginPermId id = new PluginPermId("properties");
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        fetchOptions.withScript().withRegistrator();
+        fetchOptions.withScript();
+        fetchOptions.withRegistrator();
         
         // When
         Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);
@@ -50,9 +53,9 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.getName(), id.getPermId());
         assertEquals(plugin.getPermId(), id);
         assertEquals(plugin.getDescription(), "number of properties");
-        assertEquals(plugin.getEntityKinds(), null);
-        assertEquals(plugin.getPluginType(), PluginType.JYTHON);
-        assertEquals(plugin.getScriptType(), ScriptType.DYNAMIC_PROPERTY);
+        assertEquals(plugin.getEntityKinds(), EnumSet.allOf(EntityKind.class));
+        assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
+        assertEquals(plugin.getPluginType(), PluginType.DYNAMIC_PROPERTY);
         assertEquals(plugin.isAvailable(), true);
         assertEquals(plugin.getScript(), "str(entity.properties().size()) + ' properties'");
         assertEqualsDate(plugin.getRegistrationDate(), "2010-10-27 15:16:48");
@@ -68,7 +71,8 @@ public class GetPluginTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PluginPermId id = new PluginPermId("testEXPERIMENT");
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        fetchOptions.withScript().withRegistrator();
+        fetchOptions.withScript();
+        fetchOptions.withRegistrator();
         
         // When
         Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);
@@ -78,8 +82,8 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.getPermId(), id);
         assertEquals(plugin.getDescription(), null);
         assertEquals(plugin.getEntityKinds().toString(), "[EXPERIMENT]");
-        assertEquals(plugin.getPluginType(), PluginType.JYTHON);
-        assertEquals(plugin.getScriptType(), ScriptType.ENTITY_VALIDATION);
+        assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
+        assertEquals(plugin.getPluginType(), PluginType.ENTITY_VALIDATION);
         assertEquals(plugin.isAvailable(), true);
         assertEquals(plugin.getScript(), "import time;\ndef validate(entity, isNew):\n  pass\n ");
         assertEqualsDate(plugin.getRegistrationDate(), "2010-10-27 15:16:48");
@@ -103,9 +107,9 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.getName(), id.getPermId());
         assertEquals(plugin.getPermId(), id);
         assertEquals(plugin.getDescription(), null);
-        assertEquals(plugin.getEntityKinds(), null);
-        assertEquals(plugin.getPluginType(), PluginType.JYTHON);
-        assertEquals(plugin.getScriptType(), ScriptType.MANAGED_PROPERTY);
+        assertEquals(plugin.getEntityKinds(), EnumSet.allOf(EntityKind.class));
+        assertEquals(plugin.getPluginKind(), PluginKind.JYTHON);
+        assertEquals(plugin.getPluginType(), PluginType.MANAGED_PROPERTY);
         assertEquals(plugin.isAvailable(), true);
         assertEquals(plugin.getScript(), null);
         assertEqualsDate(plugin.getRegistrationDate(), "2010-10-27 15:16:48");

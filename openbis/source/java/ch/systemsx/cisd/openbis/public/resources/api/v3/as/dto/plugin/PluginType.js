@@ -4,7 +4,7 @@
 
 define([ "stjs", "as/dto/common/Enum" ], function(stjs, Enum) {
     var PluginType = function() {
-        Enum.call(this, [ "JYTHON", "PREDEPLOYED" ]);
+        Enum.call(this, [ "DYNAMIC_PROPERTY", "MANAGED_PROPERTY", "ENTITY_VALIDATION" ]);
     };
     stjs.extend(PluginType, Enum, [ Enum ], function(constructor, prototype) {
     }, {});

@@ -18,22 +18,80 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.ScriptType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 
 /**
  * @author Franz-Josef Elmer
  */
 public class SearchPluginTest extends AbstractTest
 {
+    @Test
+    public void testSearchWithId()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_OBSERVER_CISD, PASSWORD);
+        PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
+        PluginPermId pluginPermId = new PluginPermId("propertiesSAMPLE");
+        searchCriteria.withId().thatEquals(pluginPermId);
+        PluginFetchOptions fetchOptions = new PluginFetchOptions();
+
+        // When
+        List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
+
+        // Then
+        assertEquals(plugins.get(0).getPermId().getPermId(), pluginPermId.getPermId());
+        assertEquals(plugins.get(0).getName(), pluginPermId.getPermId());
+        assertEquals(plugins.get(0).getPluginType(), PluginType.DYNAMIC_PROPERTY);
+        assertEquals(plugins.get(0).getPluginKind(), PluginKind.JYTHON);
+        assertEquals(plugins.get(0).getEntityKinds(), EnumSet.of(EntityKind.SAMPLE));
+        assertEquals(plugins.get(0).getFetchOptions().hasScript(), false);
+        assertEquals(plugins.size(), 1);
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithIds()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_OBSERVER_CISD, PASSWORD);
+        PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
+        PluginPermId id1 = new PluginPermId("validateUpdateFAIL");
+        PluginPermId id2 = new PluginPermId("validateOK");
+        searchCriteria.withIds().thatIn(Arrays.asList(id1, id2));
+        PluginFetchOptions fetchOptions = new PluginFetchOptions();
+        fetchOptions.sortBy().name().desc();
+        
+        // When
+        List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
+        
+        // Then
+        assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(),
+                "[validateUpdateFAIL, validateOK]");
+        assertEquals(plugins.get(0).getPermId().getPermId(), id1.getPermId());
+        assertEquals(plugins.get(0).getName(), id1.getPermId());
+        assertEquals(plugins.get(0).getPluginType(), PluginType.ENTITY_VALIDATION);
+        assertEquals(plugins.get(0).getPluginKind(), PluginKind.JYTHON);
+        assertEquals(plugins.get(0).getEntityKinds(), EnumSet.allOf(EntityKind.class));
+        assertEquals(plugins.get(0).getFetchOptions().hasScript(), false);
+        
+        v3api.logout(sessionToken);
+    }
+    
     @Test
     public void testSearchWithName()
     {
@@ -43,31 +101,31 @@ public class SearchPluginTest extends AbstractTest
         searchCriteria.withName().thatContains("ida");
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         fetchOptions.sortBy().name().desc();
-
+        
         // When
         List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
-
+        
         // Then
         assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(),
                 "[validateUpdateFAIL, validateOK, validateFAIL, validateChildren]");
-        assertEquals(plugins.get(0).getScriptType(), ScriptType.ENTITY_VALIDATION);
-        assertEquals(plugins.get(0).getPluginType(), PluginType.JYTHON);
-        assertEquals(plugins.get(0).getFetchOptions().isWithScript(), false);
-        assertEquals(plugins.get(0).getScript(), null);
-
+        assertEquals(plugins.get(0).getPluginType(), PluginType.ENTITY_VALIDATION);
+        assertEquals(plugins.get(0).getPluginKind(), PluginKind.JYTHON);
+        assertEquals(plugins.get(0).getFetchOptions().hasScript(), false);
+        
         v3api.logout(sessionToken);
     }
-
+    
     @Test
-    public void testSearchWithNameAndScriptType()
+    public void testSearchWithNameAndPluginType()
     {
         // Given
         String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
         PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
         searchCriteria.withName().thatContains("date");
-        searchCriteria.withScriptType().thatEquals(ScriptType.DYNAMIC_PROPERTY);
+        searchCriteria.withPluginType().thatEquals(PluginType.DYNAMIC_PROPERTY);
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        fetchOptions.withScript().sortBy().name().asc();
+        fetchOptions.withScript();
+        fetchOptions.sortBy().name().asc();
 
         // When
         List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
@@ -75,21 +133,21 @@ public class SearchPluginTest extends AbstractTest
         // Then
         assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(),
                 "[code_date, date]");
-        assertEquals(plugins.get(0).getScriptType(), ScriptType.DYNAMIC_PROPERTY);
-        assertEquals(plugins.get(0).getPluginType(), PluginType.JYTHON);
-        assertEquals(plugins.get(0).getFetchOptions().isWithScript(), true);
+        assertEquals(plugins.get(0).getPluginType(), PluginType.DYNAMIC_PROPERTY);
+        assertEquals(plugins.get(0).getPluginKind(), PluginKind.JYTHON);
+        assertEquals(plugins.get(0).getFetchOptions().hasScript(), true);
         assertEquals(plugins.get(0).getScript(), "\"%s %s\" % (entity.code(), str(currentDate().getTime()))");
 
         v3api.logout(sessionToken);
     }
     
     @Test
-    public void testSearchWithPluginType()
+    public void testSearchWithPluginKind()
     {
         // Given
         String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
         PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
-        searchCriteria.withPluginType().thatEquals(PluginType.PREDEPLOYED);
+        searchCriteria.withPluginKind().thatEquals(PluginKind.PREDEPLOYED);
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         
         // When
@@ -97,6 +155,48 @@ public class SearchPluginTest extends AbstractTest
         
         // Then
         assertEquals(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()).toString(), "[]");
+        
+        v3api.logout(sessionToken);
+    }
+    
+    @Test
+    public void testSearchWithUnspecifiedPluginKind()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+        PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
+        searchCriteria.withPluginKind();
+        PluginFetchOptions fetchOptions = new PluginFetchOptions();
+        fetchOptions.sortBy().name();
+        
+        // When
+        List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
+        
+        // Then
+        AssertionUtil.assertCollectionContainsAtLeast(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()),
+                "code", "code_date", "date", "managed list", "properties", "propertiesEXPERIMENT", "propertiesSAMPLE", "test", ""
+                + "testEXPERIMENT", "testSAMPLE", "validateChildren", "validateFAIL", "validateOK", "validateUpdateFAIL", "waitOK");
+        
+        v3api.logout(sessionToken);
+    }
+    
+    @Test
+    public void testSearchWithUnspecifiedPluginType()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_SPACE_USER, PASSWORD);
+        PluginSearchCriteria searchCriteria = new PluginSearchCriteria();
+        searchCriteria.withPluginType();
+        PluginFetchOptions fetchOptions = new PluginFetchOptions();
+        fetchOptions.sortBy().name();
+        
+        // When
+        List<Plugin> plugins = v3api.searchPlugins(sessionToken, searchCriteria, fetchOptions).getObjects();
+        
+        // Then
+        AssertionUtil.assertCollectionContainsAtLeast(plugins.stream().map(p -> p.getName()).collect(Collectors.toList()),
+                "code", "code_date", "date", "managed list", "properties", "propertiesEXPERIMENT", "propertiesSAMPLE", "test", ""
+                + "testEXPERIMENT", "testSAMPLE", "validateChildren", "validateFAIL", "validateOK", "validateUpdateFAIL", "waitOK");
         
         v3api.logout(sessionToken);
     }

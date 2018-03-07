@@ -364,16 +364,20 @@ def getDiskSpace(tr, parameters, tableBuilder):
 	storerootDir = getConfigParameterAsString("storeroot-dir")
 	diskSpaceValues = []
 	diskSpaceValues.append(getDiskSpaceForDirectory(storerootDir))
-	# The storeroot-dir might contain symlinks to different volumes.
-	# So we want to resolve them and show all relevant mount points.
-	findLinks = subprocess.check_output(["find", storerootDir, "-type", "l"])
-	mountPoints = []
+	# find symlinks to different drives
+	findLinks = subprocess.check_output(["find", storerootDir, "-type", "l", "-maxdepth", "1"])
 	for symlink in findLinks.splitlines():
 		linkPath = os.path.realpath(symlink)
 		if os.path.exists(linkPath):
 			diskSpaceForDir = getDiskSpaceForDirectory(linkPath)
 			if diskSpaceForDir not in diskSpaceValues:
 				diskSpaceValues.append(diskSpaceForDir)
+	# find mountpoints within the storeroot-dir
+	findDirs = subprocess.check_output(["find", storerootDir, "-type", "d", "-maxdepth", "1"])
+	for dir in findDirs.splitlines():
+		diskSpaceForDir = getDiskSpaceForDirectory(dir)
+		if diskSpaceForDir not in diskSpaceValues:
+			diskSpaceValues.append(diskSpaceForDir)
 	return getJsonForData(diskSpaceValues)
 
 def getDiskSpaceForDirectory(dir):

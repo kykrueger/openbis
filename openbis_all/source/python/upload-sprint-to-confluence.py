@@ -76,7 +76,7 @@ def fetchBinaries(version):
   print "trying to delete existing eln-lims artifacts"
   os.system("rm -rf eln-lims")
   print "Checking out ELN from git"
-  gitresult = os.system("git clone --depth 1 -b S{0}.{1} git@sissource.ethz.ch:sis/openbis.git eln-lims".format(major, minor))
+  gitresult = os.system("git clone --depth 1 -b S{0}.{1} git@sissource.ethz.ch:sispub/openbis.git eln-lims".format(major, minor))
   if gitresult != 0:
     raise Exception("Fetching ELN from git failed. Aborting")
 

@@ -30,7 +30,6 @@ import org.springframework.stereotype.Component;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.ScriptType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.create.PluginCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.IProgress;
@@ -85,21 +84,13 @@ public class CreatePluginExecutor
         {
             throw new UserFailureException("Name cannot be empty.");
         }
-        if (creation.getScriptType() == null)
-        {
-            throw new UserFailureException("Script type cannot be unspecified.");
-        }
         if (creation.getPluginType() == null)
         {
             throw new UserFailureException("Plugin type cannot be unspecified.");
         }
-        if (creation.getPluginType() == PluginType.JYTHON && creation.getScript() == null)
+        if (StringUtils.isEmpty(creation.getScript()))
         {
-            throw new UserFailureException("Script unspecified for plugin of type " + PluginType.JYTHON + ".");
-        }
-        if (creation.getPluginType() == PluginType.PREDEPLOYED && creation.getScript() != null)
-        {
-            throw new UserFailureException("Script specified for plugin of type " + PluginType.PREDEPLOYED + ".");
+            throw new UserFailureException("Script cannot be empty.");
         }
     }
 
@@ -132,14 +123,11 @@ public class CreatePluginExecutor
                 {
                     script.setEntityKind(translate(entityKind));
                 }
-                if (creation.getScriptType() != null)
-                {
-                    script.setScriptType(translate(creation.getScriptType()));
-                }
                 if (creation.getPluginType() != null)
                 {
-                    script.setPluginType(translate(creation.getPluginType()));
+                    script.setScriptType(translate(creation.getPluginType()));
                 }
+                script.setPluginType(ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType.JYTHON);
                 script.setScript(creation.getScript());
                 PluginUtils.checkScriptCompilation(script, evaluatorPool);
                 script.setAvailable(creation.isAvailable());
@@ -161,14 +149,9 @@ public class CreatePluginExecutor
         return ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind.valueOf(entityKind.name());
     }
 
-    private ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType translate(ScriptType scriptType)
+    private ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType translate(PluginType scriptType)
     {
         return ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType.valueOf(scriptType.name());
-    }
-
-    private ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType translate(PluginType pluginType)
-    {
-        return ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType.valueOf(pluginType.name());
     }
 
     @Override

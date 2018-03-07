@@ -14,6 +14,7 @@ define([ "stjs" ], function(stjs) {
 		prototype.description = null;
 		prototype.modificationDate = null;
 		prototype.propertyAssignments = null;
+		prototype.validationPlugin = null;
 		prototype.getPropertyAssignments = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasPropertyAssignments()) {
 				return this.propertyAssignments;
@@ -23,6 +24,16 @@ define([ "stjs" ], function(stjs) {
 		};
 		prototype.setPropertyAssignments = function(propertyAssignments) {
 			this.propertyAssignments = propertyAssignments;
+		};
+		prototype.getValidationPlugin = function() {
+			if (this.getFetchOptions() && this.getFetchOptions().hasValidationPlugin()) {
+				return this.validationPlugin;
+			} else {
+				throw new exceptions.NotFetchedException("Validation plugin have not been fetched.");
+			}
+		};
+		prototype.setValidationPlugin = function(validationPlugin) {
+			this.validationPlugin = validationPlugin;
 		};
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;

@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyAssignmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -66,6 +67,9 @@ public class DataSetType implements Serializable, ICodeHolder, IDescriptionHolde
 
     @JsonProperty
     private List<PropertyAssignment> propertyAssignments;
+
+    @JsonProperty
+    private Plugin validationPlugin;
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -194,6 +198,24 @@ public class DataSetType implements Serializable, ICodeHolder, IDescriptionHolde
     public void setPropertyAssignments(List<PropertyAssignment> propertyAssignments)
     {
         this.propertyAssignments = propertyAssignments;
+    }
+
+    @JsonIgnore
+    public Plugin getValidationPlugin()
+    {
+        if (getFetchOptions() != null && getFetchOptions().hasValidationPlugin())
+        {
+            return validationPlugin;
+        }
+        else
+        {
+            throw new NotFetchedException("Validation plugin has not been fetched.");
+        }
+    }
+
+    public void setValidationPlugin(Plugin validationPlugin)
+    {
+        this.validationPlugin = validationPlugin;
     }
 
     // Method automatically generated with DtoGenerator

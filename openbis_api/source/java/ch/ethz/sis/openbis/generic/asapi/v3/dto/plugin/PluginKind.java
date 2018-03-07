@@ -14,25 +14,16 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.EnumFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.ScriptType;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.plugin.search.ScriptTypeSearchCriteria")
-public class ScriptTypeSearchCriteria extends EnumFieldSearchCriteria<ScriptType>
+@JsonObject("as.dto.plugin.PluginKind")
+public enum PluginKind
 {
-    private static final long serialVersionUID = 1L;
-
-    public ScriptTypeSearchCriteria()
-    {
-        super("script type", SearchFieldType.ATTRIBUTE);
-    }
-
+    JYTHON, PREDEPLOYED;
 }

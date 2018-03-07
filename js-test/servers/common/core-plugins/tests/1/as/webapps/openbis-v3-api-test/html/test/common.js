@@ -40,8 +40,8 @@ define(
 				this.RoleLevel = require('as/dto/roleassignment/RoleLevel');
 				this.DataType = require('as/dto/property/DataType');
 				this.EntityKind = require('as/dto/entitytype/EntityKind');
+				this.PluginKind = require('as/dto/plugin/PluginKind');
 				this.PluginType = require('as/dto/plugin/PluginType');
-				this.ScriptType = require('as/dto/plugin/ScriptType');
 				this.SemanticAnnotationCreation = dtos.SemanticAnnotationCreation;
 				this.DataSetCreation = dtos.DataSetCreation;
 				this.FullDataSetCreation = dtos.FullDataSetCreation;
@@ -447,7 +447,9 @@ define(
 				this.createDataSet = function(facade, dataSetType) {
 					var c = this;
 					return this.getResponseFromJSTestAggregationService(facade,
-							{ "dataSetType" : dataSetType }, function(response) {
+							{
+								"dataSetType" : dataSetType
+							}, function(response) {
 								return new dtos.DataSetPermId(
 										response.result.rows[0][0].value);
 							});
@@ -536,8 +538,8 @@ define(
 					var c = this;
 					var creation = new dtos.PluginCreation();
 					creation.setName(c.generateId("PLUGIN"));
-					creation.setPluginType(c.PluginType.PREDEPLOYED);
-					creation.setScriptType(c.ScriptType.DYNAMIC_PROPERTY);
+					creation.setPluginType(c.PluginType.DYNAMIC_PROPERTY);
+					creation.setScript("42");
 					creation.setEntityKind(c.EntityKind.SAMPLE);
 					return facade.createPlugins([ creation ]).then(
 							function(permIds) {
@@ -554,7 +556,7 @@ define(
 								return permIds[0];
 							});
 				}.bind(this);
-				
+
 				this.createVocabularyTerm = function(facade) {
 					var c = this;
 					var creation = new dtos.VocabularyTermCreation();
@@ -958,7 +960,7 @@ define(
 					options.setReason("test reason");
 					return facade.deletePlugins([ id ], options);
 				}.bind(this);
-				
+
 				this.deletePropertyType = function(facade, id) {
 					var c = this;
 					var options = new dtos.PropertyTypeDeletionOptions();

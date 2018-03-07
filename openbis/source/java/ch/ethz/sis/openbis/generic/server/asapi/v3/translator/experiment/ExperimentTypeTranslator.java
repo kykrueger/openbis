@@ -45,6 +45,9 @@ public class ExperimentTypeTranslator extends AbstractCachingTranslator<Long, Ex
     @Autowired
     private IExperimentPropertyAssignmentTranslator assignmentTranslator;
 
+    @Autowired
+    private IExperimentTypeValidationPluginTranslator validationPluginTranslator;
+
     @Override
     protected ExperimentType createObject(TranslationContext context, Long typeId, ExperimentTypeFetchOptions fetchOptions)
     {
@@ -63,6 +66,11 @@ public class ExperimentTypeTranslator extends AbstractCachingTranslator<Long, Ex
         {
             relations.put(IExperimentPropertyAssignmentTranslator.class,
                     assignmentTranslator.translate(context, typeIds, fetchOptions.withPropertyAssignments()));
+        }
+        if (fetchOptions.hasValidationPlugin())
+        {
+            relations.put(IExperimentTypeValidationPluginTranslator.class,
+                    validationPluginTranslator.translate(context, typeIds, fetchOptions.withValidationPlugin()));
         }
 
         return relations;
@@ -84,6 +92,10 @@ public class ExperimentTypeTranslator extends AbstractCachingTranslator<Long, Ex
         {
             result.setPropertyAssignments(
                     (List<PropertyAssignment>) relations.get(IExperimentPropertyAssignmentTranslator.class, typeId));
+        }
+        if (fetchOptions.hasValidationPlugin())
+        {
+            result.setValidationPlugin(relations.get(IExperimentTypeValidationPluginTranslator.class, typeId));
         }
     }
 

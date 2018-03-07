@@ -1,5 +1,5 @@
 define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/person/fetchoptions/PersonFetchOptions", 
-         "as/dto/plugin/fetchoptions/PluginSortOptions" ], function(
+         "as/dto/common/fetchoptions/EmptyFetchOptions", "as/dto/plugin/fetchoptions/PluginSortOptions" ], function(
 		stjs, FetchOptions) {
 	var PluginFetchOptions = function() {
 	};
@@ -24,11 +24,17 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/person/fetch
 			return this.registrator != null;
 		};
 		prototype.withScript = function() {
-			this.script = true;
-			return this;
-		};
-		prototype.isWithScript = function() {
+			if (this.script == null) {
+				var EmptyFetchOptions = require("as/dto/common/fetchoptions/EmptyFetchOptions");
+				this.script = new EmptyFetchOptions();
+			}
 			return this.script;
+		};
+		prototype.withScriptUsing = function(fetchOptions) {
+			return this.script = fetchOptions;
+		}
+		prototype.hasScript = function() {
+			return this.script != null;
 		};
 		prototype.sortBy = function() {
 			if (this.sort == null) {
@@ -42,6 +48,7 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/person/fetch
 		};
 	}, {
 		registrator : "PersonFetchOptions",
+		script : "EmptyFetchOptions",
 		sort : "PluginSortOptions"
 	});
 	return PluginFetchOptions;

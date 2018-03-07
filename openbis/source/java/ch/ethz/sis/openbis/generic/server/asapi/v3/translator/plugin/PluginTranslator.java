@@ -29,8 +29,8 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.ScriptType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
@@ -102,13 +102,17 @@ public class PluginTranslator
         if (baseRecord.entity_kind != null)
         {
             plugin.setEntityKinds(EnumSet.of(EntityKind.valueOf(baseRecord.entity_kind)));
+        } else
+        {
+            plugin.setEntityKinds(EnumSet.allOf(EntityKind.class));
         }
+        plugin.setPluginKind(PluginKind.valueOf(baseRecord.plugin_type));
+        plugin.setPluginType(PluginType.valueOf(baseRecord.script_type));
         injectEntityKindsFromPredeployed(plugin);
-        plugin.setPluginType(PluginType.valueOf(baseRecord.plugin_type));
-        plugin.setScriptType(ScriptType.valueOf(baseRecord.script_type));
-        if (fetchOptions.isWithScript())
+        if (fetchOptions.hasScript())
         {
             plugin.setScript(baseRecord.script);
+            plugin.getFetchOptions().withScriptUsing(fetchOptions.withScript());
         }
         
         if (fetchOptions.hasRegistrator())
@@ -121,10 +125,10 @@ public class PluginTranslator
     
     private void injectEntityKindsFromPredeployed(Plugin plugin)
     {
-        if (plugin.getPluginType() == PluginType.PREDEPLOYED)
+        if (plugin.getPluginKind() == PluginKind.PREDEPLOYED)
         {
             ICommonPropertyBasedHotDeployPlugin hotDeployPlugin = null;
-            switch (plugin.getScriptType())
+            switch (plugin.getPluginType())
             {
                 case ENTITY_VALIDATION:
                     hotDeployPlugin =
@@ -154,10 +158,6 @@ public class PluginTranslator
             EnumSet<ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.ICommonPropertyBasedHotDeployPlugin.EntityKind> entityKinds)
     {
         if (entityKinds == null)
-        {
-            return null;
-        } else if (entityKinds.size() == ch.systemsx.cisd.openbis.generic.shared.hotdeploy_plugins.api.ICommonPropertyBasedHotDeployPlugin.EntityKind
-                .values().length)
         {
             return null;
         }

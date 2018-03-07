@@ -51,9 +51,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fAction = function(facade) {
 				return $.when(c.createDataSet(facade), c.createDataSet(facade)).then(function(permId1, permId2) {
 					var ids = [ permId1, permId2 ];
-					return facade.lockDataSets(ids, new c.DataSetLockOptions()).then(function() {
-						return facade.lockDataSets(ids, new c.DataSetLockOptions());
-					});
+					return facade.lockDataSets(ids, new c.DataSetLockOptions());
 				});
 			}
 			
@@ -66,7 +64,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fAction = function(facade) {
 				return $.when(c.createDataSet(facade), c.createDataSet(facade)).then(function(permId1, permId2) {
 					var ids = [ permId1, permId2 ];
-					return facade.unlockDataSets(ids, new c.DataSetUnlockOptions()).then(function() {
+					return facade.lockDataSets(ids, new c.DataSetLockOptions()).then(function() {
 						return facade.unlockDataSets(ids, new c.DataSetUnlockOptions());
 					});
 				});

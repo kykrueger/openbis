@@ -17,6 +17,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
@@ -37,6 +38,9 @@ public class SampleTypeFetchOptions extends FetchOptions<SampleType> implements 
 
     @JsonProperty
     private SemanticAnnotationFetchOptions semanticAnnotations;
+
+    @JsonProperty
+    private PluginFetchOptions validationPlugin;
 
     @JsonProperty
     private SampleTypeSortOptions sort;
@@ -83,6 +87,25 @@ public class SampleTypeFetchOptions extends FetchOptions<SampleType> implements 
     public boolean hasSemanticAnnotations()
     {
         return semanticAnnotations != null;
+    }
+
+    public PluginFetchOptions withValidationPlugin()
+    {
+        if (validationPlugin == null)
+        {
+            validationPlugin = new PluginFetchOptions();
+        }
+        return validationPlugin;
+    }
+    
+    public PluginFetchOptions withValidationPluginUsing(PluginFetchOptions fetchOptions)
+    {
+        return validationPlugin = fetchOptions;
+    }
+    
+    public boolean hasValidationPlugin()
+    {
+        return validationPlugin != null;
     }
 
     // Method automatically generated with DtoGenerator

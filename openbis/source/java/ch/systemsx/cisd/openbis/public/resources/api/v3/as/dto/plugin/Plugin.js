@@ -8,8 +8,8 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.name = null;
 		prototype.permId = null;
 		prototype.description = null;
+		prototype.pluginKind = null;
 		prototype.pluginType = null;
-		prototype.scriptType = null;
 		prototype.entityKinds = null;
 		prototype.script = null;
 		prototype.available = null;
@@ -40,17 +40,17 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setDescription = function(description) {
 			this.description = description;
 		};
+		prototype.getPluginKind = function() {
+			return this.pluginKind;
+		};
+		prototype.setPluginKind = function(pluginKind) {
+			this.pluginKind = pluginKind;
+		};
 		prototype.getPluginType = function() {
 			return this.pluginType;
 		};
 		prototype.setPluginType = function(pluginType) {
 			this.pluginType = pluginType;
-		};
-		prototype.getScriptType = function() {
-			return this.scriptType;
-		};
-		prototype.setScriptType = function(scriptType) {
-			this.scriptType = scriptType;
 		};
 		prototype.getEntityKinds = function() {
 			return this.entityKinds;
@@ -59,7 +59,11 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 			this.entityKinds = entityKinds;
 		};
 		prototype.getScript = function() {
-			return this.script;
+			if (this.getFetchOptions() && this.getFetchOptions().hasScript()) {
+				return this.script;
+			} else {
+				throw new exceptions.NotFetchedException("Script has not been fetched.");
+			}
 		};
 		prototype.setScript = function(script) {
 			this.script = script;
@@ -89,8 +93,8 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 	}, {
 		fetchOptions : "PluginFetchOptions",
 		permId : "PluginPermId",
+		pluginKind : "PluginKind",
 		pluginType : "PluginType",
-		scriptType : "ScriptType",
 		entityKinds : {
 			name : "Set",
 			arguments : [ "EntityKind" ]

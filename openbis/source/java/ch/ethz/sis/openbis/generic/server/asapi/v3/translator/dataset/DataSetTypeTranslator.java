@@ -45,6 +45,9 @@ public class DataSetTypeTranslator extends AbstractCachingTranslator<Long, DataS
     @Autowired
     private IDataSetPropertyAssignmentTranslator assignmentTranslator;
 
+    @Autowired
+    private IDataSetTypeValidationPluginTranslator validationPluginTranslator;
+
     @Override
     protected DataSetType createObject(TranslationContext context, Long typeId, DataSetTypeFetchOptions fetchOptions)
     {
@@ -63,6 +66,11 @@ public class DataSetTypeTranslator extends AbstractCachingTranslator<Long, DataS
         {
             relations.put(IDataSetPropertyAssignmentTranslator.class,
                     assignmentTranslator.translate(context, typeIds, fetchOptions.withPropertyAssignments()));
+        }
+        if (fetchOptions.hasValidationPlugin())
+        {
+            relations.put(IDataSetTypeValidationPluginTranslator.class,
+                    validationPluginTranslator.translate(context, typeIds, fetchOptions.withValidationPlugin()));
         }
 
         return relations;
@@ -86,6 +94,10 @@ public class DataSetTypeTranslator extends AbstractCachingTranslator<Long, DataS
         if (fetchOptions.hasPropertyAssignments())
         {
             result.setPropertyAssignments((List<PropertyAssignment>) relations.get(IDataSetPropertyAssignmentTranslator.class, typeId));
+        }
+        if (fetchOptions.hasValidationPlugin())
+        {
+            result.setValidationPlugin(relations.get(IDataSetTypeValidationPluginTranslator.class, typeId));
         }
     }
 

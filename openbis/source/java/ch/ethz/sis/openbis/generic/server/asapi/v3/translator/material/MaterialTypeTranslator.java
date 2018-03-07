@@ -45,6 +45,9 @@ public class MaterialTypeTranslator extends AbstractCachingTranslator<Long, Mate
     @Autowired
     private IMaterialPropertyAssignmentTranslator assignmentTranslator;
 
+    @Autowired
+    private IMaterialTypeValidationPluginTranslator validationPluginTranslator;
+
     @Override
     protected MaterialType createObject(TranslationContext context, Long typeId, MaterialTypeFetchOptions fetchOptions)
     {
@@ -63,6 +66,11 @@ public class MaterialTypeTranslator extends AbstractCachingTranslator<Long, Mate
         {
             relations.put(IMaterialPropertyAssignmentTranslator.class,
                     assignmentTranslator.translate(context, typeIds, fetchOptions.withPropertyAssignments()));
+        }
+        if (fetchOptions.hasValidationPlugin())
+        {
+            relations.put(IMaterialTypeValidationPluginTranslator.class,
+                    validationPluginTranslator.translate(context, typeIds, fetchOptions.withValidationPlugin()));
         }
 
         return relations;
@@ -83,6 +91,10 @@ public class MaterialTypeTranslator extends AbstractCachingTranslator<Long, Mate
         if (fetchOptions.hasPropertyAssignments())
         {
             result.setPropertyAssignments((List<PropertyAssignment>) relations.get(IMaterialPropertyAssignmentTranslator.class, typeId));
+        }
+        if (fetchOptions.hasValidationPlugin())
+        {
+            result.setValidationPlugin(relations.get(IMaterialTypeValidationPluginTranslator.class, typeId));
         }
     }
 

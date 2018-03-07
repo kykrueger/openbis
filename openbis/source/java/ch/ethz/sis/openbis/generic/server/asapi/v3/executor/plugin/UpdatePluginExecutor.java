@@ -19,11 +19,10 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
@@ -32,15 +31,20 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.update.PluginUpdate;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.context.IProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatchProcessor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.UpdateRelationProgress;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.util.PluginUtils;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
 
 /**
@@ -82,6 +86,10 @@ public class UpdatePluginExecutor
         {
             throw new UserFailureException("Plugin id cannot be null.");
         }
+        if (update.getScript().isModified() && StringUtils.isBlank(update.getScript().getValue()))
+        {
+            throw new UserFailureException("New script cannot be undefined.");
+        }
     }
 
     @Override
@@ -93,25 +101,55 @@ public class UpdatePluginExecutor
     @Override
     protected void updateBatch(IOperationContext context, MapBatch<PluginUpdate, ScriptPE> batch)
     {
-        Set<Entry<PluginUpdate, ScriptPE>> entrySet = batch.getObjects().entrySet();
-        for (Entry<PluginUpdate, ScriptPE> entry : entrySet)
+        new MapBatchProcessor<PluginUpdate, ScriptPE>(context, batch)
         {
-            PluginUpdate update = entry.getKey();
-            ScriptPE script = entry.getValue();
-            script.setDescription(getNewValue(update.getDescription(), script.getDescription()));
-            FieldUpdateValue<String> scriptField = update.getScript();
-            if (scriptField != null && scriptField.isModified())
+            @Override
+            public void process(PluginUpdate update, ScriptPE script)
             {
-                script.setScript(scriptField.getValue());
-                PluginUtils.checkScriptCompilation(script, jythonEvaluatorPool);
+                script.setDescription(getNewValue(update.getDescription(), script.getDescription()));
+                FieldUpdateValue<String> scriptField = update.getScript();
+                if (scriptField != null && scriptField.isModified())
+                {
+                    script.setScript(scriptField.getValue());
+                    PluginUtils.checkScriptCompilation(script, jythonEvaluatorPool);
+                }
+                script.setAvailable(getNewValue(update.getAvailable(), script.isAvailable()));
             }
-            script.setAvailable(getNewValue(update.getAvailable(), script.isAvailable()));
-        }
+
+            @Override
+            public IProgress createProgress(PluginUpdate update, ScriptPE script, int objectIndex, int totalObjectCount)
+            {
+                return new UpdateRelationProgress(update, script, "plugin", objectIndex, totalObjectCount);
+            }
+        };
     }
 
     @Override
     protected void updateAll(IOperationContext context, MapBatch<PluginUpdate, ScriptPE> batch)
     {
+        new MapBatchProcessor<PluginUpdate, ScriptPE>(context, batch)
+        {
+            @Override
+            public void process(PluginUpdate update, ScriptPE script)
+            {
+                FieldUpdateValue<String> scriptField = update.getScript();
+                if (scriptField != null && scriptField.isModified() && script.getScriptType() == ScriptType.DYNAMIC_PROPERTY)
+                {
+                    for (EntityTypePropertyTypePE assignment : script.getPropertyAssignments())
+                    {
+                        daoFactory.getEntityPropertyTypeDAO(assignment.getEntityType().getEntityKind())
+                                .scheduleDynamicPropertiesEvaluation(assignment);
+                    }
+                }
+            }
+
+            @Override
+            public IProgress createProgress(PluginUpdate update, ScriptPE script, int objectIndex, int totalObjectCount)
+            {
+                return new UpdateRelationProgress(update, script, "plugin (scheduling dynamic properties evaluation)", 
+                        objectIndex, totalObjectCount);
+            }
+        };
     }
 
     @Override

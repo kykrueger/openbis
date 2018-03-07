@@ -15,6 +15,13 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.sample;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -23,16 +30,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyAssignmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISemanticAnnotationsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 /*
  * Class automatically generated with DtoGenerator
@@ -83,6 +86,9 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
 
     @JsonProperty
     private List<SemanticAnnotation> semanticAnnotations;
+    
+    @JsonProperty
+    private Plugin validationPlugin;
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -284,6 +290,24 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
     public void setSemanticAnnotations(List<SemanticAnnotation> semanticAnnotations)
     {
         this.semanticAnnotations = semanticAnnotations;
+    }
+
+    @JsonIgnore
+    public Plugin getValidationPlugin()
+    {
+        if (getFetchOptions() != null && getFetchOptions().hasValidationPlugin())
+        {
+            return validationPlugin;
+        }
+        else
+        {
+            throw new NotFetchedException("Validation plugin has not been fetched.");
+        }
+    }
+
+    public void setValidationPlugin(Plugin validationPlugin)
+    {
+        this.validationPlugin = validationPlugin;
     }
 
     // Method automatically generated with DtoGenerator

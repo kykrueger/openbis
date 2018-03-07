@@ -21,6 +21,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EmptyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
@@ -43,7 +44,7 @@ public class PluginFetchOptions extends FetchOptions<Plugin> implements Serializ
     private PluginSortOptions sort;
     
     @JsonProperty
-    private boolean script;
+    private EmptyFetchOptions script;
 
     public PersonFetchOptions withRegistrator()
     {
@@ -63,6 +64,27 @@ public class PluginFetchOptions extends FetchOptions<Plugin> implements Serializ
     {
         return registrator != null;
     }
+    @JsonIgnore
+    public EmptyFetchOptions withScript()
+    {
+        if (script == null)
+        {
+            script = new EmptyFetchOptions();
+        }
+        return script;
+    }
+    
+    public EmptyFetchOptions withScriptUsing(EmptyFetchOptions fetchOptions)
+    {
+        return script = fetchOptions;
+    }
+    
+    @JsonIgnore
+    public boolean hasScript()
+    {
+        return script != null;
+    }
+    
     @Override
     public PluginSortOptions sortBy()
     {
@@ -73,19 +95,6 @@ public class PluginFetchOptions extends FetchOptions<Plugin> implements Serializ
         return sort;
     }
     
-    @JsonIgnore
-    public PluginFetchOptions withScript()
-    {
-        script = true;
-        return this;
-    }
-    
-    @JsonIgnore
-    public boolean isWithScript()
-    {
-        return script;
-    }
-
     @Override
     public PluginSortOptions getSortBy()
     {
@@ -97,6 +106,7 @@ public class PluginFetchOptions extends FetchOptions<Plugin> implements Serializ
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("Plugin", this);
         f.addFetchOption("Registrator", registrator);
+        f.addFetchOption("Script", script);
         return f;
     }
 

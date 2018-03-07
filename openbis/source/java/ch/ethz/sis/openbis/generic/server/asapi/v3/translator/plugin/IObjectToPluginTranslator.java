@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.plugin;
 
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.IObjectToOneRelationTranslator;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.plugin.PluginType")
-public enum PluginType
+public interface IObjectToPluginTranslator extends IObjectToOneRelationTranslator<Plugin, PluginFetchOptions>
 {
-    DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION;
+
 }

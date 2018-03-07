@@ -23,7 +23,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.ScriptType;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -42,13 +41,10 @@ public class PluginCreation implements ICreation, IObjectCreation
     private String description;
     
     @JsonProperty
-    private PluginType pluginType;
-    
-    @JsonProperty
     private EntityKind entityKind;
     
     @JsonProperty
-    private ScriptType scriptType;
+    private PluginType pluginType;
     
     @JsonProperty
     private String script;
@@ -79,17 +75,6 @@ public class PluginCreation implements ICreation, IObjectCreation
     }
 
     @JsonIgnore
-    public PluginType getPluginType()
-    {
-        return pluginType;
-    }
-
-    public void setPluginType(PluginType pluginType)
-    {
-        this.pluginType = pluginType;
-    }
-
-    @JsonIgnore
     public EntityKind getEntityKind()
     {
         return entityKind;
@@ -101,14 +86,14 @@ public class PluginCreation implements ICreation, IObjectCreation
     }
 
     @JsonIgnore
-    public ScriptType getScriptType()
+    public PluginType getPluginType()
     {
-        return scriptType;
+        return pluginType;
     }
 
-    public void setScriptType(ScriptType scriptType)
+    public void setPluginType(PluginType pluginType)
     {
-        this.scriptType = scriptType;
+        this.pluginType = pluginType;
     }
 
     @JsonIgnore
