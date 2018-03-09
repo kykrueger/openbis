@@ -24,6 +24,7 @@ from .utils import default_echo
 from .utils import complete_git_config
 from .utils import complete_openbis_config
 from .utils import cd
+from ..scripts import cli
 
 
 # noinspection PyPep8Naming
@@ -75,9 +76,10 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def init_analysis(self, path):
+    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
         """Initialize an analysis repository at the path.
         :param path: Path for the repository.
+        :param parent: (required when outside of existing repository) Path for the parent repositort
         :return: A CommandResult.
         """
         return
@@ -133,7 +135,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_data(self, path, desc=None, create=True):
         self.error_raise("init data", "No git command found.")
 
-    def init_analysis(self, path):
+    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
         self.error_raise("init analysis", "No git command found.")
 
     def commit(self, msg, auto_add=True, sync=True):
@@ -194,8 +196,39 @@ class GitDataMgmt(AbstractDataMgmt):
             self.commit_metadata_updates('local with global')
         return result
 
-    def init_analysis(self, path):
-        return self.git_wrapper.git_init(path)
+
+    def init_analysis(self, path, parent, desc, create=True, apply_config=False):
+
+        # get data_set_id of parent from current folder or explicit parent argument
+        parent_folder = parent if parent is not None and len(parent) > 0 else "."
+        parent_data_set_id = self.get_data_set_id(parent_folder)
+        # check that data_set_id is set - parent repository has been added to openBIS
+        if parent_data_set_id is None:
+            return CommandResult(returncode=-1, output="Parent data set must be committed to openBIS before creating an analysis data set.")
+        # init analysis repository
+        result = self.init_data(path, desc, create, apply_config)
+        if result.failure():
+            return result
+        # add analysis repository folder to .gitignore of parent
+        if os.path.exists('.obis'):
+            with open(".gitignore", "a") as gitignore:
+                gitignore.write(path)
+                gitignore.write("\n")
+        elif parent is None:
+            return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
+
+        with cd(path):
+            cli.config_internal(self, False, "data_set_id", parent_data_set_id)
+
+
+        # TODO init repo and link new data set as child.
+        # add to gitignore of parent data set
+        # add parameter to reference parent in case it's not in the same folder
+
+        # TODO use git check-ignore to not add folder twice
+        # TODO cleanup when something goes wrong
+        return result
+
 
     def sync(self):
         try:
