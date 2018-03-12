@@ -142,12 +142,24 @@ def set_property(data_mgmt, prop, value, is_global):
         return CommandResult(returncode=0, output="")
 
 
-def init_data_impl(ctx, object_id, collection_id, folder, name):
+def init_data_impl(ctx, object_id, collection_id, folder, desc):
     """Shared implementation for the init_data command."""
     click_echo("init_data {}".format(folder))
     data_mgmt = shared_data_mgmt(ctx.obj)
-    name = name if name != "" else None
-    result = data_mgmt.init_data(folder, name, create=True)
+    desc = desc if desc != "" else None
+    result = data_mgmt.init_data(folder, desc, create=True)
+    init_handle_cleanup(result, object_id, collection_id)
+
+
+def init_analysis_impl(ctx, parent, object_id, collection_id, folder, description):
+    click_echo("init_analysis {}".format(folder))
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    description = description if description != "" else None
+    result = data_mgmt.init_analysis(folder, parent, description, create=True)
+    init_handle_cleanup(result, object_id, collection_id)
+
+
+def init_handle_cleanup(result, object_id, collection_id):
     if (not object_id and not collection_id) or result.failure():
         return check_result("init_data", result)
     with dm.cd(folder):
@@ -162,10 +174,10 @@ def init_data_impl(ctx, object_id, collection_id, folder, name):
 @click.option('-oi', '--object_id', help='Set the id of the owning sample.')
 @click.option('-ci', '--collection_id', help='Set the id of the owning experiment.')
 @click.argument('folder', type=click.Path(exists=False, file_okay=False))
-@click.argument('name', default="")
-def init(ctx, object_id, collection_id, folder, name):
+@click.argument('description', default="")
+def init(ctx, object_id, collection_id, folder, description):
     """Initialize the folder as a data folder (alias for init_data)."""
-    return init_data_impl(ctx, object_id, collection_id, folder, name)
+    return init_data_impl(ctx, object_id, collection_id, folder, description)
 
 
 @cli.command()
@@ -173,18 +185,22 @@ def init(ctx, object_id, collection_id, folder, name):
 @click.option('-oi', '--object_id', help='Set the id of the owning sample.')
 @click.option('-ci', '--collection_id', help='Set the id of the owning experiment.')
 @click.argument('folder', type=click.Path(exists=False, file_okay=False))
-@click.argument('name', default="")
-def init_data(ctx, object_id, collection_id, folder, name):
+@click.argument('description', default="")
+def init_data(ctx, object_id, collection_id, folder, description):
     """Initialize the folder as a data folder."""
-    return init_data_impl(ctx, object_id, collection_id, folder, name)
+    return init_data_impl(ctx, object_id, collection_id, folder, description)
 
 
 @cli.command()
 @click.pass_context
+@click.option('-p', '--parent', type=click.Path(exists=False, file_okay=False))
+@click.option('-oi', '--object_id', help='Set the id of the owning sample.')
+@click.option('-ci', '--collection_id', help='Set the id of the owning experiment.')
 @click.argument('folder', type=click.Path(exists=False, file_okay=False))
-def init_analysis(ctx, folder):
+@click.argument('description', default="")
+def init_analysis(ctx, parent, object_id, collection_id, folder, description):
     """Initialize the folder as an analysis folder."""
-    click_echo("init analysis {}".format(folder))
+    return init_analysis_impl(ctx, parent, object_id, collection_id, folder, description)
 
 
 @cli.command()

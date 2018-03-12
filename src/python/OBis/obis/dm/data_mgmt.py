@@ -24,6 +24,7 @@ from .utils import default_echo
 from .utils import complete_git_config
 from .utils import complete_openbis_config
 from .utils import cd
+from ..scripts import cli
 
 
 # noinspection PyPep8Naming
@@ -75,9 +76,10 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def init_analysis(self, path):
+    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
         """Initialize an analysis repository at the path.
         :param path: Path for the repository.
+        :param parent: (required when outside of existing repository) Path for the parent repositort
         :return: A CommandResult.
         """
         return
@@ -133,7 +135,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_data(self, path, desc=None, create=True):
         self.error_raise("init data", "No git command found.")
 
-    def init_analysis(self, path):
+    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
         self.error_raise("init analysis", "No git command found.")
 
     def commit(self, msg, auto_add=True, sync=True):
@@ -177,6 +179,9 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(path):
             return self.config_resolver.config_dict().get('data_set_id')
 
+    def get_config(self, path, key):
+        with cd(path):
+            return self.config_resolver.config_dict().get(key)
 
     def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:
@@ -194,8 +199,32 @@ class GitDataMgmt(AbstractDataMgmt):
             self.commit_metadata_updates('local with global')
         return result
 
-    def init_analysis(self, path):
-        return self.git_wrapper.git_init(path)
+
+    def init_analysis(self, path, parent, desc, create=True, apply_config=False):
+
+        # get data_set_id of parent from current folder or explicit parent argument
+        parent_folder = parent if parent is not None and len(parent) > 0 else "."
+        parent_data_set_id = self.get_data_set_id(parent_folder)
+        # check that parent repository has been added to openBIS
+        if self.get_config(parent_folder, 'repository_id') is None:
+            return CommandResult(returncode=-1, output="Parent data set must be committed to openBIS before creating an analysis data set.")
+        # check that analysis repository does not already exist
+        if os.path.exists(path):
+            return CommandResult(returncode=-1, output="Data set already exists: " + path)
+        # init analysis repository
+        result = self.init_data(path, desc, create, apply_config)
+        if result.failure():
+            return result
+        # add analysis repository folder to .gitignore of parent
+        if os.path.exists('.obis'):
+            self.git_wrapper.git_ignore(path)
+        elif parent is None:
+            return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
+        # set data_set_id to analysis repository so it will be used as parent when committing
+        with cd(path):
+            cli.config_internal(self, False, "data_set_id", parent_data_set_id)
+        return result
+
 
     def sync(self):
         try:
