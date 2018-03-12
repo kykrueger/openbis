@@ -37,9 +37,17 @@ public class LinkedData implements Serializable
     @JsonProperty
     private LinkedDataFetchOptions fetchOptions;
 
+    /**
+     * @deprecated Use {@link ContentCopy} instead.
+     */
+    @Deprecated
     @JsonProperty
     private String externalCode;
 
+    /**
+     * @deprecated Use {@link ContentCopy} instead.
+     */
+    @Deprecated
     @JsonProperty
     private ExternalDms externalDms;
 
