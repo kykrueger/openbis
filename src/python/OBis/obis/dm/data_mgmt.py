@@ -200,7 +200,7 @@ class GitDataMgmt(AbstractDataMgmt):
         return result
 
 
-    def init_analysis(self, path, parent, desc, create=True, apply_config=False):
+    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
 
         # get data_set_id of parent from current folder or explicit parent argument
         parent_folder = parent if parent is not None and len(parent) > 0 else "."
@@ -222,7 +222,7 @@ class GitDataMgmt(AbstractDataMgmt):
             return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
         # set data_set_id to analysis repository so it will be used as parent when committing
         with cd(path):
-            cli.config_internal(self, False, "data_set_id", parent_data_set_id)
+            cli.set_property(self, "data_set_id", parent_data_set_id, False)
         return result
 
 

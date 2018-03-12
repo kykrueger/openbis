@@ -198,6 +198,49 @@ def test_undo_commit_when_sync_fails(tmpdir):
     dm.git_wrapper.git_reset_to.assert_called_once()
 
 
+def test_init_analysis(tmpdir):
+    dm = shared_dm()
+
+    tmp_dir_path = str(tmpdir)
+
+    result = dm.init_data(tmp_dir_path, "test")
+    assert result.returncode == 0
+
+    copy_test_data(tmpdir)
+
+    with data_mgmt.cd(tmp_dir_path):
+        dm = shared_dm()
+        prepare_registration_expectations(dm)
+        set_registration_configuration(dm)
+
+        result = dm.commit("Added data.")
+        assert result.returncode == 0
+        parent_ds_code = dm.config_resolver.config_dict()['data_set_id']
+
+        analysis_repo = "analysis"
+        import pdb; pdb.set_trace()
+        result = dm.init_analysis(analysis_repo, None)
+        assert result.returncode == 0
+
+        with data_mgmt.cd(analysis_repo):
+
+            set_registration_configuration(dm)
+            prepare_new_data_set_expectations(dm)
+            result = dm.commit("Analysis.")
+            assert result.returncode == 0
+            child_ds_code = dm.config_resolver.config_dict()['data_set_id']
+            assert parent_ds_code != child_ds_code
+            commit_id = dm.git_wrapper.git_commit_hash().output
+            repository_id = dm.config_resolver.config_dict()['repository_id']
+            assert repository_id is not None
+
+            print(tmp_dir_path)
+
+            contents = git.GitRepoFileInfo(dm.git_wrapper).contents()
+            check_new_data_set_expectations(dm, tmp_dir_path + '/' + analysis_repo, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, 
+                                            None, contents)
+
+
 # TODO Test that if the data set registration fails, the data_set_id is reverted
 
 def set_registration_configuration(dm, properties=None):
