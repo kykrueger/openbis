@@ -151,11 +151,11 @@ def init_data_impl(ctx, object_id, collection_id, folder, desc):
     init_handle_cleanup(result, object_id, collection_id)
 
 
-def init_analysis_impl(ctx, object_id, collection_id, folder, parent, desc):
+def init_analysis_impl(ctx, parent, object_id, collection_id, folder, description):
     click_echo("init_analysis {}".format(folder))
     data_mgmt = shared_data_mgmt(ctx.obj)
-    desc = desc if desc != "" else None
-    result = data_mgmt.init_analysis(folder, parent, desc, create=True)
+    description = description if description != "" else None
+    result = data_mgmt.init_analysis(folder, parent, description, create=True)
     init_handle_cleanup(result, object_id, collection_id)
 
 
@@ -193,14 +193,14 @@ def init_data(ctx, object_id, collection_id, folder, description):
 
 @cli.command()
 @click.pass_context
+@click.option('-p', '--parent', type=click.Path(exists=False, file_okay=False))
 @click.option('-oi', '--object_id', help='Set the id of the owning sample.')
 @click.option('-ci', '--collection_id', help='Set the id of the owning experiment.')
 @click.argument('folder', type=click.Path(exists=False, file_okay=False))
 @click.argument('description', default="")
-@click.option('-p', '--parent', type=click.Path(exists=False, file_okay=False))
-def init_analysis(ctx, object_id, collection_id, folder, description, parent):
+def init_analysis(ctx, parent, object_id, collection_id, folder, description):
     """Initialize the folder as an analysis folder."""
-    return init_analysis_impl(ctx, object_id, collection_id, folder, description, parent)
+    return init_analysis_impl(ctx, parent, object_id, collection_id, folder, description)
 
 
 @cli.command()

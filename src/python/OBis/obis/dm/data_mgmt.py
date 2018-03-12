@@ -179,6 +179,9 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(path):
             return self.config_resolver.config_dict().get('data_set_id')
 
+    def get_config(self, path, key):
+        with cd(path):
+            return self.config_resolver.config_dict().get(key)
 
     def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:
@@ -202,31 +205,24 @@ class GitDataMgmt(AbstractDataMgmt):
         # get data_set_id of parent from current folder or explicit parent argument
         parent_folder = parent if parent is not None and len(parent) > 0 else "."
         parent_data_set_id = self.get_data_set_id(parent_folder)
-        # check that data_set_id is set - parent repository has been added to openBIS
-        if parent_data_set_id is None:
+        # check that parent repository has been added to openBIS
+        if self.get_config(parent_folder, 'repository_id') is None:
             return CommandResult(returncode=-1, output="Parent data set must be committed to openBIS before creating an analysis data set.")
+        # check that analysis repository does not already exist
+        if os.path.exists(path):
+            return CommandResult(returncode=-1, output="Data set already exists: " + path)
         # init analysis repository
         result = self.init_data(path, desc, create, apply_config)
         if result.failure():
             return result
         # add analysis repository folder to .gitignore of parent
         if os.path.exists('.obis'):
-            with open(".gitignore", "a") as gitignore:
-                gitignore.write(path)
-                gitignore.write("\n")
+            self.git_wrapper.git_ignore(path)
         elif parent is None:
             return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
-
+        # set data_set_id to analysis repository so it will be used as parent when committing
         with cd(path):
             cli.config_internal(self, False, "data_set_id", parent_data_set_id)
-
-
-        # TODO init repo and link new data set as child.
-        # add to gitignore of parent data set
-        # add parameter to reference parent in case it's not in the same folder
-
-        # TODO use git check-ignore to not add folder twice
-        # TODO cleanup when something goes wrong
         return result
 
 
