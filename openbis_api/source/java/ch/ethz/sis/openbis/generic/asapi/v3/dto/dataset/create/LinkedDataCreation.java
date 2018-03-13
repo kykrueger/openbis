@@ -33,17 +33,9 @@ public class LinkedDataCreation implements ICreation
 {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * @deprecated Use {@link ContentCopyCreation} instead.
-     */
-    @Deprecated
     @JsonProperty
     private String externalCode;
 
-    /**
-     * @deprecated Use {@link ContentCopyCreation} instead.
-     */
-    @Deprecated
     @JsonProperty
     private IExternalDmsId externalDmsId;
 

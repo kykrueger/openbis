@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NameSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;

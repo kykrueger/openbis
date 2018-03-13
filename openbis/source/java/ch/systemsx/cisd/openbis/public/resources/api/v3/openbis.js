@@ -1683,6 +1683,18 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+		this.executeSearchDomainService = function(options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeSearchDomainService",
+					"params" : [ thisFacade._private.sessionToken, options ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
 		this.archiveDataSets = function(ids, options) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({

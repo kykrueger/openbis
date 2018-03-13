@@ -158,6 +158,8 @@ define(
 				this.CustomASServiceFetchOptions = dtos.CustomASServiceFetchOptions;
 				this.CustomASServiceCode = dtos.CustomASServiceCode;
 				this.CustomASServiceExecutionOptions = dtos.CustomASServiceExecutionOptions;
+//				this.SearchDomainServiceExecutionOptions = require('as/dto/service/execute/SearchDomainServiceExecutionOptions');
+				this.SearchDomainServiceExecutionOptions = dtos.SearchDomainServiceExecutionOptions;
 				this.GlobalSearchCriteria = dtos.GlobalSearchCriteria;
 				this.GlobalSearchObjectFetchOptions = dtos.GlobalSearchObjectFetchOptions;
 				this.ObjectKindModificationSearchCriteria = dtos.ObjectKindModificationSearchCriteria;
@@ -303,6 +305,7 @@ define(
 				this.RevertDeletionsOperation = dtos.RevertDeletionsOperation;
 				this.ConfirmDeletionsOperation = dtos.ConfirmDeletionsOperation;
 				this.ExecuteCustomASServiceOperation = dtos.ExecuteCustomASServiceOperation;
+				this.ExecuteSearchDomainServiceOperation = dtos.ExecuteSearchDomainServiceOperation;
 				this.ArchiveDataSetsOperation = dtos.ArchiveDataSetsOperation;
 				this.UnarchiveDataSetsOperation = dtos.UnarchiveDataSetsOperation;
 				this.LockDataSetsOperation = dtos.LockDataSetsOperation;
@@ -1453,7 +1456,7 @@ define(
 				};
 
 				this.shallowEqual = function(actual, expected, message) {
-					function oneWay(from, to) {
+					function oneWay(c, from, to) {
 						var isBad = _.chain(_.keys(from)).filter(
 								function(k) {
 									return !_.isFunction(from[k])
@@ -1464,6 +1467,7 @@ define(
 											&& !_.isObject(to[k]);
 								}).any(function(k) {
 							if (from[k] !== to[k]) {
+								c.ok("--- k:"+k+" from:"+from[k]+" to:"+to[k]);
 								return true;
 							}
 						}).value();
@@ -1473,8 +1477,8 @@ define(
 						}
 					}
 
-					oneWay(actual, expected);
-					oneWay(expected, actual);
+					oneWay(this, actual, expected);
+					oneWay(this, expected, actual);
 				};
 
 				this.start = function() {

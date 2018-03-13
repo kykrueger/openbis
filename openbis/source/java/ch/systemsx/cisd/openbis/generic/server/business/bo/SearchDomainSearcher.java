@@ -40,7 +40,7 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.EntityPropertySearchRe
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ISearchDomainResultLocation;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomain;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchResult;
-import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWithPermId;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWithIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SearchDomainSearchResultWithFullEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
@@ -60,11 +60,11 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
 {
     private static final Map<Long, Set<Metaproject>> EMPTY_METAPROJECTS = Collections.<Long, Set<Metaproject>> emptyMap();
 
-    private static final IKeyExtractor<String, IEntityInformationHolderWithPermId> PERM_ID_EXTRACTOR =
-            new IKeyExtractor<String, IEntityInformationHolderWithPermId>()
+    private static final IKeyExtractor<String, IEntityInformationHolderWithIdentifier> PERM_ID_EXTRACTOR =
+            new IKeyExtractor<String, IEntityInformationHolderWithIdentifier>()
                 {
                     @Override
-                    public String getKey(IEntityInformationHolderWithPermId e)
+                    public String getKey(IEntityInformationHolderWithIdentifier e)
                     {
                         return e.getPermId();
                     }
@@ -136,14 +136,14 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
     private List<SearchDomainSearchResultWithFullEntity> enrichWithEntities(List<SearchDomainSearchResult> searchResults)
     {
         Map<EntityLoader, List<String>> map = separate(searchResults);
-        Map<EntityLoader, TableMap<String, IEntityInformationHolderWithPermId>> result = loadEntities(map);
+        Map<EntityLoader, TableMap<String, IEntityInformationHolderWithIdentifier>> result = loadEntities(map);
         List<SearchDomainSearchResultWithFullEntity> enrichedResults = new ArrayList<SearchDomainSearchResultWithFullEntity>();
         for (SearchDomainSearchResult searchResult : searchResults)
         {
             ISearchDomainResultLocation location = searchResult.getResultLocation();
             Selector selector = new Selector(location);
             EntityLoader loader = selector.getLoader();
-            IEntityInformationHolderWithPermId entity = result.get(loader).tryGet(selector.getPermId());
+            IEntityInformationHolderWithIdentifier entity = result.get(loader).tryGet(selector.getPermId());
             SearchDomainSearchResultWithFullEntity searchResultWithEntity = new SearchDomainSearchResultWithFullEntity();
             searchResultWithEntity.setSearchResult(searchResult);
             searchResultWithEntity.setEntity(entity);
@@ -182,17 +182,16 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
         return map;
     }
 
-    private Map<EntityLoader, TableMap<String, IEntityInformationHolderWithPermId>> loadEntities(Map<EntityLoader, List<String>> map)
+    private Map<EntityLoader, TableMap<String, IEntityInformationHolderWithIdentifier>> loadEntities(Map<EntityLoader, List<String>> map)
     {
-        Map<EntityLoader, TableMap<String, IEntityInformationHolderWithPermId>> result =
-                new EnumMap<EntityLoader, TableMap<String, IEntityInformationHolderWithPermId>>(EntityLoader.class);
+        Map<EntityLoader, TableMap<String, IEntityInformationHolderWithIdentifier>> result = new EnumMap<>(EntityLoader.class);
         Set<Entry<EntityLoader, List<String>>> entrySet = map.entrySet();
         for (Entry<EntityLoader, List<String>> entry : entrySet)
         {
             EntityLoader loader = entry.getKey();
             List<String> permIds = entry.getValue();
-            List<IEntityInformationHolderWithPermId> entities = loader.loadEntities(this, managedPropertyEvaluatorFactory, permIds);
-            result.put(loader, new TableMap<String, IEntityInformationHolderWithPermId>(entities, PERM_ID_EXTRACTOR));
+            List<IEntityInformationHolderWithIdentifier> entities = loader.loadEntities(this, managedPropertyEvaluatorFactory, permIds);
+            result.put(loader, new TableMap<String, IEntityInformationHolderWithIdentifier>(entities, PERM_ID_EXTRACTOR));
         }
         return result;
     }
@@ -202,7 +201,7 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
         SAMPLE()
         {
             @Override
-            public List<? extends IEntityInformationHolderWithPermId> doLoadEntities(IDAOFactory daoFactory,
+            public List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
                     IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
             {
                 List<SamplePE> samples = daoFactory.getSampleDAO().listByPermID(permIds);
@@ -212,7 +211,7 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
         DATA_SET()
         {
             @Override
-            public List<? extends IEntityInformationHolderWithPermId> doLoadEntities(IDAOFactory daoFactory,
+            public List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
                     IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
             {
                 List<DataPE> dataSets = daoFactory.getDataDAO().listByCode(new HashSet<String>(permIds));
@@ -222,7 +221,7 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
         EXPERIMENT()
         {
             @Override
-            public List<? extends IEntityInformationHolderWithPermId> doLoadEntities(IDAOFactory daoFactory,
+            public List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
                     IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
             {
                 List<ExperimentPE> experiments = daoFactory.getExperimentDAO().listByPermID(permIds);
@@ -232,25 +231,25 @@ public class SearchDomainSearcher extends AbstractBusinessObject implements ISea
         MATERIAL()
         {
             @Override
-            public List<? extends IEntityInformationHolderWithPermId> doLoadEntities(IDAOFactory daoFactory,
+            public List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
                     IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
             {
                 throw new UnsupportedOperationException();
             }
         };
 
-        public List<IEntityInformationHolderWithPermId> loadEntities(IDAOFactory daoFactory,
+        public List<IEntityInformationHolderWithIdentifier> loadEntities(IDAOFactory daoFactory,
                 IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds)
         {
-            List<IEntityInformationHolderWithPermId> result = new ArrayList<IEntityInformationHolderWithPermId>();
-            for (IEntityInformationHolderWithPermId entity : doLoadEntities(daoFactory, evaluatorFactory, permIds))
+            List<IEntityInformationHolderWithIdentifier> result = new ArrayList<>();
+            for (IEntityInformationHolderWithIdentifier entity : doLoadEntities(daoFactory, evaluatorFactory, permIds))
             {
                 result.add(entity);
             }
             return result;
         }
 
-        public abstract List<? extends IEntityInformationHolderWithPermId> doLoadEntities(IDAOFactory daoFactory,
+        public abstract List<? extends IEntityInformationHolderWithIdentifier> doLoadEntities(IDAOFactory daoFactory,
                 IManagedPropertyEvaluatorFactory evaluatorFactory, List<String> permIds);
     }
 

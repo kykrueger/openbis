@@ -3,7 +3,7 @@ define([ "stjs", "as/dto/common/search/StringFieldSearchCriteria", "as/dto/commo
 		StringFieldSearchCriteria.call(this, "name", SearchFieldType.ATTRIBUTE);
 	};
 	stjs.extend(NameSearchCriteria, StringFieldSearchCriteria, [ StringFieldSearchCriteria ], function(constructor, prototype) {
-		prototype['@type'] = 'as.dto.plugin.search.NameSearchCriteria';
+		prototype['@type'] = 'as.dto.common.search.NameSearchCriteria';
 		constructor.serialVersionUID = 1;
 	}, {
 		fieldType : {

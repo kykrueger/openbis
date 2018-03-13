@@ -169,9 +169,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Semant
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.SemanticAnnotationUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainServiceExecutionResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.ICustomASServiceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.CustomASServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
@@ -893,6 +898,14 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public SearchResult<SearchDomainService> searchSearchDomainServices(String sessionToken, SearchDomainServiceSearchCriteria searchCriteria,
+            SearchDomainServiceFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-search-domain-services", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
     public SearchResult<ObjectKindModification> searchObjectKindModifications(String sessionToken,
             ObjectKindModificationSearchCriteria searchCriteria, ObjectKindModificationFetchOptions fetchOptions)
     {
@@ -935,6 +948,13 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public Object executeCustomASService(String sessionToken, ICustomASServiceId serviceId, CustomASServiceExecutionOptions options)
     {
         logAccess(sessionToken, "execute-custom-as-service", "SERVICE_ID(%s) EXECUTION_OPTIONS(%s)", serviceId, options);
+        return null;
+    }
+
+    @Override
+    public SearchResult<SearchDomainServiceExecutionResult> executeSearchDomainService(String sessionToken, SearchDomainServiceExecutionOptions options)
+    {
+        logAccess(sessionToken, "execute-search-domain-service", "EXECUTION_OPTIONS(%s)", options);
         return null;
     }
 

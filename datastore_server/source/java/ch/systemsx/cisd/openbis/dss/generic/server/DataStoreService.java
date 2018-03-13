@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.cifex.rpc.client.ICIFEXComponent;
+import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.InvalidAuthenticationException;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
@@ -530,6 +532,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             if (service.isAvailable())
             {
                 SearchDomain searchDomain = new SearchDomain();
+                searchDomain.setDataStoreCode(config.getDataStoreCode());
                 searchDomain.setName(name);
                 searchDomain.setLabel(description.getLabel());
                 searchDomain.setPossibleSearchOptionsKey(service.getPossibleSearchOptionsKey());
@@ -554,6 +557,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             ISearchDomainService service = provider.getPluginInstance(serviceDescription.getKey());
             List<SearchDomainSearchResult> result = service.search(sequenceSnippet, optionalParametersOrNull);
             SearchDomain searchDomain = new SearchDomain();
+            searchDomain.setDataStoreCode(config.getDataStoreCode());
             searchDomain.setName(serviceDescription.getKey());
             searchDomain.setLabel(serviceDescription.getLabel());
             for (SearchDomainSearchResult sequenceSearchResult : result)
@@ -570,6 +574,14 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             String preferredSequenceDatabaseOrNull)
     {
         List<DatastoreServiceDescription> pluginDescriptions = provider.getPluginDescriptions();
+        Collections.sort(pluginDescriptions, new SimpleComparator<DatastoreServiceDescription, String>()
+            {
+                @Override
+                public String evaluate(DatastoreServiceDescription item)
+                {
+                    return item.getKey();
+                }
+            });
         DatastoreServiceDescription availableService = null;
         for (DatastoreServiceDescription description : pluginDescriptions)
         {

@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.shared.basic.dto;
 import java.io.Serializable;
 
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchResult;
-import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWithPermId;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IEntityInformationHolderWithIdentifier;
 
 /**
  * Result of a search in a search domain.
@@ -30,16 +30,16 @@ public class SearchDomainSearchResultWithFullEntity implements Serializable
 {
     private static final long serialVersionUID = ServiceVersionHolder.VERSION;
 
-    private IEntityInformationHolderWithPermId entity;
+    private IEntityInformationHolderWithIdentifier entity;
 
     private SearchDomainSearchResult searchResult;
 
-    public IEntityInformationHolderWithPermId getEntity()
+    public IEntityInformationHolderWithIdentifier getEntity()
     {
         return entity;
     }
 
-    public void setEntity(IEntityInformationHolderWithPermId entity)
+    public void setEntity(IEntityInformationHolderWithIdentifier entity)
     {
         this.entity = entity;
     }

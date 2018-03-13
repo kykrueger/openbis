@@ -507,6 +507,12 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			});
 		}
 
+		this.executeSearchDomainService = function(options) {
+			return this._executeOperation(new c.ExecuteSearchDomainServiceOperation(options)).then(function(results) {
+				return results.getResults()[0].getResult();
+			});
+		}
+		
 		this.archiveDataSets = function(ids, options) {
 			return this._executeOperation(new c.ArchiveDataSetsOperation(ids, options)).then(function(results) {
 				return results.getResults()[0];

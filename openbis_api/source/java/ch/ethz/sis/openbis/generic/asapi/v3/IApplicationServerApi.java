@@ -168,9 +168,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Semant
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.SemanticAnnotationUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainServiceExecutionResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.ICustomASServiceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.CustomASServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
@@ -411,6 +416,8 @@ public interface IApplicationServerApi extends IRpcService
 
     public SearchResult<CustomASService> searchCustomASServices(String sessionToken, CustomASServiceSearchCriteria searchCriteria,
             CustomASServiceFetchOptions fetchOptions);
+    
+    public SearchResult<SearchDomainService> searchSearchDomainServices(String sessionToken, SearchDomainServiceSearchCriteria searchCriteria, SearchDomainServiceFetchOptions fetchOptions);
 
     public SearchResult<ObjectKindModification> searchObjectKindModifications(String sessionToken,
             ObjectKindModificationSearchCriteria searchCriteria, ObjectKindModificationFetchOptions fetchOptions);
@@ -477,6 +484,8 @@ public interface IApplicationServerApi extends IRpcService
     public void confirmDeletions(String sessionToken, List<? extends IDeletionId> deletionIds);
 
     public Object executeCustomASService(String sessionToken, ICustomASServiceId serviceId, CustomASServiceExecutionOptions options);
+    
+    public SearchResult<SearchDomainServiceExecutionResult> executeSearchDomainService(String sessionToken, SearchDomainServiceExecutionOptions options);
 
     public void archiveDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetArchiveOptions options);
 

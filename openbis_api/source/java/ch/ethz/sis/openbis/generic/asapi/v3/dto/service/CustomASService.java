@@ -15,13 +15,14 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.CustomASServiceCode;
-import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.CustomASServiceCode;
+import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /*
  * Class automatically generated with DtoGenerator
@@ -99,7 +100,7 @@ public class CustomASService implements Serializable
     @Override
     public String toString()
     {
-        return "CustomASService code: " + code;
+        return "CustomASService: " + code;
     }
 
 }

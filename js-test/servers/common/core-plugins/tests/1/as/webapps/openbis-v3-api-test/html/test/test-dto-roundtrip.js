@@ -91,9 +91,11 @@ define(['jquery', 'underscore', 'openbis', 'test/common'], function($, _, openbi
 										}
 									} else {
 										var setter = _.find(_.functions(subj), function(fn) {
-											return fn.toLowerCase() === key.toLowerCase() || fn.toLowerCase() === "set" + key.toLowerCase();
+											return fn.toLowerCase() === key.toLowerCase() 
+												|| (fn.toLowerCase() === "set" + key.toLowerCase())
+												|| (fn.toLowerCase() === "with" + key.toLowerCase());
 										});
-										c.ok("Setter: [set]" + key);
+										c.ok("Setter: [set/with]" + key);
 
 										if (setter) {
 											subj[setter](val);

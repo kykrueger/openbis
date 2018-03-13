@@ -14,25 +14,55 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import java.io.Serializable;
+
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.plugin.search.NameSearchCriteria")
-public class NameSearchCriteria extends StringFieldSearchCriteria
+@JsonObject("as.dto.service.SearchDomainServiceParameter")
+public class SearchDomainServiceParameter implements Serializable
 {
-
     private static final long serialVersionUID = 1L;
 
-    public NameSearchCriteria()
+    private String code;
+    
+    private String label;
+    
+    private String description;
+
+    public String getCode()
     {
-        super("name", SearchFieldType.ATTRIBUTE);
+        return code;
+    }
+
+    public void setCode(String code)
+    {
+        this.code = code;
+    }
+
+    public String getLabel()
+    {
+        return label;
+    }
+
+    public void setLabel(String label)
+    {
+        this.label = label;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 
 }

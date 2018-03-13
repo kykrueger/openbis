@@ -36,17 +36,9 @@ public class LinkedDataUpdate implements IUpdate
 {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * @deprecated Use {@link ContentCopyListUpdateValue} instead.
-     */
-    @Deprecated
     @JsonProperty
     private FieldUpdateValue<String> externalCode = new FieldUpdateValue<String>();
 
-    /**
-     * @deprecated Use {@link ContentCopyListUpdateValue} instead.
-     */
-    @Deprecated
     @JsonProperty
     private FieldUpdateValue<IExternalDmsId> externalDmsId = new FieldUpdateValue<IExternalDmsId>();
 

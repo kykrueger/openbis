@@ -119,7 +119,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.ISearchSemanticAnnotationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.IUpdateSemanticAnnotationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteCustomASServiceOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteSearchDomainServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchCustomASServicesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchSearchDomainServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.session.IGetSessionInformationOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.ICreateSpacesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.IDeleteSpacesOperationExecutor;
@@ -446,6 +448,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchCustomASServicesOperationExecutor searchCustomASServicesExecutor;
+    
+    @Autowired
+    private ISearchSearchDomainServicesOperationExecutor searchSearchDomainServicesExecutor;
 
     @Autowired
     private ISearchDeletionsOperationExecutor searchDeletionsExecutor;
@@ -474,6 +479,9 @@ public class OperationsExecutor implements IOperationsExecutor
     @Autowired
     private IExecuteCustomASServiceOperationExecutor executeCustomASServiceExecutor;
 
+    @Autowired
+    private IExecuteSearchDomainServiceOperationExecutor executeSearchDomainServiceExecutor;
+    
     @Autowired
     private IRevertDeletionsOperationExecutor revertDeletionsExecutor;
 
@@ -536,6 +544,7 @@ public class OperationsExecutor implements IOperationsExecutor
             Map<IOperation, IOperationResult> resultMap, IOperationContext context)
     {
         resultMap.putAll(executeCustomASServiceExecutor.execute(context, operations));
+        resultMap.putAll(executeSearchDomainServiceExecutor.execute(context, operations));
         resultMap.putAll(revertDeletionsExecutor.execute(context, operations));
         resultMap.putAll(confirmDeletionsExecutor.execute(context, operations));
         resultMap.putAll(lockDataSetsExecutor.execute(context, operations));
@@ -567,6 +576,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchDataSetTypesExecutor.execute(context, operations));
         resultMap.putAll(searchMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(searchCustomASServicesExecutor.execute(context, operations));
+        resultMap.putAll(searchSearchDomainServicesExecutor.execute(context, operations));
         resultMap.putAll(searchDeletionsExecutor.execute(context, operations));
         resultMap.putAll(searchGloballyExecutor.execute(context, operations));
         resultMap.putAll(searchObjectKindModificationsExecutor.execute(context, operations));

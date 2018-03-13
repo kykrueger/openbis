@@ -1988,3 +1988,41 @@ unlock Data Sets
 Unlock Data Sets Operation
 Unlock Data Sets Operation Result
 
+Dss Service Perm Id
+execute Search Domain Service
+Execute Search Domain Service Operation
+Execute Search Domain Service Operation Result
+get Entity Identifier
+get Entity PermId
+get Preferred Search Domain
+get Result Details
+get Search Domain Label
+get Search String
+get Service Perm Id
+I Search Domain Service Id
+Search Domain Search Option
+Search Domain Search Result
+Search Domain Service
+Search Domain Service Execution Options
+Search Domain Service Fetch Options
+Search Domain Service Perm Id
+Search Domain Service Result
+Search Domain Service Search Criteria
+search Search Domain Services
+Search Search Domain Services Operation
+Search Search Domain Services Operation Result
+set Entity Identifier
+set Entity PermId
+set Result Details
+set Search Domain Label
+set Service PermId
+with Preferred Search Domain
+with Search Options
+with Search String
+get Possible Search Options Key
+IDssServiceId
+Search Domain Service Execution Result
+Search Domain Service Parameter
+Search Domain Service Sort Options
+set Parameters
+set Possible Search Options Key

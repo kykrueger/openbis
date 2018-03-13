@@ -12,6 +12,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.testng.annotations.BeforeClass;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
@@ -30,6 +31,8 @@ public class AbstractFileTest extends SystemTestCase
 
     protected IGeneralInformationService gis;
 
+    protected IApplicationServerApi as;
+    
     protected IDataStoreServerApi dss;
 
     protected String dataSetCode;
@@ -56,6 +59,7 @@ public class AbstractFileTest extends SystemTestCase
     protected void beforeClass() throws Exception
     {
         gis = ServiceProvider.getGeneralInformationService();
+        as = ServiceProvider.getV3ApplicationService();
         dss = (IDataStoreServerApi) ServiceProvider.getDssServiceV3().getService();
     }
 

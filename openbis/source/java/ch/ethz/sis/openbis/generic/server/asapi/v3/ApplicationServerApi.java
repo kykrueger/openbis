@@ -318,13 +318,22 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.Semant
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.UpdateSemanticAnnotationsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainServiceExecutionResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteCustomASServiceOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteCustomASServiceOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteSearchDomainServiceOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteSearchDomainServiceOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.ICustomASServiceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.CustomASServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchCustomASServicesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchCustomASServicesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchSearchDomainServicesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchSearchDomainServicesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.get.GetSessionInformationOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.get.GetSessionInformationOperationResult;
@@ -1238,6 +1247,15 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    public SearchResult<SearchDomainService> searchSearchDomainServices(String sessionToken, SearchDomainServiceSearchCriteria searchCriteria,
+            SearchDomainServiceFetchOptions fetchOptions)
+    {
+        SearchSearchDomainServicesOperationResult result =
+                executeOperation(sessionToken, new SearchSearchDomainServicesOperation(searchCriteria, fetchOptions));
+        return result.getSearchResult();
+    }
+
+    @Override
     @Transactional
     public SearchResult<ObjectKindModification> searchObjectKindModifications(String sessionToken,
             ObjectKindModificationSearchCriteria searchCriteria, ObjectKindModificationFetchOptions fetchOptions)
@@ -1252,6 +1270,13 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public Object executeCustomASService(String sessionToken, ICustomASServiceId serviceId, CustomASServiceExecutionOptions options)
     {
         ExecuteCustomASServiceOperationResult result = executeOperation(sessionToken, new ExecuteCustomASServiceOperation(serviceId, options));
+        return result.getResult();
+    }
+
+    @Override
+    public SearchResult<SearchDomainServiceExecutionResult> executeSearchDomainService(String sessionToken, SearchDomainServiceExecutionOptions options)
+    {
+        ExecuteSearchDomainServiceOperationResult result = executeOperation(sessionToken, new ExecuteSearchDomainServiceOperation(options));
         return result.getResult();
     }
 
