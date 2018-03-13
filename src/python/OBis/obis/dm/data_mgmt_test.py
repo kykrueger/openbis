@@ -218,7 +218,6 @@ def test_init_analysis(tmpdir):
         parent_ds_code = dm.config_resolver.config_dict()['data_set_id']
 
         analysis_repo = "analysis"
-        import pdb; pdb.set_trace()
         result = dm.init_analysis(analysis_repo, None)
         assert result.returncode == 0
 
@@ -233,8 +232,6 @@ def test_init_analysis(tmpdir):
             commit_id = dm.git_wrapper.git_commit_hash().output
             repository_id = dm.config_resolver.config_dict()['repository_id']
             assert repository_id is not None
-
-            print(tmp_dir_path)
 
             contents = git.GitRepoFileInfo(dm.git_wrapper).contents()
             check_new_data_set_expectations(dm, tmp_dir_path + '/' + analysis_repo, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, 
