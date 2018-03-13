@@ -37,7 +37,6 @@ import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
 import ch.systemsx.cisd.common.mail.MailClientParameters;
-import ch.systemsx.cisd.etlserver.ConfigProvider;
 import ch.systemsx.cisd.etlserver.api.v1.PutDataSetService;
 import ch.systemsx.cisd.openbis.common.conversation.context.ServiceConversationsThreadContext;
 import ch.systemsx.cisd.openbis.common.conversation.progress.IServiceConversationProgressListener;
@@ -52,6 +51,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
@@ -111,7 +111,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
 
     private PutDataSetService putService;
 
-    private ConfigProvider config;
+    private IConfigProvider config;
 
     public DataStoreService(SessionTokenManager sessionTokenManager, OpenbisSessionTokenCache sessionTokenCache,
             MailClientParameters mailClientParameters, IPluginTaskInfoProvider pluginTaskParameters,
@@ -631,7 +631,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
         return hierarchicalContentProvider;
     }
 
-    public void setConfig(ConfigProvider config)
+    public void setConfig(IConfigProvider config)
     {
         this.config = config;
     }

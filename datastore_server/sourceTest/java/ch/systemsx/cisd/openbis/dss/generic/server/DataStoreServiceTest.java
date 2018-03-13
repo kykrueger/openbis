@@ -46,6 +46,7 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.IPluginTaskInfo
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.PluginTaskFactory;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.PluginTaskProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IProcessingPluginTask;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
@@ -65,6 +66,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.builders.DatasetDescriptionBu
  */
 public class DataStoreServiceTest extends AssertJUnit
 {
+    private static final String DATA_STORE_CODE = "DSS";
+
     private static final String EMAIL = "email";
 
     private static final String USER_ID = "user";
@@ -184,6 +187,8 @@ public class DataStoreServiceTest extends AssertJUnit
 
     private IDataSetCommandExecutorProvider executorProvider;
 
+    private IConfigProvider configProvider;
+
     @BeforeMethod
     public void setup()
     {
@@ -197,6 +202,7 @@ public class DataStoreServiceTest extends AssertJUnit
         shareIdManager = context.mock(IShareIdManager.class);
         cifexServiceFactory = context.mock(ICIFEXRPCServiceFactory.class);
         cifex = context.mock(ICIFEXComponent.class);
+        configProvider = context.mock(IConfigProvider.class);
         mailClientParameters = new MailClientParameters();
         mailClientParameters.setFrom("a@bc.de");
         mailClientParameters.setSmtpHost("file://targets/email");
@@ -214,6 +220,9 @@ public class DataStoreServiceTest extends AssertJUnit
 
                     allowing(pluginTaskParameters).getArchiverPluginFactory();
                     will(returnValue(new ArchiverPluginFactory(new SectionProperties("archiver", new Properties()))));
+                    
+                    allowing(configProvider).getDataStoreCode();
+                    will(returnValue(DATA_STORE_CODE));
                 }
             });
     }
@@ -472,7 +481,7 @@ public class DataStoreServiceTest extends AssertJUnit
                         properties.setProperty(PluginTaskFactory.CLASS_PROPERTY_NAME, MockProcessingTask.class.getName());
                         properties.setProperty(PluginTaskFactory.DATASET_CODES_PROPERTY_NAME, ".*");
                         factories.add(new PluginTaskFactory<IProcessingPluginTask>(null,
-                                new SectionProperties(task, properties), "DSS",
+                                new SectionProperties(task, properties), DATA_STORE_CODE,
                                 IProcessingPluginTask.class, task, TEST_STORE));
                         allowing(executorProvider).getExecutor(with(any(MockProcessingTask.class)), with(task));
                         will(returnValue(commandExecutor));
@@ -508,7 +517,7 @@ public class DataStoreServiceTest extends AssertJUnit
                         properties.setProperty(MockSequenceDatabase.AVAILABLE_KEY, Boolean.toString(available));
                         properties.setProperty(MockSequenceDatabase.DATA_SET_KEY, "DS-" + database.toUpperCase());
                         factories.add(new PluginTaskFactory<ISearchDomainService>(null,
-                                new SectionProperties("db-" + database, properties), "DSS",
+                                new SectionProperties("db-" + database, properties), DATA_STORE_CODE,
                                 ISearchDomainService.class, "Test-db-" + database, TEST_STORE));
                     }
                     allowing(pluginTaskParameters).getSearchDomainServiceProvider();
@@ -526,6 +535,7 @@ public class DataStoreServiceTest extends AssertJUnit
                         CIFEX_URL, pluginTaskParameters, executorProvider);
         service.setShareIdManager(shareIdManager);
         service.afterPropertiesSet();
+        service.setConfig(configProvider);
         return service;
     }
 }
