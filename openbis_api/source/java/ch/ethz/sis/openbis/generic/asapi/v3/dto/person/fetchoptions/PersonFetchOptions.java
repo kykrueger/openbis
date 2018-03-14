@@ -15,15 +15,21 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EmptyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.SortIgnore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.fetchoptions.WebAppSettingsFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
 
 /*
  * Class automatically generated with DtoGenerator
@@ -41,7 +47,13 @@ public class PersonFetchOptions extends FetchOptions<Person> implements Serializ
 
     @JsonProperty
     private RoleAssignmentFetchOptions roleAssignments;
-    
+
+    @JsonProperty
+    private Map<String, WebAppSettingsFetchOptions> webAppSettings;
+
+    @JsonProperty
+    private boolean allWebAppSettings;
+
     @JsonProperty
     private PersonSortOptions sort;
 
@@ -97,17 +109,72 @@ public class PersonFetchOptions extends FetchOptions<Person> implements Serializ
         }
         return roleAssignments;
     }
-    
+
     public RoleAssignmentFetchOptions withRoleAssignmentsUsing(RoleAssignmentFetchOptions fetchOptions)
     {
         return roleAssignments = fetchOptions;
     }
-    
+
     public boolean hasRoleAssignments()
     {
         return roleAssignments != null;
     }
-    
+
+    @SortIgnore
+    public WebAppSettingsFetchOptions withWebAppSettings(String webAppId)
+    {
+        if (webAppSettings == null)
+        {
+            webAppSettings = new HashMap<String, WebAppSettingsFetchOptions>();
+        }
+
+        WebAppSettingsFetchOptions webAppFo = webAppSettings.get(webAppId);
+
+        if (webAppFo == null)
+        {
+            webAppFo = new WebAppSettingsFetchOptions();
+            webAppSettings.put(webAppId, webAppFo);
+        }
+
+        return webAppFo;
+    }
+
+    @SortIgnore
+    public boolean hasWebAppSettings(String webAppId)
+    {
+        return webAppSettings != null && webAppSettings.get(webAppId) != null;
+    }
+
+    @SortIgnore
+    public Map<String, WebAppSettingsFetchOptions> withWebAppSettingsUsing(Map<String, WebAppSettingsFetchOptions> webAppSettings)
+    {
+        return this.webAppSettings = webAppSettings;
+    }
+
+    @SortIgnore
+    public Map<String, WebAppSettingsFetchOptions> getWebAppSettings()
+    {
+        return webAppSettings;
+    }
+
+    @SortIgnore
+    public void withAllWebAppSettings()
+    {
+        allWebAppSettings = true;
+    }
+
+    @SortIgnore
+    public boolean hasAllWebAppSettings()
+    {
+        return allWebAppSettings;
+    }
+
+    @SortIgnore
+    public boolean withAllWebAppSettingsUsing(boolean allWebAppSettings)
+    {
+        return this.allWebAppSettings = allWebAppSettings;
+    }
+
     // Method automatically generated with DtoGenerator
     @Override
     public PersonSortOptions sortBy()
@@ -125,12 +192,28 @@ public class PersonFetchOptions extends FetchOptions<Person> implements Serializ
     {
         return sort;
     }
+
     @Override
     protected FetchOptionsToStringBuilder getFetchOptionsStringBuilder()
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("Person", this);
         f.addFetchOption("Space", space);
         f.addFetchOption("Registrator", registrator);
+        f.addFetchOption("RoleAssignments", roleAssignments);
+
+        if (webAppSettings != null && false == webAppSettings.isEmpty())
+        {
+            for (Map.Entry<String, WebAppSettingsFetchOptions> entry : webAppSettings.entrySet())
+            {
+                f.addFetchOption("WebAppSettings [" + entry.getKey() + "]", entry.getValue());
+            }
+        }
+
+        if (allWebAppSettings)
+        {
+            f.addFetchOption("AllWebAppSettings", new EmptyFetchOptions());
+        }
+
         return f;
     }
 

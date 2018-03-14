@@ -664,6 +664,11 @@ var sources = [
 	'as/dto/vocabulary/update/UpdateVocabularyTermsOperation',
 	'as/dto/vocabulary/update/UpdateVocabularyTermsOperationResult',
 	
+	'as/dto/webapp/create/WebAppSettingCreation',
+	'as/dto/webapp/fetchoptions/WebAppSettingsFetchOptions',
+	'as/dto/webapp/fetchoptions/WebAppSettingsSortOptions',
+	'as/dto/webapp/update/WebAppSettingsUpdateValue',
+	'as/dto/webapp/WebAppSetting',
 	'as/dto/webapp/WebAppSettings',
 	
 	'as/dto/operation/delete/OperationExecutionDeletionOptions',

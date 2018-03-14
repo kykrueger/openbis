@@ -18,6 +18,8 @@ package ch.systemsx.cisd.openbis.generic.shared.basic.dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -348,6 +350,25 @@ public class DisplaySettings implements Serializable
             PortletConfiguration portletConfiguration)
     {
         configurations.put(portletConfiguration.getName(), portletConfiguration);
+    }
+
+    public Collection<String> getCustomWebAppIds()
+    {
+        if (customWebAppDisplaySettings != null)
+        {
+            return Collections.unmodifiableSet(customWebAppDisplaySettings.keySet());
+        } else
+        {
+            return Collections.emptySet();
+        }
+    }
+
+    public void removeCustomWebAppSettings(String webAppId)
+    {
+        if (customWebAppDisplaySettings != null)
+        {
+            customWebAppDisplaySettings.remove(webAppId);
+        }
     }
 
     /**

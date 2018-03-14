@@ -55,12 +55,15 @@ public class UpdatePersonExecutor
 
     @Autowired
     private IPersonAuthorizationExecutor authorizationExecutor;
-    
+
     @Autowired
     private IMapPersonByIdExecutor mapPersonByIdExecutor;
-    
+
     @Autowired
     private IUpdateHomeSpaceExecutor updateHomeSpaceExecutor;
+
+    @Autowired
+    private IUpdateWebAppSettingsExecutor updateWebAppSettingsExecutor;
 
     @Override
     protected IPersonId getId(PersonUpdate update)
@@ -104,6 +107,7 @@ public class UpdatePersonExecutor
     protected void updateBatch(IOperationContext context, MapBatch<PersonUpdate, PersonPE> batch)
     {
         updateHomeSpaceExecutor.update(context, batch);
+        updateWebAppSettingsExecutor.update(context, batch);
         Set<Entry<PersonUpdate, PersonPE>> entrySet = batch.getObjects().entrySet();
         for (Entry<PersonUpdate, PersonPE> entry : entrySet)
         {

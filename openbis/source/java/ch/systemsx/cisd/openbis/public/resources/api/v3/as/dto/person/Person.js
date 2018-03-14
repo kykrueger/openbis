@@ -19,6 +19,8 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.space = null;
 		prototype.registrator = null;
 		prototype.roleAssignments = null;
+		prototype.webAppSettings = null;
+
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
 		};
@@ -97,6 +99,28 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setRoleAssignments = function(roleAssignments) {
 			this.roleAssignments = roleAssignments;
 		};
+
+		prototype.getWebAppSettings = function(webAppId) {
+			if (webAppId === undefined) {
+				if (this.getFetchOptions()
+						&& (this.getFetchOptions().hasAllWebAppSettings() || (this.getFetchOptions().getWebAppSettings() && Object.keys(this.getFetchOptions().getWebAppSettings()).length > 0))) {
+					return this.webAppSettings;
+				} else {
+					throw new exceptions.NotFetchedException("Settings have not been fetched.");
+				}
+			} else {
+				if (this.getFetchOptions() && (this.getFetchOptions().hasAllWebAppSettings() || this.getFetchOptions().hasWebAppSettings(webAppId))) {
+					return this.webAppSettings ? this.webAppSettings[webAppId] : null;
+				} else {
+					throw new exceptions.NotFetchedException("Settings for web app '" + webAppId + "' have not been fetched.");
+				}
+			}
+		};
+
+		prototype.setWebAppSettings = function(webAppSettings) {
+			this.webAppSettings = webAppSettings;
+		};
+
 	}, {
 		fetchOptions : "PersonFetchOptions",
 		permId : "PersonPermId",
@@ -106,6 +130,10 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		roleAssignments : {
 			name : "List",
 			arguments : [ "RoleAssignment" ]
+		},
+		webAppSettings : {
+			name : "Map",
+			arguments : [ "String", "WebAppSettings" ]
 		}
 	});
 	return Person;

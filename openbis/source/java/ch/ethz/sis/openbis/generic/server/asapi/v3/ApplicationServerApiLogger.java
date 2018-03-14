@@ -210,7 +210,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
 import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.openbis.common.spring.IInvocationLoggerContext;
 import ch.systemsx.cisd.openbis.generic.shared.AbstractServerLogger;
@@ -355,7 +354,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         logAccess(sessionToken, "create-vocabulary-terms", "NEW_VOCABULARY_TERMS(%s)", abbreviate(newVocabularyTerms));
         return null;
     }
-    
+
     @Override
     public List<TagPermId> createTags(String sessionToken, List<TagCreation> newTags)
     {
@@ -483,7 +482,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     {
         logAccess(sessionToken, "update-vocabulary-terms", "VOCABULARY_TERM_UPDATES(%s)", abbreviate(vocabularyTermUpdates));
     }
-    
+
     @Override
     public void updateTags(String sessionToken, List<TagUpdate> tagUpdates)
     {
@@ -611,7 +610,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         logAccess(sessionToken, "get-persons", "IDS(%s) FETCH_OPTIONS(%s)", abbreviate(ids), fetchOptions);
         return null;
     }
-    
+
     @Override
     public Map<IExternalDmsId, ExternalDms> getExternalDataManagementSystems(String sessionToken, List<? extends IExternalDmsId> externalDmsIds,
             ExternalDmsFetchOptions fetchOptions)
@@ -756,14 +755,14 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         logAccess(sessionToken, "search-role-assignments", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
-    
+
     @Override
     public SearchResult<Person> searchPersons(String sessionToken, PersonSearchCriteria searchCriteria, PersonFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-persons", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
-    
+
     @Override
     public void deleteSpaces(String sessionToken, List<? extends ISpaceId> spaceIds, SpaceDeletionOptions deletionOptions)
     {
@@ -843,7 +842,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void deleteAuthorizationGroups(String sessionToken, List<? extends IAuthorizationGroupId> groupIds,
             AuthorizationGroupDeletionOptions deletionOptions)
     {
-        logAccess(sessionToken, "delete-authorization-groups", "AUTHORIZATION_GROUP_IDS(%s) DELETION_OPTIONS(%s)", 
+        logAccess(sessionToken, "delete-authorization-groups", "AUTHORIZATION_GROUP_IDS(%s) DELETION_OPTIONS(%s)",
                 abbreviate(groupIds), deletionOptions);
     }
 
@@ -851,7 +850,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void deleteRoleAssignments(String sessionToken, List<? extends IRoleAssignmentId> assignmentIds,
             RoleAssignmentDeletionOptions deletionOptions)
     {
-        logAccess(sessionToken, "delete-role-assignments", "ROLE_ASSIGNMENT_IDS(%s) DELETION_OPTIONS(%s)", 
+        logAccess(sessionToken, "delete-role-assignments", "ROLE_ASSIGNMENT_IDS(%s) DELETION_OPTIONS(%s)",
                 abbreviate(assignmentIds), deletionOptions);
     }
 
@@ -1016,19 +1015,6 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public Map<String, String> getServerInformation(String sessionToken)
     {
         logAccess(sessionToken, "server-info");
-        return null;
-    }
-
-    @Override
-    public void setWebAppSettings(String sessionToken, WebAppSettings webAppSettings)
-    {
-        logAccess(sessionToken, "set-web-app-settings", "SETTINGS(%s)", webAppSettings);
-    }
-
-    @Override
-    public WebAppSettings getWebAppSettings(String sessionToken, String webAppId)
-    {
-        logAccess(sessionToken, "get-web-app-settings", "WEB_APP_ID(%s)", webAppId);
         return null;
     }
 

@@ -17,14 +17,16 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.fetchoptions.WebAppSettingsFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -38,11 +40,26 @@ public class WebAppSettings implements Serializable
     private static final long serialVersionUID = 1L;
 
     @JsonProperty
+    private WebAppSettingsFetchOptions fetchOptions;
+
+    @JsonProperty
     private String webAppId;
 
     @JsonProperty
-    private Map<String, String> settings = new HashMap<>();
+    private Map<String, WebAppSetting> settings;
 
+    @JsonIgnore
+    public WebAppSettingsFetchOptions getFetchOptions()
+    {
+        return fetchOptions;
+    }
+
+    public void setFetchOptions(WebAppSettingsFetchOptions fetchOptions)
+    {
+        this.fetchOptions = fetchOptions;
+    }
+
+    @JsonIgnore
     public String getWebAppId()
     {
         return webAppId;
@@ -53,12 +70,32 @@ public class WebAppSettings implements Serializable
         this.webAppId = webAppId;
     }
 
-    public Map<String, String> getSettings()
+    @JsonIgnore
+    public WebAppSetting getSetting(String setting)
     {
-        return settings;
+        if (getFetchOptions() != null && (getFetchOptions().hasAllSettings() || getFetchOptions().hasSetting(setting)))
+        {
+            return settings != null ? settings.get(setting) : null;
+        } else
+        {
+            throw new NotFetchedException("Setting '" + setting + "' has not been fetched.");
+        }
     }
 
-    public void setSettings(Map<String, String> settings)
+    @JsonIgnore
+    public Map<String, WebAppSetting> getSettings()
+    {
+        if (getFetchOptions() != null && (getFetchOptions().hasAllSettings()
+                || (getFetchOptions().getSettings() != null && false == getFetchOptions().getSettings().isEmpty())))
+        {
+            return settings;
+        } else
+        {
+            throw new NotFetchedException("Settings have not been fetched.");
+        }
+    }
+
+    public void setSettings(Map<String, WebAppSetting> settings)
     {
         this.settings = settings;
     }

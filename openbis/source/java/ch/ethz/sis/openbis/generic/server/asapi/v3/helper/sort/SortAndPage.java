@@ -37,6 +37,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.AbstractCollectionView;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.ListView;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.SetView;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.SortIgnore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 
 /**
@@ -65,7 +66,7 @@ public class SortAndPage
 
         return newObjects;
     }
-    
+
     private Collection sort(Collection objects, ISearchCriteria c, FetchOptions fo)
     {
         if (objects == null || objects.isEmpty())
@@ -337,6 +338,11 @@ public class SortAndPage
             {
                 for (Method method : clazz.getMethods())
                 {
+                    if (method.getAnnotation(SortIgnore.class) != null)
+                    {
+                        continue;
+                    }
+
                     if (method.getName().startsWith("has") && false == method.getName().equals("hashCode"))
                     {
                         String fieldName = method.getName().substring(3);

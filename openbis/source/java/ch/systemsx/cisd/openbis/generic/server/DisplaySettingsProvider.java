@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.server;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -132,6 +133,24 @@ public class DisplaySettingsProvider
                     displaySettingsMap.put(person.getUserId(), settings);
                     person.setDisplaySettings(settings);
                     return settings;
+                }
+            });
+    }
+
+    public Collection<String> getWebAppIds(final PersonPE person)
+    {
+        return executeActionWithPersonLock(person, new IDelegatedActionWithResult<Collection<String>>()
+            {
+                @Override
+                public Collection<String> execute(boolean didOperationSucceed)
+                {
+                    DisplaySettings settings = displaySettingsMap.get(person.getUserId());
+                    if (settings == null)
+                    {
+                        settings = person.getDisplaySettings();
+                        displaySettingsMap.put(person.getUserId(), settings);
+                    }
+                    return settings.getCustomWebAppIds();
                 }
             });
     }
