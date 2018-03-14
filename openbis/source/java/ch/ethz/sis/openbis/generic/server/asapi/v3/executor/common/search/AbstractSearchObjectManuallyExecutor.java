@@ -41,8 +41,6 @@ public abstract class AbstractSearchObjectManuallyExecutor<CRITERIA extends Abst
     @Autowired
     protected IDAOFactory daoFactory;
 
-    protected abstract List<OBJECT> listAll();
-
     protected abstract Matcher<OBJECT> getMatcher(ISearchCriteria criteria);
 
     @Override
@@ -57,8 +55,19 @@ public abstract class AbstractSearchObjectManuallyExecutor<CRITERIA extends Abst
             throw new IllegalArgumentException("Criterion cannot be null");
         }
 
-        return getMatching(context, listAll(), criteria);
+        return getMatching(context, listAll(context), criteria);
     }
+    
+    protected List<OBJECT> listAll(IOperationContext context)
+    {
+        return listAll();
+    }
+
+    protected List<OBJECT> listAll()
+    {
+        throw new UnsupportedOperationException("Non of the listAll methods are implemented.");
+    }
+    
 
     private List<OBJECT> getMatching(IOperationContext context, List<OBJECT> objects, CRITERIA criteria)
     {

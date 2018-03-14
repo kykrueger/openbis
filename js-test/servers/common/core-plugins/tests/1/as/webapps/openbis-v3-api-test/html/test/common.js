@@ -158,7 +158,8 @@ define(
 				this.CustomASServiceFetchOptions = dtos.CustomASServiceFetchOptions;
 				this.CustomASServiceCode = dtos.CustomASServiceCode;
 				this.CustomASServiceExecutionOptions = dtos.CustomASServiceExecutionOptions;
-//				this.SearchDomainServiceExecutionOptions = require('as/dto/service/execute/SearchDomainServiceExecutionOptions');
+				this.SearchDomainServiceSearchCriteria = dtos.SearchDomainServiceSearchCriteria;
+				this.SearchDomainServiceFetchOptions = dtos.SearchDomainServiceFetchOptions;
 				this.SearchDomainServiceExecutionOptions = dtos.SearchDomainServiceExecutionOptions;
 				this.GlobalSearchCriteria = dtos.GlobalSearchCriteria;
 				this.GlobalSearchObjectFetchOptions = dtos.GlobalSearchObjectFetchOptions;
@@ -275,6 +276,7 @@ define(
 				this.SearchRoleAssignmentsOperation = dtos.SearchRoleAssignmentsOperation;
 				this.SearchPersonsOperation = dtos.SearchPersonsOperation;
 				this.SearchCustomASServicesOperation = dtos.SearchCustomASServicesOperation;
+				this.SearchSearchDomainServicesOperation = dtos.SearchSearchDomainServicesOperation;
 				this.SearchObjectKindModificationsOperation = dtos.SearchObjectKindModificationsOperation;
 				this.SearchGloballyOperation = dtos.SearchGloballyOperation;
 				this.SearchOperationExecutionsOperation = dtos.SearchOperationExecutionsOperation;

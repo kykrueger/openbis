@@ -389,6 +389,10 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeSearchOperation(new c.SearchCustomASServicesOperation(criteria, fetchOptions));
 		}
 
+		this.searchSearchDomainServices = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchSearchDomainServicesOperation(criteria, fetchOptions));
+		}
+		
 		this.searchObjectKindModifications = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new c.SearchObjectKindModificationsOperation(criteria, fetchOptions));
 		}

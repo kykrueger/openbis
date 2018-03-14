@@ -29,8 +29,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchSearchDomai
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchSearchDomainServicesOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.NopTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 
 /**
  * @author Franz-Josef Elmer
@@ -58,7 +59,16 @@ public class SearchSearchDomainServicesOperationExecutor
     @Override
     protected ITranslator<SearchDomainService, SearchDomainService, SearchDomainServiceFetchOptions> getTranslator()
     {
-        return new NopTranslator<SearchDomainService, SearchDomainServiceFetchOptions>();
+        return new AbstractTranslator<SearchDomainService, SearchDomainService, SearchDomainServiceFetchOptions>()
+        {
+            @Override
+            protected SearchDomainService doTranslate(TranslationContext context, SearchDomainService object,
+                    SearchDomainServiceFetchOptions fetchOptions)
+            {
+                object.setFetchOptions(fetchOptions);
+                return object;
+            }
+        };
     }
 
     @Override

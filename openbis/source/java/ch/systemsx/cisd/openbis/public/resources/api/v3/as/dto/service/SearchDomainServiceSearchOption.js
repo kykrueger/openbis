@@ -1,8 +1,8 @@
 define([ "stjs" ], function(stjs) {
-	var SearchDomainServiceParameter = function() {
+	var SearchDomainServiceSearchOption = function() {
 	};
-	stjs.extend(SearchDomainServiceParameter, null, [], function(constructor, prototype) {
-		prototype['@type'] = 'as.dto.service.SearchDomainServiceParameter';
+	stjs.extend(SearchDomainServiceSearchOption, null, [], function(constructor, prototype) {
+		prototype['@type'] = 'as.dto.service.SearchDomainServiceSearchOption';
 		constructor.serialVersionUID = 1;
 		prototype.code = null;
 		prototype.label = null;
@@ -24,8 +24,11 @@ define([ "stjs" ], function(stjs) {
 		};
 		prototype.setDescription = function(description) {
 			this.description = description;
-		}
+		};
+		prototype.toString = function() {
+			return this.label + " [" + this.code + "]";
+		};
 	}, {}
 	);
-	return SearchDomainServiceParameter;
+	return SearchDomainServiceSearchOption;
 })

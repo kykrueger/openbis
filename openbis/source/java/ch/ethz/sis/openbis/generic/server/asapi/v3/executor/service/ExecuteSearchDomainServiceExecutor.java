@@ -88,9 +88,13 @@ public class ExecuteSearchDomainServiceExecutor implements IExecuteSearchDomainS
     @Autowired
     private IDataSetAuthorizationValidator dataSetValidator;
 
+    @Autowired
+    private ISearchDomainServiceAuthorizationExecutor authorizationExecutor;
+
     @Override
     public SearchResult<SearchDomainServiceExecutionResult> execute(IOperationContext context, SearchDomainServiceExecutionOptions options)
     {
+        authorizationExecutor.canExecute(context);
         String preferredSearchDomain = options.getPreferredSearchDomain();
         String searchString = options.getSearchString();
         Map<String, String> parameters = options.getParameters();

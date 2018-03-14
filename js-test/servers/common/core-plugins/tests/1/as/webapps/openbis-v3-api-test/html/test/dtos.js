@@ -541,7 +541,7 @@ var sources = [
 	'as/dto/service/CustomASService',
 	'as/dto/service/CustomASServiceExecutionOptions',
 	'as/dto/service/SearchDomainService',
-	'as/dto/service/SearchDomainServiceParameter',
+	'as/dto/service/SearchDomainServiceSearchOption',
 	'as/dto/service/SearchDomainServiceExecutionResult',
 	'as/dto/service/execute/ExecuteCustomASServiceOperation',
 	'as/dto/service/execute/ExecuteCustomASServiceOperationResult',
@@ -554,6 +554,9 @@ var sources = [
 	'as/dto/service/fetchoptions/SearchDomainServiceSortOptions',
 	'as/dto/service/id/CustomASServiceCode',
 	'as/dto/service/search/CustomASServiceSearchCriteria',
+	'as/dto/service/search/SearchDomainServiceSearchCriteria',
+	'as/dto/service/search/SearchSearchDomainServicesOperation',
+	'as/dto/service/search/SearchSearchDomainServicesOperationResult',
 	'as/dto/service/search/SearchCustomASServicesOperation',
 	'as/dto/service/search/SearchCustomASServicesOperationResult',
 	

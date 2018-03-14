@@ -2020,9 +2020,10 @@ with Preferred Search Domain
 with Search Options
 with Search String
 get Possible Search Options Key
+get Possible Search Options
 IDssServiceId
 Search Domain Service Execution Result
-Search Domain Service Parameter
+Search Domain Service Search Option
 Search Domain Service Sort Options
-set Parameters
+set Possible Search Options
 set Possible Search Options Key
