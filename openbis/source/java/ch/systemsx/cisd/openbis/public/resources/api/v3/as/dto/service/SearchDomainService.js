@@ -5,16 +5,23 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype['@type'] = 'as.dto.service.SearchDomainService';
 		constructor.serialVersionUID = 1;
 		prototype.fetchOptions = null;
+		prototype.permId = null;
 		prototype.name = null;
 		prototype.label = null;
 		prototype.possibleSearchOptionsKey = null;
-		prototype.parameters = null;
+		prototype.possibleSearchOptions = null;
 
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
 		};
 		prototype.setFetchOptions = function(fetchOptions) {
 			this.fetchOptions = fetchOptions;
+		};
+		prototype.getPermId = function() {
+			return this.permId;
+		};
+		prototype.setPermId = function(permId) {
+			this.permId = permId;
 		};
 		prototype.getName = function() {
 			return this.name;
@@ -34,11 +41,11 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setPossibleSearchOptionsKey = function(possibleSearchOptionsKey) {
 			this.possibleSearchOptionsKey = possibleSearchOptionsKey;
 		};
-		prototype.getParameters = function() {
-			return this.parameters;
+		prototype.getPossibleSearchOptions = function() {
+			return this.possibleSearchOptions;
 		};
-		prototype.setParameters = function(parameters) {
-			this.parameters = parameters;
+		prototype.setPossibleSearchOptions = function(possibleSearchOptions) {
+			this.possibleSearchOptions = possibleSearchOptions;
 		};
 		prototype.toString = function() {
 			return "SearchDomainService: " + this.code;

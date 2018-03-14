@@ -18,18 +18,98 @@ package ch.ethz.sis.openbis.generic.dss.systemtest.api.v3;
 
 import java.util.List;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainServiceExecutionResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainServiceSearchOption;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServiceSearchCriteria;
 
 /**
  * @author Franz-Josef Elmer
  */
 public class SearchDomainServiceTest extends AbstractFileTest
 {
+    @Test
+    public void testSearchSearchDomainServiceAll()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        SearchDomainServiceSearchCriteria searchCriteria = new SearchDomainServiceSearchCriteria();
+        SearchDomainServiceFetchOptions fetchOptions = new SearchDomainServiceFetchOptions();
+
+        // When
+        List<SearchDomainService> result = as.searchSearchDomainServices(sessionToken, searchCriteria, fetchOptions).getObjects();
+        
+        // Then
+        assertEquals(2, result.size());
+        
+        as.logout(sessionToken);
+    }
+    
+    @Test
+    public void testSearchSearchDomainServiceById()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        SearchDomainServiceSearchCriteria searchCriteria = new SearchDomainServiceSearchCriteria();
+        DssServicePermId id = new DssServicePermId("b", new DataStorePermId("STANDARD"));
+        searchCriteria.withId().thatEquals(id);
+        SearchDomainServiceFetchOptions fetchOptions = new SearchDomainServiceFetchOptions();
+        
+        // When
+        List<SearchDomainService> result = as.searchSearchDomainServices(sessionToken, searchCriteria, fetchOptions).getObjects();
+        
+        // Then
+        SearchDomainService searchDomainService = result.get(0);
+        assertEquals("optionsKey", searchDomainService.getPossibleSearchOptionsKey());
+        List<SearchDomainServiceSearchOption> possibleSearchOptions = searchDomainService.getPossibleSearchOptions();
+        assertEquals("[Alpha [alpha], beta [beta]]", possibleSearchOptions.toString());
+        assertEquals("[alpha:Alpha:, beta:beta:I'm Beta]", possibleSearchOptions.stream()
+                .map(o -> o.getCode() + ":" + o.getLabel() + ":" + o.getDescription()).collect(Collectors.toList()).toString());
+        assertEquals(id, searchDomainService.getPermId());
+        assertEquals("b", searchDomainService.getName());
+        assertEquals("Search Domain B", searchDomainService.getLabel());
+        assertEquals(fetchOptions.toString(), searchDomainService.getFetchOptions().toString());
+        assertEquals(1, result.size());
+        
+        as.logout(sessionToken);
+    }
+    
+    @Test
+    public void testSearchSearchDomainServiceByName()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        SearchDomainServiceSearchCriteria searchCriteria = new SearchDomainServiceSearchCriteria();
+        searchCriteria.withName().thatContains("c");
+        SearchDomainServiceFetchOptions fetchOptions = new SearchDomainServiceFetchOptions();
+        
+        // When
+        List<SearchDomainService> result = as.searchSearchDomainServices(sessionToken, searchCriteria, fetchOptions).getObjects();
+        
+        // Then
+        SearchDomainService searchDomainService = result.get(0);
+        assertEquals(null, searchDomainService.getPossibleSearchOptionsKey());
+        List<SearchDomainServiceSearchOption> possibleSearchOptions = searchDomainService.getPossibleSearchOptions();
+        assertEquals("[]", possibleSearchOptions.toString());
+        assertEquals("c", searchDomainService.getPermId().getPermId());
+        assertEquals("STANDARD", searchDomainService.getPermId().getDataStoreId().toString());
+        assertEquals("c", searchDomainService.getName());
+        assertEquals("Search Domain C", searchDomainService.getLabel());
+        assertEquals(fetchOptions.toString(), searchDomainService.getFetchOptions().toString());
+        assertEquals(1, result.size());
+        
+        as.logout(sessionToken);
+    }
+    
     @Test
     public void testExecuteSearchDomainServiceFirstAvailable()
     {

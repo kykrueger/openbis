@@ -21,9 +21,34 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			});
 		}
 
-		QUnit.test("executeSearchDomainService()", function(assert) {
+		QUnit.test("searchSearchDomainService()", function(assert) {
 			var c = new common(assert, openbis);
 
+			var fAction = function(facade) {
+				var criteria = new c.SearchDomainServiceSearchCriteria();
+				var fetchOptions = new c.SearchDomainServiceFetchOptions();
+				return facade.searchSearchDomainServices(criteria, fetchOptions);
+			}
+
+			var fCheck = function(facade, result) {
+				console.log(result);
+				c.assertEqual(result.getTotalCount(), 2, "Number of results");
+				c.assertEqual(result.getObjects().length, 2, "Number of results");
+				var objects = result.getObjects();
+				objects.sort(function(o1, o2) { return o1.getPermId().toString().localeCompare(o2.getPermId().toString())});
+				c.assertEqual(objects[0].getPermId().toString(), "DSS1:echo-database", "Perm id");
+				c.assertEqual(objects[0].getName(), "echo-database", "Name");
+				c.assertEqual(objects[0].getLabel(), "Echo database", "Label");
+				c.assertEqual(objects[0].getPossibleSearchOptionsKey(), "optionsKey", "Possible searcg option keys");
+				c.assertEqual(objects[0].getPossibleSearchOptions().toString(), "Alpha [alpha],beta [beta]", "Possible search options");
+			}
+
+			testAction(c, fAction, fCheck);
+		});
+		
+		QUnit.test("executeSearchDomainService()", function(assert) {
+			var c = new common(assert, openbis);
+			
 			var fAction = function(facade) {
 				var options = new c.SearchDomainServiceExecutionOptions();
 				options.withSearchString("key").withParameter("key", 
@@ -36,7 +61,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 						}));
 				return facade.executeSearchDomainService(options);
 			}
-
+			
 			var fCheck = function(facade, result) {
 				console.log(result);
 				c.assertEqual(result.getTotalCount(), 2, "Number of results");
@@ -52,7 +77,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(JSON.stringify(objects[0].getResultDetails()), JSON.stringify({"identifier": "ID-2",
 					"path_in_data_set": "PATH-2", "position": "2"}), "Result details");
 			}
-
+			
 			testAction(c, fAction, fCheck);
 		});
 	}

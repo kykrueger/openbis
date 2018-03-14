@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.openbis.dss.generic.server.api.v2.sequencedatabases;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.EntityPropertySearchResultLocation;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ISearchDomainResultLocation;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomain;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchOption;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchResult;
 
 /**
@@ -50,16 +52,39 @@ public class EchoDatabase extends AbstractSearchDomainService
 
     private boolean available;
 
+    private List<SearchDomainSearchOption> searchOptions = new ArrayList<>();
+
     public EchoDatabase(Properties properties, File storeRoot)
     {
         super(properties, storeRoot);
         available = PropertyUtils.getBoolean(properties, "available", true);
+        List<String> optionCodes = PropertyUtils.getList(properties, "possible-search-options");
+        for (String optionCode : optionCodes)
+        {
+            SearchDomainSearchOption option = new SearchDomainSearchOption();
+            option.setCode(optionCode);
+            option.setLabel(properties.getProperty(optionCode + ".label", optionCode));
+            option.setDescription(properties.getProperty(optionCode + ".description", ""));
+            searchOptions.add(option);
+        }
     }
 
     @Override
     public boolean isAvailable()
     {
         return available;
+    }
+    
+    @Override
+    public String getPossibleSearchOptionsKey()
+    {
+        return searchOptions.isEmpty() ? null : "optionsKey";
+    }
+
+    @Override
+    public List<SearchDomainSearchOption> getPossibleSearchOptions()
+    {
+        return searchOptions;
     }
 
     @Override

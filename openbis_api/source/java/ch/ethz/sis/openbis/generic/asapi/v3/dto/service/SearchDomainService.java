@@ -19,7 +19,9 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
 import java.io.Serializable;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -27,11 +29,13 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  *
  */
 @JsonObject("as.dto.service.SearchDomainService")
-public class SearchDomainService implements Serializable
+public class SearchDomainService implements Serializable, IPermIdHolder
 {
     private static final long serialVersionUID = 1L;
 
     private SearchDomainServiceFetchOptions fetchOptions;
+    
+    private DssServicePermId permId;
     
     private String name;
 
@@ -39,7 +43,7 @@ public class SearchDomainService implements Serializable
     
     private String possibleSearchOptionsKey;
     
-    private List<SearchDomainServiceParameter> parameters;
+    private List<SearchDomainServiceSearchOption> possibleSearchOptions;
 
     public SearchDomainServiceFetchOptions getFetchOptions()
     {
@@ -49,6 +53,17 @@ public class SearchDomainService implements Serializable
     public void setFetchOptions(SearchDomainServiceFetchOptions fetchOptions)
     {
         this.fetchOptions = fetchOptions;
+    }
+
+    @Override
+    public DssServicePermId getPermId()
+    {
+        return permId;
+    }
+
+    public void setPermId(DssServicePermId permId)
+    {
+        this.permId = permId;
     }
 
     public String getName()
@@ -81,19 +96,19 @@ public class SearchDomainService implements Serializable
         this.possibleSearchOptionsKey = possibleSearchOptionsKey;
     }
 
-    public List<SearchDomainServiceParameter> getParameters()
+    public List<SearchDomainServiceSearchOption> getPossibleSearchOptions()
     {
-        return parameters;
+        return possibleSearchOptions;
     }
 
-    public void setParameters(List<SearchDomainServiceParameter> parameters)
+    public void setPossibleSearchOptions(List<SearchDomainServiceSearchOption> parameters)
     {
-        this.parameters = parameters;
+        this.possibleSearchOptions = parameters;
     }
     
     @Override
     public String toString()
     {
-        return "SearchDomainService: " + name;
+        return "SearchDomainService: " + permId;
     }
 }

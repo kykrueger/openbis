@@ -24,8 +24,8 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.service.SearchDomainServiceParameter")
-public class SearchDomainServiceParameter implements Serializable
+@JsonObject("as.dto.service.SearchDomainServiceSearchOption")
+public class SearchDomainServiceSearchOption implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -63,6 +63,12 @@ public class SearchDomainServiceParameter implements Serializable
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    @Override
+    public String toString()
+    {
+        return label + " [" + code + "]";
     }
 
 }

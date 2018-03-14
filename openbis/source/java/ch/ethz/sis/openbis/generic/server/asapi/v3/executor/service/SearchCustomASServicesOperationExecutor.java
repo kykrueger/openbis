@@ -29,8 +29,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchCustomASSer
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchCustomASServicesOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.NopTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 
 /**
  * @author pkupczyk
@@ -59,7 +60,16 @@ public class SearchCustomASServicesOperationExecutor
     @Override
     protected ITranslator<CustomASService, CustomASService, CustomASServiceFetchOptions> getTranslator()
     {
-        return new NopTranslator<CustomASService, CustomASServiceFetchOptions>();
+        return new AbstractTranslator<CustomASService, CustomASService, CustomASServiceFetchOptions>()
+            {
+                @Override
+                protected CustomASService doTranslate(TranslationContext context, CustomASService object,
+                        CustomASServiceFetchOptions fetchOptions)
+                {
+                    object.setFetchOptions(fetchOptions);
+                    return object;
+                }
+            };
     }
 
     @Override
