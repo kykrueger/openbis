@@ -28,7 +28,6 @@ import ch.systemsx.cisd.common.annotation.TechPreview;
  * @author anttil
  */
 @JsonObject("as.dto.externaldms.create.ExternalDmsCreation")
-@TechPreview
 public class ExternalDmsCreation implements ICreation, IObjectCreation, ICreationIdHolder
 {
     private static final long serialVersionUID = 1L;

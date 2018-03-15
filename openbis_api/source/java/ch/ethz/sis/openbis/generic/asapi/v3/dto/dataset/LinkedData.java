@@ -93,14 +93,12 @@ public class LinkedData implements Serializable
         this.externalDms = externalDms;
     }
 
-    @TechPreview
     @JsonIgnore
     public List<ContentCopy> getContentCopies()
     {
         return contentCopies;
     }
 
-    @TechPreview
     public void setContentCopies(List<ContentCopy> contentCopies)
     {
         this.contentCopies = contentCopies;

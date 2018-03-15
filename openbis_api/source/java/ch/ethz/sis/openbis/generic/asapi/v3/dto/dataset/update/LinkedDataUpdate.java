@@ -78,14 +78,12 @@ public class LinkedDataUpdate implements IUpdate
     }
 
     @JsonIgnore
-    @TechPreview
     public ContentCopyListUpdateValue getContentCopies()
     {
         return contentCopies;
     }
 
     @JsonIgnore
-    @TechPreview
     public void setContentCopyActions(List<ListUpdateAction<Object>> actions)
     {
         contentCopies.setActions(actions);

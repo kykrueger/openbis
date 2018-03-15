@@ -69,13 +69,11 @@ public class LinkedDataCreation implements ICreation
         this.externalDmsId = externalDmsId;
     }
 
-    @TechPreview
     public List<ContentCopyCreation> getContentCopies()
     {
         return contentCopies;
     }
 
-    @TechPreview
     public void setContentCopies(List<ContentCopyCreation> contentCopies)
     {
         this.contentCopies = contentCopies;
