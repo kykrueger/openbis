@@ -6,7 +6,7 @@ To help users interested in trying out _obis_, we provide a vagrant setup that c
 
 0. Download openbis from the https://wiki-bsse.ethz.ch/display/bis/Production+Releases
 1. Put the extract the openbis installer to the src/vagrant/initialize folder
-2. cd to `src/vagrant/obis_with_openbis`
+2. cd to `src/vagrant/obis`
 3. `vagrant up --provision --provider virtualbox` -- initialize the virtual machine
 4. `vagrant ssh obisserver`  -- log into the virtual machine
 5. install openBIS (inside the vagrant machine) `/vagrant_initialize/install_openbis.sh`. The admin password will be 'admin'.
