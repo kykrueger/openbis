@@ -16,41 +16,33 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.service.execute.SearchDomainServiceExecutionOptions")
-public class SearchDomainServiceExecutionOptions extends AbstractExecutionOptionsWithParameters<SearchDomainServiceExecutionOptions, String>
+@JsonObject("as.dto.service.execute.AbstractExecutionOptionsWithParameters<EO, V>")
+public abstract class AbstractExecutionOptionsWithParameters<EO extends AbstractExecutionOptionsWithParameters<EO, V>, V> implements Serializable
 {
     private static final long serialVersionUID = 1L;
+    
+    private final Map<String, V> parameters = new HashMap<String, V>();
 
-    private String preferredSearchDomain;
-    
-    private String searchString;
-    
-    public SearchDomainServiceExecutionOptions withPreferredSearchDomain(String preferredSearchDomain)
+    @SuppressWarnings("unchecked")
+    public EO withParameter(String parameterName, V value)
     {
-        this.preferredSearchDomain = preferredSearchDomain;
-        return this;
-    }
-    
-    public String getPreferredSearchDomain()
-    {
-        return preferredSearchDomain;
+        parameters.put(parameterName, value);
+        return (EO) this;
     }
 
-    public SearchDomainServiceExecutionOptions withSearchString(String searchString)
+    public Map<String, V> getParameters()
     {
-        this.searchString = searchString;
-        return this;
-    }
-    
-    public String getSearchString()
-    {
-        return searchString;
+        return parameters;
     }
 
 }

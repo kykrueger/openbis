@@ -16,41 +16,46 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.service.execute.SearchDomainServiceExecutionOptions")
-public class SearchDomainServiceExecutionOptions extends AbstractExecutionOptionsWithParameters<SearchDomainServiceExecutionOptions, String>
+@JsonObject("as.dto.service.execute.ExecuteAggregationServiceOperationResult")
+public class ExecuteAggregationServiceOperationResult implements IOperationResult
 {
+
     private static final long serialVersionUID = 1L;
 
-    private String preferredSearchDomain;
-    
-    private String searchString;
-    
-    public SearchDomainServiceExecutionOptions withPreferredSearchDomain(String preferredSearchDomain)
+    private TableModel result;
+
+    @SuppressWarnings("unused")
+    private ExecuteAggregationServiceOperationResult()
     {
-        this.preferredSearchDomain = preferredSearchDomain;
-        return this;
-    }
-    
-    public String getPreferredSearchDomain()
-    {
-        return preferredSearchDomain;
     }
 
-    public SearchDomainServiceExecutionOptions withSearchString(String searchString)
+    public ExecuteAggregationServiceOperationResult(TableModel result)
     {
-        this.searchString = searchString;
-        return this;
+        this.result = result;
     }
-    
-    public String getSearchString()
+
+    public TableModel getResult()
     {
-        return searchString;
+        return result;
+    }
+
+    @Override
+    public String getMessage()
+    {
+        return toString();
+    }
+
+    @Override
+    public String toString()
+    {
+        return getClass().getSimpleName();
     }
 
 }

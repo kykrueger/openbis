@@ -118,6 +118,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.IGetSemanticAnnotationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.ISearchSemanticAnnotationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.IUpdateSemanticAnnotationsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteAggregationServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteCustomASServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteSearchDomainServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchCustomASServicesOperationExecutor;
@@ -480,6 +481,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private IExecuteCustomASServiceOperationExecutor executeCustomASServiceExecutor;
 
     @Autowired
+    private IExecuteAggregationServiceOperationExecutor executeAggregationServiceExecutor;
+    
+    @Autowired
     private IExecuteSearchDomainServiceOperationExecutor executeSearchDomainServiceExecutor;
     
     @Autowired
@@ -544,6 +548,7 @@ public class OperationsExecutor implements IOperationsExecutor
             Map<IOperation, IOperationResult> resultMap, IOperationContext context)
     {
         resultMap.putAll(executeCustomASServiceExecutor.execute(context, operations));
+        resultMap.putAll(executeAggregationServiceExecutor.execute(context, operations));
         resultMap.putAll(executeSearchDomainServiceExecutor.execute(context, operations));
         resultMap.putAll(revertDeletionsExecutor.execute(context, operations));
         resultMap.putAll(confirmDeletionsExecutor.execute(context, operations));

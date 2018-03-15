@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 ETH Zuerich, SIS
+ * Copyright 2018 ETH Zuerich, SIS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AbstractExecutionOptionsWithParameters;
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AggregationServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 
 /**
  * @author Franz-Josef Elmer
+ *
  */
-@JsonObject("as.dto.service.CustomASServiceExecutionOptions")
-public class CustomASServiceExecutionOptions extends AbstractExecutionOptionsWithParameters<CustomASServiceExecutionOptions, Object>
+public interface IExecuteAggregationServiceExecutor
 {
-    private static final long serialVersionUID = 1L;
+
+    TableModel execute(IOperationContext context, IDssServiceId serviceId, AggregationServiceExecutionOptions options);
 
 }

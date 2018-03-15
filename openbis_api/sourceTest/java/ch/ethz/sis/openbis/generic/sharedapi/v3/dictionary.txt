@@ -2027,3 +2027,17 @@ Search Domain Service Search Option
 Search Domain Service Sort Options
 set Possible Search Options
 set Possible Search Options Key
+
+Abstract Execution Options With Parameters
+Aggregation Service Execution Options
+execute Aggregation Service
+Execute Aggregation Service Operation
+Execute Aggregation Service Operation Result
+get Columns
+get Rows
+I Table Cell
+Table Column
+Table Double Cell
+Table Long Cell
+Table Model
+Table String Cell

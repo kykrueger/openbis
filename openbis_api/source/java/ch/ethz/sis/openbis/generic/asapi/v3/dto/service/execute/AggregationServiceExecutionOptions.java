@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 ETH Zuerich, SIS
+ * Copyright 2018 ETH Zuerich, SIS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AbstractExecutionOptionsWithParameters;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
+ *
  */
-@JsonObject("as.dto.service.CustomASServiceExecutionOptions")
-public class CustomASServiceExecutionOptions extends AbstractExecutionOptionsWithParameters<CustomASServiceExecutionOptions, Object>
+@JsonObject("as.dto.service.execute.AggregationServiceExecutionOptions")
+public class AggregationServiceExecutionOptions extends AbstractExecutionOptionsWithParameters<AggregationServiceExecutionOptions, Object>
 {
     private static final long serialVersionUID = 1L;
-
 }
