@@ -511,6 +511,12 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			});
 		}
 
+		this.executeAggregationService = function(serviceId, options) {
+			return this._executeOperation(new c.ExecuteAggregationServiceOperation(serviceId, options)).then(function(results) {
+				return results.getResults()[0].getResult();
+			});
+		}
+		
 		this.executeSearchDomainService = function(options) {
 			return this._executeOperation(new c.ExecuteSearchDomainServiceOperation(options)).then(function(results) {
 				return results.getResults()[0].getResult();

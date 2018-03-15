@@ -13,7 +13,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 			this.title = title;
 		};
 		prototype.toString = function() {
-			return value;
+			return this.title;
 		};
 		prototype.hashCode = function() {
 			return this.title == null ? 0 : this.title;

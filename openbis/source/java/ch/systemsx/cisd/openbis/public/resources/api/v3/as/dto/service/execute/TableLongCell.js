@@ -13,7 +13,7 @@ define([ "stjs", "util/Exceptions", "as/dto/service/execute/ITableCell" ], funct
 			this.value = value;
 		};
 		prototype.toString = function() {
-			return value;
+			return this.value;
 		};
 		prototype.hashCode = function() {
 			return this.value == null ? 0 : this.value;

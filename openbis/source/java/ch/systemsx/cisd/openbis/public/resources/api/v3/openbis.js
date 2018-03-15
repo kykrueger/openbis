@@ -1707,6 +1707,18 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 		
+		this.executeAggregationService = function(serviceId, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeAggregationService",
+					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
 		this.archiveDataSets = function(ids, options) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({

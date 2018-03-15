@@ -21,6 +21,22 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			});
 		}
 
+		var testActionWhichShouldFail = function(c, fAction, errorMessage) {
+			c.start();
+			
+			c.createFacadeAndLogin().then(function(facade) {
+				c.ok("Login");
+				return fAction(facade).then(function(result) {
+					c.fail("Action supposed to fail");
+					c.finish();
+				});
+			}).fail(function(error) {
+				c.ok("Action failed as expected");
+				c.assertEqual(error.message, errorMessage, "Error message");
+				c.finish();
+			});
+		}
+		
 		QUnit.test("searchSearchDomainService()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -31,7 +47,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			var fCheck = function(facade, result) {
-				console.log(result);
 				c.assertEqual(result.getTotalCount(), 2, "Number of results");
 				c.assertEqual(result.getObjects().length, 2, "Number of results");
 				var objects = result.getObjects();
@@ -63,7 +78,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 			
 			var fCheck = function(facade, result) {
-				console.log(result);
 				c.assertEqual(result.getTotalCount(), 2, "Number of results");
 				c.assertEqual(result.getObjects().length, 2, "Number of results");
 				var objects = result.getObjects();
@@ -79,6 +93,61 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 			
 			testAction(c, fAction, fCheck);
+		});
+		
+		QUnit.test("executeAggregationService()", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fAction = function(facade) {
+				var id = new c.DssServicePermId("js-test", new c.DataStorePermId("DSS1"));
+				var options = new c.AggregationServiceExecutionOptions();
+				options.withParameter("method", "test");
+				options.withParameter("answer", 42).withParameter("pi", 3.1415926);
+				return facade.executeAggregationService(id, options);
+			}
+			
+			var fCheck = function(facade, tableModel) {
+				c.assertEqual(tableModel.getColumns().toString(), "key,value", "Table columns");
+				c.assertEqual(tableModel.getRows().toString(), "method,test,answer,42,pi,3.1415926", "Table rows");
+			}
+			
+			testAction(c, fAction, fCheck);
+		});
+		
+		QUnit.test("executeAggregationService() with data store code is null", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fAction = function(facade) {
+				var id = new c.DssServicePermId("js-test", new c.DataStorePermId(null));
+				var options = new c.AggregationServiceExecutionOptions();
+				return facade.executeAggregationService(id, options);
+			}
+			
+			testActionWhichShouldFail(c, fAction, "Data store code cannot be empty. (Context: [])");
+		});
+		
+		QUnit.test("executeAggregationService() with data store id is null", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fAction = function(facade) {
+				var id = new c.DssServicePermId("js-test", null);
+				var options = new c.AggregationServiceExecutionOptions();
+				return facade.executeAggregationService(id, options);
+			}
+			
+			testActionWhichShouldFail(c, fAction, "Data store id cannot be null. (Context: [])");
+		});
+		
+		QUnit.test("executeAggregationService() with key is null", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fAction = function(facade) {
+				var id = new c.DssServicePermId(null, new c.DataStorePermId("DSS1"));
+				var options = new c.AggregationServiceExecutionOptions();
+				return facade.executeAggregationService(id, options);
+			}
+			
+			testActionWhichShouldFail(c, fAction, "Service key cannot be empty. (Context: [])");
 		});
 	}
 

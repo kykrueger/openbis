@@ -158,10 +158,12 @@ define(
 				this.CustomASServiceSearchCriteria = dtos.CustomASServiceSearchCriteria;
 				this.CustomASServiceFetchOptions = dtos.CustomASServiceFetchOptions;
 				this.CustomASServiceCode = dtos.CustomASServiceCode;
+				this.DssServicePermId = dtos.DssServicePermId;
 				this.CustomASServiceExecutionOptions = dtos.CustomASServiceExecutionOptions;
 				this.SearchDomainServiceSearchCriteria = dtos.SearchDomainServiceSearchCriteria;
 				this.SearchDomainServiceFetchOptions = dtos.SearchDomainServiceFetchOptions;
 				this.SearchDomainServiceExecutionOptions = dtos.SearchDomainServiceExecutionOptions;
+				this.AggregationServiceExecutionOptions = dtos.AggregationServiceExecutionOptions;
 				this.GlobalSearchCriteria = dtos.GlobalSearchCriteria;
 				this.GlobalSearchObjectFetchOptions = dtos.GlobalSearchObjectFetchOptions;
 				this.ObjectKindModificationSearchCriteria = dtos.ObjectKindModificationSearchCriteria;
@@ -308,6 +310,7 @@ define(
 				this.RevertDeletionsOperation = dtos.RevertDeletionsOperation;
 				this.ConfirmDeletionsOperation = dtos.ConfirmDeletionsOperation;
 				this.ExecuteCustomASServiceOperation = dtos.ExecuteCustomASServiceOperation;
+				this.ExecuteAggregationServiceOperation = dtos.ExecuteAggregationServiceOperation;
 				this.ExecuteSearchDomainServiceOperation = dtos.ExecuteSearchDomainServiceOperation;
 				this.ArchiveDataSetsOperation = dtos.ArchiveDataSetsOperation;
 				this.UnarchiveDataSetsOperation = dtos.UnarchiveDataSetsOperation;

@@ -51,6 +51,13 @@ def process(tr, parameters, tableBuilder):
 		else:
 			row.setCell("STATUS", "SUCCESS")
 		row.setCell("RESULT", report)
+	elif method == "test":
+		tableBuilder.addHeader("key")
+		tableBuilder.addHeader("value")
+		for entry in parameters.entrySet():
+			row = tableBuilder.addRow()
+			row.setCell("key", entry.key)
+			row.setCell("value", entry.value)
 
 def findSample(tr):
 	criteria = SearchCriteria()
