@@ -39,19 +39,19 @@ public interface DataSetQuery extends ObjectQuery
             + "from data d where d.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<DataSetBaseRecord> getDataSets(LongSet dataSetIds);
 
-    @Select(sql = "select ed.data_id as objectId, ed.data_id as relatedId from external_data ed where ed.data_id = any(?{1})", parameterBindings = {
+    @Select(sql = "select ed.id as objectId, ed.id as relatedId from external_data ed where ed.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getPhysicalDataIds(LongSet dataSetIds);
 
-    @Select(sql = "select ed.data_id as id, ed.share_id as shareId, ed.location, ed.size, ed.status, ed.is_complete as isComplete, ed.present_in_archive as isPresentInArchive, ed.storage_confirmation as isStorageConfirmed, ed.speed_hint as speedHint "
-            + "from external_data ed where ed.data_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select ed.id as id, ed.share_id as shareId, ed.location, ed.size, ed.status, ed.is_complete as isComplete, ed.present_in_archive as isPresentInArchive, ed.storage_confirmation as isStorageConfirmed, ed.speed_hint as speedHint "
+            + "from external_data ed where ed.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PhysicalDataBaseRecord> getPhysicalDatas(LongSet dataSetIds);
 
-    @Select(sql = "select ld.data_id as objectId, ld.data_id as relatedId from link_data ld where ld.data_id = any(?{1})", parameterBindings = {
+    @Select(sql = "select ld.id as objectId, ld.id as relatedId from link_data ld where ld.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getLinkedDataIds(LongSet dataSetIds);
 
-    @Select(sql = "select ld.data_id as id, cc.external_code as externalCode from link_data ld, content_copies cc where cc.data_id = ld.data_id and ld.data_id = any(?{1})", parameterBindings = {
+    @Select(sql = "select ld.id as id, cc.external_code as externalCode from link_data ld, content_copies cc where cc.data_id = ld.id and ld.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<LinkedDataBaseRecord> getLinkedDatas(LongSet dataSetIds);
 
@@ -59,7 +59,7 @@ public interface DataSetQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getExternalDmsIds(LongSet dataSetIds);
 
-    @Select(sql = "select ed.data_id as objectId, ed.ffty_id as relatedId from external_data ed where ed.data_id = any(?{1})", parameterBindings = {
+    @Select(sql = "select ed.id as objectId, ed.ffty_id as relatedId from external_data ed where ed.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getFileFormatTypeIds(LongSet dataSetIds);
 
@@ -67,7 +67,7 @@ public interface DataSetQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<FileFormatTypeBaseRecord> getFileFormatTypes(LongSet fileFormatTypeIds);
 
-    @Select(sql = "select ed.data_id as objectId, ed.loty_id as relatedId from external_data ed where ed.data_id = any(?{1})", parameterBindings = {
+    @Select(sql = "select ed.id as objectId, ed.loty_id as relatedId from external_data ed where ed.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getLocatorTypeIds(LongSet dataSetIds);
 
@@ -75,7 +75,7 @@ public interface DataSetQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<LocatorTypeBaseRecord> getLocatorTypes(LongSet locatorTypeIds);
 
-    @Select(sql = "select ed.data_id as objectId, ed.cvte_id_stor_fmt as relatedId from external_data ed where ed.data_id = any(?{1})", parameterBindings = {
+    @Select(sql = "select ed.id as objectId, ed.cvte_id_stor_fmt as relatedId from external_data ed where ed.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getStorageFormatIds(LongSet dataSetIds);
 

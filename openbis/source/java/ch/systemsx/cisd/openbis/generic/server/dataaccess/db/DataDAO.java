@@ -891,13 +891,13 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     {
         return "SELECT ed.location, ed.share_id, ds.code FROM " + TableNames.DATA_ALL_TABLE + " d "
                 + "JOIN data_stores ds ON (d.dast_id = ds.id) "
-                + "LEFT OUTER JOIN external_data ed ON (d.id = ed.data_id) WHERE d.id "
+                + "LEFT OUTER JOIN external_data ed ON (d.id = ed.id) WHERE d.id "
                 + SQLBuilder.inEntityIds() + " ORDER BY d.id";
     }
 
     private static String createDeleteExternalDataSQL()
     {
-        return "DELETE FROM " + TableNames.EXTERNAL_DATA_TABLE + " WHERE data_id "
+        return "DELETE FROM " + TableNames.EXTERNAL_DATA_TABLE + " WHERE id "
                 + SQLBuilder.inEntityIds();
     }
 
@@ -976,7 +976,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                 + "ed.storage_confirmation, ed.status as archiving_status, "
                 + "ed.present_in_archive "
                 + "FROM data_all d "
-                + "left JOIN external_data ed on d.id = ed.data_id "
+                + "left JOIN external_data ed on d.id = ed.id "
                 + "left JOIN locator_types lt on lt.id = ed.loty_id "
                 + "left JOIN file_format_types fft on fft.id = ffty_id "
                 + "left JOIN controlled_vocabulary_terms stf on stf.id = cvte_id_stor_fmt "
