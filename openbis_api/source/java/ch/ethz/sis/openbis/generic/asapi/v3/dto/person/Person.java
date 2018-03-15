@@ -15,22 +15,25 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.person;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISpaceHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
 
 /*
  * Class automatically generated with DtoGenerator
@@ -72,6 +75,9 @@ public class Person implements Serializable, IPermIdHolder, IRegistrationDateHol
 
     @JsonProperty
     private List<RoleAssignment> roleAssignments;
+
+    @JsonProperty
+    private Map<String, WebAppSettings> webAppSettings;
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -187,8 +193,7 @@ public class Person implements Serializable, IPermIdHolder, IRegistrationDateHol
         if (getFetchOptions() != null && getFetchOptions().hasSpace())
         {
             return space;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Space has not been fetched.");
         }
@@ -208,8 +213,7 @@ public class Person implements Serializable, IPermIdHolder, IRegistrationDateHol
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }
@@ -221,24 +225,53 @@ public class Person implements Serializable, IPermIdHolder, IRegistrationDateHol
         this.registrator = registrator;
     }
 
-    
     @JsonIgnore
     public List<RoleAssignment> getRoleAssignments()
     {
         if (getFetchOptions() != null && getFetchOptions().hasRoleAssignments())
         {
             return roleAssignments;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Role assignments have not been fetched.");
         }
     }
-    
+
     public void setRoleAssignments(List<RoleAssignment> roleAssignments)
     {
         this.roleAssignments = roleAssignments;
     }
+
+    @JsonIgnore
+    public WebAppSettings getWebAppSettings(String webAppId)
+    {
+        if (getFetchOptions() != null && (getFetchOptions().hasAllWebAppSettings() || getFetchOptions().hasWebAppSettings(webAppId)))
+        {
+            return webAppSettings != null ? webAppSettings.get(webAppId) : null;
+        } else
+        {
+            throw new NotFetchedException("Settings for web app '" + webAppId + "' have not been fetched.");
+        }
+    }
+
+    @JsonIgnore
+    public Map<String, WebAppSettings> getWebAppSettings()
+    {
+        if (getFetchOptions() != null && (getFetchOptions().hasAllWebAppSettings()
+                || (getFetchOptions().getWebAppSettings() != null && false == getFetchOptions().getWebAppSettings().isEmpty())))
+        {
+            return webAppSettings;
+        } else
+        {
+            throw new NotFetchedException("Settings have not been fetched.");
+        }
+    }
+
+    public void setWebAppSettings(Map<String, WebAppSettings> webAppSettings)
+    {
+        this.webAppSettings = webAppSettings;
+    }
+
     // Method automatically generated with DtoGenerator
     @Override
     public String toString()

@@ -1988,6 +1988,25 @@ unlock Data Sets
 Unlock Data Sets Operation
 Unlock Data Sets Operation Result
 
+getSetting
+hasAllSettings
+hasAllWebAppSettings
+hasSetting
+hasWebAppSettings
+SortIgnore
+WebAppSetting
+WebAppSettingCreation
+WebAppSettingsFetchOptions
+WebAppSettingsSortOptions
+WebAppSettingsUpdateValue
+withAllSettings
+withAllSettingsUsing
+withAllWebAppSettings
+withAllWebAppSettingsUsing
+withSetting
+withSettingsUsing
+withWebAppSettings
+withWebAppSettingsUsing
 Dss Service Perm Id
 execute Search Domain Service
 Execute Search Domain Service Operation

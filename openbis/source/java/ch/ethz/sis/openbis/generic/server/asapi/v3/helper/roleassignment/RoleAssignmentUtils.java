@@ -61,7 +61,7 @@ public class RoleAssignmentUtils
         }
     }
 
-    private static boolean isInstanceAdmin(PersonPE personPE)
+    public static boolean isInstanceAdmin(PersonPE personPE)
     {
         for (RoleAssignmentPE roleAssigment : personPE.getRoleAssignments())
         {

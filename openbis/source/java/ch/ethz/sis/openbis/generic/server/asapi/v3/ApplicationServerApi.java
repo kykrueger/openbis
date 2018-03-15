@@ -406,10 +406,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.UpdateVocabula
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.UpdateVocabularyTermsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.OperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.IExecuteOperationExecutor;
-import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.common.spring.IInvocationLoggerContext;
 import ch.systemsx.cisd.openbis.generic.server.AbstractServer;
@@ -420,7 +418,6 @@ import ch.systemsx.cisd.openbis.generic.server.plugin.IDataSetTypeSlaveServerPlu
 import ch.systemsx.cisd.openbis.generic.server.plugin.ISampleTypeSlaveServerPlugin;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
-import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
@@ -594,7 +591,7 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
         CreateVocabularyTermsOperationResult result = executeOperation(sessionToken, new CreateVocabularyTermsOperation(creations));
         return result.getObjectIds();
     }
-    
+
     @Override
     @Transactional
     public List<TagPermId> createTags(String sessionToken, List<TagCreation> creations)
@@ -741,7 +738,7 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     {
         executeOperation(sessionToken, new UpdateVocabularyTermsOperation(updates));
     }
-    
+
     @Override
     @Transactional
     public void updateTags(String sessionToken, List<TagUpdate> updates)
@@ -1041,7 +1038,8 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public SearchResult<AuthorizationGroup> searchAuthorizationGroups(String sessionToken, AuthorizationGroupSearchCriteria searchCriteria,
             AuthorizationGroupFetchOptions fetchOptions)
     {
-        SearchAuthorizationGroupsOperationResult result = executeOperation(sessionToken, new SearchAuthorizationGroupsOperation(searchCriteria, fetchOptions));
+        SearchAuthorizationGroupsOperationResult result =
+                executeOperation(sessionToken, new SearchAuthorizationGroupsOperation(searchCriteria, fetchOptions));
         return result.getSearchResult();
     }
 
@@ -1050,7 +1048,8 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public SearchResult<RoleAssignment> searchRoleAssignments(String sessionToken, RoleAssignmentSearchCriteria searchCriteria,
             RoleAssignmentFetchOptions fetchOptions)
     {
-        SearchRoleAssignmentsOperationResult result = executeOperation(sessionToken, new SearchRoleAssignmentsOperation(searchCriteria, fetchOptions));
+        SearchRoleAssignmentsOperationResult result =
+                executeOperation(sessionToken, new SearchRoleAssignmentsOperation(searchCriteria, fetchOptions));
         return result.getSearchResult();
     }
 
@@ -1424,43 +1423,6 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
         // info.put("server-disabled-info", disabledText);
         // }
         return info;
-    }
-
-    @Override
-    @Transactional
-    public void setWebAppSettings(String sessionToken, WebAppSettings webAppSettings)
-    {
-        try
-        {
-            Session session = getSession(sessionToken);
-            PersonPE person = session.tryGetPerson();
-            if (person != null)
-            {
-                synchronized (displaySettingsProvider)
-                {
-                    displaySettingsProvider.replaceWebAppSettings(person,
-                            new ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.WebAppSettings(
-                                    webAppSettings.getWebAppId(), webAppSettings.getSettings()));
-                    getDAOFactory().getPersonDAO().updatePerson(person);
-                }
-            }
-        } catch (InvalidSessionException e)
-        {
-            // ignore the situation when session is not available
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public WebAppSettings getWebAppSettings(String sessionToken, String webAppId)
-    {
-        Session session = getSession(sessionToken);
-        ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.WebAppSettings settings =
-                displaySettingsProvider.getWebAppSettings(session.tryGetPerson(), webAppId);
-        WebAppSettings webAppSettings = new WebAppSettings();
-        webAppSettings.setWebAppId(webAppId);
-        webAppSettings.setSettings(settings.getSettings());
-        return webAppSettings;
     }
 
     @Override

@@ -30,33 +30,31 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions")
 public class RoleAssignmentFetchOptions extends FetchOptions<RoleAssignment> implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    
+
     @JsonProperty
     private PersonFetchOptions registrator;
 
     @JsonProperty
     private PersonFetchOptions user;
-    
+
     @JsonProperty
     private AuthorizationGroupFetchOptions authorizationGroup;
-    
+
     @JsonProperty
     private SpaceFetchOptions space;
 
     @JsonProperty
     private ProjectFetchOptions project;
-    
+
     @JsonProperty
     private RoleAssignmentSortOptions sort;
-    
+
     public PersonFetchOptions withUser()
     {
         if (user == null)
@@ -65,17 +63,17 @@ public class RoleAssignmentFetchOptions extends FetchOptions<RoleAssignment> imp
         }
         return user;
     }
-    
+
     public PersonFetchOptions withUserUsing(PersonFetchOptions fetchOptions)
     {
         return user = fetchOptions;
     }
-    
+
     public boolean hasUser()
     {
         return user != null;
     }
-    
+
     public PersonFetchOptions withRegistrator()
     {
         if (registrator == null)
@@ -103,12 +101,12 @@ public class RoleAssignmentFetchOptions extends FetchOptions<RoleAssignment> imp
         }
         return authorizationGroup;
     }
-    
+
     public AuthorizationGroupFetchOptions withAuthorizationGroupUsing(AuthorizationGroupFetchOptions fetchOptions)
     {
         return authorizationGroup = fetchOptions;
     }
-    
+
     public boolean hasAuthorizationGroup()
     {
         return authorizationGroup != null;
@@ -141,17 +139,17 @@ public class RoleAssignmentFetchOptions extends FetchOptions<RoleAssignment> imp
         }
         return project;
     }
-    
+
     public ProjectFetchOptions withProjectUsing(ProjectFetchOptions fetchOptions)
     {
         return project = fetchOptions;
     }
-    
+
     public boolean hasProject()
     {
         return project != null;
     }
-    
+
     @Override
     public RoleAssignmentSortOptions sortBy()
     {
@@ -172,6 +170,11 @@ public class RoleAssignmentFetchOptions extends FetchOptions<RoleAssignment> imp
     protected FetchOptionsToStringBuilder getFetchOptionsStringBuilder()
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("RoleAssignment", this);
+        f.addFetchOption("Space", space);
+        f.addFetchOption("Project", project);
+        f.addFetchOption("User", user);
+        f.addFetchOption("AuthorizationGroup", authorizationGroup);
+        f.addFetchOption("Registrator", registrator);
         return f;
     }
 

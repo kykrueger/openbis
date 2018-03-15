@@ -1,4 +1,5 @@
-define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/IdListUpdateValue" ], function(stjs, FieldUpdateValue, IdListUpdateValue) {
+define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/IdListUpdateValue", "as/dto/webapp/update/WebAppSettingsUpdateValue" ], function(stjs, FieldUpdateValue,
+		IdListUpdateValue, WebAppSettingsUpdateValue) {
 	var PersonUpdate = function() {
 		this.spaceId = new FieldUpdateValue();
 	};
@@ -7,6 +8,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		constructor.serialVersionUID = 1;
 		prototype.userId = null;
 		prototype.spaceId = null;
+		prototype.webAppSettings = null;
 		prototype.active = true;
 
 		prototype.getObjectId = function() {
@@ -24,6 +26,24 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.setSpaceId = function(spaceId) {
 			this.spaceId.setValue(spaceId);
 		};
+		prototype.getWebAppSettings = function(webAppId) {
+			if (webAppId === undefined) {
+				return this.webAppSettings;
+			} else {
+				if (this.webAppSettings == null) {
+					this.webAppSettings = {};
+				}
+
+				var updateValue = this.webAppSettings[webAppId];
+
+				if (updateValue == null) {
+					updateValue = new WebAppSettingsUpdateValue();
+					this.webAppSettings[webAppId] = updateValue;
+				}
+
+				return updateValue;
+			}
+		};
 		prototype.isActive = function() {
 			return this.active;
 		};
@@ -35,6 +55,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		spaceId : {
 			name : "FieldUpdateValue",
 			arguments : [ "ISpaceId" ]
+		},
+		webAppSettings : {
+			name : "Map",
+			arguments : [ "String", "WebAppSettingsUpdateValue" ]
 		}
 	});
 	return PersonUpdate;

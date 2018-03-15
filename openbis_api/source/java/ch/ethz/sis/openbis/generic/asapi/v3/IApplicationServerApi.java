@@ -212,7 +212,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
 import ch.systemsx.cisd.common.annotation.TechPreview;
 import ch.systemsx.cisd.common.api.IRpcService;
 
@@ -264,23 +263,23 @@ public interface IApplicationServerApi extends IRpcService
     public List<MaterialPermId> createMaterials(String sessionToken, List<MaterialCreation> newMaterials);
 
     public List<EntityTypePermId> createMaterialTypes(String sessionToken, List<MaterialTypeCreation> newMaterialTypes);
-    
+
     public List<PropertyTypePermId> createPropertyTypes(String sessionToken, List<PropertyTypeCreation> newPropertyTypes);
-    
+
     public List<PluginPermId> createPlugins(String sessionToken, List<PluginCreation> newPlugins);
 
     public List<VocabularyPermId> createVocabularies(String sessionToken, List<VocabularyCreation> newVocabularies);
 
     public List<VocabularyTermPermId> createVocabularyTerms(String sessionToken, List<VocabularyTermCreation> newVocabularyTerms);
-    
+
     public List<TagPermId> createTags(String sessionToken, List<TagCreation> newTags);
 
     public List<AuthorizationGroupPermId> createAuthorizationGroups(String sessionToken, List<AuthorizationGroupCreation> newAuthorizationGroups);
-    
+
     public List<RoleAssignmentTechId> createRoleAssignments(String sessionToken, List<RoleAssignmentCreation> newRoleAssignments);
-    
+
     public List<PersonPermId> createPersons(String sessionToken, List<PersonCreation> newPersons);
-    
+
     @TechPreview
     public List<ExternalDmsPermId> createExternalDataManagementSystems(String sessionToken,
             List<ExternalDmsCreation> newExternalDataManagementSystems);
@@ -292,7 +291,7 @@ public interface IApplicationServerApi extends IRpcService
     public void updateProjects(String sessionToken, List<ProjectUpdate> projectUpdates);
 
     public void updateExperiments(String sessionToken, List<ExperimentUpdate> experimentUpdates);
-    
+
     public void updateExperimentTypes(String sessionToken, List<ExperimentTypeUpdate> experimentTypeUpdates);
 
     public void updateSamples(String sessionToken, List<SampleUpdate> sampleUpdates);
@@ -300,28 +299,28 @@ public interface IApplicationServerApi extends IRpcService
     public void updateSampleTypes(String sessionToken, List<SampleTypeUpdate> sampleTypeUpdates);
 
     public void updateDataSets(String sessionToken, List<DataSetUpdate> dataSetUpdates);
-    
+
     public void updateDataSetTypes(String sessionToken, List<DataSetTypeUpdate> dataSetTypeUpdates);
 
     public void updateMaterials(String sessionToken, List<MaterialUpdate> materialUpdates);
-    
+
     public void updateMaterialTypes(String sessionToken, List<MaterialTypeUpdate> materialTypeUpdates);
 
     @TechPreview
     public void updateExternalDataManagementSystems(String sessionToken, List<ExternalDmsUpdate> externalDmsUpdates);
-    
+
     public void updatePropertyTypes(String sessionToken, List<PropertyTypeUpdate> propertyTypeUpdates);
 
     public void updatePlugins(String sessionToken, List<PluginUpdate> pluginUpdates);
-    
+
     public void updateVocabularies(String sessionToken, List<VocabularyUpdate> vocabularyUpdates);
-    
+
     public void updateVocabularyTerms(String sessionToken, List<VocabularyTermUpdate> vocabularyTermUpdates);
 
     public void updateTags(String sessionToken, List<TagUpdate> tagUpdates);
 
     public void updateAuthorizationGroups(String sessionToken, List<AuthorizationGroupUpdate> authorizationGroupUpdates);
-    
+
     public void updatePersons(String sessionToken, List<PersonUpdate> personUpdates);
 
     public void updateOperationExecutions(String sessionToken, List<OperationExecutionUpdate> executionUpdates);
@@ -343,24 +342,27 @@ public interface IApplicationServerApi extends IRpcService
 
     public Map<IMaterialId, Material> getMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions);
 
-    public Map<IPropertyTypeId, PropertyType> getPropertyTypes(String sessionToken, List<? extends IPropertyTypeId> typeIds, PropertyTypeFetchOptions fetchOptions);
-    
+    public Map<IPropertyTypeId, PropertyType> getPropertyTypes(String sessionToken, List<? extends IPropertyTypeId> typeIds,
+            PropertyTypeFetchOptions fetchOptions);
+
     public Map<IPluginId, Plugin> getPlugins(String sessionToken, List<? extends IPluginId> pluginIds, PluginFetchOptions fetchOptions);
-    
+
     public Map<IVocabularyId, Vocabulary> getVocabularies(String sessionToken, List<? extends IVocabularyId> vocabularyIds,
             VocabularyFetchOptions fetchOptions);
 
     public Map<IVocabularyTermId, VocabularyTerm> getVocabularyTerms(String sessionToken, List<? extends IVocabularyTermId> vocabularyTermIds,
             VocabularyTermFetchOptions fetchOptions);
-    
+
     public Map<ITagId, Tag> getTags(String sessionToken, List<? extends ITagId> tagIds, TagFetchOptions fetchOptions);
-    
-    public Map<IAuthorizationGroupId, AuthorizationGroup> getAuthorizationGroups(String sessionToken, List<? extends IAuthorizationGroupId> groupIds, AuthorizationGroupFetchOptions fetchOptions);
-    
-    public Map<IRoleAssignmentId, RoleAssignment> getRoleAssignments(String sessionToken, List<? extends IRoleAssignmentId> ids, RoleAssignmentFetchOptions fetchOptions);
+
+    public Map<IAuthorizationGroupId, AuthorizationGroup> getAuthorizationGroups(String sessionToken, List<? extends IAuthorizationGroupId> groupIds,
+            AuthorizationGroupFetchOptions fetchOptions);
+
+    public Map<IRoleAssignmentId, RoleAssignment> getRoleAssignments(String sessionToken, List<? extends IRoleAssignmentId> ids,
+            RoleAssignmentFetchOptions fetchOptions);
 
     public Map<IPersonId, Person> getPersons(String sessionToken, List<? extends IPersonId> ids, PersonFetchOptions fetchOptions);
-    
+
     @TechPreview
     public Map<IExternalDmsId, ExternalDms> getExternalDataManagementSystems(String sessionToken, List<? extends IExternalDmsId> externalDmsIds,
             ExternalDmsFetchOptions fetchOptions);
@@ -405,15 +407,17 @@ public interface IApplicationServerApi extends IRpcService
 
     public SearchResult<Vocabulary> searchVocabularies(String sessionToken, VocabularySearchCriteria searchCriteria,
             VocabularyFetchOptions fetchOptions);
-    
+
     public SearchResult<VocabularyTerm> searchVocabularyTerms(String sessionToken, VocabularyTermSearchCriteria searchCriteria,
             VocabularyTermFetchOptions fetchOptions);
-    
+
     public SearchResult<Tag> searchTags(String sessionToken, TagSearchCriteria searchCriteria, TagFetchOptions fetchOptions);
-    
-    public SearchResult<AuthorizationGroup> searchAuthorizationGroups(String sessionToken, AuthorizationGroupSearchCriteria searchCriteria, AuthorizationGroupFetchOptions fetchOptions);
-    
-    public SearchResult<RoleAssignment> searchRoleAssignments(String sessionToken, RoleAssignmentSearchCriteria searchCriteria, RoleAssignmentFetchOptions fetchOptions);
+
+    public SearchResult<AuthorizationGroup> searchAuthorizationGroups(String sessionToken, AuthorizationGroupSearchCriteria searchCriteria,
+            AuthorizationGroupFetchOptions fetchOptions);
+
+    public SearchResult<RoleAssignment> searchRoleAssignments(String sessionToken, RoleAssignmentSearchCriteria searchCriteria,
+            RoleAssignmentFetchOptions fetchOptions);
 
     public SearchResult<Person> searchPersons(String sessionToken, PersonSearchCriteria searchCriteria, PersonFetchOptions fetchOptions);
 
@@ -456,12 +460,13 @@ public interface IApplicationServerApi extends IRpcService
 
     public void deletePlugins(String sessionToken, List<? extends IPluginId> pluginIds, PluginDeletionOptions deletionOptions);
 
-    public void deletePropertyTypes(String sessionToken, List<? extends IPropertyTypeId> propertyTypeIds, PropertyTypeDeletionOptions deletionOptions);
-    
+    public void deletePropertyTypes(String sessionToken, List<? extends IPropertyTypeId> propertyTypeIds,
+            PropertyTypeDeletionOptions deletionOptions);
+
     public void deleteVocabularies(String sessionToken, List<? extends IVocabularyId> ids, VocabularyDeletionOptions deletionOptions);
 
     public void deleteVocabularyTerms(String sessionToken, List<? extends IVocabularyTermId> termIds, VocabularyTermDeletionOptions deletionOptions);
-    
+
     public void deleteEntityTypes(String sessionToken, List<? extends IEntityTypeId> entityTypeIds, EntityTypeDeletionOptions deletionOptions);
 
     @TechPreview
@@ -470,10 +475,12 @@ public interface IApplicationServerApi extends IRpcService
 
     public void deleteTags(String sessionToken, List<? extends ITagId> tagIds, TagDeletionOptions deletionOptions);
 
-    public void deleteAuthorizationGroups(String sessionToken, List<? extends IAuthorizationGroupId> groupIds, AuthorizationGroupDeletionOptions deletionOptions);
+    public void deleteAuthorizationGroups(String sessionToken, List<? extends IAuthorizationGroupId> groupIds,
+            AuthorizationGroupDeletionOptions deletionOptions);
 
-    public void deleteRoleAssignments(String sessionToken, List<? extends IRoleAssignmentId> assignmentIds, RoleAssignmentDeletionOptions deletionOptions);
-    
+    public void deleteRoleAssignments(String sessionToken, List<? extends IRoleAssignmentId> assignmentIds,
+            RoleAssignmentDeletionOptions deletionOptions);
+
     public void deleteOperationExecutions(String sessionToken, List<? extends IOperationExecutionId> executionIds,
             OperationExecutionDeletionOptions deletionOptions);
 
@@ -497,19 +504,13 @@ public interface IApplicationServerApi extends IRpcService
     public void unarchiveDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetUnarchiveOptions options);
 
     public void lockDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetLockOptions options);
-    
+
     public void unlockDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetUnlockOptions options);
-    
+
     public IOperationExecutionResults executeOperations(String sessionToken, List<? extends IOperation> operations,
             IOperationExecutionOptions options);
 
     public Map<String, String> getServerInformation(String sessionToken);
-
-    @TechPreview
-    public void setWebAppSettings(String sessionToken, WebAppSettings webAppSettings);
-
-    @TechPreview
-    public WebAppSettings getWebAppSettings(String sessionToken, String webAppId);
 
     @TechPreview
     public List<String> createPermIdStrings(String sessionToken, int amount);

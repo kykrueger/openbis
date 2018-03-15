@@ -50,6 +50,7 @@ define(
 				this.LinkedDataCreation = dtos.LinkedDataCreation;
 				this.ContentCopyCreation = dtos.ContentCopyCreation;
 				this.ExternalDmsCreation = dtos.ExternalDmsCreation;
+				this.WebAppSettingCreation = dtos.WebAppSettingCreation;
 				this.ExternalDmsAddressType = require('as/dto/externaldms/ExternalDmsAddressType');
 				this.SpaceUpdate = dtos.SpaceUpdate;
 				this.ProjectUpdate = dtos.ProjectUpdate;
@@ -1254,6 +1255,7 @@ define(
 					fo.withSpace();
 					fo.withRoleAssignments().withSpace();
 					fo.withRegistrator();
+					fo.withAllWebAppSettings();
 					return fo;
 				};
 
