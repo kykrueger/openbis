@@ -1444,7 +1444,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                 currentSession().createSQLQuery(
                         "update external_data set storage_confirmation = true "
                                 + "where storage_confirmation = false "
-                                + "and data_id in (select id from data_all where code = :code)");
+                                + "and id in (select id from data_all where code = :code)");
         query.setString("code", CodeConverter.tryToDatabase(dataSetCode));
         return query.executeUpdate() > 0;
     }
