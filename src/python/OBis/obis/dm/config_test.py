@@ -33,7 +33,7 @@ def copy_user_config_test_data(tmpdir):
 
 
 def configure_resolver_for_test(resolver, tmpdir):
-    resolver.location_resolver.location_roots['user_home'] = os.path.join(str(tmpdir), 'user_config')
+    resolver.set_resolver_location_roots('user_home', os.path.join(str(tmpdir), 'user_config'))
 
 
 def test_read_config(tmpdir):
