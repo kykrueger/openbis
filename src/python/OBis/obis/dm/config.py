@@ -220,7 +220,7 @@ class ConfigResolverImpl(object):
         config[param.name] = value
         return config
 
-    def local_public_config_folder_path(self):
+    def local_public_properties_path(self):
         loc = self.env.location_at_path(['local', 'public'])
         return self.location_resolver.resolve_location(loc) + '/' + self.config_file
 
@@ -263,7 +263,7 @@ class ConfigResolver(object):
     def local_public_properties_path(self):
         for resolver in self.resolvers:
             if not resolver.is_usersetting():
-                return resolver.local_public_config_folder_path()        
+                return resolver.local_public_properties_path()        
 
     def copy_global_to_local(self):
         for resolver in self.resolvers:
