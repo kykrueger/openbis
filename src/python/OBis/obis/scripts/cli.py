@@ -110,14 +110,14 @@ def config(ctx, is_global, prop, value):
 def config_internal(data_mgmt, is_global, prop, value):
     resolver = data_mgmt.config_resolver
     if is_global:
-        resolver.location_search_order = ['global']
+        resolver.set_location_search_order(['global'])
     else:
         top_level_path = data_mgmt.git_wrapper.git_top_level_path()
         if top_level_path.success():
-            resolver.location_resolver.location_roots['data_set'] = top_level_path.output
-            resolver.location_search_order = ['local']
+            resolver.set_resolver_location_roots('data_set', top_level_path.output)
+            resolver.set_location_search_order(['local'])
         else:
-            resolver.location_search_order = ['global']
+            resolver.set_location_search_order(['global'])
 
     config_dict = resolver.config_dict()
     if not prop:

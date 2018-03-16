@@ -42,7 +42,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
         config_resolver = dm_config.ConfigResolver()
         result = git_wrapper.git_top_level_path()
         if result.success():
-            config_resolver.location_resolver.location_roots['data_set'] = result.output
+            config_resolver.set_resolver_location_roots('data_set', result.output)
     complete_openbis_config(openbis_config, config_resolver)
 
     return GitDataMgmt(config_resolver, openbis_config, git_wrapper, openbis)
@@ -159,7 +159,7 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def setup_local_config(self, config, path):
         with cd(path):
-            self.config_resolver.location_resolver.location_roots['data_set'] = '.'
+            self.config_resolver.set_resolver_location_roots('data_set', '.')
             for key, value in config.items():
                 self.config_resolver.set_value_for_parameter(key, value, 'local')
 
@@ -194,7 +194,7 @@ class GitDataMgmt(AbstractDataMgmt):
             return result
         with cd(path):
             # Update the resolvers location
-            self.config_resolver.location_resolver.location_roots['data_set'] = '.'
+            self.config_resolver.set_resolver_location_roots('data_set', '.')
             self.config_resolver.copy_global_to_local()
             self.commit_metadata_updates('local with global')
         return result
@@ -266,12 +266,12 @@ class GitDataMgmt(AbstractDataMgmt):
         return self.git_wrapper.git_status()
 
     def commit_metadata_updates(self, msg_fragment=None):
-        folder = self.config_resolver.local_public_config_folder_path()
-        status = self.git_wrapper.git_status(folder)
+        properties_path = self.config_resolver.local_public_properties_path()
+        status = self.git_wrapper.git_status(properties_path)
         if len(status.output.strip()) < 1:
             # Nothing to commit
             return CommandResult(returncode=0, output="")
-        self.git_wrapper.git_add(folder)
+        self.git_wrapper.git_add(properties_path)
         if msg_fragment is None:
             msg = "OBIS: Update openBIS metadata cache."
         else:
@@ -283,8 +283,8 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def restore(self):
         self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
-        folder = self.config_resolver.local_public_config_folder_path()
-        self.git_wrapper.git_checkout(folder)
+        properties_path = self.config_resolver.local_public_properties_path()
+        self.git_wrapper.git_checkout(properties_path)
 
     def clone(self, data_set_id, ssh_user, content_copy_index):
         try:
