@@ -59,14 +59,14 @@ def git_status(path=None, annex=False):
 
 def check_correct_config_semantics():
     # This how things should work
-    with open('.obis/config.json') as f:
+    with open('.obis/properties.json') as f:
         config_local = json.load(f)
     assert config_local.get('data_set_id') is not None
 
 
 def check_workaround_config_semantics():
     # This how things should work
-    with open('.obis/config.json') as f:
+    with open('.obis/properties.json') as f:
         config_local = json.load(f)
     assert config_local.get('data_set_id') is None
 
@@ -153,7 +153,7 @@ def test_child_data_set(tmpdir):
         child_ds_code = dm.config_resolver.config_dict()['data_set_id']
         assert parent_ds_code != child_ds_code
         commit_id = dm.git_wrapper.git_commit_hash().output
-        repository_id = dm.config_resolver.config_dict()['repository_id'] # TODO fail
+        repository_id = dm.config_resolver.config_dict()['repository_id']
         assert repository_id is not None
 
         contents = git.GitRepoFileInfo(dm.git_wrapper).contents()
