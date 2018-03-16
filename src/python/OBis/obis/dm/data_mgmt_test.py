@@ -59,14 +59,14 @@ def git_status(path=None, annex=False):
 
 def check_correct_config_semantics():
     # This how things should work
-    with open('.obis/config.json') as f:
+    with open('.obis/properties.json') as f:
         config_local = json.load(f)
     assert config_local.get('data_set_id') is not None
 
 
 def check_workaround_config_semantics():
     # This how things should work
-    with open('.obis/config.json') as f:
+    with open('.obis/properties.json') as f:
         config_local = json.load(f)
     assert config_local.get('data_set_id') is None
 
