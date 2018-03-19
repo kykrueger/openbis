@@ -95,6 +95,28 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testAction(c, fAction, fCheck);
 		});
 		
+		QUnit.test("searchAggregationService()", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fAction = function(facade) {
+				var criteria = new c.AggregationServiceSearchCriteria();
+				var id = new c.DssServicePermId("js-test", new c.DataStorePermId("DSS1"));
+				criteria.withId().thatEquals(id);
+				var fetchOptions = new c.AggregationServiceFetchOptions();
+				return facade.searchAggregationServices(criteria, fetchOptions);
+			}
+
+			var fCheck = function(facade, result) {
+				c.assertEqual(result.getTotalCount(), 1, "Number of results");
+				c.assertEqual(result.getObjects().length, 1, "Number of results");
+				var objects = result.getObjects();
+				c.assertEqual(objects[0].getPermId().toString(), "DSS1:js-test", "Perm id");
+				c.assertEqual(objects[0].getLabel(), "js-test", "Label");
+			}
+
+			testAction(c, fAction, fCheck);
+		});
+		
 		QUnit.test("executeAggregationService()", function(assert) {
 			var c = new common(assert, openbis);
 			

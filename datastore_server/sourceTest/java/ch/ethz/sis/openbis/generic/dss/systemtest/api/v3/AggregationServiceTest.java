@@ -19,20 +19,25 @@ package ch.ethz.sis.openbis.generic.dss.systemtest.api.v3;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.IDataStoreId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.AggregationService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AggregationServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ITableCell;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableDoubleCell;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableLongCell;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableStringCell;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.AggregationServiceSearchCriteria;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 
 /**
@@ -40,6 +45,64 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
  */
 public class AggregationServiceTest extends AbstractFileTest
 {
+    private static SimpleComparator<AggregationService, String> AGGREGATION_SERVICE_COMPARATOR = new SimpleComparator<AggregationService, String>()
+        {
+            @Override
+            public String evaluate(AggregationService item)
+            {
+                return item.getPermId().getPermId();
+            }
+        };
+
+    @Test
+    public void testSearchAggregationServiceWithId()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("example-jython-aggregation-service-report", new DataStorePermId("STANDARD"));
+        AggregationServiceSearchCriteria searchCriteria = new AggregationServiceSearchCriteria();
+        searchCriteria.withId().thatEquals(id);
+        AggregationServiceFetchOptions fetchOptions = new AggregationServiceFetchOptions();
+
+        // When
+        List<AggregationService> services = as.searchAggregationServices(sessionToken, searchCriteria, fetchOptions).getObjects();
+
+        // Then
+        assertEquals("Test Jython Aggregation Reporting", services.get(0).getLabel());
+        assertEquals(id.toString(), services.get(0).getPermId().toString());
+        assertEquals(fetchOptions.toString(), services.get(0).getFetchOptions().toString());
+        assertEquals(1, services.size());
+
+        as.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchAggregationService()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        AggregationServiceSearchCriteria searchCriteria = new AggregationServiceSearchCriteria();
+        AggregationServiceFetchOptions fetchOptions = new AggregationServiceFetchOptions();
+
+        // When
+        List<AggregationService> services = as.searchAggregationServices(sessionToken, searchCriteria, fetchOptions).getObjects();
+
+        // Then
+        services.sort(AGGREGATION_SERVICE_COMPARATOR);
+        assertEquals("[content-provider-aggregation-service, content-provider-aggregation-service-no-authorization, "
+                + "example-aggregation-service, example-db-modifying-aggregation-service, "
+                + "example-jython-aggregation-service-report, example-jython-db-modifying-aggregation-service, "
+                + "metaproject-api, property-definitions-aggregation-service, search-service-aggregation-service]",
+                services.stream().map(s -> s.getPermId().getPermId()).collect(Collectors.toList()).toString());
+        assertEquals("[Test Content Provider Aggregation Reporting, Test Content Provider Aggregation Reporting, "
+                + "Example Aggregation Service, Example Db Modifying Aggregation Service, Test Jython Aggregation Reporting, "
+                + "Test Db Modifying Jython Aggregation Reporting, Test Db Modifying Jython Aggregation Reporting, "
+                + "Test Properties Definitions Api, Test Search Service Aggregation Reporting]",
+                services.stream().map(s -> s.getLabel()).collect(Collectors.toList()).toString());
+
+        as.logout(sessionToken);
+    }
+
     @Test
     public void testExecuteAggregationService()
     {

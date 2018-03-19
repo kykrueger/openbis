@@ -121,6 +121,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteAggregationServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteCustomASServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteSearchDomainServiceOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchAggregationServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchCustomASServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchSearchDomainServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.session.IGetSessionInformationOperationExecutor;
@@ -454,6 +455,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private ISearchSearchDomainServicesOperationExecutor searchSearchDomainServicesExecutor;
 
     @Autowired
+    private ISearchAggregationServicesOperationExecutor searchAggregationServicesExecutor;
+    
+    @Autowired
     private ISearchDeletionsOperationExecutor searchDeletionsExecutor;
 
     @Autowired
@@ -581,6 +585,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchDataSetTypesExecutor.execute(context, operations));
         resultMap.putAll(searchMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(searchCustomASServicesExecutor.execute(context, operations));
+        resultMap.putAll(searchAggregationServicesExecutor.execute(context, operations));
         resultMap.putAll(searchSearchDomainServicesExecutor.execute(context, operations));
         resultMap.putAll(searchDeletionsExecutor.execute(context, operations));
         resultMap.putAll(searchGloballyExecutor.execute(context, operations));

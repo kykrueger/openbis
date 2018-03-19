@@ -164,6 +164,9 @@ define(
 				this.SearchDomainServiceFetchOptions = dtos.SearchDomainServiceFetchOptions;
 				this.SearchDomainServiceExecutionOptions = dtos.SearchDomainServiceExecutionOptions;
 				this.AggregationServiceExecutionOptions = dtos.AggregationServiceExecutionOptions;
+				this.AggregationServiceSearchCriteria = dtos.AggregationServiceSearchCriteria;
+				this.AggregationServiceFetchOptions = dtos.AggregationServiceFetchOptions;
+				this.AggregationServiceExecutionOptions = dtos.AggregationServiceExecutionOptions;
 				this.GlobalSearchCriteria = dtos.GlobalSearchCriteria;
 				this.GlobalSearchObjectFetchOptions = dtos.GlobalSearchObjectFetchOptions;
 				this.ObjectKindModificationSearchCriteria = dtos.ObjectKindModificationSearchCriteria;
@@ -280,6 +283,7 @@ define(
 				this.SearchPersonsOperation = dtos.SearchPersonsOperation;
 				this.SearchCustomASServicesOperation = dtos.SearchCustomASServicesOperation;
 				this.SearchSearchDomainServicesOperation = dtos.SearchSearchDomainServicesOperation;
+				this.SearchAggregationServicesOperation = dtos.SearchAggregationServicesOperation;
 				this.SearchObjectKindModificationsOperation = dtos.SearchObjectKindModificationsOperation;
 				this.SearchGloballyOperation = dtos.SearchGloballyOperation;
 				this.SearchOperationExecutionsOperation = dtos.SearchOperationExecutionsOperation;

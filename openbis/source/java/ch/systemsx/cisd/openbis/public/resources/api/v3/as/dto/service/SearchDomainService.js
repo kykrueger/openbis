@@ -48,7 +48,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 			this.possibleSearchOptions = possibleSearchOptions;
 		};
 		prototype.toString = function() {
-			return "SearchDomainService: " + this.code;
+			return "SearchDomainService: " + this.permId;
 		};
 	}, {
 		fetchOptions : "SearchDomainServiceFetchOptions"

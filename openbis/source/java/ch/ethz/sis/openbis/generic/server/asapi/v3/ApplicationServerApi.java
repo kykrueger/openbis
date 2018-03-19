@@ -316,6 +316,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Search
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.SemanticAnnotationUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.UpdateSemanticAnnotationsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.AggregationService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainService;
@@ -329,11 +330,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteSearchDom
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteSearchDomainServiceOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.ICustomASServiceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.AggregationServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.CustomASServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchAggregationServicesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchAggregationServicesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchCustomASServicesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchCustomASServicesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServiceSearchCriteria;
@@ -1256,6 +1261,14 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     {
         SearchSearchDomainServicesOperationResult result =
                 executeOperation(sessionToken, new SearchSearchDomainServicesOperation(searchCriteria, fetchOptions));
+        return result.getSearchResult();
+    }
+
+    @Override
+    public SearchResult<AggregationService> searchAggregationServices(String sessionToken, AggregationServiceSearchCriteria searchCriteria,
+            AggregationServiceFetchOptions fetchOptions)
+    {
+        SearchAggregationServicesOperationResult result = executeOperation(sessionToken, new SearchAggregationServicesOperation(searchCriteria, fetchOptions));
         return result.getSearchResult();
     }
 

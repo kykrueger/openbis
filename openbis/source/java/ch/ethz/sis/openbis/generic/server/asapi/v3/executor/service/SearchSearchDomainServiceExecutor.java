@@ -54,7 +54,7 @@ public class SearchSearchDomainServiceExecutor
         implements ISearchSearchDomainServiceExecutor
 {
     @Resource(name = ComponentNames.COMMON_BUSINESS_OBJECT_FACTORY)
-    protected ICommonBusinessObjectFactory businessObjectFactory;
+    private ICommonBusinessObjectFactory businessObjectFactory;
 
     @Resource(name = ComponentNames.SESSION_MANAGER)
     private IOpenBisSessionManager sessionManager;

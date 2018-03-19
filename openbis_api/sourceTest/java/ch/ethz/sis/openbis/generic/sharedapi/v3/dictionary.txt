@@ -2060,3 +2060,10 @@ Table Double Cell
 Table Long Cell
 Table Model
 Table String Cell
+Aggregation Service
+Aggregation Service Fetch Options
+Aggregation Service Search Criteria
+Aggregation Service Sort Options
+search Aggregation Services
+Search Aggregation Services Operation
+Search Aggregation Services Operation Result
