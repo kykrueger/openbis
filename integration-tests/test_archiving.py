@@ -70,7 +70,7 @@ class TestCase(systemtest.testcase.TestCase):
         util.printAndFlush("==== assert correct last dataset content in database with pattern %s, %s ====" % (status, archived))
     
         queryResult = openbisController.queryDatabase("openbis", 
-            "select d.code, ed.status, ed.present_in_archive from data as d left join external_data as ed on ed.data_id = d.id where d.id = (select max(id) from data)")
+            "select d.code, ed.status, ed.present_in_archive from data as d left join external_data as ed on ed.id = d.id where d.id = (select max(id) from data)")
         
         result = queryResult[0]
         

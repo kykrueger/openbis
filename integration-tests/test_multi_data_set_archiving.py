@@ -178,7 +178,7 @@ class TestCase(systemtest.testcase.TestCase):
                                   expected_in_archive_flag, expected_share_id):
         resultSet = openbisController.queryDatabase('openbis', 
                         "select share_id, location, status, present_in_archive from data" + 
-                        " left join external_data as ed on ed.data_id = data.id" + " where code = '%s'" % data_set_code)
+                        " left join external_data as ed on ed.id = data.id" + " where code = '%s'" % data_set_code)
         self.assertEquals("Number of data sets with code %s found in openbis database" % data_set_code, 
                           "1", str(len(resultSet)))
         share_id = resultSet[0][0]
