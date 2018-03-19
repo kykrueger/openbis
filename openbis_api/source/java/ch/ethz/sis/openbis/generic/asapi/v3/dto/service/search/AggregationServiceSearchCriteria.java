@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -30,6 +31,16 @@ public class AggregationServiceSearchCriteria extends AbstractObjectSearchCriter
 {
 
     private static final long serialVersionUID = 1L;
+
+    public AggregationServiceSearchCriteria withOrOperator()
+    {
+        return (AggregationServiceSearchCriteria) withOperator(SearchOperator.OR);
+    }
+
+    public AggregationServiceSearchCriteria withAndOperator()
+    {
+        return (AggregationServiceSearchCriteria) withOperator(SearchOperator.AND);
+    }
 
     @Override
     protected SearchCriteriaToStringBuilder createBuilder()

@@ -41,7 +41,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.String
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISearchDomainSearcher;
-import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomain;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchOption;
 
@@ -55,9 +54,6 @@ public class SearchSearchDomainServiceExecutor
 {
     @Resource(name = ComponentNames.COMMON_BUSINESS_OBJECT_FACTORY)
     private ICommonBusinessObjectFactory businessObjectFactory;
-
-    @Resource(name = ComponentNames.SESSION_MANAGER)
-    private IOpenBisSessionManager sessionManager;
 
     @Autowired
     private ISearchDomainServiceAuthorizationExecutor authorizationExecutor;

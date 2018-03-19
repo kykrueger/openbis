@@ -2046,6 +2046,8 @@ Search Domain Service Search Option
 Search Domain Service Sort Options
 set Possible Search Options
 set Possible Search Options Key
+get Search Domain Name
+set Search Domain Name
 
 Abstract Execution Options With Parameters
 Aggregation Service Execution Options

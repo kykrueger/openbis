@@ -10,6 +10,12 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			var NameSearchCriteria = require("as/dto/common/search/NameSearchCriteria");
 			return this.addCriteria(new NameSearchCriteria());
 		};
+		prototype.withOrOperator = function() {
+			return this.withOperator(SearchOperator.OR);
+		};
+		prototype.withAndOperator = function() {
+			return this.withOperator(SearchOperator.AND);
+		};
 	}, {
 		criteria : {
 			name : "Collection",

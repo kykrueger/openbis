@@ -111,21 +111,25 @@ public class ExecuteSearchDomainServiceExecutor implements IExecuteSearchDomainS
             String dataStoreCode = searchResult.getSearchDomain().getDataStoreCode();
             String name = searchResult.getSearchDomain().getName();
             serviceResult.setServicePermId(new DssServicePermId(name, new DataStorePermId(dataStoreCode)));
+            serviceResult.setSearchDomainName(name);
             serviceResult.setSearchDomainLabel(searchResult.getSearchDomain().getLabel());
-            serviceResult.setEntityKind(EntityKindConverter.convert(entity.getEntityKind()));
-            serviceResult.setEntityType(entity.getEntityType().getCode());
-            serviceResult.setEntityPermId(entity.getPermId());
-            serviceResult.setEntityIdentifier(entity.getIdentifier());
+            if (entity != null)
+            {
+                serviceResult.setEntityKind(EntityKindConverter.convert(entity.getEntityKind()));
+                serviceResult.setEntityType(entity.getEntityType().getCode());
+                serviceResult.setEntityPermId(entity.getPermId());
+                serviceResult.setEntityIdentifier(entity.getIdentifier());
+            }
             Map<String, String> resultDetails = new TreeMap<>();
             serviceResult.setResultDetails(resultDetails);
-            filleResultDetailsWithLocation(resultDetails, searchResult.getResultLocation());
-            filleResultDetailsWithScore(resultDetails, searchResult.getScore());
+            fillResultDetailsWithLocation(resultDetails, searchResult.getResultLocation());
+            fillResultDetailsWithScore(resultDetails, searchResult.getScore());
             serviceResults.add(serviceResult);
         }
         return new SearchResult<SearchDomainServiceExecutionResult>(serviceResults, serviceResults.size());
     }
 
-    private void filleResultDetailsWithLocation(Map<String, String> resultDetails, ISearchDomainResultLocation resultLocation)
+    private void fillResultDetailsWithLocation(Map<String, String> resultDetails, ISearchDomainResultLocation resultLocation)
     {
         if (resultLocation instanceof AbstractEntitySearchResultLocation)
         {
@@ -168,7 +172,7 @@ public class ExecuteSearchDomainServiceExecutor implements IExecuteSearchDomainS
         }
     }
 
-    private void filleResultDetailsWithScore(Map<String, String> resultDetails, ISearchDomainResultScore resultScore)
+    private void fillResultDetailsWithScore(Map<String, String> resultDetails, ISearchDomainResultScore resultScore)
     {
         if (resultScore instanceof BlastScore)
         {

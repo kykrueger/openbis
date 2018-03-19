@@ -134,6 +134,7 @@ public class SearchDomainServiceTest extends AbstractFileTest
         // Then
         SearchDomainServiceExecutionResult result = results.get(0);
         assertEquals("STANDARD:b", result.getServicePermId().toString());
+        assertEquals("b", result.getSearchDomainName());
         assertEquals("Search Domain B", result.getSearchDomainLabel());
         assertEquals(EntityKind.DATA_SET, result.getEntityKind());
         assertEquals("HCS_IMAGE", result.getEntityType());

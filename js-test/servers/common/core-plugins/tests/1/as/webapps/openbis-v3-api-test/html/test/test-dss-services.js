@@ -83,6 +83,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var objects = result.getObjects();
 				objects.sort(function(o1, o2) { return o1.getServicePermId().toString().localeCompare(o2.getServicePermId().toString())});
 				c.assertEqual(objects[0].getServicePermId().toString(), "DSS1:echo-database", "Service perm id");
+				c.assertEqual(objects[0].getSearchDomainName(), "echo-database", "Search domain name");
 				c.assertEqual(objects[0].getSearchDomainLabel(), "Echo database", "Search domain label");
 				c.assertEqual(objects[0].getEntityIdentifier(), "20130415093804724-403", "Entity identifier");
 				c.assertEqual(objects[0].getEntityKind(), "DATA_SET", "Entity kind");

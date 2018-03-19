@@ -53,7 +53,7 @@ public class DssServicePermId extends ObjectPermId implements IDssServiceId
     @Override
     public int hashCode()
     {
-        return dataStoreId.hashCode() * 37 + super.hashCode();
+        return (dataStoreId == null ? 0 : dataStoreId.hashCode()) * 37 + super.hashCode();
     }
 
     @Override
@@ -63,12 +63,12 @@ public class DssServicePermId extends ObjectPermId implements IDssServiceId
         {
             return true;
         }
-        if (super.equals(obj) == false || getClass() != obj.getClass())
+        if (obj == null || super.equals(obj) == false || getClass() != obj.getClass())
         {
             return false;
         }
         DssServicePermId that = (DssServicePermId) obj;
-        return this.dataStoreId.equals(that.dataStoreId) && this.getPermId().equals(that.getPermId());
+        return dataStoreId == null ? that.dataStoreId == null : dataStoreId.equals(that.dataStoreId);
     }
 
     //
@@ -85,9 +85,5 @@ public class DssServicePermId extends ObjectPermId implements IDssServiceId
     {
         return dataStoreId;
     }
-    
-//    private void setDataStoreId(IDataStoreId dataStoreId)
-//    {
-//        this.dataStoreId = dataStoreId;
-//    }
+
 }
