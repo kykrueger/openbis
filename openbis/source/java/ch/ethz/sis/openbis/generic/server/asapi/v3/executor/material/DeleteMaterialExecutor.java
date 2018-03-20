@@ -63,7 +63,8 @@ public class DeleteMaterialExecutor extends AbstractDeleteEntityExecutor<Void, I
     private IMaterialAuthorizationExecutor authorizationExecutor;
 
     @Override
-    protected Map<IMaterialId, MaterialPE> map(IOperationContext context, List<? extends IMaterialId> entityIds)
+    protected Map<IMaterialId, MaterialPE> map(IOperationContext context, List<? extends IMaterialId> entityIds,
+            MaterialDeletionOptions deletionOptions)
     {
         return mapMaterialByIdExecutor.map(context, entityIds);
     }
@@ -105,14 +106,14 @@ public class DeleteMaterialExecutor extends AbstractDeleteEntityExecutor<Void, I
                 if (materialProperty != null)
                 {
                     links.put(material.getPermId(), materialProperty.getPermId());
-                    
+
                 }
             }
         }
         return links;
     }
-    
-    private List<Entry<Integer, List<TechId>>> orderMaterialsByLevel(Collection<MaterialPE> materials, 
+
+    private List<Entry<Integer, List<TechId>>> orderMaterialsByLevel(Collection<MaterialPE> materials,
             Map<String, String> links)
     {
         Map<Integer, List<TechId>> levelMap = new HashMap<>();

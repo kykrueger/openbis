@@ -52,18 +52,18 @@ public class DeletePluginExecutor
 
     @Autowired
     private IDAOFactory daoFactory;
-    
+
     @Autowired
     private IPluginAuthorizationExecutor authorizationExecutor;
-    
+
     @Autowired
     private IMapPluginByIdExecutor mapPluginByIdExecutor;
 
     @Resource(name = "entity-validation-factory")
     private IEntityValidatorFactory entityValidationFactory;
-    
+
     @Override
-    protected Map<IPluginId, ScriptPE> map(IOperationContext context, List<? extends IPluginId> entityIds)
+    protected Map<IPluginId, ScriptPE> map(IOperationContext context, List<? extends IPluginId> entityIds, PluginDeletionOptions deletionOptions)
     {
         return mapPluginByIdExecutor.map(context, entityIds);
     }

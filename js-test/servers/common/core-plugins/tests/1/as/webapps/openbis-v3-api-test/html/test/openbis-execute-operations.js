@@ -464,7 +464,23 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 		this.deleteVocabularyTerms = function(ids, deletionOptions) {
 			return this._executeDeleteOperation(new c.DeleteVocabularyTermsOperation(ids, deletionOptions));
 		}
+
+		this.deleteExperimentTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteExperimentTypesOperation(ids, deletionOptions));
+		}
 		
+		this.deleteSampleTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteSampleTypesOperation(ids, deletionOptions));
+		}
+
+		this.deleteDataSetTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteDataSetTypesOperation(ids, deletionOptions));
+		}
+		
+		this.deleteMaterialTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteMaterialTypesOperation(ids, deletionOptions));
+		}
+
 		this.deleteEntityTypes = function(ids, deletionOptions) {
 			return this._executeDeleteOperation(new c.DeleteEntityTypesOperation(ids, deletionOptions));
 		}

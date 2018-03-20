@@ -45,15 +45,16 @@ public class DeletePropertyTypeExecutor
 {
     @Resource(name = ComponentNames.COMMON_BUSINESS_OBJECT_FACTORY)
     private ICommonBusinessObjectFactory businessObjectFactory;
-    
+
     @Autowired
     private IPropertyTypeAuthorizationExecutor authorizationExecutor;
-    
+
     @Autowired
     private IMapPropertyTypeByIdExecutor mapPropertyTypeByIdExeceutor;
 
     @Override
-    protected Map<IPropertyTypeId, PropertyTypePE> map(IOperationContext context, List<? extends IPropertyTypeId> entityIds)
+    protected Map<IPropertyTypeId, PropertyTypePE> map(IOperationContext context, List<? extends IPropertyTypeId> entityIds,
+            PropertyTypeDeletionOptions deletionOptions)
     {
         return mapPropertyTypeByIdExeceutor.map(context, entityIds);
     }

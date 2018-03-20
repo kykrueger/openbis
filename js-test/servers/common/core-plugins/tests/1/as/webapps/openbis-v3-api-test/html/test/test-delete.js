@@ -186,7 +186,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.finish();
 			});
 		});
-		
+
 		QUnit.test("deleteDataSets() with disallowed type with force flag", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -220,12 +220,12 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createPlugin, c.findPlugin, c.deletePlugin);
 		});
-		
+
 		QUnit.test("deletePropertyTypes()", function(assert) {
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createPropertyType, c.findPropertyType, c.deletePropertyType);
 		});
-		
+
 		QUnit.test("deleteVocabularies()", function(assert) {
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createVocabulary, c.findVocabulary, c.deleteVocabulary);
@@ -234,6 +234,26 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		QUnit.test("deleteVocabularyTerms()", function(assert) {
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createVocabularyTerm, c.findVocabularyTerm, c.deleteVocabularyTerm);
+		});
+
+		QUnit.test("deleteExperimentTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createExperimentType, c.findExperimentType, c.deleteExperimentType);
+		});
+
+		QUnit.test("deleteSampleTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createSampleType, c.findSampleType, c.deleteSampleType);
+		});
+
+		QUnit.test("deleteDataSetTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createDataSetType, c.findDataSetType, c.deleteDataSetType);
+		});
+
+		QUnit.test("deleteMaterialTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createMaterialType, c.findMaterialType, c.deleteMaterialType);
 		});
 
 		QUnit.test("deleteEntityTypes()", function(assert) {

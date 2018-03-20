@@ -69,7 +69,8 @@ public class DeleteExternalDmsExecutor
     }
 
     @Override
-    protected Map<IExternalDmsId, ExternalDataManagementSystemPE> map(IOperationContext context, List<? extends IExternalDmsId> entityIds)
+    protected Map<IExternalDmsId, ExternalDataManagementSystemPE> map(IOperationContext context, List<? extends IExternalDmsId> entityIds,
+            ExternalDmsDeletionOptions deletionOptions)
     {
         return mapExternalDmsByIdExecutor.map(context, entityIds);
     }

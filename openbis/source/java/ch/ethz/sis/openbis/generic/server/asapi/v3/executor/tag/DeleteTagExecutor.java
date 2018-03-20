@@ -59,7 +59,7 @@ public class DeleteTagExecutor extends AbstractDeleteEntityExecutor<Void, ITagId
     private ITagAuthorizationExecutor authorizationExecutor;
 
     @Override
-    protected Map<ITagId, MetaprojectPE> map(IOperationContext context, List<? extends ITagId> entityIds)
+    protected Map<ITagId, MetaprojectPE> map(IOperationContext context, List<? extends ITagId> entityIds, TagDeletionOptions deletionOptions)
     {
         return mapTagByIdExecutor.map(context, entityIds);
     }

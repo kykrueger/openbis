@@ -53,7 +53,7 @@ public class DeleteDataSetExecutor extends AbstractDeleteEntityExecutor<IDeletio
     private IDataSetAuthorizationExecutor authorizationExecutor;
 
     @Override
-    protected Map<IDataSetId, DataPE> map(IOperationContext context, List<? extends IDataSetId> entityIds)
+    protected Map<IDataSetId, DataPE> map(IOperationContext context, List<? extends IDataSetId> entityIds, DataSetDeletionOptions deletionOptions)
     {
         return mapDataSetByIdExecutor.map(context, entityIds);
     }
