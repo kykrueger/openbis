@@ -27,17 +27,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NameSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.AggregationService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ReportingService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.AggregationServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.ReportingServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.StringFieldMatcher;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStoreServiceKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ReportingPluginType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStoreServicePE;
 
@@ -45,44 +43,41 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataStoreServicePE;
  * @author Franz-Josef Elmer
  */
 @Component
-public class SearchAggregationServiceExecutor
-        extends AbstractSearchObjectManuallyExecutor<AggregationServiceSearchCriteria, AggregationService>
-        implements ISearchAggregationServiceExecutor
+public class SearchReportingServiceExecutor
+        extends AbstractSearchObjectManuallyExecutor<ReportingServiceSearchCriteria, ReportingService>
+        implements ISearchReportingServiceExecutor
 {
     @Autowired
     private IDAOFactory daoFactory;
 
     @Autowired
-    private IAggregationServiceAuthorizationExecutor authorizationExecutor;
+    private IReportingServiceAuthorizationExecutor authorizationExecutor;
 
     @Override
-    public List<AggregationService> search(IOperationContext context, AggregationServiceSearchCriteria criteria)
+    public List<ReportingService> search(IOperationContext context, ReportingServiceSearchCriteria criteria)
     {
         authorizationExecutor.canSearch(context);
         return super.search(context, criteria);
     }
 
     @Override
-    protected List<AggregationService> listAll()
+    protected List<ReportingService> listAll()
     {
         List<DataStorePE> dataStores = daoFactory.getDataStoreDAO().listDataStores();
-        List<AggregationService> services = new ArrayList<>();
+        List<ReportingService> services = new ArrayList<>();
         for (DataStorePE dataStore : dataStores)
         {
             for (DataStoreServicePE dsService : dataStore.getServices())
             {
-                boolean reportingService = dsService.getKind() == DataStoreServiceKind.QUERIES;
-                ReportingPluginType reportingPluginType = dsService.getReportingPluginTypeOrNull();
-                boolean aggregationTableReport =
-                        reportingPluginType != null
-                                && reportingPluginType == ReportingPluginType.AGGREGATION_TABLE_MODEL;
-                if (reportingService && aggregationTableReport)
+                if (dsService.isTableReport())
                 {
-                    AggregationService aggregationService = new AggregationService();
-                    aggregationService.setPermId(new DssServicePermId(dsService.getKey(), new DataStorePermId(dataStore.getCode())));
-                    aggregationService.setName(dsService.getKey());
-                    aggregationService.setLabel(dsService.getLabel());
-                    services.add(aggregationService);
+                    ReportingService reportingService = new ReportingService();
+                    reportingService.setPermId(new DssServicePermId(dsService.getKey(), new DataStorePermId(dataStore.getCode())));
+                    reportingService.setName(dsService.getKey());
+                    reportingService.setLabel(dsService.getLabel());
+                    reportingService.setDataSetTypeCodes(
+                            dsService.getDatasetTypes().stream().map(t -> t.getCode()).collect(Collectors.toList()));
+                    services.add(reportingService);
                 }
             }
         }
@@ -90,7 +85,7 @@ public class SearchAggregationServiceExecutor
     }
 
     @Override
-    protected Matcher<AggregationService> getMatcher(ISearchCriteria criteria)
+    protected Matcher<ReportingService> getMatcher(ISearchCriteria criteria)
     {
         if (criteria instanceof IdSearchCriteria<?>)
         {
@@ -102,10 +97,10 @@ public class SearchAggregationServiceExecutor
         throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());
     }
 
-    private static class IdMatcher extends Matcher<AggregationService>
+    private static class IdMatcher extends Matcher<ReportingService>
     {
         @Override
-        public List<AggregationService> getMatching(IOperationContext context, List<AggregationService> objects, ISearchCriteria criteria)
+        public List<ReportingService> getMatching(IOperationContext context, List<ReportingService> objects, ISearchCriteria criteria)
         {
             @SuppressWarnings("unchecked")
             IDssServiceId id = ((IdSearchCriteria<IDssServiceId>) criteria).getId();
@@ -117,10 +112,10 @@ public class SearchAggregationServiceExecutor
         }
     }
 
-    private static class NameMatcher extends StringFieldMatcher<AggregationService>
+    private static class NameMatcher extends StringFieldMatcher<ReportingService>
     {
         @Override
-        protected String getFieldValue(AggregationService service)
+        protected String getFieldValue(ReportingService service)
         {
             return service.getName();
         }

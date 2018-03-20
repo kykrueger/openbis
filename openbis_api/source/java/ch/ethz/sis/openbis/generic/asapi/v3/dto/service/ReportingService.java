@@ -17,20 +17,21 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
 
 import java.io.Serializable;
+import java.util.List;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ReportingServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  */
-@JsonObject("as.dto.service.AggregationService")
-public class AggregationService implements Serializable
+@JsonObject("as.dto.service.ReportingService")
+public class ReportingService implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    private AggregationServiceFetchOptions fetchOptions;
+    private ReportingServiceFetchOptions fetchOptions;
 
     private DssServicePermId permId;
 
@@ -38,12 +39,14 @@ public class AggregationService implements Serializable
 
     private String label;
 
-    public AggregationServiceFetchOptions getFetchOptions()
+    private List<String> dataSetTypeCodes;
+
+    public ReportingServiceFetchOptions getFetchOptions()
     {
         return fetchOptions;
     }
 
-    public void setFetchOptions(AggregationServiceFetchOptions fetchOptions)
+    public void setFetchOptions(ReportingServiceFetchOptions fetchOptions)
     {
         this.fetchOptions = fetchOptions;
     }
@@ -78,9 +81,19 @@ public class AggregationService implements Serializable
         this.label = label;
     }
 
+    public List<String> getDataSetTypeCodes()
+    {
+        return dataSetTypeCodes;
+    }
+
+    public void setDataSetTypeCodes(List<String> dataSetTypeCodes)
+    {
+        this.dataSetTypeCodes = dataSetTypeCodes;
+    }
+
     @Override
     public String toString()
     {
-        return "AggregationService: " + permId;
+        return "ReportingService: " + permId;
     }
 }

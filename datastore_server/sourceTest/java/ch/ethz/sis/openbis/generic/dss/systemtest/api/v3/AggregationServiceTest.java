@@ -77,6 +77,30 @@ public class AggregationServiceTest extends AbstractFileTest
     }
 
     @Test
+    public void testSearchAggregationServiceWithName()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        AggregationServiceSearchCriteria searchCriteria = new AggregationServiceSearchCriteria();
+        searchCriteria.withName().thatStartsWith("example-jython");
+        AggregationServiceFetchOptions fetchOptions = new AggregationServiceFetchOptions();
+        
+        // When
+        List<AggregationService> services = as.searchAggregationServices(sessionToken, searchCriteria, fetchOptions).getObjects();
+        
+        // Then
+        services.sort(AGGREGATION_SERVICE_COMPARATOR);
+        assertEquals("[example-jython-aggregation-service-report, example-jython-db-modifying-aggregation-service]",
+                services.stream().map(s -> s.getPermId().getPermId()).collect(Collectors.toList()).toString());
+        assertEquals("[example-jython-aggregation-service-report, example-jython-db-modifying-aggregation-service]",
+                services.stream().map(s -> s.getName()).collect(Collectors.toList()).toString());
+        assertEquals("[Test Jython Aggregation Reporting, Test Db Modifying Jython Aggregation Reporting]",
+                services.stream().map(s -> s.getLabel()).collect(Collectors.toList()).toString());
+        
+        as.logout(sessionToken);
+    }
+    
+    @Test
     public void testSearchAggregationService()
     {
         // Given
@@ -94,6 +118,11 @@ public class AggregationServiceTest extends AbstractFileTest
                 + "example-jython-aggregation-service-report, example-jython-db-modifying-aggregation-service, "
                 + "metaproject-api, property-definitions-aggregation-service, search-service-aggregation-service]",
                 services.stream().map(s -> s.getPermId().getPermId()).collect(Collectors.toList()).toString());
+        assertEquals("[content-provider-aggregation-service, content-provider-aggregation-service-no-authorization, "
+                + "example-aggregation-service, example-db-modifying-aggregation-service, "
+                + "example-jython-aggregation-service-report, example-jython-db-modifying-aggregation-service, "
+                + "metaproject-api, property-definitions-aggregation-service, search-service-aggregation-service]",
+                services.stream().map(s -> s.getName()).collect(Collectors.toList()).toString());
         assertEquals("[Test Content Provider Aggregation Reporting, Test Content Provider Aggregation Reporting, "
                 + "Example Aggregation Service, Example Db Modifying Aggregation Service, Test Jython Aggregation Reporting, "
                 + "Test Db Modifying Jython Aggregation Reporting, Test Db Modifying Jython Aggregation Reporting, "

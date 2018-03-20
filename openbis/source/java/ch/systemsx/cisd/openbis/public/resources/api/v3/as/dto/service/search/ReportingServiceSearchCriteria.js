@@ -1,10 +1,10 @@
 define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/NameSearchCriteria"], 
 	function(require, stjs, AbstractObjectSearchCriteria) {
-	var AggregationServiceSearchCriteria = function() {
+	var ReportingServiceSearchCriteria = function() {
 		AbstractObjectSearchCriteria.call(this);
 	};
-	stjs.extend(AggregationServiceSearchCriteria, AbstractObjectSearchCriteria, [ AbstractObjectSearchCriteria ], function(constructor, prototype) {
-		prototype['@type'] = 'as.dto.service.search.AggregationServiceSearchCriteria';
+	stjs.extend(ReportingServiceSearchCriteria, AbstractObjectSearchCriteria, [ AbstractObjectSearchCriteria ], function(constructor, prototype) {
+		prototype['@type'] = 'as.dto.service.search.ReportingServiceSearchCriteria';
 		constructor.serialVersionUID = 1;
 		prototype.withName = function() {
 			var NameSearchCriteria = require("as/dto/common/search/NameSearchCriteria");
@@ -22,5 +22,5 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			arguments : [ "ISearchCriteria" ]
 		}
 	});
-	return AggregationServiceSearchCriteria;
+	return ReportingServiceSearchCriteria;
 })

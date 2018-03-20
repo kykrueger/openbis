@@ -112,6 +112,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(result.getObjects().length, 1, "Number of results");
 				var objects = result.getObjects();
 				c.assertEqual(objects[0].getPermId().toString(), "DSS1:js-test", "Perm id");
+				c.assertEqual(objects[0].getName(), "js-test", "Name");
 				c.assertEqual(objects[0].getLabel(), "js-test", "Label");
 			}
 
@@ -172,6 +173,52 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			
 			testActionWhichShouldFail(c, fAction, "Service key cannot be empty. (Context: [])");
 		});
+		
+		QUnit.test("searchReportingService()", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fAction = function(facade) {
+				var criteria = new c.ReportingServiceSearchCriteria();
+				var id = new c.DssServicePermId("test-reporting-service", new c.DataStorePermId("DSS1"));
+				criteria.withId().thatEquals(id);
+				var fetchOptions = new c.ReportingServiceFetchOptions();
+				return facade.searchReportingServices(criteria, fetchOptions);
+			}
+
+			var fCheck = function(facade, result) {
+				c.assertEqual(result.getTotalCount(), 1, "Number of results");
+				c.assertEqual(result.getObjects().length, 1, "Number of results");
+				var objects = result.getObjects();
+				c.assertEqual(objects[0].getPermId().toString(), "DSS1:test-reporting-service", "Perm id");
+				c.assertEqual(objects[0].getName(), "test-reporting-service", "Name");
+				c.assertEqual(objects[0].getLabel(), "Test Jython Reporting", "Label");
+			}
+
+			testAction(c, fAction, fCheck);
+		});
+		
+		QUnit.test("executeReportingService()", function(assert) {
+			var c = new common(assert, openbis);
+			var dataSetCode;
+			
+			var fAction = function(facade) {
+				return $.when(c.createDataSet(facade)).then(function(permId) {
+					dataSetCode = permId;
+					var serviceId = new c.DssServicePermId("test-reporting-service", new c.DataStorePermId("DSS1"));
+					var options = new c.ReportingServiceExecutionOptions();
+					options.withDataSets([dataSetCode]);
+					return facade.executeReportingService(serviceId, options);
+				});
+			}
+			
+			var fCheck = function(facade, tableModel) {
+				c.assertEqual(tableModel.getColumns().toString(), "Data Set,Data Set Type", "Table columns");
+				c.assertEqual(tableModel.getRows().toString(), dataSetCode + ",ALIGNMENT", "Table rows");
+			}
+			
+			testAction(c, fAction, fCheck);
+		});
+		
 	}
 
 	return function() {

@@ -17,8 +17,9 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -26,23 +27,28 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.service.execute.AbstractExecutionOptionsWithParameters")
-public abstract class AbstractExecutionOptionsWithParameters<EO extends AbstractExecutionOptionsWithParameters<EO, V>, V> implements Serializable
+@JsonObject("as.dto.service.execute.ReportingServiceExecutionOptions")
+public class ReportingServiceExecutionOptions implements Serializable
 {
     private static final long serialVersionUID = 1L;
     
-    private final Map<String, V> parameters = new HashMap<String, V>();
-
-    @SuppressWarnings("unchecked")
-    public EO withParameter(String parameterName, V value)
+    private List<String> dataSetCodes = new ArrayList<>();
+    
+    public ReportingServiceExecutionOptions withDataSets(String... dataSetCodes)
     {
-        parameters.put(parameterName, value);
-        return (EO) this;
+        return withDataSets(Arrays.asList(dataSetCodes));
     }
-
-    public Map<String, V> getParameters()
+    
+    public ReportingServiceExecutionOptions withDataSets(List<String> dataSetCodes)
     {
-        return parameters;
+        this.dataSetCodes.addAll(dataSetCodes);
+        return this;
     }
-
+    
+    public List<String> getDataSetCodes()
+    {
+        return dataSetCodes;
+    }
+    
+    
 }

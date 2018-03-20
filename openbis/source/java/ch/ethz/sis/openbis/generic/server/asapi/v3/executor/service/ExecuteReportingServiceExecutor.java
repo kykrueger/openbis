@@ -16,17 +16,20 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AggregationServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ReportingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
@@ -35,25 +38,42 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
  * @author Franz-Josef Elmer
  */
 @Component
-public class ExecuteAggregationServiceExecutor extends AbstractDssServiceExecutor implements IExecuteAggregationServiceExecutor
+public class ExecuteReportingServiceExecutor extends AbstractDssServiceExecutor implements IExecuteReportingServiceExecutor
 {
     @Autowired
-    private IAggregationServiceAuthorizationExecutor authorizationExecutor;
+    private IReportingServiceAuthorizationExecutor authorizationExecutor;
 
     @Resource(name = ComponentNames.COMMON_BUSINESS_OBJECT_FACTORY)
     protected ICommonBusinessObjectFactory businessObjectFactory;
 
     @Override
-    public TableModel execute(IOperationContext context, IDssServiceId serviceId, AggregationServiceExecutionOptions options)
+    public TableModel execute(IOperationContext context, IDssServiceId serviceId, ReportingServiceExecutionOptions options)
     {
-        authorizationExecutor.canExecute(context);
-        checkData(serviceId);
+        checkData(serviceId, options);
+        authorizationExecutor.canExecute(context, options.getDataSetCodes());
 
         IDataSetTable dataSetTable = businessObjectFactory.createDataSetTable(context.getSession());
         DssServicePermId permId = (DssServicePermId) serviceId;
         String key = permId.getPermId();
         String datastoreCode = ((DataStorePermId) permId.getDataStoreId()).getPermId();
-        return translate(dataSetTable.createReportFromAggregationService(key, datastoreCode, options.getParameters()));
+        return translate(dataSetTable.createReportFromDatasets(key, datastoreCode, options.getDataSetCodes()));
     }
-
+    
+    private void checkData(IDssServiceId serviceId, ReportingServiceExecutionOptions options)
+    {
+        checkData(serviceId);
+        if (options == null)
+        {
+            throw new UserFailureException("Options cannot be null.");
+        }
+        List<String> dataSetCodes = options.getDataSetCodes();
+        if (dataSetCodes == null)
+        {
+            throw new UserFailureException("Data set codes cannot be null.");
+        }
+        if (dataSetCodes.isEmpty())
+        {
+            throw new UserFailureException("No data set code specified.");
+        }
+    }
 }

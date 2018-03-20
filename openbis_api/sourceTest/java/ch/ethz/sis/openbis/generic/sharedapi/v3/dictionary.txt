@@ -2069,3 +2069,18 @@ Aggregation Service Sort Options
 search Aggregation Services
 Search Aggregation Services Operation
 Search Aggregation Services Operation Result
+
+get Data Set Type Codes
+set Data Set Type Codes
+Reporting Service
+Reporting Service Fetch Options
+Reporting Service Search Criteria
+Reporting Service Sort Options
+search Reporting Services
+Search Reporting Services Operation
+Search Reporting Services Operation Result
+execute Reporting Service
+Execute Reporting Service Operation
+Execute Reporting Service Operation Result
+get Data Set Codes
+Reporting Service Execution Options

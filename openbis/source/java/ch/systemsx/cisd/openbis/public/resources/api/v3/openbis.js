@@ -1385,6 +1385,18 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 		
+		this.searchReportingServices = function(criteria, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "searchReportingServices",
+					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
 		this.searchObjectKindModifications = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1725,6 +1737,18 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				url : openbisUrl,
 				data : {
 					"method" : "executeAggregationService",
+					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
+		this.executeReportingService = function(serviceId, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeReportingService",
 					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
 				},
 				returnType : "SearchResult"

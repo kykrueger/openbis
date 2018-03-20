@@ -1,13 +1,14 @@
 define([ "stjs" ], function(stjs) {
-	var AggregationService = function() {
+	var ReportingService = function() {
 	};
-	stjs.extend(AggregationService, null, [], function(constructor, prototype) {
-		prototype['@type'] = 'as.dto.service.AggregationService';
+	stjs.extend(ReportingService, null, [], function(constructor, prototype) {
+		prototype['@type'] = 'as.dto.service.ReportingService';
 		constructor.serialVersionUID = 1;
 		prototype.fetchOptions = null;
 		prototype.permId = null;
 		prototype.name = null;
 		prototype.label = null;
+		prototype.dataSetTypeCodes = null;
 
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
@@ -33,11 +34,17 @@ define([ "stjs" ], function(stjs) {
 		prototype.setLabel = function(label) {
 			this.label = label;
 		};
+		prototype.getDataSetTypeCodes = function() {
+			return this.dataSetTypeCodes;
+		};
+		prototype.setDataSetTypeCodes = function(dataSetTypeCodes) {
+			this.dataSetTypeCodes = dataSetTypeCodes;
+		};
 		prototype.toString = function() {
-			return "AggregationService: " + this.permId;
+			return "ReportingService: " + this.permId;
 		};
 	}, {
-		fetchOptions : "AggregationServiceFetchOptions"
+		fetchOptions : "ReportingServiceFetchOptions"
 	});
-	return AggregationService;
+	return ReportingService;
 })

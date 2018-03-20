@@ -14,35 +14,31 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ReportingService;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.service.execute.AbstractExecutionOptionsWithParameters")
-public abstract class AbstractExecutionOptionsWithParameters<EO extends AbstractExecutionOptionsWithParameters<EO, V>, V> implements Serializable
+@JsonObject("as.dto.service.search.SearchReportingServicesOperationResult")
+public class SearchReportingServicesOperationResult extends SearchObjectsOperationResult<ReportingService>
 {
-    private static final long serialVersionUID = 1L;
-    
-    private final Map<String, V> parameters = new HashMap<String, V>();
 
-    @SuppressWarnings("unchecked")
-    public EO withParameter(String parameterName, V value)
+    private static final long serialVersionUID = 1L;
+
+    @SuppressWarnings("unused")
+    private SearchReportingServicesOperationResult()
     {
-        parameters.put(parameterName, value);
-        return (EO) this;
     }
 
-    public Map<String, V> getParameters()
+    public SearchReportingServicesOperationResult(SearchResult<ReportingService> searchResult)
     {
-        return parameters;
+        super(searchResult);
     }
 
 }

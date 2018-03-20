@@ -120,9 +120,11 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.IUpdateSemanticAnnotationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteAggregationServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteCustomASServiceOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteReportingServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteSearchDomainServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchAggregationServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchCustomASServicesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchReportingServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchSearchDomainServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.session.IGetSessionInformationOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.ICreateSpacesOperationExecutor;
@@ -458,6 +460,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private ISearchAggregationServicesOperationExecutor searchAggregationServicesExecutor;
     
     @Autowired
+    private ISearchReportingServicesOperationExecutor searchReportingServicesExecutor;
+    
+    @Autowired
     private ISearchDeletionsOperationExecutor searchDeletionsExecutor;
 
     @Autowired
@@ -486,6 +491,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IExecuteAggregationServiceOperationExecutor executeAggregationServiceExecutor;
+    
+    @Autowired
+    private IExecuteReportingServiceOperationExecutor executeReportingServiceExecutor;
     
     @Autowired
     private IExecuteSearchDomainServiceOperationExecutor executeSearchDomainServiceExecutor;
@@ -553,6 +561,7 @@ public class OperationsExecutor implements IOperationsExecutor
     {
         resultMap.putAll(executeCustomASServiceExecutor.execute(context, operations));
         resultMap.putAll(executeAggregationServiceExecutor.execute(context, operations));
+        resultMap.putAll(executeReportingServiceExecutor.execute(context, operations));
         resultMap.putAll(executeSearchDomainServiceExecutor.execute(context, operations));
         resultMap.putAll(revertDeletionsExecutor.execute(context, operations));
         resultMap.putAll(confirmDeletionsExecutor.execute(context, operations));
@@ -586,6 +595,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(searchCustomASServicesExecutor.execute(context, operations));
         resultMap.putAll(searchAggregationServicesExecutor.execute(context, operations));
+        resultMap.putAll(searchReportingServicesExecutor.execute(context, operations));
         resultMap.putAll(searchSearchDomainServicesExecutor.execute(context, operations));
         resultMap.putAll(searchDeletionsExecutor.execute(context, operations));
         resultMap.putAll(searchGloballyExecutor.execute(context, operations));

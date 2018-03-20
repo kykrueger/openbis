@@ -27,8 +27,8 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.service.search.AggregationServiceSearchCriteria")
-public class AggregationServiceSearchCriteria extends AbstractObjectSearchCriteria<IDssServiceId>
+@JsonObject("as.dto.service.search.ReportingServiceSearchCriteria")
+public class ReportingServiceSearchCriteria extends AbstractObjectSearchCriteria<IDssServiceId>
 {
 
     private static final long serialVersionUID = 1L;
@@ -38,21 +38,21 @@ public class AggregationServiceSearchCriteria extends AbstractObjectSearchCriter
         return with(new NameSearchCriteria());
     }
 
-    public AggregationServiceSearchCriteria withOrOperator()
+    public ReportingServiceSearchCriteria withOrOperator()
     {
-        return (AggregationServiceSearchCriteria) withOperator(SearchOperator.OR);
+        return (ReportingServiceSearchCriteria) withOperator(SearchOperator.OR);
     }
 
-    public AggregationServiceSearchCriteria withAndOperator()
+    public ReportingServiceSearchCriteria withAndOperator()
     {
-        return (AggregationServiceSearchCriteria) withOperator(SearchOperator.AND);
+        return (ReportingServiceSearchCriteria) withOperator(SearchOperator.AND);
     }
 
     @Override
     protected SearchCriteriaToStringBuilder createBuilder()
     {
         SearchCriteriaToStringBuilder builder = super.createBuilder();
-        builder.setName("AGGREGATION_SERVICE");
+        builder.setName("REPORTING_SERVICE");
         return builder;
     }
 }

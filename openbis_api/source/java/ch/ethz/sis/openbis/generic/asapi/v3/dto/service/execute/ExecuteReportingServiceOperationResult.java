@@ -16,33 +16,46 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-@JsonObject("as.dto.service.execute.AbstractExecutionOptionsWithParameters")
-public abstract class AbstractExecutionOptionsWithParameters<EO extends AbstractExecutionOptionsWithParameters<EO, V>, V> implements Serializable
+@JsonObject("as.dto.service.execute.ExecuteReportingServiceOperationResult")
+public class ExecuteReportingServiceOperationResult implements IOperationResult
 {
-    private static final long serialVersionUID = 1L;
-    
-    private final Map<String, V> parameters = new HashMap<String, V>();
 
-    @SuppressWarnings("unchecked")
-    public EO withParameter(String parameterName, V value)
+    private static final long serialVersionUID = 1L;
+
+    private TableModel result;
+
+    @SuppressWarnings("unused")
+    private ExecuteReportingServiceOperationResult()
     {
-        parameters.put(parameterName, value);
-        return (EO) this;
     }
 
-    public Map<String, V> getParameters()
+    public ExecuteReportingServiceOperationResult(TableModel result)
     {
-        return parameters;
+        this.result = result;
+    }
+
+    public TableModel getResult()
+    {
+        return result;
+    }
+
+    @Override
+    public String getMessage()
+    {
+        return toString();
+    }
+
+    @Override
+    public String toString()
+    {
+        return getClass().getSimpleName();
     }
 
 }
