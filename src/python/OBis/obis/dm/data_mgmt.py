@@ -227,6 +227,14 @@ class GitDataMgmt(AbstractDataMgmt):
 
 
     def sync(self):
+        self.set_restorepoint()
+        result = self._sync()
+        if result.failure():
+            self.restore()
+        return result
+
+
+    def _sync(self):
         try:
             cmd = OpenbisSync(self)
             return cmd.run()
@@ -257,7 +265,7 @@ class GitDataMgmt(AbstractDataMgmt):
             # TODO If no changes were made check if the data set is in openbis. If not, just sync.
             return result
         if sync:
-            result = self.sync()
+            result = self._sync()
             if result.failure():
                 self.restore()
         return result

@@ -46,6 +46,8 @@ def shared_data_mgmt(context={}):
 def check_result(command, result):
     if result.failure():
         click_echo("Could not {}:\n{}".format(command, result.output))
+    elif len(result.output) > 0:
+        click_echo(result.output)
     return result.returncode
 
 
