@@ -1838,11 +1838,6 @@ Update Sample Types Operation Result
 is Force Removing Assignments
 set Force Removing Assignments
 
-delete Entity Types
-Delete Entity Types Operation
-Delete Entity Types Operation Result
-Entity Type Deletion Options
-
 get Terms
 has Terms
 search Vocabularies

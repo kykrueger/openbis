@@ -25,7 +25,6 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.AbstractObjectDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.EntityTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
@@ -67,10 +66,7 @@ public class DeleteEntityTypeExecutor extends AbstractDeleteEntityExecutor<Void,
     {
         EntityKind entityKind;
 
-        if (deletionOptions instanceof EntityTypeDeletionOptions)
-        {
-            entityKind = null;
-        } else if (deletionOptions instanceof ExperimentTypeDeletionOptions)
+        if (deletionOptions instanceof ExperimentTypeDeletionOptions)
         {
             entityKind = EntityKind.EXPERIMENT;
         } else if (deletionOptions instanceof SampleTypeDeletionOptions)

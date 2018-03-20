@@ -256,11 +256,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testDeleteWithoutTrash(c, c.createMaterialType, c.findMaterialType, c.deleteMaterialType);
 		});
 
-		QUnit.test("deleteEntityTypes()", function(assert) {
-			var c = new common(assert, openbis);
-			testDeleteWithoutTrash(c, c.createSampleType, c.findSampleType, c.deleteEntityType);
-		});
-
 		QUnit.test("deleteExternalDms()", function(assert) {
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createExternalDms, c.findExternalDms, c.deleteExternalDms);

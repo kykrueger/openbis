@@ -95,8 +95,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.revert.RevertDeletionsO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.SearchDeletionsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.SearchDeletionsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.DeleteEntityTypesOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.EntityTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -1198,13 +1196,6 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public void deleteMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds, MaterialTypeDeletionOptions deletionOptions)
     {
         executeOperation(sessionToken, new DeleteMaterialTypesOperation(materialTypeIds, deletionOptions));
-    }
-
-    @Override
-    @Transactional
-    public void deleteEntityTypes(String sessionToken, List<? extends IEntityTypeId> entityTypeIds, EntityTypeDeletionOptions deletionOptions)
-    {
-        executeOperation(sessionToken, new DeleteEntityTypesOperation(entityTypeIds, deletionOptions));
     }
 
     @Override

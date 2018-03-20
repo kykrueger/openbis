@@ -50,7 +50,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.datastore.ISearchDat
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IConfirmDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IRevertDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.ISearchDeletionsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.IDeleteEntityTypeOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IDeleteExperimentTypesOperationExecutor;
@@ -200,9 +199,6 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IDeleteMaterialTypesOperationExecutor deleteMaterialTypesExecutor;
-
-    @Autowired
-    private IDeleteEntityTypeOperationExecutor deleteEntityTypesExecutor;
 
     @Autowired
     private IDeletePluginsOperationExecutor deletePluginsExecutor;
@@ -702,7 +698,6 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(deleteSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(deleteDataSetTypesExecutor.execute(context, operations));
         resultMap.putAll(deleteMaterialTypesExecutor.execute(context, operations));
-        resultMap.putAll(deleteEntityTypesExecutor.execute(context, operations));
         resultMap.putAll(deletePropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(deletePluginsExecutor.execute(context, operations));
         resultMap.putAll(deleteVocabularyTermsExecutor.execute(context, operations));

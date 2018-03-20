@@ -481,10 +481,6 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeDeleteOperation(new c.DeleteMaterialTypesOperation(ids, deletionOptions));
 		}
 
-		this.deleteEntityTypes = function(ids, deletionOptions) {
-			return this._executeDeleteOperation(new c.DeleteEntityTypesOperation(ids, deletionOptions));
-		}
-		
 		this.deleteTags = function(ids, deletionOptions) {
 			return this._executeDeleteOperation(new c.DeleteTagsOperation(ids, deletionOptions));
 		}
