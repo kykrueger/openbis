@@ -266,8 +266,10 @@ def prepare_new_data_set_expectations(dm, properties={}):
     data_set = DataSet(dm.openbis, None,
                        {'code': perm_id, 'properties': properties,
                         "parents": [], "children": [], "samples": [], 'tags': [],
-                        'physicalData': None})
+                        'physicalData': None, 'linkedData': { 'contentCopies': []}})
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
+    dm.openbis.get_dataset = MagicMock(return_value=data_set)
+
 
 
 def check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, external_dms, data_set_id, parent_id, properties,
