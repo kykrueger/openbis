@@ -52,8 +52,7 @@ class OpenbisSync(OpenbisCommand):
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,
                                                      sample=sample_id, experiment=experiment_id, properties=properties, parents=parent_data_set_id,
                                                      data_set_code=data_set_code, contents=contents)
-            permId = data_set.data['permId']['permId']
-            return CommandResult(returncode=0, output="Created data set {}.".format(permId)), data_set
+            return CommandResult(returncode=0, output="Created data set {}.".format(str(data_set))), data_set
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
 
