@@ -1,13 +1,12 @@
-define([ "stjs" ], function(stjs) {
+define([ "stjs", "as/dto/service/execute/AbstractExecutionOptionsWithParameters"], function(stjs, AbstractExecutionOptionsWithParameters) {
 	var SearchDomainServiceExecutionOptions = function() {
-		this.parameters = {};
+		AbstractExecutionOptionsWithParameters.call(this);
 	};
-	stjs.extend(SearchDomainServiceExecutionOptions, null, [], function(constructor, prototype) {
+	stjs.extend(SearchDomainServiceExecutionOptions, AbstractExecutionOptionsWithParameters, [AbstractExecutionOptionsWithParameters], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.service.execute.SearchDomainServiceExecutionOptions';
 		constructor.serialVersionUID = 1;
 		prototype.preferredSearchDomain = null;
 		prototype.searchString = null;
-		prototype.parameters = null;
 		prototype.withPreferredSearchDomain = function(preferredSearchDomain) {
 			this.preferredSearchDomain = preferredSearchDomain;
 			return this;
@@ -22,18 +21,6 @@ define([ "stjs" ], function(stjs) {
 		prototype.getSearchString = function() {
 			return this.searchString;
 		}
-		prototype.withParameter = function(parameterName, value) {
-			this.parameters[parameterName] = value;
-			return this;
-		}
-		prototype.getParameters = function() {
-			return this.parameters;
-		}
-	}, {
-		parameters : {
-			name : "Map",
-			arguments : [ null, null ]
-		}
-	});
+	}, {});
 	return SearchDomainServiceExecutionOptions;
 })

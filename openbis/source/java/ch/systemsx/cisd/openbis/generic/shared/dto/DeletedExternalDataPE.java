@@ -38,9 +38,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.Location;
  * @author Piotr Buczek
  */
 @Entity
-@Table(name = TableNames.EXTERNAL_DATA_TABLE, uniqueConstraints = @UniqueConstraint(columnNames =
-{ ColumnNames.LOCATION_COLUMN, ColumnNames.LOCATOR_TYPE_COLUMN }))
-@PrimaryKeyJoinColumn(name = ColumnNames.DATA_ID_COLUMN)
+@Table(name = TableNames.EXTERNAL_DATA_TABLE, uniqueConstraints = @UniqueConstraint(columnNames = { ColumnNames.LOCATION_COLUMN,
+        ColumnNames.LOCATOR_TYPE_COLUMN }))
+@PrimaryKeyJoinColumn(name = ColumnNames.ID_COLUMN)
 public final class DeletedExternalDataPE extends DeletedDataPE
 {
     private static final long serialVersionUID = IServer.VERSION;

@@ -115,19 +115,18 @@ public class SearchDomainServiceTest extends AbstractFileTest
     {
         // Given
         String sessionToken = as.login(TEST_USER, PASSWORD);
-        SearchDomainServiceExecutionOptions options = new SearchDomainServiceExecutionOptions();
-        options.withSearchString("key");
-        options.withParameter("key", "{\"searchDomain\" : \"Echo database\","
-                + "\"pathInDataSet\": \"a/path/to/a/file\","
-                + "\"alignmentMatchSequenceStart\": 3,"
-                + "\"alignmentMatchSequenceEnd\": 20,"
-                + "\"alignmentMatchQueryStart\": 4,"
-                + "\"alignmentMatchQueryEnd\": 6,"
-                + "\"alignmentMatchMismatches\": 2,"
-                + "\"alignmentMatchGaps\": 1,"
-                + "\"positionInSequence\": 42,"
-                + "\"sequenceIdentifier\": \"seq123\","
-                + "\"dataSetCode\": \"COMPONENT_3A\"}");
+        SearchDomainServiceExecutionOptions options = new SearchDomainServiceExecutionOptions().withSearchString("key")
+                .withParameter("key", "{\"searchDomain\" : \"Echo database\","
+                        + "\"pathInDataSet\": \"a/path/to/a/file\","
+                        + "\"alignmentMatchSequenceStart\": 3,"
+                        + "\"alignmentMatchSequenceEnd\": 20,"
+                        + "\"alignmentMatchQueryStart\": 4,"
+                        + "\"alignmentMatchQueryEnd\": 6,"
+                        + "\"alignmentMatchMismatches\": 2,"
+                        + "\"alignmentMatchGaps\": 1,"
+                        + "\"positionInSequence\": 42,"
+                        + "\"sequenceIdentifier\": \"seq123\","
+                        + "\"dataSetCode\": \"COMPONENT_3A\"}");
 
         // When
         List<SearchDomainServiceExecutionResult> results = as.executeSearchDomainService(sessionToken, options).getObjects();
@@ -135,6 +134,7 @@ public class SearchDomainServiceTest extends AbstractFileTest
         // Then
         SearchDomainServiceExecutionResult result = results.get(0);
         assertEquals("STANDARD:b", result.getServicePermId().toString());
+        assertEquals("b", result.getSearchDomainName());
         assertEquals("Search Domain B", result.getSearchDomainLabel());
         assertEquals(EntityKind.DATA_SET, result.getEntityKind());
         assertEquals("HCS_IMAGE", result.getEntityType());

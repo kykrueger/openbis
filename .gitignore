@@ -7,3 +7,5 @@
 datastore_server/source/core-plugins
 openbis/source/core-plugins
 */bin/*
+**/.DS_Store
+ivy-repository

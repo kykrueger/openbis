@@ -45,10 +45,13 @@ public abstract class TestDataStoreServer
     private Integer debugPort;
 
     protected abstract String getCommand();
+    
+    protected abstract void cleanUp();
 
     public String start() throws Exception
     {
         TestDatabase.restoreDumps(getDumpsPath());
+        cleanUp();
 
         System.out.println("STARTING DATA STORE: " + getName() + " COMMAND: " + getCommand());
 

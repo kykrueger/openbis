@@ -47,18 +47,34 @@ import net.lemnik.eodsql.TypeMapper;
 public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
 {
 
+    public final static String EXTERNAL_DATA_COLUMNS =
+            "external_data.location, "
+                    + "external_data.ffty_id, "
+                    + "external_data.loty_id, "
+                    + "external_data.cvte_id_stor_fmt, "
+                    + "external_data.is_complete, "
+                    + "external_data.cvte_id_store, "
+                    + "external_data.status, "
+                    + "external_data.share_id, "
+                    + "external_data.size, "
+                    + "external_data.present_in_archive, "
+                    + "external_data.speed_hint, "
+                    + "external_data.storage_confirmation, "
+                    + "external_data.h5_folders, "
+                    + "external_data.h5ar_folders";
+
     public final static String SELECT_ALL =
-            "select data.*, external_data.*, link_data.*, content_copies.external_code, content_copies.edms_id, "
+            "select data.*, " + EXTERNAL_DATA_COLUMNS + ", link_data.id as link_data_id, content_copies.external_code, content_copies.edms_id, "
                     + "prdq.id IS NULL as is_post_registered "
-                    + "from data left outer join external_data on data.id = external_data.data_id "
-                    + "left outer join link_data on data.id = link_data.data_id "
+                    + "from data left outer join external_data on data.id = external_data.id "
+                    + "left outer join link_data on data.id = link_data.id "
                     + "left outer join post_registration_dataset_queue prdq on data.id = prdq.ds_id "
                     + "left outer join content_copies on data.id = content_copies.data_id";
 
     public final static String SELECT_ALL_EXTERNAL_DATAS =
-            "select data.*, external_data.*, prdq.id IS NULL as is_post_registered "
+            "select data.*, " + EXTERNAL_DATA_COLUMNS + ", prdq.id IS NULL as is_post_registered "
                     + "from data "
-                    + "join external_data on data.id = external_data.data_id "
+                    + "join external_data on data.id = external_data.id "
                     + "left outer join post_registration_dataset_queue prdq on data.id = prdq.ds_id ";
 
     /**
@@ -81,11 +97,27 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
             + " JOIN metaproject_assignments ma ON data.id=ma.data_id WHERE ma.mepr_id = ?{1} AND external_data.present_in_archive = ?{2}")
     public DataIterator<DatasetRecord> getDatasetsForMetaprojectAndArchivalState(long metaprojectId, boolean isArchived);
 
+    public final static String ED_COLUMNS =
+            "ed.id as external_data_id, ed.location, "
+                    + "ed.ffty_id, "
+                    + "ed.loty_id, "
+                    + "ed.cvte_id_stor_fmt, "
+                    + "ed.is_complete, "
+                    + "ed.cvte_id_store, "
+                    + "ed.status, "
+                    + "ed.share_id, "
+                    + "ed.size, "
+                    + "ed.present_in_archive, "
+                    + "ed.speed_hint, "
+                    + "ed.storage_confirmation, "
+                    + "ed.h5_folders, "
+                    + "ed.h5ar_folders";
+
     @Select(sql = "with recursive connected_data as ( "
-            + "select d.*, ed.*, ld.*, prdq.id IS NULL as is_post_registered "
+            + "select d.*," + ED_COLUMNS + ", ld.id as link_data_id, prdq.id IS NULL as is_post_registered "
             + "from data as d "
-            + "left outer join external_data as ed on d.id = ed.data_id "
-            + "left outer join link_data as ld on d.id = ld.data_id "
+            + "left outer join external_data as ed on d.id = ed.id "
+            + "left outer join link_data as ld on d.id = ld.id "
             + "left outer join post_registration_dataset_queue prdq on d.id = prdq.ds_id "
             + "where expe_id = ?{1} "
             + "   or samp_id in (with recursive connected_samples as "
@@ -97,8 +129,8 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
             + "union select d.*, ed.*, ld.*, prdq.id IS NULL as is_post_registered from connected_data as cd "
             + "                       inner join data_set_relationships as dr on dr.data_id_parent = cd.id "
             + "                       left join data as d on d.id = dr.data_id_child "
-            + "                       left outer join external_data as ed on d.id = ed.data_id"
-            + "                       left outer join link_data as ld on d.id = ld.data_id "
+            + "                       left outer join external_data as ed on d.id = ed.id"
+            + "                       left outer join link_data as ld on d.id = ld.id "
             + "left outer join post_registration_dataset_queue prdq on d.id = prdq.ds_id "
             + "where dr.relationship_id = ?{2}) "
             + "select * from connected_data")
@@ -282,7 +314,7 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
 
     // NOTE: we list ALL data sets (even those in trash) using data_all table here
     @Select(sql = "SELECT code, share_id FROM data_all LEFT OUTER JOIN external_data "
-            + "ON data_all.id = external_data.data_id WHERE data_all.dast_id = ?{1}", fetchSize = FETCH_SIZE)
+            + "ON data_all.id = external_data.id WHERE data_all.dast_id = ?{1}", fetchSize = FETCH_SIZE)
     public DataIterator<DatasetCodeWithShareIdRecord> getAllDatasetsWithShareIdsByDataStoreId(
             long dataStoreId);
 
@@ -333,15 +365,15 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
             LongSet entityIds, String propertyTypeCode);
 
     @Select(sql = "with recursive connected_data(id,code,container_id,ordinal,dast_id,location,link_info) as ("
-            + "  select distinct d.id,d.code,nullif(r.data_id_parent,d.id),nullif(r.ordinal,r.ordinal),d.dast_id,ed.location,ld.data_id"
-            + "  from data as d left outer join external_data as ed on ed.data_id = d.id"
-            + "  left outer join link_data as ld on ld.data_id = d.id"
+            + "  select distinct d.id,d.code,nullif(r.data_id_parent,d.id),nullif(r.ordinal,r.ordinal),d.dast_id,ed.location,ld.id"
+            + "  from data as d left outer join external_data as ed on ed.id = d.id"
+            + "  left outer join link_data as ld on ld.id = d.id"
             + "  left outer join data_set_relationships as r on r.data_id_parent=d.id"
             + "  where d.code = ?{1}"
             + "  union all"
-            + "    select distinct d.id,d.code,r.data_id_parent,r.ordinal,d.dast_id,ed.location,ld.data_id"
+            + "    select distinct d.id,d.code,r.data_id_parent,r.ordinal,d.dast_id,ed.location,ld.id"
             + "    from connected_data as cd inner join data_set_relationships as r on r.data_id_parent=cd.id"
-            + "    inner join data as d on r.data_id_child=d.id left outer join external_data as ed on ed.data_id = d.id left outer join link_data as ld on ld.data_id = d.id"
+            + "    inner join data as d on r.data_id_child=d.id left outer join external_data as ed on ed.id = d.id left outer join link_data as ld on ld.id = d.id"
             + "    where r.relationship_id = ?{2}"
             + ") " +
             "select cd.id,cd.code,cd.container_id,cd.ordinal,cd.location,d.code as data_store_code, d.remote_url as data_store_url, cd.link_info "

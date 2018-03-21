@@ -5,6 +5,7 @@ define([ "stjs" ], function(stjs) {
 		prototype['@type'] = 'as.dto.service.SearchDomainServiceExecutionResult';
 		constructor.serialVersionUID = 1;
 		prototype.servicePermId = null;
+		prototype.searchDomainName = null;
 		prototype.searchDomainLabel = null;
 		prototype.entityKind = null;
 		prototype.entityType = null;
@@ -16,6 +17,12 @@ define([ "stjs" ], function(stjs) {
 		};
 		prototype.setServicePermId = function(servicePermId) {
 			this.servicePermId = servicePermId;
+		}
+		prototype.getSearchDomainName = function() {
+			return this.searchDomainName;
+		};
+		prototype.setSearchDomainName = function(searchDomainName) {
+			this.searchDomainName = searchDomainName;
 		}
 		prototype.getSearchDomainLabel = function() {
 			return this.searchDomainLabel;

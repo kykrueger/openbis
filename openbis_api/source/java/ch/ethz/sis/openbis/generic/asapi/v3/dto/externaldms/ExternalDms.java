@@ -134,26 +134,22 @@ public class ExternalDms implements Serializable, ICodeHolder
         this.openbis = openbis;
     }
 
-    @TechPreview
     public void setAddressType(ExternalDmsAddressType type)
     {
         this.addressType = type;
     }
 
-    @TechPreview
     @JsonProperty
     public ExternalDmsAddressType getAddressType()
     {
         return addressType;
     }
 
-    @TechPreview
     public void setAddress(String address)
     {
         this.address = address;
     }
 
-    @TechPreview
     @JsonProperty
     public String getAddress()
     {

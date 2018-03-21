@@ -51,6 +51,26 @@ def process(tr, parameters, tableBuilder):
 		else:
 			row.setCell("STATUS", "SUCCESS")
 		row.setCell("RESULT", report)
+	elif method == "test":
+		tableBuilder.addHeader("key")
+		tableBuilder.addHeader("value")
+		for entry in parameters.entrySet():
+			row = tableBuilder.addRow()
+			row.setCell("key", entry.key)
+			row.setCell("value", entry.value)
+	elif method == "getEmailsWith":
+		tableBuilder.addHeader("to")
+		tableBuilder.addHeader("subject")
+		tableBuilder.addHeader("content")
+		tableBuilder.addHeader("full-content")
+		textSnippet = parameters.get("text-snippet")
+		emails = V3APIReport().getEmailsWith(textSnippet if textSnippet is not None else "")
+		for email in emails:
+			row = tableBuilder.addRow()
+			row.setCell("to", email.getTo())
+			row.setCell("subject", email.getSubject())
+			row.setCell("content", email.getContent())
+			row.setCell("full-content", email.getFullContent())
 
 def findSample(tr):
 	criteria = SearchCriteria()

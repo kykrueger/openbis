@@ -1,5 +1,7 @@
 package ch.systemsx.cisd.openbis.jstest.report;
 
+import java.io.File;
+
 /*
  * Copyright 2015 ETH Zuerich, CISD
  *
@@ -21,7 +23,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +48,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
+import ch.systemsx.cisd.openbis.jstest.server.JsTestDataStoreServer;
 
 /**
  * @author pkupczyk
@@ -107,7 +114,29 @@ public class V3APIReport
     {
         System.out.println(getReport());
     }
-
+    
+    public List<EMail> getEmailsWith(String textSnippet)
+    {
+        List<EMail> emails = new ArrayList<>();
+        File emailFolder = new File(JsTestDataStoreServer.EMAIL_FOLDER);
+        java.io.File[] emailFiles = emailFolder.listFiles();
+        if (emailFiles != null)
+        {
+            List<File> files = new ArrayList<>(Arrays.asList(emailFiles));
+            Collections.sort(files);
+            Collections.reverse(files);
+            for (File emailFile : files)
+            {
+                String fullContent = FileUtilities.loadToString(emailFile);
+                if (fullContent.contains(textSnippet))
+                {
+                    emails.add(new EMail(fullContent));
+                }
+            }
+        }
+        return emails;
+    }
+    
     public String getReport() throws Exception
     {
         Report report = new Report();
@@ -351,6 +380,51 @@ public class V3APIReport
             return filterName;
         }
 
+    }
+
+    public static final class EMail
+    {
+        private static final String TO = "To:";
+        private static final String SUBJECT = "Subject:";
+        private static final String CONTENT = "Content:";
+        private String content;
+        private String to;
+        private String subject;
+        private String fullContent;
+
+        EMail(String fullContent)
+        {
+            this.fullContent = fullContent;
+            int toIndex = fullContent.indexOf(TO);
+            int subjectIndex = fullContent.indexOf(SUBJECT);
+            int contentIndex = fullContent.indexOf(CONTENT);
+            if (0 < toIndex && toIndex < subjectIndex && subjectIndex < contentIndex)
+            {
+                to = fullContent.substring(toIndex + TO.length(), subjectIndex).trim();
+                subject = fullContent.substring(subjectIndex + SUBJECT.length(), contentIndex).trim();
+                content = fullContent.substring(contentIndex + CONTENT.length()).trim();
+            }
+        }
+
+        public String getContent()
+        {
+            return content;
+        }
+
+        public String getTo()
+        {
+            return to;
+        }
+
+        public String getSubject()
+        {
+            return subject;
+        }
+
+        public String getFullContent()
+        {
+            return fullContent;
+        }
     }
 
     public static void main(String[] args) throws Exception

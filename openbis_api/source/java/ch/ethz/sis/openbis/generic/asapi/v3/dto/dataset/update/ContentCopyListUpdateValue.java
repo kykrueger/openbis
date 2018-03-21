@@ -26,7 +26,6 @@ import ch.systemsx.cisd.common.annotation.TechPreview;
  * @author pkupczyk
  */
 @JsonObject("as.dto.dataset.update.ContentCopyListUpdateValue")
-@TechPreview
 public class ContentCopyListUpdateValue extends ListUpdateValue<ContentCopyCreation, IContentCopyId, ContentCopyCreation, Object>
 {
 

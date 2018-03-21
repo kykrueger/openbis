@@ -38,6 +38,9 @@ public class SearchDomainServiceExecutionResult implements Serializable
     private DssServicePermId servicePermId;
     
     @JsonProperty
+    private String searchDomainName;
+    
+    @JsonProperty
     private String searchDomainLabel;
     
     @JsonProperty
@@ -64,6 +67,17 @@ public class SearchDomainServiceExecutionResult implements Serializable
     public void setServicePermId(DssServicePermId servicePermId)
     {
         this.servicePermId = servicePermId;
+    }
+
+    @JsonIgnore
+    public String getSearchDomainName()
+    {
+        return searchDomainName;
+    }
+
+    public void setSearchDomainName(String searchDomainName)
+    {
+        this.searchDomainName = searchDomainName;
     }
 
     @JsonIgnore

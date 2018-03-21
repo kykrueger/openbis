@@ -19,6 +19,8 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
 import java.io.Serializable;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ILabelHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.INameHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
@@ -29,7 +31,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  *
  */
 @JsonObject("as.dto.service.SearchDomainService")
-public class SearchDomainService implements Serializable, IPermIdHolder
+public class SearchDomainService implements Serializable, INameHolder, ILabelHolder, IPermIdHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -66,6 +68,7 @@ public class SearchDomainService implements Serializable, IPermIdHolder
         this.permId = permId;
     }
 
+    @Override
     public String getName()
     {
         return name;
@@ -76,6 +79,7 @@ public class SearchDomainService implements Serializable, IPermIdHolder
         this.name = name;
     }
 
+    @Override
     public String getLabel()
     {
         return label;
