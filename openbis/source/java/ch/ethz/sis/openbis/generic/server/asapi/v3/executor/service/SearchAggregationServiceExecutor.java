@@ -34,7 +34,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.AggregationServic
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.StringFieldMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.NameMatcher;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStoreServiceKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ReportingPluginType;
@@ -97,7 +97,7 @@ public class SearchAggregationServiceExecutor
             return new IdMatcher();
         } else if (criteria instanceof NameSearchCriteria)
         {
-            return new NameMatcher();
+            return new NameMatcher<AggregationService>();
         }
         throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());
     }
@@ -114,15 +114,6 @@ public class SearchAggregationServiceExecutor
                 return objects;
             }
             return objects.stream().filter(s -> s.getPermId().equals(id)).collect(Collectors.toList());
-        }
-    }
-
-    private static class NameMatcher extends StringFieldMatcher<AggregationService>
-    {
-        @Override
-        protected String getFieldValue(AggregationService service)
-        {
-            return service.getName();
         }
     }
 }

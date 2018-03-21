@@ -319,6 +319,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.Update
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.AggregationService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ProcessingService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ReportingService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainServiceExecutionResult;
@@ -327,27 +328,33 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteAggregati
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteAggregationServiceOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteCustomASServiceOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteCustomASServiceOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteProcessingServiceOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteReportingServiceOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteReportingServiceOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteSearchDomainServiceOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteSearchDomainServiceOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ProcessingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ReportingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ProcessingServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ReportingServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.ICustomASServiceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.AggregationServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.CustomASServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.ProcessingServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.ReportingServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchAggregationServicesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchAggregationServicesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchCustomASServicesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchCustomASServicesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchProcessingServicesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchProcessingServicesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchReportingServicesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchReportingServicesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchSearchDomainServicesOperation;
@@ -1276,7 +1283,8 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public SearchResult<AggregationService> searchAggregationServices(String sessionToken, AggregationServiceSearchCriteria searchCriteria,
             AggregationServiceFetchOptions fetchOptions)
     {
-        SearchAggregationServicesOperationResult result = executeOperation(sessionToken, new SearchAggregationServicesOperation(searchCriteria, fetchOptions));
+        SearchAggregationServicesOperationResult result =
+                executeOperation(sessionToken, new SearchAggregationServicesOperation(searchCriteria, fetchOptions));
         return result.getSearchResult();
     }
 
@@ -1284,7 +1292,17 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public SearchResult<ReportingService> searchReportingServices(String sessionToken, ReportingServiceSearchCriteria searchCriteria,
             ReportingServiceFetchOptions fetchOptions)
     {
-        SearchReportingServicesOperationResult result = executeOperation(sessionToken, new SearchReportingServicesOperation(searchCriteria, fetchOptions));
+        SearchReportingServicesOperationResult result =
+                executeOperation(sessionToken, new SearchReportingServicesOperation(searchCriteria, fetchOptions));
+        return result.getSearchResult();
+    }
+
+    @Override
+    public SearchResult<ProcessingService> searchProcessingServices(String sessionToken, ProcessingServiceSearchCriteria searchCriteria,
+            ProcessingServiceFetchOptions fetchOptions)
+    {
+        SearchProcessingServicesOperationResult result =
+                executeOperation(sessionToken, new SearchProcessingServicesOperation(searchCriteria, fetchOptions));
         return result.getSearchResult();
     }
 
@@ -1307,7 +1325,8 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
-    public SearchResult<SearchDomainServiceExecutionResult> executeSearchDomainService(String sessionToken, SearchDomainServiceExecutionOptions options)
+    public SearchResult<SearchDomainServiceExecutionResult> executeSearchDomainService(String sessionToken,
+            SearchDomainServiceExecutionOptions options)
     {
         ExecuteSearchDomainServiceOperationResult result = executeOperation(sessionToken, new ExecuteSearchDomainServiceOperation(options));
         return result.getResult();
@@ -1326,7 +1345,13 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
         ExecuteReportingServiceOperationResult result = executeOperation(sessionToken, new ExecuteReportingServiceOperation(serviceId, options));
         return result.getResult();
     }
-    
+
+    @Override
+    public void executeProcessingService(String sessionToken, IDssServiceId serviceId, ProcessingServiceExecutionOptions options)
+    {
+        executeOperation(sessionToken, new ExecuteProcessingServiceOperation(serviceId, options));
+    }
+
     @Override
     @Transactional
     public SearchResult<GlobalSearchObject> searchGlobally(String sessionToken, GlobalSearchCriteria searchCriteria,

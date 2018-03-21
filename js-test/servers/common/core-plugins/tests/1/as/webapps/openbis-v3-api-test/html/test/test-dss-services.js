@@ -12,8 +12,14 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.ok("Login");
 				return fAction(facade).then(function(result) {
 					c.ok("Got results");
-					fCheck(facade, result);
-					c.finish();
+					var token = fCheck(facade, result);
+					if (token) {
+						token.then(function() {
+							c.finish()
+						});
+					} else {
+						c.finish();
+					}
 				});
 			}).fail(function(error) {
 				c.fail(error.message);
@@ -214,6 +220,54 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fCheck = function(facade, tableModel) {
 				c.assertEqual(tableModel.getColumns().toString(), "Data Set,Data Set Type", "Table columns");
 				c.assertEqual(tableModel.getRows().toString(), dataSetCode + ",ALIGNMENT", "Table rows");
+			}
+			
+			testAction(c, fAction, fCheck);
+		});
+		
+		QUnit.test("searchProcessingService()", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fAction = function(facade) {
+				var criteria = new c.ProcessingServiceSearchCriteria();
+				var id = new c.DssServicePermId("test-processing-service", new c.DataStorePermId("DSS1"));
+				criteria.withId().thatEquals(id);
+				var fetchOptions = new c.ProcessingServiceFetchOptions();
+				return facade.searchProcessingServices(criteria, fetchOptions);
+			}
+
+			var fCheck = function(facade, result) {
+				c.assertEqual(result.getTotalCount(), 1, "Number of results");
+				c.assertEqual(result.getObjects().length, 1, "Number of results");
+				var objects = result.getObjects();
+				c.assertEqual(objects[0].getPermId().toString(), "DSS1:test-processing-service", "Perm id");
+				c.assertEqual(objects[0].getName(), "test-processing-service", "Name");
+				c.assertEqual(objects[0].getLabel(), "Test Jython Processing", "Label");
+			}
+
+			testAction(c, fAction, fCheck);
+		});
+		
+		QUnit.test("executeProcessingService()", function(assert) {
+			var c = new common(assert, openbis);
+			var dataSetCode;
+			
+			var fAction = function(facade) {
+				return $.when(c.createDataSet(facade)).then(function(permId) {
+					dataSetCode = permId.getPermId();
+					var serviceId = new c.DssServicePermId("test-processing-service", new c.DataStorePermId("DSS1"));
+					var options = new c.ProcessingServiceExecutionOptions();
+					options.withDataSets([dataSetCode]);
+					return facade.executeProcessingService(serviceId, options);
+				});
+			}
+			
+			var fCheck = function(facade) {
+				return $.when(c.waitUntilEmailWith(facade, dataSetCode, 10000).then(function(emails) {
+					c.assertEqual(emails[0][0].value, "franz-josef.elmer@systemsx.ch", "Email To");
+					c.assertEqual(emails[0][1].value, "'Test Jython Processing' [test-processing-service] processing\n finished", "Email Subject");
+					c.assertContains(emails[0][2].value, dataSetCode, "Email Content with data set " + dataSetCode);
+				}));
 			}
 			
 			testAction(c, fAction, fCheck);

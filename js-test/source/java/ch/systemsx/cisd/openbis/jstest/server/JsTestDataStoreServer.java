@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.jstest.server;
 
 import java.io.File;
 
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.openbis.test.server.TestDataStoreServer;
 
 /**
@@ -25,6 +26,7 @@ import ch.systemsx.cisd.openbis.test.server.TestDataStoreServer;
  */
 public abstract class JsTestDataStoreServer extends TestDataStoreServer
 {
+    public static final String EMAIL_FOLDER = "data/email";
 
     @Override
     protected String getCommand()
@@ -57,5 +59,12 @@ public abstract class JsTestDataStoreServer extends TestDataStoreServer
                 + getDebugPort()
                 + " -Dfile.encoding=UTF-8 -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog -classpath " + classpath
                 + " ch.systemsx.cisd.openbis.dss.generic.DataStoreServer";
+    }
+    
+    public void cleanUp()
+    {
+        File emailFolder = new File(getRootPath(), EMAIL_FOLDER);
+        System.out.println("DELETE EMAIL FOLDER " + emailFolder.getAbsolutePath());
+        FileUtilities.deleteRecursively(emailFolder);
     }
 }

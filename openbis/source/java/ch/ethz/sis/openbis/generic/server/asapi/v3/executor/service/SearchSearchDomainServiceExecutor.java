@@ -37,7 +37,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServi
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.StringFieldMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.NameMatcher;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ISearchDomainSearcher;
@@ -102,7 +102,7 @@ public class SearchSearchDomainServiceExecutor
             return new IdMatcher();
         } else if (criteria instanceof NameSearchCriteria)
         {
-            return new NameMatcher();
+            return new NameMatcher<SearchDomainService>();
         }
         throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());
     }
@@ -120,15 +120,5 @@ public class SearchSearchDomainServiceExecutor
             }
             return objects.stream().filter(s -> s.getPermId().equals(id)).collect(Collectors.toList());
         }
-    }
-    
-    private static class NameMatcher extends StringFieldMatcher<SearchDomainService>
-    {
-        @Override
-        protected String getFieldValue(SearchDomainService searchDomainService)
-        {
-            return searchDomainService.getName();
-        }
-        
     }
 }

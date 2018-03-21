@@ -18,6 +18,9 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ILabelHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.INameHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -26,7 +29,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.service.AggregationService")
-public class AggregationService implements Serializable
+public class AggregationService implements INameHolder, ILabelHolder, IPermIdHolder, Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -48,6 +51,7 @@ public class AggregationService implements Serializable
         this.fetchOptions = fetchOptions;
     }
 
+    @Override
     public DssServicePermId getPermId()
     {
         return permId;
@@ -58,6 +62,7 @@ public class AggregationService implements Serializable
         this.permId = permId;
     }
 
+    @Override
     public String getName()
     {
         return name;
@@ -68,6 +73,7 @@ public class AggregationService implements Serializable
         this.name = name;
     }
 
+    @Override
     public String getLabel()
     {
         return label;

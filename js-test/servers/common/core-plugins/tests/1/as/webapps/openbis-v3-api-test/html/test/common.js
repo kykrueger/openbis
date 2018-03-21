@@ -166,10 +166,12 @@ define(
 				this.AggregationServiceExecutionOptions = dtos.AggregationServiceExecutionOptions;
 				this.AggregationServiceSearchCriteria = dtos.AggregationServiceSearchCriteria;
 				this.AggregationServiceFetchOptions = dtos.AggregationServiceFetchOptions;
-				this.AggregationServiceExecutionOptions = dtos.AggregationServiceExecutionOptions;
 				this.ReportingServiceSearchCriteria = dtos.ReportingServiceSearchCriteria;
 				this.ReportingServiceFetchOptions = dtos.ReportingServiceFetchOptions;
 				this.ReportingServiceExecutionOptions = dtos.ReportingServiceExecutionOptions;
+				this.ProcessingServiceSearchCriteria = dtos.ProcessingServiceSearchCriteria;
+				this.ProcessingServiceFetchOptions = dtos.ProcessingServiceFetchOptions;
+				this.ProcessingServiceExecutionOptions = dtos.ProcessingServiceExecutionOptions;
 				this.GlobalSearchCriteria = dtos.GlobalSearchCriteria;
 				this.GlobalSearchObjectFetchOptions = dtos.GlobalSearchObjectFetchOptions;
 				this.ObjectKindModificationSearchCriteria = dtos.ObjectKindModificationSearchCriteria;
@@ -288,6 +290,7 @@ define(
 				this.SearchSearchDomainServicesOperation = dtos.SearchSearchDomainServicesOperation;
 				this.SearchAggregationServicesOperation = dtos.SearchAggregationServicesOperation;
 				this.SearchReportingServicesOperation = dtos.SearchReportingServicesOperation;
+				this.SearchProcessingServicesOperation = dtos.SearchProcessingServicesOperation;
 				this.SearchObjectKindModificationsOperation = dtos.SearchObjectKindModificationsOperation;
 				this.SearchGloballyOperation = dtos.SearchGloballyOperation;
 				this.SearchOperationExecutionsOperation = dtos.SearchOperationExecutionsOperation;
@@ -320,6 +323,7 @@ define(
 				this.ExecuteCustomASServiceOperation = dtos.ExecuteCustomASServiceOperation;
 				this.ExecuteAggregationServiceOperation = dtos.ExecuteAggregationServiceOperation;
 				this.ExecuteReportingServiceOperation = dtos.ExecuteReportingServiceOperation;
+				this.ExecuteProcessingServiceOperation = dtos.ExecuteProcessingServiceOperation;
 				this.ExecuteSearchDomainServiceOperation = dtos.ExecuteSearchDomainServiceOperation;
 				this.ArchiveDataSetsOperation = dtos.ArchiveDataSetsOperation;
 				this.UnarchiveDataSetsOperation = dtos.UnarchiveDataSetsOperation;
@@ -471,6 +475,30 @@ define(
 								return new dtos.DataSetPermId(
 										response.result.rows[0][0].value);
 							});
+				}.bind(this);
+				
+				this.waitUntilEmailWith = function(facade, textSnippet, timeout) {
+					var c = this;
+					var dfd = $.Deferred();
+					var start = new Date().getTime();
+					var waitForEmailWith = function() {
+						var parameters = {"method" : "getEmailsWith", "text-snippet" : textSnippet}
+						c.getResponseFromJSTestAggregationService(facade, parameters, function(response) {
+							if (response.result.rows.length == 0) {
+								var now = new Date().getTime();
+								if (now - start > timeout) {
+									c.fail("No e-mail with text snippet '" + textSnippet + "' after " + timeout + " msec.");
+									dfd.reject();
+								} else {
+									setTimeout(waitForEmailWith, 1000);
+								}
+							} else {
+								dfd.resolve(response.result.rows);
+							}
+						});
+					};
+					waitForEmailWith();
+					return dfd.promise();
 				}.bind(this);
 
 				this.waitUntilIndexed = function(facade, dataSetCode, timeout) {

@@ -34,7 +34,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.ReportingServiceS
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.StringFieldMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.NameMatcher;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStorePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataStoreServicePE;
@@ -92,7 +92,7 @@ public class SearchReportingServiceExecutor
             return new IdMatcher();
         } else if (criteria instanceof NameSearchCriteria)
         {
-            return new NameMatcher();
+            return new NameMatcher<ReportingService>();
         }
         throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());
     }
@@ -109,15 +109,6 @@ public class SearchReportingServiceExecutor
                 return objects;
             }
             return objects.stream().filter(s -> s.getPermId().equals(id)).collect(Collectors.toList());
-        }
-    }
-
-    private static class NameMatcher extends StringFieldMatcher<ReportingService>
-    {
-        @Override
-        protected String getFieldValue(ReportingService service)
-        {
-            return service.getName();
         }
     }
 }

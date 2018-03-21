@@ -130,13 +130,6 @@ public class ReportingServiceTest extends AbstractFileTest
         as.logout(sessionToken);
     }
 
-    private List<String> getSortedDataSetTypeCodes(ReportingService reportingService)
-    {
-        List<String> codes = new ArrayList<>(reportingService.getDataSetTypeCodes());
-        Collections.sort(codes);
-        return codes;
-    }
-
     @Test
     public void testExecuteReportingService() throws Exception
     {
@@ -156,6 +149,75 @@ public class ReportingServiceTest extends AbstractFileTest
         assertEquals(tableModel.getRows().get(0).get(0).getClass(), TableStringCell.class);
         assertEquals(tableModel.getRows().get(0).get(1).getClass(), TableStringCell.class);
 
+        as.logout(sessionToken);
+    }
+
+    @Test
+    public void testExecuteUnknownReportingService() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("unknown service", new DataStorePermId("STANDARD"));
+        ReportingServiceExecutionOptions options = new ReportingServiceExecutionOptions();
+        options.withDataSets("abc");
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // When
+                    as.executeReportingService(sessionToken, id, options);
+                }
+            },
+                // Then
+                "Data store 'STANDARD' does not have 'unknown service' reporting plugin configured.");
+        as.logout(sessionToken);
+    }
+
+    @Test
+    public void testExecuteProcessingService() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("demo processor", new DataStorePermId("STANDARD"));
+        ReportingServiceExecutionOptions options = new ReportingServiceExecutionOptions();
+        options.withDataSets("abc");
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // When
+                    as.executeReportingService(sessionToken, id, options);
+                }
+            },
+                // Then
+                "Data store 'STANDARD' does not have 'demo processor' reporting plugin configured.");
+        as.logout(sessionToken);
+    }
+
+    @Test
+    public void testExecuteReportingServiceOfUnknownDataStore() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("example-jython-report", new DataStorePermId("UNKNOWN"));
+        ReportingServiceExecutionOptions options = new ReportingServiceExecutionOptions();
+        options.withDataSets("abc");
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // When
+                    as.executeReportingService(sessionToken, id, options);
+                }
+            },
+                // Then
+                "Cannot find the data store UNKNOWN");
         as.logout(sessionToken);
     }
 
@@ -183,6 +245,49 @@ public class ReportingServiceTest extends AbstractFileTest
     }
 
     @Test
+    public void testExecuteReportingServiceWithUnspecifiedOptions() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("example-jython-report", new DataStorePermId("STANDARD"));
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // When
+                    as.executeReportingService(sessionToken, id, null);
+                }
+            },
+                // Then
+                "Options cannot be null.");
+        as.logout(sessionToken);
+    }
+
+    @Test
+    public void testExecuteReportingServiceWithNoDataSets() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("example-jython-report", new DataStorePermId("STANDARD"));
+        ReportingServiceExecutionOptions options = new ReportingServiceExecutionOptions();
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // When
+                    as.executeReportingService(sessionToken, id, options);
+                }
+            },
+                // Then
+                "No data set codes specified.");
+        as.logout(sessionToken);
+    }
+
+    @Test
     public void testExecuteReportingServiceWithMissingServiceId()
     {
         // Given
@@ -191,7 +296,6 @@ public class ReportingServiceTest extends AbstractFileTest
 
         assertUserFailureException(new IDelegatedAction()
             {
-
                 @Override
                 public void execute()
                 {
@@ -294,6 +398,13 @@ public class ReportingServiceTest extends AbstractFileTest
                 // Then
                 "Data store code cannot be empty.");
         as.logout(sessionToken);
+    }
+
+    private List<String> getSortedDataSetTypeCodes(ReportingService reportingService)
+    {
+        List<String> codes = new ArrayList<>(reportingService.getDataSetTypeCodes());
+        Collections.sort(codes);
+        return codes;
     }
 
     private static final class MyId implements IDssServiceId, IDataStoreId

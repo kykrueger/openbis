@@ -20,6 +20,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ILabelHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.CustomASServiceCode;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -28,7 +29,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.service.CustomASService")
-public class CustomASService implements Serializable
+public class CustomASService implements ILabelHolder, Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -72,6 +73,7 @@ public class CustomASService implements Serializable
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
+    @Override
     public String getLabel()
     {
         return label;

@@ -16,8 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service;
 
-import java.util.List;
-
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
@@ -38,7 +35,9 @@ import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
  * @author Franz-Josef Elmer
  */
 @Component
-public class ExecuteReportingServiceExecutor extends AbstractDssServiceExecutor implements IExecuteReportingServiceExecutor
+public class ExecuteReportingServiceExecutor
+        extends AbstractDataSetBasedDssServiceExecutor<ReportingServiceExecutionOptions>
+        implements IExecuteReportingServiceExecutor
 {
     @Autowired
     private IReportingServiceAuthorizationExecutor authorizationExecutor;
@@ -58,22 +57,5 @@ public class ExecuteReportingServiceExecutor extends AbstractDssServiceExecutor 
         String datastoreCode = ((DataStorePermId) permId.getDataStoreId()).getPermId();
         return translate(dataSetTable.createReportFromDatasets(key, datastoreCode, options.getDataSetCodes()));
     }
-    
-    private void checkData(IDssServiceId serviceId, ReportingServiceExecutionOptions options)
-    {
-        checkData(serviceId);
-        if (options == null)
-        {
-            throw new UserFailureException("Options cannot be null.");
-        }
-        List<String> dataSetCodes = options.getDataSetCodes();
-        if (dataSetCodes == null)
-        {
-            throw new UserFailureException("Data set codes cannot be null.");
-        }
-        if (dataSetCodes.isEmpty())
-        {
-            throw new UserFailureException("No data set code specified.");
-        }
-    }
+
 }

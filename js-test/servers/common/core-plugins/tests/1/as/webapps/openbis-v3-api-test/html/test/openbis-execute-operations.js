@@ -401,6 +401,10 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeSearchOperation(new c.SearchReportingServicesOperation(criteria, fetchOptions));
 		}
 		
+		this.searchProcessingServices = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchProcessingServicesOperation(criteria, fetchOptions));
+		}
+		
 		this.searchObjectKindModifications = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new c.SearchObjectKindModificationsOperation(criteria, fetchOptions));
 		}
@@ -528,6 +532,12 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 		this.executeReportingService = function(serviceId, options) {
 			return this._executeOperation(new c.ExecuteReportingServiceOperation(serviceId, options)).then(function(results) {
 				return results.getResults()[0].getResult();
+			});
+		}
+		
+		this.executeProcessingService = function(serviceId, options) {
+			return this._executeOperation(new c.ExecuteProcessingServiceOperation(serviceId, options)).then(function(results) {
+				return results.getResults()[0];
 			});
 		}
 		

@@ -21,34 +21,34 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDataSetCodesHolder;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.service.execute.ReportingServiceExecutionOptions")
-public class ReportingServiceExecutionOptions implements Serializable
+public class ReportingServiceExecutionOptions implements Serializable, IDataSetCodesHolder
 {
     private static final long serialVersionUID = 1L;
-    
+
     private List<String> dataSetCodes = new ArrayList<>();
-    
+
     public ReportingServiceExecutionOptions withDataSets(String... dataSetCodes)
     {
         return withDataSets(Arrays.asList(dataSetCodes));
     }
-    
+
     public ReportingServiceExecutionOptions withDataSets(List<String> dataSetCodes)
     {
         this.dataSetCodes.addAll(dataSetCodes);
         return this;
     }
-    
+
+    @Override
     public List<String> getDataSetCodes()
     {
         return dataSetCodes;
     }
-    
-    
+
 }

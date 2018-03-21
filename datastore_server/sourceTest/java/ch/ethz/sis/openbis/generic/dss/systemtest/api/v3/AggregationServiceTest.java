@@ -84,10 +84,10 @@ public class AggregationServiceTest extends AbstractFileTest
         AggregationServiceSearchCriteria searchCriteria = new AggregationServiceSearchCriteria();
         searchCriteria.withName().thatStartsWith("example-jython");
         AggregationServiceFetchOptions fetchOptions = new AggregationServiceFetchOptions();
-        
+
         // When
         List<AggregationService> services = as.searchAggregationServices(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         services.sort(AGGREGATION_SERVICE_COMPARATOR);
         assertEquals("[example-jython-aggregation-service-report, example-jython-db-modifying-aggregation-service]",
@@ -96,10 +96,10 @@ public class AggregationServiceTest extends AbstractFileTest
                 services.stream().map(s -> s.getName()).collect(Collectors.toList()).toString());
         assertEquals("[Test Jython Aggregation Reporting, Test Db Modifying Jython Aggregation Reporting]",
                 services.stream().map(s -> s.getLabel()).collect(Collectors.toList()).toString());
-        
+
         as.logout(sessionToken);
     }
-    
+
     @Test
     public void testSearchAggregationService()
     {
@@ -158,6 +158,72 @@ public class AggregationServiceTest extends AbstractFileTest
         assertEquals(getValueCellFor(tableModel.getRows(), "name").getClass(), TableStringCell.class);
         assertEquals(getValueCellFor(tableModel.getRows(), "timestamp").getClass(), TableStringCell.class);
 
+        as.logout(sessionToken);
+    }
+
+    @Test
+    public void testExecuteUnknownAggregationService() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("unknown service", new DataStorePermId("STANDARD"));
+        AggregationServiceExecutionOptions options = new AggregationServiceExecutionOptions();
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // When
+                    as.executeAggregationService(sessionToken, id, options);
+                }
+            },
+                // Then
+                "Data store 'STANDARD' does not have 'unknown service' aggregation plugin configured.");
+        as.logout(sessionToken);
+    }
+
+    @Test
+    public void testExecuteProcessingService() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("demo processor", new DataStorePermId("STANDARD"));
+        AggregationServiceExecutionOptions options = new AggregationServiceExecutionOptions();
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // When
+                    as.executeAggregationService(sessionToken, id, options);
+                }
+            },
+                // Then
+                "Data store 'STANDARD' does not have 'demo processor' aggregation plugin configured.");
+        as.logout(sessionToken);
+    }
+
+    @Test
+    public void testExecuteAggregationServiceOfUnknownDataStore() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("example-jython-aggregation-service-report", new DataStorePermId("UNKNOWN"));
+        AggregationServiceExecutionOptions options = new AggregationServiceExecutionOptions();
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    // When
+                    as.executeAggregationService(sessionToken, id, options);
+                }
+            },
+                // Then
+                "Cannot find the data store UNKNOWN");
         as.logout(sessionToken);
     }
 

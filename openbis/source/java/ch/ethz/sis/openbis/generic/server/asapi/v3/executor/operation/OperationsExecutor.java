@@ -120,10 +120,12 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.IUpdateSemanticAnnotationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteAggregationServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteCustomASServiceOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteProcessingServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteReportingServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteSearchDomainServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchAggregationServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchCustomASServicesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchProcessingServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchReportingServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchSearchDomainServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.session.IGetSessionInformationOperationExecutor;
@@ -185,10 +187,10 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IDeleteAuthorizationGroupsOperationExecutor deleteAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private IDeleteRoleAssignmentsOperationExecutor deleteRoleAssignmentsExecutor;
-    
+
     @Autowired
     private IDeleteEntityTypeOperationExecutor deleteEntityTypesExecutor;
 
@@ -197,13 +199,13 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IDeletePropertyTypesOperationExecutor deletePropertyTypesExecutor;
-    
+
     @Autowired
     private IDeleteVocabulariesOperationExecutor deleteVocabulariesExecutor;
-    
+
     @Autowired
     private IDeleteVocabularyTermsOperationExecutor deleteVocabularyTermsExecutor;
-    
+
     @Autowired
     private IDeleteOperationExecutionsOperationExecutor deleteOperationExecutionsExecutor;
 
@@ -233,25 +235,25 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ICreateAuthorizationGroupsOperationExecutor createAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private ICreateRoleAssignmentsOperationExecutor createRoleAssignmentsExecutor;
-    
+
     @Autowired
     private ICreatePersonsOperationExecutor createPersonsExecutor;
-    
+
     @Autowired
     private ICreateSemanticAnnotationsOperationExecutor createSemanticAnnotationsExecutor;
 
     @Autowired
     private ICreatePropertyTypesOperationExecutor createPropertyTypesExecutor;
-    
+
     @Autowired
     private ICreatePluginsOperationExecutor createPluginsExecutor;
-    
+
     @Autowired
     private ICreateVocabulariesOperationExecutor createVocabulariesExecutor;
-    
+
     @Autowired
     private ICreateVocabularyTermsOperationExecutor createVocabularyTermsExecutor;
 
@@ -284,7 +286,7 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUpdateSamplesOperationExecutor updateSamplesExecutor;
-    
+
     @Autowired
     private IUpdateSampleTypesOperationExecutor updateSampleTypesExecutor;
 
@@ -293,25 +295,25 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUpdateDataSetTypesOperationExecutor updateDataSetTypesExecutor;
-    
+
     @Autowired
     private IUpdateMaterialsOperationExecutor updateMaterialsExecutor;
 
     @Autowired
     private IUpdateMaterialTypesOperationExecutor updateMaterialTypesExecutor;
-    
+
     @Autowired
     private IUpdateTagsOperationExecutor updateTagsExecutor;
 
     @Autowired
     private IUpdateAuthorizationGroupsOperationExecutor updateAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private IUpdatePersonsOperationExecutor updatePersonsExecutor;
 
     @Autowired
     private IUpdateExternalDmsOperationExecutor updateExternalDmsExecutor;
-    
+
     @Autowired
     private IUpdatePropertyTypesOperationExecutor updatePropertyTypesExecutor;
 
@@ -320,10 +322,10 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUpdateVocabulariesOperationExecutor updateVocabulariesExecutor;
-    
+
     @Autowired
     private IUpdateVocabularyTermsOperationExecutor updateVocabularyTermsExecutor;
-    
+
     @Autowired
     private IUpdateOperationExecutionsOperationExecutor updateOperationExecutionsExecutor;
 
@@ -368,25 +370,25 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IGetAuthorizationGroupsOperationExecutor getAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private IGetRoleAssignmentsOperationExecutor getRoleAssignmentsExecutor;
-    
+
     @Autowired
     private IGetPersonsOperationExecutor getPersonsExecutor;
-    
+
     @Autowired
     private IGetPropertyTypesOperationExecutor getPropertyTypesExecutor;
 
     @Autowired
     private IGetPluginsOperationExecutor getPluginsExecutor;
-    
+
     @Autowired
     private IGetVocabulariesOperationExecutor getVocabulariesExecutor;
-    
+
     @Autowired
     private IGetVocabularyTermsOperationExecutor getVocabularyTermsExecutor;
-    
+
     @Autowired
     private IGetExternalDmsOperationExecutor getExternalDmsExecutor;
 
@@ -419,22 +421,22 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchAuthorizationGroupsOperationExecutor searchAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private ISearchRoleAssignmentsOperationExecutor searchRoleAssignmentsExecutor;
-    
+
     @Autowired
     private ISearchPersonsOperationExecutor searchPersonsExecutor;
-    
+
     @Autowired
     private ISearchExternalDmsOperationExecutor searchExternalDmsExecutor;
 
     @Autowired
     private ISearchPluginsOperationExecutor searchPluginsExecutor;
-    
+
     @Autowired
     private ISearchVocabulariesOperationExecutor searchVocabulariesExecutor;
-    
+
     @Autowired
     private ISearchVocabularyTermsOperationExecutor searchVocabularyTermsExecutor;
 
@@ -452,15 +454,18 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchCustomASServicesOperationExecutor searchCustomASServicesExecutor;
-    
+
     @Autowired
     private ISearchSearchDomainServicesOperationExecutor searchSearchDomainServicesExecutor;
 
     @Autowired
     private ISearchAggregationServicesOperationExecutor searchAggregationServicesExecutor;
-    
+
     @Autowired
     private ISearchReportingServicesOperationExecutor searchReportingServicesExecutor;
+
+    @Autowired
+    private ISearchProcessingServicesOperationExecutor searchProcessingServicesExecutor;
     
     @Autowired
     private ISearchDeletionsOperationExecutor searchDeletionsExecutor;
@@ -491,13 +496,16 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IExecuteAggregationServiceOperationExecutor executeAggregationServiceExecutor;
-    
+
     @Autowired
     private IExecuteReportingServiceOperationExecutor executeReportingServiceExecutor;
-    
+
+    @Autowired
+    private IExecuteProcessingServiceOperationExecutor executeProcessingServiceExecutor;
+
     @Autowired
     private IExecuteSearchDomainServiceOperationExecutor executeSearchDomainServiceExecutor;
-    
+
     @Autowired
     private IRevertDeletionsOperationExecutor revertDeletionsExecutor;
 
@@ -512,10 +520,10 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ILockDataSetsOperationExecutor lockDataSetsExecutor;
-    
+
     @Autowired
     private IUnlockDataSetsOperationExecutor unlockDataSetsExecutor;
-    
+
     @Autowired
     private IGetSessionInformationOperationExecutor getSessionInformationExecutor;
 
@@ -561,6 +569,7 @@ public class OperationsExecutor implements IOperationsExecutor
     {
         resultMap.putAll(executeCustomASServiceExecutor.execute(context, operations));
         resultMap.putAll(executeAggregationServiceExecutor.execute(context, operations));
+        resultMap.putAll(executeProcessingServiceExecutor.execute(context, operations));
         resultMap.putAll(executeReportingServiceExecutor.execute(context, operations));
         resultMap.putAll(executeSearchDomainServiceExecutor.execute(context, operations));
         resultMap.putAll(revertDeletionsExecutor.execute(context, operations));
@@ -596,6 +605,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchCustomASServicesExecutor.execute(context, operations));
         resultMap.putAll(searchAggregationServicesExecutor.execute(context, operations));
         resultMap.putAll(searchReportingServicesExecutor.execute(context, operations));
+        resultMap.putAll(searchProcessingServicesExecutor.execute(context, operations));
         resultMap.putAll(searchSearchDomainServicesExecutor.execute(context, operations));
         resultMap.putAll(searchDeletionsExecutor.execute(context, operations));
         resultMap.putAll(searchGloballyExecutor.execute(context, operations));
