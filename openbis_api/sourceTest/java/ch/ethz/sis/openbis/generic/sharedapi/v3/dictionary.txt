@@ -2041,6 +2041,59 @@ Search Domain Service Search Option
 Search Domain Service Sort Options
 set Possible Search Options
 set Possible Search Options Key
+get Search Domain Name
+set Search Domain Name
+
+Abstract Execution Options With Parameters
+Aggregation Service Execution Options
+execute Aggregation Service
+Execute Aggregation Service Operation
+Execute Aggregation Service Operation Result
+get Columns
+get Rows
+I Table Cell
+Table Column
+Table Double Cell
+Table Long Cell
+Table Model
+Table String Cell
+Aggregation Service
+Aggregation Service Fetch Options
+Aggregation Service Search Criteria
+Aggregation Service Sort Options
+search Aggregation Services
+Search Aggregation Services Operation
+Search Aggregation Services Operation Result
+
+get Data Set Type Codes
+set Data Set Type Codes
+Reporting Service
+Reporting Service Fetch Options
+Reporting Service Search Criteria
+Reporting Service Sort Options
+search Reporting Services
+Search Reporting Services Operation
+Search Reporting Services Operation Result
+execute Reporting Service
+Execute Reporting Service Operation
+Execute Reporting Service Operation Result
+get Data Set Codes
+Reporting Service Execution Options
+
+execute Processing Service
+Execute Processing Service Operation
+Execute Processing Service Operation Result
+I Data Set Codes Holder
+I Label Holder
+I Name Holder
+Processing Service
+Processing Service Execution Options
+Processing Service Fetch Options
+Processing Service Search Criteria
+Processing Service Sort Options
+search Processing Services
+Search Processing Services Operation
+Search Processing Services Operation Result
 Data Set Type Deletion Options
 delete Data Set Types
 Delete Data Set Types Operation
