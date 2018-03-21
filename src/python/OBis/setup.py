@@ -12,6 +12,7 @@ setup(name='obis',
       packages=['obis', 'obis.dm', 'obis.dm.commands', 'obis.scripts'],
       package_data={'obis' : ['dm/git-annex-attributes']},
       install_requires=[
+          'pyOpenSSL',
           'pytest',
           'pybis',
           'click'
