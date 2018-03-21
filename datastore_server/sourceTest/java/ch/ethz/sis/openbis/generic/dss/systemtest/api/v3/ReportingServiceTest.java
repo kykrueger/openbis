@@ -107,6 +107,9 @@ public class ReportingServiceTest extends AbstractFileTest
         String sessionToken = as.login(TEST_USER, PASSWORD);
         ReportingServiceSearchCriteria searchCriteria = new ReportingServiceSearchCriteria();
         ReportingServiceFetchOptions fetchOptions = new ReportingServiceFetchOptions();
+        List<String> allDataSetTypeCodes = as.searchDataSetTypes(sessionToken, new DataSetTypeSearchCriteria(),
+                new DataSetTypeFetchOptions()).getObjects().stream().map(t -> t.getCode()).collect(Collectors.toList());
+        Collections.sort(allDataSetTypeCodes);
 
         // When
         List<ReportingService> services = as.searchReportingServices(sessionToken, searchCriteria, fetchOptions).getObjects();
@@ -121,9 +124,6 @@ public class ReportingServiceTest extends AbstractFileTest
                 services.stream().map(s -> s.getLabel()).collect(Collectors.toList()).toString());
         assertEquals("[]", services.get(0).getDataSetTypeCodes().toString());
         assertEquals("[]", services.get(3).getDataSetTypeCodes().toString());
-        List<String> allDataSetTypeCodes = as.searchDataSetTypes(sessionToken, new DataSetTypeSearchCriteria(),
-                new DataSetTypeFetchOptions()).getObjects().stream().map(t -> t.getCode()).collect(Collectors.toList());
-        Collections.sort(allDataSetTypeCodes);
         assertEquals(allDataSetTypeCodes.toString(), getSortedDataSetTypeCodes(services.get(1)).toString());
         assertEquals(allDataSetTypeCodes.toString(), getSortedDataSetTypeCodes(services.get(2)).toString());
 
