@@ -1409,42 +1409,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 		
-		this.searchAggregationServices = function(criteria, fetchOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequest({
-				url : openbisUrl,
-				data : {
-					"method" : "searchAggregationServices",
-					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
-				},
-				returnType : "SearchResult"
-			});
-		}
-		
-		this.searchReportingServices = function(criteria, fetchOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequest({
-				url : openbisUrl,
-				data : {
-					"method" : "searchReportingServices",
-					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
-				},
-				returnType : "SearchResult"
-			});
-		}
-		
-		this.searchProcessingServices = function(criteria, fetchOptions) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequest({
-				url : openbisUrl,
-				data : {
-					"method" : "searchProcessingServices",
-					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
-				},
-				returnType : "SearchResult"
-			});
-		}
-		
 		this.searchObjectKindModifications = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1812,41 +1776,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
-		this.executeAggregationService = function(serviceId, options) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequest({
-				url : openbisUrl,
-				data : {
-					"method" : "executeAggregationService",
-					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
-				},
-				returnType : "SearchResult"
-			});
-		}
-		
-		this.executeReportingService = function(serviceId, options) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequest({
-				url : openbisUrl,
-				data : {
-					"method" : "executeReportingService",
-					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
-				},
-				returnType : "SearchResult"
-			});
-		}
-		
-		this.executeProcessingService = function(serviceId, options) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequest({
-				url : openbisUrl,
-				data : {
-					"method" : "executeProcessingService",
-					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
-				}
-			});
-		}
-		
 		this.executeAggregationService = function(serviceId, options) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
