@@ -37,13 +37,19 @@ Here are some tips for speed up development:
 
 * Change the code not only in the original Javascript file but also in the file in targets/gradle/webapps/webapp. 
   Otherwise the old code is executed. This isn't necessary for testing classes.
+  If you change only API code you can do the following command:
+  
+  cp -R <root folder>/openbis/source/java/ch/systemsx/cisd/openbis/public/resources/api <root folder>/js-test/targets/gradle/webapps/webapp/resources/
   
 * In case of changes of Java classes the a stop and restart (using ./gradlew js-test:clean js-test:test) is needed.
-  The test server is available much faster after outcommenting the following lines in build.gradle of project openbis_standard_technologies:
+  The test server is available much faster after outcommenting the following lines in build.gradle of 
+  project openbis_standard_technologies:
   
   war.dependsOn compileGwt
   war.dependsOn signWebStartJars
   
+  Note, that when compileGwt is not executed changes in JS code should be copy after server start up with 
+  the above mentioned copy command.  
 
 Debugging:
 ----------
