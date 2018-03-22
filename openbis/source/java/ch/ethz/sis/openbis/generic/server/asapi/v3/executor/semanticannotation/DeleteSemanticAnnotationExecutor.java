@@ -45,7 +45,8 @@ public class DeleteSemanticAnnotationExecutor
     private ISemanticAnnotationAuthorizationExecutor authorizationExecutor;
 
     @Override
-    protected Map<ISemanticAnnotationId, SemanticAnnotationPE> map(IOperationContext context, List<? extends ISemanticAnnotationId> entityIds)
+    protected Map<ISemanticAnnotationId, SemanticAnnotationPE> map(IOperationContext context, List<? extends ISemanticAnnotationId> entityIds,
+            SemanticAnnotationDeletionOptions deletionOptions)
     {
         return mapSemanticAnnotationByIdExecutor.map(context, entityIds);
     }

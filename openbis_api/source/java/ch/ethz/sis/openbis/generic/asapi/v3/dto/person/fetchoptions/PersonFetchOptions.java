@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EmptyFetchOptions;
@@ -177,6 +178,7 @@ public class PersonFetchOptions extends FetchOptions<Person> implements Serializ
 
     // Method automatically generated with DtoGenerator
     @Override
+    @JsonIgnore
     public PersonSortOptions sortBy()
     {
         if (sort == null)
@@ -188,6 +190,7 @@ public class PersonFetchOptions extends FetchOptions<Person> implements Serializ
 
     // Method automatically generated with DtoGenerator
     @Override
+    @JsonIgnore
     public PersonSortOptions getSortBy()
     {
         return sort;

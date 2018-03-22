@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete;
 
 import java.util.List;
 
@@ -23,21 +23,19 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
- * @author Franz-Josef Elmer
+ * @author pkupczyk
  */
-@JsonObject("as.dto.entitytype.delete.DeleteEntityTypesOperation")
-public class DeleteEntityTypesOperation extends DeleteObjectsOperation<IEntityTypeId, EntityTypeDeletionOptions>
+@JsonObject("as.dto.material.delete.DeleteMaterialTypesOperation")
+public class DeleteMaterialTypesOperation extends DeleteObjectsOperation<IEntityTypeId, MaterialTypeDeletionOptions>
 {
     private static final long serialVersionUID = 1L;
 
     @SuppressWarnings("unused")
-    private DeleteEntityTypesOperation()
+    private DeleteMaterialTypesOperation()
     {
     }
 
-    public DeleteEntityTypesOperation(List<? extends IEntityTypeId> objectIds, EntityTypeDeletionOptions options)
+    public DeleteMaterialTypesOperation(List<? extends IEntityTypeId> objectIds, MaterialTypeDeletionOptions options)
     {
         super(objectIds, options);
     }

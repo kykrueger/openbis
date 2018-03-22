@@ -23,8 +23,12 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.EntityTypeDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetTypeDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.AbstractObjectDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDataSetTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IExperimentTypeAuthorizationExecutor;
@@ -32,34 +36,54 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IMaterialTy
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISampleTypeAuthorizationExecutor;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypeBO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
 /**
  * @author Franz-Josef Elmer
  */
 @Component
-public class DeleteEntityTypeExecutor
-        extends AbstractDeleteEntityExecutor<Void, IEntityTypeId, EntityTypePE, EntityTypeDeletionOptions>
+public class DeleteEntityTypeExecutor extends AbstractDeleteEntityExecutor<Void, IEntityTypeId, EntityTypePE, AbstractObjectDeletionOptions<?>>
         implements IDeleteEntityTypeExecutor
 {
     @Autowired
     private IMapEntityTypeByIdExecutor mapEntityTypeByIdExecutor;
-    
+
     @Autowired
     private IDataSetTypeAuthorizationExecutor dataSetTypeAuthorizationExecutor;
-    
+
     @Autowired
     private IExperimentTypeAuthorizationExecutor experimentTypeAuthorizationExecutor;
-    
+
     @Autowired
     private IMaterialTypeAuthorizationExecutor materialTypeAuthorizationExecutor;
-    
+
     @Autowired
     private ISampleTypeAuthorizationExecutor sampleTypeAuthorizationExecutor;
-    
+
     @Override
-    protected Map<IEntityTypeId, EntityTypePE> map(IOperationContext context, List<? extends IEntityTypeId> entityTypeIds)
+    protected Map<IEntityTypeId, EntityTypePE> map(IOperationContext context, List<? extends IEntityTypeId> entityTypeIds,
+            AbstractObjectDeletionOptions<?> deletionOptions)
     {
-        return mapEntityTypeByIdExecutor.map(context, null, entityTypeIds);
+        EntityKind entityKind;
+
+        if (deletionOptions instanceof ExperimentTypeDeletionOptions)
+        {
+            entityKind = EntityKind.EXPERIMENT;
+        } else if (deletionOptions instanceof SampleTypeDeletionOptions)
+        {
+            entityKind = EntityKind.SAMPLE;
+        } else if (deletionOptions instanceof DataSetTypeDeletionOptions)
+        {
+            entityKind = EntityKind.DATA_SET;
+        } else if (deletionOptions instanceof MaterialTypeDeletionOptions)
+        {
+            entityKind = EntityKind.MATERIAL;
+        } else
+        {
+            throw new IllegalArgumentException("Unsupported deletion options: " + (deletionOptions != null ? deletionOptions.getClass() : null));
+        }
+
+        return mapEntityTypeByIdExecutor.map(context, entityKind, entityTypeIds);
     }
 
     @Override
@@ -88,7 +112,7 @@ public class DeleteEntityTypeExecutor
     }
 
     @Override
-    protected Void delete(IOperationContext context, Collection<EntityTypePE> entities, EntityTypeDeletionOptions deletionOptions)
+    protected Void delete(IOperationContext context, Collection<EntityTypePE> entities, AbstractObjectDeletionOptions<?> deletionOptions)
     {
         for (EntityTypePE entityType : entities)
         {

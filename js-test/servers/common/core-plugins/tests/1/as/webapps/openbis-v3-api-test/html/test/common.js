@@ -311,6 +311,10 @@ define(
 				this.DeletePropertyTypesOperation = dtos.DeletePropertyTypesOperation;
 				this.DeleteVocabulariesOperation = dtos.DeleteVocabulariesOperation;
 				this.DeleteVocabularyTermsOperation = dtos.DeleteVocabularyTermsOperation;
+				this.DeleteExperimentTypesOperation = dtos.DeleteExperimentTypesOperation;
+				this.DeleteSampleTypesOperation = dtos.DeleteSampleTypesOperation;
+				this.DeleteDataSetTypesOperation = dtos.DeleteDataSetTypesOperation;
+				this.DeleteMaterialTypesOperation = dtos.DeleteMaterialTypesOperation;
 				this.DeleteEntityTypesOperation = dtos.DeleteEntityTypesOperation;
 				this.DeleteTagsOperation = dtos.DeleteTagsOperation;
 				this.DeleteAuthorizationGroupsOperation = dtos.DeleteAuthorizationGroupsOperation;
@@ -614,12 +618,42 @@ define(
 								return permIds[0];
 							});
 				}.bind(this);
-
+				
+				this.createExperimentType = function(facade) {
+					var c = this;
+					var creation = new dtos.ExperimentTypeCreation();
+					creation.setCode(c.generateId("EXPERIMENT_TYPE"));
+					return facade.createExperimentTypes([ creation ]).then(
+							function(permIds) {
+								return permIds[0];
+							});
+				}.bind(this);
+				
 				this.createSampleType = function(facade) {
 					var c = this;
 					var creation = new dtos.SampleTypeCreation();
 					creation.setCode(c.generateId("SAMPLE_TYPE"));
 					return facade.createSampleTypes([ creation ]).then(
+							function(permIds) {
+								return permIds[0];
+							});
+				}.bind(this);
+				
+				this.createDataSetType = function(facade) {
+					var c = this;
+					var creation = new dtos.DataSetTypeCreation();
+					creation.setCode(c.generateId("DATA_SET_TYPE"));
+					return facade.createDataSetTypes([ creation ]).then(
+							function(permIds) {
+								return permIds[0];
+							});
+				}.bind(this);
+				
+				this.createMaterialType = function(facade) {
+					var c = this;
+					var creation = new dtos.MaterialTypeCreation();
+					creation.setCode(c.generateId("MATERIAL_TYPE"));
+					return facade.createMaterialTypes([ creation ]).then(
 							function(permIds) {
 								return permIds[0];
 							});
@@ -993,6 +1027,34 @@ define(
 							options);
 				}.bind(this);
 
+				this.deleteExperimentType = function(facade, id) {
+					var c = this;
+					var options = new dtos.ExperimentTypeDeletionOptions();
+					options.setReason("test reason");
+					return facade.deleteExperimentTypes([ id ], options);
+				}.bind(this);
+				
+				this.deleteSampleType = function(facade, id) {
+					var c = this;
+					var options = new dtos.SampleTypeDeletionOptions();
+					options.setReason("test reason");
+					return facade.deleteSampleTypes([ id ], options);
+				}.bind(this);
+				
+				this.deleteDataSetType = function(facade, id) {
+					var c = this;
+					var options = new dtos.DataSetTypeDeletionOptions();
+					options.setReason("test reason");
+					return facade.deleteDataSetTypes([ id ], options);
+				}.bind(this);
+				
+				this.deleteMaterialType = function(facade, id) {
+					var c = this;
+					var options = new dtos.MaterialTypeDeletionOptions();
+					options.setReason("test reason");
+					return facade.deleteMaterialTypes([ id ], options);
+				}.bind(this);
+				
 				this.deleteEntityType = function(facade, id) {
 					var c = this;
 					var options = new dtos.EntityTypeDeletionOptions();

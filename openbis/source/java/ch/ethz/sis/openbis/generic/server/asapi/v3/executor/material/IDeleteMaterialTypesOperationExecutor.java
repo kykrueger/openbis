@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.delete.DeleteObjectsWithoutTrashOperationResult;
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.delete.IDeleteObjectsOperationExecutor;
 
 /**
- * 
- *
- * @author Franz-Josef Elmer
+ * @author pkupczyk
  */
-@JsonObject("as.dto.entitytype.delete.DeleteEntityTypesOperationResult")
-public class DeleteEntityTypesOperationResult extends DeleteObjectsWithoutTrashOperationResult
+public interface IDeleteMaterialTypesOperationExecutor extends IDeleteObjectsOperationExecutor
 {
-
-    private static final long serialVersionUID = 1L;
-
-    public DeleteEntityTypesOperationResult()
-    {
-    }
 
 }

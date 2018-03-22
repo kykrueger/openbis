@@ -30,6 +30,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.AbstractObjectDeletionO
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnauthorizedObjectAccessException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -55,22 +56,22 @@ public abstract class AbstractDeleteEntityExecutor<DELETION_ID, ENTITY_ID, ENTIT
     {
         if (context == null)
         {
-            throw new IllegalArgumentException("Context cannot be null");
+            throw new UserFailureException("Context cannot be null");
         }
         if (entityIds == null)
         {
-            throw new IllegalArgumentException("Entity ids cannot be null");
+            throw new UserFailureException("Entity ids cannot be null");
         }
         if (deletionOptions == null)
         {
-            throw new IllegalArgumentException("Deletion options cannot be null");
+            throw new UserFailureException("Deletion options cannot be null");
         }
         if (deletionOptions.getReason() == null)
         {
-            throw new IllegalArgumentException("Deletion reason cannot be null");
+            throw new UserFailureException("Deletion reason cannot be null");
         }
 
-        Map<ENTITY_ID, ENTITY_PE> entityMap = map(context, entityIds);
+        Map<ENTITY_ID, ENTITY_PE> entityMap = map(context, entityIds, deletionOptions);
 
         if (entityMap.isEmpty())
         {
@@ -106,7 +107,8 @@ public abstract class AbstractDeleteEntityExecutor<DELETION_ID, ENTITY_ID, ENTIT
         return techIds;
     }
 
-    protected abstract Map<ENTITY_ID, ENTITY_PE> map(IOperationContext context, List<? extends ENTITY_ID> entityIds);
+    protected abstract Map<ENTITY_ID, ENTITY_PE> map(IOperationContext context, List<? extends ENTITY_ID> entityIds,
+            DELETION_OPTIONS deletionOptions);
 
     protected abstract void checkAccess(IOperationContext context, ENTITY_ID entityId, ENTITY_PE entity);
 

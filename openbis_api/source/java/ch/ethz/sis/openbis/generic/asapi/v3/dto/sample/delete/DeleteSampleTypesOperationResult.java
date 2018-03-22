@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.delete.IDeleteObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.delete.DeleteObjectsWithoutTrashOperationResult;
+import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
- * @author Franz-Josef Elmer
+ * @author pkupczyk
  */
-public interface IDeleteEntityTypeOperationExecutor extends IDeleteObjectsOperationExecutor
+@JsonObject("as.dto.sample.delete.DeleteSampleTypesOperationResult")
+public class DeleteSampleTypesOperationResult extends DeleteObjectsWithoutTrashOperationResult
 {
+
+    private static final long serialVersionUID = 1L;
+
+    public DeleteSampleTypesOperationResult()
+    {
+    }
 
 }

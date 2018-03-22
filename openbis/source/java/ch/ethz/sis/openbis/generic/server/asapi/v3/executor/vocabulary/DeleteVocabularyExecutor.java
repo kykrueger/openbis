@@ -48,12 +48,13 @@ public class DeleteVocabularyExecutor
 
     @Autowired
     private IVocabularyAuthorizationExecutor authorizationExecutor;
-    
+
     @Autowired
     private IMapVocabularyByIdExecutor mapVocabularyByIdExecutor;
 
     @Override
-    protected Map<IVocabularyId, VocabularyPE> map(IOperationContext context, List<? extends IVocabularyId> entityIds)
+    protected Map<IVocabularyId, VocabularyPE> map(IOperationContext context, List<? extends IVocabularyId> entityIds,
+            VocabularyDeletionOptions deletionOptions)
     {
         return mapVocabularyByIdExecutor.map(context, entityIds);
     }

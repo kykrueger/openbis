@@ -35,6 +35,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.authorizationgroup.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IArchiveDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ICreateDataSetTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ICreateDataSetsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDeleteDataSetTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDeleteDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IGetDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ILockDataSetsOperationExecutor;
@@ -49,9 +50,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.datastore.ISearchDat
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IConfirmDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IRevertDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.ISearchDeletionsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.IDeleteEntityTypeOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IDeleteExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IDeleteExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IGetExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ISearchExperimentTypesOperationExecutor;
@@ -67,6 +68,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.externaldms.IUpdateE
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.globalsearch.ISearchGloballyOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ICreateMaterialTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ICreateMaterialsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IDeleteMaterialTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IDeleteMaterialsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IGetMaterialsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ISearchMaterialTypesOperationExecutor;
@@ -106,6 +108,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.IGetR
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.ISearchRoleAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ICreateSampleTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ICreateSamplesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IDeleteSampleTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IDeleteSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IGetSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISearchSampleTypesOperationExecutor;
@@ -192,7 +195,16 @@ public class OperationsExecutor implements IOperationsExecutor
     private IDeleteRoleAssignmentsOperationExecutor deleteRoleAssignmentsExecutor;
 
     @Autowired
-    private IDeleteEntityTypeOperationExecutor deleteEntityTypesExecutor;
+    private IDeleteExperimentTypesOperationExecutor deleteExperimentTypesExecutor;
+
+    @Autowired
+    private IDeleteSampleTypesOperationExecutor deleteSampleTypesExecutor;
+
+    @Autowired
+    private IDeleteDataSetTypesOperationExecutor deleteDataSetTypesExecutor;
+
+    @Autowired
+    private IDeleteMaterialTypesOperationExecutor deleteMaterialTypesExecutor;
 
     @Autowired
     private IDeletePluginsOperationExecutor deletePluginsExecutor;
@@ -712,7 +724,10 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(deleteTagsExecutor.execute(context, operations));
         resultMap.putAll(deleteRoleAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(deleteAuthorizationGroupsExecutor.execute(context, operations));
-        resultMap.putAll(deleteEntityTypesExecutor.execute(context, operations));
+        resultMap.putAll(deleteExperimentTypesExecutor.execute(context, operations));
+        resultMap.putAll(deleteSampleTypesExecutor.execute(context, operations));
+        resultMap.putAll(deleteDataSetTypesExecutor.execute(context, operations));
+        resultMap.putAll(deleteMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(deletePropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(deletePluginsExecutor.execute(context, operations));
         resultMap.putAll(deleteVocabularyTermsExecutor.execute(context, operations));

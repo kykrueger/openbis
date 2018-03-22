@@ -1838,11 +1838,6 @@ Update Sample Types Operation Result
 is Force Removing Assignments
 set Force Removing Assignments
 
-delete Entity Types
-Delete Entity Types Operation
-Delete Entity Types Operation Result
-Entity Type Deletion Options
-
 get Terms
 has Terms
 search Vocabularies
@@ -2099,3 +2094,20 @@ Processing Service Sort Options
 search Processing Services
 Search Processing Services Operation
 Search Processing Services Operation Result
+
+Data Set Type Deletion Options
+delete Data Set Types
+Delete Data Set Types Operation
+Delete Data Set Types Operation Result
+delete Experiment Types
+Delete Experiment Types Operation
+Delete Experiment Types Operation Result
+delete Material Types
+Delete Material Types Operation
+Delete Material Types Operation Result
+delete Sample Types
+Delete Sample Types Operation
+Delete Sample Types Operation Result
+Experiment Type Deletion Options
+Material Type Deletion Options
+Sample Type Deletion Options

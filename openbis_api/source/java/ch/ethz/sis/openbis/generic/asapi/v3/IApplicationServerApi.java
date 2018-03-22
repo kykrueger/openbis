@@ -35,6 +35,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOp
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
@@ -53,7 +54,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.EntityTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -61,6 +61,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
@@ -85,6 +86,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
@@ -150,6 +152,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
@@ -484,7 +487,14 @@ public interface IApplicationServerApi extends IRpcService
 
     public void deleteVocabularyTerms(String sessionToken, List<? extends IVocabularyTermId> termIds, VocabularyTermDeletionOptions deletionOptions);
 
-    public void deleteEntityTypes(String sessionToken, List<? extends IEntityTypeId> entityTypeIds, EntityTypeDeletionOptions deletionOptions);
+    public void deleteExperimentTypes(String sessionToken, List<? extends IEntityTypeId> experimentTypeIds,
+            ExperimentTypeDeletionOptions deletionOptions);
+
+    public void deleteSampleTypes(String sessionToken, List<? extends IEntityTypeId> sampleTypeIds, SampleTypeDeletionOptions deletionOptions);
+
+    public void deleteDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds, DataSetTypeDeletionOptions deletionOptions);
+
+    public void deleteMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds, MaterialTypeDeletionOptions deletionOptions);
 
     public void deleteExternalDataManagementSystems(String sessionToken, List<? extends IExternalDmsId> externalDmsIds,
             ExternalDmsDeletionOptions deletionOptions);

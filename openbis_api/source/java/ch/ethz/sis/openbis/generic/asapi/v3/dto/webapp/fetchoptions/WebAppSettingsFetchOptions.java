@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EmptyFetchOptions;
@@ -94,6 +95,7 @@ public class WebAppSettingsFetchOptions extends FetchOptions<WebAppSettings> imp
     }
 
     @Override
+    @JsonIgnore
     public WebAppSettingsSortOptions sortBy()
     {
         if (sort == null)
@@ -104,6 +106,7 @@ public class WebAppSettingsFetchOptions extends FetchOptions<WebAppSettings> imp
     }
 
     @Override
+    @JsonIgnore
     public WebAppSettingsSortOptions getSortBy()
     {
         return sort;

@@ -51,7 +51,8 @@ public class DeleteExperimentExecutor extends AbstractDeleteEntityExecutor<IDele
     private IMapExperimentByIdExecutor mapExperimentByIdExecutor;
 
     @Override
-    protected Map<IExperimentId, ExperimentPE> map(IOperationContext context, List<? extends IExperimentId> entityIds)
+    protected Map<IExperimentId, ExperimentPE> map(IOperationContext context, List<? extends IExperimentId> entityIds,
+            ExperimentDeletionOptions deletionOptions)
     {
         return mapExperimentByIdExecutor.map(context, entityIds);
     }

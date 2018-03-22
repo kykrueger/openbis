@@ -32,23 +32,22 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AuthorizationGroupPE;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @Component
-public class DeleteAuthorizationGroupExecutor 
+public class DeleteAuthorizationGroupExecutor
         extends AbstractDeleteEntityExecutor<Void, IAuthorizationGroupId, AuthorizationGroupPE, AuthorizationGroupDeletionOptions>
         implements IDeleteAuthorizationGroupExecutor
 {
     @Autowired
     private IMapGroupPEByIdExecutor mapGroupByIdExecutor;
-    
+
     @Autowired
     private IAuthorizationGroupAuthorizationExecutor authorizationExecutor;
 
     @Override
-    protected Map<IAuthorizationGroupId, AuthorizationGroupPE> map(IOperationContext context, List<? extends IAuthorizationGroupId> entityIds)
+    protected Map<IAuthorizationGroupId, AuthorizationGroupPE> map(IOperationContext context, List<? extends IAuthorizationGroupId> entityIds,
+            AuthorizationGroupDeletionOptions deletionOptions)
     {
         return mapGroupByIdExecutor.map(context, entityIds);
     }

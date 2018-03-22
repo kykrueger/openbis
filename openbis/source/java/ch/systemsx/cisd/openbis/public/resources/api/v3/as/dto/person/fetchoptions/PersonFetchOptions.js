@@ -82,6 +82,10 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/s
 			return this.webAppSettings;
 		};
 
+		prototype.setWebAppSettings = function(webAppSettings) {
+			this.webAppSettings = webAppSettings;
+		};
+
 		prototype.withAllWebAppSettings = function() {
 			this.allWebAppSettings = true;
 		};
@@ -91,6 +95,14 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/s
 		};
 
 		prototype.withAllWebAppSettingsUsing = function(allWebAppSettings) {
+			this.allWebAppSettings = allWebAppSettings;
+		};
+
+		prototype.getAllWebAppSettings = function() {
+			return this.allWebAppSettings;
+		};
+
+		prototype.setAllWebAppSettings = function(allWebAppSettings) {
 			this.allWebAppSettings = allWebAppSettings;
 		};
 

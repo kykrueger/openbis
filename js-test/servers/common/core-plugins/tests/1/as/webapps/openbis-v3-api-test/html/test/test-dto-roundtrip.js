@@ -90,11 +90,18 @@ define(['jquery', 'underscore', 'openbis', 'test/common'], function($, _, openbi
 											c.ok("Skipping setValue field: " + key);
 										}
 									} else {
-										var setter = _.find(_.functions(subj), function(fn) {
-											return fn.toLowerCase() === key.toLowerCase() 
-												|| (fn.toLowerCase() === "set" + key.toLowerCase())
+										var regularSetFn = _.find(_.functions(subj), function(fn) {
+											return fn.toLowerCase() === "set" + key.toLowerCase();
+										});
+										
+										var otherSetFn = _.find(_.functions(subj), function(fn) {
+											return (fn.toLowerCase() === key.toLowerCase())
 												|| (fn.toLowerCase() === "with" + key.toLowerCase());
 										});
+										
+										// prefer regularSetFn function over otherSetFn 
+										var setter = regularSetFn || otherSetFn;
+										
 										c.ok("Setter: [set/with]" + key);
 
 										if (setter) {

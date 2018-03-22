@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.AbstractObjectDeletionOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
- * @author Franz-Josef Elmer
+ * @author pkupczyk
  */
-@JsonObject("as.dto.entitytype.delete.EntityTypeDeletionOptions")
-public class EntityTypeDeletionOptions extends AbstractObjectDeletionOptions<EntityTypeDeletionOptions>
+@JsonObject("as.dto.sample.delete.SampleTypeDeletionOptions")
+public class SampleTypeDeletionOptions extends AbstractObjectDeletionOptions<SampleTypeDeletionOptions>
 {
     private static final long serialVersionUID = 1L;
 

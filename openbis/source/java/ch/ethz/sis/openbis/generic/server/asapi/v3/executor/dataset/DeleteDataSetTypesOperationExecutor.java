@@ -14,43 +14,43 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.delete.DeleteObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.delete.DeleteObjectsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.DeleteEntityTypesOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.DeleteEntityTypesOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.EntityTypeDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetTypeDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DeleteDataSetTypesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DeleteDataSetTypesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.delete.DeleteObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.IDeleteEntityTypeExecutor;
 
 /**
- * @author Franz-Josef Elmer
+ * @author pkupczyk
  */
 @Component
-public class DeleteEntityTypeOperationExecutor
-        extends DeleteObjectsOperationExecutor<IEntityTypeId, EntityTypeDeletionOptions>
-        implements IDeleteEntityTypeOperationExecutor
+public class DeleteDataSetTypesOperationExecutor extends DeleteObjectsOperationExecutor<IEntityTypeId, DataSetTypeDeletionOptions>
+        implements IDeleteDataSetTypesOperationExecutor
 {
     @Autowired
     private IDeleteEntityTypeExecutor executor;
 
     @Override
-    protected Class<? extends DeleteObjectsOperation<IEntityTypeId, EntityTypeDeletionOptions>> getOperationClass()
+    protected Class<? extends DeleteObjectsOperation<IEntityTypeId, DataSetTypeDeletionOptions>> getOperationClass()
     {
-        return DeleteEntityTypesOperation.class;
+        return DeleteDataSetTypesOperation.class;
     }
 
     @Override
     protected DeleteObjectsOperationResult doExecute(IOperationContext context,
-            DeleteObjectsOperation<IEntityTypeId, EntityTypeDeletionOptions> operation)
+            DeleteObjectsOperation<IEntityTypeId, DataSetTypeDeletionOptions> operation)
     {
         executor.delete(context, operation.getObjectIds(), operation.getOptions());
-        return new DeleteEntityTypesOperationResult();
+        return new DeleteDataSetTypesOperationResult();
     }
 
 }
