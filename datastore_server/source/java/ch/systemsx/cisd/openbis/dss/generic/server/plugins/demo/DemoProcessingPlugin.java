@@ -57,12 +57,15 @@ public class DemoProcessingPlugin implements IProcessingPluginTask
             DataSetProcessingContext context)
     {
         operationLog.info("Processing of the following datasets has been requested: " + datasets);
-        Map<String, String> parameterBindings = context.getParameterBindings();
-        if (parameterBindings.isEmpty() == false)
+        if (context != null)
         {
-            for (Entry<String, String> entry : parameterBindings.entrySet())
+            Map<String, String> parameterBindings = context.getParameterBindings();
+            if (parameterBindings != null && parameterBindings.isEmpty() == false)
             {
-                operationLog.info("Parameter: " + entry);
+                for (Entry<String, String> entry : parameterBindings.entrySet())
+                {
+                    operationLog.info("Parameter: " + entry);
+                }
             }
         }
         IHierarchicalContentProvider contentProvider =
