@@ -46,6 +46,7 @@ from .group import Group
 from .role_assignment import RoleAssignment
 from .tag import Tag
 from .semantic_annotation import SemanticAnnotation
+from .plugin import Plugin
 
 from pandas import DataFrame, Series
 import pandas as pd
@@ -97,6 +98,7 @@ def get_search_type_for_entity(entity, operator=None):
         "code": "as.dto.common.search.CodeSearchCriteria",
         "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
         "global": "as.dto.global.GlobalSearchObject",
+        "plugin": "as.dto.plugin.search.PluginSearchCriteria",
     }
 
     sc = { "@type": search_criteria[entity] }
@@ -156,20 +158,6 @@ def crc32(fileName):
     return "%x" % (prev & 0xFFFFFFFF)
 
 
-def _create_tagIds(tags=None):
-    if tags is None:
-        return None
-    if not isinstance(tags, list):
-        tags = [tags]
-    tagIds = []
-    for tag in tags:
-        tagIds.append({
-            "code": tag, 
-            "@type": "as.dto.tag.id.TagCode"
-        })
-    return tagIds
-    
-
 def _tagIds_for_tags(tags=None, action='Add'):
     """creates an action item to add or remove tags. 
     Action is either 'Add', 'Remove' or 'Set'
@@ -224,33 +212,6 @@ def _list_update(ids=None, entity=None, action='Add'):
     }
     return list_update
 
-
-def _create_typeId(type):
-    return {
-        "permId": type.upper(),
-        "@type": "as.dto.entitytype.id.EntityTypePermId"
-    }
-
-
-def _create_projectId(ident):
-    match = re.match('/', ident)
-    if match:
-        return {
-            "identifier": ident,
-            "@type": "as.dto.project.id.ProjectIdentifier"
-        }
-    else:
-        return {
-            "permId": ident,
-            "@type": "as.dto.project.id.ProjectPermId"
-        }
-
-
-def _create_experimentId(ident):
-    return {
-        "identifier": ident,
-        "@type": "as.dto.experiment.id.ExperimentIdentifier"
-    }
 
 def get_field_value_search(field, value, comparison="StringEqualToValue"):
     return {
@@ -588,6 +549,8 @@ class Openbis:
             "get_group(code)",
             "get_role_assignments()",
             "get_role_assignment(techId)",
+            "get_plugins()",
+            "get_plugin(name)",
             "new_group(code, description, userIds)",
             'new_space(name, description)',
             'new_project(space, code, description, attachments)',
@@ -1523,39 +1486,6 @@ class Openbis:
         }
         self._post_request(self.as_v3, request)
 
-    def create_sample(self, space_ident, code, type,
-                      project_ident=None, experiment_ident=None, properties=None, attachments=None, tags=None):
-
-        tagIds = _create_tagIds(tags)
-        typeId = _create_typeId(type)
-        projectId = _create_projectId(project_ident)
-        experimentId = _create_experimentId(experiment_ident)
-
-        if properties is None:
-            properties = {}
-
-        request = {
-            "method": "createSamples",
-            "params": [
-                self.token,
-                [
-                    {
-                        "properties": properties,
-                        "code": code,
-                        "typeId": typeId,
-                        "projectId": projectId,
-                        "experimentId": experimentId,
-                        "tagIds": tagIds,
-                        "attachments": attachments,
-                        "@type": "as.dto.sample.create.SampleCreation",
-                    }
-                ]
-            ],
-        }
-        resp = self._post_request(self.as_v3, request)
-        return self.get_sample(resp[0]['permId'])
-
-    create_object = create_sample # Alias
 
     def create_external_data_management_system(self, code, label, address, address_type='FILE_SYSTEM'):
         """Create an external DMS.
@@ -1830,7 +1760,9 @@ class Openbis:
         search_criteria = get_search_type_for_entity('tag', 'AND')
 
         criteria = []
-        fetchopts = {}
+        fetchopts = fetch_option['tag']
+        for option in ['owner']:
+            fetchopts[option] = fetch_option[option]
         if code:
             criteria.append(_criteria_for_code(code))
         search_criteria['criteria'] = criteria
@@ -1844,7 +1776,7 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
-        attrs = ['permId', 'code', 'owner', 'private', 'registrationDate']
+        attrs = ['permId', 'code', 'description', 'owner', 'private', 'registrationDate']
         if len(resp['objects']) == 0:
             tags = DataFrame(columns = attrs)
         else: 
@@ -1853,6 +1785,8 @@ class Openbis:
             tags = DataFrame(objects)
             tags['registrationDate'] = tags['registrationDate'].map(format_timestamp)
             tags['permId'] = tags['permId'].map(extract_permid)
+            tags['description'] = tags['description'].map(lambda x: '' if x is None else x)
+            tags['owner'] = tags['owner'].map(extract_person)
 
         return Things(self, 'tag', tags[attrs], 'permId')
 
@@ -1942,7 +1876,6 @@ class Openbis:
         attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
         annotations = DataFrame(objects)
         return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
-    
     def get_semantic_annotation(self, permId, only_data = False):
 
         criteria = {
@@ -1963,6 +1896,99 @@ class Openbis:
             return object
         else:
             return SemanticAnnotation(self, isNew=False, **object)    
+
+    def get_plugins(self):
+
+        criteria = []
+        search_criteria = get_search_type_for_entity('plugin', 'AND')
+        search_criteria['criteria'] = criteria
+
+        fetchopts = fetch_option['plugin']
+        for option in ['registrator']:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "searchPlugins",
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts,
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+        attrs = ['name', 'description', 'pluginType', 'pluginKind',
+        'entityKinds', 'registrator', 'registrationDate', 'permId']
+
+        if len(resp['objects']) == 0:
+            plugins = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
+
+            plugins = DataFrame(objects)
+            plugins['permId'] = plugins['permId'].map(extract_permid)
+            plugins['registrator'] = plugins['registrator'].map(extract_person)
+            plugins['registrationDate'] = plugins['registrationDate'].map(format_timestamp)
+            plugins['description'] = plugins['description'].map(lambda x: '' if x is None else x)
+            plugins['entityKinds'] = plugins['entityKinds'].map(lambda x: '' if x is None else x)
+
+        return Things(self, 'plugin', plugins[attrs], 'name')
+
+
+    def get_plugin(self, permId, only_data=False, with_script=True):
+        search_request = search_request_for_identifier(permId, 'plugin')
+        fetchopts = fetch_option['plugin']
+        options = ['registrator']
+        if with_script:
+            options.append('script')
+
+        for option in options:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "getPlugins",
+            "params": [
+                self.token,
+                [search_request],
+                fetchopts
+            ],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        parse_jackson(resp)
+
+        if resp is None or len(resp) == 0:
+            raise ValueError('no such plugin found: ' + permId)
+        else:
+            for permId in resp:
+                if only_data:
+                    return resp[permId]
+                else:
+                    return Plugin(self, data=resp[permId])
+
+    def new_plugin(self, name, pluginType= "MANAGED_PROPERTY", pluginKind = "JYTHON", **kwargs):
+        """ Creates a new Plugin in openBIS. The attribute pluginKind must be one of
+        the following:
+        DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION;
+
+        Usage::
+            o.new_plugin(
+                name = 'name of plugin',
+                description = '...',
+                pluginType  = "ENTITY_VALIDATION",
+                script      = "def a():\n  pass",
+                available   = True,
+                entityKind  = None
+            )
+        """
+
+        if pluginType not in [
+            'DYNAMIC_PROPERTY', 'MANAGED_PROPERTY', 'ENTITY_VALIDATION'
+        ]:
+            raise ValueError(
+                "pluginType must be one of the following: DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION")
+        return Plugin(self, pluginType=pluginType, pluginKind=pluginKind, **kwargs) 
+
     
     def get_sample_types(self, type=None):
         """ Returns a list of all available sample types
@@ -1982,7 +2008,7 @@ class Openbis:
                 "searchSampleTypes",
                 "Sample",
                 type,
-                ["generatedCodePrefix"]
+                ["generatedCodePrefix", "validationPluginId"]
             )
         except Exception:
             raise ValueError("no such sample type: {}".format(type))
@@ -1998,6 +2024,8 @@ class Openbis:
             type
         )
 
+    get_collection_types = get_experiment_types  # Alias
+
     def get_experiment_type(self, type):
         try:
             return self._get_types_of(
@@ -2006,7 +2034,9 @@ class Openbis:
                 type
             )
         except Exception:
-            raise ValueError("No such experiment type: {}".format(type))
+           raise ValueError("No such experiment type: {}".format(type))
+
+    get_collection_type = get_experiment_type  # Alias
 
     def get_material_types(self, type=None):
         """ Returns a list of all available material types
@@ -2036,7 +2066,11 @@ class Openbis:
         """
 
         search_request = {}
-        fetch_options = {}
+        fetch_options = {
+            "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions".format(
+                entity.lower(), entity
+            )
+        }
 
         if type_name is not None:
             search_request = _gen_search_criteria({
@@ -2044,13 +2078,8 @@ class Openbis:
                 "operator": "AND",
                 "code": type_name
             })
-
-            fetch_options = {
-                "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions".format(
-                    entity.lower(), entity
-                )
-            }
             fetch_options['propertyAssignments'] = fetch_option['propertyAssignments']
+            fetch_options['validationPlugin'] = fetch_option['plugin']
 
         request = {
             "method": method_name,

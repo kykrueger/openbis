@@ -66,9 +66,10 @@ def openbis_definitions(entity):
         },
         "Material": {
             "attrs_new": "code description type creation tags".split(),
+            "attrs_up": "description type creation tags".split(),
             "attrs": "code description type creation registrator tags".split(),
             "multi": "".split(),
-            "identifier": "permId",
+            "identifier": "materialId",
         },
         "Tag": {
             "attrs_new": "code description".split(),
@@ -76,6 +77,13 @@ def openbis_definitions(entity):
             "attrs": "permId code description registrationDate".split(),
             "multi": "".split(),
             "identifier": "tagId",
+        },
+        "Plugin": {
+            "attrs_new": "name description available script available script pluginType pluginKind entityKinds".split(),
+            "attrs_up": "description, available script available script pluginType pluginKind entityKinds".split(),
+            "attrs": "permId name description registrator registrationDate available script pluginType pluginKind entityKinds".split(),
+            "multi": "".split(),
+            "identifier": "pluginId",
         },
         "Person": {
             "attrs_new": "userId space".split(),
@@ -132,6 +140,10 @@ fetch_option = {
     "person": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
     "users": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
     "user": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
+    "owner": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions" },
+    "registrator": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
+    "modifier": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
+    "leader": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
     "authorizationGroup": {"@type": "as.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions"},
     "experiment": {
         "@type": "as.dto.experiment.fetchoptions.ExperimentFetchOptions",
@@ -169,11 +181,7 @@ fetch_option = {
         }
     },
     "tags": {"@type": "as.dto.tag.fetchoptions.TagFetchOptions"},
-
-    "registrator": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
-    "modifier": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
-    "leader": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
-
+    "tag": {"@type": "as.dto.tag.fetchoptions.TagFetchOptions"},
     "attachments": {"@type": "as.dto.attachment.fetchoptions.AttachmentFetchOptions"},
     "attachmentsWithContent": {
         "@type": "as.dto.attachment.fetchoptions.AttachmentFetchOptions",
@@ -181,6 +189,10 @@ fetch_option = {
             "@type": "as.dto.common.fetchoptions.EmptyFetchOptions"
         },
     },
+    "script": {
+        "@type": "as.dto.common.fetchoptions.EmptyFetchOptions",
+    },
     "history": {"@type": "as.dto.history.fetchoptions.HistoryEntryFetchOptions"},
     "dataStore": {"@type": "as.dto.datastore.fetchoptions.DataStoreFetchOptions"},
+    "plugin": {"@type": "as.dto.plugin.fetchoptions.PluginFetchOptions"},
 }

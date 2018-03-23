@@ -509,7 +509,8 @@ class AttrHolder():
             self.add_users(value)
 
         else:
-            raise KeyError("no such attribute: {}".format(name))
+            self.__dict__['_'+name] = value
+
 
     def get_type(self):
         return self._type

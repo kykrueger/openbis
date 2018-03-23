@@ -15,7 +15,7 @@ def parse_jackson(input_json):
        Any further findings only carry this reference id.
        This function is used to dereference the output.
     """
-    interesting=['tags', 'registrator', 'modifier', 'type', 'parents', 
+    interesting=['tags', 'registrator', 'modifier', 'owner', 'type', 'parents', 
         'children', 'containers', 'properties', 'experiment', 'sample',
         'project', 'space', 'propertyType', 'entityType', 'propertyType', 'propertyAssignment',
         'externalDms', 'roleAssignments', 'user', 'authorizationGroup'
