@@ -48,8 +48,10 @@ Vagrant.configure(2) do |config|
     # Install necessary packages and tools (yum commands + install conda)
     obisserver.vm.provision :shell, inline: "/vagrant/initialize/setup_general.sh || true"
 
-    # Install openBIS
+    # Install and start openBIS
     obisserver.vm.provision :shell, inline: "/vagrant/initialize/setup_openbis.sh || true"
+    obisserver.vm.provision :shell, inline: "/vagrant/initialize/install_openbis.sh || true"
+    obisserver.vm.provision :shell, inline: "/vagrant/initialize/start_services.sh || true"
 
     # Install obis (including prereqs: python3, git, git-annex)
     obisserver.vm.provision :shell, inline: "/vagrant/initialize/setup_obis.sh || true"

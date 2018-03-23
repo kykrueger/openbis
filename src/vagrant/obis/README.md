@@ -9,9 +9,10 @@ To help users interested in trying out _obis_, we provide a vagrant setup that c
 2. cd to `src/vagrant/obis`
 3. `vagrant plugin install vagrant-vbguest` -- install the vagrant-vbguest plugin
 3. `vagrant up --provision --provider virtualbox` -- initialize the virtual machine
-4. `vagrant ssh obisserver`  -- log into the virtual machine
-5. `/vagrant_initialize/install_openbis.sh` -- install openBIS (the admin password will be 'admin')
-6. `exit` -- log off the virtual machine
+
+This sets up two machines:
+1. obisserver - contains an obis client and an openBIS installation which is started when the machine comes up
+2. obisclient - contains a second obis client for scenarios where two are needed
 
 ## Running openBIS
 
