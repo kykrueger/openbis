@@ -369,6 +369,8 @@ class AttrHolder():
                         values.append(item['identifier'])
                     elif "code" in item:
                         values.append(item['code'])
+                    elif "userId" in item:
+                        values.append(item['userId'])
                     elif "permId" in item:
                         values.append(item['permId'])
                     else:
@@ -381,6 +383,8 @@ class AttrHolder():
                     return self.__dict__[int_name]['identifier']
                 elif "code" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['code']
+                elif "userId" in self.__dict__[int_name]:
+                    return self.__dict__[int_name]['userId']
                 elif "permId" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['permId']
                 elif "id" in self.__dict__[int_name]:
