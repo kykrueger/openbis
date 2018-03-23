@@ -4,6 +4,7 @@
 import json
 import subprocess
 import socket
+from pybis import Openbis
 
 
 def run(cmd, tmpdir="", params=[]):
@@ -19,6 +20,10 @@ def run(cmd, tmpdir="", params=[]):
 
 
 def test_obis(tmpdir):
+    # 0. pybis login
+    o = Openbis('https://localhost:8443', verify_certificates=False)
+    o.login('admin', 'admin', save_token=True)
+
     # 1. Global configuration
     result = run('./01_global_config.sh', tmpdir)
     config = json.loads(run('./00_get_config_global.sh'))
