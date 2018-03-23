@@ -13,6 +13,7 @@ if [ ! -L /openbis_installed ]; then
     sudo su openbis -c "export ADMIN_PASSWORD=admin && export ETLSERVER_PASSWORD=etlserver && $ob_dir/run-console.sh"
 
     sudo touch /openbis_installed
+    sudo chmod 777 /openbis_installed
 
     popd $@ > /dev/null
 

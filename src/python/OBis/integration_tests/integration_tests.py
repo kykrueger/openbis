@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# can be run on vagrant like this:
+# vagrant ssh obisserver -c 'cd /vagrant_python/OBis/integration_tests && pytest ./integration_tests.py'
+
 import json
 import subprocess
 import socket
@@ -17,6 +20,19 @@ def run(cmd, tmpdir="", params=[]):
     print('-------------------' + cmd + '------------------- ' + str(tmpdir))
     print(result)
     return result
+
+
+def assert_matching(config, data_set, tmpdir, path):
+    content_copies = data_set['linkedData']['contentCopies']
+    content_copy = list(filter(lambda cc: cc['path'].endswith(path) == 1, content_copies))[0]
+    assert data_set['type']['code'] == config['data_set_type']
+    assert content_copy['externalDms']['code'] == config['external_dms_id']
+    assert content_copy['gitCommitHash'] == run('./00_get_commit_hash.sh', str(tmpdir) + '/' + path)
+    assert content_copy['gitRepositoryId'] == config['repository_id']
+    if config['object_id'] is not None:
+        assert data_set['sample']['identifier']['identifier'] == config['object_id']
+    if config['collection_id'] is not None:
+        assert data_set['experiment']['identifier']['identifier'] == config['collection_id']
 
 
 def test_obis(tmpdir):
@@ -41,6 +57,9 @@ def test_obis(tmpdir):
     assert config['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
     assert len(config['repository_id']) == 36
     assert "Created data set {}.".format(config['data_set_id']) in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data/data1')
+
 
     # 3. Second commit
     config_before = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data1'))
@@ -55,6 +74,9 @@ def test_obis(tmpdir):
     assert 'file: big_file' in result
     assert 'key: SHA256E-s1000000--d29751f2649b32ff572b5e0a9f541ea660a50f94ff0beedfb0b692b924cc8025' in result
     assert 'present: true' in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data/data1')
+    assert data_set['parents'][0]['code'] == config_before['data_set_id']
 
     # 4. Second repository
     result = run('./04_second_repository.sh', tmpdir)
@@ -65,6 +87,8 @@ def test_obis(tmpdir):
     assert len(config['repository_id']) == 36
     assert config['repository_id'] != config_data1['repository_id']
     assert "Created data set {}.".format(config['data_set_id']) in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data/data2')
 
     # 5. Second external dms
     result = run('./05_second_external_dms.sh', tmpdir)
@@ -75,6 +99,8 @@ def test_obis(tmpdir):
     assert len(config['repository_id']) == 36
     assert config['repository_id'] != config_data1['repository_id']
     assert "Created data set {}.".format(config['data_set_id']) in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data_b/data3')
 
     # 6. Error on first commit
     result = run('./06_error_on_first_commit_1_error.sh', tmpdir)
@@ -84,6 +110,8 @@ def test_obis(tmpdir):
     result = run('./06_error_on_first_commit_3_commit.sh', tmpdir)
     config = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data4'))
     assert "Created data set {}.".format(config['data_set_id']) in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data/data4')
 
     # 7. Attach data set to a collection
     result = run('./07_attach_to_collection.sh', tmpdir)
@@ -91,6 +119,8 @@ def test_obis(tmpdir):
     assert config['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
     assert len(config['repository_id']) == 36
     assert "Created data set {}.".format(config['data_set_id']) in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data/data5')
 
     # 8. Addref
     result = run('./08_addref_1_success.sh', tmpdir)
@@ -101,6 +131,8 @@ def test_obis(tmpdir):
     assert 'DataSet already exists in the database' in result
     result = run('./08_addref_3_non-existent.sh', tmpdir)
     assert 'Invalid value' in result
+    data_set = o.get_dataset(config_data6['data_set_id']).data
+    assert_matching(config_data6, data_set, tmpdir, 'obis_data/data6')
 
     # 9. Local clone
     config_data2 = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data2'))
@@ -108,6 +140,8 @@ def test_obis(tmpdir):
     config_data2_clone = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data_b/data2'))
     assert config_data2_clone['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
     assert config_data2_clone['external_dms_id'] != config_data2['external_dms_id']
+    data_set = o.get_dataset(config_data2_clone['data_set_id']).data
+    assert_matching(config_data2_clone, data_set, tmpdir, 'obis_data_b/data2')
     del config_data2['external_dms_id']
     del config_data2_clone['external_dms_id']
     assert config_data2_clone == config_data2
@@ -120,6 +154,9 @@ def test_obis(tmpdir):
     assert len(config_analysis1['repository_id']) == 36
     assert config_analysis1['repository_id'] != config_data1['repository_id']
     assert config_analysis1['data_set_id'] != config_data1['data_set_id']
+    data_set = o.get_dataset(config_analysis1['data_set_id']).data
+    assert_matching(config_analysis1, data_set, tmpdir, 'obis_data/analysis1')
+    assert data_set['parents'][0]['code'] == config_data1['data_set_id']
     result = run('./11_init_analysis_2_internal.sh', tmpdir)
     config_analysis2 = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data1/analysis2'))
     assert "Created data set {}.".format(config_analysis2['data_set_id']) in result
@@ -128,18 +165,27 @@ def test_obis(tmpdir):
     assert config_analysis2['data_set_id'] != config_data1['data_set_id']
     result = run('./11_init_analysis_3_git_check_ignore.sh', tmpdir)
     assert 'analysis2' in result
+    data_set = o.get_dataset(config_analysis2['data_set_id']).data
+    assert_matching(config_analysis2, data_set, tmpdir, 'obis_data/data1/analysis2')
+    assert data_set['parents'][0]['code'] == config_data1['data_set_id']
 
     # 12. Metadata only commit
     result = run('./12_metadata_only_1_commit.sh', tmpdir)
     config = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data7'))
     assert "Created data set {}.".format(config['data_set_id']) in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data/data7')
     result = run('./12_metadata_only_2_metadata_commit.sh', tmpdir)
     config = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data7'))
     assert "Created data set {}.".format(config['data_set_id']) in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data/data7')
 
     # 13. obis sync
     result = run('./13_sync_1_git_commit_and_sync.sh', tmpdir)
     config = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data7'))
     assert "Created data set {}.".format(config['data_set_id']) in result
+    data_set = o.get_dataset(config['data_set_id']).data
+    assert_matching(config, data_set, tmpdir, 'obis_data/data7')
     result = run('./13_sync_2_only_sync.sh', tmpdir)
     assert 'Nothing to sync' in result
