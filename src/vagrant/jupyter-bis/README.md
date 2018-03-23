@@ -79,10 +79,10 @@ This process describes how to upgrade your openBIS instance in your virtual mach
 5. log into vagrant: `vagrant ssh`
 6. stop all services: `sync/initialize/stop_services.sh`
 7. switch to openbis user: `sudo su - openbis`
-9. copy the downloaded gz-file (change the filename accordingly): `cp /vagrant_initialize/openBIS-installation-standard-technologies-S267.0-r39027.tar.gz ~/servers`
+9. copy the downloaded gz-file to the servers-folder (change the filename accordingly): `cp /vagrant_initialize/openBIS-installation-standard-technologies-S267.0-r39027.tar.gz ~/servers`
 10. do the openBIS upgrade: `bin/upgrade.sh`
 11. switch back to vagrant user: `logout` or CTRL-D
-11. start openBIS: `sync/initialize/start_services`
+11. start openBIS: `sync/initialize/start_services.sh`
 
 ## start openBIS and JupyterHub
 

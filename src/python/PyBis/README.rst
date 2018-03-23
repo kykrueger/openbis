@@ -38,6 +38,41 @@ Masterdata
     o.get_terms('MATING_TYPE')
     o.get_tags()
 
+Users, Groups and RoleAssignments
+---------------------------------
+
+::
+
+    o.get_groups()
+    group = o.new_group(code='group_name', description='...')
+    group = o.get_group('group_name')
+    group.save()
+    group.assign_role(role='ADMIN', space='DEFAULT')
+    group.get_roles() 
+    group.revoke_role(role='ADMIN', space='DEFAULT')
+
+    group.add_persons(['admin'])
+    group.get_persons()
+    group.del_persons(['admin'])
+    group.delete()
+
+    o.get_persons()
+    person = o.new_person(userId='username')
+    person.space = 'USER_SPACE'
+    person.save()
+
+    person.assign_role(role='ADMIN', space='MY_SPACE')
+    person.assign_role(role='OBSERVER')
+    person.get_roles()
+    person.revoke_role(role='ADMIN', space='MY_SPACE')
+    person.revoke_role(role='OBSERVER')
+
+    o.get_role_assignments()
+    o.get_role_assignments(space='MY_SPACE')
+    o.get_role_assignments(group='MY_GROUP')
+    ra = o.get_role_assignment(techId)
+    ra.delete()
+
 Spaces
 ------
 
@@ -259,6 +294,21 @@ Semantic Annotations
 
     # delete semantic annotation
     sa.delete('reason')
+
+Tags
+----
+
+::
+
+    new_tag = o.new_tag('my_tag', description='some descriptive text')
+    new_tag.save()
+    o.get_tags()
+    tag = o.get_tag('/username/TAG_Name')
+    tag.description = 'some new description'
+    tag.save()
+    tag.get_experiments()
+    tag.get_samples()
+    tag.delete()
 
 Requirements and organization
 =============================

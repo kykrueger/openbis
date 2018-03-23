@@ -73,7 +73,8 @@
 #   and `data` is the POST form data from the login page.
 # c.JupyterHub.authenticator_class = 'jupyterhub.auth.PAMAuthenticator'
 
-c.JupyterHub.authenticator_class = 'jupyterbis.auth.OpenbisAuthenticator'
+#c.JupyterHub.authenticator_class = 'jupyterbis.auth.OpenbisAuthenticator'
+c.JupyterHub.authenticator_class = 'jupyter_openbis_authenticator.auth.OpenbisAuthenticator'
 
 # The base URL of the entire application
 # c.JupyterHub.base_url = '/'
