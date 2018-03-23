@@ -267,6 +267,18 @@ sa.save()
 sa.delete('reason')
 ```
 
+## Tags
+```
+new_tag = o.new_tag('my_tag', description='some descriptive text')
+new_tag.save()
+o.get_tags()
+tag = o.get_tag('/username/TAG_Name')
+tag.get_experiments()
+tag.get_samples()
+tag.delete()
+```
+
+
 # Requirements and organization
 
 ### Dependencies and Requirements

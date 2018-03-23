@@ -52,10 +52,11 @@ class Tag(OpenBisObject):
             self._set_data(new_tag_data)
 
     def get_samples(self):
-        raise ValueError('not yet implemented')
+        return self.openbis.get_samples(tags=[self.code])
+        #raise ValueError('not yet implemented')
 
     def get_experiments(self):
-        raise ValueError('not yet implemented')
+        return self.openbis.get_experiments(tags=[self.code])
 
     def get_materials(self):
         raise ValueError('not yet implemented')
