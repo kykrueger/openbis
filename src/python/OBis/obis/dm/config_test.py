@@ -33,7 +33,7 @@ def copy_user_config_test_data(tmpdir):
 
 
 def configure_resolver_for_test(resolver, tmpdir):
-    resolver.location_resolver.location_roots['user_home'] = os.path.join(str(tmpdir), 'user_config')
+    resolver.set_resolver_location_roots('user_home', os.path.join(str(tmpdir), 'user_config'))
 
 
 def test_read_config(tmpdir):
@@ -46,7 +46,7 @@ def test_read_config(tmpdir):
         expected_dict = json.load(f)
     assert config_dict['user'] == expected_dict['user']
 
-    assert './.obis' == resolver.local_public_config_folder_path()
+    assert './.obis/properties.json' == resolver.local_public_properties_path()
 
 
 def test_write_config(tmpdir):

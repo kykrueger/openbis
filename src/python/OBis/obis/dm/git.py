@@ -79,6 +79,13 @@ class GitWrapper(object):
     def git_reset_to(self, commit_hash):
         return run_shell([self.git_path, 'reset', commit_hash])
 
+    def git_ignore(self, path):
+        result = run_shell([self.git_path, 'check-ignore', path])
+        if result.returncode == 1:
+            with open(".gitignore", "a") as gitignore:
+                gitignore.write(path)
+                gitignore.write("\n")
+
 
 class GitRepoFileInfo(object):
     """Class that gathers checksums and file lengths for all files in the repo."""

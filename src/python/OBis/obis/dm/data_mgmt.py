@@ -24,6 +24,7 @@ from .utils import default_echo
 from .utils import complete_git_config
 from .utils import complete_openbis_config
 from .utils import cd
+from ..scripts import cli
 
 
 # noinspection PyPep8Naming
@@ -41,7 +42,7 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
         config_resolver = dm_config.ConfigResolver()
         result = git_wrapper.git_top_level_path()
         if result.success():
-            config_resolver.location_resolver.location_roots['data_set'] = result.output
+            config_resolver.set_resolver_location_roots('data_set', result.output)
     complete_openbis_config(openbis_config, config_resolver)
 
     return GitDataMgmt(config_resolver, openbis_config, git_wrapper, openbis)
@@ -75,9 +76,10 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def init_analysis(self, path):
+    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
         """Initialize an analysis repository at the path.
         :param path: Path for the repository.
+        :param parent: (required when outside of existing repository) Path for the parent repositort
         :return: A CommandResult.
         """
         return
@@ -133,7 +135,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_data(self, path, desc=None, create=True):
         self.error_raise("init data", "No git command found.")
 
-    def init_analysis(self, path):
+    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
         self.error_raise("init analysis", "No git command found.")
 
     def commit(self, msg, auto_add=True, sync=True):
@@ -157,7 +159,7 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def setup_local_config(self, config, path):
         with cd(path):
-            self.config_resolver.location_resolver.location_roots['data_set'] = '.'
+            self.config_resolver.set_resolver_location_roots('data_set', '.')
             for key, value in config.items():
                 self.config_resolver.set_value_for_parameter(key, value, 'local')
 
@@ -177,6 +179,9 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(path):
             return self.config_resolver.config_dict().get('data_set_id')
 
+    def get_config(self, path, key):
+        with cd(path):
+            return self.config_resolver.config_dict().get(key)
 
     def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:
@@ -189,15 +194,47 @@ class GitDataMgmt(AbstractDataMgmt):
             return result
         with cd(path):
             # Update the resolvers location
-            self.config_resolver.location_resolver.location_roots['data_set'] = '.'
+            self.config_resolver.set_resolver_location_roots('data_set', '.')
             self.config_resolver.copy_global_to_local()
             self.commit_metadata_updates('local with global')
         return result
 
-    def init_analysis(self, path):
-        return self.git_wrapper.git_init(path)
+
+    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
+
+        # get data_set_id of parent from current folder or explicit parent argument
+        parent_folder = parent if parent is not None and len(parent) > 0 else "."
+        parent_data_set_id = self.get_data_set_id(parent_folder)
+        # check that parent repository has been added to openBIS
+        if self.get_config(parent_folder, 'repository_id') is None:
+            return CommandResult(returncode=-1, output="Parent data set must be committed to openBIS before creating an analysis data set.")
+        # check that analysis repository does not already exist
+        if os.path.exists(path):
+            return CommandResult(returncode=-1, output="Data set already exists: " + path)
+        # init analysis repository
+        result = self.init_data(path, desc, create, apply_config)
+        if result.failure():
+            return result
+        # add analysis repository folder to .gitignore of parent
+        if os.path.exists('.obis'):
+            self.git_wrapper.git_ignore(path)
+        elif parent is None:
+            return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
+        # set data_set_id to analysis repository so it will be used as parent when committing
+        with cd(path):
+            cli.set_property(self, "data_set_id", parent_data_set_id, False)
+        return result
+
 
     def sync(self):
+        self.set_restorepoint()
+        result = self._sync()
+        if result.failure():
+            self.restore()
+        return result
+
+
+    def _sync(self):
         try:
             cmd = OpenbisSync(self)
             return cmd.run()
@@ -228,7 +265,7 @@ class GitDataMgmt(AbstractDataMgmt):
             # TODO If no changes were made check if the data set is in openbis. If not, just sync.
             return result
         if sync:
-            result = self.sync()
+            result = self._sync()
             if result.failure():
                 self.restore()
         return result
@@ -237,12 +274,12 @@ class GitDataMgmt(AbstractDataMgmt):
         return self.git_wrapper.git_status()
 
     def commit_metadata_updates(self, msg_fragment=None):
-        folder = self.config_resolver.local_public_config_folder_path()
-        status = self.git_wrapper.git_status(folder)
+        properties_path = self.config_resolver.local_public_properties_path()
+        status = self.git_wrapper.git_status(properties_path)
         if len(status.output.strip()) < 1:
             # Nothing to commit
             return CommandResult(returncode=0, output="")
-        self.git_wrapper.git_add(folder)
+        self.git_wrapper.git_add(properties_path)
         if msg_fragment is None:
             msg = "OBIS: Update openBIS metadata cache."
         else:
@@ -254,8 +291,8 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def restore(self):
         self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
-        folder = self.config_resolver.local_public_config_folder_path()
-        self.git_wrapper.git_checkout(folder)
+        properties_path = self.config_resolver.local_public_properties_path()
+        self.git_wrapper.git_checkout(properties_path)
 
     def clone(self, data_set_id, ssh_user, content_copy_index):
         try:

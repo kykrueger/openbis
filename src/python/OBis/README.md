@@ -8,6 +8,17 @@ For situations like these, we have developed `obis`, a tool for orderly manageme
 
 Under the covers, `obis` takes advantage of publicly available and tested tools to manage data on the file system. In particular, it uses `git` and `git-annex` to track the content of a dataset. Using `git-annex`, even large binary artifacts can be tracked efficiently. For communication with openBIS, `obis` uses the openBIS API, which offers the power to register and track all metadata supported by openBIS.
 
+# Installation
+
+Since `obis` is based on `pybis`, it requires python 3.6 and the corresponding `pip3`.
+
+First, install `pybis` if it is not already installed. Then install `obis` (paths relative to repository root):
+
+```
+pip3 install src/python/PyBis
+pip3 install src/python/Obis
+```
+
 # See also
 
   V. Korolev, A. Joshi, V. Korolev, M.A. Grasso, A. Joshi, M.A. Grasso, et al., "PROB: A tool for tracking provenance and reproducibility of big data experiments", Reproduce'14. HPCA 2014, vol. 11, pp. 264-286, 2014.

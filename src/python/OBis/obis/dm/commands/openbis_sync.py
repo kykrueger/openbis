@@ -25,13 +25,6 @@ class OpenbisSync(OpenbisCommand):
                                  output="Missing configuration settings for {}.".format(missing_config_settings))
         return CommandResult(returncode=0, output="")
 
-    def check_data_set_status(self):
-        """If we are in sync with the data set on the server, there is nothing to do."""
-        # TODO Get the DataSet from the server
-        #  - Find the content copy that refers to this repo
-        #  - Check if the commit id is the current commit id
-        #  - If so, skip sync.
-        return CommandResult(returncode=0, output="")
 
     def create_data_set_code(self):
         try:
@@ -40,9 +33,9 @@ class OpenbisSync(OpenbisCommand):
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
 
-    def create_data_set(self, data_set_code, external_dms, repository_id):
+    def create_data_set(self, data_set_code, external_dms, repository_id, ignore_parent=False):
         data_set_type = self.data_set_type()
-        parent_data_set_id = self.data_set_id()
+        parent_data_set_id = None if ignore_parent else self.data_set_id()
         properties = self.data_set_properties()
         result = self.git_wrapper.git_top_level_path()
         if result.failure():
@@ -59,7 +52,7 @@ class OpenbisSync(OpenbisCommand):
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,
                                                      sample=sample_id, experiment=experiment_id, properties=properties, parents=parent_data_set_id,
                                                      data_set_code=data_set_code, contents=contents)
-            return CommandResult(returncode=0, output=""), data_set
+            return CommandResult(returncode=0, output="Created data set {}.".format(str(data_set))), data_set
         except ValueError as e:
             return CommandResult(returncode=-1, output=str(e)), None
 
@@ -76,7 +69,57 @@ class OpenbisSync(OpenbisCommand):
         return CommandResult(returncode=0, output=repository_id)
 
 
+    def handle_unsynced_commits(self):
+        return CommandResult(returncode=0, output="")
+
+
+    def handle_missing_data_set(self):
+        return CommandResult(returncode=0, output="")
+
+
+    def git_hash_matches(self, data_set):
+        content_copies = data_set.data['linkedData']['contentCopies']
+        for content_copy in content_copies:
+            cc_commit_hash = content_copy['gitCommitHash']
+            result = self.git_wrapper.git_commit_hash()
+            if result.failure():
+                return result
+            git_comit_hash = result.output
+            if cc_commit_hash == git_comit_hash:
+                return True
+        return False
+
+    def continue_without_parent_data_set(self):
+        while True:
+            print("The data set {} not found in openBIS".format(self.data_set_id()))
+            print("Create new data set without parent? (y/n)")
+            continue_without_parent = input("> ")
+            if continue_without_parent == "y":
+                return True
+            elif continue_without_parent == "n":
+                return False 
+
+
     def run(self):
+
+        ignore_parent = False
+
+        if self.data_set_id() is not None:
+            try:
+                data_set = self.openbis.get_dataset(self.data_set_id())
+                if self.git_hash_matches(data_set):
+                    return CommandResult(returncode=0, output="Nothing to sync.")
+            except ValueError as e:
+                if 'no such dataset' in str(e):
+                    ignore_parent = self.continue_without_parent_data_set()
+                    if not ignore_parent:
+                        return CommandResult(returncode=-1, output="Parent data set not found in openBIS.")
+                elif 'Your session expired' in str(e):
+                    self.login()
+                    return self.run()
+                else:
+                    raise e
+
         # TODO Write mementos in case openBIS is unreachable
         # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
 
@@ -105,5 +148,5 @@ class OpenbisSync(OpenbisCommand):
         self.commit_metadata_updates("data set id")
 
         # create a data set, using the existing data set as a parent, if there is one
-        result, data_set = self.create_data_set(data_set_code, external_dms, repository_id)
+        result, data_set = self.create_data_set(data_set_code, external_dms, repository_id, ignore_parent)
         return result
