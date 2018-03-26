@@ -53,4 +53,19 @@ public class SearchDomainServiceExecutionOptions extends AbstractExecutionOption
         return searchString;
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder(super.toString());
+        if (searchString != null)
+        {
+            builder.append(", search string='").append(searchString).append("'");
+        }
+        if (preferredSearchDomain != null)
+        {
+            builder.append(", preferred serach domain=").append(preferredSearchDomain);
+        }
+        return builder.toString();
+    }
+
 }

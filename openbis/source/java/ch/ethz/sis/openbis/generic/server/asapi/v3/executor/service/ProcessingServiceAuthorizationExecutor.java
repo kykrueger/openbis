@@ -43,7 +43,7 @@ public class ProcessingServiceAuthorizationExecutor implements IProcessingServic
     }
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER })
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_USER })
     @Capability("EXECUTE_PROCESSING_SERVICES")
     public void canExecute(IOperationContext context,
             @AuthorizationGuard(guardClass = DataSetCodeCollectionPredicate.class) List<String> dataSetCodes)

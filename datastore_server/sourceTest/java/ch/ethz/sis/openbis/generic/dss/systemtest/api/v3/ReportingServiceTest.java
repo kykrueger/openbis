@@ -132,7 +132,7 @@ public class ReportingServiceTest extends AbstractFileTest
     }
 
     @Test
-    public void testExecuteReportingService() throws Exception
+    public void testExecuteReportingServiceWithSpecifiedDataStore() throws Exception
     {
         // Given
         String dataSetCode = registerDataSet();
@@ -153,6 +153,28 @@ public class ReportingServiceTest extends AbstractFileTest
         as.logout(sessionToken);
     }
 
+    @Test
+    public void testExecuteReportingService() throws Exception
+    {
+        // Given
+        String dataSetCode = registerDataSet();
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("example-jython-report");
+        ReportingServiceExecutionOptions options = new ReportingServiceExecutionOptions();
+        options.withDataSets(dataSetCode);
+        
+        // When
+        TableModel tableModel = as.executeReportingService(sessionToken, id, options);
+        
+        // Then
+        assertEquals("[Data Set, Data Set Type]", tableModel.getColumns().toString());
+        assertEquals("[[" + dataSetCode + ", UNKNOWN]]", tableModel.getRows().toString());
+        assertEquals(tableModel.getRows().get(0).get(0).getClass(), TableStringCell.class);
+        assertEquals(tableModel.getRows().get(0).get(1).getClass(), TableStringCell.class);
+        
+        as.logout(sessionToken);
+    }
+    
     @Test
     public void testExecuteUnknownReportingService() throws Exception
     {

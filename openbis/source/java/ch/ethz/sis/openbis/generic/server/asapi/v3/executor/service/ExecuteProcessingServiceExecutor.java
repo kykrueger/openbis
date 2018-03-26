@@ -16,12 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.IDataStoreId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ProcessingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
@@ -48,12 +52,20 @@ public class ExecuteProcessingServiceExecutor
     public void execute(IOperationContext context, IDssServiceId serviceId, ProcessingServiceExecutionOptions options)
     {
         checkData(serviceId, options);
-        authorizationExecutor.canExecute(context, options.getDataSetCodes());
+        List<String> dataSetCodes = options.getDataSetCodes();
+        authorizationExecutor.canExecute(context, dataSetCodes);
 
         IDataSetTable dataSetTable = businessObjectFactory.createDataSetTable(context.getSession());
         DssServicePermId permId = (DssServicePermId) serviceId;
         String key = permId.getPermId();
-        String datastoreCode = ((DataStorePermId) permId.getDataStoreId()).getPermId();
-        dataSetTable.processDatasets(key, datastoreCode, options.getDataSetCodes(), options.getParameters());
+        IDataStoreId dataStoreId = permId.getDataStoreId();
+        Map<String, String> parameters = options.getParameters();
+        if (dataStoreId instanceof DataStorePermId)
+        {
+            dataSetTable.processDatasets(key, ((DataStorePermId) dataStoreId).getPermId(), dataSetCodes, parameters);
+        } else
+        {
+            dataSetTable.processDatasets(key, dataSetCodes, parameters);
+        }
     }
 }

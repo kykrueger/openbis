@@ -45,4 +45,10 @@ public abstract class AbstractExecutionOptionsWithParameters<EO extends Abstract
         return parameters;
     }
 
+    @Override
+    public String toString()
+    {
+        return getClass().getSimpleName() + ": parameters=" + parameters;
+    }
+
 }

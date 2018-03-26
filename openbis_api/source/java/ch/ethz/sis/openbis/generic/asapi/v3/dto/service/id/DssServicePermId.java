@@ -33,21 +33,22 @@ public class DssServicePermId extends ObjectPermId implements IDssServiceId
 
     @JsonProperty
     private IDataStoreId dataStoreId;
+    
+    public DssServicePermId(String permId)
+    {
+        this(permId, null);
+    }
 
     public DssServicePermId(String permId, IDataStoreId dataStoreId)
     {
         super(permId);
-        if (dataStoreId == null)
-        {
-            throw new IllegalArgumentException("Data store id cannot be null.");
-        }
         this.dataStoreId = dataStoreId;
     }
 
     @Override
     public String toString()
     {
-        return dataStoreId + ":" + super.toString();
+        return dataStoreId == null ? super.toString() : dataStoreId + ":" + super.toString();
     }
 
     @Override

@@ -212,7 +212,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					dataSetCode = permId;
 					var serviceId = new c.DssServicePermId("test-reporting-service", new c.DataStorePermId("DSS1"));
 					var options = new c.ReportingServiceExecutionOptions();
-					options.withDataSets([dataSetCode]);
+					options.withDataSets(dataSetCode);
 					return facade.executeReportingService(serviceId, options);
 				});
 			}

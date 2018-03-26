@@ -52,4 +52,10 @@ public class ProcessingServiceExecutionOptions
         return dataSetCodes;
     }
 
+    @Override
+    public String toString()
+    {
+        return super.toString() + ", data sets=" + dataSetCodes;
+    }
+
 }
