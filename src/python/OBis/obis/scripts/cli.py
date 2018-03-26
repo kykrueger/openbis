@@ -97,19 +97,20 @@ def commit(ctx, msg, auto_add):
 
 @cli.command()
 @click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
+@click.option('-p', '--is_data_set_property', default=False, is_flag=True, help='Configure data set property.')
 @click.argument('prop', default="")
 @click.argument('value', default="")
 @click.pass_context
-def config(ctx, is_global, prop, value):
+def config(ctx, is_global, is_data_set_property, prop, value):
     """Configure the openBIS setup.
 
     Configure the openBIS server url, the data set type, and the data set properties.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    config_internal(data_mgmt, is_global, prop, value)
+    config_internal(data_mgmt, is_global, is_data_set_property, prop, value)
 
 
-def config_internal(data_mgmt, is_global, prop, value):
+def config_internal(data_mgmt, is_global, is_data_set_property, prop, value):
     resolver = data_mgmt.config_resolver
     if is_global:
         resolver.set_location_search_order(['global'])
@@ -130,14 +131,17 @@ def config_internal(data_mgmt, is_global, prop, value):
         config_str = json.dumps(little_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
     else:
-        return check_result("config", set_property(data_mgmt, prop, value, is_global))
+        return check_result("config", set_property(data_mgmt, prop, value, is_global, is_data_set_property))
 
 
-def set_property(data_mgmt, prop, value, is_global):
+def set_property(data_mgmt, prop, value, is_global, is_data_set_property):
     """Helper function to implement the property setting semantics."""
     loc = 'global' if is_global else 'local'
     resolver = data_mgmt.config_resolver
-    resolver.set_value_for_parameter(prop, value, loc)
+    if is_data_set_property:
+        resolver.set_value_for_json_parameter('data_set_properties', prop, value, loc)
+    else:
+        resolver.set_value_for_parameter(prop, value, loc)
     if not is_global:
         return data_mgmt.commit_metadata_updates(prop)
     else:

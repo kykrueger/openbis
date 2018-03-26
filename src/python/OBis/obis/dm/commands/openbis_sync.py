@@ -100,7 +100,7 @@ class OpenbisSync(OpenbisCommand):
                 return False 
 
 
-    def run(self):
+    def run(self, info_only=False):
 
         ignore_parent = False
 
@@ -111,6 +111,8 @@ class OpenbisSync(OpenbisCommand):
                     return CommandResult(returncode=0, output="Nothing to sync.")
             except ValueError as e:
                 if 'no such dataset' in str(e):
+                    if info_only:
+                        return CommandResult(returncode=-1, output="Parent data set not found in openBIS.")
                     ignore_parent = self.continue_without_parent_data_set()
                     if not ignore_parent:
                         return CommandResult(returncode=-1, output="Parent data set not found in openBIS.")
@@ -119,6 +121,9 @@ class OpenbisSync(OpenbisCommand):
                     return self.run()
                 else:
                     raise e
+
+        if info_only:
+            return CommandResult(returncode=-1, output="There are git commits which have not been synchronized.")
 
         # TODO Write mementos in case openBIS is unreachable
         # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.

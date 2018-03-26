@@ -14,6 +14,7 @@ import os
 import shutil
 import traceback
 import pybis
+import requests
 from . import config as dm_config
 from .commands.addref import Addref
 from .commands.clone import Clone
@@ -222,7 +223,7 @@ class GitDataMgmt(AbstractDataMgmt):
             return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
         # set data_set_id to analysis repository so it will be used as parent when committing
         with cd(path):
-            cli.set_property(self, "data_set_id", parent_data_set_id, False)
+            cli.set_property(self, "data_set_id", parent_data_set_id, False, False)
         return result
 
 
@@ -271,7 +272,15 @@ class GitDataMgmt(AbstractDataMgmt):
         return result
 
     def status(self):
-        return self.git_wrapper.git_status()
+        git_status = self.git_wrapper.git_status()
+        try:
+            sync_status = OpenbisSync(self).run(info_only=True)
+        except requests.exceptions.ConnectionError:
+            sync_status = CommandResult(returncode=-1, output="Could not connect to openBIS.")
+        output = git_status.output
+        if sync_status.failure():
+            output += '\n' + sync_status.output
+        return CommandResult(returncode=sync_status.returncode + sync_status.returncode, output=output)
 
     def commit_metadata_updates(self, msg_fragment=None):
         properties_path = self.config_resolver.local_public_properties_path()
