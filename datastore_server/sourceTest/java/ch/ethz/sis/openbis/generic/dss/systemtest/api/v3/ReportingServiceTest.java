@@ -110,6 +110,7 @@ public class ReportingServiceTest extends AbstractFileTest
         List<String> allDataSetTypeCodes = as.searchDataSetTypes(sessionToken, new DataSetTypeSearchCriteria(),
                 new DataSetTypeFetchOptions()).getObjects().stream().map(t -> t.getCode()).collect(Collectors.toList());
         Collections.sort(allDataSetTypeCodes);
+        System.err.println(allDataSetTypeCodes);
 
         // When
         List<ReportingService> services = as.searchReportingServices(sessionToken, searchCriteria, fetchOptions).getObjects();
