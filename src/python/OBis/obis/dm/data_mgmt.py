@@ -279,8 +279,10 @@ class GitDataMgmt(AbstractDataMgmt):
             sync_status = CommandResult(returncode=-1, output="Could not connect to openBIS.")
         output = git_status.output
         if sync_status.failure():
-            output += '\n' + sync_status.output
-        return CommandResult(returncode=sync_status.returncode + sync_status.returncode, output=output)
+            if len(output) > 0:
+                output += '\n'
+            output += sync_status.output
+        return CommandResult(returncode=0, output=output)
 
     def commit_metadata_updates(self, msg_fragment=None):
         properties_path = self.config_resolver.local_public_properties_path()

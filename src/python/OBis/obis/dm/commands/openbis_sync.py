@@ -123,7 +123,10 @@ class OpenbisSync(OpenbisCommand):
                     raise e
 
         if info_only:
-            return CommandResult(returncode=-1, output="There are git commits which have not been synchronized.")
+            if self.data_set_id() is None:
+                return CommandResult(returncode=-1, output="Not yet synchronized with openBIS.")
+            else:
+                return CommandResult(returncode=-1, output="There are git commits which have not been synchronized.")
 
         # TODO Write mementos in case openBIS is unreachable
         # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.

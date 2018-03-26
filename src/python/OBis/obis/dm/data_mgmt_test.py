@@ -93,7 +93,7 @@ def test_data_use_case(tmpdir):
         raw_status = git_status()
         status = dm.status()
         assert raw_status.returncode == status.returncode
-        assert raw_status.output == status.output
+        assert raw_status.output + '\nNot yet synchronized with openBIS.' == status.output
         assert len(status.output) > 0
 
         result = dm.commit("Added data.")
@@ -120,7 +120,7 @@ def test_data_use_case(tmpdir):
         assert stat.st_nlink == 1
 
         status = dm.status()
-        assert len(status.output) == 0
+        assert status.output == 'There are git commits which have not been synchronized.'
 
         check_correct_config_semantics()
 
