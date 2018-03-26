@@ -217,7 +217,7 @@ def get(ctx, f):
 @cli.command()
 @click.pass_context
 def status(ctx):
-    """Sync the repository with openBIS.
+    """Show the state of the obis repository.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
     result = data_mgmt.status()
