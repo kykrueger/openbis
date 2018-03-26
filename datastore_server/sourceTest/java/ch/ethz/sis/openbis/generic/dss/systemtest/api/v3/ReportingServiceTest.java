@@ -109,7 +109,6 @@ public class ReportingServiceTest extends AbstractFileTest
         ReportingServiceFetchOptions fetchOptions = new ReportingServiceFetchOptions();
         List<String> allDataSetTypeCodes = as.searchDataSetTypes(sessionToken, new DataSetTypeSearchCriteria(),
                 new DataSetTypeFetchOptions()).getObjects().stream().map(t -> t.getCode()).collect(Collectors.toList());
-        allDataSetTypeCodes.remove("AUTH-DATASET-TYPE"); // Otherwise test would fail in suite for unknown reason
         Collections.sort(allDataSetTypeCodes);
         System.err.println(allDataSetTypeCodes);
 
