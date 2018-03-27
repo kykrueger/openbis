@@ -17,6 +17,7 @@ import pybis
 import requests
 from . import config as dm_config
 from .commands.addref import Addref
+from .commands.removeref import Removeref
 from .commands.clone import Clone
 from .commands.openbis_sync import OpenbisSync
 from .command_result import CommandResult
@@ -129,6 +130,12 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         """
         return
 
+    def removeref(self):
+        """Remove the current folder / repository from openBIS.
+        :return: A CommandResult.
+        """
+        return
+
 
 class NoGitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations when git is not available -- show error messages."""
@@ -153,6 +160,9 @@ class NoGitDataMgmt(AbstractDataMgmt):
 
     def addref(self):
         self.error_raise("addref", "No git command found.")
+
+    def removeref(self):
+        self.error_raise("removeref", "No git command found.")
 
 
 class GitDataMgmt(AbstractDataMgmt):
@@ -315,6 +325,13 @@ class GitDataMgmt(AbstractDataMgmt):
     def addref(self):
         try:
             cmd = Addref(self)
+            return cmd.run()
+        except Exception as e:
+            return CommandResult(returncode=-1, output="Error: " + str(e))
+
+    def removeref(self):
+        try:
+            cmd = Removeref(self)
             return cmd.run()
         except Exception as e:
             return CommandResult(returncode=-1, output="Error: " + str(e))

@@ -35,13 +35,6 @@ class Addref(OpenbisCommand):
             return CommandResult(returncode=-1, output="This is not an obis repository.")
 
 
-    def path(self):
-        result = self.git_wrapper.git_top_level_path()
-        if result.failure():
-            return result
-        return result.output
-
-
     def commit_id(self):
         result = self.git_wrapper.git_commit_hash()
         if result.failure():

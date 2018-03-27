@@ -65,11 +65,22 @@ def cli(ctx, quiet, skip_verification):
 @click.pass_context
 @click.argument('repository', type=click.Path(exists=True))
 def addref(ctx, repository):
-    """Add a reference to the other repository in this repository.
+    """Add the given repository as a reference to openBIS.
     """
     with cd(repository):
         data_mgmt = shared_data_mgmt(ctx.obj)
         return check_result("addref", data_mgmt.addref())
+
+
+@cli.command()
+@click.pass_context
+@click.argument('repository', type=click.Path(exists=True))
+def removeref(ctx, repository):
+    """Remove the reference to the given repository from openBIS.
+    """
+    with cd(repository):
+        data_mgmt = shared_data_mgmt(ctx.obj)
+        return check_result("addref", data_mgmt.removeref())
 
 
 @cli.command()
@@ -210,15 +221,6 @@ def init_data(ctx, object_id, collection_id, folder, description):
 def init_analysis(ctx, parent, object_id, collection_id, folder, description):
     """Initialize the folder as an analysis folder."""
     return init_analysis_impl(ctx, parent, object_id, collection_id, folder, description)
-
-
-@cli.command()
-@click.pass_context
-@click.argument('file')
-def get(ctx, f):
-    """Get one or more files from a clone of this repository.
-    """
-    click_echo("get {}".format(f))
 
 
 @cli.command()

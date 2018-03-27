@@ -130,3 +130,9 @@ class OpenbisCommand(object):
             return hostname_input
         else:
             return hostname
+
+    def path(self):
+        result = self.git_wrapper.git_top_level_path()
+        if result.failure():
+            return result
+        return result.output
