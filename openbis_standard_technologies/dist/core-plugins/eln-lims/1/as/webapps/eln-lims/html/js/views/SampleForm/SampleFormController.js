@@ -420,8 +420,12 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			
 			if(samplesToDelete) {
 				mainController.serverFacade.deleteSamples(samplesToDelete,  "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier, 
-															function() {
-																Util.showSuccess(message, callbackOk);
+															function(response) {
+																if(response.error) {
+																	Util.showError("Deletes failed, other changes where commited: " + response.error.message, callbackOk);
+																} else {
+																	Util.showSuccess(message, callbackOk);
+																}
 																_this._sampleFormModel.isFormDirty = false;
 															}, 
 															false);
