@@ -116,9 +116,6 @@ class OpenbisSync(OpenbisCommand):
                     ignore_parent = self.continue_without_parent_data_set()
                     if not ignore_parent:
                         return CommandResult(returncode=-1, output="Parent data set not found in openBIS.")
-                elif 'Your session expired' in str(e):
-                    self.login()
-                    return self.run()
                 else:
                     raise e
 

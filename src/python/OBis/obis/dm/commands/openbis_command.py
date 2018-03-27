@@ -18,6 +18,7 @@ class OpenbisCommand(object):
 
         if self.openbis is None and dm.openbis_config.get('url') is not None:
             self.openbis = pybis.Openbis(**dm.openbis_config)
+            self.login()
 
     def external_dms_id(self):
         return self.config_dict.get('external_dms_id')
