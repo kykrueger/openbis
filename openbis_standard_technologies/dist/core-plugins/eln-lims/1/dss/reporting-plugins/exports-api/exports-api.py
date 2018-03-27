@@ -595,7 +595,7 @@ def getFilePath(spaceCode, projCode, expCode, sampCode, dataCode):
 
 def addToZipFile(path, file, zos):
         fis = FileInputStream(file);
-        zipEntry = ZipEntry(path);
+        zipEntry = ZipEntry(path[1:]); # Making paths relative to make them compatible with Windows zip implementation
         zos.putNextEntry(zipEntry);
 
         bytes = jarray.zeros(1024, "b");
