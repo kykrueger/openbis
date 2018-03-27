@@ -216,20 +216,13 @@ class ConfigResolverImpl(object):
         if not param.is_json:
             raise ValueError('Can not set json value for non-json parameter: ' + json_param_name)
 
-        import pdb; pdb.set_trace()
-        # TODO
-        json_value = json.loads(self.value_for_parameter(param, loc))
+        json_value = self.value_for_parameter(param, loc)
+        if json_value is None:
+            json_value = {}
         json_value[name] = value
 
-        location_config_dict = self.set_cache_value_for_parameter(param, value, loc)
-        location_path = param.location_path(loc)
-        location = self.env.location_at_path(location_path)
-        location_dir_path = self.location_resolver.resolve_location(location)
-        if not os.path.exists(location_dir_path):
-            os.makedirs(location_dir_path)
-        config_path = os.path.join(location_dir_path, self.config_file)
-        with open(config_path, "w") as f:
-            json.dump(location_config_dict, f, sort_keys=True)
+        self.set_value_for_parameter(json_param_name, json_value, loc)
+
 
     def value_for_parameter(self, param, loc):
         config = self.location_cache[loc]
@@ -289,6 +282,7 @@ class ConfigResolver(object):
         for resolver in self.resolvers:
             if name in resolver.env.params:
                 return resolver.set_value_for_parameter(name, value, loc)
+        raise ValueError('Config does not exist: ' + name)
 
     def set_value_for_json_parameter(self, json_param_name, name, value, loc):
         for resolver in self.resolvers:

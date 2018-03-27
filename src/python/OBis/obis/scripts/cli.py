@@ -138,10 +138,13 @@ def set_property(data_mgmt, prop, value, is_global, is_data_set_property):
     """Helper function to implement the property setting semantics."""
     loc = 'global' if is_global else 'local'
     resolver = data_mgmt.config_resolver
-    if is_data_set_property:
-        resolver.set_value_for_json_parameter('data_set_properties', prop, value, loc)
-    else:
-        resolver.set_value_for_parameter(prop, value, loc)
+    try:
+        if is_data_set_property:
+            resolver.set_value_for_json_parameter('data_set_properties', prop, value, loc)
+        else:
+            resolver.set_value_for_parameter(prop, value, loc)
+    except ValueError as e:
+        return CommandResult(returncode=-1, output="Error: " + str(e))
     if not is_global:
         return data_mgmt.commit_metadata_updates(prop)
     else:

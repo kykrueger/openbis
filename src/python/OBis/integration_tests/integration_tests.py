@@ -60,7 +60,6 @@ def test_obis(tmpdir):
     data_set = o.get_dataset(config['data_set_id']).data
     assert_matching(config, data_set, tmpdir, 'obis_data/data1')
 
-
     # 3. Second commit
     config_before = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data1'))
     result = run('./03_second_commit_1_commit.sh', tmpdir)
@@ -189,3 +188,11 @@ def test_obis(tmpdir):
     assert_matching(config, data_set, tmpdir, 'obis_data/data7')
     result = run('./13_sync_2_only_sync.sh', tmpdir)
     assert 'Nothing to sync' in result
+
+    # 14. Configure data set properties
+    result = run('./14_config_data_set_properties_1.sh', tmpdir)
+    config = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data8'))
+    assert config['data_set_properties'] == { 'a': '0' }
+    result = run('./14_config_data_set_properties_2.sh', tmpdir)
+    config = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data8'))
+    assert config['data_set_properties'] == { 'a': '0', 'b': '1', 'c': '3' }
