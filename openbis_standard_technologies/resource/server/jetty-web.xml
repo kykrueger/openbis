@@ -5,4 +5,10 @@
 	<Call name="addAliasCheck">
 	  <Arg><New class="org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker"/></Arg>
 	</Call>
+    <Get name="sessionHandler">
+      <Get name="sessionCookieConfig">
+        <Set name="secure" type="boolean">true</Set>
+        <Set name="httpOnly" type="boolean">true</Set>
+      </Get>
+    </Get>
 </Configure>
