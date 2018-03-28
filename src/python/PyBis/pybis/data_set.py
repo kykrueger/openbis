@@ -179,7 +179,7 @@ class GitDataSetCreation(object):
 
 class GitDataSetUpdate(object):
 
-    def __init__(self, openbis, path, commit_id, repository_id, edms_id, data_set_id):
+    def __init__(self, openbis, data_set_id):
         """Initialize the command object with the necessary parameters.
         :param openbis: The openBIS API object.
         :param path: The path to the git repository
@@ -189,20 +189,28 @@ class GitDataSetUpdate(object):
         :param data_set_id: Id of the data set to be updated
         """
         self.openbis = openbis
+        self.data_set_id = data_set_id
+
+    def new_content_copy(self, path, commit_id, repository_id, edms_id):
+        """ Create a data set update for adding a content copy.
+        :return: A DataSetUpdate object
+        """
         self.path = path
         self.commit_id = commit_id
         self.repository_id = repository_id
         self.edms_id =edms_id
-        self.data_set_id = data_set_id
-
-
-    def new_content_copy(self):
-        """ Create a data set update for adding a content copy.
-        :return: A DataSetUpdate object
-        """
-        data_set_update = self.get_data_set_update()
+        
+        content_copy_actions = self.get_actions_add_content_copy()
+        data_set_update = self.get_data_set_update(content_copy_actions)
         self.send_request(data_set_update)
 
+    def delete_content_copy(self, content_copy):
+        """ Deletes the given content_copy from openBIS.
+        :param content_copy: Content copy to be deleted.
+        """
+        content_copy_actions = self.get_actions_remove_content_copy(content_copy)
+        data_set_update = self.get_data_set_update(content_copy_actions)
+        self.send_request(data_set_update)
 
     def send_request(self, data_set_update):
         request = {
@@ -215,11 +223,11 @@ class GitDataSetUpdate(object):
         self.openbis._post_request(self.openbis.as_v3, request)
 
 
-    def get_data_set_update(self):
+    def get_data_set_update(self, content_copy_actions=[]):
         return {
             "@type": "as.dto.dataset.update.DataSetUpdate",
             "dataSetId": self.get_data_set_id(),
-            "linkedData": self.get_linked_data()
+            "linkedData": self.get_linked_data(content_copy_actions)
         }
 
 
@@ -230,7 +238,7 @@ class GitDataSetUpdate(object):
         }
 
 
-    def get_linked_data(self):
+    def get_linked_data(self, actions):
         return {
             "@type": "as.dto.common.update.FieldUpdateValue",
             "isModified": True,
@@ -238,14 +246,23 @@ class GitDataSetUpdate(object):
                 "@type": "as.dto.dataset.update.LinkedDataUpdate",
                 "contentCopies": {
                     "@type": "as.dto.dataset.update.ContentCopyListUpdateValue",
-                    "actions": [ {
-                        "@type": "as.dto.common.update.ListUpdateActionAdd",
-                        "items": [ self.get_content_copy_creation() ]
-                    } ]
+                    "actions": actions,
                 }
             }
         }
 
+
+    def get_actions_add_content_copy(self):
+        return [{
+                    "@type": "as.dto.common.update.ListUpdateActionAdd",
+                    "items": [ self.get_content_copy_creation() ]
+                }]
+
+    def get_actions_remove_content_copy(self, content_copy):
+        return [{
+                    "@type": "as.dto.common.update.ListUpdateActionRemove",
+                    "items": [ content_copy["id"] ]
+                }]
 
     def get_content_copy_creation(self):
         return {

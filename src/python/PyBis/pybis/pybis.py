@@ -2576,7 +2576,15 @@ class Openbis:
         "param edms_id: Id of the external data managment system of the content copy
         "param data_set_id: Id of the data set to which the new content copy belongs
         """
-        return pbds.GitDataSetUpdate(self, path, commit_id, repository_id, edms_id, data_set_id).new_content_copy()
+        return pbds.GitDataSetUpdate(self, data_set_id).new_content_copy(path, commit_id, repository_id, edms_id)
+
+    def delete_content_copy(self, data_set_id, content_copy):
+        """
+        Deletes a content copy from a data set.
+        :param data_set_id: Id of the data set containing the content copy
+        :param content_copy: The content copy to be deleted
+        """
+        return pbds.GitDataSetUpdate(self, data_set_id).delete_content_copy(content_copy)        
 
     @staticmethod
     def sample_to_sample_id(sample):

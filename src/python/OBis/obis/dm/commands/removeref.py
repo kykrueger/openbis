@@ -36,8 +36,7 @@ class Removeref(OpenbisCommand):
             return CommandResult(returncode=-1, output="Matching content copy not fount in data set: " + self.data_set_id())
 
         for content_copy in matching_content_copies:
-            print(content_copy)
-            # TODO delete
+            self.openbis.delete_content_copy(self.data_set_id(), content_copy)
 
         return CommandResult(returncode=0, output="")
 
