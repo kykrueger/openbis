@@ -53,8 +53,22 @@ class ConfigParam(object):
         if not self.is_json:
             return value
         if isinstance(value, str):
-            return json.loads(value)
+            return self.parse_json_value(value)
         return value
+
+    def parse_json_value(self, value):
+        value_dict = json.loads(value, object_hook=self.json_upper)
+        return value_dict
+
+    def json_upper(self, obj):
+        for key in obj.keys():
+            new_key = key.upper()
+            if new_key != key:
+                if new_key in obj:
+                    raise ValueError("Duplicate key after capitalizing JSON config: " + new_key)
+                obj[new_key] = obj[key]
+                del obj[key]
+        return obj
 
 
 class ConfigEnv(object):
@@ -219,9 +233,9 @@ class ConfigResolverImpl(object):
         json_value = self.value_for_parameter(param, loc)
         if json_value is None:
             json_value = {}
-        json_value[name] = value
+        json_value[name.upper()] = value
 
-        self.set_value_for_parameter(json_param_name, json_value, loc)
+        self.set_value_for_parameter(json_param_name, json.dumps(json_value), loc)
 
 
     def value_for_parameter(self, param, loc):

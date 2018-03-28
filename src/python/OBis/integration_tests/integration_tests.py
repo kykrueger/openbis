@@ -192,7 +192,9 @@ def test_obis(tmpdir):
     # 14. Configure data set properties
     result = run('./14_config_data_set_properties_1.sh', tmpdir)
     config = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data8'))
-    assert config['data_set_properties'] == { 'a': '0' }
+    assert config['data_set_properties'] == { 'A': '0' }
     result = run('./14_config_data_set_properties_2.sh', tmpdir)
     config = json.loads(run('./00_get_config.sh', tmpdir + '/obis_data/data8'))
-    assert config['data_set_properties'] == { 'a': '0', 'b': '1', 'c': '3' }
+    assert config['data_set_properties'] == { 'A': '0', 'B': '1', 'C': '3' }
+    result = run('./14_config_data_set_properties_3.sh', tmpdir)
+    assert 'Duplicate key after capitalizing JSON config: A' in result
