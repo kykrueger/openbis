@@ -51,4 +51,10 @@ public class ReportingServiceExecutionOptions implements Serializable, IDataSetC
         return dataSetCodes;
     }
 
+    @Override
+    public String toString()
+    {
+        return getClass().getSimpleName() + ": data sets=" + dataSetCodes;
+    }
+
 }

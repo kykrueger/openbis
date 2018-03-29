@@ -226,6 +226,28 @@ public class AggregationServiceTest extends AbstractFileTest
                 "Cannot find the data store UNKNOWN");
         as.logout(sessionToken);
     }
+    
+    @Test
+    public void testExecuteAggregationServiceOfUnspecifiedDataStore() throws Exception
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("example-jython-aggregation-service-report");
+        AggregationServiceExecutionOptions options = new AggregationServiceExecutionOptions();
+        
+        assertUserFailureException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
+            {
+                // When
+                as.executeAggregationService(sessionToken, id, options);
+            }
+        },
+        // Then
+                "Data store id cannot be null.");
+        as.logout(sessionToken);
+    }
 
     @Test
     public void testExecuteAggregationServiceWithMissingServiceId()

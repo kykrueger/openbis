@@ -139,7 +139,7 @@ public class ProcessingServiceTest extends AbstractFileTest
     }
 
     @Test
-    public void testExecuteProcessingService() throws Exception
+    public void testExecuteProcessingServiceWithSpecifiedDataStore() throws Exception
     {
         // Given
         String dataSetCode = registerDataSet();
@@ -200,6 +200,68 @@ public class ProcessingServiceTest extends AbstractFileTest
         as.logout(sessionToken);
     }
 
+    @Test
+    public void testExecuteProcessingService() throws Exception
+    {
+        // Given
+        String dataSetCode = registerDataSet();
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DssServicePermId id = new DssServicePermId("demo-processor");
+        ProcessingServiceExecutionOptions options = new ProcessingServiceExecutionOptions();
+        options.withDataSets(dataSetCode).withParameter("greetings", "hello world");
+        
+        // When
+        as.executeProcessingService(sessionToken, id, options);
+        
+        // Then
+        List<String> log = new ArrayList<>();
+        waitUntil(new ILogMonitoringStopCondition()
+        {
+            @Override
+            public boolean stopConditionFulfilled(ParsedLogEntry logEntry)
+            {
+                String logMessage = logEntry.getLogMessage();
+                if (logMessage.contains("DemoProcessingPlugin"))
+                {
+                    log.add(logMessage.replace(dataSetCode, "<data set code>"));
+                }
+                return logMessage.contains("Processing done.");
+            }
+        }, 10);
+        Collections.sort(log);
+        assertEquals("OPERATION.DemoProcessingPlugin - Parameter: greetings=hello world\n"
+                + "OPERATION.DemoProcessingPlugin - Parameter: user=test\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/file1.txt\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/file2.txt\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/subdir1\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/subdir1/file3.txt\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/subdir1/file4.txt\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/subdir1/subdir2\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/subdir1/subdir2/file5.txt\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/subdir3\n"
+                + "OPERATION.DemoProcessingPlugin - Processing <data set code>/original/<data set code>/subdir3/file6.txt\n"
+                + "OPERATION.DemoProcessingPlugin - Processing done.\n"
+                + "OPERATION.DemoProcessingPlugin - Processing of the following datasets has been requested: [Dataset '<data set code>']",
+                String.join("\n", log));
+        File[] emails = EMAIL_FOLDER.listFiles();
+        if (emails == null)
+        {
+            fail("Empty e-mails folder: " + EMAIL_FOLDER.getAbsolutePath());
+        }
+        File emailFile = Collections.max(new ArrayList<>(Arrays.asList(emails)));
+        String email = FileUtilities.loadToString(emailFile);
+        assertContains("'Demo Processing' [demo-processor] processing finished on 1 data set(s):", email);
+        assertContains(dataSetCode, email);
+        PersonPermId personPermId = new PersonPermId(TEST_USER);
+        PersonFetchOptions fetchOptions = new PersonFetchOptions();
+        String emailAddress = as.getPersons(sessionToken, Arrays.asList(personPermId), fetchOptions).get(personPermId).getEmail();
+        assertContains("To: " + emailAddress, email);
+        as.logout(sessionToken);
+    }
+    
     @Test
     public void testExecuteProcessingServiceUsingReservedParameter() throws Exception
     {
@@ -365,6 +427,7 @@ public class ProcessingServiceTest extends AbstractFileTest
         // Given
         String sessionToken = as.login(TEST_USER, PASSWORD);
         ProcessingServiceExecutionOptions options = new ProcessingServiceExecutionOptions();
+        options.withDataSets("123");
 
         assertUserFailureException(new IDelegatedAction()
             {
@@ -387,6 +450,7 @@ public class ProcessingServiceTest extends AbstractFileTest
         String sessionToken = as.login(TEST_USER, PASSWORD);
         IDssServiceId id = new MyId();
         ProcessingServiceExecutionOptions options = new ProcessingServiceExecutionOptions();
+        options.withDataSets("123");
 
         assertUserFailureException(new IDelegatedAction()
             {
@@ -410,6 +474,7 @@ public class ProcessingServiceTest extends AbstractFileTest
         String sessionToken = as.login(TEST_USER, PASSWORD);
         IDssServiceId id = new DssServicePermId("", new DataStorePermId("STANDARD"));
         ProcessingServiceExecutionOptions options = new ProcessingServiceExecutionOptions();
+        options.withDataSets("123");
 
         assertUserFailureException(new IDelegatedAction()
             {
@@ -433,6 +498,7 @@ public class ProcessingServiceTest extends AbstractFileTest
         String sessionToken = as.login(TEST_USER, PASSWORD);
         IDssServiceId id = new DssServicePermId("key", new MyId());
         ProcessingServiceExecutionOptions options = new ProcessingServiceExecutionOptions();
+        options.withDataSets("123");
 
         assertUserFailureException(new IDelegatedAction()
             {
@@ -456,6 +522,7 @@ public class ProcessingServiceTest extends AbstractFileTest
         String sessionToken = as.login(TEST_USER, PASSWORD);
         IDssServiceId id = new DssServicePermId("key", new DataStorePermId(""));
         ProcessingServiceExecutionOptions options = new ProcessingServiceExecutionOptions();
+        options.withDataSets("123");
 
         assertUserFailureException(new IDelegatedAction()
             {

@@ -2107,7 +2107,7 @@ public class CommonServerTest extends SystemTestCase
                 commonServer.createReportFromDatasets(session.getSessionToken(), serviceKey, Arrays.asList(dataSetCode));
             } catch (Exception e)
             {
-                assertEquals(e.getMessage(), "Data store 'STANDARD' does not have '" + serviceKey + "' report configured.");
+                assertEquals(e.getMessage(), "Data store 'STANDARD' does not have '" + serviceKey + "' reporting plugin configured.");
             }
         } else
         {

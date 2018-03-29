@@ -43,7 +43,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRow;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 abstract class AbstractDssServiceExecutor
 {
@@ -63,54 +62,61 @@ abstract class AbstractDssServiceExecutor
             throw new UserFailureException("Service key cannot be empty.");
         }
         IDataStoreId dataStoreId = permId.getDataStoreId();
-        if (dataStoreId == null)
+        if (dataStoreId != null)
         {
-            throw new UserFailureException("Data store id cannot be null.");
-        }
-        if (dataStoreId instanceof DataStorePermId == false)
-        {
-            throw new UserFailureException("Unknown data store id type: " + dataStoreId.getClass().getName());
-        }
-        if (StringUtils.isBlank(((DataStorePermId) dataStoreId).getPermId()))
-        {
-            throw new UserFailureException("Data store code cannot be empty.");
+            if (dataStoreId instanceof DataStorePermId == false)
+            {
+                throw new UserFailureException("Unknown data store id type: " + dataStoreId.getClass().getName());
+            }
+            if (StringUtils.isBlank(((DataStorePermId) dataStoreId).getPermId()))
+            {
+                throw new UserFailureException("Data store code cannot be empty.");
+            }
         }
     }
 
     protected TableModel translate(ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel tableModel)
     {
-        List<TableModelColumnHeader> headers = tableModel.getHeader();
-        List<TableColumn> columns = new ArrayList<>(headers.size());
-        for (TableModelColumnHeader header : headers)
+        ArrayList<TableColumn> columns = new ArrayList<>();
+        ArrayList<List<ITableCell>> translatedRows = new ArrayList<>();
+        if (tableModel != null && tableModel.getHeader() != null && tableModel.getRows() != null)
         {
-            columns.add(new TableColumn(header.getTitle()));
-        }
-        SimpleDateFormat format = new SimpleDateFormat(BasicConstant.CANONICAL_DATE_FORMAT_PATTERN);
-        List<TableModelRow> rows = tableModel.getRows();
-        List<List<ITableCell>> translatedRows = new ArrayList<>(rows.size());
-        for (TableModelRow row : rows)
-        {
-            List<ISerializableComparable> values = row.getValues();
-            List<ITableCell> cells = new ArrayList<>(values.size());
-            for (ISerializableComparable value : values)
+            List<TableModelColumnHeader> headers = tableModel.getHeader();
+            columns.ensureCapacity(headers.size());
+            for (TableModelColumnHeader header : headers)
             {
-                ITableCell cell = null;
-                if (value instanceof IntegerTableCell)
-                {
-                    cell = new TableLongCell(((IntegerTableCell) value).getNumber());
-                } else if (value instanceof DoubleTableCell)
-                {
-                    cell = new TableDoubleCell(((DoubleTableCell) value).getNumber());
-                } else if (value instanceof DateTableCell)
-                {
-                    cell = new TableStringCell(format.format(((DateTableCell) value).getDateTime()));
-                } else if (value != null)
-                {
-                    cell = new TableStringCell(value.toString());
-                }
-                cells.add(cell);
+                columns.add(new TableColumn(header.getTitle()));
             }
-            translatedRows.add(cells);
+            SimpleDateFormat format = new SimpleDateFormat(BasicConstant.CANONICAL_DATE_FORMAT_PATTERN);
+            List<TableModelRow> rows = tableModel.getRows();
+            translatedRows.ensureCapacity(rows.size());
+            for (TableModelRow row : rows)
+            {
+                List<ISerializableComparable> values = row.getValues();
+                if (values != null)
+                {
+                    List<ITableCell> cells = new ArrayList<>(values.size());
+                    for (ISerializableComparable value : values)
+                    {
+                        ITableCell cell = null;
+                        if (value instanceof IntegerTableCell)
+                        {
+                            cell = new TableLongCell(((IntegerTableCell) value).getNumber());
+                        } else if (value instanceof DoubleTableCell)
+                        {
+                            cell = new TableDoubleCell(((DoubleTableCell) value).getNumber());
+                        } else if (value instanceof DateTableCell)
+                        {
+                            cell = new TableStringCell(format.format(((DateTableCell) value).getDateTime()));
+                        } else if (value != null)
+                        {
+                            cell = new TableStringCell(value.toString());
+                        }
+                        cells.add(cell);
+                    }
+                    translatedRows.add(cells);
+                }
+            }
         }
         return new TableModel(columns, translatedRows);
     }

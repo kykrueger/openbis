@@ -249,6 +249,7 @@ public class DataStoreServer
         servletContextHandler.setAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,
                 ServiceProvider.getApplicationContext());
+        servletContextHandler.getSessionHandler().getSessionCookieConfig().setHttpOnly(true);
         // Disable URL rewriting (forces container to stop appending ";jsessionid=xxx" to urls)
         // to avoid mistakes in URL parsing by download servlets
         servletContextHandler.getSessionHandler()

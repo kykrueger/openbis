@@ -7,7 +7,11 @@ define([ "stjs"], function(stjs) {
 		constructor.serialVersionUID = 1;
 		prototype.dataSetCodes = null;
 		prototype.withDataSets = function(dataSetCodes) {
-			this.dataSetCodes = dataSetCodes;
+			if (Object.prototype.toString.call( dataSetCodes ) === '[object Array]' ) {
+				this.dataSetCodes = this.dataSetCodes.concat(dataSetCodes);
+			} else {
+				this.dataSetCodes.push(dataSetCodes);
+			}
 		};
 		prototype.getDataSetCodes = function() {
 			return this.dataSetCodes;

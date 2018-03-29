@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.IDataStoreId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ReportingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
@@ -54,8 +55,16 @@ public class ExecuteReportingServiceExecutor
         IDataSetTable dataSetTable = businessObjectFactory.createDataSetTable(context.getSession());
         DssServicePermId permId = (DssServicePermId) serviceId;
         String key = permId.getPermId();
-        String datastoreCode = ((DataStorePermId) permId.getDataStoreId()).getPermId();
-        return translate(dataSetTable.createReportFromDatasets(key, datastoreCode, options.getDataSetCodes()));
+        IDataStoreId dataStoreId = permId.getDataStoreId();
+        if (dataStoreId instanceof DataStorePermId)
+        {
+            DataStorePermId n = (DataStorePermId) dataStoreId;
+            String dataStoreCode = n.getPermId();
+            return translate(dataSetTable.createReportFromDatasets(key, dataStoreCode, options.getDataSetCodes()));
+        } else
+        {
+            return translate(dataSetTable.createReportFromDatasets(key, options.getDataSetCodes()));
+        }
     }
 
 }

@@ -81,7 +81,6 @@ define(
 				this.MaterialDeletionOptions = dtos.MaterialDeletionOptions;
 				this.PluginDeletionOptions = dtos.PluginDeletionOptions;
 				this.VocabularyTermDeletionOptions = dtos.VocabularyTermDeletionOptions;
-				this.EntityTypeDeletionOptions = dtos.EntityTypeDeletionOptions;
 				this.ExternalDmsDeletionOptions = dtos.ExternalDmsDeletionOptions;
 				this.TagDeletionOptions = dtos.TagDeletionOptions;
 				this.AuthorizationGroupDeletionOptions = dtos.AuthorizationGroupDeletionOptions;
@@ -315,7 +314,6 @@ define(
 				this.DeleteSampleTypesOperation = dtos.DeleteSampleTypesOperation;
 				this.DeleteDataSetTypesOperation = dtos.DeleteDataSetTypesOperation;
 				this.DeleteMaterialTypesOperation = dtos.DeleteMaterialTypesOperation;
-				this.DeleteEntityTypesOperation = dtos.DeleteEntityTypesOperation;
 				this.DeleteTagsOperation = dtos.DeleteTagsOperation;
 				this.DeleteAuthorizationGroupsOperation = dtos.DeleteAuthorizationGroupsOperation;
 				this.DeleteRoleAssignmentsOperation = dtos.DeleteRoleAssignmentsOperation;
@@ -1055,13 +1053,6 @@ define(
 					return facade.deleteMaterialTypes([ id ], options);
 				}.bind(this);
 				
-				this.deleteEntityType = function(facade, id) {
-					var c = this;
-					var options = new dtos.EntityTypeDeletionOptions();
-					options.setReason("test reason");
-					return facade.deleteEntityTypes([ id ], options);
-				}.bind(this);
-
 				this.deletePlugin = function(facade, id) {
 					var c = this;
 					var options = new dtos.PluginDeletionOptions();

@@ -22,11 +22,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.IDataStoreId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AggregationServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
@@ -54,6 +56,17 @@ public class ExecuteAggregationServiceExecutor extends AbstractDssServiceExecuto
         String key = permId.getPermId();
         String datastoreCode = ((DataStorePermId) permId.getDataStoreId()).getPermId();
         return translate(dataSetTable.createReportFromAggregationService(key, datastoreCode, options.getParameters()));
+    }
+
+    @Override
+    protected void checkData(IDssServiceId serviceId)
+    {
+        super.checkData(serviceId);
+        IDataStoreId dataStoreId = ((DssServicePermId) serviceId).getDataStoreId();
+        if (dataStoreId == null)
+        {
+            throw new UserFailureException("Data store id cannot be null.");
+        }
     }
 
 }
