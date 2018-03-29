@@ -31,7 +31,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
@@ -42,6 +41,7 @@ import org.reflections.util.FilterBuilder;
 import org.testng.annotations.Test;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
@@ -76,36 +76,14 @@ public class V3APIReport
                 }
             });
 
-        CLASS_FILTERS.add(new ClassFilter("ignored classes filter")
+        CLASS_FILTERS.add(new ClassFilter("ignored classes marked with @JsonIgnoreType")
             {
                 @Override
                 public boolean accepts(Class<?> clazz)
                 {
-                    String[] IGNORE_CLASSES = {
-                            "ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder",
-                            "ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder"
-                    };
-                    return false == ArrayUtils.contains(IGNORE_CLASSES, clazz.getName());
+                    return clazz.getAnnotation(JsonIgnoreType.class) == null;
                 }
             });
-
-//        CLASS_FILTERS.add(new ClassFilter("classes that implement IOperation or IOperationResult (executeOperations is not yet supported in JS)")
-//            {
-//                @Override
-//                public boolean accepts(Class<?> clazz)
-//                {
-//                    return false == IOperation.class.isAssignableFrom(clazz) && false == IOperationResult.class.isAssignableFrom(clazz);
-//                }
-//            });
-//
-//        CLASS_FILTERS.add(new ClassFilter("operation execution related classes (executeOperations is not yet supported in JS)")
-//            {
-//                @Override
-//                public boolean accepts(Class<?> clazz)
-//                {
-//                    return false == clazz.getName().contains("v3.dto.operation") && false == clazz.getName().contains("v3.dto.common.operation");
-//                }
-//            });
 
     }
 
@@ -114,7 +92,7 @@ public class V3APIReport
     {
         System.out.println(getReport());
     }
-    
+
     public List<EMail> getEmailsWith(String textSnippet)
     {
         List<EMail> emails = new ArrayList<>();
@@ -136,7 +114,7 @@ public class V3APIReport
         }
         return emails;
     }
-    
+
     public String getReport() throws Exception
     {
         Report report = new Report();
@@ -385,11 +363,17 @@ public class V3APIReport
     public static final class EMail
     {
         private static final String TO = "To:";
+
         private static final String SUBJECT = "Subject:";
+
         private static final String CONTENT = "Content:";
+
         private String content;
+
         private String to;
+
         private String subject;
+
         private String fullContent;
 
         EMail(String fullContent)

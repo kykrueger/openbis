@@ -77,7 +77,14 @@ public class SearchCacheKey<CRITERIA, FETCH_OPTIONS> implements Serializable
         }
 
         SearchCacheKey<?, ?> other = (SearchCacheKey<?, ?>) obj;
-        return sessionToken.equals(other.sessionToken) && criteria.equals(other.criteria)
-                && FetchOptionsMatcher.arePartsEqual(fetchOptions, other.fetchOptions);
+        
+        if (sessionToken.equals(other.sessionToken) && criteria.equals(other.criteria))
+        {
+            FetchOptionsMatcher matcher = new FetchOptionsMatcher();
+            return matcher.areMatching(fetchOptions, other.fetchOptions);
+        } else
+        {
+            return false;
+        }
     }
 }

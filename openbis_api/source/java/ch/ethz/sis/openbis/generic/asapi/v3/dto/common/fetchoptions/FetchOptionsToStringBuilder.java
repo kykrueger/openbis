@@ -22,9 +22,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+
 /**
  * @author jakubs
  */
+@JsonIgnoreType
 public class FetchOptionsToStringBuilder implements Serializable
 {
     private static final long serialVersionUID = 1L;

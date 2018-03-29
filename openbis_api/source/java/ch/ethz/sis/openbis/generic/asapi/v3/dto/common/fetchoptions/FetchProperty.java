@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 
 /**
- * An annotation that can be used to mark methods that should not be considered as candidates for V3 sorting, e.g. because they operate on data that
- * cannot be sorted or are just helper methods.
+ * An annotation that can be used to mark fields to be considered as part of fetch options and customize their handling.
  * 
  * @author pkupczyk
  */
-@Target({ ElementType.METHOD })
+@Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
-@JsonObject("as.dto.common.interfaces.SortIgnore")
-public @interface SortIgnore
+@JsonIgnoreType
+public @interface FetchProperty
 {
+
+    Class<? extends IFetchPropertyHandler> handler();
 
 }

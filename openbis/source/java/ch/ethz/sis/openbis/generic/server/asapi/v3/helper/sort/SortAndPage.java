@@ -31,13 +31,13 @@ import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchIgnore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.Sorting;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.AbstractCollectionView;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.ListView;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.SetView;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.SortIgnore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 
 /**
@@ -338,7 +338,7 @@ public class SortAndPage
             {
                 for (Method method : clazz.getMethods())
                 {
-                    if (method.getAnnotation(SortIgnore.class) != null)
+                    if (method.getAnnotation(FetchIgnore.class) != null)
                     {
                         continue;
                     }
