@@ -14,6 +14,8 @@ if [ ! -L /openbis_installed ]; then
 
     sudo su openbis -c "sed -i '/host-address = /c\host-address = https://obisserver' /home/openbis/servers/datastore_server/etc/service.properties"
 
+    sudo su openbis -c "~/servers/openBIS-server/jetty/bin/passwd.sh add obis -p obis"
+
     sudo touch /openbis_installed
     sudo chmod 777 /openbis_installed
 

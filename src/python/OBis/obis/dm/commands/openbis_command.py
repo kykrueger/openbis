@@ -63,9 +63,12 @@ class OpenbisCommand(object):
 
 
     def login(self):
-        if self.openbis.is_session_active():
-            return CommandResult(returncode=0, output="")
         user = self.user()
+        if self.openbis.is_session_active():
+            if self.openbis.token.startswith(user):
+                return CommandResult(returncode=0, output="")
+            else:
+                self.openbis.logout()
         passwd = getpass.getpass("Password for {}:".format(user))
         try:
             self.openbis.login(user, passwd, save_token=True)
