@@ -23,9 +23,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EmptyFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchIgnore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.SortIgnore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -35,9 +36,11 @@ public class WebAppSettingsFetchOptions extends FetchOptions<WebAppSettings> imp
     private static final long serialVersionUID = 1L;
 
     @JsonProperty
+    @FetchProperty(handler = WebAppSettingsFetchOptionsSettingsHandler.class)
     private Collection<String> settings;
 
     @JsonProperty
+    @FetchProperty(handler = WebAppSettingsFetchOptionsAllSettingsHandler.class)
     private boolean allSettings = false;
 
     @JsonProperty
@@ -47,7 +50,7 @@ public class WebAppSettingsFetchOptions extends FetchOptions<WebAppSettings> imp
     {
     }
 
-    @SortIgnore
+    @FetchIgnore
     public void withSetting(String setting)
     {
         if (settings == null)
@@ -58,37 +61,37 @@ public class WebAppSettingsFetchOptions extends FetchOptions<WebAppSettings> imp
         settings.add(setting);
     }
 
-    @SortIgnore
+    @FetchIgnore
     public boolean hasSetting(String setting)
     {
         return settings != null && settings.contains(setting);
     }
 
-    @SortIgnore
+    @FetchIgnore
     public Collection<String> withSettingsUsing(Collection<String> settings)
     {
         return this.settings = settings;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public Collection<String> getSettings()
     {
         return settings;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public void withAllSettings()
     {
         allSettings = true;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public boolean hasAllSettings()
     {
         return allSettings;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public boolean withAllSettingsUsing(boolean allSettings)
     {
         return this.allSettings = allSettings;

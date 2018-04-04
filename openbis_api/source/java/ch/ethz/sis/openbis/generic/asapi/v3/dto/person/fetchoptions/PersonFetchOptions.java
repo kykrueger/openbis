@@ -23,9 +23,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.EmptyFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchIgnore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.SortIgnore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
@@ -50,9 +51,11 @@ public class PersonFetchOptions extends FetchOptions<Person> implements Serializ
     private RoleAssignmentFetchOptions roleAssignments;
 
     @JsonProperty
+    @FetchProperty(handler = PersonFetchOptionsWebAppSettingsHandler.class)
     private Map<String, WebAppSettingsFetchOptions> webAppSettings;
 
     @JsonProperty
+    @FetchProperty(handler = PersonFetchOptionsAllWebAppSettingsHandler.class)
     private boolean allWebAppSettings;
 
     @JsonProperty
@@ -121,7 +124,7 @@ public class PersonFetchOptions extends FetchOptions<Person> implements Serializ
         return roleAssignments != null;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public WebAppSettingsFetchOptions withWebAppSettings(String webAppId)
     {
         if (webAppSettings == null)
@@ -140,37 +143,37 @@ public class PersonFetchOptions extends FetchOptions<Person> implements Serializ
         return webAppFo;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public boolean hasWebAppSettings(String webAppId)
     {
         return webAppSettings != null && webAppSettings.get(webAppId) != null;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public Map<String, WebAppSettingsFetchOptions> withWebAppSettingsUsing(Map<String, WebAppSettingsFetchOptions> webAppSettings)
     {
         return this.webAppSettings = webAppSettings;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public Map<String, WebAppSettingsFetchOptions> getWebAppSettings()
     {
         return webAppSettings;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public void withAllWebAppSettings()
     {
         allWebAppSettings = true;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public boolean hasAllWebAppSettings()
     {
         return allWebAppSettings;
     }
 
-    @SortIgnore
+    @FetchIgnore
     public boolean withAllWebAppSettingsUsing(boolean allWebAppSettings)
     {
         return this.allWebAppSettings = allWebAppSettings;
