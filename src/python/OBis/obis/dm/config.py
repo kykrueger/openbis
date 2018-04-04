@@ -283,8 +283,8 @@ class ConfigResolver(object):
     
     def __init__(self, location_resolver=None):
         self.resolvers = []
-        self.resolvers.append(ConfigResolverImpl(env=ConfigEnv()))
-        self.resolvers.append(ConfigResolverImpl(env=PropertiesEnv(), config_file='properties.json'))
+        self.resolvers.append(ConfigResolverImpl(location_resolver=location_resolver, env=ConfigEnv()))
+        self.resolvers.append(ConfigResolverImpl(location_resolver=location_resolver, env=PropertiesEnv(), config_file='properties.json'))
 
     def config_dict(self, local_only=False):
         combined_dict = {}
