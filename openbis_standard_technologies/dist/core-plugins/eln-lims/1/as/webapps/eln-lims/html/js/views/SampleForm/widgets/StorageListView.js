@@ -144,12 +144,12 @@ function StorageListView(storageListController, storageListModel) {
 		}
 
 		// multi-select delete option
-		let isMultiselectable = false;
+		var isMultiselectable = false;
 		var extraOptions = [];
 		if(!this._storageListModel.isDisabled) {
 			isMultiselectable = true;
 			extraOptions.push({ name : "Delete selected", action : function(selected) {
-				for (let i=0; i<selected.length; i++) {
+				for (var i=0; i<selected.length; i++) {
 					_this.removeChildFromSampleOrMarkToDelete(selected[i]);
 				}
 				_this._dataGrid.refresh();

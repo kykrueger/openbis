@@ -104,7 +104,44 @@ function ServerFacade(openbisServer) {
 			_this.openbisServer.setWebAppSettings(webAppSettings, function(result) {});
 		});
 	}
+	/* New Settings API - To use with new release
+	this.getSetting = function(key, callback) {
+		require([ "jquery", "openbis", "as/dto/person/update/PersonUpdate", "as/dto/person/id/Me", "as/dto/webapp/create/WebAppSettingCreation", "as/dto/person/fetchoptions/PersonFetchOptions" ],
+        function($, openbis, PersonUpdate, Me, WebAppSettingCreation, PersonFetchOptions) {
+            $(document).ready(function() {
+				var mefo = new PersonFetchOptions();
+				var	mefowsfo = mefo.withWebAppSettings("ELN-LIMS");
+					mefowsfo.withSetting(key);
+				mainController.openbisV3.getPersons([ new Me() ], mefo).done(function(persons) {
+					var person = persons[new Me()];
+					var settings = person.getWebAppSettings("ELN-LIMS");
+					
+					var keySettings = settings.getSetting(key);
+					var value = null;
+					if(keySettings) {
+						value = keySettings.getValue();
+					}
+					console.log("getSetting key: " + key + " value: " + value);
+					callback(value);
+				});
+            });
+        });
+	}
 	
+	this.setSetting = function(key, value) {
+		// console.log("Write key: " + key + " value: " + value);
+		require([ "jquery", "openbis", "as/dto/person/update/PersonUpdate", "as/dto/person/id/Me", "as/dto/webapp/create/WebAppSettingCreation", "as/dto/person/fetchoptions/PersonFetchOptions" ],
+        function($, openbis, PersonUpdate, Me, WebAppSettingCreation, PersonFetchOptions) {
+            $(document).ready(function() {
+            		var update = new PersonUpdate();
+                update.setUserId(new Me());
+                var elnlims = update.getWebAppSettings("ELN-LIMS");
+                elnlims.add(new WebAppSettingCreation(key, value));
+                mainController.openbisV3.updatePersons([ update ]).done(function() { });
+            });
+        });
+	}
+	*/
 	//
 	// Login Related Functions
 	//

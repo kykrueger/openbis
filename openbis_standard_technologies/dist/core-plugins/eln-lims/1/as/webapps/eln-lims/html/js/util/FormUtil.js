@@ -1149,7 +1149,7 @@ var FormUtil = new function() {
     //
 
 	this.showDiskSpaceDialog = function() {
-		let _this = this;
+		var _this = this;
 
 		Util.blockUI(null, null, true);
 
@@ -1161,26 +1161,26 @@ var FormUtil = new function() {
 				Util.showError("Could not get disk space information.");
 			} else {
 
-				let $dialog = $("<div>");
+				var $dialog = $("<div>");
 				$dialog
 					.append($("<div>")
 						.append($("<legend>").text("Available storage space:")));
 
-				let $formFieldContainer = $("<div>");
+				var $formFieldContainer = $("<div>");
 				$dialog.append($formFieldContainer);
 
 				// close button
-				let $closeButton = $("<a>", {
+				var $closeButton = $("<a>", {
 					class : "btn btn-default",
 					id : "dropboxFolderNameClose"
 				}).text("Close").css("margin-top", "15px");
 				$dialog.append($closeButton);
 
 				// add disk space
-				let rowHeight = "50px";
-				let barHeight = "30px";
+				var rowHeight = "50px";
+				var barHeight = "30px";
 
-				let $table  = $("<table>");
+				var $table  = $("<table>");
 				$table
 					.append($("<thead>")
 						.append($("<tr>").css("height", rowHeight)
@@ -1201,16 +1201,16 @@ var FormUtil = new function() {
 				$table.append($tbody);
 				$formFieldContainer.append($table);
 
-				let diskSpaceValues = result.data;
-				for (let i=0; i<diskSpaceValues.length; i++) {
-					let filesystem = diskSpaceValues[i]["Mounted_on"]
-					let size = diskSpaceValues[i]["Size"]
-					let used = diskSpaceValues[i]["Used"]
-					let avail = diskSpaceValues[i]["Avail"]
-					let usedPercentage = diskSpaceValues[i]["UsedPercentage"]
+				var diskSpaceValues = result.data;
+				for (var i=0; i<diskSpaceValues.length; i++) {
+					var filesystem = diskSpaceValues[i]["Mounted_on"]
+					var size = diskSpaceValues[i]["Size"]
+					var used = diskSpaceValues[i]["Used"]
+					var avail = diskSpaceValues[i]["Avail"]
+					var usedPercentage = diskSpaceValues[i]["UsedPercentage"]
 
-					let $diskSpaceSection = $("<div>");
-					let $total = $("<div>").css({
+					var $diskSpaceSection = $("<div>");
+					var $total = $("<div>").css({
 						height : barHeight,
 						width : "100%",
 						"background-color" : "lightgray",
@@ -1220,7 +1220,7 @@ var FormUtil = new function() {
 						"line-height" : barHeight,
 					});
 					$total.text(usedPercentage);
-					let $used = $("<div>").css({
+					var $used = $("<div>").css({
 						height: barHeight,
 						width : usedPercentage,
 						"background-color" : "lightblue",
