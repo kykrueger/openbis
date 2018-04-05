@@ -465,6 +465,22 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         return getDAOFactory().getPersonDAO().countActivePersons();
     }
 
+    public SessionContextDTO tryToAuthenticateAsSystem()
+    {
+        final PersonPE systemUser = getSystemUser();
+        HibernateUtils.initialize(systemUser.getAllPersonRoles());
+        RoleAssignmentPE role = new RoleAssignmentPE();
+        role.setRole(RoleCode.ADMIN);
+        systemUser.addRoleAssignment(role);
+        String sessionToken =
+                sessionManager.tryToOpenSession(systemUser.getUserId(),
+                        new AuthenticatedPersonBasedPrincipalProvider(systemUser));
+        Session session = sessionManager.getSession(sessionToken);
+        session.setPerson(systemUser);
+        session.setCreatorPerson(systemUser);
+        return tryGetSession(sessionToken);
+    }
+
     @Override
     public SessionContextDTO tryAuthenticateAnonymously()
     {

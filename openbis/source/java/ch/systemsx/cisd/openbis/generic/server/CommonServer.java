@@ -211,7 +211,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SampleUpdatesDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermWithStats;
@@ -321,27 +320,6 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     public final ICommonServerForInternalUse createLogger(IInvocationLoggerContext context)
     {
         return new CommonServerLogger(getSessionManager(), context);
-    }
-
-    //
-    // ISystemAuthenticator
-    //
-
-    @Override
-    public SessionContextDTO tryToAuthenticateAsSystem()
-    {
-        final PersonPE systemUser = getSystemUser();
-        HibernateUtils.initialize(systemUser.getAllPersonRoles());
-        RoleAssignmentPE role = new RoleAssignmentPE();
-        role.setRole(RoleCode.ADMIN);
-        systemUser.addRoleAssignment(role);
-        String sessionToken =
-                sessionManager.tryToOpenSession(systemUser.getUserId(),
-                        new AuthenticatedPersonBasedPrincipalProvider(systemUser));
-        Session session = sessionManager.getSession(sessionToken);
-        session.setPerson(systemUser);
-        session.setCreatorPerson(systemUser);
-        return tryGetSession(sessionToken);
     }
 
     //

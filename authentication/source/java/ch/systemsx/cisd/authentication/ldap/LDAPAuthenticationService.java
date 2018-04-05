@@ -207,4 +207,8 @@ public class LDAPAuthenticationService implements IAuthenticationService
         return configured;
     }
 
+    public List<Principal> listPrincipalsByGroup(String group)
+    {
+        return query.listPrincipalsByKeyValue("memberOf", group);
+    }
 }
