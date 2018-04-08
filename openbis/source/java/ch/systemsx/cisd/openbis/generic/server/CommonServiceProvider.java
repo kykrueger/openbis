@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.generic.server;
 import org.springframework.context.ApplicationContext;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.IImportService;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApi;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
@@ -45,6 +46,11 @@ public class CommonServiceProvider
     {
         return (ICommonServerForInternalUse) applicationContext
                 .getBean(ResourceNames.COMMON_SERVER);
+    }
+
+    public static IImportService getImportService()
+    {
+        return (IImportService) applicationContext.getBean(ResourceNames.IMPORT_SERVICE);
     }
 
     public static IDAOFactory getDAOFactory()

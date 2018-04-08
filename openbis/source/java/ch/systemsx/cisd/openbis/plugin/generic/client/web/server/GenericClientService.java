@@ -49,6 +49,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.server.UploadedFilesBean;
 import ch.systemsx.cisd.openbis.generic.client.web.server.queue.ConsumerQueue;
 import ch.systemsx.cisd.openbis.generic.client.web.server.queue.ConsumerTask;
 import ch.systemsx.cisd.openbis.generic.client.web.server.translator.UserFailureExceptionTranslator;
+import ch.systemsx.cisd.openbis.generic.server.IEntityImportService;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.exception.SampleUniqueCodeViolationException;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.exception.SampleUniqueCodeViolationExceptionAbstract;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
@@ -110,7 +111,7 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.ResourceNames;
  * @author Franz-Josef Elmer
  */
 @Component(value = ResourceNames.GENERIC_PLUGIN_SERVICE)
-public class GenericClientService extends AbstractClientService implements IGenericClientService
+public class GenericClientService extends AbstractClientService implements IGenericClientService, IEntityImportService
 {
 
     @Resource(name = ResourceNames.GENERIC_PLUGIN_SERVER)

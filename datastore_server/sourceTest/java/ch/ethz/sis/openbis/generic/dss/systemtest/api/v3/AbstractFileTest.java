@@ -27,15 +27,17 @@ public class AbstractFileTest extends SystemTestCase
 {
 
     public static final String TEST_USER = "test";
-    
+
     public static final String TEST_SPACE_USER = "test_space";
+
+    public static final String ETL_SERVER_USER = "etlserver";
 
     public static final String PASSWORD = "password";
 
     protected IGeneralInformationService gis;
 
     protected IApplicationServerApi as;
-    
+
     protected IDataStoreServerApi dss;
 
     protected String dataSetCode;

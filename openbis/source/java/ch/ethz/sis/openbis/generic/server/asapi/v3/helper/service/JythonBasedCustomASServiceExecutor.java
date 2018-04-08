@@ -51,7 +51,8 @@ public class JythonBasedCustomASServiceExecutor implements ICustomASServiceExecu
     {
         if (factory == null)
         {
-            factory = new CustomASServiceScriptRunnerFactory(scriptPath, CommonServiceProvider.getApplicationServerApi());
+            factory = new CustomASServiceScriptRunnerFactory(scriptPath, CommonServiceProvider.getApplicationServerApi(),
+                    CommonServiceProvider.getImportService());
         }
         return factory;
     }

@@ -316,6 +316,8 @@ public final class SampleTable extends AbstractSampleBusinessObject implements I
         {
             relationshipService.assignSampleToSpace(session, sample, sample.getSpace());
         }
+
+        RelationshipUtils.updateModificationDateAndModifier(sample, session, getTransactionTimeStamp());
     }
 
     /**
