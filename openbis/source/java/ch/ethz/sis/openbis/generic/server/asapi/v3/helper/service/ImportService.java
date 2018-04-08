@@ -24,8 +24,8 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.IImportService;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.server.ICustomImportService;
-import ch.systemsx.cisd.openbis.generic.server.IEntityImportService;
+import ch.systemsx.cisd.openbis.generic.shared.ICustomImportService;
+import ch.systemsx.cisd.openbis.generic.shared.IEntityImportService;
 import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BatchRegistrationResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
