@@ -16,9 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.plugin.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+
 /**
  * @author pkupczyk
  */
+@JsonIgnoreType
 public interface IImportService
 {
 
