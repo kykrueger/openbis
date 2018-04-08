@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 
 /**
@@ -41,48 +42,56 @@ public class UpdateMaterialsImportTest extends ObjectsImportTest
 
         MaterialPermId materialPermId = new MaterialPermId("TEST-IMPORT-" + UUID.randomUUID().toString(), "VIRUS");
 
-        MaterialCreation creation = new MaterialCreation();
-        creation.setCode(materialPermId.getCode());
-        creation.setTypeId(new EntityTypePermId(materialPermId.getTypeCode()));
-        creation.setProperty("DESCRIPTION", "initial description");
-
-        Material material = getObject(sessionToken, materialPermId);
-        assertNull(material);
-
-        as.createMaterials(sessionToken, Arrays.asList(creation));
-
-        material = getObject(sessionToken, materialPermId);
-        assertEquals("initial description", material.getProperty("DESCRIPTION"));
-
-        ImportFile file = new ImportFile("code", "DESCRIPTION");
-        file.addLine(materialPermId.getCode(), "imported description");
-        uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
-
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
-        parameters.put(PARAM_TYPE_CODE, materialPermId.getTypeCode());
-        parameters.put(PARAM_IGNORE_UNREGISTERED, false);
-        parameters.put(PARAM_ASYNC, async);
-
-        if (async)
+        try
         {
-            parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
-        }
+            MaterialCreation creation = new MaterialCreation();
+            creation.setCode(materialPermId.getCode());
+            creation.setTypeId(new EntityTypePermId(materialPermId.getTypeCode()));
+            creation.setProperty("DESCRIPTION", "initial description");
 
-        long timestamp = System.currentTimeMillis();
-        String message = executeImport(sessionToken, "updateMaterials", parameters);
+            Material material = getObject(sessionToken, materialPermId);
+            assertNull(material);
 
-        material = getObject(sessionToken, materialPermId, timestamp, DEFAULT_TIMEOUT);
-        assertEquals("imported description", material.getProperty("DESCRIPTION"));
+            as.createMaterials(sessionToken, Arrays.asList(creation));
 
-        if (async)
+            material = getObject(sessionToken, materialPermId);
+            assertEquals("initial description", material.getProperty("DESCRIPTION"));
+
+            ImportFile file = new ImportFile("code", "DESCRIPTION");
+            file.addLine(materialPermId.getCode(), "imported description");
+            uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+
+            Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
+            parameters.put(PARAM_TYPE_CODE, materialPermId.getTypeCode());
+            parameters.put(PARAM_IGNORE_UNREGISTERED, false);
+            parameters.put(PARAM_ASYNC, async);
+
+            if (async)
+            {
+                parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
+            }
+
+            long timestamp = System.currentTimeMillis();
+            String message = executeImport(sessionToken, "updateMaterials", parameters);
+
+            material = getObject(sessionToken, materialPermId, timestamp, DEFAULT_TIMEOUT);
+            assertEquals("imported description", material.getProperty("DESCRIPTION"));
+
+            if (async)
+            {
+                assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
+                assertEmail(timestamp, TEST_EMAIL, "Material Batch Update successfully performed");
+            } else
+            {
+                assertEquals("1 material(s) updated.", message);
+                assertNoEmails(timestamp);
+            }
+        } finally
         {
-            assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
-            assertEmail(timestamp, TEST_EMAIL, "Material Batch Update successfully performed");
-        } else
-        {
-            assertEquals("1 material(s) updated.", message);
-            assertNoEmails(timestamp);
+            MaterialDeletionOptions options = new MaterialDeletionOptions();
+            options.setReason("cleanup");
+            as.deleteMaterials(sessionToken, Arrays.asList(materialPermId), options);
         }
     }
 

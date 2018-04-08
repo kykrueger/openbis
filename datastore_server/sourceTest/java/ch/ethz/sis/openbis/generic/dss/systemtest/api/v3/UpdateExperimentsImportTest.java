@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 
@@ -43,48 +44,56 @@ public class UpdateExperimentsImportTest extends ObjectsImportTest
         String experimentCode = "TEST-IMPORT-" + UUID.randomUUID().toString();
         ExperimentIdentifier experimentIdentifier = new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/" + experimentCode);
 
-        ExperimentCreation creation = new ExperimentCreation();
-        creation.setCode(experimentCode);
-        creation.setTypeId(new EntityTypePermId("SIRNA_HCS"));
-        creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
-        creation.setProperty("DESCRIPTION", "initial value");
-
-        Experiment experiment = getObject(sessionToken, experimentIdentifier);
-        assertNull(experiment);
-
-        as.createExperiments(sessionToken, Arrays.asList(creation));
-
-        experiment = getObject(sessionToken, experimentIdentifier);
-        assertEquals("initial value", experiment.getProperty("DESCRIPTION"));
-
-        ImportFile file = new ImportFile("identifier", "DESCRIPTION");
-        file.addLine(experimentIdentifier.getIdentifier(), "imported description");
-        uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
-
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
-        parameters.put(PARAM_TYPE_CODE, "SIRNA_HCS");
-        parameters.put(PARAM_ASYNC, async);
-
-        if (async)
+        try
         {
-            parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
-        }
+            ExperimentCreation creation = new ExperimentCreation();
+            creation.setCode(experimentCode);
+            creation.setTypeId(new EntityTypePermId("SIRNA_HCS"));
+            creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+            creation.setProperty("DESCRIPTION", "initial value");
 
-        long timestamp = System.currentTimeMillis();
-        String message = executeImport(sessionToken, "updateExperiments", parameters);
+            Experiment experiment = getObject(sessionToken, experimentIdentifier);
+            assertNull(experiment);
 
-        experiment = getObject(sessionToken, experimentIdentifier, timestamp, DEFAULT_TIMEOUT);
-        assertEquals("imported description", experiment.getProperty("DESCRIPTION"));
+            as.createExperiments(sessionToken, Arrays.asList(creation));
 
-        if (async)
+            experiment = getObject(sessionToken, experimentIdentifier);
+            assertEquals("initial value", experiment.getProperty("DESCRIPTION"));
+
+            ImportFile file = new ImportFile("identifier", "DESCRIPTION");
+            file.addLine(experimentIdentifier.getIdentifier(), "imported description");
+            uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+
+            Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
+            parameters.put(PARAM_TYPE_CODE, "SIRNA_HCS");
+            parameters.put(PARAM_ASYNC, async);
+
+            if (async)
+            {
+                parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
+            }
+
+            long timestamp = System.currentTimeMillis();
+            String message = executeImport(sessionToken, "updateExperiments", parameters);
+
+            experiment = getObject(sessionToken, experimentIdentifier, timestamp, DEFAULT_TIMEOUT);
+            assertEquals("imported description", experiment.getProperty("DESCRIPTION"));
+
+            if (async)
+            {
+                assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
+                assertEmail(timestamp, TEST_EMAIL, "Experiment Batch Update successfully performed");
+            } else
+            {
+                assertEquals("Update of 1 experiment(s) is complete.", message);
+                assertNoEmails(timestamp);
+            }
+        } finally
         {
-            assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
-            assertEmail(timestamp, TEST_EMAIL, "Experiment Batch Update successfully performed");
-        } else
-        {
-            assertEquals("Update of 1 experiment(s) is complete.", message);
-            assertNoEmails(timestamp);
+            ExperimentDeletionOptions options = new ExperimentDeletionOptions();
+            options.setReason("cleanup");
+            as.deleteExperiments(sessionToken, Arrays.asList(experimentIdentifier), options);
         }
     }
 

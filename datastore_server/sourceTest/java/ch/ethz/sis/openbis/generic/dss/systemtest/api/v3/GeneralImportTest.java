@@ -47,10 +47,10 @@ public class GeneralImportTest extends ObjectsImportTest
         MaterialPermId materialPermId1 = new MaterialPermId("TEST-IMPORT-1", "VIRUS");
         MaterialPermId materialPermId2 = new MaterialPermId("TEST-IMPORT-2", "VIRUS");
 
+        deleteMaterials(sessionToken, materialPermId1, materialPermId2);
+
         try
         {
-            deleteMaterials(sessionToken, materialPermId1, materialPermId2);
-
             Material material1 = getObject(sessionToken, materialPermId1);
             assertNull(material1);
 

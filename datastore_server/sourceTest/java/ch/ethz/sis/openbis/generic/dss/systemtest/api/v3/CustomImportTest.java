@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.dss.systemtest.api.v3;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,6 +27,7 @@ import org.eclipse.jetty.client.util.StringContentProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 
 /**
@@ -41,40 +43,48 @@ public class CustomImportTest extends ObjectsImportTest
 
         DataSetPermId dataSetPermId = new DataSetPermId("TEST-IMPORT-" + UUID.randomUUID().toString());
 
-        MultiPartContentProvider multiPart = new MultiPartContentProvider();
-        ContentProvider contentProvider = new StringContentProvider("test-file-content");
-        multiPart.addFilePart(TEST_UPLOAD_KEY, dataSetPermId.getPermId(), contentProvider, null);
-        multiPart.close();
-
-        uploadFiles(sessionToken, TEST_UPLOAD_KEY, multiPart);
-
-        DataSet dataSet = getObject(sessionToken, dataSetPermId);
-        assertNull(dataSet);
-
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
-        parameters.put(PARAM_CUSTOM_IMPORT_CODE, "test-custom-import");
-        parameters.put(PARAM_ASYNC, async);
-
-        if (async)
+        try
         {
-            parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
-        }
+            MultiPartContentProvider multiPart = new MultiPartContentProvider();
+            ContentProvider contentProvider = new StringContentProvider("test-file-content");
+            multiPart.addFilePart(TEST_UPLOAD_KEY, dataSetPermId.getPermId(), contentProvider, null);
+            multiPart.close();
 
-        long timestamp = System.currentTimeMillis();
-        String message = executeImport(sessionToken, "customImport", parameters);
+            uploadFiles(sessionToken, TEST_UPLOAD_KEY, multiPart);
 
-        dataSet = getObject(sessionToken, dataSetPermId, timestamp, DEFAULT_TIMEOUT);
-        assertEquals("test comment " + dataSetPermId.getPermId(), dataSet.getProperty("COMMENT"));
+            DataSet dataSet = getObject(sessionToken, dataSetPermId);
+            assertNull(dataSet);
 
-        if (async)
+            Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
+            parameters.put(PARAM_CUSTOM_IMPORT_CODE, "test-custom-import");
+            parameters.put(PARAM_ASYNC, async);
+
+            if (async)
+            {
+                parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
+            }
+
+            long timestamp = System.currentTimeMillis();
+            String message = executeImport(sessionToken, "customImport", parameters);
+
+            dataSet = getObject(sessionToken, dataSetPermId, timestamp, DEFAULT_TIMEOUT);
+            assertEquals("test comment " + dataSetPermId.getPermId(), dataSet.getProperty("COMMENT"));
+
+            if (async)
+            {
+                assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
+                assertEmail(timestamp, TEST_EMAIL, "Custom import successfully performed");
+            } else
+            {
+                assertEquals("Import successfully completed.", message);
+                assertNoEmails(timestamp);
+            }
+        } finally
         {
-            assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
-            assertEmail(timestamp, TEST_EMAIL, "Custom import successfully performed");
-        } else
-        {
-            assertEquals("Import successfully completed.", message);
-            assertNoEmails(timestamp);
+            DataSetDeletionOptions options = new DataSetDeletionOptions();
+            options.setReason("cleanup");
+            as.deleteDataSets(sessionToken, Arrays.asList(dataSetPermId), options);
         }
     }
 

@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
@@ -49,57 +50,65 @@ public class UpdateDataSetsImportTest extends ObjectsImportTest
 
         DataSetPermId dataSetPermId = new DataSetPermId("TEST-IMPORT-" + UUID.randomUUID().toString());
 
-        PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
-        physicalCreation.setLocation("test/location/" + dataSetPermId.getPermId());
-        physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
-        physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
-        physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
-
-        DataSetCreation creation = new DataSetCreation();
-        creation.setCode(dataSetPermId.getPermId());
-        creation.setDataSetKind(DataSetKind.PHYSICAL);
-        creation.setTypeId(new EntityTypePermId("HCS_IMAGE"));
-        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
-        creation.setDataStoreId(new DataStorePermId("STANDARD"));
-        creation.setPhysicalData(physicalCreation);
-        creation.setProperty("COMMENT", "initial comment");
-
-        DataSet dataSet = getObject(sessionToken, dataSetPermId);
-        assertNull(dataSet);
-
-        as.createDataSets(etlServerSessionToken, Arrays.asList(creation));
-
-        dataSet = getObject(sessionToken, dataSetPermId);
-        assertEquals("initial comment", dataSet.getProperty("COMMENT"));
-
-        ImportFile file = new ImportFile("code", "COMMENT");
-        file.addLine(dataSetPermId.getPermId(), "imported comment");
-        uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
-
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
-        parameters.put(PARAM_TYPE_CODE, "HCS_IMAGE");
-        parameters.put(PARAM_ASYNC, async);
-
-        if (async)
+        try
         {
-            parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
-        }
+            PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
+            physicalCreation.setLocation("test/location/" + dataSetPermId.getPermId());
+            physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
+            physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
+            physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
 
-        long timestamp = System.currentTimeMillis();
-        String message = executeImport(sessionToken, "updateDataSets", parameters);
+            DataSetCreation creation = new DataSetCreation();
+            creation.setCode(dataSetPermId.getPermId());
+            creation.setDataSetKind(DataSetKind.PHYSICAL);
+            creation.setTypeId(new EntityTypePermId("HCS_IMAGE"));
+            creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+            creation.setDataStoreId(new DataStorePermId("STANDARD"));
+            creation.setPhysicalData(physicalCreation);
+            creation.setProperty("COMMENT", "initial comment");
 
-        dataSet = getObject(sessionToken, dataSetPermId, timestamp, DEFAULT_TIMEOUT);
-        assertEquals("imported comment", dataSet.getProperty("COMMENT"));
+            DataSet dataSet = getObject(sessionToken, dataSetPermId);
+            assertNull(dataSet);
 
-        if (async)
+            as.createDataSets(etlServerSessionToken, Arrays.asList(creation));
+
+            dataSet = getObject(sessionToken, dataSetPermId);
+            assertEquals("initial comment", dataSet.getProperty("COMMENT"));
+
+            ImportFile file = new ImportFile("code", "COMMENT");
+            file.addLine(dataSetPermId.getPermId(), "imported comment");
+            uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+
+            Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
+            parameters.put(PARAM_TYPE_CODE, "HCS_IMAGE");
+            parameters.put(PARAM_ASYNC, async);
+
+            if (async)
+            {
+                parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
+            }
+
+            long timestamp = System.currentTimeMillis();
+            String message = executeImport(sessionToken, "updateDataSets", parameters);
+
+            dataSet = getObject(sessionToken, dataSetPermId, timestamp, DEFAULT_TIMEOUT);
+            assertEquals("imported comment", dataSet.getProperty("COMMENT"));
+
+            if (async)
+            {
+                assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
+                assertEmail(timestamp, TEST_EMAIL, "Data Set Batch Update successfully performed");
+            } else
+            {
+                assertEquals("1 data set(s) found and registered.", message);
+                assertNoEmails(timestamp);
+            }
+        } finally
         {
-            assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
-            assertEmail(timestamp, TEST_EMAIL, "Data Set Batch Update successfully performed");
-        } else
-        {
-            assertEquals("1 data set(s) found and registered.", message);
-            assertNoEmails(timestamp);
+            DataSetDeletionOptions options = new DataSetDeletionOptions();
+            options.setReason("cleanup");
+            as.deleteDataSets(sessionToken, Arrays.asList(dataSetPermId), options);
         }
     }
 

@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.dss.systemtest.api.v3;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 
 /**
@@ -38,38 +40,46 @@ public class CreateMaterialsImportTest extends ObjectsImportTest
 
         MaterialPermId materialPermId = new MaterialPermId("TEST-IMPORT-" + UUID.randomUUID().toString(), "VIRUS");
 
-        ImportFile file = new ImportFile("code", "DESCRIPTION");
-        file.addLine(materialPermId.getCode(), "imported description");
-        uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
-
-        Material material = getObject(sessionToken, materialPermId);
-        assertNull(material);
-
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
-        parameters.put(PARAM_TYPE_CODE, materialPermId.getTypeCode());
-        parameters.put(PARAM_UPDATE_EXISTING, false);
-        parameters.put(PARAM_ASYNC, async);
-
-        if (async)
+        try
         {
-            parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
-        }
+            ImportFile file = new ImportFile("code", "DESCRIPTION");
+            file.addLine(materialPermId.getCode(), "imported description");
+            uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
 
-        long timestamp = System.currentTimeMillis();
-        String message = executeImport(sessionToken, "createMaterials", parameters);
+            Material material = getObject(sessionToken, materialPermId);
+            assertNull(material);
 
-        material = getObject(sessionToken, materialPermId, timestamp, DEFAULT_TIMEOUT);
-        assertEquals("imported description", material.getProperty("DESCRIPTION"));
+            Map<String, Object> parameters = new HashMap<String, Object>();
+            parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
+            parameters.put(PARAM_TYPE_CODE, materialPermId.getTypeCode());
+            parameters.put(PARAM_UPDATE_EXISTING, false);
+            parameters.put(PARAM_ASYNC, async);
 
-        if (async)
+            if (async)
+            {
+                parameters.put(PARAM_USER_EMAIL, TEST_EMAIL);
+            }
+
+            long timestamp = System.currentTimeMillis();
+            String message = executeImport(sessionToken, "createMaterials", parameters);
+
+            material = getObject(sessionToken, materialPermId, timestamp, DEFAULT_TIMEOUT);
+            assertEquals("imported description", material.getProperty("DESCRIPTION"));
+
+            if (async)
+            {
+                assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
+                assertEmail(timestamp, TEST_EMAIL, "Material Batch Registration successfully performed");
+            } else
+            {
+                assertEquals("Registration/update of 1 material(s) is complete.", message);
+                assertNoEmails(timestamp);
+            }
+        } finally
         {
-            assertEquals("When the import is complete the confirmation or failure report will be sent by email.", message);
-            assertEmail(timestamp, TEST_EMAIL, "Material Batch Registration successfully performed");
-        } else
-        {
-            assertEquals("Registration/update of 1 material(s) is complete.", message);
-            assertNoEmails(timestamp);
+            MaterialDeletionOptions options = new MaterialDeletionOptions();
+            options.setReason("cleanup");
+            as.deleteMaterials(sessionToken, Arrays.asList(materialPermId), options);
         }
     }
 
