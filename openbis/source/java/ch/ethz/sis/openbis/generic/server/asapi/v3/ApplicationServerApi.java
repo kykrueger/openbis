@@ -453,7 +453,7 @@ import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedProperty
  */
 @Component(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> implements
-        IApplicationServerApi
+        IApplicationServerInternalApi
 {
     /**
      * Name of this service for which it is registered as Spring bean
@@ -484,6 +484,12 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     {
         SessionContextDTO session = tryAuthenticate(userId, password);
         return session == null ? null : session.getSessionToken();
+    }
+
+    @Override
+    public String loginAsSystem()
+    {
+        return tryToAuthenticateAsSystem().getSessionToken();
     }
 
     @Override

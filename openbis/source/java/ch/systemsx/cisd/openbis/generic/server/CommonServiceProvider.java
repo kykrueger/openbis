@@ -18,9 +18,9 @@ package ch.systemsx.cisd.openbis.generic.server;
 
 import org.springframework.context.ApplicationContext;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.IImportService;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApi;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
 import ch.systemsx.cisd.common.mail.MailClientParameters;
@@ -72,9 +72,9 @@ public class CommonServiceProvider
         return new MailClient(mailClientParameters);
     }
 
-    public static IApplicationServerApi getApplicationServerApi()
+    public static IApplicationServerInternalApi getApplicationServerApi()
     {
-        return (IApplicationServerApi) applicationContext.getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME);
+        return (IApplicationServerInternalApi) applicationContext.getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME);
     }
 
     public static Object tryToGetBean(String beanName)

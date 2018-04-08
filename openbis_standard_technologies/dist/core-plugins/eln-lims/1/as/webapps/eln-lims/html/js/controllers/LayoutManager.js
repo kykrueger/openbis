@@ -438,12 +438,13 @@ var LayoutManager = {
 	},
 	resize : function(view, forceFirstTime) {
 		if(this.canReload()) {
-			console.log("reloadView");
 			this.reloadView(view, forceFirstTime);
 		}
 	}
 }
 
 $(window).resize(function() {
-    LayoutManager.resize(mainController.views, true);
+	if(mainController && mainController.views) {
+		LayoutManager.resize(mainController.views, true);
+	}
 });
