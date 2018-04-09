@@ -17,6 +17,7 @@ import click
 
 from .. import dm
 from ..dm.command_result import CommandResult
+from ..dm.command_result import CommandException
 from ..dm.utils import cd
 
 
@@ -51,6 +52,13 @@ def check_result(command, result):
     return result.returncode
 
 
+def run(function):
+    try:
+        return function()
+    except CommandException as e:
+        return e.command_result
+
+
 @click.group()
 @click.option('-q', '--quiet', default=False, is_flag=True, help='Suppress status reporting.')
 @click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
@@ -69,7 +77,7 @@ def addref(ctx, repository):
     """
     with cd(repository):
         data_mgmt = shared_data_mgmt(ctx.obj)
-        return check_result("addref", data_mgmt.addref())
+        return check_result("addref", run(data_mgmt.addref))
 
 
 @cli.command()
@@ -80,7 +88,7 @@ def removeref(ctx, repository):
     """
     with cd(repository):
         data_mgmt = shared_data_mgmt(ctx.obj)
-        return check_result("addref", data_mgmt.removeref())
+        return check_result("addref", run(data_mgmt.removeref))
 
 
 @cli.command()
@@ -92,7 +100,7 @@ def clone(ctx, ssh_user, content_copy_index, data_set_id):
     """Clone the repository found in the given data set id.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("clone", data_mgmt.clone(data_set_id, ssh_user, content_copy_index))
+    return check_result("clone", run(lambda: data_mgmt.clone(data_set_id, ssh_user, content_copy_index)))
 
 
 @cli.command()
@@ -103,7 +111,7 @@ def commit(ctx, msg, auto_add):
     """Commit the repository to git and inform openBIS.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("commit", data_mgmt.commit(msg, auto_add))
+    return check_result("commit", run(lambda: data_mgmt.commit(msg, auto_add)))
 
 
 @cli.command()
@@ -167,26 +175,26 @@ def init_data_impl(ctx, object_id, collection_id, folder, desc):
     click_echo("init_data {}".format(folder))
     data_mgmt = shared_data_mgmt(ctx.obj)
     desc = desc if desc != "" else None
-    result = data_mgmt.init_data(folder, desc, create=True)
-    init_handle_cleanup(result, object_id, collection_id)
+    result = run(lambda: data_mgmt.init_data(folder, desc, create=True))
+    init_handle_cleanup(result, object_id, collection_id, folder, data_mgmt)
 
 
 def init_analysis_impl(ctx, parent, object_id, collection_id, folder, description):
     click_echo("init_analysis {}".format(folder))
     data_mgmt = shared_data_mgmt(ctx.obj)
     description = description if description != "" else None
-    result = data_mgmt.init_analysis(folder, parent, description, create=True)
-    init_handle_cleanup(result, object_id, collection_id)
+    result = run(lambda: data_mgmt.init_analysis(folder, parent, description, create=True))
+    init_handle_cleanup(result, object_id, collection_id, folder, data_mgmt)
 
 
-def init_handle_cleanup(result, object_id, collection_id):
+def init_handle_cleanup(result, object_id, collection_id, folder, data_mgmt):
     if (not object_id and not collection_id) or result.failure():
         return check_result("init_data", result)
     with dm.cd(folder):
         if object_id:
-            return check_result("init_data", set_property(data_mgmt, 'object_id', object_id, False))
+            return check_result("init_data", set_property(data_mgmt, 'object_id', object_id, False, False))
         if collection_id:
-            return check_result("init_data", set_property(data_mgmt, 'collection_id', collection_id, False))
+            return check_result("init_data", set_property(data_mgmt, 'collection_id', collection_id, False, False))
 
 
 @cli.command()
@@ -229,7 +237,7 @@ def status(ctx):
     """Show the state of the obis repository.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    result = data_mgmt.status()
+    result = run(data_mgmt.status)
     click.echo(result.output)
 
 
@@ -239,7 +247,7 @@ def sync(ctx):
     """Sync the repository with openBIS.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("sync", data_mgmt.sync())
+    return check_result("sync", run(data_mgmt.sync))
 
 
 def main():

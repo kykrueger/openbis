@@ -247,14 +247,8 @@ class GitDataMgmt(AbstractDataMgmt):
 
 
     def _sync(self):
-        try:
-            cmd = OpenbisSync(self)
-            return cmd.run()
-        except CommandException as e:
-            return e.command_result
-        except Exception:
-            traceback.print_exc()
-            return CommandResult(returncode=-1, output="Could not synchronize with openBIS.")
+        cmd = OpenbisSync(self)
+        return cmd.run()
 
 
     def commit(self, msg, auto_add=True, sync=True, path=None):

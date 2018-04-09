@@ -309,7 +309,6 @@ def cd(newdir):
 def cmd(cmd, timeout=None):
     global output_buffer
     output_buffer += '==== running: ' + cmd + '\n'
-    output_buffer += '====          with: ' + str(cmd.split(' ')) + '\n'
     completed_process = subprocess.run(cmd.split(' '), stdout=PIPE, stderr=PIPE, timeout=timeout)
     result = get_cmd_result(completed_process)
     output_buffer += result + '\n'
