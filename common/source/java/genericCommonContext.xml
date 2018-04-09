@@ -66,6 +66,7 @@
         <property name="securityPrincipalDistinguishedName" value="${ldap.security.principal.distinguished.name}" />
         <property name="securityPrincipalPassword" value="${ldap.security.principal.password}" />
         <property name="referral" value="${ldap.referral}" /> 
+        <property name="searchBase" value="${ldap.searchBase}" /> 
         <property name="userIdAttributeName" value="${ldap.attributenames.user.id}" /> 
         <property name="emailAttributeName" value="${ldap.attributenames.email}" /> 
         <property name="firstNameAttributeName" value="${ldap.attributenames.first.name}" /> 

@@ -29,6 +29,25 @@ public class LDAPDirectoryConfigurationTest
 {
 
     @Test
+    public void testLDAPDirectoryConfigurationUnresolvedVariableSearchBase()
+    {
+        final LDAPDirectoryConfiguration config = new LDAPDirectoryConfiguration();
+        config.setSearchBase(" ");
+        assertEquals("", config.getSearchBase());
+        config.setQueryTemplate("${ldap.searchBase}");
+        assertEquals("", config.getSearchBase());
+    }
+    
+    @Test
+    public void testLDAPDirectoryConfigurationResolvedVariableSearchBase()
+    {
+        final LDAPDirectoryConfiguration config = new LDAPDirectoryConfiguration();
+        final String searchBase = "ou=a,o=b,c=c";
+        config.setSearchBase(searchBase);
+        assertEquals(searchBase, config.getSearchBase());
+    }
+
+    @Test
     public void testLDAPDirectoryConfigurationUnresolvedVariableQueryTemplate()
     {
         final LDAPDirectoryConfiguration config = new LDAPDirectoryConfiguration();
@@ -37,7 +56,7 @@ public class LDAPDirectoryConfigurationTest
         config.setQueryTemplate("${ldap.queryTemplate}");
         assertEquals(LDAPDirectoryConfiguration.DEFAULT_QUERY_TEMPLATE, config.getQueryTemplate());
     }
-
+    
     @Test
     public void testLDAPDirectoryConfigurationResolvedVariableQueryTemplate()
     {
