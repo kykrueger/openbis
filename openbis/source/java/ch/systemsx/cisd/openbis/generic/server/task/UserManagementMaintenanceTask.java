@@ -31,8 +31,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
-import ch.systemsx.cisd.authentication.ldap.LDAPDirectoryConfiguration;
-import ch.systemsx.cisd.authentication.ldap.LDAPPrincipalQuery;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
@@ -46,10 +44,6 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
  */
 public class UserManagementMaintenanceTask implements IMaintenanceTask
 {
-    private static final String DISTINGUISHED_NAME_TEMPLATE_PROPERTY = "distinguished-name-template";
-
-    private static final String DEFAULT_DISTINGUISHED_NAME_TEMPLATE = "CN=%s,OU=EthLists,DC=d,DC=ethz,DC=ch";
-
     private static final String CONFIGURATION_FILE_PATH_PROPERTY = "configuration-file-path";
 
     private static final String DEFAULT_CONFIGURATION_FILE_PATH = "etc/user-management-maintenance-config.json";
@@ -61,8 +55,6 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
     private LDAPAuthenticationService ldapService;
 
-    private String dnTemplate;
-
     @Override
     public void setUp(String pluginName, Properties properties)
     {
@@ -72,11 +64,6 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         {
             throw new ConfigurationFailureException("Configuration file '" + configurationFile.getAbsolutePath()
                     + "' doesn't exist or is a directory.");
-        }
-        dnTemplate = properties.getProperty(DISTINGUISHED_NAME_TEMPLATE_PROPERTY, DEFAULT_DISTINGUISHED_NAME_TEMPLATE);
-        if (dnTemplate.contains("%s") == false)
-        {
-            throw new ConfigurationFailureException("Property '" + DISTINGUISHED_NAME_TEMPLATE_PROPERTY + "' doesn't contain '%s' as placeholder.");
         }
         ldapService = (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
         operationLog.info("Plugin '" + pluginName + "' initialized. Configuration file: " + configurationFile.getAbsolutePath());
@@ -112,7 +99,7 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
                     return;
                     
                 }
-                List<Principal> principals = ldapService.listPrincipalsByGroup(String.format(dnTemplate, ldapGroupKey));
+                List<Principal> principals = ldapService.listPrincipalsByKeyValue("ou", ldapGroupKey);
                 if (principals.isEmpty())
                 {
                     operationLog.error("No users found for ldapGroupKey '" + ldapGroupKey + "' for group '" + key + "'. Task aborted.");
