@@ -4,6 +4,7 @@ import os
 import socket
 import pybis
 from ..command_result import CommandResult
+from ..command_result import CommandException
 from ...scripts import cli
 
 
@@ -18,7 +19,11 @@ class OpenbisCommand(object):
 
         if self.openbis is None and dm.openbis_config.get('url') is not None:
             self.openbis = pybis.Openbis(**dm.openbis_config)
-            self.login()
+            if self.user() is not None:
+                result = self.login()
+                if result.failure():
+                    raise CommandException(result)
+
 
     def external_dms_id(self):
         return self.config_dict.get('external_dms_id')

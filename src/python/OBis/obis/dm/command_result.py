@@ -24,3 +24,9 @@ class CommandResult(object):
 
     def failure(self):
         return not self.success()
+
+
+class CommandException(Exception):
+    
+    def __init__(self, command_result):
+        self.command_result = command_result

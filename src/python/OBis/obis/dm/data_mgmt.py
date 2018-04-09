@@ -21,6 +21,7 @@ from .commands.removeref import Removeref
 from .commands.clone import Clone
 from .commands.openbis_sync import OpenbisSync
 from .command_result import CommandResult
+from .command_result import CommandException
 from .git import GitWrapper
 from .utils import default_echo
 from .utils import complete_git_config
@@ -249,6 +250,8 @@ class GitDataMgmt(AbstractDataMgmt):
         try:
             cmd = OpenbisSync(self)
             return cmd.run()
+        except CommandException as e:
+            return e.command_result
         except Exception:
             traceback.print_exc()
             return CommandResult(returncode=-1, output="Could not synchronize with openBIS.")
