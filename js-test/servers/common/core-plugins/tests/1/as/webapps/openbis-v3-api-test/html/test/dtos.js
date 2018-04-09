@@ -349,6 +349,7 @@ var sources = [
 	'as/dto/history/HistoryEntry',
 	'as/dto/history/PropertyHistoryEntry',
 	'as/dto/history/RelationHistoryEntry',
+	'as/dto/history/ContentCopyHistoryEntry',
 	
 	'as/dto/material/create/MaterialCreation',
 	'as/dto/material/create/CreateMaterialsOperation',

@@ -284,7 +284,7 @@ public final class LDAPPrincipalQuery implements ISelfTestable
         {
             try
             {
-                return primListPrincipalsByKeyValue(key, value, additionalAttributesOrNull, limit);
+                return primListPrincipalsByKeyValue(config.getSearchBase(), key, value, additionalAttributesOrNull, limit);
             } catch (RuntimeException ex)
             {
                 contextHolder.set(null);
@@ -307,7 +307,7 @@ public final class LDAPPrincipalQuery implements ISelfTestable
         throw firstException;
     }
 
-    private List<Principal> primListPrincipalsByKeyValue(String key, String value,
+    private List<Principal> primListPrincipalsByKeyValue(String searchBase, String key, String value,
             Collection<String> additionalAttributesOrNull, int limit)
     {
         final List<Principal> principals = new ArrayList<Principal>();
@@ -318,7 +318,7 @@ public final class LDAPPrincipalQuery implements ISelfTestable
             final DirContext context = createContext(false);
             final SearchControls ctrl = new SearchControls();
             ctrl.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            final NamingEnumeration<SearchResult> enumeration = context.search("", query, ctrl);
+            final NamingEnumeration<SearchResult> enumeration = context.search(searchBase, query, ctrl);
             int count = 0;
             while (count++ < limit && enumeration.hasMore())
             {

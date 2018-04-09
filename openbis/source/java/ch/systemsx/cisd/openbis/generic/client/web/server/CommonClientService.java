@@ -124,6 +124,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.server.translator.SearchableS
 import ch.systemsx.cisd.openbis.generic.client.web.server.translator.UserFailureExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.client.web.server.util.TSVRenderer;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
+import ch.systemsx.cisd.openbis.generic.shared.ICustomImportService;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomain;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchOption;
@@ -241,7 +242,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.WebClientConfigUtils;
  * @author Franz-Josef Elmer
  */
 public final class CommonClientService extends AbstractClientService implements
-        ICommonClientService
+        ICommonClientService, ICustomImportService
 {
     @Resource(name = "registration-queue")
     private ConsumerQueue asyncRegistrationQueue;

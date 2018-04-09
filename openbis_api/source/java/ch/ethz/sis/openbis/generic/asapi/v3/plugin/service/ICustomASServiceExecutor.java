@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.plugin.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.context.CustomASServiceContext;
@@ -25,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.context.CustomASServi
  * 
  * @author Franz-Josef Elmer
  */
+@JsonIgnoreType
 public interface ICustomASServiceExecutor
 {
     public Object executeService(CustomASServiceContext context, CustomASServiceExecutionOptions options);

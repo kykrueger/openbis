@@ -20,6 +20,7 @@ import java.util.List;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectRelationRecord;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryContentCopyRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history.HistoryPropertyRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.MaterialPropertyRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.PropertyAssignmentRecord;
@@ -121,6 +122,16 @@ public interface DataSetQuery extends ObjectQuery
             + "from data_set_relationships_history drh where drh.valid_until_timestamp is not null and drh.main_data_id = any(?{1})", parameterBindings = {
                     LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<DataSetRelationshipRecord> getRelationshipsHistory(LongSet dataSetIds);
+
+    @Select(sql = "select dsch.id as id, dsch.data_id as dataSetId, dsch.external_code as externalCode, dsch.path as path, dsch.git_commit_hash as gitCommitHash, dsch.git_repository_id as gitRepositoryId, "
+            + "dsch.edms_id as externalDmsId, dsch.pers_id_author as authorId, dsch.valid_from_timestamp as validFrom, dsch.valid_until_timestamp as validTo "
+            + "from data_set_copies_history dsch "
+            + "where dsch.valid_until_timestamp is not null and dsch.data_id = any(?{1})", 
+            parameterBindings = {
+                    LongSetMapper.class
+                },
+            fetchSize = FETCH_SIZE)
+    public List<HistoryContentCopyRecord> getContentCopyHistory(LongSet dataSetIds);
 
     @Select(sql = "select ds_id from post_registration_dataset_queue where ds_id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
