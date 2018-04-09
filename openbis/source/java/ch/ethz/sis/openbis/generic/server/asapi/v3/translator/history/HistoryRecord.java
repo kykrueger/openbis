@@ -16,20 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history;
 
-/**
- * @author pkupczyk
- */
-public class HistoryPropertyRecord extends HistoryRecord
+import java.util.Date;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectBaseRecord;
+
+public class HistoryRecord extends ObjectBaseRecord
 {
 
-    public Long objectId;
+    public Date validFrom;
 
-    public String propertyCode;
+    public Date validTo;
 
-    public String propertyValue;
-
-    public String materialPropertyValue;
-
-    public String vocabularyPropertyValue;
+    public Long authorId;
 
 }

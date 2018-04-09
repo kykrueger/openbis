@@ -16,20 +16,19 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history;
 
-/**
- * @author pkupczyk
- */
-public class HistoryPropertyRecord extends HistoryRecord
+public class HistoryContentCopyRecord extends HistoryRecord
 {
 
-    public Long objectId;
+    public Long dataSetId;
 
-    public String propertyCode;
+    public String externalCode;
 
-    public String propertyValue;
+    public String path;
 
-    public String materialPropertyValue;
+    public String gitCommitHash;
 
-    public String vocabularyPropertyValue;
+    public String gitRepositoryId;
+
+    public Long externalDmsId;
 
 }

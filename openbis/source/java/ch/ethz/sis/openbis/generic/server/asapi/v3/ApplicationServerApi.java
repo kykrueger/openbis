@@ -1531,7 +1531,7 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     @Override
     public int getMinorVersion()
     {
-        return 3;
+        return 4;
     }
 
     @Override

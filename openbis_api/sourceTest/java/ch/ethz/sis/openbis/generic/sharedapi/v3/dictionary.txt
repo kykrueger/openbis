@@ -79,6 +79,7 @@ COMPONENT
 CONTAINER
 contains
 containsAll
+ContentCopyHistoryEntry
 count
 createDataSets
 createExperiments
