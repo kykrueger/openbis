@@ -477,13 +477,23 @@ class Openbis:
             except KeyError:
                 raise ValueError("please provide a URL you want to connect to.")
 
+        else:
+            # url has been provided. If the environment variable OPENBIS_URL points to the same URL,
+            # use the OPENBIS_TOKEN as well.
+            if 'OPENBIS_URL' in os.environ:
+                if url == os.environ["OPENBIS_URL"]:
+                    token = os.environ["OPENBIS_TOKEN"] if "OPENBIS_TOKEN" in os.environ else None
+
+
         url_obj = urlparse(url)
-        if url_obj.netloc is None:
+        if url_obj.netloc is None or url_obj.netloc == '':
             raise ValueError("please provide the url in this format: https://openbis.host.ch:8443")
         if url_obj.hostname is None:
             raise ValueError("hostname is missing")
-
-
+        if url_obj.scheme == 'http':
+            raise ValueError("always use https!")
+            
+        
         self.url = url_obj.geturl()
         self.port = url_obj.port
         self.hostname = url_obj.hostname
@@ -2128,8 +2138,13 @@ class Openbis:
             "method": "isSessionActive",
             "params": [token],
         }
-        resp = self._post_request(self.as_v1, request)
+        try:
+            resp = self._post_request(self.as_v1, request)
+        except Exception as e:
+            return False
+
         return resp
+
 
     def get_dataset(self, permid, only_data=False):
         """fetch a dataset and some metadata attached to it:
@@ -2457,8 +2472,6 @@ class PhysicalData():
                 getattr(self, attr, '')
             ])
         return tabulate(lines, headers=headers)
-
-
 
 
 class ExternalDMS():
