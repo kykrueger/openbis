@@ -86,6 +86,10 @@ class GitWrapper(object):
                 gitignore.write(path)
                 gitignore.write("\n")
 
+    def git_delete_if_untracked(self, file):
+        result = run_shell([self.git_path, 'ls-files', '--error-unmatch', file])
+        if file in result.output:
+            run_shell(['rm', file])
 
 class GitRepoFileInfo(object):
     """Class that gathers checksums and file lengths for all files in the repo."""

@@ -311,6 +311,7 @@ class GitDataMgmt(AbstractDataMgmt):
         self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
         properties_path = self.config_resolver.local_public_properties_path()
         self.git_wrapper.git_checkout(properties_path)
+        self.git_wrapper.git_delete_if_untracked('.obis/properties.json')
 
     def clone(self, data_set_id, ssh_user, content_copy_index):
         try:
