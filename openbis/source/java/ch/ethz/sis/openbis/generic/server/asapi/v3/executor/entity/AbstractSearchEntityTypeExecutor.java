@@ -17,7 +17,6 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +24,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
@@ -32,10 +32,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.AbstractEntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractIdMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractIdsMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodeMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodesMatcher;
@@ -93,81 +94,39 @@ public abstract class AbstractSearchEntityTypeExecutor<ENTITY_TYPE_SEARCH_CRITER
         }
     }
 
-    private class IdMatcher extends Matcher<ENTITY_TYPE_PE>
+    private class IdMatcher extends AbstractIdMatcher<ENTITY_TYPE_PE>
     {
-
-        @SuppressWarnings("unchecked")
         @Override
-        public List<ENTITY_TYPE_PE> getMatching(IOperationContext context, List<ENTITY_TYPE_PE> objects, ISearchCriteria criteria)
+        protected AbstractIdsMatcher<ENTITY_TYPE_PE> createIdsMatcher()
         {
-            IEntityTypeId id = ((IdSearchCriteria<IEntityTypeId>) criteria).getId();
-
-            if (id == null)
-            {
-                return objects;
-            } else
-            {
-                IdsSearchCriteria<IEntityTypeId> idsCriteria = new IdsSearchCriteria<IEntityTypeId>();
-                idsCriteria.thatIn(Arrays.asList(id));
-                return new IdsMatcher().getMatching(context, objects, idsCriteria);
-            }
+            return new IdsMatcher();
         }
-
     }
 
-    private class IdsMatcher extends Matcher<ENTITY_TYPE_PE>
+    private class IdsMatcher extends AbstractIdsMatcher<ENTITY_TYPE_PE>
     {
-
-        @SuppressWarnings("unchecked")
         @Override
-        public List<ENTITY_TYPE_PE> getMatching(IOperationContext context, List<ENTITY_TYPE_PE> objects, ISearchCriteria criteria)
+        protected boolean addPermIdIfPossible(Collection<String> permIds, IObjectId id)
         {
-            Collection<IEntityTypeId> ids = ((IdsSearchCriteria<IEntityTypeId>) criteria).getFieldValue();
-
-            if (ids != null && false == ids.isEmpty())
+            if (id instanceof EntityTypePermId == false)
             {
-                Collection<String> codes = new HashSet<String>();
-
-                for (IEntityTypeId id : ids)
-                {
-                    if (id instanceof EntityTypePermId)
-                    {
-                        EntityTypePermId permId = (EntityTypePermId) id;
-
-                        if (permId.getPermId() == null)
-                        {
-                            throw new UserFailureException("Entity type perm id cannot be null");
-                        }
-
-                        // allow entity kind to be null for backward compatibility
-
-                        if (permId.getEntityKind() == null || permId.getEntityKind().equals(EntityKindConverter.convert(entityKind)))
-                        {
-                            codes.add(permId.getPermId());
-                        }
-                    } else
-                    {
-                        throw new IllegalArgumentException("Unknown id: " + id.getClass());
-                    }
-                }
-
-                List<ENTITY_TYPE_PE> matches = new ArrayList<ENTITY_TYPE_PE>();
-
-                for (ENTITY_TYPE_PE object : objects)
-                {
-                    if (codes.contains(object.getCode()))
-                    {
-                        matches.add(object);
-                    }
-                }
-
-                return matches;
-            } else
-            {
-                return new ArrayList<ENTITY_TYPE_PE>();
+                return false;
             }
+            EntityTypePermId permId = (EntityTypePermId) id;
+            
+            if (permId.getPermId() == null)
+            {
+                throw new UserFailureException("Entity type perm id cannot be null");
+            }
+            
+            // allow entity kind to be null for backward compatibility
+            
+            if (permId.getEntityKind() == null || permId.getEntityKind().equals(EntityKindConverter.convert(entityKind)))
+            {
+                permIds.add(permId.getPermId());
+            }
+            return true;
         }
-
     }
 
     private class PropertyAssignmentMatcher extends Matcher<ENTITY_TYPE_PE>

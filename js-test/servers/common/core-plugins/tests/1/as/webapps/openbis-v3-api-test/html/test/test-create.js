@@ -162,6 +162,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fCheck = function(type) {
 				c.assertEqual(type.getCode(), code, "Type code");
 				c.assertEqual(type.getPermId().getPermId(), code, "Type perm id");
+				c.assertEqual(type.getPermId().toString(), code + ", EXPERIMENT", "Full type perm id");
 				c.assertEqual(type.getDescription(), "a new description", "Description");
 
 				c.assertEqual(type.getPropertyAssignments().length, 1, "Assignments count");
@@ -295,23 +296,6 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				});
 			}
 
-			var waitUntilIndexed = function(facade, dataSetCode, timeout, action) {
-				if (timeout < 0) {
-					c.fail("Data set " + dataSetCode + " after " + timeout + " msec.");
-				}
-				setTimeout(function() {
-					var criteria = new c.DataSetSearchCriteria();
-					criteria.withPermId().thatEquals(dataSetCode);
-					facade.searchDataSets(criteria, c.createDataSetFetchOptions()).then(function(result) {
-						if (result.getTotalCount() == 0) {
-							waitUntilIndexed(facade, dataSetCode, timeout - 1000, action);
-						} else {
-							action();
-						}
-					});
-				}, 1000)
-			};
-
 			var fCheck = function(dataSet, facade) {
 				c.assertEqual(dataSet.getType().getCode(), "LINK_TYPE", "Data set type");
 				var contentCopies = dataSet.getLinkedData().getContentCopies();
@@ -321,7 +305,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(contentCopy.getPath(), "/my/path", "Content copy path");
 				var dfd = $.Deferred()
 				var dataSetCode = dataSet.getCode();
-				waitUntilIndexed(facade, dataSetCode, 10000, function() {
+				c.waitUntilIndexed(facade, dataSetCode, 10000).then(function() {
 					var criteria = new c.DataSetFileSearchCriteria();
 					criteria.withDataSet().withCode().thatEquals(dataSet.getCode());
 					facade.getDataStoreFacade("DSS1").searchFiles(criteria, c.createDataSetFileFetchOptions()).then(function(result) {
@@ -467,6 +451,86 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testCreate(c, fCreate, c.findMaterialType, fCheck);
 		});
+		
+		QUnit.test("createPropertyTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			var code = c.generateId("PROPERTY_TYPE");
+			
+			var fCreate = function(facade) {
+				var creation = new c.PropertyTypeCreation();
+				creation.setCode(code);
+				creation.setDescription("hello");
+				creation.setDataType(c.DataType.INTEGER);
+				creation.setLabel("Test Property Type");
+				return facade.createPropertyTypes([ creation ]);
+			}
+			
+			var fCheck = function(type) {
+				c.assertEqual(type.getCode(), code, "Type code");
+				c.assertEqual(type.getPermId().getPermId(), code, "Type perm id");
+				c.assertEqual(type.getLabel(), "Test Property Type", "Label");
+				c.assertEqual(type.getDescription(), "hello", "Description");
+				c.assertEqual(type.getDataType(), c.DataType.INTEGER, "Data type");
+			}
+			
+			testCreate(c, fCreate, c.findPropertyType, fCheck);
+		});
+
+		QUnit.test("createPlugins()", function(assert) {
+			var c = new common(assert, openbis);
+			var name = c.generateId("PLUGIN");
+			
+			var fCreate = function(facade) {
+				var creation = new c.PluginCreation();
+				creation.setName(name);
+				creation.setDescription("hello");
+				creation.setPluginType(c.PluginType.ENTITY_VALIDATION);
+				creation.setScript("def a():\n  pass");
+				return facade.createPlugins([ creation ]);
+			}
+			
+			var fCheck = function(plugin) {
+				c.assertEqual(plugin.getName(), name, "Name");
+				c.assertEqual(plugin.getPermId().getPermId(), name, "Perm id");
+				c.assertEqual(plugin.getDescription(), "hello", "Description");
+				c.assertEqual(plugin.getPluginKind(), c.PluginKind.JYTHON, "Plugin kind");
+				c.assertEqual(plugin.getPluginType(), c.PluginType.ENTITY_VALIDATION, "Plugin type");
+				c.assertEqual(plugin.getScript(), "def a():\n  pass", "Script");
+				c.assertEqual(plugin.isAvailable(), true, "Available?");
+			}
+			
+			testCreate(c, fCreate, c.findPlugin, fCheck);
+		});
+		
+		QUnit.test("createVocabularies()", function(assert) {
+			var c = new common(assert, openbis);
+			var code = c.generateId("VOCABULARY");
+
+			var fCreate = function(facade) {
+				var vocabularyCreation = new c.VocabularyCreation();
+				vocabularyCreation.setCode(code);
+				vocabularyCreation.setDescription("test description");
+				vocabularyCreation.setManagedInternally(true);
+				vocabularyCreation.setInternalNameSpace(true);
+				vocabularyCreation.setChosenFromList(true);
+				vocabularyCreation.setUrlTemplate("https://www.ethz.ch");
+				var termCreation = new c.VocabularyTermCreation();
+				termCreation.setCode("alpha");
+				vocabularyCreation.setTerms([ termCreation ]);
+				return facade.createVocabularies([ vocabularyCreation ]);
+			}
+
+			var fCheck = function(vocabulary) {
+				c.assertEqual(vocabulary.getCode(), "$" + code, "Code");
+				c.assertEqual(vocabulary.getDescription(), "test description", "Description");
+				c.assertEqual(vocabulary.isManagedInternally(), true, "Managed internally");
+				c.assertEqual(vocabulary.isInternalNameSpace(), true, "Internal name space");
+				c.assertEqual(vocabulary.isChosenFromList(), true, "Chosen from list");
+				c.assertEqual(vocabulary.getUrlTemplate(), "https://www.ethz.ch", "URL template");
+			}
+
+			testCreate(c, fCreate, c.findVocabulary, fCheck);
+		});
 
 		QUnit.test("createVocabularyTerms()", function(assert) {
 			var c = new common(assert, openbis);
@@ -544,15 +608,15 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var c = new common(assert, openbis);
 			var code = c.generateId("AUTHORIZATION_GROUP");
 			var description = "Description of " + code;
-			
+
 			var fCreate = function(facade) {
 				var creation = new c.AuthorizationGroupCreation();
 				creation.setCode(code);
 				creation.setDescription(description);
-				creation.setUserIds([new c.PersonPermId("power_user")]);
+				creation.setUserIds([ new c.PersonPermId("power_user") ]);
 				return facade.createAuthorizationGroups([ creation ]);
 			}
-			
+
 			var fCheck = function(group) {
 				c.assertEqual(group.getCode(), code, "Code");
 				c.assertEqual(group.getDescription(), description, "Description");
@@ -562,54 +626,54 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				users.sort();
 				c.assertEqual(users.toString(), "power_user", "Users");
 			}
-			
+
 			testCreate(c, fCreate, c.findAuthorizationGroup, fCheck);
 		});
-		
+
 		QUnit.test("createRoleAssignments() for space user", function(assert) {
 			var c = new common(assert, openbis);
-			
+
 			var fCreate = function(facade) {
 				return c.createSpace(facade).then(function(spaceId) {
 					var creation = new c.RoleAssignmentCreation();
 					creation.setRole(c.Role.POWER_USER);
 					creation.setUserId(new c.PersonPermId("power_user"));
 					creation.setSpaceId(spaceId);
-					return facade.createRoleAssignments([creation]);
+					return facade.createRoleAssignments([ creation ]);
 				});
 			}
-			
+
 			var fCheck = function(roleAssignment) {
 				c.assertEqual(roleAssignment.getUser().getUserId(), "power_user", "User");
 				c.assertEqual(roleAssignment.getRole(), c.Role.POWER_USER, "Role");
 				c.assertEqual(roleAssignment.getRoleLevel(), c.RoleLevel.SPACE, "Role level");
 				c.assertEqual(roleAssignment.getRegistrator().getUserId(), "openbis_test_js", "Registrator");
 			}
-			
+
 			testCreate(c, fCreate, c.findRoleAssignment, fCheck);
 		});
-		
+
 		QUnit.test("createPersons()", function(assert) {
 			var c = new common(assert, openbis);
 			var userId = c.generateId("user");
-			
+
 			var fCreate = function(facade) {
 				var personCreation = new c.PersonCreation();
 				personCreation.setUserId(userId);
-				personCreation.setHomeSpaceId(new c.SpacePermId("TEST"))
+				personCreation.setSpaceId(new c.SpacePermId("TEST"))
 				return facade.createPersons([ personCreation ]);
 			}
-			
+
 			var fCheck = function(person) {
 				c.assertEqual(person.getUserId(), userId, "User id");
 				c.assertEqual(person.getRegistrator().getUserId(), "openbis_test_js", "Registrator");
 				c.assertEqual(person.isActive(), true, "User active");
 				c.assertEqual(person.getSpace().getCode(), "TEST", "Home space");
 			}
-			
+
 			testCreate(c, fCreate, c.findPerson, fCheck);
 		});
-		
+
 		var createSemanticAnnotationCreation = function(c) {
 			var creation = new c.SemanticAnnotationCreation();
 			creation.setPredicateOntologyId("jsPredicateOntologyId");
@@ -681,6 +745,72 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}
 
 			testCreate(c, fCreate, c.findSemanticAnnotation, fCheck);
+		});
+
+		QUnit.test("createUploadedDataSet()", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fCreate = function(facade) {
+
+				// unfortunately old Firefox that is used together with our
+				// Selenium tests does not allow to use FormData class which
+				// would make constructing form data much easier
+
+				var formData = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"file\"; filename=\"filePath/file1.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\ncontent1\r\n"
+						+ "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"file\"; filename=\"filePath/file2.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\ncontent2\r\n"
+						+ "------WebKitFormBoundary7MA4YWxkTrZu0gW--";
+
+				var dataStoreFacade = facade.getDataStoreFacade("DSS1");
+
+				return dataStoreFacade.createDataSetUpload("UNKNOWN").then(function(upload) {
+					return $.ajax({
+						url : upload.getUrl("testFolder", false),
+						type : "POST",
+						processData : false,
+						contentType : "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
+						data : formData
+					}).then(function() {
+						return c.createExperiment(facade).then(function(experimentPermId) {
+							var creation = new c.UploadedDataSetCreation();
+							creation.setUploadId(upload.getId());
+							creation.setTypeId(new c.EntityTypePermId(upload.getDataSetType()));
+							creation.setExperimentId(experimentPermId);
+							creation.setProperty("DESCRIPTION", "test description");
+							creation.setParentIds([ new c.DataSetPermId("20130424111751432-431") ]);
+							return dataStoreFacade.createUploadedDataSet(creation).then(function(permId) {
+								return [ permId ];
+							})
+						});
+					});
+				});
+			}
+
+			var fCheck = function(dataSet, facade) {
+				return c.waitUntilIndexed(facade, dataSet.getCode(), 10000).then(function() {
+					var dataStoreFacade = facade.getDataStoreFacade("DSS1");
+
+					var criteria = new c.DataSetFileSearchCriteria();
+					criteria.withDataSet().withCode().thatEquals(dataSet.getCode());
+
+					return dataStoreFacade.searchFiles(criteria, c.createDataSetFileFetchOptions()).then(function(result) {
+						var files = result.getObjects();
+						c.assertEqual(files.length, 6, "Number of files");
+						c.assertEqual(files[0].path, "", "Path 0");
+						c.assertEqual(files[1].path, "original", "Path 1");
+						c.assertEqual(files[2].path, "original/testFolder", "Path 2");
+						c.assertEqual(files[3].path, "original/testFolder/filePath", "Path 3");
+						c.assertEqual(files[4].path, "original/testFolder/filePath/file1.txt", "Path 4");
+						c.assertEqual(files[5].path, "original/testFolder/filePath/file2.txt", "Path 5");
+
+						c.assertEqual(dataSet.getType().getCode(), "UNKNOWN", "Type code");
+						c.assertEqual(dataSet.getProperty("DESCRIPTION"), "test description", "'DESCRIPTION' property value");
+						c.assertEqual(dataSet.getParents().length, 1, "Number of parents");
+						c.assertEqual(dataSet.getParents()[0].getCode(), "20130424111751432-431", "Parent code");
+					});
+				});
+			}
+
+			testCreate(c, fCreate, c.findDataSet, fCheck);
 		});
 
 	}

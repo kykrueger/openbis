@@ -53,7 +53,8 @@ public class DeleteOperationExecutionExecutor
     private IOperationExecutionStore executionStore;
 
     @Override
-    protected Map<IOperationExecutionId, OperationExecutionPE> map(IOperationContext context, List<? extends IOperationExecutionId> ids)
+    protected Map<IOperationExecutionId, OperationExecutionPE> map(IOperationContext context, List<? extends IOperationExecutionId> ids,
+            OperationExecutionDeletionOptions deletionOptions)
     {
         Map<IOperationExecutionId, OperationExecutionPE> map = new LinkedHashMap<IOperationExecutionId, OperationExecutionPE>();
 

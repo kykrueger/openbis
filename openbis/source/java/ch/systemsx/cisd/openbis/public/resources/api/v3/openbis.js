@@ -127,7 +127,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				});
 			}
 		}
-		
+
 		this._createUrl = function(dataStore) {
 			return dataStore.downloadUrl + "/datastore_server/rmi-data-store-server-v3.json";
 		}
@@ -168,7 +168,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				});
 			});
 		}
-		
+
 		this.createDataSets = function(creations) {
 			var thisFacade = this;
 			var creationsByStore = {};
@@ -178,7 +178,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				if (dataStoreCode in creationsByStore) {
 					creationsByStore[dataStoreCode].append(creation);
 				} else {
-					creationsByStore[dataStoreCode] = [creation];
+					creationsByStore[dataStoreCode] = [ creation ];
 				}
 			}
 			return this._getDataStores().then(function(dataStores) {
@@ -210,6 +210,82 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 
 			});
 		}
+
+		this.createDataSetUpload = function(dataSetType) {
+
+			var pad = function(value, length) {
+				var result = "" + value;
+				while (result.length < length) {
+					result = "0" + result;
+				}
+				return result;
+			}
+
+			return this._getDataStores().then(
+					function(dataStores) {
+						var dfd = jquery.Deferred();
+
+						if (dataStores.length > 1) {
+							dfd.reject("Please specify exactly one data store");
+						} else {
+							var dataStore = dataStores[0];
+							var now = new Date();
+							var id = "upload-" + now.getFullYear() + pad(now.getMonth() + 1, 2) + pad(now.getDate(), 2) + pad(now.getHours(), 2) + pad(now.getMinutes(), 2) + pad(now.getSeconds(), 2)
+									+ "-" + pad(Math.round(Math.random() * 100000), 5);
+
+							dfd.resolve({
+								"getId" : function() {
+									return id;
+								},
+								"getUrl" : function(folderPath, ignoreFilePath) {
+									var params = {
+										"sessionID" : facade._private.sessionToken,
+										"uploadID" : id,
+										"dataSetType" : dataSetType
+									};
+
+									if (folderPath != null) {
+										params["folderPath"] = folderPath;
+									}
+
+									if (ignoreFilePath != null) {
+										params["ignoreFilePath"] = ignoreFilePath;
+									}
+
+									return dataStore.downloadUrl + "/datastore_server/store_share_file_upload?" + jquery.param(params);
+								},
+								"getDataSetType" : function() {
+									return dataSetType;
+								}
+							});
+						}
+
+						return dfd.promise();
+					});
+		}
+
+		this.createUploadedDataSet = function(creation) {
+			var thisFacade = this;
+			return this._getDataStores().then(function(dataStores) {
+				if (dataStores.length > 1) {
+					var dfd = jquery.Deferred();
+					dfd.reject("Please specify exactly one data store");
+					return dfd.promise();
+				}
+
+				return facade._private.ajaxRequest({
+					url : thisFacade._createUrl(dataStores[0]),
+					data : {
+						"method" : "createUploadedDataSet",
+						"params" : [ facade._private.sessionToken, creation ]
+					},
+					returnType : {
+						name : "DataSetPermId"
+					}
+				});
+			});
+		}
+
 	}
 
 	var facade = function(openbisUrl) {
@@ -416,7 +492,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.createMaterials = function(creations) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -443,6 +519,51 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : {
 					name : "List",
 					arguments : [ "EntityTypePermId" ]
+				}
+			});
+		}
+
+		this.createPropertyTypes = function(creations) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "createPropertyTypes",
+					"params" : [ thisFacade._private.sessionToken, creations ]
+				},
+				returnType : {
+					name : "List",
+					arguments : [ "PropertyTypePermId" ]
+				}
+			});
+		}
+
+		this.createPlugins = function(creations) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "createPlugins",
+					"params" : [ thisFacade._private.sessionToken, creations ]
+				},
+				returnType : {
+					name : "List",
+					arguments : [ "PluginPermId" ]
+				}
+			});
+		}
+
+		this.createVocabularies = function(creations) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "createVocabularies",
+					"params" : [ thisFacade._private.sessionToken, creations ]
+				},
+				returnType : {
+					name : "List",
+					arguments : [ "VocabularyPermId" ]
 				}
 			});
 		}
@@ -476,7 +597,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.createAuthorizationGroups = function(creations) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -491,7 +612,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.createRoleAssignments = function(creations) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -506,7 +627,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.createPersons = function(creations) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -521,7 +642,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.createSemanticAnnotations = function(creations) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -580,7 +701,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.updateSamples = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -602,7 +723,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.updateDataSets = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -624,7 +745,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.updateMaterials = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -646,7 +767,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.updateExternalDataManagementSystems = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -657,7 +778,40 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
+		this.updatePropertyTypes = function(updates) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "updatePropertyTypes",
+					"params" : [ thisFacade._private.sessionToken, updates ]
+				}
+			});
+		}
+
+		this.updatePlugins = function(updates) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "updatePlugins",
+					"params" : [ thisFacade._private.sessionToken, updates ]
+				}
+			});
+		}
+
+		this.updateVocabularies = function(updates) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "updateVocabularies",
+					"params" : [ thisFacade._private.sessionToken, updates ]
+				}
+			});
+		}
+
 		this.updateVocabularyTerms = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -679,7 +833,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.updateAuthorizationGroups = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -701,7 +855,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.updateOperationExecutions = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -712,7 +866,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.updateSemanticAnnotations = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -814,6 +968,51 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+		this.getPropertyTypes = function(ids, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "getPropertyTypes",
+					"params" : [ thisFacade._private.sessionToken, ids, fetchOptions ]
+				},
+				returnType : {
+					name : "Map",
+					arguments : [ "IPropertyTypeId", "PropertyType" ]
+				}
+			});
+		}
+
+		this.getPlugins = function(ids, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "getPlugins",
+					"params" : [ thisFacade._private.sessionToken, ids, fetchOptions ]
+				},
+				returnType : {
+					name : "Map",
+					arguments : [ "IPluginId", "Plugin" ]
+				}
+			});
+		}
+
+		this.getVocabularies = function(ids, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "getVocabularies",
+					"params" : [ thisFacade._private.sessionToken, ids, fetchOptions ]
+				},
+				returnType : {
+					name : "Map",
+					arguments : [ "IVocabularyId", "Vocabulary" ]
+				}
+			});
+		}
+
 		this.getVocabularyTerms = function(ids, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -843,7 +1042,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.getAuthorizationGroups = function(ids, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -858,7 +1057,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.getRoleAssignments = function(ids, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -873,7 +1072,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.getPersons = function(ids, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -888,7 +1087,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.getSemanticAnnotations = function(ids, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1065,7 +1264,31 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : "SearchResult"
 			});
 		}
-		
+
+		this.searchPlugins = function(criteria, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "searchPlugins",
+					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+
+		this.searchVocabularies = function(criteria, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "searchVocabularies",
+					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+
 		this.searchVocabularyTerms = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1089,7 +1312,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : "SearchResult"
 			});
 		}
-		
+
 		this.searchAuthorizationGroups = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1113,7 +1336,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : "SearchResult"
 			});
 		}
-		
+
 		this.searchPersons = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1125,7 +1348,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : "SearchResult"
 			});
 		}
-		
+
 		this.searchCustomASServices = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1138,6 +1361,54 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+		this.searchSearchDomainServices = function(criteria, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "searchSearchDomainServices",
+					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+
+		this.searchAggregationServices = function(criteria, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "searchAggregationServices",
+					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
+		this.searchReportingServices = function(criteria, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "searchReportingServices",
+					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
+		this.searchProcessingServices = function(criteria, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "searchProcessingServices",
+					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
 		this.searchObjectKindModifications = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1185,7 +1456,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : "SearchResult"
 			});
 		}
-		
+
 		this.searchPropertyTypes = function(criteria, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1301,7 +1572,40 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
+		this.deletePlugins = function(ids, deletionOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "deletePlugins",
+					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+				}
+			});
+		}
+
+		this.deletePropertyTypes = function(ids, deletionOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "deletePropertyTypes",
+					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+				}
+			});
+		}
+
+		this.deleteVocabularies = function(ids, deletionOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "deleteVocabularies",
+					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+				}
+			});
+		}
+
 		this.deleteVocabularyTerms = function(ids, deletionOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1313,17 +1617,50 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
-		this.deleteEntityTypes = function(ids, deletionOptions) {
+		this.deleteExperimentTypes = function(ids, deletionOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
 				url : openbisUrl,
 				data : {
-					"method" : "deleteEntityTypes",
+					"method" : "deleteExperimentTypes",
 					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
 				}
 			});
 		}
-		
+
+		this.deleteSampleTypes = function(ids, deletionOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "deleteSampleTypes",
+					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+				}
+			});
+		}
+
+		this.deleteDataSetTypes = function(ids, deletionOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "deleteDataSetTypes",
+					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+				}
+			});
+		}
+
+		this.deleteMaterialTypes = function(ids, deletionOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "deleteMaterialTypes",
+					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+				}
+			});
+		}
+
 		this.deleteTags = function(ids, deletionOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1345,7 +1682,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.deleteRoleAssignments = function(ids, deletionOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1356,7 +1693,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.deleteOperationExecutions = function(ids, deletionOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1367,7 +1704,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.deleteSemanticAnnotations = function(ids, deletionOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1427,6 +1764,53 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+		this.executeSearchDomainService = function(options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeSearchDomainService",
+					"params" : [ thisFacade._private.sessionToken, options ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+
+		this.executeAggregationService = function(serviceId, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeAggregationService",
+					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
+		this.executeReportingService = function(serviceId, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeReportingService",
+					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
+				},
+				returnType : "SearchResult"
+			});
+		}
+		
+		this.executeProcessingService = function(serviceId, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeProcessingService",
+					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
+				}
+			});
+		}
+		
 		this.archiveDataSets = function(ids, options) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1444,6 +1828,28 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				url : openbisUrl,
 				data : {
 					"method" : "unarchiveDataSets",
+					"params" : [ thisFacade._private.sessionToken, ids, options ]
+				}
+			});
+		}
+
+		this.lockDataSets = function(ids, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "lockDataSets",
+					"params" : [ thisFacade._private.sessionToken, ids, options ]
+				}
+			});
+		}
+
+		this.unlockDataSets = function(ids, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "unlockDataSets",
 					"params" : [ thisFacade._private.sessionToken, ids, options ]
 				}
 			});
@@ -1471,28 +1877,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
-		this.setWebAppSettings = function(webAppSettings) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequest({
-				url : openbisUrl,
-				data : {
-					"method" : "setWebAppSettings",
-					"params" : [ thisFacade._private.sessionToken, webAppSettings]
-				}
-			});
-		}
-
-		this.getWebAppSettings = function(webAppId) {
-			var thisFacade = this;
-			return thisFacade._private.ajaxRequest({
-				url : openbisUrl,
-				data : {
-					"method" : "getWebAppSettings",
-					"params" : [ thisFacade._private.sessionToken, webAppId]
-				}
-			});
-		}
-		
 		this.createPermIdStrings = function(amount) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
@@ -1503,7 +1887,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
-		
+
 		this.getDataStoreFacade = function() {
 			var dataStoreCodes = [];
 			for (var i = 0; i < arguments.length; i++) {

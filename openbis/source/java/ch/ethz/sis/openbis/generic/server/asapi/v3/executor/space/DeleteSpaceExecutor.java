@@ -45,7 +45,7 @@ public class DeleteSpaceExecutor extends AbstractDeleteEntityExecutor<Void, ISpa
     private ISpaceAuthorizationExecutor authorizationExecutor;
 
     @Override
-    protected Map<ISpaceId, SpacePE> map(IOperationContext context, List<? extends ISpaceId> entityIds)
+    protected Map<ISpaceId, SpacePE> map(IOperationContext context, List<? extends ISpaceId> entityIds, SpaceDeletionOptions deletionOptions)
     {
         return mapSpaceByIdExecutor.map(context, entityIds);
     }

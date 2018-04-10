@@ -16,30 +16,15 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.service;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AbstractExecutionOptionsWithParameters;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.service.CustomASServiceExecutionOptions")
-public class CustomASServiceExecutionOptions implements Serializable
+public class CustomASServiceExecutionOptions extends AbstractExecutionOptionsWithParameters<CustomASServiceExecutionOptions, Object>
 {
     private static final long serialVersionUID = 1L;
 
-    private final Map<String, Object> parameters = new HashMap<String, Object>();
-
-    public CustomASServiceExecutionOptions withParameter(String parameterName, Object value)
-    {
-        parameters.put(parameterName, value);
-        return this;
-    }
-
-    public Map<String, Object> getParameters()
-    {
-        return parameters;
-    }
 }

@@ -120,4 +120,25 @@ public class SearchMaterialTypeTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testSearchWithValidationPlugin()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        MaterialTypeSearchCriteria searchCriteria = new MaterialTypeSearchCriteria();
+        searchCriteria.withCode().thatEquals("CONTROL");
+        MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
+        fetchOptions.withValidationPlugin().withScript();
+        
+        // When
+        MaterialType type = v3api.searchMaterialTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
+        
+        // Then
+        assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
+        assertEquals(type.getValidationPlugin().getFetchOptions().hasScript(), true);
+        assertEquals(type.getValidationPlugin().getName(), "validateOK");
+        assertEquals(type.getValidationPlugin().getScript(), "def validate(entity, isNew):\n  pass\n ");
+        
+        v3api.logout(sessionToken);
+    }
 }

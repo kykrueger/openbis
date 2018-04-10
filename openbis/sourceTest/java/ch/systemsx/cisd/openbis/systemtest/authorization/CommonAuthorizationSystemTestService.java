@@ -26,10 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import ch.systemsx.cisd.openbis.generic.server.DataStoreServiceRegistrator;
+import ch.systemsx.cisd.openbis.generic.server.IDataStoreServiceRegistrator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletionType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
@@ -66,6 +69,17 @@ public class CommonAuthorizationSystemTestService
     private ICommonServer commonServer;
 
     private List<IIdHolder> createdObjects;
+    
+    private IDataStoreServiceRegistrator dataStoreServiceRegistrator;
+    
+    private IDataStoreServiceRegistrator getDataStoreServiceRegistrator()
+    {
+        if (dataStoreServiceRegistrator == null)
+        {
+            dataStoreServiceRegistrator = new DataStoreServiceRegistrator(daoFactory);
+        }
+        return dataStoreServiceRegistrator;
+    }
 
     @Transactional
     public void createPerson(PersonPE person)
@@ -115,6 +129,12 @@ public class CommonAuthorizationSystemTestService
     public void createType(EntityTypePE entityType, EntityKind entityKind)
     {
         daoFactory.getEntityTypeDAO(entityKind).createOrUpdateEntityType(entityType);
+        if (EntityKind.DATA_SET.equals(entityKind))
+        {
+            DataSetType dataSetType = new DataSetType();
+            dataSetType.setCode(entityType.getCode());
+            getDataStoreServiceRegistrator().register(dataSetType);
+        }
         createdObjects.add(entityType);
     }
 

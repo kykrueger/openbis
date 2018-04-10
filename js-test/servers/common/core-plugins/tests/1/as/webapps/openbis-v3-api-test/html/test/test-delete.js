@@ -165,9 +165,70 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testDeleteWithTrashAndConfirm(c, c.createDataSet, c.findDataSet, c.deleteDataSet);
 		});
 
+		QUnit.test("deleteDataSets() with disallowed type without force flag", function(assert) {
+			var c = new common(assert, openbis);
+
+			c.start();
+
+			c.createFacadeAndLogin().then(function(facade) {
+				return c.createDataSet(facade, "UNKNOWN").then(function(permId) {
+					c.assertNotNull(permId, "Entity was created");
+					return c.deleteDataSet(facade, permId).then(function(deletionId) {
+						c.assertNotNull(deletionId, "Entity was moved to trash");
+						return facade.confirmDeletions([ deletionId ]).then(function() {
+							c.fail("Confirmation of deletion should fail without the force flag");
+							c.finish();
+						});
+					});
+				});
+			}).fail(function(error) {
+				c.assertContains(error.message, "Deletion failed because the following data sets have 'Disallow deletion' flag set to true in their type", "Expected error message");
+				c.finish();
+			});
+		});
+
+		QUnit.test("deleteDataSets() with disallowed type with force flag", function(assert) {
+			var c = new common(assert, openbis);
+
+			c.start();
+
+			c.createFacadeAndLogin().then(function(facade) {
+				return c.createDataSet(facade, "UNKNOWN").then(function(permId) {
+					c.assertNotNull(permId, "Entity was created");
+					return c.deleteDataSet(facade, permId).then(function(deletionId) {
+						c.assertNotNull(deletionId, "Entity was moved to trash");
+						var operation = new c.ConfirmDeletionsOperation([ deletionId ]);
+						operation.setForceDeletion(true);
+						var options = new c.SynchronousOperationExecutionOptions();
+						return facade.executeOperations([ operation ], options).then(function() {
+							c.finish();
+						});
+					});
+				});
+			}).fail(function(error) {
+				c.fail("Confirmation of deletion should not fail with the force flag");
+				c.finish();
+			});
+		});
+
 		QUnit.test("deleteMaterials()", function(assert) {
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createMaterial, c.findMaterial, c.deleteMaterial);
+		});
+
+		QUnit.test("deletePlugins()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createPlugin, c.findPlugin, c.deletePlugin);
+		});
+
+		QUnit.test("deletePropertyTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createPropertyType, c.findPropertyType, c.deletePropertyType);
+		});
+
+		QUnit.test("deleteVocabularies()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createVocabulary, c.findVocabulary, c.deleteVocabulary);
 		});
 
 		QUnit.test("deleteVocabularyTerms()", function(assert) {
@@ -175,11 +236,26 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testDeleteWithoutTrash(c, c.createVocabularyTerm, c.findVocabularyTerm, c.deleteVocabularyTerm);
 		});
 
-		QUnit.test("deleteEntityTypes()", function(assert) {
+		QUnit.test("deleteExperimentTypes()", function(assert) {
 			var c = new common(assert, openbis);
-			testDeleteWithoutTrash(c, c.createSampleType, c.findSampleType, c.deleteEntityType);
+			testDeleteWithoutTrash(c, c.createExperimentType, c.findExperimentType, c.deleteExperimentType);
 		});
-		
+
+		QUnit.test("deleteSampleTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createSampleType, c.findSampleType, c.deleteSampleType);
+		});
+
+		QUnit.test("deleteDataSetTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createDataSetType, c.findDataSetType, c.deleteDataSetType);
+		});
+
+		QUnit.test("deleteMaterialTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createMaterialType, c.findMaterialType, c.deleteMaterialType);
+		});
+
 		QUnit.test("deleteExternalDms()", function(assert) {
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createExternalDms, c.findExternalDms, c.deleteExternalDms);
@@ -199,12 +275,12 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createAuthorizationGroup, c.findAuthorizationGroup, c.deleteAuthorizationGroup);
 		});
-		
+
 		QUnit.test("deleteRoleAssignments()", function(assert) {
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createRoleAssignment, c.findRoleAssignment, c.deleteRoleAssignment);
 		});
-		
+
 		QUnit.test("deleteOperationExecutions()", function(assert) {
 			var c = new common(assert, openbis);
 

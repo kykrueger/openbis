@@ -30,6 +30,8 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 public class SearchDomain implements Serializable
 {
     private static final long serialVersionUID = 1L;
+    
+    private String dataStoreCode;
 
     private String name;
 
@@ -39,6 +41,16 @@ public class SearchDomain implements Serializable
     
     private List<SearchDomainSearchOption> possibleSearchOptions;
     
+    public String getDataStoreCode()
+    {
+        return dataStoreCode;
+    }
+
+    public void setDataStoreCode(String dataStoreCode)
+    {
+        this.dataStoreCode = dataStoreCode;
+    }
+
     public String getName()
     {
         return name;

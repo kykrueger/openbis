@@ -16,12 +16,15 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractCreateEntityTypeExecutor;
+import ch.systemsx.cisd.openbis.generic.server.DataStoreServiceRegistrator;
+import ch.systemsx.cisd.openbis.generic.server.IDataStoreServiceRegistrator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypeBO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetTypePE;
@@ -32,11 +35,18 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
  */
 @Component
 public class CreateDataSetTypesExecutor extends AbstractCreateEntityTypeExecutor<DataSetTypeCreation, DataSetType, DataSetTypePE>
-        implements ICreateDataSetTypeExecutor
+        implements ICreateDataSetTypeExecutor, InitializingBean
 {
-
     @Autowired
     private IDataSetTypeAuthorizationExecutor authorizationExecutor;
+
+    private IDataStoreServiceRegistrator dataStoreServiceRegistrator;
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        dataStoreServiceRegistrator = new DataStoreServiceRegistrator(daoFactory);
+    }
 
     @Override
     protected ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind getPEEntityKind()
@@ -75,6 +85,7 @@ public class CreateDataSetTypesExecutor extends AbstractCreateEntityTypeExecutor
         IEntityTypeBO typeBO = businessObjectFactory.createEntityTypeBO(context.getSession());
         typeBO.define(type);
         typeBO.save();
+        dataStoreServiceRegistrator.register(type);
     }
 
     @Override

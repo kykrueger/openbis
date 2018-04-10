@@ -78,6 +78,8 @@ public final class LDAPDirectoryConfiguration
 
     private String securityPrincipalPassword;
 
+    private String searchBase = "";
+
     /**
      * Returns <code>true</code> if this configuration is complete.
      */
@@ -320,6 +322,19 @@ public final class LDAPDirectoryConfiguration
         if (isResolved(queryTemplate))
         {
             this.queryTemplate = queryTemplate;
+        }
+    }
+    
+    public String getSearchBase()
+    {
+        return searchBase;
+    }
+    
+    public void setSearchBase(String searchBase)
+    {
+        if (isResolved(searchBase))
+        {
+            this.searchBase = searchBase;
         }
     }
 

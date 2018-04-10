@@ -30,7 +30,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			});
 		}
 
-		var testSearchWithPagingAndSorting = function(c, fSearch, fetchOptions, fieldName, fieldParameters) {
+		var testSearchWithPagingAndSorting = function(c, fSearch, fetchOptions, fieldName, fieldParameters, disableSortCheck, codeOfFirstAsc) {
 			c.start();
 
 			fetchOptions.from(null).count(null);
@@ -48,37 +48,52 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 					var fieldGetterName = "get" + fieldName.substr(0, 1).toUpperCase() + fieldName.substr(1);
 
-					var comparatorAsc = function(o1, o2) {
-						var v1 = o1[fieldGetterName](fieldParameters);
-						var v2 = o2[fieldGetterName](fieldParameters);
-						return naturalsort(v1, v2);
-					};
-
-					var comparatorDesc = function(o1, o2) {
-						return comparatorAsc(o2, o1);
-					};
-
-					objects.sort(comparatorAsc);
-					var codesAsc = objects.map(function(object) {
-						return object.code;
-					});
-
-					objects.sort(comparatorDesc);
-					var codesDesc = objects.map(function(object) {
-						return object.code;
-					});
-
-					fetchOptions.from(1).count(1);
+					if(disableSortCheck && codeOfFirstAsc) {
+						fetchOptions.from(0).count(1);
+					} else {
+						var comparatorAsc = function(o1, o2) {
+							var v1 = o1[fieldGetterName](fieldParameters);
+							var v2 = o2[fieldGetterName](fieldParameters);
+							return naturalsort(v1, v2);
+						};
+	
+						var comparatorDesc = function(o1, o2) {
+							return comparatorAsc(o2, o1);
+						};
+	
+						objects.sort(comparatorAsc);
+						var codesAsc = objects.map(function(object) {
+							return object.code;
+						});
+	
+						objects.sort(comparatorDesc);
+						var codesDesc = objects.map(function(object) {
+							return object.code;
+						});
+						
+						fetchOptions.from(1).count(1);
+					}
+					
 					fetchOptions.sortBy()[fieldName](fieldParameters);
-
 					return fSearch(facade).then(function(results) {
 						c.ok("Got results ASC");
-						c.assertObjectsWithValues(results.getObjects(), "code", [ codesAsc[1] ]);
+						if(disableSortCheck && codeOfFirstAsc) {
+							c.assertObjectsWithValues(results.getObjects(), "code", [ codeOfFirstAsc ]);
+							fetchOptions.from(null).count(null);
+						} else {
+							c.assertObjectsWithValues(results.getObjects(), "code", [ codesAsc[1] ]);
+						}
+						
+						
 						fetchOptions.sortBy()[fieldName](fieldParameters).desc();
-
 						return fSearch(facade).then(function(results) {
 							c.ok("Got results DESC");
-							c.assertObjectsWithValues(results.getObjects(), "code", [ codesDesc[1] ]);
+							if(disableSortCheck && codeOfFirstAsc) {
+								var lastObject = results.getObjects()[results.getObjects().length - 1];
+								c.assertObjectsWithValues([lastObject], "code", [ codeOfFirstAsc ]);
+							} else {
+								c.assertObjectsWithValues(results.getObjects(), "code", [ codesDesc[1] ]);
+							}
 							c.finish();
 						});
 					});
@@ -228,6 +243,21 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearchWithPagingAndSortingByAll(c, function(facade) {
 				return facade.searchExperiments(criteria, fo);
 			}, fo);
+		});
+		
+		QUnit.test("searchExperiments() with paging and sorting by score", function(assert) {
+			var c = new common(assert, openbis);
+
+			var criteria = new c.ExperimentSearchCriteria();
+			criteria.withOrOperator();
+			criteria.withCode().thatContains("EXP");
+			criteria.withCode().thatContains("-1");
+
+			var fo = c.createExperimentFetchOptions();
+
+			testSearchWithPagingAndSorting(c, function(facade) {
+				return facade.searchExperiments(criteria, fo);
+			}, fo, "fetchedFieldsScore", null, true, "EXP-1");
 		});
 
 		QUnit.test("searchExperiments() with sorting by identifier", function(assert) {
@@ -404,7 +434,21 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				return facade.searchSamples(criteria, fo);
 			}, fo);
 		});
-
+		
+		QUnit.test("searchSamples() with paging and sorting by score", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var criteria = new c.SampleSearchCriteria();
+			criteria.withOrOperator();
+			criteria.withCode().thatContains("TEST-SAMPLE-1");
+			
+			var fo = c.createSampleFetchOptions();
+			
+			testSearchWithPagingAndSorting(c, function(facade) {
+				return facade.searchSamples(criteria, fo);
+			}, fo, "fetchedFieldsScore", null, true,"TEST-SAMPLE-1");
+		});
+		
 		QUnit.test("searchSamples() withoutSpace", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("SAMPLE");
@@ -745,6 +789,21 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			}, fo);
 		});
 
+		QUnit.test("searchDataSets() with paging and sorting by score", function(assert) {
+			var c = new common(assert, openbis);
+
+			var criteria = new c.DataSetSearchCriteria();
+			criteria.withOrOperator();
+			criteria.withCode().thatContains("20130412142");
+			criteria.withCode().thatContains("942295-198");
+
+			var fo = c.createDataSetFetchOptions();
+
+			testSearchWithPagingAndSorting(c, function(facade) {
+				return facade.searchDataSets(criteria, fo);
+			}, fo, "fetchedFieldsScore", null, true, "20130412142942295-198");
+		});
+
 		QUnit.test("searchDataSets() with sorting by property", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -986,6 +1045,21 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearchWithPagingAndSortingByAll(c, function(facade) {
 				return facade.searchMaterials(criteria, fo);
 			}, fo);
+		});
+		
+		QUnit.test("searchMaterials() with paging and sorting by score", function(assert) {
+			var c = new common(assert, openbis);
+
+			var criteria = new c.MaterialSearchCriteria();
+			criteria.withOrOperator();
+			criteria.withCode().thatContains("SIRNA");
+			criteria.withCode().thatContains("A-2");
+
+			var fo = c.createMaterialFetchOptions();
+
+			testSearchWithPagingAndSorting(c, function(facade) {
+				return facade.searchMaterials(criteria, fo);
+			}, fo, "fetchedFieldsScore", null, true, "SIRNA-2");
 		});
 
 		QUnit.test("searchMaterials() with sorting by type", function(assert) {
@@ -1239,6 +1313,60 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchPlugins()", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+				var criteria = new c.PluginSearchCriteria();
+				criteria.withName().thatContains("e");
+				criteria.withPluginType().thatEquals(c.PluginType.ENTITY_VALIDATION);
+				var fo = c.createPluginFetchOptions();
+				fo.withScript();
+				fo.sortBy().name().desc();
+				return facade.searchPlugins(criteria, fo);
+			}
+
+			var fCheck = function(facade, plugins) {
+				c.assertEqual(plugins.length, 1);
+				var plugin = plugins[0];
+				c.assertEqual(plugin.getName(), "Has_Parents", "Name");
+				c.assertEqual(plugin.getDescription(), "Check if the Entity has a parent", "Description");
+				c.assertEqual(plugin.getPluginKind(), c.PluginKind.JYTHON, "Plugin kind");
+				c.assertEqual(plugin.getPluginType(), c.PluginType.ENTITY_VALIDATION, "Plugin type");
+				c.assertEqual(plugin.getFetchOptions().hasScript(), true, "Has script");
+				c.assertEqual(plugin.getScript(), 'def validate(entity, isNew):\n'
+						+ '  parents = entity.entityPE().parents\n'
+						+ '  if parents:\n'
+						+ '    return None\n'
+						+ '  else:\n'
+						+ '    return "No Parents have been selected!"\n' , "Script");
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+
+		QUnit.test("searchVocabularies()", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.VocabularySearchCriteria();
+				criteria.withCode().thatEquals("$STORAGE_FORMAT");
+				return facade.searchVocabularies(criteria, c.createVocabularyFetchOptions());
+			}
+			
+			var fCheck = function(facade, vocabularies) {
+				c.assertEqual(vocabularies.length, 1);
+				var vocabulary = vocabularies[0];
+				c.assertEqual(vocabulary.getCode(), "$STORAGE_FORMAT", "Code");
+				c.assertEqual(vocabulary.getDescription(), "The on-disk storage format of a data set", "Description");
+				c.assertEqual(vocabulary.isManagedInternally(), true, "Managed internally");
+				c.assertEqual(vocabulary.isInternalNameSpace(), true, "Internal namespace");
+				c.assertEqual(vocabulary.getTerms().length, 2, "# of terms");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchVocabularyTerms()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1305,7 +1433,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		QUnit.test("searchAuthorizationGroups()", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
-			
+
 			var fSearch = function(facade) {
 				return c.createAuthorizationGroup(facade).then(function(permId) {
 					var criteria = new c.AuthorizationGroupSearchCriteria();
@@ -1314,7 +1442,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 					return facade.searchAuthorizationGroups(criteria, c.createAuthorizationGroupFetchOptions());
 				});
 			}
-			
+
 			var fCheck = function(facade, groups) {
 				c.assertEqual(groups.length, 1);
 				var group = groups[0];
@@ -1323,20 +1451,20 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(users[0].getUserId(), "power_user", "User");
 				c.assertEqual(users.length, 1, "# Users");
 			}
-			
+
 			testSearch(c, fSearch, fCheck);
 		});
-		
+
 		QUnit.test("searchAuthorizationGroups() existing with role assigments", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
-			
+
 			var fSearch = function(facade) {
 				var criteria = new c.AuthorizationGroupSearchCriteria();
 				criteria.withCode().thatEquals("TEST-GROUP");
 				return facade.searchAuthorizationGroups(criteria, c.createAuthorizationGroupFetchOptions());
 			}
-			
+
 			var fCheck = function(facade, groups) {
 				c.assertEqual(groups.length, 1);
 				var group = groups[0];
@@ -1362,21 +1490,21 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(numberOfTestSpaceAssignments, 1, "Number of TEST space assignments");
 				c.assertEqual(numberOfProjectAssignments, 0, "Number of project assignments");
 			}
-			
+
 			testSearch(c, fSearch, fCheck);
 		});
-		
+
 		QUnit.test("searchRoleAssignments()", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
-			
+
 			var fSearch = function(facade) {
 				var criteria = new c.RoleAssignmentSearchCriteria();
 				criteria.withSpace().withCode().thatEquals("TEST");
 				criteria.withUser().withUserId().thatEquals("observer");
 				return facade.searchRoleAssignments(criteria, c.createRoleAssignmentFetchOptions());
 			}
-			
+
 			var fCheck = function(facade, assignments) {
 				c.assertEqual(assignments.length, 1, "# Role Assignments");
 				var assignment = assignments[0];
@@ -1384,20 +1512,20 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(assignment.getRoleLevel(), "SPACE", "Role level");
 				c.assertEqual(assignment.getSpace().getCode(), "TEST", "Space");
 			}
-			
+
 			testSearch(c, fSearch, fCheck);
 		});
-		
+
 		QUnit.test("searchPersons()", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
-			
+
 			var fSearch = function(facade) {
 				var criteria = new c.PersonSearchCriteria();
 				criteria.withUserId().thatContains("bser");
 				return facade.searchPersons(criteria, c.createPersonFetchOptions());
 			}
-			
+
 			var fCheck = function(facade, persons) {
 				c.assertEqual(persons.length, 1, "# persons");
 				var person = persons[0];
@@ -1410,10 +1538,10 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(assignment.getRoleLevel(), "SPACE", "Role level");
 				c.assertEqual(assignment.getSpace().getCode(), "TEST", "Space");
 			}
-			
+
 			testSearch(c, fSearch, fCheck);
 		});
-		
+
 		QUnit.test("searchOperationExecutions()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1731,6 +1859,32 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(types.length, 1);
 				c.assertEqual(types[0].getEntityType().getCode(), "LIBRARY", "Entity type code");
 				c.assertEqual(types[0].getPropertyType().getCode(), "EXTERNAL_SAMPLE_NAME", "Property type code");
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+
+		QUnit.test("searchDeletions()", function(assert) {
+			var c = new common(assert, openbis);
+
+			var fSearch = function(facade) {
+				return c.createSample(facade).then(function(permId) {
+					var options = new c.SampleDeletionOptions();
+					options.setReason("test reason");
+					return facade.deleteSamples([ permId ], options).then(function(deletionId) {
+						var criteria = new c.DeletionSearchCriteria();
+						criteria.withId().thatEquals(deletionId);
+						var fetchOptions = new c.DeletionFetchOptions();
+						return facade.searchDeletions(criteria, fetchOptions);
+					});
+				});
+			}
+
+			var fCheck = function(facade, deletions) {
+				c.assertEqual(deletions.length, 1);
+				var deletion = deletions[0];
+				c.assertEqual(deletion.getReason(), "test reason", "reason");
+				c.assertToday(deletion.getDeletionDate(), "deletion date");
 			}
 
 			testSearch(c, fSearch, fCheck);

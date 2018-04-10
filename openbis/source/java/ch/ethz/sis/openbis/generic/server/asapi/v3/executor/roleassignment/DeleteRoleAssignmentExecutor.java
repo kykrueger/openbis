@@ -35,8 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @Component
@@ -46,12 +44,13 @@ public class DeleteRoleAssignmentExecutor
 {
     @Autowired
     private IMapRoleAssignmentPEByIdExecutor mapRoleAssignmentByIdExecutor;
-    
+
     @Autowired
     private IRoleAssignmentAuthorizationExecutor authorizationExecutor;
 
     @Override
-    protected Map<IRoleAssignmentId, RoleAssignmentPE> map(IOperationContext context, List<? extends IRoleAssignmentId> entityIds)
+    protected Map<IRoleAssignmentId, RoleAssignmentPE> map(IOperationContext context, List<? extends IRoleAssignmentId> entityIds,
+            RoleAssignmentDeletionOptions deletionOptions)
     {
         return mapRoleAssignmentByIdExecutor.map(context, entityIds);
     }

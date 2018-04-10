@@ -79,6 +79,7 @@ COMPONENT
 CONTAINER
 contains
 containsAll
+ContentCopyHistoryEntry
 count
 createDataSets
 createExperiments
@@ -1838,7 +1839,291 @@ Update Sample Types Operation Result
 is Force Removing Assignments
 set Force Removing Assignments
 
-delete Entity Types
-Delete Entity Types Operation
-Delete Entity Types Operation Result
-Entity Type Deletion Options
+get Terms
+has Terms
+search Vocabularies
+Search Vocabularies Operation
+Search Vocabularies Operation Result
+set Terms
+with Terms
+with Terms Using
+create Vocabularies
+Create Vocabularies Operation
+Create Vocabularies Operation Result
+get Vocabularies
+Get Vocabularies Operation
+Get Vocabularies Operation Result
+is Chosen From List
+set Chosen From List
+Vocabulary Creation
+get Chosen From List
+get Internal NameSpace
+get Managed Internally
+update Vocabularies
+Update Vocabularies Operation
+Update Vocabularies Operation Result
+Vocabulary Update
+delete Vocabularies
+Delete Vocabularies Operation
+Delete Vocabularies Operation Result
+Vocabulary Deletion Options
+
+create Property Types
+Create Property Types Operation
+Create Property Types Operation Result
+get Material Type Id
+Property Type Creation
+set Material Type Id
+
+get Property Types
+Get Property Types Operation
+Get Property Types Operation Result
+
+create Uploaded Data Set
+get Upload Id
+set Upload Id
+Uploaded Data Set Creation
+get Deletion Date
+set Deletion Date
+
+is Force Deletion
+set Force Deletion
+
+Property Type Update
+update Property Types
+Update Property Types Operation
+Update Property Types Operation Result
+
+delete Property Types
+Delete Property Types Operation
+Delete Property Types Operation Result
+Property Type Deletion Options
+
+create Plugins
+Create Plugins Operation
+Create Plugins Operation Result
+DYNAMIC_PROPERTY
+ENTITY_VALIDATION
+get EntityKinds
+get Name
+get Plugins
+Get Plugins Operation
+Get Plugins Operation Result
+get Plugin Kind
+get Script
+get Script Type
+is Available
+JYTHON
+PREDEPLOYED
+MANAGED_PROPERTY
+NAME
+Plugin
+Plugin Creation
+Plugin Fetch Options
+is Without Script
+without Script
+Plugin Sort Options
+Plugin Type
+Script Type
+set Available
+set Entity Kinds
+set Plugin Kind
+set Script
+set Script Type
+get Available
+Plugin Update
+update Plugins
+Update Plugins Operation
+Update Plugins Operation Result
+Plugin Search Criteria
+search Plugins
+Search Plugins Operation
+Search Plugins Operation Result
+Name Search Criteria
+with Name
+name
+Plugin Kind Search Criteria
+Script Type Search Criteria
+with Plugin Kind
+with Script Type
+with Script
+has Script
+with Script Using
+delete Plugins
+Delete Plugins Operation
+Delete Plugins Operation Result
+Plugin Deletion Options
+get Plugin Type
+get Validation Plugin
+has Validation Plugin
+Plugin Kind
+Plugin Type Search Criteria
+set Plugin Type
+set Validation Plugin
+with Plugin Type
+with Validation Plugin
+with Validation Plugin Using
+
+FETCHED_FIELDS_SCORE
+fetchedFieldsScore
+getFetchedFieldsScore
+FETCHED_FIELDS_SCORE
+SortParameter
+FULL_MATCH_CODE_BOOST
+FULL_MATCH_PROPERTY_BOOST
+FULL_MATCH_TYPE_BOOST
+PARTIAL_MATCH_CODE_BOOST
+PARTIAL_MATCH_PROPERTY_BOOST
+
+Data Set Lock Options
+Data Set Unlock Options
+lock Data Sets
+Lock Data Sets Operation
+Lock Data Sets Operation Result
+unlock Data Sets
+Unlock Data Sets Operation
+Unlock Data Sets Operation Result
+
+getSetting
+hasAllSettings
+hasAllWebAppSettings
+hasSetting
+hasWebAppSettings
+SortIgnore
+WebAppSetting
+WebAppSettingCreation
+WebAppSettingsFetchOptions
+WebAppSettingsSortOptions
+WebAppSettingsUpdateValue
+withAllSettings
+withAllSettingsUsing
+withAllWebAppSettings
+withAllWebAppSettingsUsing
+withSetting
+withSettingsUsing
+withWebAppSettings
+withWebAppSettingsUsing
+Dss Service Perm Id
+execute Search Domain Service
+Execute Search Domain Service Operation
+Execute Search Domain Service Operation Result
+get Entity Identifier
+get Entity PermId
+get Preferred Search Domain
+get Result Details
+get Search Domain Label
+get Search String
+get Service Perm Id
+I Search Domain Service Id
+Search Domain Search Option
+Search Domain Search Result
+Search Domain Service
+Search Domain Service Execution Options
+Search Domain Service Fetch Options
+Search Domain Service Perm Id
+Search Domain Service Result
+Search Domain Service Search Criteria
+search Search Domain Services
+Search Search Domain Services Operation
+Search Search Domain Services Operation Result
+set Entity Identifier
+set Entity PermId
+set Result Details
+set Search Domain Label
+set Service PermId
+with Preferred Search Domain
+with Search Options
+with Search String
+get Possible Search Options Key
+get Possible Search Options
+IDssServiceId
+Search Domain Service Execution Result
+Search Domain Service Search Option
+Search Domain Service Sort Options
+set Possible Search Options
+set Possible Search Options Key
+get Search Domain Name
+set Search Domain Name
+
+Abstract Execution Options With Parameters
+Aggregation Service Execution Options
+execute Aggregation Service
+Execute Aggregation Service Operation
+Execute Aggregation Service Operation Result
+get Columns
+get Rows
+I Table Cell
+Table Column
+Table Double Cell
+Table Long Cell
+Table Model
+Table String Cell
+Aggregation Service
+Aggregation Service Fetch Options
+Aggregation Service Search Criteria
+Aggregation Service Sort Options
+search Aggregation Services
+Search Aggregation Services Operation
+Search Aggregation Services Operation Result
+
+get Data Set Type Codes
+set Data Set Type Codes
+Reporting Service
+Reporting Service Fetch Options
+Reporting Service Search Criteria
+Reporting Service Sort Options
+search Reporting Services
+Search Reporting Services Operation
+Search Reporting Services Operation Result
+execute Reporting Service
+Execute Reporting Service Operation
+Execute Reporting Service Operation Result
+get Data Set Codes
+Reporting Service Execution Options
+
+execute Processing Service
+Execute Processing Service Operation
+Execute Processing Service Operation Result
+I Data Set Codes Holder
+I Label Holder
+I Name Holder
+Processing Service
+Processing Service Execution Options
+Processing Service Fetch Options
+Processing Service Search Criteria
+Processing Service Sort Options
+search Processing Services
+Search Processing Services Operation
+Search Processing Services Operation Result
+
+Data Set Type Deletion Options
+delete Data Set Types
+Delete Data Set Types Operation
+Delete Data Set Types Operation Result
+delete Experiment Types
+Delete Experiment Types Operation
+Delete Experiment Types Operation Result
+delete Material Types
+Delete Material Types Operation
+Delete Material Types Operation Result
+delete Sample Types
+Delete Sample Types Operation
+Delete Sample Types Operation Result
+Experiment Type Deletion Options
+Material Type Deletion Options
+Sample Type Deletion Options
+
+are Matching
+Fetch Ignore
+Fetch Property
+handler
+I Fetch Options Matcher
+I Fetch Property Handler
+Person Fetch Options All WebApp Settings Handler
+Person Fetch Options WebApp Settings Handler
+WebApp Settings Fetch Options All Settings Handler
+WebApp Settings Fetch Options Settings Handler
+
+custom Import
+general Import
+I Import Service

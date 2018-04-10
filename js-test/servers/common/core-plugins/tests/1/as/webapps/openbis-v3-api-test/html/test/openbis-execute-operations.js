@@ -129,10 +129,22 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeCreateOperation(new c.CreateMaterialTypesOperation(creations));
 		}
 
+		this.createPropertyTypes = function(creations) {
+			return this._executeCreateOperation(new c.CreatePropertyTypesOperation(creations));
+		}
+		
+		this.createPlugins = function(creations) {
+			return this._executeCreateOperation(new c.CreatePluginsOperation(creations));
+		}
+
 		this.createVocabularyTerms = function(creations) {
 			return this._executeCreateOperation(new c.CreateVocabularyTermsOperation(creations));
 		}
-
+		
+		this.createVocabularies = function(creations) {
+			return this._executeCreateOperation(new c.CreateVocabulariesOperation(creations));
+		}
+		
 		this.createTags = function(creations) {
 			return this._executeCreateOperation(new c.CreateTagsOperation(creations));
 		}
@@ -193,10 +205,22 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeUpdateOperation(new c.UpdateMaterialTypesOperation(updates));
 		}
 		
+		this.updateVocabularies = function(updates) {
+			return this._executeUpdateOperation(new c.UpdateVocabulariesOperation(updates));
+		}
+
+		this.updatePropertyTypes = function(updates) {
+			return this._executeUpdateOperation(new c.UpdatePropertyTypesOperation(updates));
+		}
+		
+		this.updatePlugins = function(updates) {
+			return this._executeUpdateOperation(new c.UpdatePluginsOperation(updates));
+		}
+		
 		this.updateVocabularyTerms = function(updates) {
 			return this._executeUpdateOperation(new c.UpdateVocabularyTermsOperation(updates));
 		}
-
+		
 		this.updateExternalDataManagementSystems = function(updates) {
 			return this._executeUpdateOperation(new c.UpdateExternalDmsOperation(updates));
 		}
@@ -245,10 +269,22 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeGetOperation(new c.GetMaterialsOperation(ids, fetchOptions));
 		}
 
+		this.getPropertyTypes = function(ids, fetchOptions) {
+			return this._executeGetOperation(new c.GetPropertyTypesOperation(ids, fetchOptions));
+		}
+		
+		this.getPlugins = function(ids, fetchOptions) {
+			return this._executeGetOperation(new c.GetPluginsOperation(ids, fetchOptions));
+		}
+
+		this.getVocabularies = function(ids, fetchOptions) {
+			return this._executeGetOperation(new c.GetVocabulariesOperation(ids, fetchOptions));
+		}
+		
 		this.getVocabularyTerms = function(ids, fetchOptions) {
 			return this._executeGetOperation(new c.GetVocabularyTermsOperation(ids, fetchOptions));
 		}
-
+		
 		this.getTags = function(ids, fetchOptions) {
 			return this._executeGetOperation(new c.GetTagsOperation(ids, fetchOptions));
 		}
@@ -317,10 +353,18 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeSearchOperation(new c.SearchMaterialTypesOperation(criteria, fetchOptions));
 		}
 
+		this.searchPlugins = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchPluginsOperation(criteria, fetchOptions));
+		}
+
+		this.searchVocabularies = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchVocabulariesOperation(criteria, fetchOptions));
+		}
+		
 		this.searchVocabularyTerms = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new c.SearchVocabularyTermsOperation(criteria, fetchOptions));
 		}
-
+		
 		this.searchExternalDataManagementSystems = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new c.SearchExternalDmsOperation(criteria, fetchOptions));
 		}
@@ -345,6 +389,22 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeSearchOperation(new c.SearchCustomASServicesOperation(criteria, fetchOptions));
 		}
 
+		this.searchSearchDomainServices = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchSearchDomainServicesOperation(criteria, fetchOptions));
+		}
+		
+		this.searchAggregationServices = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchAggregationServicesOperation(criteria, fetchOptions));
+		}
+		
+		this.searchReportingServices = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchReportingServicesOperation(criteria, fetchOptions));
+		}
+		
+		this.searchProcessingServices = function(criteria, fetchOptions) {
+			return this._executeSearchOperation(new c.SearchProcessingServicesOperation(criteria, fetchOptions));
+		}
+		
 		this.searchObjectKindModifications = function(criteria, fetchOptions) {
 			return this._executeSearchOperation(new c.SearchObjectKindModificationsOperation(criteria, fetchOptions));
 		}
@@ -393,7 +453,7 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeDeleteOperation(new c.DeleteDataSetsOperation(ids, deletionOptions));
 		}
 
-		this.deleteMaterials = function(ids, deletionOptions) {
+		this.deleteMaterials = function(ids, deletionOptions) {	
 			return this._executeDeleteOperation(new c.DeleteMaterialsOperation(ids, deletionOptions));
 		}
 
@@ -401,14 +461,38 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			return this._executeDeleteOperation(new c.DeleteExternalDmsOperation(ids, deletionOptions));
 		}
 
+		this.deletePlugins = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeletePluginsOperation(ids, deletionOptions));
+		}
+		
+		this.deletePropertyTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeletePropertyTypesOperation(ids, deletionOptions));
+		}
+		
+		this.deleteVocabularies = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteVocabulariesOperation(ids, deletionOptions));
+		}
+		
 		this.deleteVocabularyTerms = function(ids, deletionOptions) {
 			return this._executeDeleteOperation(new c.DeleteVocabularyTermsOperation(ids, deletionOptions));
 		}
-		
-		this.deleteEntityTypes = function(ids, deletionOptions) {
-			return this._executeDeleteOperation(new c.DeleteEntityTypesOperation(ids, deletionOptions));
+
+		this.deleteExperimentTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteExperimentTypesOperation(ids, deletionOptions));
 		}
 		
+		this.deleteSampleTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteSampleTypesOperation(ids, deletionOptions));
+		}
+
+		this.deleteDataSetTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteDataSetTypesOperation(ids, deletionOptions));
+		}
+		
+		this.deleteMaterialTypes = function(ids, deletionOptions) {
+			return this._executeDeleteOperation(new c.DeleteMaterialTypesOperation(ids, deletionOptions));
+		}
+
 		this.deleteTags = function(ids, deletionOptions) {
 			return this._executeDeleteOperation(new c.DeleteTagsOperation(ids, deletionOptions));
 		}
@@ -451,6 +535,30 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			});
 		}
 
+		this.executeAggregationService = function(serviceId, options) {
+			return this._executeOperation(new c.ExecuteAggregationServiceOperation(serviceId, options)).then(function(results) {
+				return results.getResults()[0].getResult();
+			});
+		}
+		
+		this.executeReportingService = function(serviceId, options) {
+			return this._executeOperation(new c.ExecuteReportingServiceOperation(serviceId, options)).then(function(results) {
+				return results.getResults()[0].getResult();
+			});
+		}
+		
+		this.executeProcessingService = function(serviceId, options) {
+			return this._executeOperation(new c.ExecuteProcessingServiceOperation(serviceId, options)).then(function(results) {
+				return results.getResults()[0];
+			});
+		}
+		
+		this.executeSearchDomainService = function(options) {
+			return this._executeOperation(new c.ExecuteSearchDomainServiceOperation(options)).then(function(results) {
+				return results.getResults()[0].getResult();
+			});
+		}
+		
 		this.archiveDataSets = function(ids, options) {
 			return this._executeOperation(new c.ArchiveDataSetsOperation(ids, options)).then(function(results) {
 				return results.getResults()[0];
@@ -463,6 +571,18 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			});
 		}
 
+		this.lockDataSets = function(ids, options) {
+			return this._executeOperation(new c.LockDataSetsOperation(ids, options)).then(function(results) {
+				return results.getResults()[0];
+			});
+		}
+		
+		this.unlockDataSets = function(ids, options) {
+			return this._executeOperation(new c.UnlockDataSetsOperation(ids, options)).then(function(results) {
+				return results.getResults()[0];
+			});
+		}
+		
 		this.executeOperations = function(operations, options) {
 			return this._openbis.executeOperations(operations, options);
 		}

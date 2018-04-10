@@ -1,6 +1,6 @@
 define(['jquery', 'underscore', 'openbis', 'test/common'], function($, _, openbis, common) {
 	return function() {
-		QUnit.module("Dto roundtrip test");
+		QUnit.module("DTO roundtrip test");
 
 		var testAction = function(c, fAction, fCheck) {
 			c.start();
@@ -43,7 +43,6 @@ define(['jquery', 'underscore', 'openbis', 'test/common'], function($, _, openbi
 				actionFacade = facade;
 
 				return _.chain(
-						// [c.getDtos().GlobalSearchTextCriteria]
 						c.getDtos()
 					)
 					.map(function(proto) {
@@ -91,10 +90,19 @@ define(['jquery', 'underscore', 'openbis', 'test/common'], function($, _, openbi
 											c.ok("Skipping setValue field: " + key);
 										}
 									} else {
-										var setter = _.find(_.functions(subj), function(fn) {
-											return fn.toLowerCase() === key.toLowerCase() || fn.toLowerCase() === "set" + key.toLowerCase();
+										var regularSetFn = _.find(_.functions(subj), function(fn) {
+											return fn.toLowerCase() === "set" + key.toLowerCase();
 										});
-										c.ok("Setter: [set]" + key);
+										
+										var otherSetFn = _.find(_.functions(subj), function(fn) {
+											return (fn.toLowerCase() === key.toLowerCase())
+												|| (fn.toLowerCase() === "with" + key.toLowerCase());
+										});
+										
+										// prefer regularSetFn function over otherSetFn 
+										var setter = regularSetFn || otherSetFn;
+										
+										c.ok("Setter: [set/with]" + key);
 
 										if (setter) {
 											subj[setter](val);

@@ -55,7 +55,8 @@ public class DeleteVocabularyTermExecutor
     private IMapVocabularyTermByIdExecutor mapTermByIdExecutor;
 
     @Override
-    protected Map<IVocabularyTermId, VocabularyTermPE> map(IOperationContext context, List<? extends IVocabularyTermId> entityIds)
+    protected Map<IVocabularyTermId, VocabularyTermPE> map(IOperationContext context, List<? extends IVocabularyTermId> entityIds,
+            VocabularyTermDeletionOptions deletionOptions)
     {
         return mapTermByIdExecutor.map(context, entityIds);
     }

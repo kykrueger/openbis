@@ -72,6 +72,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetBatchUpdateDetai
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStoreServiceKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ReportingPluginType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetBatchUpdatesDTO;
@@ -504,6 +505,8 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         List<DatasetDescription> locations = loadAvailableDatasetDescriptions(datasetCodes);
         String sessionToken = dataStore.getSessionToken();
         String userSessionToken = session.getSessionToken();
+        validateParameterBindings(datastoreServiceKey, parameterBindings);
+        validateProcessingServiceKey(dataStore, datastoreServiceKey, datastoreCode);
         parameterBindings.put(Constants.USER_PARAMETER, session.tryGetPerson().getUserId());
         service.processDatasets(sessionToken, userSessionToken, datastoreServiceKey, locations,
                 parameterBindings, tryGetLoggedUserId(), tryGetLoggedUserEmail());
@@ -531,19 +534,10 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
                         @Override
                         public void validateBatch(IBatch<DatasetDescription, String> batch)
                         {
+                            validateParameterBindings(datastoreServiceKey, parameterBindings);
+                            
                             DataStorePE dataStore = findDataStore(batch.getId());
-                            Set<DataStoreServicePE> services = dataStore.getServices();
-
-                            for (DataStoreServicePE service : services)
-                            {
-                                if (service.getKey().equals(datastoreServiceKey) && service.getKind().equals(DataStoreServiceKind.PROCESSING))
-                                {
-                                    return;
-                                }
-                            }
-
-                            throw new UserFailureException("Data store '" + batch.getId() + "' does not have '" + datastoreServiceKey
-                                    + "' processing plugin configured.");
+                            validateProcessingServiceKey(dataStore, datastoreServiceKey, batch.getId());
                         }
 
                         @Override
@@ -562,6 +556,61 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
 
         multiplexer.process(locations, batchIdProvider, batchHandler);
 
+    }
+
+    private void validateParameterBindings(final String datastoreServiceKey, final Map<String, String> parameterBindings)
+    {
+        String value = parameterBindings.get(Constants.USER_PARAMETER);
+        if (value != null)
+        {
+            throw new UserFailureException("Couldn't execute processing plugin '" + datastoreServiceKey
+                    + "' because parameter '" + Constants.USER_PARAMETER
+                    + "' has already be bound to the value '" + value
+                    + "'. Note, that parameter '" + Constants.USER_PARAMETER
+                    + "' is a reserved parameter used internally.");
+        }
+    }
+
+    private void validateProcessingServiceKey(DataStorePE dataStore, final String datastoreServiceKey, String dataStoreCode)
+    {
+        for (DataStoreServicePE service : dataStore.getServices())
+        {
+            if (service.getKey().equals(datastoreServiceKey) && service.getKind().equals(DataStoreServiceKind.PROCESSING))
+            {
+                return;
+            }
+        }
+
+        throw new UserFailureException("Data store '" + dataStoreCode + "' does not have '" + datastoreServiceKey
+                + "' processing plugin configured.");
+    }
+    
+    private void validateReportingServiceKey(DataStorePE dataStore, final String datastoreServiceKey, String dataStoreCode)
+    {
+        for (DataStoreServicePE service : dataStore.getServices())
+        {
+            if (service.getKey().equals(datastoreServiceKey) && service.isTableReport())
+            {
+                return;
+            }
+        }
+
+        throw new UserFailureException("Data store '" + dataStoreCode + "' does not have '" + datastoreServiceKey
+                + "' reporting plugin configured.");
+    }
+    
+    private void validateAggregationServiceKey(DataStorePE dataStore, final String datastoreServiceKey, String dataStoreCode)
+    {
+        for (DataStoreServicePE service : dataStore.getServices())
+        {
+            if (service.getKey().equals(datastoreServiceKey) && ReportingPluginType.AGGREGATION_TABLE_MODEL.equals(service.getReportingPluginTypeOrNull()))
+            {
+                return;
+            }
+        }
+        
+        throw new UserFailureException("Data store '" + dataStoreCode + "' does not have '" + datastoreServiceKey
+                + "' aggregation plugin configured.");
     }
 
     private String tryGetLoggedUserEmail()
@@ -591,6 +640,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         {
             throw createUnknownDataStoreServerException();
         }
+        validateReportingServiceKey(dataStore, datastoreServiceKey, datastoreCode);
 
         IDataStoreService service =
                 getConversationClient().getDataStoreService(dataStore.getRemoteUrl(),
@@ -625,18 +675,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
                         public void validateBatch(IBatch<DatasetDescription, String> batch)
                         {
                             DataStorePE dataStore = findDataStore(batch.getId());
-                            Set<DataStoreServicePE> services = dataStore.getServices();
-
-                            for (DataStoreServicePE service : services)
-                            {
-                                if (service.getKey().equals(datastoreServiceKey) && service.isTableReport())
-                                {
-                                    return;
-                                }
-                            }
-
-                            throw new UserFailureException("Data store '" + batch.getId() + "' does not have '" + datastoreServiceKey
-                                    + "' report configured.");
+                            validateReportingServiceKey(dataStore, datastoreServiceKey, batch.getId());
                         }
 
                         @Override
@@ -720,7 +759,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         DataStorePE dataStore = getDataStoreDAO().tryToFindDataStoreByCode(datastoreCode);
         if (dataStore == null)
         {
-            throw new IllegalStateException("Cannot find the data store " + datastoreCode);
+            throw new UserFailureException("Cannot find the data store " + datastoreCode);
         }
         return dataStore;
     }
@@ -1192,6 +1231,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         {
             throw createUnknownDataStoreServerException();
         }
+        validateAggregationServiceKey(dataStore, datastoreServiceKey, datastoreCode);
 
         IDataStoreService service =
                 getConversationClient().getDataStoreService(dataStore.getRemoteUrl(),
@@ -1201,4 +1241,5 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         return service.createReportFromAggregationService(sessionToken, userSessionToken,
                 datastoreServiceKey, parameters, tryGetLoggedUserId(), tryGetLoggedUserEmail());
     }
+
 }

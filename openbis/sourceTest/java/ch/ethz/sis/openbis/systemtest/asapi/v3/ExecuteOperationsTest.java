@@ -23,19 +23,13 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -92,6 +86,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.UpdateSpacesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.UpdateSpacesOperationResult;
+import ch.ethz.sis.openbis.systemtest.asapi.v3.util.EmailUtil;
+import ch.ethz.sis.openbis.systemtest.asapi.v3.util.EmailUtil.Email;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
@@ -105,10 +101,6 @@ public class ExecuteOperationsTest extends AbstractOperationExecutionTest
     private static final int SECONDS_PER_HOUR = 60 * 60;
 
     private static final int SECONDS_PER_DAY = SECONDS_PER_HOUR * 24;
-
-    private static final String EMAIL_DIR = "targets/email";
-
-    private static final String EMAIL_PATTERN = "Date: (.*)\nFrom: (.*)\nTo: (.*)\nSubject: (.*)\nContent:\n(.*)";
 
     private static final String EMAIL_FROM = "application_server@localhost";
 
@@ -412,7 +404,7 @@ public class ExecuteOperationsTest extends AbstractOperationExecutionTest
         assertEquals(historyEntry.getPropertyName(), "COMMENT");
         assertEquals(historyEntry.getPropertyValue(), "created");
     }
-    
+
     @Test
     public void testUpdateDataSetAndRelatedSample()
     {
@@ -842,7 +834,7 @@ public class ExecuteOperationsTest extends AbstractOperationExecutionTest
         CreateSpacesOperationResult result = (CreateSpacesOperationResult) results.getResults().get(0);
         assertEquals(result.getObjectIds(), Arrays.asList(new SpacePermId(creation.getCode())));
 
-        Email email = findLatestEmail();
+        Email email = EmailUtil.findLatestEmail();
         assertEquals(email.from, EMAIL_FROM);
         assertEquals(email.to, EMAIL_TO_1 + ", " + EMAIL_TO_2);
         assertEquals(email.subject, String.format("Operation execution %s finished", options.getExecutionId()));
@@ -872,7 +864,7 @@ public class ExecuteOperationsTest extends AbstractOperationExecutionTest
                 }
             }, "Code cannot be empty");
 
-        Email email = findLatestEmail();
+        Email email = EmailUtil.findLatestEmail();
         assertEquals(email.from, EMAIL_FROM);
         assertEquals(email.to, EMAIL_TO_1 + ", " + EMAIL_TO_2);
         assertEquals(email.subject, String.format("Operation execution %s failed", options.getExecutionId()));
@@ -895,61 +887,6 @@ public class ExecuteOperationsTest extends AbstractOperationExecutionTest
         v3api.executeOperations(sessionToken, operations, options);
 
         return getExecution(sessionToken, options.getExecutionId(), fullOperationExecutionFetchOptions());
-    }
-
-    private Email findLatestEmail()
-    {
-        File emailDir = new File(EMAIL_DIR);
-
-        if (emailDir.exists())
-        {
-            File[] emails = emailDir.listFiles();
-
-            if (emails != null && emails.length > 0)
-            {
-                Arrays.sort(emails, new Comparator<File>()
-                    {
-                        @Override
-                        public int compare(File f1, File f2)
-                        {
-                            return -f1.getName().compareTo(f2.getName());
-                        }
-                    });
-
-                File latestEmail = emails[0];
-                try
-                {
-                    String latestEmailContent = FileUtils.readFileToString(latestEmail);
-                    Pattern pattern = Pattern.compile(EMAIL_PATTERN, Pattern.DOTALL);
-
-                    Matcher m = pattern.matcher(latestEmailContent);
-                    if (m.find())
-                    {
-                        Email email = new Email();
-                        email.from = m.group(2);
-                        email.to = m.group(3);
-                        email.subject = m.group(4);
-                        email.content = m.group(5);
-                        return email;
-                    } else
-                    {
-                        throw new RuntimeException("Latest email content does not match the expected email pattern. The latest email content was:\n"
-                                + latestEmailContent + "\nThe expected email pattern was:\n" + EMAIL_PATTERN);
-                    }
-
-                } catch (IOException e)
-                {
-                    throw new RuntimeException("Could not read the latest email " + latestEmail.getAbsolutePath(), e);
-                }
-
-            } else
-            {
-                throw new RuntimeException("No emails found in " + emailDir.getAbsolutePath() + " directory");
-            }
-        } else
-        {
-            throw new RuntimeException("Email directory " + emailDir.getAbsolutePath() + " does not exist");
-        }
     }
 
     private Set<String> getAllSpaceCodes()
@@ -990,17 +927,6 @@ public class ExecuteOperationsTest extends AbstractOperationExecutionTest
         {
             txManager.commit(transaction);
         }
-    }
-
-    private class Email
-    {
-        private String from;
-
-        private String to;
-
-        private String subject;
-
-        private String content;
     }
 
 }

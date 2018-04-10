@@ -152,4 +152,7 @@ public interface SampleQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getPropertyAssignmentAnnotationIds(LongSet sampleTypePropertyTypeIds);
 
+    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from sample_types t where t.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    public List<ObjectRelationRecord> getValidationPluginIds(LongSet sampleTypeIds);
+
 }

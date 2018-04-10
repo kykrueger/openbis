@@ -1501,7 +1501,7 @@ test("executeQuery()", function() {
 test("listTableReportDescriptions()", function() {
 	createFacadeAndLogin(function(facade) {
 		facade.listTableReportDescriptions(function(response) {
-			assertObjectsCount(response.result, 2);
+			assertObjectsCount(response.result, 4);
 			facade.close();
 		});
 	});

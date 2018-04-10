@@ -53,7 +53,7 @@ public class SearchServiceTest extends AbstractTest
                 new CustomASServiceSearchCriteria(),
                 fetchOptions);
 
-        assertEquals(result.getObjects().toString(), "[CustomASService code: service3]");
+        assertEquals(result.getObjects().toString(), "[CustomASService: service3]");
         assertEquals(result.getTotalCount(), 4);
     }
 
@@ -67,7 +67,7 @@ public class SearchServiceTest extends AbstractTest
         SearchResult<CustomASService> result = v3api.searchCustomASServices(sessionToken, searchCriteria, new
                 CustomASServiceFetchOptions());
 
-        assertEquals(result.getObjects().toString(), "[CustomASService code: simple-service]");
+        assertEquals(result.getObjects().toString(), "[CustomASService: simple-service]");
         assertEquals(result.getTotalCount(), 1);
     }
 

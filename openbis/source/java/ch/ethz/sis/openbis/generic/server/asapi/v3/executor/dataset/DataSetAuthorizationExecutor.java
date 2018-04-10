@@ -163,4 +163,18 @@ public class DataSetAuthorizationExecutor implements IDataSetAuthorizationExecut
     {
     }
 
+    @Override
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_ADMIN })
+    @Capability("LOCK_DATASET")
+    public void canLock(IOperationContext context, IDataSetId dataSetId, @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE dataSet)
+    {
+    }
+
+    @Override
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_ADMIN })
+    @Capability("UNLOCK_DATASET")
+    public void canUnlock(IOperationContext context, IDataSetId dataSetId, @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE dataSet)
+    {
+    }
+
 }

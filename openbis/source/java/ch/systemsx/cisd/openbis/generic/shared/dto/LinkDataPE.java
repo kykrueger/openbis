@@ -40,7 +40,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
  */
 @Entity
 @Table(name = TableNames.LINK_DATA_TABLE)
-@PrimaryKeyJoinColumn(name = ColumnNames.DATA_ID_COLUMN)
+@PrimaryKeyJoinColumn(name = ColumnNames.ID_COLUMN)
 @Indexed(index = "DataPE")
 @ClassBridge(impl = LinkDataGlobalSearchBridge.class)
 public class LinkDataPE extends DataPE

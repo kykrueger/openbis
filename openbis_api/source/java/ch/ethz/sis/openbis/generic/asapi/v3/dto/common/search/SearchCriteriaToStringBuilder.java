@@ -19,9 +19,12 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
 import java.io.Serializable;
 import java.util.Collection;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+
 /**
  * @author pkupczyk
  */
+@JsonIgnoreType
 public class SearchCriteriaToStringBuilder implements Serializable
 {
 

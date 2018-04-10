@@ -579,8 +579,10 @@ var FormUtil = new function() {
 			controlColumnClass = this.controlColumnClass;
 		}
 		var $controls = $('<div>', { class : 'controls' });
-			
-		$controlGroup.append($controlLabel);
+		
+		if(label) {
+			$controlGroup.append($controlLabel);
+		}
 		
 		if(isInline) {
 			$controlGroup.append($component);
@@ -1141,4 +1143,111 @@ var FormUtil = new function() {
 				.css("margin-right", "3px"))
 			.append($("<span>").text(infoText));
 	}
+
+    //
+    // DSS disk space usage dialog
+    //
+
+	this.showDiskSpaceDialog = function() {
+		var _this = this;
+
+		Util.blockUI(null, null, true);
+
+		mainController.serverFacade.customELNApi({
+			"method" : "getDiskSpace",
+			"diskMountPoints" : _this.profile.diskMountPoints,
+		}, function(error, result){
+			if (error) {
+				Util.showError("Could not get disk space information.");
+			} else {
+
+				var $dialog = $("<div>");
+				$dialog
+					.append($("<div>")
+						.append($("<legend>").text("Available storage space:")));
+
+				var $formFieldContainer = $("<div>");
+				$dialog.append($formFieldContainer);
+
+				// close button
+				var $closeButton = $("<a>", {
+					class : "btn btn-default",
+					id : "dropboxFolderNameClose"
+				}).text("Close").css("margin-top", "15px");
+				$dialog.append($closeButton);
+
+				// add disk space
+				var rowHeight = "50px";
+				var barHeight = "30px";
+
+				var $table  = $("<table>");
+				$table
+					.append($("<thead>")
+						.append($("<tr>").css("height", rowHeight)
+							.append($("<th>").text("Mount point").css("width", "30%"))
+							.append($("<th>").text("Size").css("width", "10%"))
+							.append($("<th>").text("Used").css("width", "10%"))
+							.append($("<th>").text("Available").css("width", "10%"))
+							.append($("<th>").text("Percentage").css("width", "40%"))
+					));
+				$table.css({
+					width : "90%",
+					"margin-top" : "25px",
+					"margin-bottom" : "25px",
+					"margin-left" : "auto",
+					"margin-right" : "auto",
+				});
+				$tbody = $("<tbody>");
+				$table.append($tbody);
+				$formFieldContainer.append($table);
+
+				var diskSpaceValues = result.data;
+				for (var i=0; i<diskSpaceValues.length; i++) {
+					var filesystem = diskSpaceValues[i]["Mounted_on"]
+					var size = diskSpaceValues[i]["Size"]
+					var used = diskSpaceValues[i]["Used"]
+					var avail = diskSpaceValues[i]["Avail"]
+					var usedPercentage = diskSpaceValues[i]["UsedPercentage"]
+
+					var $diskSpaceSection = $("<div>");
+					var $total = $("<div>").css({
+						height : barHeight,
+						width : "100%",
+						"background-color" : "lightgray",
+						"border-radius" : "7px",
+						"text-align" : "center",
+						"vertical-align" : "middle",
+						"line-height" : barHeight,
+					});
+					$total.text(usedPercentage);
+					var $used = $("<div>").css({
+						height: barHeight,
+						width : usedPercentage,
+						"background-color" : "lightblue",
+						"border-radius" : "7px",
+						"margin-top" : "-" + barHeight
+					});
+					$diskSpaceSection.append($total).append($used);
+
+					$tbody
+						.append($("<tr>").css("height", rowHeight)
+							.append($("<td>").text(filesystem))
+							.append($("<td>").text(size))
+							.append($("<td>").text(used))
+							.append($("<td>").text(avail))
+							.append($("<td>").append($diskSpaceSection))
+					);
+				}
+
+				Util.blockUI($dialog.html(), _this.getDialogCss());
+
+				// events
+				$("#dropboxFolderNameClose").on("click", function(event) {
+					Util.unblockUI();
+				});
+
+			}
+		});
+	}
+
 }

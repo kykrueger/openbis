@@ -17,19 +17,27 @@
 package ch.systemsx.cisd.openbis.dss.generic.server.api.v2.sequencedatabases;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetFileSearchResultLocation;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.properties.PropertyUtils;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.AlignmentMatch;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetFileBlastSearchResultLocation;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.EntityPropertySearchResultLocation;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.ISearchDomainResultLocation;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomain;
+import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchOption;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchResult;
 
 /**
@@ -39,15 +47,44 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchDomainSearchResu
  */
 public class EchoDatabase extends AbstractSearchDomainService
 {
+    public static final Logger operationLog =
+            LogFactory.getLogger(LogCategory.OPERATION, EchoDatabase.class);
+
+    private boolean available;
+
+    private List<SearchDomainSearchOption> searchOptions = new ArrayList<>();
+
     public EchoDatabase(Properties properties, File storeRoot)
     {
         super(properties, storeRoot);
+        available = PropertyUtils.getBoolean(properties, "available", true);
+        List<String> optionCodes = PropertyUtils.getList(properties, "possible-search-options");
+        for (String optionCode : optionCodes)
+        {
+            SearchDomainSearchOption option = new SearchDomainSearchOption();
+            option.setCode(optionCode);
+            option.setLabel(properties.getProperty(optionCode + ".label", optionCode));
+            option.setDescription(properties.getProperty(optionCode + ".description", ""));
+            searchOptions.add(option);
+        }
     }
 
     @Override
     public boolean isAvailable()
     {
-        return true;
+        return available;
+    }
+    
+    @Override
+    public String getPossibleSearchOptionsKey()
+    {
+        return searchOptions.isEmpty() ? null : "optionsKey";
+    }
+
+    @Override
+    public List<SearchDomainSearchOption> getPossibleSearchOptions()
+    {
+        return searchOptions;
     }
 
     @Override
@@ -67,6 +104,7 @@ public class EchoDatabase extends AbstractSearchDomainService
                 return Collections.singletonList(result);
             } catch (Exception e)
             {
+                operationLog.error("Couldn't create result", e);
                 throw CheckedExceptionTunnel.wrapIfNecessary(e);
             }
         } else
@@ -79,13 +117,13 @@ public class EchoDatabase extends AbstractSearchDomainService
     {
         private SearchDomain searchDomain = new SearchDomain();
 
-        private DataSetFileSearchResultLocation dataSetFileResultLocation;
+        private DataSetFileBlastSearchResultLocation dataSetFileBlastResultLocation;
 
         private EntityPropertySearchResultLocation entityPropertyResultLocation;
 
         public ISearchDomainResultLocation getResultLocation()
         {
-            return dataSetFileResultLocation == null ? entityPropertyResultLocation : dataSetFileResultLocation;
+            return dataSetFileBlastResultLocation == null ? entityPropertyResultLocation : dataSetFileBlastResultLocation;
         }
 
         public SearchDomain getSearchDomain()
@@ -100,25 +138,55 @@ public class EchoDatabase extends AbstractSearchDomainService
 
         public void setDataSetCode(String dataSetCode)
         {
-            getDataSetFileResultLocation().setCode(dataSetCode);
-            getDataSetFileResultLocation().setPermId(dataSetCode);
+            getDataSetFileBlastResultLocation().setCode(dataSetCode);
+            getDataSetFileBlastResultLocation().setPermId(dataSetCode);
         }
 
         public void setPathInDataSet(String path)
         {
-            getDataSetFileResultLocation().setPathInDataSet(path);
+            getDataSetFileBlastResultLocation().setPathInDataSet(path);
         }
 
         public void setSequenceIdentifier(String identifier)
         {
-            getDataSetFileResultLocation().setIdentifier(identifier);
+            getDataSetFileBlastResultLocation().setIdentifier(identifier);
         }
 
         public void setPositionInSequence(int position)
         {
-            getDataSetFileResultLocation().setPosition(position);
+            getDataSetFileBlastResultLocation().setPosition(position);
         }
 
+        public void setAlignmentMatchSequenceStart(int pos)
+        {
+            getAlignmentMatch().setSequenceStart(pos);
+        }
+
+        public void setAlignmentMatchSequenceEnd(int pos)
+        {
+            getAlignmentMatch().setSequenceEnd(pos);
+        }
+
+        public void setAlignmentMatchQueryStart(int pos)
+        {
+            getAlignmentMatch().setQueryStart(pos);
+        }
+        
+        public void setAlignmentMatchQueryEnd(int pos)
+        {
+            getAlignmentMatch().setQueryEnd(pos);
+        }
+        
+        public void setAlignmentMatchMismatches(int n)
+        {
+            getAlignmentMatch().setNumberOfMismatches(n);
+        }
+        
+        public void setAlignmentMatchGaps(int n)
+        {
+            getAlignmentMatch().setTotalNumberOfGaps(n);
+        }
+        
         public void setEntityKind(EntityKind entityKind)
         {
             getEntityPropertyResultLocation().setEntityKind(entityKind);
@@ -144,13 +212,24 @@ public class EchoDatabase extends AbstractSearchDomainService
             getEntityPropertyResultLocation().setPropertyType(propertyType);
         }
 
-        private DataSetFileSearchResultLocation getDataSetFileResultLocation()
+        private DataSetFileBlastSearchResultLocation getDataSetFileBlastResultLocation()
         {
-            if (dataSetFileResultLocation == null)
+            if (dataSetFileBlastResultLocation == null)
             {
-                dataSetFileResultLocation = new DataSetFileSearchResultLocation();
+                dataSetFileBlastResultLocation = new DataSetFileBlastSearchResultLocation();
             }
-            return dataSetFileResultLocation;
+            return dataSetFileBlastResultLocation;
+        }
+
+        private AlignmentMatch getAlignmentMatch()
+        {
+            AlignmentMatch alignmentMatch = getDataSetFileBlastResultLocation().getAlignmentMatch();
+            if (alignmentMatch == null)
+            {
+                alignmentMatch = new AlignmentMatch();
+                getDataSetFileBlastResultLocation().setAlignmentMatch(alignmentMatch);
+            }
+            return alignmentMatch;
         }
 
         private EntityPropertySearchResultLocation getEntityPropertyResultLocation()

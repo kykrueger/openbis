@@ -33,9 +33,17 @@ public class LinkedDataCreation implements ICreation
 {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * @deprecated Use {@link ContentCopyCreation} instead.
+     */
+    @Deprecated
     @JsonProperty
     private String externalCode;
 
+    /**
+     * @deprecated Use {@link ContentCopyCreation} instead.
+     */
+    @Deprecated
     @JsonProperty
     private IExternalDmsId externalDmsId;
 
@@ -61,13 +69,11 @@ public class LinkedDataCreation implements ICreation
         this.externalDmsId = externalDmsId;
     }
 
-    @TechPreview
     public List<ContentCopyCreation> getContentCopies()
     {
         return contentCopies;
     }
 
-    @TechPreview
     public void setContentCopies(List<ContentCopyCreation> contentCopies)
     {
         this.contentCopies = contentCopies;

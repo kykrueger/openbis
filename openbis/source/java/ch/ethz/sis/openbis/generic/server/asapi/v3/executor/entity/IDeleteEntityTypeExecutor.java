@@ -16,15 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.EntityTypeDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.AbstractObjectDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
-public interface IDeleteEntityTypeExecutor extends IDeleteEntityExecutor<Void, IEntityTypeId, EntityTypeDeletionOptions>
+public interface IDeleteEntityTypeExecutor extends IDeleteEntityExecutor<Void, IEntityTypeId, AbstractObjectDeletionOptions<?>>
 {
 
 }

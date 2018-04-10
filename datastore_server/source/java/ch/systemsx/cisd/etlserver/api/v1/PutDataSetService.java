@@ -21,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -36,6 +38,7 @@ import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
 import ch.systemsx.cisd.etlserver.DataStrategyStore;
@@ -48,6 +51,7 @@ import ch.systemsx.cisd.openbis.common.io.ByteArrayBasedContentNode;
 import ch.systemsx.cisd.openbis.common.io.ConcatenatedContentInputStream;
 import ch.systemsx.cisd.openbis.dss.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPutDataSetService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.NewDataSetDTO;
@@ -63,8 +67,11 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatabaseInstance;
  * 
  * @author Chandrasekhar Ramakrishnan
  */
-public class PutDataSetService
+public class PutDataSetService implements IPutDataSetService
 {
+
+    private static final String MULTIPLE_FILES_UPLOAD_DIR = "upload";
+
     private final IEncapsulatedOpenBISService openBisService;
 
     private final Logger operationLog;
@@ -258,8 +265,8 @@ public class PutDataSetService
             }
         }
     }
-    
-    public String putDataSet(String sessionToken, NewDataSetDTO newDataSet, String uploadId, String dataSetCode)
+
+    public List<DataSetInformation> putDataSet(String sessionToken, NewDataSetDTO newDataSet, String uploadId)
             throws IOExceptionUnchecked, IllegalArgumentException
     {
         if (false == isInitialized)
@@ -267,101 +274,129 @@ public class PutDataSetService
             doInitialization();
         }
 
+        validateSessionToken(sessionToken);
+        validateUploadId(uploadId);
+        if (newDataSet == null)
+        {
+            throw new UserFailureException("New data set cannot be null");
+        }
+
+        ServiceProvider.getOpenBISService().checkSession(sessionToken);
+
+        String dataSetType = newDataSet.tryDataSetType();
+        ITopLevelDataSetRegistrator registrator = registratorMap.getRegistratorForType(dataSetType);
+
+        File sessionUploadDir = new File(getTemporaryIncomingRoot(dataSetType), sessionToken);
+        File uploadIdDir = new File(sessionUploadDir, uploadId);
+        File multipleFilesUploadDir = new File(uploadIdDir, MULTIPLE_FILES_UPLOAD_DIR);
+
+        File[] uploadedFiles = null;
+        File dataSet = null;
+
+        if (multipleFilesUploadDir.exists() && multipleFilesUploadDir.isDirectory())
+        {
+            uploadedFiles = multipleFilesUploadDir.listFiles();
+        }
+
+        if (uploadedFiles == null || uploadedFiles.length == 0)
+        {
+            throw new UserFailureException("No uploaded files found for upload id '" + uploadId + "'");
+        } else if (uploadedFiles.length == 1)
+        {
+            dataSet = uploadedFiles[0];
+        } else
+        {
+            dataSet = multipleFilesUploadDir;
+        }
+
+        if (registrator instanceof PutDataSetServerPluginHolder)
+        {
+            return new PutDataSetExecutor(this, ((PutDataSetServerPluginHolder) registrator).getPlugin(), sessionToken, newDataSet, uploadIdDir,
+                    dataSet).executeWithoutWriting();
+        } else
+        {
+            return new PutDataSetTopLevelDataSetHandler(this, registrator, sessionToken, newDataSet, uploadIdDir, dataSet).executeWithoutWriting();
+        }
+    }
+
+    public void putFileToStoreShare(String sessionToken, String folderPathOrNull, String filePath, String dataSetType, String uploadId,
+            InputStream inputStream)
+    {
+        if (false == isInitialized)
+        {
+            doInitialization();
+        }
+
+        File file = null;
+        OutputStream outputStream = null;
+
         try
         {
-            String dataSetTypeOrNull = newDataSet.tryDataSetType();
-            ITopLevelDataSetRegistrator registrator =
-                    registratorMap.getRegistratorForType(dataSetTypeOrNull);
-
-            File uploadedDataSetDir =
-                    new File(getTemporaryIncomingRoot(dataSetTypeOrNull), uploadId);
-
-            File temporaryDataSetDir =
-                    new File(getTemporaryIncomingRoot(dataSetTypeOrNull), dataSetCode);
-            
-            if(false == uploadedDataSetDir.renameTo(temporaryDataSetDir)) {
-                throw new ConfigurationFailureException("Could not rename : "
-                        + uploadedDataSetDir + " to " + temporaryDataSetDir);
-
+            validateSessionToken(sessionToken);
+            validateUploadId(uploadId);
+            if (StringUtils.isBlank(filePath))
+            {
+                throw new UserFailureException("File path cannot be null or empty");
+            }
+            if (false == StringUtils.isBlank(folderPathOrNull) && folderPathOrNull.contains("../"))
+            {
+                throw new UserFailureException("Folder path must not contain '../'");
+            }
+            if (filePath.contains("../"))
+            {
+                throw new UserFailureException("File path must not contain '../'");
+            }
+            if (StringUtils.isBlank(dataSetType))
+            {
+                throw new UserFailureException("Data set type cannot be null or empty");
+            }
+            if (inputStream == null)
+            {
+                throw new UserFailureException("Input stream cannot be null");
             }
 
-            final List<DataSetInformation> infos;
-            // Branch -- use the old logic for the ETLServerPlugins
-            if (registrator instanceof PutDataSetServerPluginHolder)
+            ServiceProvider.getOpenBISService().checkSession(sessionToken);
+
+            File sessionUploadDir = new File(getTemporaryIncomingRoot(dataSetType), sessionToken);
+            File uploadIdDir = new File(sessionUploadDir, uploadId);
+            File multipleFilesUploadDir = new File(uploadIdDir, MULTIPLE_FILES_UPLOAD_DIR);
+
+            File filePathDir = null;
+            if (StringUtils.isBlank(folderPathOrNull))
             {
-                infos =
-                        new PutDataSetExecutor(this,
-                                ((PutDataSetServerPluginHolder) registrator).getPlugin(),
-                                sessionToken, newDataSet, temporaryDataSetDir).executeWithoutWriting();
+                filePathDir = new File(multipleFilesUploadDir, FilenameUtils.getPath(filePath));
             } else
             {
-                infos =
-                        new PutDataSetTopLevelDataSetHandler(this, registrator, sessionToken,
-                                newDataSet, temporaryDataSetDir).executeWithoutWriting();
-            }
-            StringBuilder sb = new StringBuilder();
-            for (DataSetInformation info : infos)
-            {
-                sb.append(info.getDataSetCode());
-                sb.append(",");
+                filePathDir = new File(multipleFilesUploadDir, FilenameUtils.getPath(folderPathOrNull + "/" + filePath));
             }
 
-            // Remove the trailing comma
-            if (sb.length() > 0)
+            if (false == filePathDir.exists())
             {
-                sb.deleteCharAt(sb.length() - 1);
+                filePathDir.mkdirs();
             }
-            return sb.toString();
-        } catch (UserFailureException e)
+
+            file = new File(filePathDir, FilenameUtils.getName(filePath));
+            outputStream = new FileOutputStream(file);
+            IOUtils.copyLarge(inputStream, outputStream);
+
+            operationLog.info("File '" + filePath + "' with upload id: '" + uploadId + "' has been stored as '" + file.getCanonicalPath() + "'");
+
+        } catch (IOException ioe)
         {
-            throw new IllegalArgumentException(e);
-        } 
-    }
-    public String putFileToStoreShare(String sessionToken, String filePath, String dataSetTypeCodeOrNull, String uploadId, InputStream inputStream) {
-        {
-            if (false == isInitialized)
-            {
-                doInitialization();
-            }
+            IOUtils.closeQuietly(outputStream);
 
             try
             {
-                ServiceProvider.getOpenBISService().checkSession(sessionToken);
-                if (filePath.contains("../"))
-                {
-                    throw new IOExceptionUnchecked("filePath must not contain '../'");
-                }
-                String uniqueFolderName = uploadId;
-                File temporaryDataSetDir =
-                        new File(getTemporaryIncomingRoot(dataSetTypeCodeOrNull), uniqueFolderName);
-                if(false == temporaryDataSetDir.exists()) {
-                    temporaryDataSetDir.mkdir();
-                }
-                final String subDir = FilenameUtils.getFullPath(filePath);
-                final String filename = FilenameUtils.getName(filePath);
-                final File dir = new File(temporaryDataSetDir, subDir);
-                dir.mkdirs();
-                final File file = new File(dir, filename);
-                OutputStream ostream = null;
-                try
-                {
-                    ostream = new FileOutputStream(file);
-                    long size = IOUtils.copyLarge(inputStream, ostream);
-                    ostream.close();
-                    return uniqueFolderName;
-                } catch (IOException ex)
-                {
-                    file.delete();
-                    throw CheckedExceptionTunnel.wrapIfNecessary(ex);
-                } finally
-                {
-                    IOUtils.closeQuietly(ostream);
-                }
-            }
-            catch (UserFailureException e)
+                file.delete();
+            } catch (Exception e)
             {
-                throw new IllegalArgumentException(e);
-            } 
+            }
+
+            throw CheckedExceptionTunnel.wrapIfNecessary(ioe);
+
+        } finally
+        {
+            IOUtils.closeQuietly(outputStream);
         }
     }
 
@@ -442,6 +477,22 @@ public class PutDataSetService
         return registratorMap.getRegistratorForType(dataSetTypeOrNull).getGlobalState();
     }
 
+    private Collection<TopLevelDataSetRegistratorGlobalState> getThreadGlobalStates()
+    {
+        Collection<TopLevelDataSetRegistratorGlobalState> states = new ArrayList<TopLevelDataSetRegistratorGlobalState>();
+        Collection<ITopLevelDataSetRegistrator> registrators = registratorMap.getRegistrators();
+
+        for (ITopLevelDataSetRegistrator registrator : registrators)
+        {
+            if (registrator != null && registrator.getGlobalState() != null)
+            {
+                states.add(registrator.getGlobalState());
+            }
+        }
+
+        return states;
+    }
+
     Logger getOperationLog()
     {
         return operationLog;
@@ -491,10 +542,25 @@ public class PutDataSetService
         return temporaryIncomingDir;
     }
 
-    private File getTemporaryIncomingRoot(String dataSetTypeCodeOrNull)
+    public File getTemporaryIncomingRoot(String dataSetTypeCodeOrNull)
     {
+        if (false == isInitialized)
+        {
+            doInitialization();
+        }
+
         TopLevelDataSetRegistratorGlobalState globalState =
                 getThreadGlobalState(dataSetTypeCodeOrNull);
+        return getTemporaryIncomingRoot(globalState);
+    }
+
+    private File getTemporaryIncomingRoot(TopLevelDataSetRegistratorGlobalState globalState)
+    {
+        if (false == isInitialized)
+        {
+            doInitialization();
+        }
+
         File storeRoot = globalState.getStoreRootDir();
         if (false == StringUtils.isBlank(globalState.getShareId()))
         {
@@ -512,31 +578,63 @@ public class PutDataSetService
         return storeRoot;
     }
 
-    public File getTemporaryIncomingDir(String dataSetTypeCodeOrNull, String creationId)
+    public void cleanupSession(String sessionToken)
     {
         if (false == isInitialized)
         {
             doInitialization();
         }
 
-        TopLevelDataSetRegistratorGlobalState globalState =
-                getThreadGlobalState(dataSetTypeCodeOrNull);
-        File storeRoot = globalState.getStoreRootDir();
-        if (false == StringUtils.isBlank(globalState.getShareId()))
+        validateSessionToken(sessionToken);
+
+        Collection<TopLevelDataSetRegistratorGlobalState> states = getThreadGlobalStates();
+
+        for (TopLevelDataSetRegistratorGlobalState state : states)
         {
-            File shareRoot = new File(storeRoot, globalState.getShareId());
-            if (shareRoot.isDirectory())
+            File sessionUploadDir = null;
+
+            try
             {
-                File incomingDir = new File(shareRoot, "rpc-incoming");
-                File tempDir = new File(incomingDir, creationId);
-                if(false == tempDir.exists()) {
-                    throw new UserFailureException("The folder for the creation Id " + creationId + " could not be found. Have you uploaded the file first?" );
+                sessionUploadDir = new File(getTemporaryIncomingRoot(state), sessionToken);
+
+                if (sessionUploadDir.exists())
+                {
+                    operationLog.info("Cleaning up a user session upload folder '" + sessionUploadDir.getAbsolutePath() + "'");
+                    QueueingPathRemoverService.removeRecursively(sessionUploadDir);
                 }
+            } catch (Exception e)
+            {
+                operationLog.warn(
+                        "Could not clean up a user session upload folder '" + sessionUploadDir.getAbsolutePath() + "' together with the user session",
+                        e);
             }
         }
-        return storeRoot;
     }
+
+    private void validateSessionToken(String sessionToken)
+    {
+        validate(sessionToken, "Session token");
+    }
+
+    private void validateUploadId(String uploadId)
+    {
+        validate(uploadId, "Upload id");
+    }
+
+    private void validate(String uploadId, String name)
+    {
+        if (StringUtils.isBlank(uploadId))
+        {
+            throw new UserFailureException(name + " cannot be null or empty");
+        }
+        if (uploadId.contains("/"))
+        {
+            throw new UserFailureException(name + " must not contain '/'");
+        }
+    }
+
 }
+
 /**
  * Helper class to simplify initializing the final fields of the {@link PutDataSetService}.
  * 

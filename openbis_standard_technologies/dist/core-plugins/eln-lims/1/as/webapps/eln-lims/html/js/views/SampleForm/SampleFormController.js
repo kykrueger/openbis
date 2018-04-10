@@ -20,7 +20,6 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 	this._sampleFormView = new SampleFormView(this, this._sampleFormModel);
 //	this._storageControllers = [];
 	this._plateController = null;
-	this._windowHandlers = [];
 	
 	this.init = function(views) {
 		// Loading datasets
@@ -54,13 +53,6 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			
 		}
 		
-	}
-	
-	this.finalize = function() {
-		for(var whIdx = 0; whIdx < this._windowHandlers.length; whIdx++) {
-			$(window).off("resize", this._windowHandlers[whIdx]);
-		}
-		$("#mainContainer").css("overflow-y", "auto");
 	}
 		
 	this.isDirty = function() {
@@ -428,8 +420,12 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			
 			if(samplesToDelete) {
 				mainController.serverFacade.deleteSamples(samplesToDelete,  "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier, 
-															function() {
-																Util.showSuccess(message, callbackOk);
+															function(response) {
+																if(response.error) {
+																	Util.showError("Deletes failed, other changes where commited: " + response.error.message, callbackOk);
+																} else {
+																	Util.showSuccess(message, callbackOk);
+																}
 																_this._sampleFormModel.isFormDirty = false;
 															}, 
 															false);

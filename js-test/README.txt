@@ -33,8 +33,23 @@ Some Tips:
 Developing:
 -----------
 
-Change the code not in the original Javascript file but also in the file in targets/gradle/webapps/webapp. 
-Otherwise the old code is executed. This isn't necessary for testing classes.
+Here are some tips for speed up development:
+
+* Change the code not only in the original Javascript file but also in the file in targets/gradle/webapps/webapp. 
+  Otherwise the old code is executed. This isn't necessary for testing classes.
+  If you change only API code you can do the following command:
+  
+  cp -R <root folder>/openbis/source/java/ch/systemsx/cisd/openbis/public/resources/api <root folder>/js-test/targets/gradle/webapps/webapp/resources/
+  
+* In case of changes of Java classes the a stop and restart (using ./gradlew js-test:clean js-test:test) is needed.
+  The test server is available much faster after outcommenting the following lines in build.gradle of 
+  project openbis_standard_technologies:
+  
+  war.dependsOn compileGwt
+  war.dependsOn signWebStartJars
+  
+  Note, that when compileGwt is not executed changes in JS code should be copy after server start up with 
+  the above mentioned copy command.  
 
 Debugging:
 ----------
@@ -46,24 +61,4 @@ require.urlArgs = 'now=' + Date.now();
 in servers/common/core-plugins/tests/1/as/webapps/openbis-v3-api-test/html/index.html if you want to debug
 Javascript in the browser. Don't forget to bring the statement back before you do development again.
 
-==== The instructions below are probably out dated after the move from ANT to gradle
 
-To run js tests manually:
-- run create-webapp-common and run-webapp-common ant targets and wait until AS, DSS1 and DSS2 start up
-- login as admin to openBIS at http://localhost:20000/openbis/ using Firefox browser
-- enter Utilities->openbis-test.js and Utilities->openbis-screening-test.js to run js tests
-
-To run automatic js tests on a new server:
-- run create-webapp-common and run-automated-tests-on-new-server ant targets
-
-To run automatic js tests on an existing and already running server:
-- run create-webapp-common and run-automated-tests-on-existing-server ant targets
-
-To run a lab specific webapp:
-- download database dumps from lascar:/links/groups/cisd/js-test/XXX directory to
-  appropriate local directories i.e. pathinfo_test_js_XXX.js to servers/XXX/datastore_server/db
-  and openbis_test_js_XXX.js to servers/XXX/openBIS-server/db
-- download and extract a store dump from lascar:/links/groups/cisd/js-test/XXX directory to
-  local directory servers/XXX/datastore_server/data/store
-- run create-webapp-XXX and run-webapp-XXX ant targets
-- openBIS is running at http://localhost:20000/openbis/

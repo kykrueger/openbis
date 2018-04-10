@@ -49,6 +49,9 @@ public class PersonTranslator extends AbstractCachingTranslator<Long, Person, Pe
     @Autowired
     private IPersonRoleAssignmentTranslator roleAssignmentTranslator;
 
+    @Autowired
+    private IPersonWebAppSettingsTranslator webAppSettingsTranslator;
+
     @Override
     protected Person createObject(TranslationContext context, Long personId, PersonFetchOptions fetchOptions)
     {
@@ -76,7 +79,13 @@ public class PersonTranslator extends AbstractCachingTranslator<Long, Person, Pe
 
         if (fetchOptions.hasRoleAssignments())
         {
-            relations.put(IPersonRoleAssignmentTranslator.class, roleAssignmentTranslator.translate(context, personIds, fetchOptions.withRoleAssignments()));
+            relations.put(IPersonRoleAssignmentTranslator.class,
+                    roleAssignmentTranslator.translate(context, personIds, fetchOptions.withRoleAssignments()));
+        }
+
+        if (fetchOptions.hasAllWebAppSettings() || (fetchOptions.getWebAppSettings() != null && false == fetchOptions.getWebAppSettings().isEmpty()))
+        {
+            relations.put(IPersonWebAppSettingsTranslator.class, webAppSettingsTranslator.translate(context, personIds, fetchOptions));
         }
 
         return relations;
@@ -114,5 +123,12 @@ public class PersonTranslator extends AbstractCachingTranslator<Long, Person, Pe
             result.setRoleAssignments((List<RoleAssignment>) relations.get(IPersonRoleAssignmentTranslator.class, personId));
             result.getFetchOptions().withRoleAssignmentsUsing(fetchOptions.withRoleAssignments());
         }
-}
+
+        if (fetchOptions.hasAllWebAppSettings() || (fetchOptions.getWebAppSettings() != null && false == fetchOptions.getWebAppSettings().isEmpty()))
+        {
+            result.setWebAppSettings(relations.get(IPersonWebAppSettingsTranslator.class, personId));
+            result.getFetchOptions().withWebAppSettingsUsing(fetchOptions.getWebAppSettings());
+            result.getFetchOptions().withAllWebAppSettingsUsing(fetchOptions.hasAllWebAppSettings());
+        }
+    }
 }

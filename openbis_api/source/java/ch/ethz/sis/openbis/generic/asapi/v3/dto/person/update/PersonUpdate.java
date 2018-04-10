@@ -16,6 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -24,11 +27,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.update.WebAppSettingsUpdateValue;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.person.update.PersonUpdate")
@@ -36,16 +38,19 @@ public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>
 {
 
     private static final long serialVersionUID = 1L;
-    
+
     @JsonProperty
     private IPersonId userId;
 
     @JsonProperty
-    private FieldUpdateValue<ISpaceId> homeSpaceId = new FieldUpdateValue<ISpaceId>();
-    
+    private FieldUpdateValue<ISpaceId> spaceId = new FieldUpdateValue<ISpaceId>();
+
+    @JsonProperty
+    private Map<String, WebAppSettingsUpdateValue> webAppSettings;
+
     @JsonProperty
     private boolean active = true;
-    
+
     public IPersonId getUserId()
     {
         return userId;
@@ -64,23 +69,47 @@ public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>
     }
 
     @JsonIgnore
-    public void setHomeSpaceId(ISpaceId spaceId)
+    public void setSpaceId(ISpaceId spaceId)
     {
-        this.homeSpaceId.setValue(spaceId);
+        this.spaceId.setValue(spaceId);
     }
 
     @JsonIgnore
-    public FieldUpdateValue<ISpaceId> getHomeSpaceId()
+    public FieldUpdateValue<ISpaceId> getSpaceId()
     {
-        return homeSpaceId;
+        return spaceId;
     }
-    
+
+    @JsonIgnore
+    public WebAppSettingsUpdateValue getWebAppSettings(String webAppId)
+    {
+        if (webAppSettings == null)
+        {
+            webAppSettings = new HashMap<String, WebAppSettingsUpdateValue>();
+        }
+
+        WebAppSettingsUpdateValue updateValue = webAppSettings.get(webAppId);
+
+        if (updateValue == null)
+        {
+            updateValue = new WebAppSettingsUpdateValue();
+            webAppSettings.put(webAppId, updateValue);
+        }
+
+        return updateValue;
+    }
+
+    public Map<String, WebAppSettingsUpdateValue> getWebAppSettings()
+    {
+        return webAppSettings;
+    }
+
     @JsonIgnore
     public boolean isActive()
     {
         return active;
     }
-    
+
     @JsonIgnore
     public void deactivate()
     {

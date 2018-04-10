@@ -18,6 +18,8 @@ package ch.systemsx.cisd.openbis.dss.generic.server.plugins.demo;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -55,6 +57,17 @@ public class DemoProcessingPlugin implements IProcessingPluginTask
             DataSetProcessingContext context)
     {
         operationLog.info("Processing of the following datasets has been requested: " + datasets);
+        if (context != null)
+        {
+            Map<String, String> parameterBindings = context.getParameterBindings();
+            if (parameterBindings != null && parameterBindings.isEmpty() == false)
+            {
+                for (Entry<String, String> entry : parameterBindings.entrySet())
+                {
+                    operationLog.info("Parameter: " + entry);
+                }
+            }
+        }
         IHierarchicalContentProvider contentProvider =
                 ServiceProvider.getHierarchicalContentProvider();
 

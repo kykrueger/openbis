@@ -22,7 +22,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 import ch.systemsx.cisd.common.annotation.TechPreview;
 
 @JsonObject("as.dto.dataset.create.ContentCopyCreation")
-@TechPreview
 public class ContentCopyCreation implements ICreation
 {
     private static final long serialVersionUID = 1L;

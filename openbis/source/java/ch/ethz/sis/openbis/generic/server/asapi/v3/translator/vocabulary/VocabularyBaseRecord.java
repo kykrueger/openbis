@@ -30,7 +30,13 @@ public class VocabularyBaseRecord extends ObjectBaseRecord
 
     public String description;
 
-    public Boolean isInternalNamespace;
+    public boolean isInternalNamespace;
+    
+    public boolean isManagedInternally;
+    
+    public boolean isChosenFromList;
+    
+    public String urlTemplate;
 
     public Date registrationDate;
 

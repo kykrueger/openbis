@@ -221,13 +221,25 @@ public class AssertionUtil
     }
 
     /**
+     * Assert given collection contains given items
+     */
+    public static <T> void assertCollectionContainsAtLeast(Collection<T> objects, T... items)
+    {
+        Set<T> objectsSet = new HashSet<T>(objects);
+        for (T item : items)
+        {
+            assertCollectionContains(objectsSet, item);
+        }
+    }
+    
+    /**
      * Assert given collection contains only given items
      */
     public static <T> void assertCollectionContainsOnly(Collection<T> objects, T... items)
     {
         Set<T> objectsSet = new HashSet<T>(objects);
         Set<T> itemsSet = new HashSet<T>(Arrays.asList(items));
-
+        
         if (false == objectsSet.equals(itemsSet))
         {
             fail("expected that collection: <" + objects + "> contains only: <" + itemsSet + ">");

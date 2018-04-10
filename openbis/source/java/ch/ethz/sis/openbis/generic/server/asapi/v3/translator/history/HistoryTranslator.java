@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +52,10 @@ public abstract class HistoryTranslator extends AbstractCachingTranslator<Long, 
 
     protected abstract List<? extends HistoryRelationshipRecord> loadRelationshipHistory(TranslationContext context, Collection<Long> entityIds);
 
+    protected List<? extends HistoryRecord> loadAbritraryHistory(TranslationContext context, Collection<Long> entityIds) {
+        return null;
+    }
+
     @Override
     protected ObjectHolder<List<HistoryEntry>> createObject(TranslationContext context, Long entityId, HistoryEntryFetchOptions fetchOptions)
     {
@@ -62,30 +67,34 @@ public abstract class HistoryTranslator extends AbstractCachingTranslator<Long, 
     {
         List<? extends HistoryPropertyRecord> properties = loadPropertyHistory(entityIds);
         List<? extends HistoryRelationshipRecord> relationships = loadRelationshipHistory(context, entityIds);
+        List<? extends HistoryRecord> arbitraryRecords = loadAbritraryHistory(context, entityIds);
 
         Map<Long, Person> authorMap = new HashMap<>();
 
         if (fetchOptions.hasAuthor())
         {
+
             Set<Long> authorIds = new HashSet<Long>();
+
+            List<HistoryRecord> completeHistory = new ArrayList<>();
             if (properties != null)
             {
-                for (HistoryPropertyRecord property : properties)
-                {
-                    if (property.authorId != null)
-                    {
-                        authorIds.add(property.authorId);
-                    }
-                }
+                completeHistory.addAll(properties);
             }
             if (relationships != null)
             {
-                for (HistoryRelationshipRecord relationship : relationships)
+                completeHistory.addAll(relationships);
+            }
+            if (arbitraryRecords != null)
+            {
+                completeHistory.addAll(arbitraryRecords);
+            }
+
+            for (HistoryRecord record : completeHistory)
+            {
+                if (record.authorId != null)
                 {
-                    if (relationship.authorId != null)
-                    {
-                        authorIds.add(relationship.authorId);
-                    }
+                    authorIds.add(record.authorId);
                 }
             }
             authorMap = personTranslator.translate(context, authorIds, fetchOptions.withAuthor());
@@ -100,6 +109,10 @@ public abstract class HistoryTranslator extends AbstractCachingTranslator<Long, 
         if (relationships != null)
         {
             createRelationshipEntries(entriesMap, relationships, authorMap, fetchOptions);
+        }
+        if (arbitraryRecords != null)
+        {
+            createArbitraryEntries(entriesMap, arbitraryRecords, authorMap, fetchOptions);
         }
 
         for (Long entityId : entityIds)
@@ -169,6 +182,11 @@ public abstract class HistoryTranslator extends AbstractCachingTranslator<Long, 
             entry.getFetchOptions().withAuthorUsing(fetchOptions.withAuthor());
         }
         return entry;
+    }
+
+    protected void createArbitraryEntries(Map<Long, List<HistoryEntry>> entriesMap, List<? extends HistoryRecord> records,
+            Map<Long, Person> authorMap, HistoryEntryFetchOptions fetchOptions)
+    {
     }
 
     private void createRelationshipEntries(Map<Long, List<HistoryEntry>> entriesMap, List<? extends HistoryRelationshipRecord> records,

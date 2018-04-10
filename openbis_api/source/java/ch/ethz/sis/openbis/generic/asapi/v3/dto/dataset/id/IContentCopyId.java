@@ -10,7 +10,6 @@ import ch.systemsx.cisd.common.annotation.TechPreview;
  * @author anttil
  */
 @JsonObject("as.dto.dataset.id.IContentCopyId")
-@TechPreview
 public interface IContentCopyId extends IObjectId
 {
 }

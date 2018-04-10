@@ -258,6 +258,7 @@ function MainController(profile) {
 		this._changeView(newViewChange, arg, true, shouldStateBePushToHistory);
 	}
 	this._changeView = function(newViewChange, arg, shouldURLBePushToHistory, shouldStateBePushToHistory) {
+		LayoutManager.isBlocked = false;
 		//
 		// Dirty forms management, to avoid loosing changes.
 		//

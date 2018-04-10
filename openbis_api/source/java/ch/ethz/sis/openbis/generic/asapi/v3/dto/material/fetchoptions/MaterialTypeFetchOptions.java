@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptionsToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,6 +34,9 @@ public class MaterialTypeFetchOptions extends FetchOptions<MaterialType> impleme
 
     @JsonProperty
     private PropertyAssignmentFetchOptions propertyAssignments;
+
+    @JsonProperty
+    private PluginFetchOptions validationPlugin;
 
     @JsonProperty
     private MaterialTypeSortOptions sort;
@@ -57,6 +61,25 @@ public class MaterialTypeFetchOptions extends FetchOptions<MaterialType> impleme
     public boolean hasPropertyAssignments()
     {
         return propertyAssignments != null;
+    }
+
+    public PluginFetchOptions withValidationPlugin()
+    {
+        if (validationPlugin == null)
+        {
+            validationPlugin = new PluginFetchOptions();
+        }
+        return validationPlugin;
+    }
+    
+    public PluginFetchOptions withValidationPluginUsing(PluginFetchOptions fetchOptions)
+    {
+        return validationPlugin = fetchOptions;
+    }
+    
+    public boolean hasValidationPlugin()
+    {
+        return validationPlugin != null;
     }
 
     // Method automatically generated with DtoGenerator

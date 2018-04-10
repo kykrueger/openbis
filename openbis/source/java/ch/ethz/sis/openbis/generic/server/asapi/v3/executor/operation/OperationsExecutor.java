@@ -35,11 +35,14 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.authorizationgroup.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IArchiveDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ICreateDataSetTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ICreateDataSetsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDeleteDataSetTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDeleteDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IGetDataSetsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ILockDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ISearchDataSetTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ISearchDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IUnarchiveDataSetsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IUnlockDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IUpdateDataSetTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IUpdateDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IVerifyDataSetsOperationExecutor;
@@ -47,9 +50,9 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.datastore.ISearchDat
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IConfirmDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IRevertDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.ISearchDeletionsOperationExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.IDeleteEntityTypeOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IDeleteExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IDeleteExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IGetExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ISearchExperimentTypesOperationExecutor;
@@ -65,6 +68,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.externaldms.IUpdateE
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.globalsearch.ISearchGloballyOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ICreateMaterialTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ICreateMaterialsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IDeleteMaterialTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IDeleteMaterialsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IGetMaterialsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ISearchMaterialTypesOperationExecutor;
@@ -82,19 +86,29 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.ICreatePerson
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.IGetPersonsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.ISearchPersonsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person.IUpdatePersonsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin.ICreatePluginsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin.IDeletePluginsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin.IGetPluginsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin.ISearchPluginsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin.IUpdatePluginsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.ICreateProjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IDeleteProjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IGetProjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.ISearchProjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project.IUpdateProjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.ICreatePropertyTypesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.IDeletePropertyTypesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.IGetPropertyTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.ISearchPropertyAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.ISearchPropertyTypesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.IUpdatePropertyTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.ICreateRoleAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.IDeleteRoleAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.IGetRoleAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.ISearchRoleAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ICreateSampleTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ICreateSamplesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IDeleteSampleTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IDeleteSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IGetSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISearchSampleTypesOperationExecutor;
@@ -107,8 +121,16 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.IGetSemanticAnnotationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.ISearchSemanticAnnotationsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.semanticannotation.IUpdateSemanticAnnotationsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteAggregationServiceOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteCustomASServiceOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteProcessingServiceOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteReportingServiceOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.IExecuteSearchDomainServiceOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchAggregationServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchCustomASServicesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchProcessingServicesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchReportingServicesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service.ISearchSearchDomainServicesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.session.IGetSessionInformationOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.ICreateSpacesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.IDeleteSpacesOperationExecutor;
@@ -120,10 +142,15 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.tag.IDeleteTagsOpera
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.tag.IGetTagsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.tag.ISearchTagsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.tag.IUpdateTagsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.ICreateVocabulariesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.ICreateVocabularyTermsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.IDeleteVocabulariesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.IDeleteVocabularyTermsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.IGetVocabulariesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.IGetVocabularyTermsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.ISearchVocabulariesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.ISearchVocabularyTermsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.IUpdateVocabulariesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.IUpdateVocabularyTermsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.utils.ExceptionUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -163,12 +190,30 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IDeleteAuthorizationGroupsOperationExecutor deleteAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private IDeleteRoleAssignmentsOperationExecutor deleteRoleAssignmentsExecutor;
-    
+
     @Autowired
-    private IDeleteEntityTypeOperationExecutor deleteEntityTypesExecutor;
+    private IDeleteExperimentTypesOperationExecutor deleteExperimentTypesExecutor;
+
+    @Autowired
+    private IDeleteSampleTypesOperationExecutor deleteSampleTypesExecutor;
+
+    @Autowired
+    private IDeleteDataSetTypesOperationExecutor deleteDataSetTypesExecutor;
+
+    @Autowired
+    private IDeleteMaterialTypesOperationExecutor deleteMaterialTypesExecutor;
+
+    @Autowired
+    private IDeletePluginsOperationExecutor deletePluginsExecutor;
+
+    @Autowired
+    private IDeletePropertyTypesOperationExecutor deletePropertyTypesExecutor;
+
+    @Autowired
+    private IDeleteVocabulariesOperationExecutor deleteVocabulariesExecutor;
 
     @Autowired
     private IDeleteVocabularyTermsOperationExecutor deleteVocabularyTermsExecutor;
@@ -202,15 +247,24 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ICreateAuthorizationGroupsOperationExecutor createAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private ICreateRoleAssignmentsOperationExecutor createRoleAssignmentsExecutor;
-    
+
     @Autowired
     private ICreatePersonsOperationExecutor createPersonsExecutor;
-    
+
     @Autowired
     private ICreateSemanticAnnotationsOperationExecutor createSemanticAnnotationsExecutor;
+
+    @Autowired
+    private ICreatePropertyTypesOperationExecutor createPropertyTypesExecutor;
+
+    @Autowired
+    private ICreatePluginsOperationExecutor createPluginsExecutor;
+
+    @Autowired
+    private ICreateVocabulariesOperationExecutor createVocabulariesExecutor;
 
     @Autowired
     private ICreateVocabularyTermsOperationExecutor createVocabularyTermsExecutor;
@@ -244,7 +298,7 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUpdateSamplesOperationExecutor updateSamplesExecutor;
-    
+
     @Autowired
     private IUpdateSampleTypesOperationExecutor updateSampleTypesExecutor;
 
@@ -253,24 +307,33 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUpdateDataSetTypesOperationExecutor updateDataSetTypesExecutor;
-    
+
     @Autowired
     private IUpdateMaterialsOperationExecutor updateMaterialsExecutor;
 
     @Autowired
     private IUpdateMaterialTypesOperationExecutor updateMaterialTypesExecutor;
-    
+
     @Autowired
     private IUpdateTagsOperationExecutor updateTagsExecutor;
 
     @Autowired
     private IUpdateAuthorizationGroupsOperationExecutor updateAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private IUpdatePersonsOperationExecutor updatePersonsExecutor;
 
     @Autowired
     private IUpdateExternalDmsOperationExecutor updateExternalDmsExecutor;
+
+    @Autowired
+    private IUpdatePropertyTypesOperationExecutor updatePropertyTypesExecutor;
+
+    @Autowired
+    private IUpdatePluginsOperationExecutor updatePluginsExecutor;
+
+    @Autowired
+    private IUpdateVocabulariesOperationExecutor updateVocabulariesExecutor;
 
     @Autowired
     private IUpdateVocabularyTermsOperationExecutor updateVocabularyTermsExecutor;
@@ -319,13 +382,22 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IGetAuthorizationGroupsOperationExecutor getAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private IGetRoleAssignmentsOperationExecutor getRoleAssignmentsExecutor;
-    
+
     @Autowired
     private IGetPersonsOperationExecutor getPersonsExecutor;
-    
+
+    @Autowired
+    private IGetPropertyTypesOperationExecutor getPropertyTypesExecutor;
+
+    @Autowired
+    private IGetPluginsOperationExecutor getPluginsExecutor;
+
+    @Autowired
+    private IGetVocabulariesOperationExecutor getVocabulariesExecutor;
+
     @Autowired
     private IGetVocabularyTermsOperationExecutor getVocabularyTermsExecutor;
 
@@ -361,15 +433,21 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchAuthorizationGroupsOperationExecutor searchAuthorizationGroupsExecutor;
-    
+
     @Autowired
     private ISearchRoleAssignmentsOperationExecutor searchRoleAssignmentsExecutor;
-    
+
     @Autowired
     private ISearchPersonsOperationExecutor searchPersonsExecutor;
-    
+
     @Autowired
     private ISearchExternalDmsOperationExecutor searchExternalDmsExecutor;
+
+    @Autowired
+    private ISearchPluginsOperationExecutor searchPluginsExecutor;
+
+    @Autowired
+    private ISearchVocabulariesOperationExecutor searchVocabulariesExecutor;
 
     @Autowired
     private ISearchVocabularyTermsOperationExecutor searchVocabularyTermsExecutor;
@@ -389,6 +467,18 @@ public class OperationsExecutor implements IOperationsExecutor
     @Autowired
     private ISearchCustomASServicesOperationExecutor searchCustomASServicesExecutor;
 
+    @Autowired
+    private ISearchSearchDomainServicesOperationExecutor searchSearchDomainServicesExecutor;
+
+    @Autowired
+    private ISearchAggregationServicesOperationExecutor searchAggregationServicesExecutor;
+
+    @Autowired
+    private ISearchReportingServicesOperationExecutor searchReportingServicesExecutor;
+
+    @Autowired
+    private ISearchProcessingServicesOperationExecutor searchProcessingServicesExecutor;
+    
     @Autowired
     private ISearchDeletionsOperationExecutor searchDeletionsExecutor;
 
@@ -417,6 +507,18 @@ public class OperationsExecutor implements IOperationsExecutor
     private IExecuteCustomASServiceOperationExecutor executeCustomASServiceExecutor;
 
     @Autowired
+    private IExecuteAggregationServiceOperationExecutor executeAggregationServiceExecutor;
+
+    @Autowired
+    private IExecuteReportingServiceOperationExecutor executeReportingServiceExecutor;
+
+    @Autowired
+    private IExecuteProcessingServiceOperationExecutor executeProcessingServiceExecutor;
+
+    @Autowired
+    private IExecuteSearchDomainServiceOperationExecutor executeSearchDomainServiceExecutor;
+
+    @Autowired
     private IRevertDeletionsOperationExecutor revertDeletionsExecutor;
 
     @Autowired
@@ -427,6 +529,12 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUnarchiveDataSetsOperationExecutor unarchiveDataSetsExecutor;
+
+    @Autowired
+    private ILockDataSetsOperationExecutor lockDataSetsExecutor;
+
+    @Autowired
+    private IUnlockDataSetsOperationExecutor unlockDataSetsExecutor;
 
     @Autowired
     private IGetSessionInformationOperationExecutor getSessionInformationExecutor;
@@ -472,8 +580,14 @@ public class OperationsExecutor implements IOperationsExecutor
             Map<IOperation, IOperationResult> resultMap, IOperationContext context)
     {
         resultMap.putAll(executeCustomASServiceExecutor.execute(context, operations));
+        resultMap.putAll(executeAggregationServiceExecutor.execute(context, operations));
+        resultMap.putAll(executeProcessingServiceExecutor.execute(context, operations));
+        resultMap.putAll(executeReportingServiceExecutor.execute(context, operations));
+        resultMap.putAll(executeSearchDomainServiceExecutor.execute(context, operations));
         resultMap.putAll(revertDeletionsExecutor.execute(context, operations));
         resultMap.putAll(confirmDeletionsExecutor.execute(context, operations));
+        resultMap.putAll(lockDataSetsExecutor.execute(context, operations));
+        resultMap.putAll(unlockDataSetsExecutor.execute(context, operations));
         resultMap.putAll(archiveDataSetsExecutor.execute(context, operations));
         resultMap.putAll(unarchiveDataSetsExecutor.execute(context, operations));
         resultMap.putAll(getSessionInformationExecutor.execute(context, operations));
@@ -493,12 +607,18 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchRoleAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(searchPersonsExecutor.execute(context, operations));
         resultMap.putAll(searchExternalDmsExecutor.execute(context, operations));
+        resultMap.putAll(searchPluginsExecutor.execute(context, operations));
+        resultMap.putAll(searchVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(searchVocabularyTermsExecutor.execute(context, operations));
         resultMap.putAll(searchExperimentTypesExecutor.execute(context, operations));
         resultMap.putAll(searchSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(searchDataSetTypesExecutor.execute(context, operations));
         resultMap.putAll(searchMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(searchCustomASServicesExecutor.execute(context, operations));
+        resultMap.putAll(searchAggregationServicesExecutor.execute(context, operations));
+        resultMap.putAll(searchReportingServicesExecutor.execute(context, operations));
+        resultMap.putAll(searchProcessingServicesExecutor.execute(context, operations));
+        resultMap.putAll(searchSearchDomainServicesExecutor.execute(context, operations));
         resultMap.putAll(searchDeletionsExecutor.execute(context, operations));
         resultMap.putAll(searchGloballyExecutor.execute(context, operations));
         resultMap.putAll(searchObjectKindModificationsExecutor.execute(context, operations));
@@ -522,6 +642,9 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(getAuthorizationGroupsExecutor.execute(context, operations));
         resultMap.putAll(getRoleAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(getPersonsExecutor.execute(context, operations));
+        resultMap.putAll(getPropertyTypesExecutor.execute(context, operations));
+        resultMap.putAll(getPluginsExecutor.execute(context, operations));
+        resultMap.putAll(getVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(getVocabularyTermsExecutor.execute(context, operations));
         resultMap.putAll(getExternalDmsExecutor.execute(context, operations));
         resultMap.putAll(getOperationExecutionsExecutor.execute(context, operations));
@@ -542,6 +665,9 @@ public class OperationsExecutor implements IOperationsExecutor
     {
         resultMap.putAll(updateSemanticAnnotationsExecutor.execute(context, operations));
         resultMap.putAll(updateOperationExecutionsExecutor.execute(context, operations));
+        resultMap.putAll(updatePluginsExecutor.execute(context, operations));
+        resultMap.putAll(updateVocabulariesExecutor.execute(context, operations));
+        resultMap.putAll(updatePropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(updateVocabularyTermsExecutor.execute(context, operations));
         resultMap.putAll(updateMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(updateExperimentTypesExecutor.execute(context, operations));
@@ -563,7 +689,10 @@ public class OperationsExecutor implements IOperationsExecutor
             Map<IOperation, IOperationResult> resultMap, IOperationContext context)
     {
         resultMap.putAll(createPersonsExecutor.execute(context, operations));
+        resultMap.putAll(createPluginsExecutor.execute(context, operations));
+        resultMap.putAll(createVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(createVocabularyTermsExecutor.execute(context, operations));
+        resultMap.putAll(createPropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(createExperimentTypesExecutor.execute(context, operations));
         resultMap.putAll(createSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(createDataSetTypesExecutor.execute(context, operations));
@@ -595,8 +724,14 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(deleteTagsExecutor.execute(context, operations));
         resultMap.putAll(deleteRoleAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(deleteAuthorizationGroupsExecutor.execute(context, operations));
-        resultMap.putAll(deleteEntityTypesExecutor.execute(context, operations));
+        resultMap.putAll(deleteExperimentTypesExecutor.execute(context, operations));
+        resultMap.putAll(deleteSampleTypesExecutor.execute(context, operations));
+        resultMap.putAll(deleteDataSetTypesExecutor.execute(context, operations));
+        resultMap.putAll(deleteMaterialTypesExecutor.execute(context, operations));
+        resultMap.putAll(deletePropertyTypesExecutor.execute(context, operations));
+        resultMap.putAll(deletePluginsExecutor.execute(context, operations));
         resultMap.putAll(deleteVocabularyTermsExecutor.execute(context, operations));
+        resultMap.putAll(deleteVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(deleteOperationExecutionsExecutor.execute(context, operations));
     }
 

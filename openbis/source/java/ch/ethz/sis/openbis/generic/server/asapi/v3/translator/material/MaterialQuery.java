@@ -92,4 +92,7 @@ public interface MaterialQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PropertyAssignmentRecord> getPropertyAssignments(LongSet materialTypePropertyTypeIds);
 
+    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from material_types t where t.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    public List<ObjectRelationRecord> getValidationPluginIds(LongSet materialTypeIds);
+
 }

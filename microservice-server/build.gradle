@@ -6,7 +6,6 @@ task wrapper(type: Wrapper) {
 }
 
 repositories {
-    mavenCentral()
     ivy {
         ivyPattern "http://svnsis.ethz.ch/repos/cisd/ivy-repository/trunk/[organisation]/[module]/[revision]/ivy.xml"
         artifactPattern "http://svnsis.ethz.ch/repos/cisd/ivy-repository/trunk/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
@@ -25,7 +24,7 @@ dependencies {
 }
 
 
-mainClassName = "ch.ethz.sis.microservices.download.server.startup.Main"
+mainClassName = "ch.ethz.sis.microservices.server.startup.Main"
 
 distZip {
     into(project.name) {

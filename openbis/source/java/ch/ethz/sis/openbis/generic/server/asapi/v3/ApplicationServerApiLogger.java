@@ -36,13 +36,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOp
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.lock.DataSetLockOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unarchive.DataSetUnarchiveOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unlock.DataSetUnlockOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
@@ -52,7 +55,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.delete.EntityTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -60,6 +62,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
@@ -84,6 +87,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
@@ -110,6 +114,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.PersonUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.create.PluginCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.delete.PluginDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.update.PluginUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.delete.ProjectDeletionOptions;
@@ -120,10 +132,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.delete.PropertyTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.delete.RoleAssignmentDeletionOptions;
@@ -136,6 +153,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
@@ -152,11 +170,30 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.id.ISemanticA
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.id.SemanticAnnotationPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.SemanticAnnotationUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.AggregationService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ProcessingService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ReportingService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainServiceExecutionResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AggregationServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ProcessingServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ReportingServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ProcessingServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ReportingServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.ICustomASServiceId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.AggregationServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.CustomASServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.ProcessingServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.ReportingServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
@@ -174,15 +211,22 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.update.TagUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.delete.VocabularyDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.delete.VocabularyTermDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyTermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.WebAppSettings;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
 import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.openbis.common.spring.IInvocationLoggerContext;
 import ch.systemsx.cisd.openbis.generic.shared.AbstractServerLogger;
@@ -301,6 +345,27 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public List<PropertyTypePermId> createPropertyTypes(String sessionToken, List<PropertyTypeCreation> newPropertyTypes)
+    {
+        logAccess(sessionToken, "create-property-types", "NEW_PROPERTY_TYPES(%s)", abbreviate(newPropertyTypes));
+        return null;
+    }
+
+    @Override
+    public List<PluginPermId> createPlugins(String sessionToken, List<PluginCreation> newPlugins)
+    {
+        logAccess(sessionToken, "create-plugins", "NEW_PLUGINS(%s)", abbreviate(newPlugins));
+        return null;
+    }
+
+    @Override
+    public List<VocabularyPermId> createVocabularies(String sessionToken, List<VocabularyCreation> newVocabularies)
+    {
+        logAccess(sessionToken, "create-vocabularies", "NEW_VOCABULARIES(%s)", abbreviate(newVocabularies));
+        return null;
+    }
+
+    @Override
     public List<VocabularyTermPermId> createVocabularyTerms(String sessionToken, List<VocabularyTermCreation> newVocabularyTerms)
     {
         logAccess(sessionToken, "create-vocabulary-terms", "NEW_VOCABULARY_TERMS(%s)", abbreviate(newVocabularyTerms));
@@ -412,6 +477,24 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public void updatePropertyTypes(String sessionToken, List<PropertyTypeUpdate> propertyTypeUpdates)
+    {
+        logAccess(sessionToken, "update-property-types", "PROPERTY_TYPE_UPDATES(%s)", abbreviate(propertyTypeUpdates));
+    }
+
+    @Override
+    public void updatePlugins(String sessionToken, List<PluginUpdate> pluginUpdates)
+    {
+        logAccess(sessionToken, "update-plugins", "PLUGIN_UPDATES(%s)", abbreviate(pluginUpdates));
+    }
+
+    @Override
+    public void updateVocabularies(String sessionToken, List<VocabularyUpdate> vocabularyUpdates)
+    {
+        logAccess(sessionToken, "update-vocabularies", "VOCABULARY_UPDATES(%s)", abbreviate(vocabularyUpdates));
+    }
+
+    @Override
     public void updateVocabularyTerms(String sessionToken, List<VocabularyTermUpdate> vocabularyTermUpdates)
     {
         logAccess(sessionToken, "update-vocabulary-terms", "VOCABULARY_TERM_UPDATES(%s)", abbreviate(vocabularyTermUpdates));
@@ -485,6 +568,29 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public Map<IPropertyTypeId, PropertyType> getPropertyTypes(String sessionToken, List<? extends IPropertyTypeId> typeIds,
+            PropertyTypeFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-property-types", "PROPERTY_TYPE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(typeIds), fetchOptions);
+        return null;
+    }
+
+    @Override
+    public Map<IPluginId, Plugin> getPlugins(String sessionToken, List<? extends IPluginId> pluginIds, PluginFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-plugins", "PLUGIN_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(pluginIds), fetchOptions);
+        return null;
+    }
+
+    @Override
+    public Map<IVocabularyId, Vocabulary> getVocabularies(String sessionToken, List<? extends IVocabularyId> vocabularyIds,
+            VocabularyFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-vocabularies", "VOCABULARY_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(vocabularyIds), fetchOptions);
+        return null;
+    }
+
+    @Override
     public Map<IVocabularyTermId, VocabularyTerm> getVocabularyTerms(String sessionToken, List<? extends IVocabularyTermId> vocabularyTermIds,
             VocabularyTermFetchOptions fetchOptions)
     {
@@ -521,7 +627,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         logAccess(sessionToken, "get-persons", "IDS(%s) FETCH_OPTIONS(%s)", abbreviate(ids), fetchOptions);
         return null;
     }
-    
+
     @Override
     public Map<IExternalDmsId, ExternalDms> getExternalDataManagementSystems(String sessionToken, List<? extends IExternalDmsId> externalDmsIds,
             ExternalDmsFetchOptions fetchOptions)
@@ -622,6 +728,21 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public SearchResult<Plugin> searchPlugins(String sessionToken, PluginSearchCriteria searchCriteria, PluginFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-plugins", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
+    public SearchResult<Vocabulary> searchVocabularies(String sessionToken, VocabularySearchCriteria searchCriteria,
+            VocabularyFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-vocabularies", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
     public SearchResult<VocabularyTerm> searchVocabularyTerms(String sessionToken, VocabularyTermSearchCriteria searchCriteria,
             VocabularyTermFetchOptions fetchOptions)
     {
@@ -651,14 +772,14 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         logAccess(sessionToken, "search-role-assignments", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
-    
+
     @Override
     public SearchResult<Person> searchPersons(String sessionToken, PersonSearchCriteria searchCriteria, PersonFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-persons", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
-    
+
     @Override
     public void deleteSpaces(String sessionToken, List<? extends ISpaceId> spaceIds, SpaceDeletionOptions deletionOptions)
     {
@@ -699,15 +820,56 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public void deletePlugins(String sessionToken, List<? extends IPluginId> pluginIds, PluginDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-plugins", "PLUGIN_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(pluginIds), deletionOptions);
+    }
+
+    @Override
+    public void deletePropertyTypes(String sessionToken, List<? extends IPropertyTypeId> propertyTypeIds, PropertyTypeDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-property-types", "PROPERTY_TYPES_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(propertyTypeIds), deletionOptions);
+    }
+
+    @Override
+    public void deleteVocabularies(String sessionToken, List<? extends IVocabularyId> ids, VocabularyDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-vocabularies", "VOCABULARY_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(ids), deletionOptions);
+    }
+
+    @Override
     public void deleteVocabularyTerms(String sessionToken, List<? extends IVocabularyTermId> termIds, VocabularyTermDeletionOptions deletionOptions)
     {
         logAccess(sessionToken, "delete-vocabulary-terms", "VOCABULARY_TERM_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(termIds), deletionOptions);
     }
 
     @Override
-    public void deleteEntityTypes(String sessionToken, List<? extends IEntityTypeId> entityTypeIds, EntityTypeDeletionOptions deletionOptions)
+    public void deleteExperimentTypes(String sessionToken, List<? extends IEntityTypeId> experimentTypeIds,
+            ExperimentTypeDeletionOptions deletionOptions)
     {
-        logAccess(sessionToken, "delete-entity-types", "ENTITY_TYPE_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(entityTypeIds), deletionOptions);
+        logAccess(sessionToken, "delete-experiment-types", "EXPERIMENT_TYPE_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(experimentTypeIds),
+                deletionOptions);
+    }
+
+    @Override
+    public void deleteSampleTypes(String sessionToken, List<? extends IEntityTypeId> sampleTypeIds, SampleTypeDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-sample-types", "SAMPLE_TYPE_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(sampleTypeIds),
+                deletionOptions);
+    }
+
+    @Override
+    public void deleteDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds, DataSetTypeDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-data-set-types", "DATA_SET_TYPE_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(dataSetTypeIds),
+                deletionOptions);
+    }
+
+    @Override
+    public void deleteMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds, MaterialTypeDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-material-types", "MATERIAL_TYPE_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(materialTypeIds),
+                deletionOptions);
     }
 
     @Override
@@ -720,7 +882,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void deleteAuthorizationGroups(String sessionToken, List<? extends IAuthorizationGroupId> groupIds,
             AuthorizationGroupDeletionOptions deletionOptions)
     {
-        logAccess(sessionToken, "delete-authorization-groups", "AUTHORIZATION_GROUP_IDS(%s) DELETION_OPTIONS(%s)", 
+        logAccess(sessionToken, "delete-authorization-groups", "AUTHORIZATION_GROUP_IDS(%s) DELETION_OPTIONS(%s)",
                 abbreviate(groupIds), deletionOptions);
     }
 
@@ -728,7 +890,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void deleteRoleAssignments(String sessionToken, List<? extends IRoleAssignmentId> assignmentIds,
             RoleAssignmentDeletionOptions deletionOptions)
     {
-        logAccess(sessionToken, "delete-role-assignments", "ROLE_ASSIGNMENT_IDS(%s) DELETION_OPTIONS(%s)", 
+        logAccess(sessionToken, "delete-role-assignments", "ROLE_ASSIGNMENT_IDS(%s) DELETION_OPTIONS(%s)",
                 abbreviate(assignmentIds), deletionOptions);
     }
 
@@ -771,6 +933,38 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
             CustomASServiceFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-custom-as-services", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
+    public SearchResult<SearchDomainService> searchSearchDomainServices(String sessionToken, SearchDomainServiceSearchCriteria searchCriteria,
+            SearchDomainServiceFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-search-domain-services", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
+    public SearchResult<AggregationService> searchAggregationServices(String sessionToken, AggregationServiceSearchCriteria searchCriteria,
+            AggregationServiceFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-aggregation-services", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
+    public SearchResult<ReportingService> searchReportingServices(String sessionToken, ReportingServiceSearchCriteria searchCriteria,
+            ReportingServiceFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-reporting-services", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
+    public SearchResult<ProcessingService> searchProcessingServices(String sessionToken, ProcessingServiceSearchCriteria searchCriteria,
+            ProcessingServiceFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-processing-services", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
 
@@ -821,6 +1015,34 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public SearchResult<SearchDomainServiceExecutionResult> executeSearchDomainService(String sessionToken,
+            SearchDomainServiceExecutionOptions options)
+    {
+        logAccess(sessionToken, "execute-search-domain-service", "EXECUTION_OPTIONS(%s)", options);
+        return null;
+    }
+
+    @Override
+    public TableModel executeAggregationService(String sessionToken, IDssServiceId serviceId, AggregationServiceExecutionOptions options)
+    {
+        logAccess(sessionToken, "execute-aggregation-service", "SERVICE_ID(%s) EXECUTION_OPTIONS(%s)", serviceId, options);
+        return null;
+    }
+
+    @Override
+    public TableModel executeReportingService(String sessionToken, IDssServiceId serviceId, ReportingServiceExecutionOptions options)
+    {
+        logAccess(sessionToken, "execute-reporting-service", "SERVICE_ID(%s) EXECUTION_OPTIONS(%s)", serviceId, options);
+        return null;
+    }
+
+    @Override
+    public void executeProcessingService(String sessionToken, IDssServiceId serviceId, ProcessingServiceExecutionOptions options)
+    {
+        logAccess(sessionToken, "execute-processing-service", "SERVICE_ID(%s) EXECUTION_OPTIONS(%s)", serviceId, options);
+    }
+
+    @Override
     public SearchResult<GlobalSearchObject> searchGlobally(String sessionToken, GlobalSearchCriteria searchCriteria,
             GlobalSearchObjectFetchOptions fetchOptions)
     {
@@ -838,6 +1060,18 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void unarchiveDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetUnarchiveOptions options)
     {
         logAccess(sessionToken, "unarchive-data-sets", "DATA_SET_IDS(%s) UNARCHIVE_OPTIONS(%s)", abbreviate(dataSetIds), options);
+    }
+
+    @Override
+    public void lockDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetLockOptions options)
+    {
+        logAccess(sessionToken, "lock-data-sets", "DATA_SET_IDS(%s) LOCK_OPTIONS(%s)", abbreviate(dataSetIds), options);
+    }
+
+    @Override
+    public void unlockDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetUnlockOptions options)
+    {
+        logAccess(sessionToken, "unlock-data-sets", "DATA_SET_IDS(%s) UNLOCK_OPTIONS(%s)", abbreviate(dataSetIds), options);
     }
 
     @Override
@@ -866,19 +1100,6 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public Map<String, String> getServerInformation(String sessionToken)
     {
         logAccess(sessionToken, "server-info");
-        return null;
-    }
-
-    @Override
-    public void setWebAppSettings(String sessionToken, WebAppSettings webAppSettings)
-    {
-        logAccess(sessionToken, "set-web-app-settings", "SETTINGS(%s)", webAppSettings);
-    }
-
-    @Override
-    public WebAppSettings getWebAppSettings(String sessionToken, String webAppId)
-    {
-        logAccess(sessionToken, "get-web-app-settings", "WEB_APP_ID(%s)", webAppId);
         return null;
     }
 

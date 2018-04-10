@@ -40,10 +40,12 @@ dependencies {
 
 	testCompile project(path: ':common', configuration: 'tests'),
 				project(path: ':dbmigration', configuration: 'tests'),
+				project(path: ':openbis_api', configuration: 'tests'),
 				'springframework:spring-test:+'
 
 	testRuntime project(path: ':common', configuration: 'tests'),
-				project(path: ':dbmigration', configuration: 'tests'), 
+				project(path: ':dbmigration', configuration: 'tests'),
+				project(path: ':openbis_api', configuration: 'tests'), 
 				'apache:commons-fileupload:+'
 
 	testRuntimeFirst 'javax:servlet-api:+'

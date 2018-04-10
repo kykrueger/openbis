@@ -18,8 +18,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service;
 
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,8 +29,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.StringFieldMatcher;
-import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
-import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 
 /**
  * @author pkupczyk
@@ -44,9 +40,6 @@ public class SearchCustomASServiceExecutor extends AbstractSearchObjectManuallyE
 
     @Autowired
     private ICustomASServiceProvider serviceProvider;
-
-    @Resource(name = ComponentNames.SESSION_MANAGER)
-    private IOpenBisSessionManager sessionManager;
 
     @Autowired
     private ICustomASServiceAuthorizationExecutor authorizationExecutor;

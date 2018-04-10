@@ -58,7 +58,7 @@ public abstract class AbstractCreateEntityTypeExecutor<CREATION extends IEntityT
 {
 
     @Autowired
-    private IDAOFactory daoFactory;
+    protected IDAOFactory daoFactory;
 
     @Resource(name = ComponentNames.COMMON_BUSINESS_OBJECT_FACTORY)
     protected ICommonBusinessObjectFactory businessObjectFactory;

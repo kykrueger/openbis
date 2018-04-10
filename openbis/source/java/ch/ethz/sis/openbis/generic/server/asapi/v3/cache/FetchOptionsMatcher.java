@@ -16,29 +16,30 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.cache;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchIgnore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchProperty;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.IFetchOptionsMatcher;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.IFetchPropertyHandler;
+
 /**
  * @author pkupczyk
  */
-public class FetchOptionsMatcher
+public class FetchOptionsMatcher implements IFetchOptionsMatcher
 {
 
-    public static boolean arePartsEqual(Object o1, Object o2)
-    {
-        return areEqual(o1, o2, new PartsMatcher());
-    }
+    private Set<Pair> checked = new HashSet<Pair>();
 
-    private static boolean areEqual(Object o1, Object o2, Matcher matcher)
-    {
-        return areEqual(o1, o2, matcher, 0, new HashSet<Pair>());
-    }
-
-    private static boolean areEqual(Object o1, Object o2, Matcher matcher, int level, Set<Pair> checked)
+    public boolean areMatching(Object o1, Object o2)
     {
         Pair pair = new Pair(o1, o2);
+
+        // keep information which objects have been already checked not to loop forever on recursive fetch options
 
         if (checked.contains(pair))
         {
@@ -48,82 +49,105 @@ public class FetchOptionsMatcher
             checked.add(pair);
         }
 
+        return arePartsAccessibleViaMethodsMatching(o1, o2) && arePartsAccessibleViaFieldsMatching(o1, o2);
+    }
+
+    private boolean arePartsAccessibleViaMethodsMatching(Object o1, Object o2)
+    {
+        Class<?> clazz = o1.getClass();
+        Method method = null;
+
         try
         {
-            Class<?> clazz = o1.getClass();
+            Method[] methods = clazz.getMethods();
 
-            for (Method method : clazz.getMethods())
+            for (int i = 0; i < methods.length; i++)
             {
+                method = methods[i];
+                method.setAccessible(true);
+
+                if (method.getAnnotation(FetchIgnore.class) != null)
+                {
+                    continue;
+                }
+
                 if (method.getName().startsWith("has") && false == method.getName().equals("hashCode"))
                 {
                     boolean has1 = (boolean) method.invoke(o1);
                     boolean has2 = (boolean) method.invoke(o2);
 
-                    Method withMethod = clazz.getMethod("with" + method.getName().substring(3));
-
-                    Object with1 = null;
-                    Object with2 = null;
-
-                    if (has1)
+                    if (has1 != has2)
                     {
-                        with1 = withMethod.invoke(o1);
-                    }
-
-                    if (has2)
+                        return false;
+                    } else if (has1 && has2)
                     {
-                        with2 = withMethod.invoke(o2);
-                    }
+                        Method withMethod = clazz.getMethod("with" + method.getName().substring(3));
 
-                    if (matcher.shouldMatch(level))
-                    {
-                        if (false == matcher.match(o1, o2, has1, has2, with1, with2))
+                        Object with1 = withMethod.invoke(o1);
+                        Object with2 = withMethod.invoke(o2);
+
+                        if (with1 != null && with2 != null && false == areMatching(with1, with2))
                         {
                             return false;
                         }
                     }
-
-                    if (with1 != null && with2 != null)
-                    {
-                        if (false == areEqual(with1, with2, matcher, level + 1, checked))
-                        {
-                            return false;
-                        }
-                    }
-
                 }
             }
         } catch (Exception e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Couldn't check if fetch options are matching for class: " + clazz + " and method: " + method, e);
         }
 
         return true;
     }
 
-    private static interface Matcher
+    private boolean arePartsAccessibleViaFieldsMatching(Object o1, Object o2)
     {
+        Class<?> clazz = o1.getClass();
+        Field field = null;
 
-        public boolean shouldMatch(int level);
-
-        public boolean match(Object o1, Object o2, boolean has1, boolean has2, Object with1, Object with2);
-
-    }
-
-    private static class PartsMatcher implements Matcher
-    {
-
-        @Override
-        public boolean shouldMatch(int level)
+        try
         {
-            return true;
+            Field[] fields = clazz.getDeclaredFields();
+
+            for (int i = 0; i < fields.length; i++)
+            {
+                field = fields[i];
+                field.setAccessible(true);
+
+                FetchProperty annotation = field.getAnnotation(FetchProperty.class);
+
+                if (annotation == null)
+                {
+                    continue;
+                }
+
+                Class<? extends IFetchPropertyHandler> handlerClass = annotation.handler();
+
+                if (handlerClass == null)
+                {
+                    continue;
+                }
+
+                Constructor<? extends IFetchPropertyHandler> handlerConstructor = handlerClass.getDeclaredConstructor();
+                handlerConstructor.setAccessible(true);
+
+                IFetchPropertyHandler handler = handlerConstructor.newInstance();
+
+                // pass "this" for the handler to be able to do nested matches and take advantage of the already "checked" set
+
+                if (false == handler.areMatching(o1, o2, this))
+                {
+                    return false;
+                }
+            }
+
+        } catch (Exception e)
+        {
+            throw new RuntimeException("Couldn't check if fetch options are matching for class: " + clazz + " and field: " + field, e);
         }
 
-        @Override
-        public boolean match(Object o1, Object o2, boolean has1, boolean has2, Object with1, Object with2)
-        {
-            return has1 == has2;
-        }
-
+        return true;
     }
 
     private static class Pair
@@ -159,19 +183,11 @@ public class FetchOptionsMatcher
             if (getClass() != obj.getClass())
                 return false;
             Pair other = (Pair) obj;
-            if (object1 == null)
-            {
-                if (other.object1 != null)
-                    return false;
-            } else if (!object1.equals(other.object1))
-                return false;
-            if (object2 == null)
-            {
-                if (other.object2 != null)
-                    return false;
-            } else if (!object2.equals(other.object2))
-                return false;
-            return true;
+
+            // regard objects as equal only if they are the same object in memory, otherwise check if parts are equal (i.e. do not assume equals is
+            // properly implemented for all fetch options)
+
+            return object1 == other.object1 && object2 == other.object2;
         }
 
     }

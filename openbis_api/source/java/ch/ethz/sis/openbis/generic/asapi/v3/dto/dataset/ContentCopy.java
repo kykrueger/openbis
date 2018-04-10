@@ -26,7 +26,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 import ch.systemsx.cisd.common.annotation.TechPreview;
 
 @JsonObject("as.dto.dataset.ContentCopy")
-@TechPreview
 public class ContentCopy implements Serializable
 {
     private static final long serialVersionUID = 1L;

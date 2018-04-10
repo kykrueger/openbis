@@ -14,10 +14,10 @@ define([ 'jquery', 'underscore', 'openbis', 'test/common' ], function($, _, open
 		};
 
 		var ignoreMessages = {
-			"ICustomASServiceExecutor" : "Java class ignored: ",
 			"ServiceContext" : "Java class ignored: ",
 			"CustomASServiceContext" : "Java class ignored: ",
 			"AbstractCollectionView" : "Java class ignored: ",
+			"AbstractExecutionOptionsWithParameters" : "Java class ignored: ",
 			"ListView" : "Java class ignored: ",
 			"SetView" : "Java class ignored: ",
 			"NotFetchedException" : "Java class ignored: ",

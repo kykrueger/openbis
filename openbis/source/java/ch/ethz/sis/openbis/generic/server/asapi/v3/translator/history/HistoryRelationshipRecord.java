@@ -16,26 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.history;
 
-import java.util.Date;
-
-import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectBaseRecord;
-
 /**
  * @author pkupczyk
  */
-public class HistoryRelationshipRecord extends ObjectBaseRecord
+public class HistoryRelationshipRecord extends HistoryRecord
 {
 
     public Long objectId;
 
-    public Long authorId;
-
     public String relationType;
 
     public String relatedObjectId;
-
-    public Date validFrom;
-
-    public Date validTo;
 
 }

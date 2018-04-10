@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.cifex.rpc.client.ICIFEXComponent;
+import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.InvalidAuthenticationException;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
@@ -35,7 +37,6 @@ import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
 import ch.systemsx.cisd.common.mail.MailClientParameters;
-import ch.systemsx.cisd.etlserver.ConfigProvider;
 import ch.systemsx.cisd.etlserver.api.v1.PutDataSetService;
 import ch.systemsx.cisd.openbis.common.conversation.context.ServiceConversationsThreadContext;
 import ch.systemsx.cisd.openbis.common.conversation.progress.IServiceConversationProgressListener;
@@ -50,6 +51,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
@@ -109,7 +111,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
 
     private PutDataSetService putService;
 
-    private ConfigProvider config;
+    private IConfigProvider config;
 
     public DataStoreService(SessionTokenManager sessionTokenManager, OpenbisSessionTokenCache sessionTokenCache,
             MailClientParameters mailClientParameters, IPluginTaskInfoProvider pluginTaskParameters,
@@ -511,6 +513,8 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
         {
             QueueingPathRemoverService.removeRecursively(sessionWorkspace);
         }
+
+        getPutDataSetService().cleanupSession(userSessionToken);
     }
 
     @Override
@@ -528,6 +532,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             if (service.isAvailable())
             {
                 SearchDomain searchDomain = new SearchDomain();
+                searchDomain.setDataStoreCode(config.getDataStoreCode());
                 searchDomain.setName(name);
                 searchDomain.setLabel(description.getLabel());
                 searchDomain.setPossibleSearchOptionsKey(service.getPossibleSearchOptionsKey());
@@ -552,6 +557,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             ISearchDomainService service = provider.getPluginInstance(serviceDescription.getKey());
             List<SearchDomainSearchResult> result = service.search(sequenceSnippet, optionalParametersOrNull);
             SearchDomain searchDomain = new SearchDomain();
+            searchDomain.setDataStoreCode(config.getDataStoreCode());
             searchDomain.setName(serviceDescription.getKey());
             searchDomain.setLabel(serviceDescription.getLabel());
             for (SearchDomainSearchResult sequenceSearchResult : result)
@@ -568,6 +574,14 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             String preferredSequenceDatabaseOrNull)
     {
         List<DatastoreServiceDescription> pluginDescriptions = provider.getPluginDescriptions();
+        Collections.sort(pluginDescriptions, new SimpleComparator<DatastoreServiceDescription, String>()
+            {
+                @Override
+                public String evaluate(DatastoreServiceDescription item)
+                {
+                    return item.getKey();
+                }
+            });
         DatastoreServiceDescription availableService = null;
         for (DatastoreServiceDescription description : pluginDescriptions)
         {
@@ -587,7 +601,8 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
         return availableService;
     }
 
-    private PutDataSetService getPutDataSetService()
+    @Override
+    public PutDataSetService getPutDataSetService()
     {
         if (putService == null)
         {
@@ -616,7 +631,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
         return hierarchicalContentProvider;
     }
 
-    public void setConfig(ConfigProvider config)
+    public void setConfig(IConfigProvider config)
     {
         this.config = config;
     }

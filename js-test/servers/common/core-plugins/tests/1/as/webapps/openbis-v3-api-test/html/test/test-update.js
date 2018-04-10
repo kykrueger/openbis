@@ -193,7 +193,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				update.setTypeId(permId);
 				update.setDescription("another new description");
 				update.setValidationPluginId(new c.PluginPermId("Has_Parents"));
-				update.getPropertyAssignments().set([assignmentCreation]);
+				update.getPropertyAssignments().set([ assignmentCreation ]);
 				return facade.updateExperimentTypes([ update ]);
 			}
 
@@ -217,11 +217,10 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testUpdate(c, fCreate, fUpdate, c.findExperimentType, fCheck);
 		});
 
-		
 		QUnit.test("updateExperiments() changed attributes + added tag + added attachment", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("EXPERIMENT");
-			
+
 			var fCreate = function(facade) {
 				var experimentCreation = new c.ExperimentCreation();
 				experimentCreation.setCode(code);
@@ -231,7 +230,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				experimentCreation.setProjectId(new c.ProjectIdentifier("/TEST/TEST-PROJECT"));
 				return facade.createExperiments([ experimentCreation ]);
 			}
-			
+
 			var fUpdate = function(facade, permId) {
 				var experimentUpdate = new c.ExperimentUpdate();
 				experimentUpdate.setExperimentId(permId);
@@ -245,7 +244,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				experimentUpdate.getAttachments().add([ attachmentCreation ]);
 				return facade.updateExperiments([ experimentUpdate ]);
 			}
-			
+
 			var fCheck = function(experiment) {
 				c.assertEqual(experiment.getCode(), code, "Experiment code");
 				c.assertEqual(experiment.getType().getCode(), "HT_SEQUENCING", "Type code");
@@ -262,10 +261,10 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(atob(attachments[0].content), "hello world", "Attachment content");
 				c.assertEqual(attachments.length, 1, "Number of attachments");
 			}
-			
+
 			testUpdate(c, fCreate, fUpdate, c.findExperiment, fCheck);
 		});
-		
+
 		QUnit.test("updateExperiments() changed properties + removed tag", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("EXPERIMENT");
@@ -373,8 +372,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				update.setShowParents(true);
 				update.setShowParentMetadata(true);
 				update.setValidationPluginId(new c.PluginPermId("Has_Parents"));
-				update.getPropertyAssignments().add([assignmentCreation]);
-				update.getPropertyAssignments().remove([new c.PropertyAssignmentPermId(permId, new c.PropertyTypePermId("DESCRIPTION"))]);
+				update.getPropertyAssignments().add([ assignmentCreation ]);
+				update.getPropertyAssignments().remove([ new c.PropertyAssignmentPermId(permId, new c.PropertyTypePermId("DESCRIPTION")) ]);
 				return facade.updateSampleTypes([ update ]);
 			}
 
@@ -408,7 +407,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		QUnit.test("updateSamples()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("SAMPLE");
-			
+
 			var fCreate = function(facade) {
 				var creation = new c.SampleCreation();
 				creation.setTypeId(new c.EntityTypePermId("UNKNOWN"));
@@ -417,7 +416,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				creation.setTagIds([ new c.TagCode("CREATE_JSON_TAG") ]);
 				return facade.createSamples([ creation ]);
 			}
-			
+
 			var fUpdate = function(facade, permId) {
 				var update = new c.SampleUpdate();
 				update.setSampleId(permId);
@@ -426,7 +425,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				update.getTagIds().add(new c.TagCode("CREATE_JSON_TAG_3"));
 				return facade.updateSamples([ update ]);
 			}
-			
+
 			var fCheck = function(sample) {
 				c.assertEqual(sample.getCode(), code, "Sample code");
 				c.assertEqual(sample.getType().getCode(), "UNKNOWN", "Type code");
@@ -434,10 +433,10 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertObjectsCount(sample.getTags(), 2);
 				c.assertObjectsWithValues(sample.getTags(), "code", [ "CREATE_JSON_TAG_2", "CREATE_JSON_TAG_3" ]);
 			}
-			
+
 			testUpdate(c, fCreate, fUpdate, c.findSample, fCheck);
 		});
-		
+
 		QUnit.test("updateDataSetTypes()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("DATA_SET_TYPE");
@@ -478,7 +477,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				update.setMainDataSetPattern(".*\\.jpg");
 				update.setMainDataSetPath("original/images/");
 				update.setDisallowDeletion(true);
-				update.getPropertyAssignments().set([assignmentCreation]);
+				update.getPropertyAssignments().set([ assignmentCreation ]);
 				return facade.updateDataSetTypes([ update ]);
 			}
 
@@ -508,35 +507,35 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		QUnit.test("updateDataSets()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = null;
-			
+
 			var fCreate = function(facade) {
 				return c.createDataSet(facade).then(function(permId) {
 					code = permId.getPermId();
 					return [ permId ];
 				});
 			}
-			
+
 			var fUpdate = function(facade, permId) {
 				var physicalUpdate = new c.PhysicalDataUpdate();
 				physicalUpdate.setFileFormatTypeId(new c.FileFormatTypePermId("TIFF"));
-				
+
 				var update = new c.DataSetUpdate();
 				update.setDataSetId(permId);
 				update.setProperty("NOTES", "new 409 description");
 				update.setPhysicalData(physicalUpdate);
-				
+
 				return facade.updateDataSets([ update ]);
 			}
-			
+
 			var fCheck = function(dataSet) {
 				c.assertEqual(dataSet.getCode(), code, "Code");
 				c.assertEqual(dataSet.getProperties()["NOTES"], "new 409 description", "Property NOTES");
 				c.assertEqual(dataSet.getPhysicalData().getFileFormatType().getCode(), "TIFF", "File format type");
 			}
-			
+
 			testUpdate(c, fCreate, fUpdate, c.findDataSet, fCheck);
 		});
-		
+
 		QUnit.test("updateDataSets() link data set", function(assert) {
 			var c = new common(assert, openbis);
 			var code = "20160613195437233-437";
@@ -651,8 +650,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				update.setTypeId(permId);
 				update.setDescription("another new description");
 				update.setValidationPluginId(new c.PluginPermId("Has_Parents"));
-				update.getPropertyAssignments().add([assignmentCreation]);
-				update.getPropertyAssignments().remove([new c.PropertyAssignmentPermId(permId, new c.PropertyTypePermId("DESCRIPTION"))]);
+				update.getPropertyAssignments().add([ assignmentCreation ]);
+				update.getPropertyAssignments().remove([ new c.PropertyAssignmentPermId(permId, new c.PropertyTypePermId("DESCRIPTION")) ]);
 				return facade.updateMaterialTypes([ update ]);
 			}
 
@@ -679,7 +678,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 		QUnit.test("updateMaterials()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("MATERIAL");
-			
+
 			var fCreate = function(facade) {
 				var materialCreation = new c.MaterialCreation();
 				materialCreation.setTypeId(new c.EntityTypePermId("COMPOUND"));
@@ -687,24 +686,119 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				materialCreation.setProperty("DESCRIPTION", "Metal");
 				return facade.createMaterials([ materialCreation ]);
 			}
-			
+
 			var fUpdate = function(facade, permId) {
 				var materialUpdate = new c.MaterialUpdate();
 				materialUpdate.setMaterialId(permId);
 				materialUpdate.setProperty("DESCRIPTION", "Alloy");
 				return facade.updateMaterials([ materialUpdate ]);
 			}
-			
+
 			var fCheck = function(material) {
 				c.assertEqual(material.getCode(), code, "Material code");
 				c.assertEqual(material.getType().getCode(), "COMPOUND", "Type code");
 				var properties = material.getProperties();
 				c.assertEqual(properties["DESCRIPTION"], "Alloy", "Property DESCRIPTION");
 			}
-			
+
 			testUpdate(c, fCreate, fUpdate, c.findMaterial, fCheck);
 		});
-		
+
+		QUnit.test("updatePropertyTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			var code = c.generateId("PROPERTY_TYPE");
+			var description = "Description of " + code;
+			var label = "Label of " + code;
+
+			var fCreate = function(facade) {
+				var creation = new c.PropertyTypeCreation();
+				creation.setCode(code);
+				creation.setLabel("Testing");
+				creation.setDescription("testing");
+				creation.setDataType(c.DataType.VARCHAR);
+				return facade.createPropertyTypes([ creation ]);
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.PropertyTypeUpdate();
+				update.setTypeId(new c.PropertyTypePermId(code));
+				update.setDescription(description);
+				update.setLabel(label);
+				return facade.updatePropertyTypes([ update ]);
+			}
+
+			var fCheck = function(propertyType) {
+				c.assertEqual(propertyType.getCode(), code, "Code");
+				c.assertEqual(propertyType.getDescription(), description, "Description");
+				c.assertEqual(propertyType.getLabel(), label, "Label");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findPropertyType, fCheck);
+		});
+
+		QUnit.test("updatePlugins()", function(assert) {
+			var c = new common(assert, openbis);
+			var name = c.generateId("PLUGIN");
+			var description = "Description of " + name;
+			var script = "print 'hello'";
+
+			var fCreate = function(facade) {
+				var creation = new c.PluginCreation();
+				creation.setName(name);
+				creation.setScript("pass");
+				creation.setDescription("old description");
+				creation.setAvailable(false);
+				creation.setPluginType(c.PluginType.MANAGED_PROPERTY);
+				return facade.createPlugins([ creation ]);
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.PluginUpdate();
+				update.setPluginId(new c.PluginPermId(name));
+				update.setDescription(description);
+				update.setScript(script);
+				return facade.updatePlugins([ update ]);
+			}
+
+			var fCheck = function(plugin) {
+				c.assertEqual(plugin.getName(), name, "Name");
+				c.assertEqual(plugin.getDescription(), description, "Description");
+				c.assertEqual(plugin.getScript(), script, "Script");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findPlugin, fCheck);
+		});
+
+		QUnit.test("updateVocabularies()", function(assert) {
+			var c = new common(assert, openbis);
+			var code = c.generateId("VOCABULARY");
+			var description = "Description of " + code;
+
+			var fCreate = function(facade) {
+				var creation = new c.VocabularyCreation();
+				creation.setCode(code);
+				return facade.createVocabularies([ creation ]);
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.VocabularyUpdate();
+				update.setVocabularyId(permId);
+				update.setDescription(description);
+				update.setChosenFromList(true);
+				update.setUrlTemplate("https://www.ethz.ch")
+				return facade.updateVocabularies([ update ]);
+			}
+
+			var fCheck = function(vocabulary) {
+				c.assertEqual(vocabulary.getCode(), code, "Code");
+				c.assertEqual(vocabulary.getPermId().getPermId(), code, "Perm id");
+				c.assertEqual(vocabulary.getDescription(), description, "Description");
+				c.assertEqual(vocabulary.getUrlTemplate(), "https://www.ethz.ch", "URL template");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findVocabulary, fCheck);
+		});
+
 		QUnit.test("updateVocabularyTerms()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("VOCABULARY_TERM");
@@ -791,28 +885,28 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testUpdate(c, fCreate, fUpdate, c.findTag, fCheck);
 		});
-		
+
 		QUnit.test("updateAuthorizationGroups()", function(assert) {
 			var c = new common(assert, openbis);
 			var code = c.generateId("AUTHORIZATION_GROUP");
 			var description = "Description of " + code;
-			
+
 			var fCreate = function(facade) {
 				var creation = new c.AuthorizationGroupCreation();
 				creation.setCode(code);
-				creation.setUserIds([new c.PersonPermId("power_user")]);
+				creation.setUserIds([ new c.PersonPermId("power_user") ]);
 				return facade.createAuthorizationGroups([ creation ]);
 			}
-			
+
 			var fUpdate = function(facade, permId) {
 				var update = new c.AuthorizationGroupUpdate();
 				update.setAuthorizationGroupId(permId);
 				update.setDescription(description);
-				update.getUserIds().remove([new c.PersonPermId("power_user")]);
-				update.getUserIds().add([new c.PersonPermId("admin"), new c.Me()]);
+				update.getUserIds().remove([ new c.PersonPermId("power_user") ]);
+				update.getUserIds().add([ new c.PersonPermId("admin"), new c.Me() ]);
 				return facade.updateAuthorizationGroups([ update ]);
 			}
-			
+
 			var fCheck = function(group) {
 				c.assertEqual(group.getCode(), code, "Code");
 				c.assertEqual(group.getDescription(), description, "Description");
@@ -822,14 +916,14 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				users.sort();
 				c.assertEqual(users.toString(), "admin,openbis_test_js", "Users");
 			}
-			
+
 			testUpdate(c, fCreate, fUpdate, c.findAuthorizationGroup, fCheck);
 		});
 
 		QUnit.test("updatePersons()", function(assert) {
 			var c = new common(assert, openbis);
 			var userId = c.generateId("USER");
-			
+
 			var fCreate = function(facade) {
 				var creation = new c.PersonCreation();
 				creation.setUserId(userId);
@@ -846,44 +940,115 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var fUpdate = function(facade, permId) {
 				var update = new c.PersonUpdate();
 				update.setUserId(permId);
-				update.setHomeSpaceId(new c.SpacePermId("TEST"))
+				update.setSpaceId(new c.SpacePermId("TEST"))
 				return facade.updatePersons([ update ]);
 			}
-			
+
 			var fCheck = function(person) {
 				c.assertEqual(person.getUserId(), userId, "User id");
 				c.assertEqual(person.getSpace().getCode(), "TEST", "Home space");
 				c.assertEqual(person.isActive(), true, "Active");
 			}
-			
+
 			testUpdate(c, fCreate, fUpdate, c.findPerson, fCheck);
 		});
-		
+
 		QUnit.test("updatePersons() deactivate", function(assert) {
 			var c = new common(assert, openbis);
 			var userId = c.generateId("USER");
-			
+
 			var fCreate = function(facade) {
 				var creation = new c.PersonCreation();
 				creation.setUserId(userId);
 				return facade.createPersons([ creation ]);
 			}
-			
+
 			var fUpdate = function(facade, permId) {
 				var update = new c.PersonUpdate();
 				update.setUserId(permId);
 				update.deactivate();
 				return facade.updatePersons([ update ]);
 			}
-			
+
 			var fCheck = function(person) {
 				c.assertEqual(person.getUserId(), userId, "User id");
 				c.assertEqual(person.isActive(), false, "Active");
 			}
-			
+
 			testUpdate(c, fCreate, fUpdate, c.findPerson, fCheck);
 		});
-		
+
+		QUnit.test("updatePersons() webAppSettings", function(assert) {
+			var c = new common(assert, openbis);
+			var userId = c.generateId("USER");
+
+			var WEB_APP_1 = "webApp1";
+			var WEB_APP_2 = "webApp2";
+			var WEB_APP_3 = "webApp3";
+			var WEB_APP_4 = "webApp4";
+
+			var fCreate = function(facade) {
+				var creation = new c.PersonCreation();
+				creation.setUserId(userId);
+				return facade.createPersons([ creation ]);
+			}
+
+			var fUpdate = function(facade, permId) {
+				var update = new c.PersonUpdate();
+				update.setUserId(permId);
+
+				var webApp1Update = update.getWebAppSettings(WEB_APP_1);
+				webApp1Update.add(new c.WebAppSettingCreation("n1a", "v1a"));
+				webApp1Update.add(new c.WebAppSettingCreation("n1b", "v1b"));
+
+				var webApp2Update = update.getWebAppSettings(WEB_APP_2);
+				webApp2Update.add(new c.WebAppSettingCreation("n2a", "v2a"));
+
+				var webApp3Update = update.getWebAppSettings(WEB_APP_3);
+				webApp3Update.add(new c.WebAppSettingCreation("n3a", "v3a"));
+
+				var webApp4Update = update.getWebAppSettings(WEB_APP_4);
+				webApp4Update.add(new c.WebAppSettingCreation("n4a", "v4a"));
+
+				return facade.updatePersons([ update ]).then(function() {
+					var update = new c.PersonUpdate();
+					update.setUserId(permId);
+
+					var webApp1Update = update.getWebAppSettings(WEB_APP_1);
+					webApp1Update.add(new c.WebAppSettingCreation("n1c", "v1c"));
+					webApp1Update.remove("n1b");
+
+					var webApp2Update = update.getWebAppSettings(WEB_APP_2);
+					webApp2Update.set([ new c.WebAppSettingCreation("n2a", "v2a updated"), new c.WebAppSettingCreation("n2c", "v2c") ]);
+
+					var webApp3Update = update.getWebAppSettings(WEB_APP_3);
+					webApp3Update.set();
+
+					var webApp4Update = update.getWebAppSettings(WEB_APP_4);
+					webApp4Update.remove("n4a");
+
+					return facade.updatePersons([ update ]);
+				});
+			}
+
+			var fCheck = function(person) {
+				c.assertEqual(person.getUserId(), userId, "User id");
+				c.assertEqual(Object.keys(person.getWebAppSettings()).length, 2, "Web apps");
+
+				var webApp1 = person.getWebAppSettings(WEB_APP_1).getSettings();
+				c.assertEqual(Object.keys(webApp1).length, 2);
+				c.assertEqual(webApp1["n1a"].getValue(), "v1a");
+				c.assertEqual(webApp1["n1c"].getValue(), "v1c");
+
+				var webApp2 = person.getWebAppSettings(WEB_APP_2).getSettings();
+				c.assertEqual(Object.keys(webApp2).length, 2);
+				c.assertEqual(webApp2["n2a"].getValue(), "v2a updated");
+				c.assertEqual(webApp2["n2c"].getValue(), "v2c");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findPerson, fCheck);
+		});
+
 		QUnit.test("updateOperationExecutions()", function(assert) {
 			var c = new common(assert, openbis);
 			var permId = null;

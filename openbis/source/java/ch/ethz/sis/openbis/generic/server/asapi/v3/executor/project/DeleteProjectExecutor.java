@@ -46,7 +46,7 @@ public class DeleteProjectExecutor extends AbstractDeleteEntityExecutor<Void, IP
     private IProjectAuthorizationExecutor authorizationExecutor;
 
     @Override
-    protected Map<IProjectId, ProjectPE> map(IOperationContext context, List<? extends IProjectId> entityIds)
+    protected Map<IProjectId, ProjectPE> map(IOperationContext context, List<? extends IProjectId> entityIds, ProjectDeletionOptions deletionOptions)
     {
         return mapProjectByIdExecutor.map(context, entityIds);
     }

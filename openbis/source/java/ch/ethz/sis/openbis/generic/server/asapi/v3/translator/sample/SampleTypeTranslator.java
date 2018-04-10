@@ -49,6 +49,9 @@ public class SampleTypeTranslator extends AbstractCachingTranslator<Long, Sample
     private ISamplePropertyAssignmentTranslator assignmentTranslator;
 
     @Autowired
+    private ISampleTypeValidationPluginTranslator validationPluginTranslator;
+    
+    @Autowired
     private ISampleTypeSemanticAnnotationTranslator annotationTranslator;
 
     @Override
@@ -72,7 +75,11 @@ public class SampleTypeTranslator extends AbstractCachingTranslator<Long, Sample
             relations.put(ISamplePropertyAssignmentTranslator.class,
                     assignmentTranslator.translate(context, typeIds, fetchOptions.withPropertyAssignments()));
         }
-
+        if (fetchOptions.hasValidationPlugin())
+        {
+            relations.put(ISampleTypeValidationPluginTranslator.class,
+                    validationPluginTranslator.translate(context, typeIds, fetchOptions.withValidationPlugin()));
+        }
         if (fetchOptions.hasSemanticAnnotations())
         {
             relations.put(ISampleTypeSemanticAnnotationTranslator.class,
@@ -105,9 +112,12 @@ public class SampleTypeTranslator extends AbstractCachingTranslator<Long, Sample
         {
             Collection<PropertyAssignment> assignments = relations.get(ISamplePropertyAssignmentTranslator.class, typeId);
             List<PropertyAssignment> propertyAssignments = new ArrayList<>(assignments);
-            result.setPropertyAssignments(new SortAndPage().sortAndPage(propertyAssignments, fetchOptions.withPropertyAssignments()));
+            result.setPropertyAssignments(new SortAndPage().sortAndPage(propertyAssignments, null, fetchOptions.withPropertyAssignments()));
         }
-
+        if (fetchOptions.hasValidationPlugin())
+        {
+            result.setValidationPlugin(relations.get(ISampleTypeValidationPluginTranslator.class, typeId));
+        }
         if (fetchOptions.hasSemanticAnnotations())
         {
             result.setSemanticAnnotations((List<SemanticAnnotation>) relations.get(ISampleTypeSemanticAnnotationTranslator.class, typeId));

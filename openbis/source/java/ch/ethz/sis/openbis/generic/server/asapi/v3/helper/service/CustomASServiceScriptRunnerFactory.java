@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.IImportService;
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.context.ServiceContext;
 import ch.systemsx.cisd.common.jython.JythonUtils;
 import ch.systemsx.cisd.common.jython.evaluator.Evaluator;
@@ -35,10 +36,14 @@ class CustomASServiceScriptRunnerFactory implements IScriptRunnerFactory
 
     private final IApplicationServerApi applicationService;
 
-    public CustomASServiceScriptRunnerFactory(String scriptPath, IApplicationServerApi applicationService)
+    private final IImportService importService;
+
+    public CustomASServiceScriptRunnerFactory(String scriptPath, IApplicationServerApi applicationService,
+            IImportService importService)
     {
         this.scriptPath = scriptPath;
         this.applicationService = applicationService;
+        this.importService = importService;
         Evaluator.getFactory().initialize();
     }
 
@@ -58,7 +63,7 @@ class CustomASServiceScriptRunnerFactory implements IScriptRunnerFactory
         {
             IJythonEvaluator evaluator = Evaluator.getFactory().create("", pythonPath, scriptPath, null, scriptString, false);
             String sessionToken = context.getSessionToken();
-            ExecutionContext executionContext = new ExecutionContext(sessionToken, applicationService);
+            ExecutionContext executionContext = new ExecutionContext(sessionToken, applicationService, importService);
             return new ServiceScriptRunner(evaluator, executionContext);
         } catch (EvaluatorException ex)
         {
@@ -105,10 +110,13 @@ class CustomASServiceScriptRunnerFactory implements IScriptRunnerFactory
 
         private final IApplicationServerApi applicationService;
 
-        ExecutionContext(String sessionToken, IApplicationServerApi applicationService)
+        private final IImportService importService;
+
+        ExecutionContext(String sessionToken, IApplicationServerApi applicationService, IImportService importService)
         {
             this.sessionToken = sessionToken;
             this.applicationService = applicationService;
+            this.importService = importService;
         }
 
         public String getSessionToken()
@@ -119,6 +127,11 @@ class CustomASServiceScriptRunnerFactory implements IScriptRunnerFactory
         public IApplicationServerApi getApplicationService()
         {
             return applicationService;
+        }
+
+        public IImportService getImportService()
+        {
+            return importService;
         }
     }
 }

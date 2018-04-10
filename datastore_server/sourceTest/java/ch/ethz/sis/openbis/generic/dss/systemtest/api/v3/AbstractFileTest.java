@@ -12,9 +12,13 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.testng.annotations.BeforeClass;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.datastoreserver.systemtests.SystemTestCase;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
@@ -23,12 +27,16 @@ public class AbstractFileTest extends SystemTestCase
 {
 
     public static final String TEST_USER = "test";
-    
+
     public static final String TEST_SPACE_USER = "test_space";
+
+    public static final String ETL_SERVER_USER = "etlserver";
 
     public static final String PASSWORD = "password";
 
     protected IGeneralInformationService gis;
+
+    protected IApplicationServerApi as;
 
     protected IDataStoreServerApi dss;
 
@@ -56,6 +64,7 @@ public class AbstractFileTest extends SystemTestCase
     protected void beforeClass() throws Exception
     {
         gis = ServiceProvider.getGeneralInformationService();
+        as = ServiceProvider.getV3ApplicationService();
         dss = (IDataStoreServerApi) ServiceProvider.getDssServiceV3().getService();
     }
 
@@ -153,4 +162,16 @@ public class AbstractFileTest extends SystemTestCase
         }
     }
 
+    protected void assertUserFailureException(IDelegatedAction action, String expectedMessage)
+    {
+        try
+        {
+            action.execute();
+            fail("Expected an exception to be thrown");
+        } catch (Exception e)
+        {
+            assertEquals(UserFailureException.class, e.getClass());
+            AssertionUtil.assertContains(expectedMessage, e.getMessage());
+        }
+    }
 }

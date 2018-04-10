@@ -3,7 +3,7 @@
  * {@link ch.ethz.sis.openbis.generic.shared.api.v3.dto.generators.DtoGenerator}
  */
 define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/sample/fetchoptions/SampleTypeSortOptions", "as/dto/property/fetchoptions/PropertyAssignmentFetchOptions",
-		"as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions" ], function(stjs, FetchOptions) {
+         "as/dto/plugin/fetchoptions/PluginFetchOptions", "as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions" ], function(stjs, FetchOptions) {
 	var SampleTypeFetchOptions = function() {
 	};
 	stjs.extend(SampleTypeFetchOptions, FetchOptions, [ FetchOptions ], function(constructor, prototype) {
@@ -11,6 +11,7 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/sample/fetch
 		constructor.serialVersionUID = 1;
 		prototype.sort = null;
 		prototype.propertyAssignments = null;
+		prototype.validationPlugin = null;
 		prototype.semanticAnnotations = null;
 		prototype.withPropertyAssignments = function() {
 			if (this.propertyAssignments == null) {
@@ -24,6 +25,19 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/sample/fetch
 		};
 		prototype.hasPropertyAssignments = function() {
 			return this.propertyAssignments != null;
+		};
+		prototype.withValidationPlugin = function() {
+			if (this.validationPlugin == null) {
+				var PluginFetchOptions = require("as/dto/plugin/fetchoptions/PluginFetchOptions");
+				this.validationPlugin = new PluginFetchOptions();
+			}
+			return this.validationPlugin;
+		};
+		prototype.withValidationPluginUsing = function(fetchOptions) {
+			return this.validationPlugin = fetchOptions;
+		};
+		prototype.hasValidationPlugin = function() {
+			return this.validationPlugin != null;
 		};
 		prototype.withSemanticAnnotations = function() {
 			if (this.semanticAnnotations == null) {
@@ -50,6 +64,7 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/sample/fetch
 		};
 	}, {
 		propertyAssignments : "PropertyAssignmentFetchOptions",
+		validationPlugin : "PluginFetchOptions",
 		semanticAnnotations : "SemanticAnnotationFetchOptions",
 		sort : "SampleTypeSortOptions"
 	});
