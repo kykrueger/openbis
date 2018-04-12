@@ -432,7 +432,10 @@ public final class LDAPDirectoryConfiguration
      */
     public void setServerUrl(String ldapUrl)
     {
-        this.serverUrl = ldapUrl;
+        if (isResolved(ldapUrl))
+        {
+            this.serverUrl = ldapUrl;
+        }
     }
 
     private static boolean isResolved(String name)
