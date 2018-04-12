@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import com.izforge.izpack.api.data.AutomatedInstallData;
 import com.izforge.izpack.api.handler.AbstractUIHandler;
@@ -78,10 +80,26 @@ public abstract class AbstractScriptExecutor implements PanelAction
             OutputStream err, String... command)
     {
         ProcessBuilder pb = new ProcessBuilder(command);
-        pb.environment().putAll(System.getenv());
+        Map<String, String> environment = pb.environment();
+        environment.putAll(System.getenv());
         if (customEnv != null)
         {
-            pb.environment().putAll(customEnv);
+            Set<Entry<String, String>> entrySet = customEnv.entrySet();
+            for (Entry<String, String> entry : entrySet)
+            {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if (key != null)
+                {
+                    if (value != null)
+                    {
+                        environment.put(key,  value);
+                    } else
+                    {
+                        System.out.println("Warning: custom environment variable '" + key + "' is null.");
+                    }
+                }
+            }
         }
         try
         {
