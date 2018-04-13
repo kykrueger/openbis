@@ -526,6 +526,7 @@ class Openbis:
             "get_dataset_type('raw_data')",
             "get_dataset_types()",
             "get_datastores()",
+            "gen_code(entity, prefix)",
             "get_deletions()",
             "get_experiment('permId', withAttachments=False)",
             "get_experiments()",
@@ -714,6 +715,9 @@ class Openbis:
             self.token = result
             if save_token:
                 self.save_token()
+            # update the OPENBIS_TOKEN environment variable, if OPENBIS_URL is identical to self.url
+            if os.environ.get('OPENBIS_URL') == self.url:
+                os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
 
     def create_permId(self):
@@ -744,6 +748,43 @@ class Openbis:
             return DataFrame(resp)[['code', 'downloadUrl', 'hostUrl']]
         else:
             raise ValueError("No datastore found!")
+
+    def gen_code(self, entity, prefix=""):
+        """ Get the next sequence number for a Sample, Experiment, DataSet and Material. Other entities are currently not supported.
+        Usage::
+            gen_code('SAMPLE', 'SAM-')
+            gen_code('EXPERIMENT', 'EXP-')
+            gen_code('DATASET', '')
+            gen_code('MATERIAL', 'MAT-')
+        """
+
+        entity = entity.upper()
+        entity2enum = {
+            "DATASET" : "DATA_SET",
+            "DATASET" : "DATASET",
+            "OBJECT"  : "SAMPLE",
+            "SAMPLE"  : "SAMPLE",
+            "EXPERIMENT" : "EXPERIMENT",
+            "COLLECTION" : "EXPERIMENT",
+            "MATERIAL" : "MATERIAL",
+        }
+
+        if entity not in entity2enum:
+            raise ValueError("no such entity: {}. Allowed entities are: DATA_SET, SAMPLE, EXPERIMENT, MATERIAL")
+
+        request = {
+            "method": "generateCode",
+            "params": [
+                self.token,
+                prefix,
+                entity2enum[entity]
+            ]
+        }
+        try:
+            return self._post_request(self.as_v1, request)
+        except Exception as e:
+            raise ValueError("Could not generate a code for {}: {}".format(entity, e))
+
 
 
     def new_person(self, userId, space=None):
