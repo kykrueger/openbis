@@ -2766,9 +2766,10 @@ class DataSetUploadQueue():
 
 
 class DataSetDownloadQueue():
-    def __init__(self, workers=20):
+    def __init__(self, workers=20, check_filesize=True):
         # maximum files to be downloaded at once
         self.download_queue = Queue()
+        self.check_filesize = check_filesize
 
         # define number of threads
         for t in range(workers):
@@ -2799,7 +2800,8 @@ class DataSetDownloadQueue():
                     if chunk:  # filter out keep-alive new chunks
                         f.write(chunk)
 
-            assert os.path.getsize(filename) == int(file_size)
+            if self.check_filesize == True:
+                assert os.path.getsize(filename) == int(file_size)
             self.download_queue.task_done()
 
 
@@ -3079,7 +3081,8 @@ class DataSet(OpenBisObject):
     def set_properties(self, properties):
         self.openbis.update_dataset(self.permId, properties=properties)
 
-    def download(self, files=None, destination=None, wait_until_finished=True, workers=10):
+    def download(self, files=None, destination=None, wait_until_finished=True, workers=10, 
+        linked_dataset_fileservice_url=None, content_copy_index=0):
         """ download the actual files and put them by default in the following folder:
         __current_dir__/destination/dataset_permId/
         If no files are specified, all files of a given dataset are downloaded.
@@ -3095,6 +3098,51 @@ class DataSet(OpenBisObject):
 
         if destination is None:
             destination = self.openbis.hostname
+
+        if self.data['kind'] == 'PHYSICAL':
+            return self._download_physical(files, destination, wait_until_finished, workers)
+        elif self.data['kind'] == 'LINK':
+            if linked_dataset_fileservice_url is None:
+                raise ValueError("Can't download a LINK data set without the linked_dataset_fileservice_url parameters.")
+            return self._download_link(files, destination, wait_until_finished, workers, linked_dataset_fileservice_url, content_copy_index)
+        else:
+            raise ValueError("Can't download data set of kind {}.".format(self.data['kind']))
+
+    def _download_link(self, files, destination, wait_until_finished, workers, linked_dataset_fileservice_url, content_copy_index):
+        """ Download for data sets of kind LINK.
+        Requires the microservice server to be running at the given linked_dataset_fileservice_url.
+        """
+
+        queue = DataSetDownloadQueue(workers=workers, check_filesize=False)
+
+        if content_copy_index >= len(self.data["linkedData"]["contentCopies"]):
+            raise ValueError("Content Copy index out of range.")
+        content_copy = self.data["linkedData"]["contentCopies"][content_copy_index]
+
+        for filename in files:
+            file_info = self.get_file_list(start_folder=filename)
+            file_size = file_info[0]['fileSize']
+
+            download_url = linked_dataset_fileservice_url # TODO
+            download_url += "?sessionToken=" + self.openbis.token
+            download_url += "&datasetPermId=" + self.data["permId"]["permId"]
+            download_url += "&externalDMSCode=" + content_copy["externalDms"]["code"]
+            download_url += "&contentCopyPath=" + content_copy["path"].replace("/", "%2F")
+            download_url += "&datasetPathToFile=" + filename
+
+            filename_dest = os.path.join(destination, self.permId, filename)
+            queue.put([download_url, filename_dest, file_size, self.openbis.verify_certificates])
+
+        if wait_until_finished:
+            queue.join()
+
+        if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
+        return "Files downloaded to: %s" % os.path.join(destination, self.permId)
+
+
+    def _download_physical(self, files, destination, wait_until_finished, workers):
+        """ Download for data sets of kind PHYSICAL.
+        """
 
         base_url = self.data['dataStore']['downloadUrl'] + '/datastore_server/' + self.permId + '/'
 
