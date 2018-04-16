@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.openbis.systemtest.task;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,10 +28,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.testng.Assert;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
@@ -39,9 +39,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
@@ -67,7 +65,7 @@ class UserManagerExpectationsBuilder
 
     private Map<String, List<Principal>> usersByGroup = new TreeMap<>();
 
-    private Map<String, List<Principal>> noUsersByGroup = new TreeMap<>();
+    private Map<String, List<Principal>> disabledUsersByGroup = new TreeMap<>();
 
     private Map<String, List<Principal>> normalUsersByGroup = new TreeMap<>();
 
@@ -82,9 +80,9 @@ class UserManagerExpectationsBuilder
         this.commonSpaces = commonSpaces;
     }
 
-    UserManagerExpectationsBuilder noUser(Principal user, String... groups)
+    UserManagerExpectationsBuilder disabledUser(Principal user, String... groups)
     {
-        return addUser(user, noUsersByGroup, groups);
+        return addUser(user, disabledUsersByGroup, groups);
     }
 
     UserManagerExpectationsBuilder user(Principal user, String... groups)
@@ -145,7 +143,7 @@ class UserManagerExpectationsBuilder
             {
                 for (String commonSpace : list)
                 {
-                    allCommonSpaces.add(new SpacePermId(group + "_" + commonSpace));
+                    allCommonSpaces.add(new SpacePermId(createCommonSpaceCode(group, commonSpace)));
                 }
             }
         }
@@ -157,6 +155,7 @@ class UserManagerExpectationsBuilder
         List<String> expectedSpaces = extractedSortedPermIds(spaces);
         SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
         List<String> actualSpaces = extractedSortedCodes(v3api.getSpaces(sessionToken, spaces, fetchOptions).values());
+        System.out.println("UserManagerTestExpectation: Spaces: " + expectedSpaces);
         assertEquals(actualSpaces.toString(), expectedSpaces.toString());
     }
 
@@ -169,6 +168,7 @@ class UserManagerExpectationsBuilder
         Function<IPersonId, PersonPermId> mapper = id -> (PersonPermId) id;
         List<String> expectedUsers = extractedSortedPermIds(allUsers);
         List<String> actualUsers = extractedSortedPermIds(persons.keySet().stream().map(mapper).collect(Collectors.toSet()));
+        System.out.println("UserManagerTestExpectation: Users: " + expectedUsers);
         assertEquals(actualUsers.toString(), expectedUsers.toString());
         for (PersonPermId id : allUsers)
         {
@@ -182,17 +182,81 @@ class UserManagerExpectationsBuilder
     private void assertAuthorization(String sessionToken)
     {
         AuthorizationExpectations expectations = new AuthorizationExpectations(v3api, sessionManager, testService);
+        createExpectationsForDisabledUsers(expectations);
+        createExpectationsForNormalUsers(expectations);
+        createExpectationsForAdminUsers(expectations);
+        expectations.assertExpectations();
+    }
+
+    private void createExpectationsForDisabledUsers(AuthorizationExpectations expectations)
+    {
+        for (Entry<String, List<Principal>> entry : disabledUsersByGroup.entrySet())
+        {
+            String groupKey = entry.getKey();
+            for (Principal user : entry.getValue())
+            {
+                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupKey, Level.NON));
+                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupKey, Level.NON));
+                for (List<Principal> users2 : usersByGroup.values())
+                {
+                    users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), Level.NON));
+                }
+            }
+        }
+    }
+
+    private void createExpectationsForNormalUsers(AuthorizationExpectations expectations)
+    {
         for (Entry<String, List<Principal>> entry : normalUsersByGroup.entrySet())
         {
             String groupKey = entry.getKey();
-            List<Principal> users = entry.getValue();
-            users.forEach(user -> expectations.expect(user, groupKey, Level.SPACE_USER));
+            for (Principal user : entry.getValue())
+            {
+                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupKey, Level.SPACE_USER));
+                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupKey, Level.SPACE_OBSERVER));
+                for (List<Principal> users2 : usersByGroup.values())
+                {
+                    users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2),
+                            equals(user, user2) ? Level.SPACE_ADMIN : Level.NON));
+                }
+            }
         }
+    }
+
+    private void createExpectationsForAdminUsers(AuthorizationExpectations expectations)
+    {
+        for (Entry<String, List<Principal>> entry : adminUsersByGroup.entrySet())
+        {
+            String groupKey = entry.getKey();
+            for (Principal user : entry.getValue())
+            {
+                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupKey, Level.SPACE_ADMIN));
+                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupKey, Level.SPACE_ADMIN));
+                Set<Entry<String, List<Principal>>> entrySet = usersByGroup.entrySet();
+                for (Entry<String, List<Principal>> entry2 : entrySet)
+                {
+                    String group2Key = entry2.getKey();
+                    List<Principal> users2 = entry2.getValue();
+                    if (groupKey.equals(group2Key))
+                    {
+                        users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), Level.SPACE_ADMIN));
+                    } else
+                    {
+                        users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), Level.NON));
+                    }
+                }
+            }
+        }
+    }
+
+    private Consumer<String> expectForSpace(AuthorizationExpectations expectations, Principal user, String groupKey, Level level)
+    {
+        return space -> expectations.expect(user, createCommonSpaceCode(groupKey, space), level);
     }
 
     private static final class AuthorizationExpectations
     {
-        private Map<String, Map<Level, Set<String>>> groupsByLevelsByUsers = new TreeMap<>();
+        private Map<String, Map<Level, Set<String>>> spacesByLevelsByUsers = new TreeMap<>();
 
         private IApplicationServerInternalApi v3api;
 
@@ -208,55 +272,60 @@ class UserManagerExpectationsBuilder
             this.testService = testService;
         }
 
-        void expect(Principal user, String group, Level level)
+        void expect(Principal user, String space, Level level)
         {
             String userId = user.getUserId();
-            Map<Level, Set<String>> groupsByLevels = groupsByLevelsByUsers.get(userId);
-            if (groupsByLevels == null)
+            Map<Level, Set<String>> spacesByLevels = spacesByLevelsByUsers.get(userId);
+            if (spacesByLevels == null)
             {
-                groupsByLevels = new TreeMap<>();
-                groupsByLevelsByUsers.put(userId, groupsByLevels);
+                spacesByLevels = new TreeMap<>();
+                spacesByLevelsByUsers.put(userId, spacesByLevels);
             }
-            Set<String> groups = groupsByLevels.get(level);
-            if (groups == null)
+            Set<String> spaces = spacesByLevels.get(level);
+            if (spaces == null)
             {
-                groups = new TreeSet<>();
-                groupsByLevels.put(level, groups);
+                spaces = new TreeSet<>();
+                spacesByLevels.put(level, spaces);
             }
-            groups.add(group);
+            spaces.add(space);
         }
 
         void assertExpectations()
         {
-
-            for (Entry<String, Map<Level, Set<String>>> entry : groupsByLevelsByUsers.entrySet())
+            StringBuilder builder = new StringBuilder();
+            for (Entry<String, Map<Level, Set<String>>> entry : spacesByLevelsByUsers.entrySet())
             {
                 String userId = entry.getKey();
                 String sessionToken = v3api.login(userId, PASSWORD);
-
                 try
                 {
                     Session session = sessionManager.getSession(sessionToken);
                     IOperationContext context = new OperationContext(session);
-                    Set<Entry<Level, Set<String>>> entrySet = entry.getValue().entrySet();
-                    for (Entry<Level, Set<String>> entry2 : entrySet)
+                    for (Entry<Level, Set<String>> entry2 : entry.getValue().entrySet())
                     {
                         Level level = entry2.getKey();
-                        Set<String> groups = entry2.getValue();
-                        for (String group : groups)
+                        for (String space : entry2.getValue())
                         {
-//                            getActualLevel(context, spaceCode);
+                            Level actualLevel = getActualLevel(context, space);
+                            System.out.println("UserManagerTestExpectation: " + level + " for user " + userId + " on space " + space);
+                            if (level.equals(actualLevel) == false)
+                            {
+                                builder.append("Authorization level for user ").append(userId).append(" on space ").append(space);
+                                builder.append(". Expected: ").append(level).append(", but found: ").append(actualLevel).append("\n");
+                            }
                         }
-//                        probeAuthorizationLevel(user, spaceCodes);
                     }
                 } finally
                 {
                     v3api.logout(sessionToken);
                 }
-
+            }
+            if (builder.length() > 0)
+            {
+                fail(builder.toString().trim());
             }
         }
-        
+
         private Level getActualLevel(IOperationContext context, String spaceCode)
         {
             SpacePE space = new SpacePE();
@@ -275,19 +344,6 @@ class UserManagerExpectationsBuilder
             }
             return previousLevel;
         }
-        
-        private static final class LevelAndSpace
-        {
-            private Level level;
-            private String spaceCode;
-
-            LevelAndSpace(Level level, String spaceCode)
-            {
-                this.level = level;
-                this.spaceCode = spaceCode;
-            }
-        }
-
     }
 
     private List<String> extractedSortedPermIds(Collection<? extends ObjectPermId> ids)
@@ -314,43 +370,19 @@ class UserManagerExpectationsBuilder
         return result;
     }
 
-    private List<Level> probeAuthorizationLevel(String userId, List<String> spaceCodes)
+    private static String createCommonSpaceCode(String groupCode, String spaceCode)
     {
-        String sessionToken = v3api.login(userId, PASSWORD);
-        try
-        {
-            List<Level> levels = new ArrayList<>();
-            Session session = sessionManager.getSession(sessionToken);
-            IOperationContext context = new OperationContext(session);
-            for (String spaceCode : spaceCodes)
-            {
-                Level previousLevel = getActualLevel(context, spaceCode);
-                levels.add(previousLevel);
-            }
-            return levels;
-        } finally
-        {
-            v3api.logout(sessionToken);
-        }
+        return groupCode + "_" + spaceCode;
     }
 
-    private Level getActualLevel(IOperationContext context, String spaceCode)
+    private static String getOwenSpace(Principal user)
     {
-        SpacePE space = new SpacePE();
-        space.setCode(spaceCode);
-        Level previousLevel = null;
-        for (Level level : Level.values())
-        {
-            try
-            {
-                level.probe(testService, context, space);
-            } catch (Exception e)
-            {
-                break;
-            }
-            previousLevel = level;
-        }
-        return previousLevel;
+        return user.getUserId().toUpperCase();
+    }
+
+    private static boolean equals(Principal user1, Principal user2)
+    {
+        return user1.getUserId().equals(user2.getUserId());
     }
 
     private enum Level
