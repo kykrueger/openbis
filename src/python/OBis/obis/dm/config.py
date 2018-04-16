@@ -99,6 +99,7 @@ class ConfigEnv(object):
 
     def initialize_params(self):
         self.add_param(ConfigParam(name='openbis_url', private=False))
+        self.add_param(ConfigParam(name='fileservice_url', private=False))
         self.add_param(ConfigParam(name='user', private=True))
         self.add_param(ConfigParam(name='verify_certificates', private=True, is_json=True))
         self.add_param(ConfigParam(name='object_id', private=False, ignore_global=True))

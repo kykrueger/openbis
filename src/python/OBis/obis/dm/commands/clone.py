@@ -1,13 +1,11 @@
 import socket
 import os
 import pybis
-from .openbis_command import OpenbisCommand
+from .openbis_command import OpenbisCommand, ContentCopySelector
 from ..command_result import CommandResult
 from ..utils import cd
 from ..utils import run_shell
 from ..utils import complete_openbis_config
-from .. import config as dm_config
-from ...scripts.cli import shared_data_mgmt
 from ... import dm
 
 
@@ -23,16 +21,6 @@ class Clone(OpenbisCommand):
         self.content_copy_index = content_copy_index
         self.load_global_config(dm)
         super(Clone, self).__init__(dm)
-
-
-    def load_global_config(self, dm):
-        """
-        Use global config only.
-        """
-        resolver = dm_config.ConfigResolver()
-        config = {}
-        complete_openbis_config(config, resolver, False)
-        dm.openbis_config = config
 
 
     def check_configuration(self):
@@ -55,7 +43,7 @@ class Clone(OpenbisCommand):
 
         data_set = self.openbis.get_dataset(self.data_set_id)
 
-        content_copy = self.get_content_copy(data_set)
+        content_copy = ContentCopySelector(data_set, self.content_copy_index).select()
         host = content_copy['externalDms']['address'].split(':')[0]
         path = content_copy['path']
         repository_folder = path.split('/')[-1]
@@ -67,41 +55,6 @@ class Clone(OpenbisCommand):
         if result.failure():
             return result
         return self.add_content_copy_to_openbis(repository_folder)
-
-
-    def get_content_copy(self, data_set):
-        if data_set.data['kind'] != 'LINK':
-            raise ValueError('Data set is of type ' + data_set.data['kind'] + ' but should be LINK.')
-        content_copies = data_set.data['linkedData']['contentCopies']
-        if len(content_copies) == 0:
-            raise ValueError("Data set has no content copies.")
-        elif len(content_copies) == 1:
-            return content_copies[0]
-        else:
-            return self.select_content_copy(content_copies)
-
-
-    def select_content_copy(self, content_copies):
-        if self.content_copy_index is not None:
-            # use provided content_copy_index
-            if self.content_copy_index > 0 and self.content_copy_index <= len(content_copies):
-                return content_copies[self.content_copy_index-1]
-            else:
-                raise ValueError("Invalid content copy index.")
-        else:
-            # ask user
-            while True:
-                print('From which content copy do you want to clone?')
-                for i, content_copy in enumerate(content_copies):
-                    host = content_copy['externalDms']['address'].split(":")[0]
-                    path = content_copy['path']
-                    print("  {}) {}:{}".format(i+1, host, path))
-
-                copy_index_string = input('> ')
-                if copy_index_string.isdigit():
-                    copy_index_int = int(copy_index_string)
-                    if copy_index_int > 0 and copy_index_int <= len(content_copies):
-                        return content_copies[copy_index_int-1]
 
 
     def copy_repository(self, ssh_user, host, path):

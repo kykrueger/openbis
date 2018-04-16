@@ -5,6 +5,8 @@ import socket
 import pybis
 from ..command_result import CommandResult
 from ..command_result import CommandException
+from .. import config as dm_config
+from ..utils import complete_openbis_config
 from ...scripts import cli
 
 
@@ -51,6 +53,9 @@ class OpenbisCommand(object):
 
     def hostname(self):
         return self.config_dict.get('hostname')
+
+    def fileservice_url(self):
+        return self.config_dict.get('fileservice_url')
 
     def prepare_run(self):
         result = self.check_configuration()
@@ -144,3 +149,64 @@ class OpenbisCommand(object):
         if result.failure():
             return result
         return result.output
+
+    def load_global_config(self, dm):
+        """
+        Use global config only.
+        """
+        resolver = dm_config.ConfigResolver()
+        config = {}
+        complete_openbis_config(config, resolver, False)
+        dm.openbis_config = config
+
+
+class ContentCopySelector(object):
+
+
+    def __init__(self, data_set, content_copy_index, get_index=False):
+        self.data_set = data_set
+        self.content_copy_index = content_copy_index
+        self.get_index = get_index
+
+
+    def select(self):
+        content_copy_index = self.select_index()
+        if self.get_index == True:
+            return content_copy_index
+        else:
+            return self.data_set.data['linkedData']['contentCopies'][content_copy_index]
+
+
+    def select_index(self):
+        if self.data_set.data['kind'] != 'LINK':
+            raise ValueError('Data set is of type ' + self.data_set.data['kind'] + ' but should be LINK.')
+        content_copies = self.data_set.data['linkedData']['contentCopies']
+        if len(content_copies) == 0:
+            raise ValueError("Data set has no content copies.")
+        elif len(content_copies) == 1:
+            return 0
+        else:
+            return self.select_content_copy_index(content_copies)
+
+
+    def select_content_copy_index(self, content_copies):
+        if self.content_copy_index is not None:
+            # use provided content_copy_index
+            if self.content_copy_index >= 0 and self.content_copy_index < len(content_copies):
+                return self.content_copy_index
+            else:
+                raise ValueError("Invalid content copy index.")
+        else:
+            # ask user
+            while True:
+                print('From which location should the files be copied?')
+                for i, content_copy in enumerate(content_copies):
+                    host = content_copy['externalDms']['address'].split(":")[0]
+                    path = content_copy['path']
+                    print("  {}) {}:{}".format(i, host, path))
+
+                copy_index_string = input('> ')
+                if copy_index_string.isdigit():
+                    copy_index_int = int(copy_index_string)
+                    if copy_index_int >= 0 and copy_index_int < len(content_copies):
+                        return copy_index_int

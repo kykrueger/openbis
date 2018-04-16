@@ -20,6 +20,7 @@ from .commands.addref import Addref
 from .commands.removeref import Removeref
 from .commands.clone import Clone
 from .commands.openbis_sync import OpenbisSync
+from .commands.download import Download
 from .command_result import CommandResult
 from .command_result import CommandException
 from .git import GitWrapper
@@ -125,16 +126,22 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         """
         return
 
+    @abc.abstractmethod
     def addref(self):
         """Add the current folder as an obis repository to openBIS.
         :return: A CommandResult.
         """
         return
 
+    @abc.abstractmethod
     def removeref(self):
         """Remove the current folder / repository from openBIS.
         :return: A CommandResult.
         """
+        return
+
+    @abc.abstractmethod
+    def download(self, data_set_id, content_copy_index, file):
         return
 
 
@@ -164,6 +171,9 @@ class NoGitDataMgmt(AbstractDataMgmt):
 
     def removeref(self):
         self.error_raise("removeref", "No git command found.")
+
+    def download(self, data_set_id, content_copy_index, file):
+        self.error_raise("download", "No git command found.")
 
 
 class GitDataMgmt(AbstractDataMgmt):
@@ -314,22 +324,17 @@ class GitDataMgmt(AbstractDataMgmt):
         self.git_wrapper.git_delete_if_untracked('.obis/properties.json')
 
     def clone(self, data_set_id, ssh_user, content_copy_index):
-        try:
-            cmd = Clone(self, data_set_id, ssh_user, content_copy_index)
-            return cmd.run()
-        except Exception as e:
-            return CommandResult(returncode=-1, output="Error: " + str(e))
+        cmd = Clone(self, data_set_id, ssh_user, content_copy_index)
+        return cmd.run()
 
     def addref(self):
-        try:
-            cmd = Addref(self)
-            return cmd.run()
-        except Exception as e:
-            return CommandResult(returncode=-1, output="Error: " + str(e))
+        cmd = Addref(self)
+        return cmd.run()
 
     def removeref(self):
-        try:
-            cmd = Removeref(self)
-            return cmd.run()
-        except Exception as e:
-            return CommandResult(returncode=-1, output="Error: " + str(e))
+        cmd = Removeref(self)
+        return cmd.run()
+
+    def download(self, data_set_id, content_copy_index, file):
+        cmd = Download(self, data_set_id, content_copy_index, file)
+        return cmd.run()

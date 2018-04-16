@@ -57,6 +57,8 @@ def run(function):
         return function()
     except CommandException as e:
         return e.command_result
+    except Exception as e:
+        return CommandResult(returncode=-1, output="Error: " + str(e))
 
 
 @click.group()
@@ -127,6 +129,19 @@ def config(ctx, is_global, is_data_set_property, prop, value):
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
     config_internal(data_mgmt, is_global, is_data_set_property, prop, value)
+
+
+@cli.command()
+@click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to download from.')
+@click.option('-f', '--file', help='File in the data set to download - downloading all if not given.')
+@click.argument('data_set_id')
+@click.pass_context
+def download(ctx, content_copy_index, file, data_set_id):
+    """ Download files of a linked data set.
+    """
+
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    return check_result("download", run(lambda: data_mgmt.download(data_set_id, content_copy_index, file)))
 
 
 def config_internal(data_mgmt, is_global, is_data_set_property, prop, value):
