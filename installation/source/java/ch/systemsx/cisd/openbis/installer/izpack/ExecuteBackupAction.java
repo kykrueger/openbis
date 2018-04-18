@@ -47,7 +47,7 @@ public class ExecuteBackupAction extends AbstractScriptExecutor
                         "database.owner-password");
 
         Map<String, String> env = new HashMap<String, String>();
-        env.put("PGPASSWORD", password);
+        env.put("PGPASSWORD", password == null ? "" : password);
 
         if (dataBasesToBackup == null)
         {

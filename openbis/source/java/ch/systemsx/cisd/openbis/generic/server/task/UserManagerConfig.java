@@ -16,36 +16,36 @@
 
 package ch.systemsx.cisd.openbis.generic.server.task;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-class Group
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+
+class UserManagerConfig
 {
-    private String name;
+    private Map<Role, List<String>> commonSpaces = new HashMap<>();
 
-    private List<String> ldapGroupKeys;
+    private List<UserGroup> groups;
 
-    private List<String> admins;
-
-    private List<String> usersBlackList;
-
-    public String getName()
+    public Map<Role, List<String>> getCommonSpaces()
     {
-        return name;
+        return commonSpaces;
     }
 
-    public List<String> getAdmins()
+    public void setCommonSpaces(Map<Role, List<String>> commonSpaces)
     {
-        return admins;
+        this.commonSpaces = commonSpaces;
     }
 
-    public List<String> getLdapGroupKeys()
+    public List<UserGroup> getGroups()
     {
-        return ldapGroupKeys;
+        return groups;
     }
 
-    public List<String> getUsersBlackList()
+    public void setGroups(List<UserGroup> groups)
     {
-        return usersBlackList;
+        this.groups = groups;
     }
 
 }
