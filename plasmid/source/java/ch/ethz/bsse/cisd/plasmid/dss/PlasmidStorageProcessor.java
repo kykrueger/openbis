@@ -120,7 +120,7 @@ public class PlasmidStorageProcessor extends AbstractDelegatingStorageProcessor
             throw new IllegalStateException("Cannot upload file '" + seqFile.getName()
                     + "', see jetty.out for details.");
         }
-        File outputFile = new File(serverRootDir + outputFilePath);
+        File outputFile = new File((serverRootDir + outputFilePath).trim());        
         if (outputFile.isFile())
         {
             operationLog.info("Renaming and copying file '" + outputFile.getName() + "' from '"
