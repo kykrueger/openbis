@@ -232,6 +232,7 @@ getExperimentId
 getExperiments
 getExternalCode
 getExternalDms
+getExternalDmsAddress
 getExternalDmsCode
 getExternalDmsId
 getExternalDmsLabel
