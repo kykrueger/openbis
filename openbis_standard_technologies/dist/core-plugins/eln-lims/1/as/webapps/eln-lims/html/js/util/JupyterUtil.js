@@ -126,6 +126,8 @@ var JupyterUtil = new function() {
 		content.push(this.getCodeCell(["fileName='" + fileName + "'"]));
 		content.push(this.getMarkdownCell("Description : resultDatasetParents variable, indicates the permIds of the parents of the result dataset"));
 		content.push(this.getCodeCell(["resultDatasetParents=" + JSON.stringify(dataSetIds)]));
+		content.push(this.getMarkdownCell("Description : history identifier, different versions of the same notebook should share the same identifier to keep the history"));
+		content.push(this.getCodeCell(["resultDatasetHistoryId='" + Util.guid() + "'"]));
 		content.push(this.getMarkdownCell("Description : resultDatasetName variable, indicates the name of the result dataset, **to be set by the user**"));
 		content.push(this.getCodeCell(["resultDatasetName='Name your dataset!'"]));
 		content.push(this.getMarkdownCell("Description : resultDatasetNotes variable, indicate some notes of the result dataset, **to be set by the user**"));
@@ -143,6 +145,7 @@ var JupyterUtil = new function() {
 			}
 			content.push(this.getMarkdownCell("Dataset " + dataSetIds[cIdx] + ":"));
 			content.push(this.getCodeCell(["ds" + cIdx + " = o.get_dataset('" + dataSetIds[cIdx] + "')\n", "ds" + cIdx + ".attrs" ]));
+			content.push(this.getCodeCell(["ds" + cIdx + ".get_files(start_folder=\"/\")"]));
 		}
 		
 		content.push(this.getMarkdownCell("## Datasets Download"));
@@ -190,7 +193,7 @@ var JupyterUtil = new function() {
 		                     ownerSettings,
 		                     "parents=resultDatasetParents,\n",
 		                     "files = [fileName, fileName + '.html'],\n",
-		                     "props={'name': resultDatasetName, 'notes': resultDatasetNotes })\n",
+		                     "props={'name': resultDatasetName, 'notes': resultDatasetNotes, 'history_id' : resultDatasetHistoryId })\n",
 		                     "ds_new.save()"
 		]));
 		
