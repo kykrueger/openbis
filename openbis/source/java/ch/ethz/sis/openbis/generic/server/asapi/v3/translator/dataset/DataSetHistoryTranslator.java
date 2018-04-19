@@ -215,6 +215,9 @@ public class DataSetHistoryTranslator extends HistoryTranslator implements IData
         entry.setGitCommitHash(contentCopyRecord.gitCommitHash);
         entry.setGitRepositoryId(contentCopyRecord.gitRepositoryId);
         entry.setExternalDmsId(contentCopyRecord.externalDmsId);
+        entry.setExternalDmsCode(contentCopyRecord.externalDmsCode);
+        entry.setExternalDmsLabel(contentCopyRecord.externalDmsLabel);
+        entry.setExternalDmsAddress(contentCopyRecord.externalDmsAddress);
         entry.setValidFrom(contentCopyRecord.validFrom);
         entry.setValidTo(contentCopyRecord.validTo);
         if (fetchOptions.hasAuthor())

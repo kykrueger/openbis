@@ -10,6 +10,9 @@ define([ "stjs", "util/Exceptions", "as/dto/history/HistoryEntry" ], function(st
 		prototype.gitCommitHash = null;
 		prototype.gitRepositoryId = null;
 		prototype.externalDmsId = null;
+		prototype.externalDmsCode = null;
+		prototype.externalDmsLabel = null;
+		prototype.externalDmsAddress = null;
 
 		prototype.getExternalCode = function() {
 			return this.externalCode;
@@ -40,6 +43,24 @@ define([ "stjs", "util/Exceptions", "as/dto/history/HistoryEntry" ], function(st
 		};
 		prototype.setExternalDmsId = function(externalDmsId) {
 			this.externalDmsId = externalDmsId;
+		};
+		prototype.getExternalDmsCode = function() {
+			return this.externalDmsCode;
+		};
+		prototype.setExternalDmsCode = function(externalDmsCode) {
+			this.externalDmsCode = externalDmsCode;
+		};
+		prototype.getExternalDmsLabel = function() {
+			return this.externalDmsLabel;
+		};
+		prototype.setExternalDmsLabel = function(externalDmsLabel) {
+			this.externalDmsLabel = externalDmsLabel;
+		};
+		prototype.getExternalDmsAddress = function() {
+			return this.externalDmsAddress;
+		};
+		prototype.setExternalDmsAddress = function(externalDmsAddress) {
+			this.externalDmsAddress = externalDmsAddress;
 		};
 }, {});
 	return ContentCopyHistoryEntry;
