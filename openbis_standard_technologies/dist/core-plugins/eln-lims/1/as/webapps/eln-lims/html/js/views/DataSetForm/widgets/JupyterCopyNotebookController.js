@@ -22,8 +22,8 @@ function JupyterCopyNotebookController(datasetCode, existingNotebookURL) {
 		this._jupyterNotebookView.repaint();
 	}
 	
-	this.create = function(workspace, notebook, existingNotebookURL, datasetCode) {
-		JupyterUtil.openJupyterNotebookFromTemplate(workspace, notebook, existingNotebookURL, datasetCode);
+	this.create = function(workspace, notebook, existingNotebookURL, datasetCode, keepHistory) {
+		JupyterUtil.openJupyterNotebookFromTemplate(workspace, notebook, existingNotebookURL, datasetCode, keepHistory);
 		Util.unblockUI();
 	}
 }
