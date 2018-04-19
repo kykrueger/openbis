@@ -465,7 +465,8 @@ class Openbis:
     For creation of datasets, dataset-uploader-api needs to be installed.
     """
 
-    def __init__(self, url=None, verify_certificates=True, token=None):
+    def __init__(self, url=None, verify_certificates=True, token=None,
+    allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=False):
         """Initialize a new connection to an openBIS server.
         :param host:
         """
@@ -490,7 +491,8 @@ class Openbis:
             raise ValueError("please provide the url in this format: https://openbis.host.ch:8443")
         if url_obj.hostname is None:
             raise ValueError("hostname is missing")
-        if url_obj.scheme == 'http':
+        if url_obj.scheme == 'http' and not allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks:
+
             raise ValueError("always use https!")
             
         
