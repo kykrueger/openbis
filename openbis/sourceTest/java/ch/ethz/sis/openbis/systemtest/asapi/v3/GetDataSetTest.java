@@ -53,7 +53,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.ContentCopyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.PropertyHistoryEntry;
@@ -902,20 +906,8 @@ public class GetDataSetTest extends AbstractDataSetTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         // given - data set with content copy
-        DataSetCreation dataSetCreation = new DataSetCreation();
-        LinkedDataCreation linkedData = new LinkedDataCreation();
-        ContentCopyCreation contentCopyCreation = new ContentCopyCreation();
-        contentCopyCreation.setExternalDmsId(new ExternalDmsPermId("DMS_3"));
-        contentCopyCreation.setPath("/path");
-        contentCopyCreation.setGitCommitHash("0");
-        contentCopyCreation.setGitRepositoryId("0");
-        linkedData.setContentCopies(Arrays.asList(contentCopyCreation));
-        dataSetCreation.setCode("testGetWithHistoryContentCopy-01");
-        dataSetCreation.setLinkedData(linkedData);
-        dataSetCreation.setDataSetKind(DataSetKind.LINK);
-        dataSetCreation.setTypeId(new EntityTypePermId("UNKNOWN"));
-        dataSetCreation.setSampleId(new SampleIdentifier("//CL1:A01"));
-        dataSetCreation.setDataStoreId(new DataStorePermId("STANDARD"));
+        ContentCopyCreation contentCopyCreation = getContentCopyCreation();
+        DataSetCreation dataSetCreation = getDataSetCreation(contentCopyCreation, "testGetWithHistoryContentCopy-01");
 
         List<DataSetPermId> dataSetIds = v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation));
         assertEquals(dataSetIds.size(), 1);
@@ -952,8 +944,33 @@ public class GetDataSetTest extends AbstractDataSetTest
         ContentCopyHistoryEntry historyEntry = (ContentCopyHistoryEntry) dataSet.getHistory().get(0);
         assertEquals(historyEntry.getPath(), contentCopyCreation.getPath());
         assertEquals(historyEntry.getGitCommitHash(), contentCopyCreation.getGitCommitHash());
+        assertEquals(historyEntry.getExternalDmsAddress(), "sprint:/path/to/location");
 
         v3api.logout(sessionToken);
+    }
+
+    private DataSetCreation getDataSetCreation(ContentCopyCreation contentCopyCreation, String code)
+    {
+        LinkedDataCreation linkedData = new LinkedDataCreation();
+        linkedData.setContentCopies(Arrays.asList(contentCopyCreation));
+        DataSetCreation dataSetCreation = new DataSetCreation();
+        dataSetCreation.setCode(code);
+        dataSetCreation.setLinkedData(linkedData);
+        dataSetCreation.setDataSetKind(DataSetKind.LINK);
+        dataSetCreation.setTypeId(new EntityTypePermId("UNKNOWN"));
+        dataSetCreation.setSampleId(new SampleIdentifier("//CL1:A01"));
+        dataSetCreation.setDataStoreId(new DataStorePermId("STANDARD"));
+        return dataSetCreation;
+    }
+
+    private ContentCopyCreation getContentCopyCreation()
+    {
+        ContentCopyCreation contentCopyCreation = new ContentCopyCreation();
+        contentCopyCreation.setExternalDmsId(new ExternalDmsPermId("DMS_3"));
+        contentCopyCreation.setPath("/path");
+        contentCopyCreation.setGitCommitHash("0");
+        contentCopyCreation.setGitRepositoryId("0");
+        return contentCopyCreation;
     }
 
     @Test

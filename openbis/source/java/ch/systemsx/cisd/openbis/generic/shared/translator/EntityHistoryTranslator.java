@@ -269,7 +269,8 @@ public class EntityHistoryTranslator
                 DataSetHistoryPE dsHistoryPE = (DataSetHistoryPE) historyPE;
 
                 MatchingContentCopy contentCopy = new MatchingContentCopy(dsHistoryPE.getExternalCode(), dsHistoryPE.getPath(),
-                        dsHistoryPE.getGitCommitHash(), dsHistoryPE.getGitRepositoryId(), relatedPE);
+                        dsHistoryPE.getGitCommitHash(), dsHistoryPE.getGitRepositoryId(), dsHistoryPE.getExternalDmsCode(), 
+                        dsHistoryPE.getExternalDmsLabel(), dsHistoryPE.getExternalDmsAddress(), relatedPE);
 
                 history.setValue(contentCopy.toString());
                 PropertyType pt = new PropertyType();
