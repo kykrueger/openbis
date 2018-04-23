@@ -2795,6 +2795,9 @@ class DataSetDownloadQueue():
 
             # request the file in streaming mode
             r = requests.get(url, stream=True, verify=verify_certificates)
+            if r.ok == False:
+                raise ValueError("HTTP {}. Reason: {}".format(r.status_code, r.reason))
+
             with open(filename, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=1024):
                     if chunk:  # filter out keep-alive new chunks
