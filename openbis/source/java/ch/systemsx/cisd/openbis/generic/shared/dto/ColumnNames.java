@@ -106,6 +106,12 @@ public final class ColumnNames
 
     public static final String EXTERNAL_DATA_MANAGEMENT_SYSTEM_ID_COLUMN = "edms_id";
 
+    public static final String EXTERNAL_DATA_MANAGEMENT_SYSTEM_CODE_COLUMN = "edms_code";
+
+    public static final String EXTERNAL_DATA_MANAGEMENT_SYSTEM_LABEL_COLUMN = "edms_label";
+
+    public static final String EXTERNAL_DATA_MANAGEMENT_SYSTEM_ADDRESS_COLUMN = "edms_address";
+
     public static final String EXTERNAL_CODE_COLUMN = "external_code";
 
     public static final String FILE_FORMAT_TYPE = "ffty_id";

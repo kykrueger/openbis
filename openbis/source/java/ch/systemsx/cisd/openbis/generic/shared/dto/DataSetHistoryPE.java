@@ -45,6 +45,12 @@ public class DataSetHistoryPE extends AbstractEntityHistoryPE
 
     private Long externalDmsId;
 
+    private String externalDmsCode;
+
+    private String externalDmsLabel;
+
+    private String externalDmsAddress;
+
     private String externalCode;
 
     private String path;
@@ -121,6 +127,39 @@ public class DataSetHistoryPE extends AbstractEntityHistoryPE
     public void setExternalDmsId(Long externalDmsId)
     {
         this.externalDmsId = externalDmsId;
+    }
+
+    @Column(name = ColumnNames.EXTERNAL_DATA_MANAGEMENT_SYSTEM_CODE_COLUMN)
+    public String getExternalDmsCode()
+    {
+        return externalDmsCode;
+    }
+
+    public void setExternalDmsCode(String externalDmsCode)
+    {
+        this.externalDmsCode = externalDmsCode;
+    }
+
+    @Column(name = ColumnNames.EXTERNAL_DATA_MANAGEMENT_SYSTEM_LABEL_COLUMN)
+    public String getExternalDmsLabel()
+    {
+        return externalDmsLabel;
+    }
+
+    public void setExternalDmsLabel(String externalDmsLabel)
+    {
+        this.externalDmsLabel = externalDmsLabel;
+    }
+
+    @Column(name = ColumnNames.EXTERNAL_DATA_MANAGEMENT_SYSTEM_ADDRESS_COLUMN)
+    public String getExternalDmsAddress()
+    {
+        return externalDmsAddress;
+    }
+
+    public void setExternalDmsAddress(String externalDmsAddress)
+    {
+        this.externalDmsAddress = externalDmsAddress;
     }
 
     @Column(name = ColumnNames.EXTERNAL_CODE_COLUMN)

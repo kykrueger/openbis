@@ -21,18 +21,20 @@ function JupyterCopyNotebookView(jupyterNotebookController, jupyterNotebookModel
 	this.repaint = function() {
 		var _this = this;
 		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
-		
 		$window.append($('<legend>').append("Use Jupyter Notebook as Template"));
+		var $keepHistory = FormUtil._getBooleanField("HISTORY_ID","Keep History");
+		$window.append(FormUtil.getFieldForComponentWithLabel($keepHistory, "Keep History, this notebook is a continuation of the old one"));
 		$window.append(FormUtil.getFieldForLabelWithText("Notebook", this._jupyterNotebookModel.existingNotebookURL));
-		var $workspace = FormUtil._getInputField('text', null, 'workspace Name', null, true);
+		var $workspace = FormUtil._getInputField('text', null, 'directory Name', null, true);
 		var $notebookName = FormUtil._getInputField('text', null, 'notebook Name', null, true);
-		$window.append(FormUtil.getFieldForComponentWithLabel($workspace, "Workspace"));
+		$window.append(FormUtil.getFieldForComponentWithLabel($workspace, "Directory Name"));
 		$window.append(FormUtil.getFieldForComponentWithLabel($notebookName, "Notebook Name"));
 		
 		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
 		$window.submit(function() {
 			$.get(_this._jupyterNotebookModel.existingNotebookURL, function( data ) {
-				_this._jupyterNotebookController.create($workspace.val(), $notebookName.val(), data, _this._jupyterNotebookModel.datasetCode);
+				var keepHistory = $($($keepHistory.children()[0]).children()[0]).prop("checked");
+				_this._jupyterNotebookController.create($workspace.val(), $notebookName.val(), data, _this._jupyterNotebookModel.datasetCode, keepHistory);
 			});
 		});
 		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');

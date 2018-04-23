@@ -17,15 +17,28 @@ public class MatchingContentCopy implements IRelatedEntity
     @SuppressWarnings("unused")
     private String gitRepositoryId;
 
+    @SuppressWarnings("unused")
+    private String externalDmsCode;
+
+    @SuppressWarnings("unused")
+    private String externalDmsLabel;
+
+    @SuppressWarnings("unused")
+    private String externalDmsAddress;
+
+    @SuppressWarnings("unused")
     private ExternalDataManagementSystemPE externalDms;
 
     public MatchingContentCopy(String externalCode, String path, String gitCommitHash, String gitRepositoryId,
-            ExternalDataManagementSystemPE externalDms)
+            String externalDmsCode, String externalDmsLabel, String externalDmsAddress, ExternalDataManagementSystemPE externalDms)
     {
         this.externalCode = externalCode;
         this.path = path;
         this.gitCommitHash = gitCommitHash;
         this.gitRepositoryId = gitRepositoryId;
+        this.externalDmsCode = externalDmsCode;
+        this.externalDmsLabel = externalDmsLabel;
+        this.externalDmsAddress = externalDmsAddress;
         this.externalDms = externalDms;
     }
 
@@ -34,10 +47,10 @@ public class MatchingContentCopy implements IRelatedEntity
     {
         if (externalDms.getAddressType().equals(ExternalDataManagementSystemType.FILE_SYSTEM))
         {
-            return externalDms.getAddress() + path;
+            return externalDmsAddress + path;
         } else
         {
-            return externalDms.getAddress().replaceAll(Pattern.quote("${") + ".*" + Pattern.quote("}"), externalCode);
+            return externalDmsAddress.replaceAll(Pattern.quote("${") + ".*" + Pattern.quote("}"), externalCode);
         }
     }
 
