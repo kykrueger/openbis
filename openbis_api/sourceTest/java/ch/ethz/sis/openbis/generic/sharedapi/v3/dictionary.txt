@@ -232,7 +232,10 @@ getExperimentId
 getExperiments
 getExternalCode
 getExternalDms
+getExternalDmsAddress
+getExternalDmsCode
 getExternalDmsId
+getExternalDmsLabel
 getFetchOptions
 getField
 getFieldName
@@ -629,7 +632,10 @@ setExperimentId
 setExperiments
 setExternalCode
 setExternalDms
+setExternalDmsAddress
+setExternalDmsCode
 setExternalDmsId
+setExternalDmsLabel
 setFetchOptions
 setFieldName
 setFieldValue

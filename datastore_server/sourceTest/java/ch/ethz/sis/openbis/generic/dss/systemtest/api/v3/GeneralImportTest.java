@@ -84,7 +84,7 @@ public class GeneralImportTest extends ObjectsImportTest
             assertEquals("imported description 1", material1.getProperty("DESCRIPTION"));
 
             material2 = getObject(sessionToken, materialPermId2, timestamp, DEFAULT_TIMEOUT);
-            assertEquals("imported description 2", material2.getProperty("DESCRIPTION"));
+            assertEquals("default imported description", material2.getProperty("DESCRIPTION"));
 
             if (async)
             {

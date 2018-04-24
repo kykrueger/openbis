@@ -177,7 +177,14 @@ def addProperty(tr, entity, propertyCode, section, propertyLabel, dataType, voca
         propertyAssignment.setScriptName(dynamicScript);
 
 def createProperty(tr, propertyCode, dataType, propertyLabel, propertyDescription, vocabularyCode):
-    property = tr.getOrCreateNewPropertyType(propertyCode, dataType);
+    isManagedInternally = propertyCode[0] == "$";
+    if isManagedInternally:
+        property = tr.getOrCreateNewPropertyType(propertyCode[1:], dataType);
+        property.setManagedInternally(True);
+        property.setInternalNamespace(True);
+    else:
+        property = tr.getOrCreateNewPropertyType(propertyCode, dataType);
+    
     propertiesCache[propertyCode] = property;
     
     if propertyLabel is not None:
@@ -611,9 +618,10 @@ RAW_DATA = [FIRST_TIME_VERSIONED, "RAW_DATA", "PHYSICAL", "", [
     ]];
 
 ANALYZED_DATA = [FIRST_TIME_VERSIONED, "ANALYZED_DATA", "PHYSICAL", "", [
-        [FIRST_TIME_VERSIONED,"NAME", "General", "Name", DataType.VARCHAR, None,    "Name", None, None],
-        [FIRST_TIME_VERSIONED,"NOTES", "General information", "Notes", DataType.MULTILINE_VARCHAR, None, "Notes regarding the dataset", None, None],
-        [FIRST_TIME_VERSIONED,"XMLCOMMENTS",    "Comments","Comments List",    DataType.XML,    None,    "Several comments can be added by different users", "COMMENTS_DATA_SET", None]
+        [FIRST_TIME_VERSIONED,"HISTORY_ID",            "General",              "History Id",               DataType.VARCHAR,           None,       "Jupyter Notebook UUID",                            None,               None,   None,   False],
+        [FIRST_TIME_VERSIONED,"NAME",                   "General",              "Name",                     DataType.VARCHAR,           None,       "Name",                                             None,               None],
+        [FIRST_TIME_VERSIONED,"NOTES",                  "General information",  "Notes",                    DataType.MULTILINE_VARCHAR, None,       "Notes regarding the dataset",                      None,               None],
+        [FIRST_TIME_VERSIONED,"XMLCOMMENTS",            "Comments",             "Comments List",            DataType.XML,               None,       "Several comments can be added by different users", "COMMENTS_DATA_SET", None]
     ]];
 
 ATTACHMENT = [MANDATORY_ITEM_VERSION, "ATTACHMENT", "PHYSICAL", "", [

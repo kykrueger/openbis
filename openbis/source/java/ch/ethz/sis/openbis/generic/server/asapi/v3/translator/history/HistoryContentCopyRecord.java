@@ -31,4 +31,10 @@ public class HistoryContentCopyRecord extends HistoryRecord
 
     public Long externalDmsId;
 
+    public String externalDmsCode;
+
+    public String externalDmsLabel;
+
+    public String externalDmsAddress;
+
 }

@@ -47,7 +47,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
@@ -97,6 +96,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPerm
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.ObjectNotFoundException;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnauthorizedObjectAccessException;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.IndexOperation;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.IndexState;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
@@ -119,7 +119,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.systemtest.SystemTestCase;
 import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
-
 import junit.framework.Assert;
 
 /**
@@ -139,7 +138,7 @@ public class AbstractTest extends SystemTestCase
     private BufferedAppender logRecorder;
 
     @Autowired
-    protected IApplicationServerApi v3api;
+    protected IApplicationServerInternalApi v3api;
 
     @Autowired
     protected IGeneralInformationService generalInformationService;

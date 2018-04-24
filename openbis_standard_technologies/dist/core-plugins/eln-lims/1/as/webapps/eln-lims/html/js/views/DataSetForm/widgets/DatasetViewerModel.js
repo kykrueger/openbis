@@ -100,8 +100,17 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
 	}
 
 	this.isLinkDataset = function(datasetCode) {
-		for(var idx = 0; idx < this.datasets.length; idx++) {
-			if(this.datasets[idx].code === datasetCode && this.datasets[idx].linkDataSet) {
+		for(var idx = 0; idx < this.v3Datasets.length; idx++) {
+			if(this.v3Datasets[idx].code === datasetCode && this.v3Datasets[idx].linkedData) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	this.isHistoryDataset = function(datasetCode) {
+		for(var idx = 0; idx < this.v3Datasets.length; idx++) {
+			if(this.v3Datasets[idx].code === datasetCode && this.v3Datasets[idx].properties["HISTORY_ID"]) {
 				return true;
 			}
 		}
@@ -125,10 +134,19 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
 	}
 	
 	this.getDirectDirectoryLink = function(datasetCode, pathInDataSet) {
-		var directLinkComponent = null;
+		var directLinkComponent = "";
+		var isLinked = false;
+		
 		if(this.isLinkDataset(datasetCode)) {
 			directLinkComponent = "<span class='glyphicon glyphicon-link'></span>";
-		} else if(profile.directLinkEnabled && (profile.cifsFileServer || profile.sftpFileServer)) {
+			isLinked = true;
+		}
+		
+		if(this.isHistoryDataset(datasetCode)) {
+			directLinkComponent = "<span class='glyphicon glyphicon-time'></span>";
+		}
+		
+		if(!isLinked && profile.directLinkEnabled && (profile.cifsFileServer || profile.sftpFileServer)) {
 			var path = null;
 			
 			if(this.isExperiment()) {
@@ -136,8 +154,8 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
 			} else {
 				path = this.entity.experimentIdentifierOrNull.substring(1) + "/" + datasetCode + "/" + pathInDataSet + "/";
 			}
-			
-			directLinkComponent = "<span onclick=\"" + "Util.showDirectLink('" + path + "')" + "\" class='glyphicon glyphicon-hdd'></span>";
+				
+			directLinkComponent += "<span onclick=\"" + "Util.showDirectLink('" + path + "')" + "\" class='glyphicon glyphicon-hdd'></span>";
 		}
 		return directLinkComponent;
 	}

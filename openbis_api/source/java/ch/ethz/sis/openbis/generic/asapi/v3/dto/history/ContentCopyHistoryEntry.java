@@ -42,6 +42,15 @@ public class ContentCopyHistoryEntry extends HistoryEntry
     @JsonProperty
     private Long externalDmsId;
 
+    @JsonProperty
+    private String externalDmsCode;
+
+    @JsonProperty
+    private String externalDmsLabel;
+
+    @JsonProperty
+    private String externalDmsAddress;
+
 
     @JsonIgnore
     public String getExternalCode()
@@ -101,6 +110,42 @@ public class ContentCopyHistoryEntry extends HistoryEntry
     public void setExternalDmsId(Long externalDmsId)
     {
         this.externalDmsId = externalDmsId;
+    }
+
+    @JsonIgnore
+    public String getExternalDmsCode()
+    {
+        return externalDmsCode;
+    }
+
+    @JsonIgnore
+    public void setExternalDmsCode(String externalDmsCode)
+    {
+        this.externalDmsCode = externalDmsCode;
+    }
+
+    @JsonIgnore
+    public String getExternalDmsLabel()
+    {
+        return externalDmsLabel;
+    }
+
+    @JsonIgnore
+    public void setExternalDmsLabel(String externalDmsLabel)
+    {
+        this.externalDmsLabel = externalDmsLabel;
+    }
+
+    @JsonIgnore
+    public String getExternalDmsAddress()
+    {
+        return externalDmsAddress;
+    }
+
+    @JsonIgnore
+    public void setExternalDmsAddress(String externalDmsAddress)
+    {
+        this.externalDmsAddress = externalDmsAddress;
     }
 
     @JsonIgnore

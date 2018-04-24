@@ -86,9 +86,9 @@ function JupyterNotebookView(jupyterNotebookController, jupyterNotebookModel) {
 		}
 		
 		
-		var $workspace = FormUtil._getInputField('text', null, 'workspace Name', null, true);
+		var $workspace = FormUtil._getInputField('text', null, 'directory Name', null, true);
 		var $notebookName = FormUtil._getInputField('text', null, 'notebook Name', null, true);
-		$window.append(FormUtil.getFieldForComponentWithLabel($workspace, "Workspace"));
+		$window.append(FormUtil.getFieldForComponentWithLabel($workspace, "Directory Name"));
 		$window.append(FormUtil.getFieldForComponentWithLabel($notebookName, "Notebook Name"));
 		
 		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });

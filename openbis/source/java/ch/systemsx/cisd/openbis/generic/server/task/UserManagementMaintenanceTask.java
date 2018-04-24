@@ -19,14 +19,12 @@ package ch.systemsx.cisd.openbis.generic.server.task;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.systemsx.cisd.authentication.Principal;
@@ -51,8 +49,11 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             UserManagementMaintenanceTask.class);
 
+    private static final Logger notificationLog = LogFactory.getLogger(LogCategory.NOTIFY,
+            UserManagementMaintenanceTask.class);
+    
     private File configurationFile;
-
+    
     private LDAPAuthenticationService ldapService;
 
     @Override
@@ -65,7 +66,14 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
             throw new ConfigurationFailureException("Configuration file '" + configurationFile.getAbsolutePath()
                     + "' doesn't exist or is a directory.");
         }
+        
         ldapService = (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
+        if (ldapService.isConfigured() == false)
+        {
+            throw new ConfigurationFailureException("There is no LDAP authentication service configured. "
+                    + "At least 'ldap.server.url', 'ldap.security.principal.distinguished.name', "
+                    + "'ldap.security.principal.password' have to be specified in 'service.properties'.");
+        }
         operationLog.info("Plugin '" + pluginName + "' initialized. Configuration file: " + configurationFile.getAbsolutePath());
         
     }
@@ -73,17 +81,16 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
     @Override
     public void execute()
     {
-        Map<String, Group> groups = readGroupDefinitions();
-        if (groups == null)
+        UserManagerConfig config = readGroupDefinitions();
+        if (config == null || config.getGroups() == null)
         {
             return;
         }
         Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
-        UserManager userManager = new UserManager(CommonServiceProvider.getApplicationServerApi(), logger);
-        for (Entry<String, Group> entry : groups.entrySet())
+        UserManager userManager = new UserManager(CommonServiceProvider.getApplicationServerApi(), config.getCommonSpaces(), logger);
+        for (UserGroup group : config.getGroups())
         {
-            String key = entry.getKey();
-            Group group = entry.getValue();
+            String key = group.getKey();
             List<String> ldapGroupKeys = group.getLdapGroupKeys();
             if (ldapGroupKeys == null || ldapGroupKeys.isEmpty())
             {
@@ -112,11 +119,15 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
             }
             userManager.addGroup(key, group, principalsByUserId);
         }
-        userManager.manageUsers();
+        String errorReport = userManager.manageUsers();
+        if (StringUtils.isNotBlank(errorReport))
+        {
+            notificationLog.error("User management failed for the following reasons:\n\n" + errorReport);
+        }
         operationLog.info("finished");
     }
     
-    private Map<String, Group> readGroupDefinitions()
+    private UserManagerConfig readGroupDefinitions()
     {
         if (configurationFile.isFile() == false)
         {
@@ -134,10 +145,9 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         }
     }
 
-    private Map<String, Group> deserialize(String serializedConfig) throws Exception
+    private UserManagerConfig deserialize(String serializedConfig) throws Exception
     {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(serializedConfig, new TypeReference<Map<String, Group>>(){});
+        return mapper.readValue(serializedConfig, UserManagerConfig.class);
     }
-    
 }

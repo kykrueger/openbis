@@ -172,7 +172,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 								titleValue = previewLink + " " + titleValue;
 							}
 							var notebookLink = _this._dataSetViewerModel.getJupyterNotebookLink(code, file);
-							if (profile.jupyterOpenbisEndpoint && notebookLink) {
+							if (profile.jupyterEndpoint && notebookLink) {
 								titleValue = notebookLink + " " + titleValue;
 							}
 						}

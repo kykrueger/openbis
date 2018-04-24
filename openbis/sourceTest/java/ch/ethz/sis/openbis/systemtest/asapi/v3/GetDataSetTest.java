@@ -38,6 +38,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LinkedData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LocatorType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.StorageFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.ContentCopyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.LinkedDataCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
@@ -45,8 +48,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.history.DataSetRelationT
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.LinkedDataUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.ContentCopyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.HistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.PropertyHistoryEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.history.RelationHistoryEntry;
@@ -886,6 +898,79 @@ public class GetDataSetTest extends AbstractDataSetTest
         assertEquals(entry.getPropertyValue(), "co comment");
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testGetWithHistoryContentCopy()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        // given - data set with content copy
+        ContentCopyCreation contentCopyCreation = getContentCopyCreation();
+        DataSetCreation dataSetCreation = getDataSetCreation(contentCopyCreation, "testGetWithHistoryContentCopy-01");
+
+        List<DataSetPermId> dataSetIds = v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation));
+        assertEquals(dataSetIds.size(), 1);
+
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withHistory();
+        fetchOptions.withLinkedData();
+
+        IDataSetId id = dataSetIds.get(0);
+
+        Map<IDataSetId, DataSet> map = v3api.getDataSets(sessionToken, Arrays.asList(id), fetchOptions);
+        DataSet dataSet = map.get(id);
+
+        assertEquals(dataSet.getHistory().size(), 0);
+        assertEquals(dataSet.getLinkedData().getContentCopies().size(), 1);
+
+        // when - remove content copy
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(id);
+
+        LinkedDataUpdate linkedDataUpdate = new LinkedDataUpdate();
+        linkedDataUpdate.getContentCopies().remove(dataSet.getLinkedData().getContentCopies().get(0).getId());
+
+        update.setLinkedData(linkedDataUpdate);
+
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+
+        // then - content copy is in history
+        map = v3api.getDataSets(sessionToken, Arrays.asList(id), fetchOptions);
+        dataSet = map.get(id);
+
+        assertEquals(dataSet.getHistory().size(), 1);
+        assertEquals(dataSet.getLinkedData().getContentCopies().size(), 0);
+        ContentCopyHistoryEntry historyEntry = (ContentCopyHistoryEntry) dataSet.getHistory().get(0);
+        assertEquals(historyEntry.getPath(), contentCopyCreation.getPath());
+        assertEquals(historyEntry.getGitCommitHash(), contentCopyCreation.getGitCommitHash());
+        assertEquals(historyEntry.getExternalDmsAddress(), "sprint:/path/to/location");
+
+        v3api.logout(sessionToken);
+    }
+
+    private DataSetCreation getDataSetCreation(ContentCopyCreation contentCopyCreation, String code)
+    {
+        LinkedDataCreation linkedData = new LinkedDataCreation();
+        linkedData.setContentCopies(Arrays.asList(contentCopyCreation));
+        DataSetCreation dataSetCreation = new DataSetCreation();
+        dataSetCreation.setCode(code);
+        dataSetCreation.setLinkedData(linkedData);
+        dataSetCreation.setDataSetKind(DataSetKind.LINK);
+        dataSetCreation.setTypeId(new EntityTypePermId("UNKNOWN"));
+        dataSetCreation.setSampleId(new SampleIdentifier("//CL1:A01"));
+        dataSetCreation.setDataStoreId(new DataStorePermId("STANDARD"));
+        return dataSetCreation;
+    }
+
+    private ContentCopyCreation getContentCopyCreation()
+    {
+        ContentCopyCreation contentCopyCreation = new ContentCopyCreation();
+        contentCopyCreation.setExternalDmsId(new ExternalDmsPermId("DMS_3"));
+        contentCopyCreation.setPath("/path");
+        contentCopyCreation.setGitCommitHash("0");
+        contentCopyCreation.setGitRepositoryId("0");
+        return contentCopyCreation;
     }
 
     @Test
