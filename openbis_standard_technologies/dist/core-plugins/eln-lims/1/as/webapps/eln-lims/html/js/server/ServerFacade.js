@@ -142,6 +142,31 @@ function ServerFacade(openbisServer) {
         });
 	}
 	*/
+	
+	this.getPersons = function(personIds, callbackFunction) {
+		if(!mainController.openbisV3.getPersons) {
+			return null; // In case the method doesn't exist, do nothing
+		}
+		require([ "jquery", "openbis", "as/dto/person/id/PersonPermId", "as/dto/person/fetchoptions/PersonFetchOptions" ],
+        function($, openbis, PersonPermId, PersonFetchOptions) {
+            $(document).ready(function() {
+            		var personFetchOptions = new PersonFetchOptions();
+            		personFetchOptions.withSpace();
+                	var personPermIds = [];
+                	for(var pIds=0; pIds < personIds.length; pIds++) {
+                		personPermIds.push(new PersonPermId(personIds[pIds]));
+                	}
+                	mainController.openbisV3.getPersons(personPermIds, personFetchOptions).done(function(personsMap) {
+                		var persons = [];
+                		for(personId in personsMap) {
+                			persons.push(personsMap[personId])
+                		}
+                		callbackFunction(persons);
+                	});
+            });
+        });
+	}
+	
 	//
 	// Login Related Functions
 	//
