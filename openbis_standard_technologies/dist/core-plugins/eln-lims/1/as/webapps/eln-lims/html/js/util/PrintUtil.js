@@ -144,7 +144,9 @@ var PrintUtil = new function() {
 					var transformerResult = profile.inspectorContentTransformer(entity, propertyCode, propertyContent);
 					isSingleColumn = transformerResult["isSingleColumn"];
 					propertyContent = transformerResult["content"];
-					propertyContent = propertyContent.replace(/\n/g, "<br />");
+					if(!profile.isRTF(propertyType)) {
+						propertyContent = propertyContent.replace(/\n/g, "<br />");
+					}
 				}
 				
 				if(propertyContent && !profile.isSystemProperty(propertyType)) { // Only show non empty properties
