@@ -72,6 +72,8 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions import SampleT
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search import DataSetTypeSearchCriteria;
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions import DataSetTypeFetchOptions;
 
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.property import DataType
+
 #V3 API - Files
 from ch.ethz.sis.openbis.generic.dssapi.v3 import IDataStoreServerApi;
 from ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search import DataSetFileSearchCriteria;
@@ -102,6 +104,12 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset import DataSet
 
 #DOCX
 from ch.ethz.sis import DOCXBuilder
+
+#Images export for word
+from org.jsoup import Jsoup;
+from org.jsoup.nodes import Document;
+from org.jsoup.nodes import Element;
+from org.jsoup.select import Elements;
 
 class MLStripper(HTMLParser):
     def __init__(self):
@@ -489,6 +497,12 @@ def getDOCX(entityObj, v3, sessionToken, isHTML):
             propertyType = propertyAssigment.getPropertyType();
             if propertyType.getCode() in properties:
                 propertyValue = properties[propertyType.getCode()];
+                if propertyType.getDataType() is DataType.MULTILINE_VARCHAR:
+                    doc = Jsoup.parse(propertyValue);
+                    imageElements = doc.select("img");
+                    for imageElement in imageElements:
+                        imageSrc = imageElement.attr("src");
+                        propertyValue = propertyValue.replace(imageSrc, DataStoreServer.getConfigParameters().getServerURL() + imageSrc + "?sessionID=" + sessionToken);
                 if propertyValue != u"\uFFFD(undefined)":
                     docxBuilder.addProperty(propertyType.getLabel(), propertyValue);
     

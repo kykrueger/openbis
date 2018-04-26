@@ -21,8 +21,7 @@ public class DOCXBuilder
         docx.addHeader("MetaA");
         docx.addProperty("PropertyA", "ValueA");
         docx.addProperty("PropertyB", "ValueB");
-        docx.addProperty("PropertyC",
-                "<p>I am normal</p><p style=\"color:red;\">I am red</p><p style=\"color:blue;\">I am blue</p><p style=\"font-size:36px;\">I am big</p>");
+        docx.addProperty("PropertyC", "<p>I am normal</p><p style=\"color:red;\">I am red</p><p style=\"color:blue;\">I am blue</p><p style=\"font-size:36px;\">I am big</p>");
 
         FileOutputStream out = new FileOutputStream(new File("wordFromHTML.docx"));
         out.write(docx.getDocBytes());
