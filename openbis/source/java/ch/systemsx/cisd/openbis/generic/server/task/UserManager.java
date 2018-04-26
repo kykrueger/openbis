@@ -34,7 +34,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create.Author
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create.CreateAuthorizationGroupsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.IAuthorizationGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.AuthorizationGroupUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.UpdateAuthorizationGroupsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
@@ -45,6 +44,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.PersonUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.UpdatePersonsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
@@ -57,35 +57,48 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+import ch.systemsx.cisd.authentication.IAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.systemsx.cisd.common.utilities.ITimeProvider;
 
 /**
  * @author Franz-Josef Elmer
  */
 public class UserManager
 {
+    private final IAuthenticationService authenticationService;
+
     private final IApplicationServerInternalApi service;
 
     private final ISimpleLogger logger;
+
+    private final ITimeProvider timeProvider;
 
     private final Map<Role, List<String>> commonSpacesByRole;
 
     private final Map<String, UserInfo> userInfosByUserId = new TreeMap<>();
 
+    private final Map<String, Map<String, Principal>> usersByGroupCode = new TreeMap<>();
+
     private final List<String> groupCodes = new ArrayList<>();
 
-    public UserManager(IApplicationServerInternalApi service, Map<Role, List<String>> commonSpacesByRole, ISimpleLogger logger)
+    public UserManager(IAuthenticationService authenticationService, IApplicationServerInternalApi service,
+            Map<Role, List<String>> commonSpacesByRole, ISimpleLogger logger, ITimeProvider timeProvider)
     {
+        this.authenticationService = authenticationService;
         this.service = service;
         this.commonSpacesByRole = commonSpacesByRole;
         this.logger = logger;
+        this.timeProvider = timeProvider;
     }
 
-    public void addGroup(String key, UserGroup group, Map<String, Principal> principalsByUserId)
+    public void addGroup(UserGroup group, Map<String, Principal> principalsByUserId)
     {
-        groupCodes.add(key.toUpperCase());
+        String groupCode = group.getKey().toUpperCase();
+        usersByGroupCode.put(groupCode, principalsByUserId);
+        groupCodes.add(groupCode);
         Set<String> admins = asSet(group.getAdmins());
         for (Principal principal : principalsByUserId.values())
         {
@@ -96,70 +109,150 @@ public class UserManager
                 userInfo = new UserInfo(principal);
                 userInfosByUserId.put(userId, userInfo);
             }
-            userInfo.addGroupInfo(new GroupInfo(key, admins.contains(userId)));
+            userInfo.addGroupInfo(new GroupInfo(groupCode, admins.contains(userId)));
         }
-        logger.log(LogLevel.INFO, principalsByUserId.size() + " users for group " + key);
+        logger.log(LogLevel.INFO, principalsByUserId.size() + " users for group " + groupCode);
     }
 
-    public String manageUsers()
+    public UserManagerReport manage()
     {
-        String sessionToken = service.loginAsSystem();
-        Map<IPersonId, Person> users = getUsersWithRoleAssigments(sessionToken);
-        Map<IAuthorizationGroupId, AuthorizationGroup> authorizationGroups = getAuthorizationGroups(sessionToken);
-        StringBuilder builder = new StringBuilder();
+        UserManagerReport report = new UserManagerReport(timeProvider);
+        try
+        {
+            String sessionToken = service.loginAsSystem();
+
+            manageGroups(sessionToken, report);
+            manageUsers(sessionToken, report);
+
+            service.logout(sessionToken);
+        } catch (Throwable e)
+        {
+            report.addErrorMessage("Error: " + e.toString());
+            logger.log(LogLevel.ERROR, "", e);
+        }
+        return report;
+    }
+
+    private void manageGroups(String sessionToken, UserManagerReport report)
+    {
+        Map<String, Set<String>> usersByGroupCodes = getUsersByGroupCodes(sessionToken);
         for (String groupCode : groupCodes)
         {
             try
             {
-                manageGroup(sessionToken, groupCode, authorizationGroups);
+                Context context = new Context(sessionToken);
+                if (usersByGroupCodes.containsKey(groupCode))
+                {
+                    manageKnownGroup(context, groupCode, report);
+                } else
+                {
+                    manageNewGroup(context, groupCode, report);
+                }
+                context.executeOperations();
             } catch (Exception e)
             {
                 String message = String.format("Couldn't manage group '%s' because of the following error: %s",
                         groupCode, e);
-                builder.append(message).append("\n");
+                report.addErrorMessage(message);
                 logger.log(LogLevel.ERROR, message, e);
             }
         }
-        authorizationGroups = getAuthorizationGroups(sessionToken);
+    }
+
+    private void manageUsers(String sessionToken, UserManagerReport report)
+    {
+        revokeUsersUnkownByAuthenticationService(sessionToken, report);
+        Map<IPersonId, Person> users = getUsersWithRoleAssigments(sessionToken);
+        Map<String, Set<String>> currentUsersByGroupCodes = getUsersByGroupCodes(sessionToken);
+        Map<String, Set<String>> currentAdminUsersByGroupCodes = getAdminUsersByGroupCodes(sessionToken);
         for (UserInfo userInfo : userInfosByUserId.values())
         {
             try
             {
-                manageUser(sessionToken, userInfo, users, authorizationGroups);
+                manageUser(sessionToken, userInfo, users, currentUsersByGroupCodes, currentAdminUsersByGroupCodes, report);
             } catch (Exception e)
             {
                 String message = String.format("Couldn't manage user '%s' because of the following error: %s",
                         userInfo.getPrincipal().getUserId(), e);
-                builder.append(message).append("\n");
+                report.addErrorMessage(message);
                 logger.log(LogLevel.ERROR, message, e);
             }
         }
-        service.logout(sessionToken);
-        return builder.toString();
+
+        for (String groupCode : currentUsersByGroupCodes.keySet())
+        {
+            try
+            {
+                manageUsersRemovedFromGroup(sessionToken, groupCode, currentUsersByGroupCodes,
+                        currentAdminUsersByGroupCodes, report);
+            } catch (Exception e)
+            {
+                String message = String.format("Couldn't manage users removed from group %s because of the following error: %s",
+                        groupCode, e);
+                report.addErrorMessage(message);
+                logger.log(LogLevel.ERROR, message, e);
+            }
+        }
     }
 
-    private void manageGroup(String sessionToken, String groupCode, Map<IAuthorizationGroupId, AuthorizationGroup> knownAuthorizationGroups)
+    private void manageUsersRemovedFromGroup(String sessionToken, String groupCode, Map<String, Set<String>> currentUsersByGroupCodes,
+            Map<String, Set<String>> currentAdminUsersByGroupCodes, UserManagerReport report)
     {
+        Set<String> currentUsers = currentUsersByGroupCodes.get(groupCode);
+        Set<String> newUsers = usersByGroupCode.get(groupCode).keySet();
         Context context = new Context(sessionToken);
-        AuthorizationGroup knownGroup = knownAuthorizationGroups.get(new AuthorizationGroupPermId(groupCode));
-        if (knownGroup != null)
+        for (String currentUser : currentUsers)
         {
-            manageKnownGroup(context, knownGroup);
-        } else
-        {
-            manageNewGroup(context, groupCode);
+            if (newUsers.contains(currentUser) == false)
+            {
+                removePersonFromAuthorizationGroup(context, currentUsersByGroupCodes, groupCode, currentUser, report);
+                String adminGroupCode = createAdminGroupCode(groupCode);
+                removePersonFromAuthorizationGroup(context, currentAdminUsersByGroupCodes, adminGroupCode, currentUser, report);
+            }
         }
         context.executeOperations();
     }
 
-    private void manageNewGroup(Context context, String groupCode)
+    private void revokeUsersUnkownByAuthenticationService(String sessionToken, UserManagerReport report)
+    {
+        List<PersonUpdate> updates = new ArrayList<>();
+        List<Person> persons = service.searchPersons(sessionToken, new PersonSearchCriteria(), new PersonFetchOptions()).getObjects();
+        for (Person person : persons)
+        {
+            if (person.isActive())
+            {
+                try
+                {
+                    authenticationService.getPrincipal(person.getUserId());
+                } catch (IllegalArgumentException e)
+                {
+                    PersonUpdate update = new PersonUpdate();
+                    update.setUserId(person.getPermId());
+                    update.deactivate();
+                    updates.add(update);
+                    report.deactivateUser(person.getUserId());
+                }
+            }
+        }
+        if (updates.isEmpty() == false)
+        {
+            service.updatePersons(sessionToken, updates);
+        }
+    }
+
+    private void manageKnownGroup(Context context, String groupCode, UserManagerReport report)
+    {
+        // TODO Auto-generated method stub
+    }
+
+    private void manageNewGroup(Context context, String groupCode, UserManagerReport report)
     {
         String adminGroupCode = createAdminGroupCode(groupCode);
         assertAuthorizationGroupDoesNotExist(context, adminGroupCode);
         assertNoCommonSpaceExists(context, groupCode);
 
-        createAuthorizationGroup(context, groupCode);
-        createAuthorizationGroup(context, adminGroupCode);
+        createAuthorizationGroup(context, groupCode, report);
+        createAuthorizationGroup(context, adminGroupCode, report);
 
         for (Entry<Role, List<String>> entry : commonSpacesByRole.entrySet())
         {
@@ -167,8 +260,9 @@ public class UserManager
             for (String space : entry.getValue())
             {
                 ISpaceId spaceId = createSpace(context, createCommonSpaceCode(groupCode, space));
-                createRoleAssignment(context, new AuthorizationGroupPermId(groupCode), role, spaceId);
-                createRoleAssignment(context, new AuthorizationGroupPermId(adminGroupCode), Role.ADMIN, spaceId);
+                report.addSpace(spaceId);
+                createRoleAssignment(context, new AuthorizationGroupPermId(groupCode), role, spaceId, report);
+                createRoleAssignment(context, new AuthorizationGroupPermId(adminGroupCode), Role.ADMIN, spaceId, report);
             }
         }
     }
@@ -199,57 +293,104 @@ public class UserManager
         throw new IllegalStateException("The group '" + groupCode + "' has already the following spaces: " + existingSpaces);
     }
 
-    private void manageKnownGroup(Context context, AuthorizationGroup knownGroup)
-    {
-        // TODO Auto-generated method stub
-
-    }
-
     private void manageUser(String sessionToken, UserInfo userInfo, Map<IPersonId, Person> knownUsers,
-            Map<IAuthorizationGroupId, AuthorizationGroup> knownAuthorizationGroups)
+            Map<String, Set<String>> currentUsersByGroupCodes, Map<String, Set<String>> currentAdminUsersByGroupCodes,
+            UserManagerReport report)
     {
         Context context = new Context(sessionToken);
         Person knownUser = knownUsers.get(new PersonPermId(userInfo.getPrincipal().getUserId()));
         if (knownUser != null)
         {
-            manageKnownUser(context, userInfo, knownUser, knownAuthorizationGroups);
+            manageKnownUser(context, userInfo, knownUser, currentUsersByGroupCodes, currentAdminUsersByGroupCodes, report);
         } else
         {
-            manageNewUser(context, userInfo, knownAuthorizationGroups);
+            manageNewUser(context, userInfo, userInfo.getPrincipal().getUserId().toUpperCase(),
+                    currentUsersByGroupCodes, currentAdminUsersByGroupCodes, report);
         }
         context.executeOperations();
     }
 
     private void manageKnownUser(Context context, UserInfo userInfo, Person knownUser,
-            Map<IAuthorizationGroupId, AuthorizationGroup> knownAuthorizationGroups)
+            Map<String, Set<String>> currentUsersByGroupCodes, Map<String, Set<String>> currentAdminUsersByGroupCodes,
+            UserManagerReport report)
     {
-        System.out.println("UserManager.manageKnownUser() " + userInfo);
+        if (knownUser.isActive() == false)
+        {
+            int maxSequenceNumber = getMaxSequenceNumber(context, knownUser);
+            String homeSpaceCode = knownUser.getUserId() + "_" + (maxSequenceNumber + 1);
+            manageNewUser(context, userInfo, homeSpaceCode, currentUsersByGroupCodes, currentAdminUsersByGroupCodes, report);
+        } else
+        {
+            String userId = userInfo.principal.getUserId();
+            for (GroupInfo groupInfo : userInfo.getGroupInfosByGroupKey().values())
+            {
+                String groupCode = groupInfo.getKey();
+                addPersonToAuthorizationGroup(context, currentUsersByGroupCodes, groupCode, userId, report);
+                String adminGroupCode = createAdminGroupCode(groupCode);
+                if (groupInfo.isAdmin())
+                {
+                    addPersonToAuthorizationGroup(context, currentAdminUsersByGroupCodes, adminGroupCode, userId, report);
+                } else if (isCurrentAdminUser(currentAdminUsersByGroupCodes, adminGroupCode, userId))
+                {
+                    removePersonFromAuthorizationGroup(context, currentAdminUsersByGroupCodes, adminGroupCode, userId, report);
+                }
+            }
+        }
     }
 
-    private void manageNewUser(Context context, UserInfo userInfo,
-            Map<IAuthorizationGroupId, AuthorizationGroup> knownAuthorizationGroups)
+    private int getMaxSequenceNumber(Context context, Person knownUser)
     {
-        Principal principal = userInfo.getPrincipal();
-        String userId = principal.getUserId();
-        String spaceCode = userId.toUpperCase();
-        if (getSpaces(context.getSessionToken(), Arrays.asList(spaceCode)).isEmpty() == false)
+        PersonSearchCriteria searchCriteria = new PersonSearchCriteria();
+        searchCriteria.withUserId().thatStartsWith(knownUser.getUserId());
+        PersonFetchOptions fetchOptions = new PersonFetchOptions();
+        int maxSequenceNumber = 0;
+        for (Person person : service.searchPersons(context.getSessionToken(), searchCriteria, fetchOptions).getObjects())
         {
-            throw new IllegalStateException("There is already a space with code " + spaceCode + ".");
+            String[] splittedUserId = person.getUserId().split("_");
+            if (splittedUserId.length == 2)
+            {
+                try
+                {
+                    maxSequenceNumber = Math.max(maxSequenceNumber, Integer.parseInt(splittedUserId[1]));
+                } catch (NumberFormatException e)
+                {
+                    // silently ignored
+                }
+            }
+        }
+        return maxSequenceNumber;
+    }
+
+    private boolean isCurrentAdminUser(Map<String, Set<String>> currentAdminUsersByGroupCodes, String groupCode, String userId)
+    {
+        Set<String> users = currentAdminUsersByGroupCodes.get(groupCode);
+        return users == null ? false : users.contains(userId);
+    }
+
+    private void manageNewUser(Context context, UserInfo userInfo, String homeSpaceCode,
+            Map<String, Set<String>> currentUsersByGroupCodes, Map<String, Set<String>> currentAdminUsersByGroupCodes,
+            UserManagerReport report)
+    {
+        String userId = userInfo.getPrincipal().getUserId();
+        if (getSpaces(context.getSessionToken(), Arrays.asList(homeSpaceCode)).isEmpty() == false)
+        {
+            throw new IllegalStateException("There is already a space with code " + homeSpaceCode + ".");
         }
 
-        ISpaceId homeSpaceId = createSpace(context, spaceCode);
+        ISpaceId homeSpaceId = createSpace(context, homeSpaceCode);
         IPersonId personId = createPerson(context, userId);
         assignHomeSpace(context, homeSpaceId, personId);
+        report.addUser(userId, homeSpaceCode);
 
         for (GroupInfo groupInfo : userInfo.getGroupInfosByGroupKey().values())
         {
             String groupCode = groupInfo.getKey();
-            addPersonToAuthorizationGroup(context, new AuthorizationGroupPermId(groupCode), personId);
-            AuthorizationGroupPermId adminGroupId = new AuthorizationGroupPermId(createAdminGroupCode(groupCode));
-            createRoleAssignment(context, adminGroupId, Role.ADMIN, homeSpaceId);
+            addPersonToAuthorizationGroup(context, currentUsersByGroupCodes, groupCode, userId, report);
+            String adminGroupCode = createAdminGroupCode(groupCode);
+            createRoleAssignment(context, new AuthorizationGroupPermId(adminGroupCode), Role.ADMIN, homeSpaceId, report);
             if (groupInfo.isAdmin())
             {
-                addPersonToAuthorizationGroup(context, adminGroupId, personId);
+                addPersonToAuthorizationGroup(context, currentAdminUsersByGroupCodes, adminGroupCode, userId, report);
             }
         }
     }
@@ -267,12 +408,32 @@ public class UserManager
         context.add(roleCreation);
     }
 
-    private void addPersonToAuthorizationGroup(Context context, AuthorizationGroupPermId groupId, IPersonId personId)
+    private void addPersonToAuthorizationGroup(Context context, Map<String, Set<String>> currentUsersByGroupCodes,
+            String groupCode, String userId, UserManagerReport report)
     {
-        AuthorizationGroupUpdate groupUpdate = new AuthorizationGroupUpdate();
-        groupUpdate.setAuthorizationGroupId(groupId);
-        groupUpdate.getUserIds().add(personId);
-        context.add(groupUpdate);
+        Set<String> users = currentUsersByGroupCodes.get(groupCode);
+        if (users == null || users.contains(userId) == false)
+        {
+            AuthorizationGroupUpdate groupUpdate = new AuthorizationGroupUpdate();
+            groupUpdate.setAuthorizationGroupId(new AuthorizationGroupPermId(groupCode));
+            groupUpdate.getUserIds().add(new PersonPermId(userId));
+            context.add(groupUpdate);
+            report.addUserToGroup(groupCode, userId);
+        }
+    }
+
+    private void removePersonFromAuthorizationGroup(Context context, Map<String, Set<String>> currentUsersByGroupCodes,
+            String groupCode, String userId, UserManagerReport report)
+    {
+        Set<String> users = currentUsersByGroupCodes.get(groupCode);
+        if (users == null || users.contains(userId))
+        {
+            AuthorizationGroupUpdate groupUpdate = new AuthorizationGroupUpdate();
+            groupUpdate.setAuthorizationGroupId(new AuthorizationGroupPermId(groupCode));
+            groupUpdate.getUserIds().remove(new PersonPermId(userId));
+            context.add(groupUpdate);
+            report.removeUserFromGroup(groupCode, userId);
+        }
     }
 
     private ISpaceId createSpace(Context context, String spaceCode)
@@ -291,20 +452,23 @@ public class UserManager
         return new PersonPermId(userId);
     }
 
-    private void createAuthorizationGroup(Context context, String groupCode)
+    private void createAuthorizationGroup(Context context, String groupCode, UserManagerReport report)
     {
         AuthorizationGroupCreation creation = new AuthorizationGroupCreation();
         creation.setCode(groupCode);
         context.add(creation);
+        report.addGroup(groupCode);
     }
 
-    private void createRoleAssignment(Context context, AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)
+    private void createRoleAssignment(Context context, AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId,
+            UserManagerReport report)
     {
         RoleAssignmentCreation roleCreation = new RoleAssignmentCreation();
         roleCreation.setAuthorizationGroupId(groupId);
         roleCreation.setRole(role);
         roleCreation.setSpaceId(spaceId);
         context.add(roleCreation);
+        report.assignRoleTo(groupId, role, spaceId);
     }
 
     private String createCommonSpaceCode(String groupCode, String spaceCode)
@@ -312,9 +476,14 @@ public class UserManager
         return groupCode + "_" + spaceCode;
     }
 
-    private String createAdminGroupCode(String groupCode)
+    public static String createAdminGroupCode(String groupCode)
     {
         return groupCode + "_ADMIN";
+    }
+
+    private AuthorizationGroupPermId createAdminGroupId(String groupCode)
+    {
+        return new AuthorizationGroupPermId(createAdminGroupCode(groupCode));
     }
 
     private Map<ISpaceId, Space> getSpaces(String sessionToken, Collection<String> spaceCodes)
@@ -333,13 +502,28 @@ public class UserManager
         return users;
     }
 
-    private Map<IAuthorizationGroupId, AuthorizationGroup> getAuthorizationGroups(String sessionToken)
+    private Map<String, Set<String>> getUsersByGroupCodes(String sessionToken)
     {
-        Function<String, AuthorizationGroupPermId> mapper = key -> new AuthorizationGroupPermId(key);
+        return getUsersByGroupCodes(sessionToken, groupCode -> new AuthorizationGroupPermId(groupCode));
+    }
+
+    private Map<String, Set<String>> getAdminUsersByGroupCodes(String sessionToken)
+    {
+        return getUsersByGroupCodes(sessionToken, groupCode -> createAdminGroupId(groupCode));
+    }
+
+    private Map<String, Set<String>> getUsersByGroupCodes(String sessionToken, Function<String, AuthorizationGroupPermId> mapper)
+    {
         List<AuthorizationGroupPermId> groupPermIds = groupCodes.stream().map(mapper).collect(Collectors.toList());
         AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
         fetchOptions.withUsers();
-        return service.getAuthorizationGroups(sessionToken, groupPermIds, fetchOptions);
+        Map<String, Set<String>> usersByGroupCodes = new TreeMap<>();
+        for (AuthorizationGroup group : service.getAuthorizationGroups(sessionToken, groupPermIds, fetchOptions).values())
+        {
+            Set<String> users = group.getUsers().stream().map(Person::getUserId).collect(Collectors.toSet());
+            usersByGroupCodes.put(group.getCode(), users);
+        }
+        return usersByGroupCodes;
     }
 
     private Set<String> asSet(List<String> users)

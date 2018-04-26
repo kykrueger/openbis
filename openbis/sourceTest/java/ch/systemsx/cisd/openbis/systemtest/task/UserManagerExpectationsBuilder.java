@@ -32,6 +32,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
@@ -45,6 +48,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.OperationContext;
 import ch.systemsx.cisd.authentication.Principal;
+import ch.systemsx.cisd.openbis.generic.server.task.UserManager;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
@@ -65,8 +69,10 @@ class UserManagerExpectationsBuilder
 
     private Map<String, List<Principal>> usersByGroup = new TreeMap<>();
 
-    private Map<String, List<Principal>> disabledUsersByGroup = new TreeMap<>();
+    private List<Principal> unknownUsers = new ArrayList<>();
 
+    private Map<String, List<Principal>> disabledUsersByGroup = new TreeMap<>();
+    
     private Map<String, List<Principal>> normalUsersByGroup = new TreeMap<>();
 
     private Map<String, List<Principal>> adminUsersByGroup = new TreeMap<>();
@@ -80,6 +86,12 @@ class UserManagerExpectationsBuilder
         this.commonSpaces = commonSpaces;
     }
 
+    UserManagerExpectationsBuilder unknownUser(Principal user)
+    {
+        unknownUsers.add(user);
+        return this;
+    }
+    
     UserManagerExpectationsBuilder disabledUser(Principal user, String... groups)
     {
         return addUser(user, disabledUsersByGroup, groups);
@@ -120,6 +132,7 @@ class UserManagerExpectationsBuilder
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         assertSpaces(sessionToken);
+        assertUnknownUsers(sessionToken);
         assertUsers(sessionToken);
         assertAuthorization(sessionToken);
         v3api.logout(sessionToken);
@@ -155,10 +168,49 @@ class UserManagerExpectationsBuilder
         List<String> expectedSpaces = extractedSortedPermIds(spaces);
         SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
         List<String> actualSpaces = extractedSortedCodes(v3api.getSpaces(sessionToken, spaces, fetchOptions).values());
-        System.out.println("UserManagerTestExpectation: Spaces: " + expectedSpaces);
         assertEquals(actualSpaces.toString(), expectedSpaces.toString());
     }
 
+    private void assertUnknownUsers(String sessionToken)
+    {
+        Map<String, Set<String>> usersByGroupId = getAllUsersOfGroups(sessionToken);
+        assertEquals(usersByGroupId.isEmpty(), false);
+        List<PersonPermId> personIds = unknownUsers.stream().map(p -> new PersonPermId(p.getUserId())).collect(Collectors.toList());
+        PersonFetchOptions fetchOptions = new PersonFetchOptions();
+        fetchOptions.withRoleAssignments();
+        for (Person person : v3api.getPersons(sessionToken, personIds, fetchOptions).values())
+        {
+            String userId = person.getUserId();
+            assertEquals(person.isActive(), Boolean.FALSE, "Active flag of user " + userId);
+            assertEquals(person.getRoleAssignments().size(), 0, "Role assignments of user " + userId);
+            for (Entry<String, Set<String>> entry : usersByGroupId.entrySet())
+            {
+                if (entry.getValue().contains(userId))
+                {
+                    fail("User " + userId + " still in authorization group " + entry.getKey());
+                }
+            }
+        }
+    }
+
+    private Map<String, Set<String>> getAllUsersOfGroups(String sessionToken)
+    {
+        AuthorizationGroupFetchOptions groupFetchOptions = new AuthorizationGroupFetchOptions();
+        groupFetchOptions.withUsers();
+        List<AuthorizationGroupPermId> ids = new ArrayList<>();
+        for (String groupCode : usersByGroup.keySet())
+        {
+            ids.add(new AuthorizationGroupPermId(groupCode));
+            ids.add(new AuthorizationGroupPermId(UserManager.createAdminGroupCode(groupCode)));
+        }
+        Map<String, Set<String>> usersByGroupId = new TreeMap<>();
+        for (AuthorizationGroup group : v3api.getAuthorizationGroups(sessionToken, ids, groupFetchOptions).values())
+        {
+            usersByGroupId.put(group.getCode(), group.getUsers().stream().map(Person::getUserId).collect(Collectors.toSet()));
+        }
+        return usersByGroupId;
+    }
+    
     private void assertUsers(String sessionToken)
     {
         List<PersonPermId> allUsers = applyMapperToAllUsers(user -> new PersonPermId(user.getUserId()));
@@ -168,7 +220,6 @@ class UserManagerExpectationsBuilder
         Function<IPersonId, PersonPermId> mapper = id -> (PersonPermId) id;
         List<String> expectedUsers = extractedSortedPermIds(allUsers);
         List<String> actualUsers = extractedSortedPermIds(persons.keySet().stream().map(mapper).collect(Collectors.toSet()));
-        System.out.println("UserManagerTestExpectation: Users: " + expectedUsers);
         assertEquals(actualUsers.toString(), expectedUsers.toString());
         for (PersonPermId id : allUsers)
         {
@@ -192,28 +243,29 @@ class UserManagerExpectationsBuilder
     {
         for (Entry<String, List<Principal>> entry : disabledUsersByGroup.entrySet())
         {
-            String groupKey = entry.getKey();
+            String groupCode = entry.getKey();
             for (Principal user : entry.getValue())
             {
-                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupKey, Level.NON));
-                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupKey, Level.NON));
+                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupCode, Level.NON));
+                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupCode, Level.NON));
                 for (List<Principal> users2 : usersByGroup.values())
                 {
-                    users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), Level.NON));
+                    users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), 
+                            equals(user, user2) ? Level.SPACE_ADMIN : Level.NON));
                 }
             }
         }
     }
-
+    
     private void createExpectationsForNormalUsers(AuthorizationExpectations expectations)
     {
         for (Entry<String, List<Principal>> entry : normalUsersByGroup.entrySet())
         {
-            String groupKey = entry.getKey();
+            String groupCode = entry.getKey();
             for (Principal user : entry.getValue())
             {
-                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupKey, Level.SPACE_USER));
-                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupKey, Level.SPACE_OBSERVER));
+                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupCode, Level.SPACE_USER));
+                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupCode, Level.SPACE_OBSERVER));
                 for (List<Principal> users2 : usersByGroup.values())
                 {
                     users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2),
@@ -227,17 +279,17 @@ class UserManagerExpectationsBuilder
     {
         for (Entry<String, List<Principal>> entry : adminUsersByGroup.entrySet())
         {
-            String groupKey = entry.getKey();
+            String groupCode = entry.getKey();
             for (Principal user : entry.getValue())
             {
-                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupKey, Level.SPACE_ADMIN));
-                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupKey, Level.SPACE_ADMIN));
+                commonSpaces.get(Role.USER).forEach(expectForSpace(expectations, user, groupCode, Level.SPACE_ADMIN));
+                commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupCode, Level.SPACE_ADMIN));
                 Set<Entry<String, List<Principal>>> entrySet = usersByGroup.entrySet();
                 for (Entry<String, List<Principal>> entry2 : entrySet)
                 {
-                    String group2Key = entry2.getKey();
+                    String groupCode2 = entry2.getKey();
                     List<Principal> users2 = entry2.getValue();
-                    if (groupKey.equals(group2Key))
+                    if (groupCode.equals(groupCode2))
                     {
                         users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), Level.SPACE_ADMIN));
                     } else
@@ -249,9 +301,9 @@ class UserManagerExpectationsBuilder
         }
     }
 
-    private Consumer<String> expectForSpace(AuthorizationExpectations expectations, Principal user, String groupKey, Level level)
+    private Consumer<String> expectForSpace(AuthorizationExpectations expectations, Principal user, String groupCode, Level level)
     {
-        return space -> expectations.expect(user, createCommonSpaceCode(groupKey, space), level);
+        return space -> expectations.expect(user, createCommonSpaceCode(groupCode, space), level);
     }
 
     private static final class AuthorizationExpectations
