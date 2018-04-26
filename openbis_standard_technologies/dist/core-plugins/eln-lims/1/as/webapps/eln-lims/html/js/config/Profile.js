@@ -118,7 +118,7 @@ $.extend(DefaultProfile.prototype, {
 
 //		BigDataLink EDMs config
 		this.EDMSs = {
-//				"EXAMPLE-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
+//				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
 		}
 		
 //		Jupyter integration config
@@ -128,6 +128,12 @@ $.extend(DefaultProfile.prototype, {
 		this.systemProperties = ["ANNOTATIONS_STATE"];
 		this.forcedDisableRTF = ["FREEFORM_TABLE_STATE","NAME", "SEQUENCE"];
 		this.forceMonospaceFont = ["SEQUENCE"];
+		
+		this.isRTF = function(propertytype) {
+			return (propertytype && 
+					propertytype.dataType === "MULTILINE_VARCHAR" &&
+					$.inArray(propertytype.code, this.forcedDisableRTF) === -1)
+		}
 		
 		this.isSystemProperty = function(propertytype) {
 			return (propertytype && $.inArray(propertytype.code, this.systemProperties) !== -1);
