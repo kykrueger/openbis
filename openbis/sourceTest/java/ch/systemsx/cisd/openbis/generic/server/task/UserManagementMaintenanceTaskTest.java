@@ -243,6 +243,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         UserManagerReport report = new UserManagerReport(new MockTimeProvider(0, 1000));
         report.addErrorMessage("This is a test error message");
         report.addGroup("blabla");
+        report.addUser("a", "A");
         UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
                 .withUserManagerReport(report);
         FileUtilities.writeToFile(configFile, "");
@@ -265,6 +266,9 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "This is a test error message\n\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
                 logRecorder.getLogContent());
+        assertEquals("1970-01-01 01:00:00 [ADD-GROUP] blabla\n"
+                + "1970-01-01 01:00:01 [ADD-USER] a (home space: A)\n\n",
+                FileUtilities.loadToString(auditLogFile));
     }
 
     private void assertConfigFailure(IMaintenanceTask task, String errorMessageSnippet)
