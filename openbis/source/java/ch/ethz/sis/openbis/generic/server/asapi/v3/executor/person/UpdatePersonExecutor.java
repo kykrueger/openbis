@@ -129,6 +129,7 @@ public class UpdatePersonExecutor
         }
         IRoleAssignmentDAO roleAssignmenDAO = daoFactory.getRoleAssignmentDAO();
         person.setActive(false);
+        person.setDisplaySettings(null);
         person.clearAuthorizationGroups();
         // Direct iteration over role assignments could lead to a
         // ConcurrentModificationException because roleAssignmentDAO.deleteRoleAssignment()

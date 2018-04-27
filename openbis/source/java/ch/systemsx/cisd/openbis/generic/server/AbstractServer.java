@@ -442,6 +442,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
             {
                 IRoleAssignmentDAO roleAssignmenDAO = getDAOFactory().getRoleAssignmentDAO();
                 person.setActive(false);
+                person.setDisplaySettings(null);
                 person.clearAuthorizationGroups();
                 // Direct iteration over role assignments could lead to a
                 // ConcurrentModificationException because roleAssignmentDAO.deleteRoleAssignment()
