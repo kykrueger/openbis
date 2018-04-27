@@ -109,11 +109,12 @@ def clone(ctx, ssh_user, content_copy_index, data_set_id):
 @click.pass_context
 @click.option('-m', '--msg', prompt=True, help='A message explaining what was done.')
 @click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.')
-def commit(ctx, msg, auto_add):
+@click.option('-i', '--ignore_missing_parent', default=True, is_flag=True, help='If parent data set is missing, ignore it.')
+def commit(ctx, msg, auto_add, ignore_missing_parent):
     """Commit the repository to git and inform openBIS.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("commit", run(lambda: data_mgmt.commit(msg, auto_add)))
+    return check_result("commit", run(lambda: data_mgmt.commit(msg, auto_add, ignore_missing_parent)))
 
 
 @cli.command()
@@ -139,7 +140,6 @@ def config(ctx, is_global, is_data_set_property, prop, value):
 def download(ctx, content_copy_index, file, data_set_id):
     """ Download files of a linked data set.
     """
-
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("download", run(lambda: data_mgmt.download(data_set_id, content_copy_index, file)))
 
@@ -258,11 +258,12 @@ def status(ctx):
 
 @cli.command()
 @click.pass_context
-def sync(ctx):
+@click.option('-i', '--ignore_missing_parent', default=True, is_flag=True, help='If parent data set is missing, ignore it.')
+def sync(ctx, ignore_missing_parent):
     """Sync the repository with openBIS.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("sync", run(data_mgmt.sync))
+    return check_result("sync", run(lambda: data_mgmt.sync(ignore_missing_parent)))
 
 
 def main():

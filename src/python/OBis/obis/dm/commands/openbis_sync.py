@@ -9,6 +9,12 @@ from .openbis_command import OpenbisCommand
 class OpenbisSync(OpenbisCommand):
     """A command object for synchronizing with openBIS."""
 
+
+    def __init__(self, dm, ignore_missing_parent=False):
+        self.ignore_missing_parent = ignore_missing_parent
+        super(OpenbisSync, self).__init__(dm)
+
+
     def check_configuration(self):
         missing_config_settings = []
         if self.openbis is None:
@@ -90,6 +96,10 @@ class OpenbisSync(OpenbisCommand):
         return False
 
     def continue_without_parent_data_set(self):
+
+        if self.ignore_missing_parent:
+            return True
+
         while True:
             print("The data set {} not found in openBIS".format(self.data_set_id()))
             print("Create new data set without parent? (y/n)")

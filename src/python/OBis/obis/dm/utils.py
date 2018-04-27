@@ -37,8 +37,8 @@ def default_echo(details):
         print(details['message'])
 
 
-def run_shell(args, shell=False):
-    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell))
+def run_shell(args, shell=False, strip_whitespace=True):
+    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell), strip_whitespace=strip_whitespace)
 
 
 def locate_command(command):

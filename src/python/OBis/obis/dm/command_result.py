@@ -1,14 +1,16 @@
 class CommandResult(object):
     """Encapsulate result from a subprocess call."""
 
-    def __init__(self, completed_process=None, returncode=None, output=None):
+    def __init__(self, completed_process=None, returncode=None, output=None, strip_whitespace=True):
         """Convert a completed_process object into a ShellResult."""
         if completed_process:
             self.returncode = completed_process.returncode
             if completed_process.stderr:
-                self.output = completed_process.stderr.decode('utf-8').strip()
+                self.output = completed_process.stderr.decode('utf-8')
             else:
-                self.output = completed_process.stdout.decode('utf-8').strip()
+                self.output = completed_process.stdout.decode('utf-8')
+            if strip_whitespace:
+                self.output = self.output.strip()
         else:
             self.returncode = returncode
             self.output = output

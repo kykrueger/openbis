@@ -89,7 +89,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def commit(self, msg, auto_add=True, sync=True):
+    def commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True):
         """Commit the current repo.
 
         This issues a git commit and connects to openBIS and creates a data set in openBIS.
@@ -101,7 +101,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def sync(self):
+    def sync(self, ignore_missing_parent=False):
         """Sync the current repo.
 
         This connects to openBIS and creates a data set in openBIS.
@@ -154,10 +154,10 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
         self.error_raise("init analysis", "No git command found.")
 
-    def commit(self, msg, auto_add=True, sync=True):
+    def commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True):
         self.error_raise("commit", "No git command found.")
 
-    def sync(self):
+    def sync(self, ignore_missing_parent=False):
         self.error_raise("sync", "No git command found.")
 
     def status(self):
@@ -248,28 +248,28 @@ class GitDataMgmt(AbstractDataMgmt):
         return result
 
 
-    def sync(self):
+    def sync(self, ignore_missing_parent=False):
         self.set_restorepoint()
-        result = self._sync()
+        result = self._sync(ignore_missing_parent)
         if result.failure():
             self.restore()
         return result
 
 
-    def _sync(self):
-        cmd = OpenbisSync(self)
+    def _sync(self, ignore_missing_parent=False):
+        cmd = OpenbisSync(self, ignore_missing_parent)
         return cmd.run()
 
 
-    def commit(self, msg, auto_add=True, sync=True, path=None):
+    def commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True, path=None):
         if path is not None:
             with cd(path):
-                return self._commit(msg, auto_add, sync);
+                return self._commit(msg, auto_add, ignore_missing_parent, sync);
         else:
-            return self._commit(msg, auto_add, sync);
+            return self._commit(msg, auto_add, ignore_missing_parent, sync);
 
 
-    def _commit(self, msg, auto_add=True, sync=True):
+    def _commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True):
         self.set_restorepoint()
         if auto_add:
             result = self.git_wrapper.git_top_level_path()
@@ -283,7 +283,7 @@ class GitDataMgmt(AbstractDataMgmt):
             # TODO If no changes were made check if the data set is in openbis. If not, just sync.
             return result
         if sync:
-            result = self._sync()
+            result = self._sync(ignore_missing_parent)
             if result.failure():
                 self.restore()
         return result
