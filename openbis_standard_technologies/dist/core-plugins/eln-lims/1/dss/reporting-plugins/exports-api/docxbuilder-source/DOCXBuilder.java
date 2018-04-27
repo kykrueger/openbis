@@ -2,18 +2,19 @@ package ch.ethz.sis;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Base64;
 
-import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.contenttype.ContentType;
+import org.docx4j.convert.in.xhtml.XHTMLImporterImpl;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.CTAltChunk;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 
 public class DOCXBuilder {
 	public static void main(String[] args) throws Exception {
@@ -39,15 +40,20 @@ public class DOCXBuilder {
 	private boolean closed;
 
 	public DOCXBuilder() {
+		System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
 		closed = false;
 		doc = new StringBuffer();
 		startDoc();
 	}
 
+	public void setDocument(String doc) {
+		this.doc = new StringBuffer(doc);
+		closed = true;
+	}
+	
 	private void startDoc() {
 		if (!closed) {
-			doc.append(
-					"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
+			doc.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
 			doc.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
 			doc.append("<head></head>");
 			doc.append("<body>");
@@ -74,7 +80,7 @@ public class DOCXBuilder {
         if (!closed)
         {
             value = cleanXMLEnvelope(value);
-            doc.append("<p>").append(getImgFixed(value)).append("</p>");
+            doc.append("<p>").append(fixImageSizes(value)).append("</p>");
         }
     }
 
@@ -91,45 +97,44 @@ public class DOCXBuilder {
 	}
 
 	public byte[] getHTMLBytes() throws Exception {
-		endDoc();
-		return doc.toString().getBytes();
+		if (!closed) {
+			endDoc();
+		}
+		String docWithImg = encodeImgAsBase64(doc.toString());
+		return docWithImg.getBytes();
 	}
 
 	public byte[] getDocBytes() throws Exception {
 		// .. Finish Document
-		endDoc();
-
-		// .. HTML Code
+		if (!closed) {
+			endDoc();
+		}
+		
+		Document xhtmldoc = Jsoup.parse(doc.toString());
+		xhtmldoc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
-		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(new PartName("/hw.html"));
-		afiPart.setBinaryData(doc.toString().getBytes());
-		afiPart.setContentType(new ContentType("text/html"));
-		Relationship altChunkRel = wordMLPackage.getMainDocumentPart().addTargetPart(afiPart);
+		XHTMLImporterImpl XHTMLImporter = new XHTMLImporterImpl(wordMLPackage);
+		wordMLPackage.getMainDocumentPart().getContent().addAll(XHTMLImporter.convert( xhtmldoc.html(), null) );
 
-		// .. the bit in document body
-		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
-		ac.setId(altChunkRel.getId());
-		wordMLPackage.getMainDocumentPart().addObject(ac);
-
-		// .. content type
-		wordMLPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		wordMLPackage.save(outStream);
 
 		return outStream.toByteArray();
 	}
-
+	
 	private String cleanXMLEnvelope(String value) {
 		if (value.startsWith(START_RICH_TEXT) && value.endsWith(END_RICH_TEXT)) {
 			value = value.substring(START_RICH_TEXT.length() + 3, value.length() - END_RICH_TEXT.length());
 		}
 		return value;
 	}
-
-	private String getImgFixed(String value) {
+	
+	private String fixImageSizes(String value) {
 		Document doc = Jsoup.parse(value);
-
+		doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
 		Elements elements = doc.select("img");
+		
 		for (Element element : elements) {
 			String style = element.attr("style");
 			if (style != null) {
@@ -153,4 +158,28 @@ public class DOCXBuilder {
 		
 		return doc.html();
 	}
+	
+	private String encodeImgAsBase64(String value) {
+		Document doc = Jsoup.parse(value);
+		doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+		Elements elements = doc.select("img");
+		
+		for (Element element : elements) {
+			String src = element.attr("src");
+			try {
+				element.attr("src", getDataUriFromUri(src));
+			} catch(Exception ex) {
+				
+			}
+		}
+		
+		return doc.html();
+	}
+	
+	private static String getDataUriFromUri(String url) throws Exception {
+		HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request requestEntity = client.newRequest(url).method("GET");
+        ContentResponse contentResponse = requestEntity.send();
+        return "data:"+contentResponse.getMediaType()+";base64,"+Base64.getEncoder().encodeToString(contentResponse.getContent());
+    }
 }
