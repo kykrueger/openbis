@@ -88,7 +88,6 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
                     + "'ldap.security.principal.password' have to be specified in 'service.properties'.");
         }
         operationLog.info("Plugin '" + pluginName + "' initialized. Configuration file: " + configurationFile.getAbsolutePath());
-
     }
 
     @Override
@@ -99,9 +98,9 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         {
             return;
         }
+        operationLog.info("manage " + config.getGroups().size() + " groups");
         Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
-        UserManager userManager = new UserManager(ldapService, getService(),
-                config.getCommonSpaces(), logger, getTimeProvider());
+        UserManager userManager = createUserManager(config, logger);
         for (UserGroup group : config.getGroups())
         {
             if (addGroup(userManager, group) == false)
@@ -190,14 +189,9 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         return (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
     }
 
-    protected IApplicationServerInternalApi getService()
+    protected UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
     {
-        return CommonServiceProvider.getApplicationServerApi();
+        return new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
+                config.getCommonSpaces(), logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
     }
-
-    protected ITimeAndWaitingProvider getTimeProvider()
-    {
-        return SystemTimeProvider.SYSTEM_TIME_PROVIDER;
-    }
-
 }
