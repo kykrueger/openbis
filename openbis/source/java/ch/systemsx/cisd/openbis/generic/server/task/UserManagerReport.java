@@ -58,7 +58,7 @@ public class UserManagerReport
 
     void addGroup(String groupCode)
     {
-        log("ADD-GROUP", groupCode);
+        log("ADD-AUTHORIZATION-GROUP", groupCode);
     }
 
     void deactivateUser(String userId)
@@ -66,11 +66,16 @@ public class UserManagerReport
         log("DEACTIVATE-USER", userId);
     }
 
-    void addUser(String userId, String homeSpaceCode)
+    void addUser(String userId, ISpaceId homeSpaceId)
     {
-        log("ADD-USER", userId + " (home space: " + homeSpaceCode + ")");
+        log("ADD-USER", userId + " (home space: " + homeSpaceId + ")");
     }
 
+    public void reuseUser(String userId, ISpaceId homeSpaceId)
+    {
+        log("REUSE-USER", userId + " (home space: " + homeSpaceId + ")");
+    }
+    
     void addSpace(ISpaceId spaceId)
     {
         log("ADD-SPACE", spaceId);
@@ -78,17 +83,17 @@ public class UserManagerReport
 
     void assignRoleTo(AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)
     {
-        log("ASSIGN-ROLE-TO-GROUP", groupId + ", SPACE_" + role + " for " + spaceId);
+        log("ASSIGN-ROLE-TO-AUTHORIZATION-GROUP", "group: " + groupId + ", role: SPACE_" + role + " for " + spaceId);
     }
 
     void addUserToGroup(String groupCode, String userId)
     {
-        log("ADD-USER-TO-GROUP", groupCode + ", " + userId);
+        log("ADD-USER-TO-AUTHORIZATION-GROUP", "group: " + groupCode + ", user: " + userId);
     }
 
     void removeUserFromGroup(String groupCode, String userId)
     {
-        log("REMOVE-USER-FROM-GROUP", groupCode + ", " + userId);
+        log("REMOVE-USER-FROM-AUTHORIZATION-GROUP", "group: " + groupCode + ", user: " + userId);
     }
 
     private void log(String action, Object details)

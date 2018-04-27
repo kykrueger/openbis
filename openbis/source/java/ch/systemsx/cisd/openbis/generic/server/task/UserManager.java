@@ -378,9 +378,7 @@ public class UserManager
         }
 
         ISpaceId homeSpaceId = createSpace(context, homeSpaceCode);
-        IPersonId personId = createPerson(context, userId);
-        assignHomeSpace(context, homeSpaceId, personId);
-        report.addUser(userId, homeSpaceCode);
+        createUserWithHomeSpace(context, userId, homeSpaceId, report);
 
         for (GroupInfo groupInfo : userInfo.getGroupInfosByGroupKey().values())
         {
@@ -395,14 +393,26 @@ public class UserManager
         }
     }
 
-    private void assignHomeSpace(Context context, ISpaceId homeSpaceId, IPersonId personId)
+    private void createUserWithHomeSpace(Context context, String userId, ISpaceId homeSpaceId, UserManagerReport report)
     {
+        PersonPermId personPermId = new PersonPermId(userId);
+        PersonFetchOptions fetchOptions = new PersonFetchOptions();
+        if (service.getPersons(context.getSessionToken(), Arrays.asList(personPermId), fetchOptions).isEmpty())
+        {
+            PersonCreation personCreation = new PersonCreation();
+            personCreation.setUserId(userId);
+            context.add(personCreation);
+            report.addUser(userId, homeSpaceId);
+        } else
+        {
+            report.reuseUser(userId, homeSpaceId);
+        }
         PersonUpdate personUpdate = new PersonUpdate();
-        personUpdate.setUserId(personId);
+        personUpdate.setUserId(personPermId);
         personUpdate.setSpaceId(homeSpaceId);
         context.add(personUpdate);
         RoleAssignmentCreation roleCreation = new RoleAssignmentCreation();
-        roleCreation.setUserId(personId);
+        roleCreation.setUserId(personPermId);
         roleCreation.setRole(Role.ADMIN);
         roleCreation.setSpaceId(homeSpaceId);
         context.add(roleCreation);
@@ -442,14 +452,6 @@ public class UserManager
         spaceCreation.setCode(spaceCode);
         context.add(spaceCreation);
         return new SpacePermId(spaceCode);
-    }
-
-    private IPersonId createPerson(Context context, String userId)
-    {
-        PersonCreation personCreation = new PersonCreation();
-        personCreation.setUserId(userId);
-        context.add(personCreation);
-        return new PersonPermId(userId);
     }
 
     private void createAuthorizationGroup(Context context, String groupCode, UserManagerReport report)

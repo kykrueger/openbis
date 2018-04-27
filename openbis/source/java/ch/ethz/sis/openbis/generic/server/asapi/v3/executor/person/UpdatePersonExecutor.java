@@ -116,6 +116,9 @@ public class UpdatePersonExecutor
             if (person.isActive() && personUpdate.isActive() == false)
             {
                 deactivate(context, person);
+            } else if (person.isActive() == false && personUpdate.isActive())
+            {
+                activate(context, person);
             }
         }
     }
@@ -140,6 +143,12 @@ public class UpdatePersonExecutor
         {
             roleAssignmenDAO.deleteRoleAssignment(roleAssignment);
         }
+    }
+    
+    private void activate(IOperationContext context, PersonPE person)
+    {
+        authorizationExecutor.canActivate(context);
+        person.setActive(true);
     }
 
     @Override

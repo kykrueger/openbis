@@ -32,6 +32,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
 import ch.systemsx.cisd.authentication.ldap.LDAPDirectoryConfiguration;
@@ -243,7 +244,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         UserManagerReport report = new UserManagerReport(new MockTimeProvider(0, 1000));
         report.addErrorMessage("This is a test error message");
         report.addGroup("blabla");
-        report.addUser("a", "A");
+        report.addUser("a", new SpacePermId("A"));
         UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
                 .withUserManagerReport(report);
         FileUtilities.writeToFile(configFile, "");
@@ -266,7 +267,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "This is a test error message\n\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
                 logRecorder.getLogContent());
-        assertEquals("1970-01-01 01:00:00 [ADD-GROUP] blabla\n"
+        assertEquals("1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] blabla\n"
                 + "1970-01-01 01:00:01 [ADD-USER] a (home space: A)\n\n",
                 FileUtilities.loadToString(auditLogFile));
     }

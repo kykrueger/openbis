@@ -55,6 +55,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 
 class UserManagerExpectationsBuilder
 {
+    static final String HOME_SPACE_KEY = "home-space";
+
     private static final String TEST_USER = "test";
 
     private static final String PASSWORD = "password";
@@ -67,12 +69,14 @@ class UserManagerExpectationsBuilder
 
     private final Map<Role, List<String>> commonSpaces;
 
+    private Map<String, String> homeSpacesByUserId = new TreeMap<>();
+
     private Map<String, List<Principal>> usersByGroup = new TreeMap<>();
 
     private List<Principal> unknownUsers = new ArrayList<>();
 
     private Map<String, List<Principal>> disabledUsersByGroup = new TreeMap<>();
-    
+
     private Map<String, List<Principal>> normalUsersByGroup = new TreeMap<>();
 
     private Map<String, List<Principal>> adminUsersByGroup = new TreeMap<>();
@@ -91,7 +95,7 @@ class UserManagerExpectationsBuilder
         unknownUsers.add(user);
         return this;
     }
-    
+
     UserManagerExpectationsBuilder disabledUser(Principal user, String... groups)
     {
         return addUser(user, disabledUsersByGroup, groups);
@@ -114,6 +118,8 @@ class UserManagerExpectationsBuilder
             addUserToGroup(user, group, users);
             addUserToGroup(user, group, usersByGroup);
         }
+        String homeSpace = user.getProperty(HOME_SPACE_KEY);
+        homeSpacesByUserId.put(user.getUserId(), homeSpace == null ? user.getUserId().toUpperCase() : homeSpace);
         return this;
     }
 
@@ -142,7 +148,7 @@ class UserManagerExpectationsBuilder
     {
         List<SpacePermId> allCommonSpaces = getAllCommonSpaces();
         assertSpacesExist(sessionToken, allCommonSpaces);
-        List<SpacePermId> allUserSpaces = applyMapperToAllUsers(user -> new SpacePermId(user.getUserId().toUpperCase()));
+        List<SpacePermId> allUserSpaces = applyMapperToAllUsers(user -> new SpacePermId(getHomeSpaceFor(user.getUserId())));
         assertSpacesExist(sessionToken, allUserSpaces);
     }
 
@@ -168,7 +174,7 @@ class UserManagerExpectationsBuilder
         List<String> expectedSpaces = extractedSortedPermIds(spaces);
         SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
         List<String> actualSpaces = extractedSortedCodes(v3api.getSpaces(sessionToken, spaces, fetchOptions).values());
-        assertEquals(actualSpaces.toString(), expectedSpaces.toString());
+        assertEquals(actualSpaces.toString(), expectedSpaces.toString(), "Spaces");
     }
 
     private void assertUnknownUsers(String sessionToken)
@@ -210,7 +216,7 @@ class UserManagerExpectationsBuilder
         }
         return usersByGroupId;
     }
-    
+
     private void assertUsers(String sessionToken)
     {
         List<PersonPermId> allUsers = applyMapperToAllUsers(user -> new PersonPermId(user.getUserId()));
@@ -220,13 +226,14 @@ class UserManagerExpectationsBuilder
         Function<IPersonId, PersonPermId> mapper = id -> (PersonPermId) id;
         List<String> expectedUsers = extractedSortedPermIds(allUsers);
         List<String> actualUsers = extractedSortedPermIds(persons.keySet().stream().map(mapper).collect(Collectors.toSet()));
-        assertEquals(actualUsers.toString(), expectedUsers.toString());
+        assertEquals(actualUsers.toString(), expectedUsers.toString(), "Users");
         for (PersonPermId id : allUsers)
         {
             Person person = persons.get(id);
             assertEquals(person.getUserId(), id.getPermId());
+            assertEquals(person.isActive(), Boolean.TRUE);
             assertEquals(person.getEmail(), "franz-josef.elmer@systemsx.ch", "Wrong email of " + person);
-            assertEquals(person.getSpace().getCode(), person.getUserId().toUpperCase(), "Wrong home space of " + person);
+            assertEquals(person.getSpace().getCode(), getHomeSpaceFor(person.getUserId()), "Wrong home space of " + person);
         }
     }
 
@@ -250,13 +257,13 @@ class UserManagerExpectationsBuilder
                 commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupCode, Level.NON));
                 for (List<Principal> users2 : usersByGroup.values())
                 {
-                    users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), 
+                    users2.forEach(user2 -> expectations.expect(user, getHomeSpace(user2),
                             equals(user, user2) ? Level.SPACE_ADMIN : Level.NON));
                 }
             }
         }
     }
-    
+
     private void createExpectationsForNormalUsers(AuthorizationExpectations expectations)
     {
         for (Entry<String, List<Principal>> entry : normalUsersByGroup.entrySet())
@@ -268,7 +275,7 @@ class UserManagerExpectationsBuilder
                 commonSpaces.get(Role.OBSERVER).forEach(expectForSpace(expectations, user, groupCode, Level.SPACE_OBSERVER));
                 for (List<Principal> users2 : usersByGroup.values())
                 {
-                    users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2),
+                    users2.forEach(user2 -> expectations.expect(user, getHomeSpace(user2),
                             equals(user, user2) ? Level.SPACE_ADMIN : Level.NON));
                 }
             }
@@ -291,14 +298,24 @@ class UserManagerExpectationsBuilder
                     List<Principal> users2 = entry2.getValue();
                     if (groupCode.equals(groupCode2))
                     {
-                        users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), Level.SPACE_ADMIN));
+                        users2.forEach(user2 -> expectations.expect(user, getHomeSpace(user2), Level.SPACE_ADMIN));
                     } else
                     {
-                        users2.forEach(user2 -> expectations.expect(user, getOwenSpace(user2), Level.NON));
+                        users2.forEach(user2 -> expectations.expect(user, getHomeSpace(user2), Level.NON));
                     }
                 }
             }
         }
+    }
+
+    private String getHomeSpace(Principal user)
+    {
+        return getHomeSpaceFor(user.getUserId());
+    }
+
+    private String getHomeSpaceFor(String userId)
+    {
+        return homeSpacesByUserId.get(userId);
     }
 
     private Consumer<String> expectForSpace(AuthorizationExpectations expectations, Principal user, String groupCode, Level level)
@@ -425,11 +442,6 @@ class UserManagerExpectationsBuilder
     private static String createCommonSpaceCode(String groupCode, String spaceCode)
     {
         return groupCode + "_" + spaceCode;
-    }
-
-    private static String getOwenSpace(Principal user)
-    {
-        return user.getUserId().toUpperCase();
     }
 
     private static boolean equals(Principal user1, Principal user2)
