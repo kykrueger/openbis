@@ -75,8 +75,6 @@ elnTypes.createProperty(tr, "COLOR_ENCODED_ANNOTATION", DataType.CONTROLLEDVOCAB
 ## DataSet Types
 ##
 elnTypes.createDataSetTypeWithProperties(tr, elnTypes.SEQ_FILE);
-elnTypes.createDataSetTypeWithProperties(tr, elnTypes.RAW_DATA);
-elnTypes.createDataSetTypeWithProperties(tr, elnTypes.ANALYZED_DATA);
 	
 ##
 ## Experiment Types

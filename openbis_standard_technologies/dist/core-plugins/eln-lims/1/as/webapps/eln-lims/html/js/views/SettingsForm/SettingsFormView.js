@@ -390,8 +390,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				enabled : sampleTypeSettings["ENABLE_STORAGE"]
 			});
 			tableModel.addRow({
-				name : "Hide",
-				enabled : sampleTypeSettings["HIDE"]
+				name : "Show",
+				enabled : sampleTypeSettings["SHOW"]
 			});
 		} else { // default values
 			tableModel.addRow({
@@ -411,8 +411,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					settings["USE_AS_PROTOCOL"] = rowValues["enabled"];
 				} else if (rowValues["Options"] === "Enable Storage") {
 					settings["ENABLE_STORAGE"] = rowValues["enabled"];
-				} else if (rowValues["Options"] === "Hide") {
-					settings["HIDE"] = rowValues["enabled"];
+				} else if (rowValues["Options"] === "Show") {
+					settings["SHOW"] = rowValues["enabled"];
 				}
 			}
 			return settings;

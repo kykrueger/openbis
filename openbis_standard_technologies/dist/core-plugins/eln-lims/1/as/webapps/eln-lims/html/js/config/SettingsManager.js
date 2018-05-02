@@ -107,8 +107,8 @@ function SettingsManager(serverFacade) {
 		// sampleTypeDefinitionsExtension gets overwritten with settings if found
 		for (var sampleType of Object.keys(settings.sampleTypeDefinitionsExtension)) {
 			profile.sampleTypeDefinitionsExtension[sampleType] = settings.sampleTypeDefinitionsExtension[sampleType];
-			// Add the types to hide
-			if(settings.sampleTypeDefinitionsExtension[sampleType].HIDE) {
+			// Add the types to hide == not show
+			if(!settings.sampleTypeDefinitionsExtension[sampleType].SHOW) {
 				targetProfile.hideTypes["sampleTypeCodes"].push(sampleType);
 			}
 		}
