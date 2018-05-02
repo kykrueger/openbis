@@ -31,9 +31,9 @@ class GitWrapper(object):
 
     def git_status(self, path=None):
         if path is None:
-            return run_shell([self.git_path, "status", "--porcelain"], strip_whitespace=False)
+            return run_shell([self.git_path, "status", "--porcelain"], strip_leading_whitespace=False)
         else:
-            return run_shell([self.git_path, "status", "--porcelain", path], strip_whitespace=False)
+            return run_shell([self.git_path, "status", "--porcelain", path], strip_leading_whitespace=False)
 
     def git_annex_init(self, path, desc):
         cmd = [self.git_path, "-C", path, "annex", "init", "--version=6"]

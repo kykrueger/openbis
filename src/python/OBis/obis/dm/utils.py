@@ -34,8 +34,8 @@ def default_echo(details):
         print(details['message'])
 
 
-def run_shell(args, shell=False, strip_whitespace=True, raise_exception_on_failure=False):
-    result = CommandResult(subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell), strip_whitespace=strip_whitespace)
+def run_shell(args, shell=False, strip_leading_whitespace=True, raise_exception_on_failure=False):
+    result = CommandResult(subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell), strip_leading_whitespace=strip_leading_whitespace)
     if raise_exception_on_failure == True and result.failure():
         raise CommandException(result)
     return result
