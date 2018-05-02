@@ -20,7 +20,7 @@ def decorator_print(func):
     def wrapper(tmpdir, *args, **kwargs):
         try:
             func(tmpdir, *args, **kwargs)
-        except AssertionError:
+        except Exception:
             print(output_buffer)
             raise
     return wrapper
@@ -79,7 +79,7 @@ def test_obis(tmpdir):
             assert "Created data set {}.".format(config['data_set_id']) in result
             result = cmd('git annex info big_file')
             assert 'file: big_file' in result
-            assert 'key: SHA256E-s1000000--d29751f2649b32ff572b5e0a9f541ea660a50f94ff0beedfb0b692b924cc8025' in result
+            assert 'key: MD5-s1000000--879f4bba57ed37c9ec5e5aedf9864698' in result
             assert 'present: true' in result
             data_set = o.get_dataset(config['data_set_id']).data
             assert_matching(config, data_set, tmpdir, 'obis_data/data1')

@@ -249,7 +249,7 @@ class ConfigResolverImpl(object):
             else:
                 config = config['public']
         value = config.get(param.name)
-        if value is None:
+        if loc == 'global' and value is None:
             value = param.default_value
         return value
 
