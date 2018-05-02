@@ -325,7 +325,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	this._paintSampleTypesDefinition = function($container, text) {
 		var $fieldset = this._getFieldset($container, text.title, "settings-section-sampletype-definitions");
 		$fieldset.append(FormUtil.getInfoText(text.info));
-		for (var sampleType of this._profileToEdit.getAllSampleTypes(true)) {
+		for (var sampleType of this._profileToEdit.getAllSampleTypes(false)) {
 			// layout
 			var $div = $("<div>").css("padding-left", "15px");
 			var displayName = Util.getDisplayNameFromCode(sampleType.code);
@@ -389,6 +389,10 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				name : "Enable Storage",
 				enabled : sampleTypeSettings["ENABLE_STORAGE"]
 			});
+			tableModel.addRow({
+				name : "Hide",
+				enabled : sampleTypeSettings["HIDE"]
+			});
 		} else { // default values
 			tableModel.addRow({
 				name : "Use as Protocol",
@@ -407,6 +411,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					settings["USE_AS_PROTOCOL"] = rowValues["enabled"];
 				} else if (rowValues["Options"] === "Enable Storage") {
 					settings["ENABLE_STORAGE"] = rowValues["enabled"];
+				} else if (rowValues["Options"] === "Hide") {
+					settings["HIDE"] = rowValues["enabled"];
 				}
 			}
 			return settings;
