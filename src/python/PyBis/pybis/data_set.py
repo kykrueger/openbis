@@ -38,6 +38,8 @@ class GitDataSetCreation(object):
         :param contents: A list of dicts that describe the contents:
             {'fileLength': [file length],
              'crc32': [crc32 checksum],
+             'checksum': [checksum other than crc32],
+             'checksumType': [checksum type if fiels checksum is used],
              'directory': [is path a directory?]
              'path': [the relative path string]}
 
@@ -172,6 +174,8 @@ class GitDataSetCreation(object):
         result = {}
         transfer_to_file_creation(content, result, 'fileLength')
         transfer_to_file_creation(content, result, 'crc32', 'checksumCRC32')
+        transfer_to_file_creation(content, result, 'checksum', 'checksum')
+        transfer_to_file_creation(content, result, 'checksumType', 'checksumType')
         transfer_to_file_creation(content, result, 'directory')
         transfer_to_file_creation(content, result, 'path')
         return result

@@ -176,6 +176,20 @@ class NoGitDataMgmt(AbstractDataMgmt):
         self.error_raise("download", "No git command found.")
 
 
+def with_restore(f):
+    def f_with_restore(self, *args):
+        self.set_restorepoint()
+        try:
+            result = f(self, *args)
+            if result.failure():
+                self.restore()
+            return result
+        except Exception as e:
+            self.restore()
+            return CommandResult(returncode=-1, output="Error: " + str(e))
+    return f_with_restore
+
+
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
@@ -248,12 +262,9 @@ class GitDataMgmt(AbstractDataMgmt):
         return result
 
 
+    @with_restore
     def sync(self, ignore_missing_parent=False):
-        self.set_restorepoint()
-        result = self._sync(ignore_missing_parent)
-        if result.failure():
-            self.restore()
-        return result
+        return self._sync(ignore_missing_parent)
 
 
     def _sync(self, ignore_missing_parent=False):
@@ -269,8 +280,8 @@ class GitDataMgmt(AbstractDataMgmt):
             return self._commit(msg, auto_add, ignore_missing_parent, sync);
 
 
+    @with_restore
     def _commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True):
-        self.set_restorepoint()
         if auto_add:
             result = self.git_wrapper.git_top_level_path()
             if result.failure():
@@ -284,9 +295,8 @@ class GitDataMgmt(AbstractDataMgmt):
             return result
         if sync:
             result = self._sync(ignore_missing_parent)
-            if result.failure():
-                self.restore()
         return result
+
 
     def status(self):
         git_status = self.git_wrapper.git_status()

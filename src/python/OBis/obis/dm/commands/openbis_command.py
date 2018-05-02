@@ -57,6 +57,9 @@ class OpenbisCommand(object):
     def fileservice_url(self):
         return self.config_dict.get('fileservice_url')
 
+    def git_annex_hash_as_checksum(self):
+        return self.config_dict.get('git_annex_hash_as_checksum')
+
     def prepare_run(self):
         result = self.check_configuration()
         if result.failure():

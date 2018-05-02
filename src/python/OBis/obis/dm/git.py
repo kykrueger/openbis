@@ -1,6 +1,8 @@
+import json
 import shutil
 import os
 from .utils import run_shell
+from .command_result import CommandException
 
 
 class GitWrapper(object):
@@ -88,7 +90,7 @@ class GitWrapper(object):
 
     def git_delete_if_untracked(self, file):
         result = run_shell([self.git_path, 'ls-files', '--error-unmatch', file])
-        if file in result.output:
+        if 'did not match' in result.output:
             run_shell(['rm', file])
 
 class GitRepoFileInfo(object):
@@ -97,16 +99,18 @@ class GitRepoFileInfo(object):
     def __init__(self, git_wrapper):
         self.git_wrapper = git_wrapper
 
-    def contents(self):
+    def contents(self, git_annex_hash_as_checksum=False):
         """Return a list of dicts describing the contents of the repo.
         :return: A list of dictionaries
           {'crc32': checksum,
+           'checksum': checksum other than crc32
+           'checksumType': type of checksum
            'fileLength': size of the file,
            'path': path relative to repo root.
            'directory': False
           }"""
         files = self.file_list()
-        cksum = self.cksum(files)
+        cksum = self.cksum(files, git_annex_hash_as_checksum)
         return cksum
 
     def file_list(self):
@@ -117,20 +121,79 @@ class GitRepoFileInfo(object):
         files = [line.split("\t")[-1].strip() for line in lines]
         return files
 
-    def cksum(self, files):
-        cmd = ['cksum']
-        cmd.extend(files)
-        result = run_shell(cmd)
-        if result.failure():
-            return []
-        lines = result.output.split("\n")
-        return [self.checksum_line_to_dict(line) for line in lines]
+    def cksum(self, files, git_annex_hash_as_checksum=False):
 
-    @staticmethod
-    def checksum_line_to_dict(line):
-        fields = line.split(" ")
+        if git_annex_hash_as_checksum == False:
+            checksum_generator = ChecksumGeneratorCrc32()
+        else:
+            checksum_generator = ChecksumGeneratorGitAnnex()
+
+        checksums = []
+
+        for file in files:
+            checksum = checksum_generator.get_checksum(file)
+            checksums.append(checksum)
+
+        return checksums
+
+
+class ChecksumGeneratorCrc32(object):
+    def get_checksum(self, file):
+        result = run_shell(['cksum', file])
+        if result.failure():
+            raise CommandException(result)
+        fields = result.output.split(" ")
         return {
             'crc32': int(fields[0]),
             'fileLength': int(fields[1]),
-            'path': fields[2]
+            'path': file
         }
+
+
+class ChecksumGeneratorMd5(object):
+    def get_checksum(self, file):
+        md5_result = run_shell(['md5', file], raise_exception_on_failure=True)
+        return {
+            'checksum': md5_result.output.split(" ")[-1],
+            'checksumType': 'MD5',
+            'fileLength': os.path.getsize(file),
+            'path': file
+        }
+
+
+class ChecksumGeneratorGitAnnex(object):
+
+    def __init__(self):
+        backend = self._get_annex_backend()
+        self.checksum_generator_replacement = ChecksumGeneratorCrc32() if backend is None else None
+        # define which generator to use for files which are not handled by annex
+        if backend == 'MD5':
+            self.checksum_generator_supplement = ChecksumGeneratorMd5()
+        else:
+            self.checksum_generator_supplement = ChecksumGeneratorCrc32()
+
+    def get_checksum(self, file):
+        if self.checksum_generator_replacement is not None:
+            return self.checksum_generator_replacement.get_checksum(file)
+        return self._get_checksum(file)
+
+    def _get_checksum(self, file):
+        annex_result = run_shell(['git', 'annex', 'info', '-j', file], raise_exception_on_failure=True)
+        if 'Not a valid object name' in annex_result.output:
+            return self.checksum_generator_supplement.get_checksum(file)
+        annex_info = json.loads(annex_result.output)
+        if annex_info['present'] != True:
+            return self.checksum_generator_supplement.get_checksum(file)
+        return {
+            'checksum': annex_info['key'].split('--')[1],
+            'checksumType': annex_info['key'].split('-')[0],
+            'fileLength': os.path.getsize(file),
+            'path': file
+        }
+
+    def _get_annex_backend(self):
+        with open('.gitattributes') as gitattributes:
+            for line in gitattributes.readlines():
+                if 'annex.backend' in line:
+                    return line.split('=')[1].strip()
+        return None

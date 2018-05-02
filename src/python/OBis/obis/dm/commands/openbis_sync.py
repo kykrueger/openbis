@@ -53,7 +53,7 @@ class OpenbisSync(OpenbisCommand):
         commit_id = result.output
         sample_id = self.object_id()
         experiment_id = self.collection_id()
-        contents = GitRepoFileInfo(self.git_wrapper).contents()
+        contents = GitRepoFileInfo(self.git_wrapper).contents(git_annex_hash_as_checksum=self.git_annex_hash_as_checksum())
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,
                                                      sample=sample_id, experiment=experiment_id, properties=properties, parents=parent_data_set_id,
