@@ -156,7 +156,7 @@ def test_child_data_set(tmpdir):
         repository_id = dm.config_resolver.config_dict()['repository_id']
         assert repository_id is not None
 
-        contents = git.GitRepoFileInfo(dm.git_wrapper).contents()
+        contents = git.GitRepoFileInfo(dm.git_wrapper).contents(git_annex_hash_as_checksum=True)
         check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, 
                                         properties, contents)
 
