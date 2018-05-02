@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 

@@ -1889,6 +1889,82 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testSearch(c, fSearch, fCheck);
 		});
+		
+		QUnit.test("searchQueries() withId", function(assert) {
+			var c = new common(assert, openbis);
+
+			var creation = new c.QueryCreation();
+			creation.setName(c.generateId("query"));
+			creation.setDatabaseId(new c.QueryDatabaseName("openbisDB"));
+			creation.setQueryType(c.QueryType.GENERIC);
+			creation.setSql("some sql");
+
+			var fSearch = function(facade) {
+				return facade.createQueries([creation]).then(function(techIds) {
+					var criteria = new c.QuerySearchCriteria();
+					criteria.withId().thatEquals(techIds[0]);
+					return facade.searchQueries(criteria, c.createQueryFetchOptions());
+				});
+			}
+
+			var fCheck = function(facade, queries) {
+				c.assertEqual(queries.length, 1);
+				c.assertEqual(queries[0].getName(), creation.getName(), "Name");
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchQueries() withName", function(assert) {
+			var c = new common(assert, openbis);
+
+			var creation = new c.QueryCreation();
+			creation.setName(c.generateId("query"));
+			creation.setDatabaseId(new c.QueryDatabaseName("openbisDB"));
+			creation.setQueryType(c.QueryType.GENERIC);
+			creation.setSql("some sql");
+
+			var fSearch = function(facade) {
+				return facade.createQueries([creation]).then(function(techIds) {
+					var criteria = new c.QuerySearchCriteria();
+					criteria.withName().thatEquals(creation.getName());
+					return facade.searchQueries(criteria, c.createQueryFetchOptions());
+				});
+			}
+
+			var fCheck = function(facade, queries) {
+				c.assertEqual(queries.length, 1);
+				c.assertEqual(queries[0].getName(), creation.getName(), "Name");
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchQueries() withEntityTypeCodePattern", function(assert) {
+			var c = new common(assert, openbis);
+
+			var creation = new c.QueryCreation();
+			creation.setName(c.generateId("query"));
+			creation.setDatabaseId(new c.QueryDatabaseName("openbisDB"));
+			creation.setQueryType(c.QueryType.EXPERIMENT);
+			creation.setEntityTypeCodePattern(c.generateId("pattern"))
+			creation.setSql("some sql");
+			
+			var fSearch = function(facade) {
+				return facade.createQueries([creation]).then(function(techIds) {
+					var criteria = new c.QuerySearchCriteria();
+					criteria.withEntityTypeCodePattern().thatEquals(creation.getEntityTypeCodePattern());
+					return facade.searchQueries(criteria, c.createQueryFetchOptions());
+				});
+			}
+
+			var fCheck = function(facade, queries) {
+				c.assertEqual(queries.length, 1);
+				c.assertEqual(queries[0].getName(), creation.getName(), "Name");
+			}
+
+			testSearch(c, fSearch, fCheck);
+		});
 
 	}
 

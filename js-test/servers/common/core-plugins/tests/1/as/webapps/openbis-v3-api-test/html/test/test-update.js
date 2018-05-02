@@ -1107,6 +1107,42 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testUpdate(c, fCreate, fUpdate, c.findSemanticAnnotation, fCheck);
 		});
+		
+		QUnit.test("updateQueries()", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var update = new c.QueryUpdate();
+			update.setName(c.generateId("query"));
+			update.setDescription("updated description");
+			update.setDatabaseId(new c.QueryDatabaseName("openbisDB2"));
+			update.setQueryType(c.QueryType.SAMPLE);
+			update.setEntityTypeCodePattern("sample type pattern");
+			update.setSql("updated sql");
+			update.setPublic(true);
+
+			var fCreate = function(facade) {
+				return c.createQuery(facade).then(function(techId) {
+					return [ techId ];
+				});
+			}
+
+			var fUpdate = function(facade, techId) {
+				update.setQueryId(techId);
+				return facade.updateQueries([ update ]);
+			}
+
+			var fCheck = function(query) {
+				c.assertEqual(query.getName(), update.getName().getValue(), "Name");
+				c.assertEqual(query.getDescription(), update.getDescription().getValue(), "Description");
+				c.assertEqual(query.getDatabaseId().getName(), update.getDatabaseId().getValue().getName(), "Database");
+				c.assertEqual(query.getQueryType(), update.getQueryType().getValue(), "Query type");
+				c.assertEqual(query.getEntityTypeCodePattern(), update.getEntityTypeCodePattern().getValue(), "Entity type code pattern");
+				c.assertEqual(query.getSql(), update.getSql().getValue(), "Sql");
+				c.assertEqual(query.isPublic(), update.isPublic().getValue(), "Is public");
+			}
+
+			testUpdate(c, fCreate, fUpdate, c.findQuery, fCheck);
+		});
 
 	}
 

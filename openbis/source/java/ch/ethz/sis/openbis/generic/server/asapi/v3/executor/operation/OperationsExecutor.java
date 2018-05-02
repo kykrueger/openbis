@@ -102,6 +102,13 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.IGetPropert
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.ISearchPropertyAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.ISearchPropertyTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property.IUpdatePropertyTypesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.ICreateQueriesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IDeleteQueriesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IExecuteQueryOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IExecuteSqlOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IGetQueriesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.ISearchQueriesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query.IUpdateQueriesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.ICreateRoleAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.IDeleteRoleAssignmentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.roleassignment.IGetRoleAssignmentsOperationExecutor;
@@ -225,6 +232,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private IDeleteSemanticAnnotationsOperationExecutor deleteSemanticAnnotationsExecutor;
 
     @Autowired
+    private IDeleteQueriesOperationExecutor deleteQueriesExecutor;
+
+    @Autowired
     private ICreateSpacesOperationExecutor createSpacesExecutor;
 
     @Autowired
@@ -285,6 +295,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private ICreateMaterialTypesOperationExecutor createMaterialTypesExecutor;
 
     @Autowired
+    private ICreateQueriesOperationExecutor createQueriesExecutor;
+
+    @Autowired
     private IUpdateSpacesOperationExecutor updateSpacesExecutor;
 
     @Autowired
@@ -343,6 +356,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUpdateSemanticAnnotationsOperationExecutor updateSemanticAnnotationsExecutor;
+
+    @Autowired
+    private IUpdateQueriesOperationExecutor updateQueriesExecutor;
 
     @Autowired
     private IVerifyExperimentsOperationExecutor verifyExperimentsExecutor;
@@ -409,6 +425,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IGetSemanticAnnotationsOperationExecutor getSemanticAnnotationsExecutor;
+
+    @Autowired
+    private IGetQueriesOperationExecutor getQueriesExecutor;
 
     @Autowired
     private ISearchSpacesOperationExecutor searchSpacesExecutor;
@@ -478,7 +497,7 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchProcessingServicesOperationExecutor searchProcessingServicesExecutor;
-    
+
     @Autowired
     private ISearchDeletionsOperationExecutor searchDeletionsExecutor;
 
@@ -504,6 +523,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private ISearchPropertyAssignmentsOperationExecutor searchPropertyAssignmentsExecutor;
 
     @Autowired
+    private ISearchQueriesOperationExecutor searchQueriesExecutor;
+
+    @Autowired
     private IExecuteCustomASServiceOperationExecutor executeCustomASServiceExecutor;
 
     @Autowired
@@ -517,6 +539,12 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IExecuteSearchDomainServiceOperationExecutor executeSearchDomainServiceExecutor;
+
+    @Autowired
+    private IExecuteQueryOperationExecutor executeQueryExecutor;
+
+    @Autowired
+    private IExecuteSqlOperationExecutor executeSqlExecutor;
 
     @Autowired
     private IRevertDeletionsOperationExecutor revertDeletionsExecutor;
@@ -591,6 +619,8 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(archiveDataSetsExecutor.execute(context, operations));
         resultMap.putAll(unarchiveDataSetsExecutor.execute(context, operations));
         resultMap.putAll(getSessionInformationExecutor.execute(context, operations));
+        resultMap.putAll(executeQueryExecutor.execute(context, operations));
+        resultMap.putAll(executeSqlExecutor.execute(context, operations));
     }
 
     private void executeSearches(List<? extends IOperation> operations,
@@ -627,6 +657,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchSemanticAnnotationsExecutor.execute(context, operations));
         resultMap.putAll(searchPropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(searchPropertyAssignmentsExecutor.execute(context, operations));
+        resultMap.putAll(searchQueriesExecutor.execute(context, operations));
     }
 
     private void executeGets(List<? extends IOperation> operations,
@@ -649,6 +680,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(getExternalDmsExecutor.execute(context, operations));
         resultMap.putAll(getOperationExecutionsExecutor.execute(context, operations));
         resultMap.putAll(getSemanticAnnotationsExecutor.execute(context, operations));
+        resultMap.putAll(getQueriesExecutor.execute(context, operations));
     }
 
     private void verify(List<? extends IOperation> operations,
@@ -683,6 +715,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(updateExperimentsExecutor.execute(context, operations));
         resultMap.putAll(updateSamplesExecutor.execute(context, operations));
         resultMap.putAll(updateDataSetsExecutor.execute(context, operations));
+        resultMap.putAll(updateQueriesExecutor.execute(context, operations));
     }
 
     private void executeCreations(List<? extends IOperation> operations,
@@ -708,11 +741,13 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(createTagsExecutor.execute(context, operations));
         resultMap.putAll(createAuthorizationGroupsExecutor.execute(context, operations));
         resultMap.putAll(createRoleAssignmentsExecutor.execute(context, operations));
+        resultMap.putAll(createQueriesExecutor.execute(context, operations));
     }
 
     private void executeDeletions(List<? extends IOperation> operations,
             Map<IOperation, IOperationResult> resultMap, IOperationContext context)
     {
+        resultMap.putAll(deleteQueriesExecutor.execute(context, operations));
         resultMap.putAll(deleteSemanticAnnotationsExecutor.execute(context, operations));
         resultMap.putAll(deleteExperimentsExecutor.execute(context, operations));
         resultMap.putAll(deleteSamplesExecutor.execute(context, operations));

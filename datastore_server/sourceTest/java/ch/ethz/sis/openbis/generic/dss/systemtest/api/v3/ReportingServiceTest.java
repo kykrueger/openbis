@@ -23,14 +23,14 @@ import java.util.stream.Collectors;
 
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableModel;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableStringCell;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.IDataStoreId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ReportingService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ReportingServiceExecutionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableStringCell;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ReportingServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;

@@ -94,6 +94,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAs
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
@@ -804,6 +806,26 @@ public class Generator extends AbstractGenerator
         return gen;
     }
 
+    private static DtoGenerator createQuery()
+    {
+        DtoGenerator gen = new DtoGenerator("query", "Query", QueryFetchOptions.class);
+
+        gen.addSimpleField(String.class, "name");
+        addDescription(gen);
+        gen.addSimpleField(String.class, "database");
+        gen.addSimpleField(QueryType.class, "queryType");
+        gen.addSimpleField(String.class, "entityTypeCodePattern");
+        gen.addSimpleField(String.class, "sql");
+        gen.addSimpleField(boolean.class, "public");
+        addRegistrationDate(gen);
+        addRegistrator(gen);
+        addModificationDate(gen);
+
+        gen.setToStringMethod("\"Query \" + name");
+
+        return gen;
+    }
+
     public static void main(String[] args) throws FileNotFoundException
     {
         List<DtoGenerator> list = new LinkedList<DtoGenerator>();
@@ -840,6 +862,7 @@ public class Generator extends AbstractGenerator
         list.add(createOperationExecutionSummary());
         list.add(createOperationExecutionDetails());
         list.add(createSemanticAnnotation());
+        list.add(createQuery());
 
         for (DtoGenerator gen : list)
         {
