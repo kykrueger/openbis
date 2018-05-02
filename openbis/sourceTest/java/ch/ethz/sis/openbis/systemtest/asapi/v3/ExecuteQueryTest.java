@@ -48,8 +48,8 @@ public class ExecuteQueryTest extends AbstractQueryTest
 
         assertEquals(result.getRows().size(), 3);
         assertEquals(result.getRows().get(0).get(0).toString(), "CISD");
-        assertEquals(result.getRows().get(1).get(0).toString(), "TEST-SPACE");
-        assertEquals(result.getRows().get(2).get(0).toString(), "TESTGROUP");
+        assertEquals(result.getRows().get(1).get(0).toString(), "TESTGROUP");
+        assertEquals(result.getRows().get(2).get(0).toString(), "TEST-SPACE");
     }
 
     @Test

@@ -80,7 +80,7 @@ public class QueryEditingTest extends QuerySystemTestCase
     {
         logIntoCommonClientService();
 
-        assertEquals(1, queryClientService.initDatabases());
+        assertEquals(2, queryClientService.initDatabases());
     }
 
     @Test(dependsOnMethods = "testInitDatabases")
