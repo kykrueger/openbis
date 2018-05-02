@@ -1,3 +1,4 @@
+import hashlib
 import json
 import shutil
 import os
@@ -152,13 +153,18 @@ class ChecksumGeneratorCrc32(object):
 
 class ChecksumGeneratorMd5(object):
     def get_checksum(self, file):
-        md5_result = run_shell(['md5', file], raise_exception_on_failure=True)
         return {
-            'checksum': md5_result.output.split(" ")[-1],
+            'checksum': self.md5(file),
             'checksumType': 'MD5',
             'fileLength': os.path.getsize(file),
             'path': file
         }
+    def md5(self, file):
+        hash_md5 = hashlib.md5()
+        with open(file, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
 
 
 class ChecksumGeneratorGitAnnex(object):
