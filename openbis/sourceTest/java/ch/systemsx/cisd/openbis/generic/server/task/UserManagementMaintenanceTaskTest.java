@@ -68,7 +68,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
     public void setUp() throws IOException
     {
         super.setUp();
-        logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.DEBUG);
+        logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         configFile = new File(workingDirectory, "config.json");
         auditLogFile = new File(workingDirectory, "audit_log.txt");
         properties = new Properties();
@@ -188,7 +188,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
                 + configFile.getAbsolutePath() + "\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
-                + "DEBUG OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - No ldapGroupKeys specified for group 'ABC'. Task aborted.",
                 logRecorder.getLogContent());
     }
@@ -210,7 +210,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
                 + configFile.getAbsolutePath() + "\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
-                + "DEBUG OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - Empty ldapGroupKey for group 'ABC'. Task aborted.",
                 logRecorder.getLogContent());
     }
@@ -232,7 +232,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
                 + configFile.getAbsolutePath() + "\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
-                + "DEBUG OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - No users found for ldapGroupKey 'a1' for group 'ABC'. Task aborted.",
                 logRecorder.getLogContent());
     }
@@ -260,8 +260,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
                 + configFile.getAbsolutePath() + "\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
-                + "DEBUG OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
-                + "DEBUG OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:[u2]] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:[u2]] with users [u1=u1]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
                 + "ERROR NOTIFY.UserManagementMaintenanceTask - User management failed for the following reason(s):\n\n"
                 + "This is a test error message\n\n"
@@ -345,7 +345,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             {
                 super(null, null, commonSpacesByRole, logger, null);
                 this.logger = logger;
-                logger.log(LogLevel.DEBUG, "Common spaces: " + commonSpacesByRole);
+                logger.log(LogLevel.INFO, "Common spaces: " + commonSpacesByRole);
             }
 
             @Override
@@ -358,7 +358,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 {
                     builder.append(entry.getKey() + "=" + entry.getValue().getUserId());
                 }
-                logger.log(LogLevel.DEBUG, "Add group " + renderedGroup + " with users [" + builder + "]");
+                logger.log(LogLevel.INFO, "Add group " + renderedGroup + " with users [" + builder + "]");
                 super.addGroup(group, principalsByUserId);
             }
 
