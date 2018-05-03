@@ -695,6 +695,29 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
 		});
+		
+		QUnit.test("getQueries()", function(assert) {
+			var c = new common(assert, openbis);
+			var fo = new c.QueryFetchOptions();
+			var fechOptionsTestConfig = getConfigForFetchOptions(fo);
+
+			var fCreate = function(facade) {
+				return $.when(c.createQuery(facade), c.createQuery(facade)).then(function(techId1, techId2) {
+					return [ techId1, techId2 ];
+				});
+			}
+
+			var fGet = function(facade, techIds) {
+				testFetchOptionsAssignation(c, fo, fechOptionsTestConfig);
+				return facade.getQueries(techIds, fo);
+			}
+
+			var fGetEmptyFetchOptions = function(facade, techIds) {
+				return facade.getQueries(techIds, new c.QueryFetchOptions());
+			}
+
+			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
+		});
 
 	}
 

@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -75,6 +76,18 @@ public class QueryDAO extends AbstractGenericEntityDAO<QueryPE> implements IQuer
         {
             translateUncategorizedSQLException(e);
         }
+    }
+
+    @Override
+    public List<QueryPE> listByIDs(Collection<Long> ids)
+    {
+        return listByIDsOfName(QueryPE.class, "id", ids);
+    }
+
+    @Override
+    public List<QueryPE> listByNames(Collection<String> names)
+    {
+        return listByIDsOfName(QueryPE.class, "name", names);
     }
 
 }

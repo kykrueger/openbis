@@ -42,6 +42,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.search.Search
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.search.SearchAuthorizationGroupsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.AuthorizationGroupUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.UpdateAuthorizationGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -263,6 +264,28 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.SearchPropertyTy
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.SearchPropertyTypesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.UpdatePropertyTypesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.CreateQueriesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.CreateQueriesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.QueryCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.delete.DeleteQueriesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.delete.QueryDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.ExecuteQueryOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.ExecuteQueryOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.ExecuteSqlOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.ExecuteSqlOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.QueryExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.SqlExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.get.GetQueriesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.get.GetQueriesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QuerySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.SearchQueriesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.SearchQueriesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.QueryUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.UpdateQueriesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.CreateRoleAssignmentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.CreateRoleAssignmentsOperationResult;
@@ -342,7 +365,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ExecuteSearchDom
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ProcessingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ReportingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ProcessingServiceFetchOptions;
@@ -675,6 +697,14 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
 
     @Override
     @Transactional
+    public List<QueryTechId> createQueries(String sessionToken, List<QueryCreation> creations)
+    {
+        CreateQueriesOperationResult result = executeOperation(sessionToken, new CreateQueriesOperation(creations));
+        return result.getObjectIds();
+    }
+
+    @Override
+    @Transactional
     public void updateSpaces(String sessionToken, List<SpaceUpdate> updates)
     {
         executeOperation(sessionToken, new UpdateSpacesOperation(updates));
@@ -941,6 +971,13 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     {
         GetSemanticAnnotationsOperationResult result =
                 executeOperation(sessionToken, new GetSemanticAnnotationsOperation(annotationIds, fetchOptions));
+        return result.getObjectMap();
+    }
+
+    @Override
+    public Map<IQueryId, Query> getQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryFetchOptions fetchOptions)
+    {
+        GetQueriesOperationResult result = executeOperation(sessionToken, new GetQueriesOperation(queryIds, fetchOptions));
         return result.getObjectMap();
     }
 
@@ -1269,6 +1306,13 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    @Transactional
+    public void deleteQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryDeletionOptions deletionOptions)
+    {
+        executeOperation(sessionToken, new DeleteQueriesOperation(queryIds, deletionOptions));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public SearchResult<Deletion> searchDeletions(String sessionToken, DeletionSearchCriteria searchCriteria, DeletionFetchOptions fetchOptions)
     {
@@ -1383,6 +1427,20 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    public TableModel executeQuery(String sessionToken, IQueryId queryId, QueryExecutionOptions options)
+    {
+        ExecuteQueryOperationResult result = executeOperation(sessionToken, new ExecuteQueryOperation(queryId, options));
+        return result.getResult();
+    }
+
+    @Override
+    public TableModel executeSql(String sessionToken, String sql, SqlExecutionOptions options)
+    {
+        ExecuteSqlOperationResult result = executeOperation(sessionToken, new ExecuteSqlOperation(sql, options));
+        return result.getResult();
+    }
+
+    @Override
     @Transactional
     public SearchResult<GlobalSearchObject> searchGlobally(String sessionToken, GlobalSearchCriteria searchCriteria,
             GlobalSearchObjectFetchOptions fetchOptions)
@@ -1482,11 +1540,26 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    @Transactional
+    public void updateQueries(String sessionToken, List<QueryUpdate> updates)
+    {
+        executeOperation(sessionToken, new UpdateQueriesOperation(updates));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public SearchResult<ExternalDms> searchExternalDataManagementSystems(String sessionToken, ExternalDmsSearchCriteria searchCriteria,
             ExternalDmsFetchOptions fetchOptions)
     {
         SearchExternalDmsOperationResult result = executeOperation(sessionToken, new SearchExternalDmsOperation(searchCriteria, fetchOptions));
+        return result.getSearchResult();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SearchResult<Query> searchQueries(String sessionToken, QuerySearchCriteria searchCriteria, QueryFetchOptions fetchOptions)
+    {
+        SearchQueriesOperationResult result = executeOperation(sessionToken, new SearchQueriesOperation(searchCriteria, fetchOptions));
         return result.getSearchResult();
     }
 

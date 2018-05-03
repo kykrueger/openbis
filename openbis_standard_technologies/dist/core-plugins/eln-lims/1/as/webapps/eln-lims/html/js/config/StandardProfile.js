@@ -254,12 +254,17 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 													}																					
 												],
 				},
+				"GENERAL_ELN_SETTINGS" : {
+					"SHOW" : false
+				},
 				"STORAGE" : {
 					"SAMPLE_CHILDREN_DISABLED" : true,
 					"SAMPLE_PARENTS_DISABLED" : true,
+					"SHOW" : false
 				},
 				"STORAGE_POSITION" : {
-					"SAMPLE_CHILDREN_DISABLED" : true
+					"SAMPLE_CHILDREN_DISABLED" : true,
+					"SHOW" : false
 				},
 				"REQUEST" : {
 					"SAMPLE_PARENTS_TITLE" : "Products from Catalog",

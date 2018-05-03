@@ -5,6 +5,7 @@ define([
 
          'test/test-get', 
          'test/test-delete', 
+         'test/test-execute', 
 
 //         'test/test-dto', 
          'test/test-dto-roundtrip', 

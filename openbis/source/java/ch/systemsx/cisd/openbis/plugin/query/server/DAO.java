@@ -64,7 +64,7 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.basic.dto.QueryParameterBind
 /**
  * @author Franz-Josef Elmer
  */
-class DAO extends SimpleJdbcDaoSupport implements IDAO
+public class DAO extends SimpleJdbcDaoSupport implements IDAO
 {
 
     private static final int FETCH_SIZE = 1000;

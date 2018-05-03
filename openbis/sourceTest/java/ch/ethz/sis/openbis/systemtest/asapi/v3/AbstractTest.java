@@ -84,6 +84,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
@@ -119,6 +120,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.systemtest.SystemTestCase;
 import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+
 import junit.framework.Assert;
 
 /**
@@ -962,6 +964,17 @@ public class AbstractTest extends SystemTestCase
         }
 
         assertCollectionContainsOnly(actualSet, expectedCodes);
+    }
+
+    protected static void assertQueryNames(Collection<Query> queries, String... expectedNames)
+    {
+        Set<String> actualSet = new HashSet<String>();
+        for (Query query : queries)
+        {
+            actualSet.add(query.getName());
+        }
+
+        assertCollectionContainsOnly(actualSet, expectedNames);
     }
 
     protected static void assertProjectIdentifiers(Collection<Project> projects, String... expectedIdentifiers)

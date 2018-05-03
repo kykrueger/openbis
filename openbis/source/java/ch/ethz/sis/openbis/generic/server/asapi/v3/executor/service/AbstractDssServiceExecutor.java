@@ -16,30 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.IDataStoreId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ITableCell;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableColumn;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableDoubleCell;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableLongCell;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableStringCell;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DateTableCell;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DoubleTableCell;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ISerializableComparable;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IntegerTableCell;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelColumnHeader;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRow;
 
 /**
  * @author Franz-Josef Elmer
@@ -73,52 +56,6 @@ abstract class AbstractDssServiceExecutor
                 throw new UserFailureException("Data store code cannot be empty.");
             }
         }
-    }
-
-    protected TableModel translate(ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel tableModel)
-    {
-        ArrayList<TableColumn> columns = new ArrayList<>();
-        ArrayList<List<ITableCell>> translatedRows = new ArrayList<>();
-        if (tableModel != null && tableModel.getHeader() != null && tableModel.getRows() != null)
-        {
-            List<TableModelColumnHeader> headers = tableModel.getHeader();
-            columns.ensureCapacity(headers.size());
-            for (TableModelColumnHeader header : headers)
-            {
-                columns.add(new TableColumn(header.getTitle()));
-            }
-            SimpleDateFormat format = new SimpleDateFormat(BasicConstant.CANONICAL_DATE_FORMAT_PATTERN);
-            List<TableModelRow> rows = tableModel.getRows();
-            translatedRows.ensureCapacity(rows.size());
-            for (TableModelRow row : rows)
-            {
-                List<ISerializableComparable> values = row.getValues();
-                if (values != null)
-                {
-                    List<ITableCell> cells = new ArrayList<>(values.size());
-                    for (ISerializableComparable value : values)
-                    {
-                        ITableCell cell = null;
-                        if (value instanceof IntegerTableCell)
-                        {
-                            cell = new TableLongCell(((IntegerTableCell) value).getNumber());
-                        } else if (value instanceof DoubleTableCell)
-                        {
-                            cell = new TableDoubleCell(((DoubleTableCell) value).getNumber());
-                        } else if (value instanceof DateTableCell)
-                        {
-                            cell = new TableStringCell(format.format(((DateTableCell) value).getDateTime()));
-                        } else if (value != null)
-                        {
-                            cell = new TableStringCell(value.toString());
-                        }
-                        cells.add(cell);
-                    }
-                    translatedRows.add(cells);
-                }
-            }
-        }
-        return new TableModel(columns, translatedRows);
     }
 
 }

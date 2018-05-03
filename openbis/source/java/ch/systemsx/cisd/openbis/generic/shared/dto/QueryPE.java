@@ -25,12 +25,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.hibernate.validator.constraints.Length;
 
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.QueryType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
@@ -41,7 +43,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
  */
 @Entity
 @Table(name = TableNames.QUERIES_TABLE)
-public class QueryPE extends AbstractExpressionPE<QueryPE>
+public class QueryPE extends AbstractExpressionPE<QueryPE> implements IIdentityHolder
 {
     private static final long serialVersionUID = ServiceVersionHolder.VERSION;
 
@@ -113,6 +115,20 @@ public class QueryPE extends AbstractExpressionPE<QueryPE>
     }
 
     @Override
+    @Transient
+    public String getIdentifier()
+    {
+        return name;
+    }
+
+    @Override
+    @Transient
+    public String getPermId()
+    {
+        return id != null ? id.toString() : null;
+    }
+
+    @Override
     public final boolean equals(final Object obj)
     {
         if (obj == this)
@@ -159,4 +175,5 @@ public class QueryPE extends AbstractExpressionPE<QueryPE>
         }
         return thisName.compareTo(thatName);
     }
+
 }

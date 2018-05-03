@@ -28,6 +28,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.Authorizat
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.IAuthorizationGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.search.AuthorizationGroupSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.AuthorizationGroupUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -141,6 +142,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.QueryCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.delete.QueryDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.QueryExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.SqlExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QuerySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.QueryUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.delete.RoleAssignmentDeletionOptions;
@@ -181,7 +192,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AggregationServi
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ProcessingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ReportingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ProcessingServiceFetchOptions;
@@ -413,6 +423,13 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public List<SemanticAnnotationPermId> createSemanticAnnotations(String sessionToken, List<SemanticAnnotationCreation> newAnnotations)
     {
         logAccess(sessionToken, "create-semantic-annotations", "NEW_SEMANTIC_ANNOTATIONS(%s)", abbreviate(newAnnotations));
+        return null;
+    }
+
+    @Override
+    public List<QueryTechId> createQueries(String sessionToken, List<QueryCreation> newQueries)
+    {
+        logAccess(sessionToken, "create-queries", "NEW_QUERIES(%s)", abbreviate(newQueries));
         return null;
     }
 
@@ -653,6 +670,13 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public Map<IQueryId, Query> getQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-queries", "QUERY_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(queryIds), fetchOptions);
+        return null;
+    }
+
+    @Override
     public SearchResult<Space> searchSpaces(String sessionToken, SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-spaces", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
@@ -777,6 +801,13 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public SearchResult<Person> searchPersons(String sessionToken, PersonSearchCriteria searchCriteria, PersonFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-persons", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
+    public SearchResult<Query> searchQueries(String sessionToken, QuerySearchCriteria searchCriteria, QueryFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-queries", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
 
@@ -907,6 +938,12 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     {
         logAccess(sessionToken, "delete-semantic-annotations", "SEMANTIC_ANNOTATION_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(annotationIds),
                 deletionOptions);
+    }
+
+    @Override
+    public void deleteQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-queries", "QUERY_IDS(%s) DELETION_OPTIONS(%s)", abbreviate(queryIds), deletionOptions);
     }
 
     @Override
@@ -1043,6 +1080,20 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public TableModel executeQuery(String sessionToken, IQueryId queryId, QueryExecutionOptions options)
+    {
+        logAccess(sessionToken, "execute-query", "QUERY_ID(%s) EXECUTION_OPTIONS(%s)", queryId, options);
+        return null;
+    }
+
+    @Override
+    public TableModel executeSql(String sessionToken, String sql, SqlExecutionOptions options)
+    {
+        logAccess(sessionToken, "execute-sql", "SQL(%s) EXECUTION_OPTIONS(%s)", sql, options);
+        return null;
+    }
+
+    @Override
     public SearchResult<GlobalSearchObject> searchGlobally(String sessionToken, GlobalSearchCriteria searchCriteria,
             GlobalSearchObjectFetchOptions fetchOptions)
     {
@@ -1123,6 +1174,12 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void updateExternalDataManagementSystems(String sessionToken, List<ExternalDmsUpdate> externalDmsUpdates)
     {
         logAccess(sessionToken, "update-external-dms", "EXTERNAL_DMS_UPDATES(%s)", abbreviate(externalDmsUpdates));
+    }
+
+    @Override
+    public void updateQueries(String sessionToken, List<QueryUpdate> queryUpdates)
+    {
+        logAccess(sessionToken, "update-queries", "QUERY_UPDATES(%s)", abbreviate(queryUpdates));
     }
 
     @Override
