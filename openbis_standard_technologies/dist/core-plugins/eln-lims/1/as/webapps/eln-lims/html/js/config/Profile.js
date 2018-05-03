@@ -168,7 +168,18 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.isInventorySpace = function(spaceCode) {
-			return ($.inArray(spaceCode, this.inventorySpaces) !== -1) || ($.inArray(spaceCode, this.inventorySpacesReadOnly) !== -1);
+			for(var iIdx = 0; iIdx < this.inventorySpaces.length; iIdx++) {
+				if(spaceCode.endsWith(this.inventorySpaces[iIdx])) {
+					return true;
+				}
+			}
+			for(var iIdx = 0; iIdx < this.inventorySpacesReadOnly.length; iIdx++) {
+				if(spaceCode.endsWith(this.inventorySpacesReadOnly[iIdx])) {
+					return true;
+				}
+			}
+			
+			return false;
 		}
 		
 		this.isFileAuthenticationService = false;

@@ -35,7 +35,7 @@ function SettingsFormController(mainController, settingsSample, mode) {
 
 	this.save = function(settings) {
 		this._settingsManager.validateAndsave(this._settingsFormModel.settingsSample, settings, (function() {
-			this._mainController.changeView("showSettingsPage");
+			this._mainController.changeView("showSettingsPage", this._settingsFormModel.settingsSample.identifier);
 		}).bind(this));
 	}
 

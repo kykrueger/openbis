@@ -311,11 +311,11 @@ function MainController(profile) {
 					break;
 				case "showSettingsPage":
 					document.title = "Settings";
-					this._showSettingsPage(FormMode.VIEW);
+					this._showSettingsPage(FormMode.VIEW, arg);
 					break;
 				case "showEditSettingsPage":
 					document.title = "Edit Settings";
-					this._showSettingsPage(FormMode.EDIT);
+					this._showSettingsPage(FormMode.EDIT, arg);
 					break;
 				case "showExportTreePage":
 					document.title = "Export Builder";
@@ -802,18 +802,61 @@ function MainController(profile) {
 		this.currentView = newView;
 	}
 
-	this._showSettingsPage = function(mode) {
-		var _this = this;
-		this.serverFacade.searchSamples({ "sampleIdentifier" : "/ELN_SETTINGS/GENERAL_ELN_SETTINGS", "withProperties" : true }, function(data) {
-			if(!data[0]) {
-				window.alert("Settings sample doesn't exist, settings can't be edited, this is not supposed to happen, contact your admin.");
+	this._showSettingsPage = function(mode, sampleIdentifier) {
+		if(!sampleIdentifier) {
+			this._selectSettings();
+		} else {
+			var _this = this;
+			this.serverFacade.searchSamples({ "sampleIdentifier" : sampleIdentifier, "withProperties" : true }, function(data) {
+				if(!data[0]) {
+					window.alert("Settings object doesn't exist, settings can't be edited, this is not supposed to happen, contact your admin.");
+				} else {
+					var newView = new SettingsFormController(_this, data[0], mode);
+					var views = _this._getNewViewModel(true, true, false);
+					newView.init(views);
+					_this.currentView = newView;
+				}
+			});
+		}
+	}
+	
+	this._selectSettings = function() {
+		this.serverFacade.searchSamples({ 	"sampleTypeCode" : "GENERAL_ELN_SETTINGS",
+											"withProperties" : false }, (function(settingsObjects) {
+			if(settingsObjects && settingsObjects.length > 0) {
+				settingsObjects.sort(function(a, b) {
+				    if(a.identifier === "/ELN_SETTINGS/GENERAL_ELN_SETTINGS") { // Global settings are first on the list
+				    		return 1;
+				    } else {
+				    		return -1;
+				    }
+				});
+				
+				var settingsForDropdown = [];
+				for(var sIdx = 0; sIdx < settingsObjects.length; sIdx++) {
+					settingsForDropdown.push({ label: settingsObjects[sIdx].identifier, value: settingsObjects[sIdx].identifier})
+				}
+				
+				var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Select settigs");
+				$dropdown.attr("id", "settingsDropdown");
+				Util.blockUI("Select settings: <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='settingsDropdownCancel'>Cancel</a>");
+				
+				$("#settingsDropdown").on("change", function(event) {
+					var sampleIdentifier = $("#settingsDropdown")[0].value;
+					Util.unblockUI();
+					mainController.changeView("showSettingsPage", sampleIdentifier);
+				});
+				
+				$("#settingsDropdownCancel").on("click", function(event) { 
+					Util.unblockUI();
+				});
+		
 			} else {
-				var newView = new SettingsFormController(_this, data[0], mode);
-				var views = _this._getNewViewModel(true, true, false);
-				newView.init(views);
-				_this.currentView = newView;
+				window.alert("Settings object doesn't exist, settings can't be edited, this is not supposed to happen, contact your admin.");
 			}
-		});
+		}).bind(this))
+		
+		
 	}
 	
 	this._showStorageManager = function() {
