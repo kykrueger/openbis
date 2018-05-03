@@ -268,6 +268,32 @@ def test_obis(tmpdir):
         assert 'Matching content copy not fount in data set' in result
         cmd('obis addref data1')
 
+        output_buffer = '=================== 18. Use git-annex hashes as checksums ===================\n'
+        cmd('obis init data10')
+        with cd('data10'):
+            cmd('touch file')
+            cmd('obis config object_id /DEFAULT/DEFAULT')
+            # use MD5 form git annex by default
+            result = cmd('obis commit -m \'commit-message\'')
+            config = get_config()
+            search_result = o.search_files(config['data_set_id'])
+            files = list(filter(lambda file: file['fileLength'] > 0, search_result['objects']))
+            assert len(files) == 3
+            for file in files:
+                assert file['checksumType'] == "MD5"
+                assert len(file['checksum']) == 32
+            # don't use git annex hash - use default CRC32
+            cmd('obis config git_annex_hash_as_checksum false')
+            result = cmd('obis commit -m \'commit-message\'')
+            config = get_config()
+            search_result = o.search_files(config['data_set_id'])
+            files = list(filter(lambda file: file['fileLength'] > 0, search_result['objects']))
+            assert len(files) == 3
+            for file in files:
+                assert file['checksumType'] is None
+                assert file['checksum'] is None
+                assert file['checksumCRC32'] != 0
+
         output_buffer = '=================== 16. User switch ===================\n'
         cmd('obis init data9')
         with cd('data9'):
