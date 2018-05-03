@@ -167,14 +167,30 @@ class ChecksumGeneratorMd5(object):
         return hash_md5.hexdigest()
 
 
+class ChecksumGeneratorWORM(object):
+    def get_checksum(self, file):
+        return {
+            'checksum': self.worm(file),
+            'checksumType': 'WORM',
+            'fileLength': os.path.getsize(file),
+            'path': file
+        }        
+    def worm(self, file):
+        modification_time = int(os.path.getmtime(file))
+        size = os.path.getsize(file)
+        return "WORM-s{}-m{}--{}".format(size, modification_time, file)
+
+
 class ChecksumGeneratorGitAnnex(object):
 
     def __init__(self):
-        backend = self._get_annex_backend()
-        self.checksum_generator_replacement = ChecksumGeneratorCrc32() if backend is None else None
+        self.backend = self._get_annex_backend()
+        self.checksum_generator_replacement = ChecksumGeneratorCrc32() if self.backend is None else None
         # define which generator to use for files which are not handled by annex
-        if backend == 'MD5':
+        if self.backend == 'MD5':
             self.checksum_generator_supplement = ChecksumGeneratorMd5()
+        elif self.backend == 'WORM':
+            self.checksum_generator_supplement = ChecksumGeneratorWORM()
         else:
             self.checksum_generator_supplement = ChecksumGeneratorCrc32()
 
@@ -191,11 +207,19 @@ class ChecksumGeneratorGitAnnex(object):
         if annex_info['present'] != True:
             return self.checksum_generator_supplement.get_checksum(file)
         return {
-            'checksum': annex_info['key'].split('--')[1],
+            'checksum': self._get_checksum_from_annex_info(annex_info),
             'checksumType': annex_info['key'].split('-')[0],
             'fileLength': os.path.getsize(file),
             'path': file
         }
+
+    def _get_checksum_from_annex_info(self, annex_info):
+        if self.backend == 'MD5':
+            return annex_info['key'].split('--')[1]
+        elif self.backend == 'WORM':
+            return annex_info['key'][5:]
+        else:
+            raise ValueError("Git annex backend not supported: " + self.backend)
 
     def _get_annex_backend(self):
         with open('.gitattributes') as gitattributes:
