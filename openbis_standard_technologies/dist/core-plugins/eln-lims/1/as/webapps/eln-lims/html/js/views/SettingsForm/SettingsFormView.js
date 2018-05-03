@@ -29,7 +29,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	this._sampleTypeDefinitionsHintsTableModels = {}; // key: sample type; value: table model
 
 	this.repaint = function(views, profileToEdit) {
-
+		var _this = this;
 		this._profileToEdit = profileToEdit;
 		var $container = views.content;
 
@@ -53,7 +53,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			if(this._settingsFormModel.mode === FormMode.VIEW) {
 				//Edit
 				var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
-					mainController.changeView("showEditSettingsPage");
+					mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
 				});
 				toolbarModel.push({ component : $editButton, tooltip: "Edit" });
 			} else { //Create and Edit
