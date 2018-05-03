@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.server.task;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +25,23 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 
 class UserManagerConfig
 {
+    private List<String> globalSpaces = new ArrayList<>();
+
     private Map<Role, List<String>> commonSpaces = new HashMap<>();
 
+    private Map<String, String> commonSamples = new HashMap<>();
+
     private List<UserGroup> groups;
+
+    public List<String> getGlobalSpaces()
+    {
+        return globalSpaces;
+    }
+
+    public void setGlobalSpaces(List<String> globalSpaces)
+    {
+        this.globalSpaces = globalSpaces;
+    }
 
     public Map<Role, List<String>> getCommonSpaces()
     {
@@ -36,6 +51,16 @@ class UserManagerConfig
     public void setCommonSpaces(Map<Role, List<String>> commonSpaces)
     {
         this.commonSpaces = commonSpaces;
+    }
+
+    public Map<String, String> getCommonSamples()
+    {
+        return commonSamples;
+    }
+
+    public void setCommonSamples(Map<String, String> commonSamples)
+    {
+        this.commonSamples = commonSamples;
     }
 
     public List<UserGroup> getGroups()

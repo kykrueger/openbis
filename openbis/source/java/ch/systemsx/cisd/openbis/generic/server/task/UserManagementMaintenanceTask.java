@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
@@ -36,7 +35,6 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
-import ch.systemsx.cisd.common.utilities.ITimeAndWaitingProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
@@ -131,7 +129,7 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
             return null;
         }
     }
-
+    
     private boolean addGroup(UserManager userManager, UserGroup group)
     {
         String key = group.getKey();
@@ -191,7 +189,11 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
     protected UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
     {
-        return new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
-                config.getCommonSpaces(), logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+        UserManager userManager = new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
+                logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+        userManager.setGlobalSpaces(config.getGlobalSpaces());
+        userManager.setCommonSpacesByRole(config.getCommonSpaces());
+        userManager.setSamplesByType(config.getCommonSamples());
+        return userManager;
     }
 }

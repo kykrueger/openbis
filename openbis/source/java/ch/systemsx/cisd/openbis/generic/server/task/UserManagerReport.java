@@ -18,9 +18,12 @@ package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 
@@ -66,24 +69,34 @@ public class UserManagerReport
         log("DEACTIVATE-USER", userId);
     }
 
-    void addUser(String userId, ISpaceId homeSpaceId)
+    void addUser(String userId)
     {
-        log("ADD-USER", userId + " (home space: " + homeSpaceId + ")");
+        log("ADD-USER", userId);
     }
 
-    public void reuseUser(String userId, ISpaceId homeSpaceId)
+    public void reuseUser(String userId)
     {
-        log("REUSE-USER", userId + " (home space: " + homeSpaceId + ")");
+        log("REUSE-USER", userId);
     }
     
     void addSpace(ISpaceId spaceId)
     {
         log("ADD-SPACE", spaceId);
     }
+    
+    void addSpaces(List<SpaceCreation> spaceCreations)
+    {
+        log("ADD-SPACES", spaceCreations.stream().map(SpaceCreation::getCode).collect(Collectors.toList()).toString());
+    }
 
     void assignRoleTo(AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)
     {
         log("ASSIGN-ROLE-TO-AUTHORIZATION-GROUP", "group: " + groupId + ", role: SPACE_" + role + " for " + spaceId);
+    }
+    
+    public void unassignRoleFrom(AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)
+    {
+        log("UNASSIGN-ROLE-FORM-AUTHORIZATION-GROUP", "group: " + groupId + ", role: SPACE_" + role + " for " + spaceId);
     }
 
     void addUserToGroup(String groupCode, String userId)
