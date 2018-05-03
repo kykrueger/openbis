@@ -186,10 +186,6 @@ class GitDataSetUpdate(object):
     def __init__(self, openbis, data_set_id):
         """Initialize the command object with the necessary parameters.
         :param openbis: The openBIS API object.
-        :param path: The path to the git repository
-        :param commit_id: The git commit id
-        :param repository_id: The git repository id - same for copies
-        :param edms_id: If of the external data managment system
         :param data_set_id: Id of the data set to be updated
         """
         self.openbis = openbis
@@ -279,3 +275,64 @@ class GitDataSetUpdate(object):
             "gitCommitHash": self.commit_id,
             "gitRepositoryId" : self.repository_id,
         }
+
+
+class GitDataSetFileSearch(object):
+
+    def __init__(self, openbis, data_set_id, dss_code=None):
+        """Initialize the command object with the necessary parameters.
+        :param openbis: The openBIS API object.
+        :param data_set_id: Id of the data set to be updated
+        :param dss_code: Code for the DSS -- defaults to the first dss if none is supplied.
+        """
+        self.openbis = openbis
+        self.data_set_id = data_set_id
+        self.dss_code = dss_code
+
+    def search_files(self):
+        request = {
+            "method": "searchFiles",
+            "params": [
+                self.openbis.token,
+                self.get_data_set_file_search_criteria(),
+                self.get_data_set_file_fetch_options(),
+            ]
+        }
+        server_url = self.data_store_url()
+        return self.openbis._post_request_full_url(server_url, request)
+
+    def get_data_set_file_search_criteria(self):
+        return {
+            "@type": "dss.dto.datasetfile.search.DataSetFileSearchCriteria",
+            "operator": "AND",
+            "criteria": [
+                {
+                    "@type": "as.dto.dataset.search.DataSetSearchCriteria",
+                    "relation": "DATASET",
+                    "operator": "OR",
+                    "criteria": [
+                        {
+                            "fieldName": "code",
+                            "fieldType": "ATTRIBUTE",
+                            "fieldValue": {
+                                "value": self.data_set_id,
+                                "@type": "as.dto.common.search.StringEqualToValue"
+                            },
+                            "@type": "as.dto.common.search.CodeSearchCriteria"
+                        }
+                    ],
+                }
+            ],
+        }
+
+    def get_data_set_file_fetch_options(self):
+        return {
+            "@type": "dss.dto.datasetfile.fetchoptions.DataSetFileFetchOptions",
+        }
+
+    def data_store_url(self):
+        data_stores = self.openbis.get_datastores()
+        if self.dss_code is None:
+            self.dss_code = self.openbis.get_datastores()['code'][0]
+        data_store = data_stores[data_stores['code'] == self.dss_code]
+        return "{}/datastore_server/rmi-data-store-server-v3.json".format(data_store['hostUrl'][0])

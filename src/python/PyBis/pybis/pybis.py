@@ -2578,6 +2578,9 @@ class Openbis:
         """
         return pbds.GitDataSetUpdate(self, data_set_id).new_content_copy(path, commit_id, repository_id, edms_id)
 
+    def search_files(self, data_set_id, dss_code=None):
+        return pbds.GitDataSetFileSearch(self, data_set_id).search_files()        
+
     def delete_content_copy(self, data_set_id, content_copy):
         """
         Deletes a content copy from a data set.
