@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
@@ -81,6 +82,19 @@ public class ExecuteSqlTest extends AbstractQueryTest
                     executeSql(TEST_USER, PASSWORD, SELECT_SPACE_CODES_SQL, DB_OPENBIS_METADATA_ID, Collections.singletonMap("code", "EYE_COLOR"));
                 }
             }, "Unknown variable 'code'");
+    }
+
+    @Test
+    public void testExecuteWithDatabaseNonexistent()
+    {
+        assertObjectNotFoundException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    executeSql(TEST_USER, PASSWORD, SELECT_SPACE_CODES_SQL, new QueryDatabaseName("idontexist"), null);
+                }
+            }, new QueryDatabaseName("idontexist"));
     }
 
     @Test

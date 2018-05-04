@@ -34,7 +34,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
 import ch.systemsx.cisd.openbis.plugin.query.server.DAO;
 import ch.systemsx.cisd.openbis.plugin.query.server.authorization.QueryAccessController;
 import ch.systemsx.cisd.openbis.plugin.query.shared.DatabaseDefinition;
-import ch.systemsx.cisd.openbis.plugin.query.shared.IQueryDatabaseDefinitionProvider;
 import ch.systemsx.cisd.openbis.plugin.query.shared.basic.dto.QueryParameterBindings;
 
 /**
@@ -51,9 +50,6 @@ public class AbstractExecuteExecutor
 
     @Autowired
     protected IMapQueryDatabaseByIdExecutor mapQueryDatabaseByIdExecutor;
-
-    @Autowired
-    protected IQueryDatabaseDefinitionProvider databaseDefinitionProvider;
 
     @Autowired
     protected IDAOFactory daoFactory;

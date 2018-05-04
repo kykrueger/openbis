@@ -21,10 +21,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.roleassignment.RoleAssignmentUtils;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.plugin.query.shared.DatabaseDefinition;
+import ch.systemsx.cisd.openbis.plugin.query.shared.IQueryDatabaseDefinitionProviderAutoInitialized;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.lemnik.eodsql.QueryTool;
@@ -36,23 +39,27 @@ import net.lemnik.eodsql.QueryTool;
 public class QueryAuthorizationValidator implements IQueryAuthorizationValidator
 {
 
+    @Autowired
+    private IQueryDatabaseDefinitionProviderAutoInitialized databaseProvider;
+
     @Override
     public Set<Long> validate(PersonPE person, Collection<Long> queryIds)
     {
-        if (RoleAssignmentUtils.isInstanceAdmin(person))
-        {
-            return new HashSet<Long>(queryIds);
-        }
-
+        boolean isInstanceAdmin = RoleAssignmentUtils.isInstanceAdmin(person);
         QueryQuery query = QueryTool.getManagedQuery(QueryQuery.class);
         List<QueryAuthorizationRecord> records = query.getAuthorizations(new LongOpenHashSet(queryIds));
         Set<Long> result = new HashSet<Long>();
 
         for (QueryAuthorizationRecord record : records)
         {
-            if (record.isPublic || record.registratorId.equals(person.getId()))
+            DatabaseDefinition database = databaseProvider.getDefinition(record.databaseKey);
+
+            if (database != null)
             {
-                result.add(record.id);
+                if (record.isPublic || record.registratorId.equals(person.getId()) || isInstanceAdmin)
+                {
+                    result.add(record.id);
+                }
             }
         }
 

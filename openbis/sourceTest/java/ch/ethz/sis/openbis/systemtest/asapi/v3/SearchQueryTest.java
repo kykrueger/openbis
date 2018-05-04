@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.search.QuerySearchCriteria;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -142,6 +143,19 @@ public class SearchQueryTest extends AbstractQueryTest
         QuerySearchCriteria criteria = new QuerySearchCriteria();
         criteria.withDatabaseId().thatEquals(new QueryDatabaseName("idontexist"));
         testSearch(TEST_USER, criteria);
+    }
+
+    @Test
+    public void testSearchWithQueryThatBelongsToNonexistentDatabase()
+    {
+        QueryPE queryWithExistingDB = createQueryWithExistingDB(TEST_USER);
+        QueryPE queryWithNonExistentDB = createQueryWithNonExistentDB(TEST_USER);
+
+        QuerySearchCriteria criteria = new QuerySearchCriteria();
+        criteria.withOrOperator();
+        criteria.withName().thatEquals(queryWithExistingDB.getName());
+        criteria.withName().thatEquals(queryWithNonExistentDB.getName());
+        testSearch(TEST_USER, criteria, queryWithExistingDB.getName());
     }
 
     @Test

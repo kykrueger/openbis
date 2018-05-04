@@ -28,7 +28,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnsupportedObjectIdException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.systemsx.cisd.openbis.plugin.query.shared.DatabaseDefinition;
-import ch.systemsx.cisd.openbis.plugin.query.shared.IQueryDatabaseDefinitionProvider;
+import ch.systemsx.cisd.openbis.plugin.query.shared.IQueryDatabaseDefinitionProviderAutoInitialized;
 
 /**
  * @author pkupczyk
@@ -38,13 +38,11 @@ public class MapQueryDatabaseByIdExecutor implements IMapQueryDatabaseByIdExecut
 {
 
     @Autowired
-    private IQueryDatabaseDefinitionProvider databaseProvider;
+    private IQueryDatabaseDefinitionProviderAutoInitialized databaseProvider;
 
     @Override
     public Map<IQueryDatabaseId, DatabaseDefinition> map(IOperationContext context, Collection<? extends IQueryDatabaseId> ids)
     {
-        databaseProvider.initDatabaseDefinitions();
-
         Map<IQueryDatabaseId, DatabaseDefinition> result = new LinkedHashMap<IQueryDatabaseId, DatabaseDefinition>();
 
         for (IQueryDatabaseId id : ids)

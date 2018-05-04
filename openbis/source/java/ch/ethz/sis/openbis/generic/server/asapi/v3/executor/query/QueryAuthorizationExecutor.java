@@ -16,10 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
+import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.ObjectNotFoundException;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnauthorizedObjectAccessException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.roleassignment.RoleAssignmentUtils;
@@ -33,6 +35,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
 import ch.systemsx.cisd.openbis.plugin.query.server.authorization.QueryAccessController;
 import ch.systemsx.cisd.openbis.plugin.query.shared.DatabaseDefinition;
+import ch.systemsx.cisd.openbis.plugin.query.shared.IQueryDatabaseDefinitionProviderAutoInitialized;
 
 /**
  * @author pkupczyk
@@ -40,6 +43,9 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.DatabaseDefinition;
 @Component
 public class QueryAuthorizationExecutor implements IQueryAuthorizationExecutor
 {
+
+    @Autowired
+    private IQueryDatabaseDefinitionProviderAutoInitialized databaseProvider;
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
@@ -72,6 +78,8 @@ public class QueryAuthorizationExecutor implements IQueryAuthorizationExecutor
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     public void canExecute(IOperationContext context, IQueryId id, QueryPE query)
     {
+        checkDatabaseExists(query.getQueryDatabaseKey());
+
         if (query.isPublic() || context.getSession().tryGetPerson().equals(query.getRegistrator())
                 || RoleAssignmentUtils.isInstanceAdmin(context.getSession().tryGetPerson()))
         {
@@ -92,6 +100,8 @@ public class QueryAuthorizationExecutor implements IQueryAuthorizationExecutor
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     public void canExecute(IOperationContext context, String sql, DatabaseDefinition database)
     {
+        checkDatabaseExists(database.getKey());
+
         try
         {
             QueryAccessController.checkWriteAccess(context.getSession(), database.getKey(), "create and perform");
@@ -117,6 +127,8 @@ public class QueryAuthorizationExecutor implements IQueryAuthorizationExecutor
 
     private void canWrite(IOperationContext context, IQueryId id, QueryPE query, String operation)
     {
+        checkDatabaseExists(query.getQueryDatabaseKey());
+
         if (query.isPublic() || context.getSession().tryGetPerson().equals(query.getRegistrator())
                 || RoleAssignmentUtils.isInstanceAdmin(context.getSession().tryGetPerson()))
         {
@@ -130,6 +142,16 @@ public class QueryAuthorizationExecutor implements IQueryAuthorizationExecutor
         } else
         {
             throw new UnauthorizedObjectAccessException(id);
+        }
+    }
+
+    private void checkDatabaseExists(String databaseKey)
+    {
+        DatabaseDefinition database = databaseProvider.getDefinition(databaseKey);
+
+        if (database == null)
+        {
+            throw new ObjectNotFoundException(new QueryDatabaseName(databaseKey));
         }
     }
 

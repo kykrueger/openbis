@@ -47,6 +47,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.QueryUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
 
 /**
  * @author pkupczyk
@@ -145,6 +147,38 @@ public class AbstractQueryTest extends AbstractTest
         assertEquals(ids.size(), 1);
 
         return getQuery(user, password, ids.get(0));
+    }
+
+    protected QueryPE createQueryWithExistingDB(String user)
+    {
+        PersonPE registrator = daoFactory.getPersonDAO().tryFindPersonByUserId(user);
+
+        QueryPE queryPE = new QueryPE();
+        queryPE.setName("my-database-exists");
+        queryPE.setQueryType(ch.systemsx.cisd.openbis.generic.shared.basic.dto.QueryType.GENERIC);
+        queryPE.setQueryDatabaseKey(DB_OPENBIS_METADATA);
+        queryPE.setExpression(SELECT_SPACE_CODES_SQL);
+        queryPE.setRegistrator(registrator);
+
+        daoFactory.getQueryDAO().createQuery(queryPE);
+
+        return queryPE;
+    }
+
+    protected QueryPE createQueryWithNonExistentDB(String user)
+    {
+        PersonPE registrator = daoFactory.getPersonDAO().tryFindPersonByUserId(user);
+
+        QueryPE queryPE = new QueryPE();
+        queryPE.setName("my-database-does-not-exist");
+        queryPE.setQueryType(ch.systemsx.cisd.openbis.generic.shared.basic.dto.QueryType.GENERIC);
+        queryPE.setQueryDatabaseKey("idontexist");
+        queryPE.setExpression(SELECT_SPACE_CODES_SQL);
+        queryPE.setRegistrator(registrator);
+
+        daoFactory.getQueryDAO().createQuery(queryPE);
+
+        return queryPE;
     }
 
     protected Query getQuery(String user, String password, IQueryId queryId)

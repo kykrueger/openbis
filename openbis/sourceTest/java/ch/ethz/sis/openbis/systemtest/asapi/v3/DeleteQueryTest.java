@@ -32,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
 
 /**
  * @author pkupczyk
@@ -79,6 +80,21 @@ public class DeleteQueryTest extends AbstractQueryTest
                 }
 
             }, "Deletion options cannot be null");
+    }
+
+    @Test
+    public void testDeleteWithQueryThatBelongsToNonexistentDatabase()
+    {
+        QueryPE queryWithNonExistentDB = createQueryWithNonExistentDB(TEST_USER);
+
+        assertObjectNotFoundException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    deleteQuery(TEST_USER, PASSWORD, new QueryName(queryWithNonExistentDB.getName()));
+                }
+            }, new QueryDatabaseName("idontexist"));
     }
 
     @Test(dataProvider = PROVIDER_TRUE_FALSE)

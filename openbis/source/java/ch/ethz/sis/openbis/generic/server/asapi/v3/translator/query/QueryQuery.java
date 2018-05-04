@@ -39,7 +39,7 @@ public interface QueryQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getRegistratorIds(LongSet queryIds);
 
-    @Select(sql = "select q.id, q.is_public as isPublic, q.pers_id_registerer as registratorId from queries q where q.id = any(?{1})", parameterBindings = {
+    @Select(sql = "select q.id, q.is_public as isPublic, q.db_key as databaseKey, q.pers_id_registerer as registratorId from queries q where q.id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<QueryAuthorizationRecord> getAuthorizations(LongSet queryIds);
 

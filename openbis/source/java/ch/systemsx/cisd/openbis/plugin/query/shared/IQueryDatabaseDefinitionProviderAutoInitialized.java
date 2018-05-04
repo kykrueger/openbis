@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 ETH Zuerich, CISD
+ * Copyright 2010 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.query;
+package ch.systemsx.cisd.openbis.plugin.query.shared;
+
+import java.util.Collection;
+
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 /**
  * @author pkupczyk
  */
-public class QueryAuthorizationRecord
+public interface IQueryDatabaseDefinitionProviderAutoInitialized
 {
+    DatabaseDefinition getDefinition(String dbKey) throws UserFailureException;
 
-    public Long id;
-
-    public boolean isPublic;
-
-    public String databaseKey;
-
-    public Long registratorId;
-
+    Collection<DatabaseDefinition> getAllDefinitions() throws UserFailureException;
 }

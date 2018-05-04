@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update.QueryUpdate;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
 
 /**
  * @author pkupczyk
@@ -170,6 +171,24 @@ public class UpdateQueryTest extends AbstractQueryTest
                     updateQuery(TEST_USER, PASSWORD, update);
                 }
             }, update.getDatabaseId().getValue());
+    }
+
+    @Test
+    public void testUpdateWithQueryThatBelongsToNonexistentDatabase()
+    {
+        QueryPE queryWithNonExistentDB = createQueryWithNonExistentDB(TEST_USER);
+
+        QueryUpdate update = new QueryUpdate();
+        update.setQueryId(new QueryName(queryWithNonExistentDB.getName()));
+
+        assertObjectNotFoundException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    updateQuery(TEST_USER, PASSWORD, update);
+                }
+            }, new QueryDatabaseName("idontexist"));
     }
 
     @Test

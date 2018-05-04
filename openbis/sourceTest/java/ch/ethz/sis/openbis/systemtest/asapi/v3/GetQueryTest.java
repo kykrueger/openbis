@@ -36,6 +36,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -229,6 +230,19 @@ public class GetQueryTest extends AbstractQueryTest
 
         assertEquals(query.getName(), creation.getName());
         assertEquals(query.getRegistrator().getUserId(), TEST_USER);
+    }
+
+    @Test
+    public void testGetWithQueryThatBelongsToNonexistentDatabase()
+    {
+        QueryPE queryWithExistingDB = createQueryWithExistingDB(TEST_USER);
+        QueryPE queryWithNonExistentDB = createQueryWithNonExistentDB(TEST_USER);
+
+        Query query = getQuery(TEST_USER, PASSWORD, new QueryName(queryWithExistingDB.getName()));
+        assertEquals(query.getName(), queryWithExistingDB.getName());
+
+        query = getQuery(TEST_USER, PASSWORD, new QueryName(queryWithNonExistentDB.getName()));
+        assertNull(query);
     }
 
     @Test(dataProvider = PROVIDER_TRUE_FALSE)
