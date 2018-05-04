@@ -2799,7 +2799,7 @@ class DataSetDownloadQueue():
             # request the file in streaming mode
             r = requests.get(url, stream=True, verify=verify_certificates)
             if r.ok == False:
-                raise ValueError("HTTP {}. Reason: {}".format(r.status_code, r.reason))
+                raise ValueError("Could not download from {}: HTTP {}. Reason: {}".format(url, r.status_code, r.reason))
 
             with open(filename, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=1024):
@@ -3129,12 +3129,12 @@ class DataSet(OpenBisObject):
             file_info = self.get_file_list(start_folder=filename)
             file_size = file_info[0]['fileSize']
 
-            download_url = linked_dataset_fileservice_url # TODO
+            download_url = linked_dataset_fileservice_url
             download_url += "?sessionToken=" + self.openbis.token
             download_url += "&datasetPermId=" + self.data["permId"]["permId"]
             download_url += "&externalDMSCode=" + content_copy["externalDms"]["code"]
             download_url += "&contentCopyPath=" + content_copy["path"].replace("/", "%2F")
-            download_url += "&datasetPathToFile=" + filename
+            download_url += "&datasetPathToFile=" + quote(filename)
 
             filename_dest = os.path.join(destination, self.permId, filename)
             queue.put([download_url, filename_dest, file_size, self.openbis.verify_certificates])
