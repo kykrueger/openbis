@@ -148,11 +148,21 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.searchDomains = [ { "@id" : -1, "@type" : "GobalSearch", label : "Global", name : "global"}];
+		this.inventorySpacesPostFixes = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG", "ELN_SETTINGS", "STOCK_ORDERS"];
 		this.inventorySpaces = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"];
 		this.inventorySpacesReadOnly = ["ELN_SETTINGS", "STOCK_ORDERS"];
+		this.storageSpaces = []; // Ending in "STORAGE"
 		
 		this.searchSamplesUsingV3OnDropbox = false;
 		this.searchSamplesUsingV3OnDropboxRunCustom = false;
+		
+		this.getFirstStorageSpace = function() {
+			var first = null;
+			if(this.storageSpaces.length > 0) {
+				first = this.storageSpaces[0];
+			}
+			return first;
+		}
 		
 		this.isSampleTypeWithStorage = function(sampleTypeCode) {
 			return this.sampleTypeDefinitionsExtension[sampleTypeCode] && this.sampleTypeDefinitionsExtension[sampleTypeCode]["ENABLE_STORAGE"];
@@ -168,13 +178,8 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.isInventorySpace = function(spaceCode) {
-			for(var iIdx = 0; iIdx < this.inventorySpaces.length; iIdx++) {
-				if(spaceCode.endsWith(this.inventorySpaces[iIdx])) {
-					return true;
-				}
-			}
-			for(var iIdx = 0; iIdx < this.inventorySpacesReadOnly.length; iIdx++) {
-				if(spaceCode.endsWith(this.inventorySpacesReadOnly[iIdx])) {
+			for(var iIdx = 0; iIdx < this.inventorySpacesPostFixes.length; iIdx++) {
+				if(spaceCode.endsWith(this.inventorySpacesPostFixes[iIdx])) {
 					return true;
 				}
 			}
@@ -819,6 +824,21 @@ $.extend(DefaultProfile.prototype, {
 			}));
 		}
 		
+		this.initStorages = function(callback) {
+			var _this = this;
+			var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
+    	    		mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(spacesSearchResult) {
+    	    			for(var sIdx = 0; sIdx < spacesSearchResult.objects.length; sIdx++) {
+    	    				var space = spacesSearchResult.objects[sIdx];
+    	    				if(space.code.endsWith("STORAGE")) {
+    	    					_this.storageSpaces.push(space.code);
+    	    					_this.inventorySpaces.push(space.code);
+    	    				}
+    	    			}
+    	    			callback();
+    	    		});
+		}
+		
 		this.initAuth = function(callback) {
 			var _this = this;
 			this.serverFacade.getOpenbisV3(function(openbisV3) {
@@ -854,15 +874,16 @@ $.extend(DefaultProfile.prototype, {
 								_this.initDatasetTypeCodes(function() {
 									_this.initAuth(function() {
 										_this.isFileAuthUser(function() {
-											_this.initSettings(function() {
-												//Check if the new storage system can be enabled
-												var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");
-												var storagePositionType = _this.getSampleTypeForSampleTypeCode("STORAGE_POSITION");										
-												_this.storagesConfiguration = { 
-														"isEnabled" : storageRack && storagePositionType
-												};
-												
-												callbackWhenDone();
+											_this.initStorages(function() {
+												_this.initSettings(function() {
+													//Check if the new storage system can be enabled
+													var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");
+													var storagePositionType = _this.getSampleTypeForSampleTypeCode("STORAGE_POSITION");										
+													_this.storagesConfiguration = { 
+															"isEnabled" : storageRack && storagePositionType
+													};
+													callbackWhenDone();
+												});
 											});
 										});
 									});
