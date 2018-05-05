@@ -23,8 +23,41 @@ define([ 'jquery', 'underscore' ], function(jquery, _) {
 				moduleMap[moduleName] = module;
 			}
 
-			var dto = fromJsonObjectWithTypeOrArrayOrMap(jsonType, jsonObject, {}, moduleMap);
-			dfd.resolve(dto);
+			try {
+				var jsonObjectMap = {};
+				var v3ObjectMap = {};
+
+				// Find all objects with @id.
+
+				collectObjects(jsonObject, jsonObjectMap, moduleMap);
+
+				// Covert objects (from the lowest to the highest @id value).
+				// Such order is generated on the server-side but is not
+				// guaranteed on be kept on the client-side (e.g. order of
+				// entries in maps may be different between textual JSON
+				// representation generated on the server-side and in memory JS
+				// objects created after parsing such JSON).
+				// 
+				// Sorting objects by @id value guarantees the same order of
+				// processing on both server and client sides. This saves
+				// us from situations where in JSON an object @id is used
+				// before the object is actually defined.
+
+				var sortedJsonIds = Object.keys(jsonObjectMap).map(Number).sort(function(jsonId1, jsonId2) {
+					return jsonId1 - jsonId2;
+				});
+				sortedJsonIds.forEach(function(jsonId) {
+					fromJsonObjectWithType(jsonObjectMap[jsonId], v3ObjectMap, moduleMap);
+				});
+
+				// Convert the whole JSON using the already converted objects.
+
+				var dto = fromJsonObjectWithTypeOrArrayOrMap(jsonType, jsonObject, v3ObjectMap, moduleMap);
+				dfd.resolve(dto);
+			} catch (e) {
+				dfd.reject(e);
+			}
+
 		});
 
 		return dfd.promise();
@@ -51,11 +84,30 @@ define([ 'jquery', 'underscore' ], function(jquery, _) {
 		}
 	}
 
+	var collectObjects = function(jsonObject, objectMap, modulesMap) {
+		if (jsonObject instanceof Array) {
+			jsonObject.forEach(function(jsonItem) {
+				collectObjects(jsonItem, objectMap, modulesMap);
+			});
+		} else if (jsonObject instanceof Object) {
+			var jsonId = jsonObject["@id"];
+			var jsonType = jsonObject["@type"];
+
+			if (jsonId && jsonType) {
+				objectMap[jsonId] = jsonObject;
+			}
+
+			Object.keys(jsonObject).forEach(function(key) {
+				collectObjects(jsonObject[key], objectMap, modulesMap);
+			});
+		}
+	}
+
 	var typeToModuleName = function(type) {
 		return type.replace(/\./g, '/');
 	}
 
-	var fromJsonObjectWithTypeOrArrayOrMap = function(jsonType, jsonObject, hashedObjects, modulesMap) {
+	var fromJsonObjectWithTypeOrArrayOrMap = function(jsonType, jsonObject, objectMap, modulesMap) {
 		if (jsonObject instanceof Array) {
 			if (jsonType && _.isString(jsonType) && jsonObject.length == 2) {
 				return jsonObject[1];
@@ -64,28 +116,28 @@ define([ 'jquery', 'underscore' ], function(jquery, _) {
 				var jsonType = jsonType ? jsonType["arguments"][0] : null;
 
 				jsonObject.forEach(function(item, index) {
-					var dto = fromJsonObjectWithTypeOrArrayOrMap(jsonType, item, hashedObjects, modulesMap);
+					var dto = fromJsonObjectWithTypeOrArrayOrMap(jsonType, item, objectMap, modulesMap);
 					array.push(dto);
 				});
 				return array;
 			}
 		} else if (jsonObject instanceof Object) {
-			if (jsonObject["@type"]) {
-				return fromJsonObjectWithType(jsonObject, hashedObjects, modulesMap)
+			if (jsonObject["@id"] && jsonObject["@type"]) {
+				return fromJsonObjectWithType(jsonObject, objectMap, modulesMap)
 			} else {
 				var map = {};
 				var jsonType = jsonType ? jsonType["arguments"][1] : null;
 
 				Object.keys(jsonObject).forEach(function(key) {
-					var dto = fromJsonObjectWithTypeOrArrayOrMap(jsonType, jsonObject[key], hashedObjects, modulesMap);
+					var dto = fromJsonObjectWithTypeOrArrayOrMap(jsonType, jsonObject[key], objectMap, modulesMap);
 					map[key] = dto;
 				});
 				return map;
 			}
 		} else {
 			if (_.isNumber(jsonObject) && jsonType && jsonType != "Date") {
-				if (jsonObject in hashedObjects) {
-					return hashedObjects[jsonObject];
+				if (jsonObject in objectMap) {
+					return objectMap[jsonObject];
 				} else {
 					throw "Object with id: " + JSON.stringify(jsonObject) + " and type: " + jsonType + " haven't been found in cache";
 				}
@@ -95,37 +147,41 @@ define([ 'jquery', 'underscore' ], function(jquery, _) {
 		}
 	}
 
-	var fromJsonObjectWithType = function(jsonObject, hashedObjects, modulesMap) {
+	var fromJsonObjectWithType = function(jsonObject, objectMap, modulesMap) {
 		var jsonId = jsonObject["@id"]
 		var jsonType = jsonObject["@type"]
+		var object = objectMap[jsonId];
 
-		var moduleName = typeToModuleName(jsonType);
-		var module = modulesMap[moduleName];
-		var moduleFieldTypeMap = module.$typeDescription || {};
-		try {
-			var object = new module(""); // some entities have a mandatory non-null constructor parameters
-		} catch(e) {
-			throw "Failed deserializing object " + JSON.stringify(jsonObject) + " into type " + jsonType + " with error " + e.message;
-		}
+		if (jsonId in objectMap) {
+			return objectMap[jsonId];
+		} else {
+			var moduleName = typeToModuleName(jsonType);
+			var module = modulesMap[moduleName];
+			var moduleFieldTypeMap = module.$typeDescription || {};
 
-		if (jsonId) {
-			if (jsonId in hashedObjects) {
-				throw "This object has already been cached!"
-			}
-			hashedObjects[jsonId] = object
-		}
-
-		for ( var key in jsonObject) {
-			var fieldType = moduleFieldTypeMap[key];
-			var fieldValue = jsonObject[key];
-
-			if (object["_" + key] !== undefined) {
-				key = "_" + key;
+			try {
+				var object = new module(""); // some entities have a
+				// mandatory
+				// non-null constructor parameters
+			} catch (e) {
+				throw "Failed deserializing object " + JSON.stringify(jsonObject) + " into type " + jsonType + " with error " + e.message;
 			}
 
-			object[key] = fromJsonObjectWithTypeOrArrayOrMap(fieldType, fieldValue, hashedObjects, modulesMap)
+			objectMap[jsonId] = object;
+
+			for ( var key in jsonObject) {
+				var fieldType = moduleFieldTypeMap[key];
+				var fieldValue = jsonObject[key];
+
+				if (object["_" + key] !== undefined) {
+					key = "_" + key;
+				}
+
+				object[key] = fromJsonObjectWithTypeOrArrayOrMap(fieldType, fieldValue, objectMap, modulesMap);
+			}
+
+			return object;
 		}
-		return object;
 	};
 
 	var decycleLocal = function(object, references) {
