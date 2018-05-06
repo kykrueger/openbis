@@ -47,7 +47,7 @@ define([ 'jquery', 'underscore' ], function(jquery, _) {
 					return jsonId1 - jsonId2;
 				});
 				sortedJsonIds.forEach(function(jsonId) {
-					fromJsonObjectWithType(jsonObjectMap[jsonId], v3ObjectMap, moduleMap);
+					createJsonObjectWithType(jsonObjectMap[jsonId], v3ObjectMap, moduleMap);
 				});
 
 				// Convert the whole JSON using the already converted objects.
@@ -103,6 +103,27 @@ define([ 'jquery', 'underscore' ], function(jquery, _) {
 		}
 	}
 
+	var createJsonObjectWithType = function(jsonObject, objectMap, modulesMap) {
+		var jsonId = jsonObject["@id"]
+		var jsonType = jsonObject["@type"]
+
+		var moduleName = typeToModuleName(jsonType);
+		var module = modulesMap[moduleName];
+		var moduleFieldTypeMap = module.$typeDescription || {};
+
+		try {
+			// some entities have a mandatory
+			// non-null constructor parameters
+			var object = new module("");
+			object.__stub__ = true;
+		} catch (e) {
+			throw "Failed deserializing object " + JSON.stringify(jsonObject) + " into type " + jsonType + " with error " + e.message;
+		}
+
+		objectMap[jsonId] = object;
+		return object;
+	}
+
 	var typeToModuleName = function(type) {
 		return type.replace(/\./g, '/');
 	}
@@ -152,22 +173,12 @@ define([ 'jquery', 'underscore' ], function(jquery, _) {
 		var jsonType = jsonObject["@type"]
 		var object = objectMap[jsonId];
 
-		if (jsonId in objectMap) {
-			return objectMap[jsonId];
-		} else {
+		if (object.__stub__) {
+			delete object.__stub__;
+
 			var moduleName = typeToModuleName(jsonType);
 			var module = modulesMap[moduleName];
 			var moduleFieldTypeMap = module.$typeDescription || {};
-
-			try {
-				var object = new module(""); // some entities have a
-				// mandatory
-				// non-null constructor parameters
-			} catch (e) {
-				throw "Failed deserializing object " + JSON.stringify(jsonObject) + " into type " + jsonType + " with error " + e.message;
-			}
-
-			objectMap[jsonId] = object;
 
 			for ( var key in jsonObject) {
 				var fieldType = moduleFieldTypeMap[key];
@@ -180,6 +191,8 @@ define([ 'jquery', 'underscore' ], function(jquery, _) {
 				object[key] = fromJsonObjectWithTypeOrArrayOrMap(fieldType, fieldValue, objectMap, modulesMap);
 			}
 
+			return object;
+		} else {
 			return object;
 		}
 	};
