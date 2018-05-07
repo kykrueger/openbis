@@ -1,3 +1,6 @@
+from .utils import VERBOSE
+from .openbis_object import OpenBisObject 
+
 class Vocabulary():
 
     def __init__(self, data):
@@ -51,4 +54,10 @@ class Vocabulary():
             </table>
         """
         return html
+
+
+class VocabularyTerm(OpenBisObject):
+
+    def __init__(self, data):
+        self.data = data
 

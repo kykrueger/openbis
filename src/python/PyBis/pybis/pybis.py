@@ -30,7 +30,7 @@ from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
 from .utils import extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
 from .property import PropertyHolder, PropertyAssignments
-from .masterdata import Vocabulary
+from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
 from .definitions import fetch_option
 
@@ -1797,8 +1797,21 @@ class Openbis:
             "params": [self.token, search_request, fetch_options]
         }
         resp = self._post_request(self.as_v3, request)
-        parse_jackson(resp)
-        return Vocabulary(resp)
+
+        attrs = 'code label description vocabulary registrationDate modificationDate official ordinal'.split()
+
+        if len(resp['objects']) == 0:
+            terms = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(resp)
+            terms = DataFrame(objects)
+            terms['registrationDate'] = terms['registrationDate'].map(format_timestamp)
+            terms['modificationDate'] = terms['modificationDate'].map(format_timestamp)
+
+        return Things(self, 'term', terms[attrs], 'permId')
+        return VocabularyTerm(terms)
+
 
     def new_tag(self, code, description=None):
         """ Creates a new tag (for this user)
