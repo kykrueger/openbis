@@ -32,7 +32,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
@@ -86,8 +85,6 @@ class UserManagerExpectationsBuilder
 
     private Map<String, Set<String>> groupsByAdminUsers = new TreeMap<>();
 
-    private Map<String, Set<String>> userSpacesByGroups = new TreeMap<>();
-
     private Map<String, String> homeSpacesByUserId = new TreeMap<>();
 
     private List<String> globalSpaces = new ArrayList<>();;
@@ -104,6 +101,12 @@ class UserManagerExpectationsBuilder
     public void setGlobalSpaces(List<String> globalSpaces)
     {
         this.globalSpaces = globalSpaces;
+    }
+    
+    UserManagerExpectationsBuilder homeSpace(Principal user, String homeSpace)
+    {
+        homeSpacesByUserId.put(user.getUserId(), homeSpace);
+        return this;
     }
 
     UserManagerExpectationsBuilder unknownUser(Principal user)

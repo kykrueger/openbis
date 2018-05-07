@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -48,7 +47,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.CreatePersonsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.PersonUpdate;
@@ -431,6 +429,7 @@ public class UserManager
     private void removeUsersFromGroup(Context context, String groupCode, Set<String> usersToBeRemoved)
     {
         String adminGroupCode = createAdminGroupCode(groupCode);
+        AuthorizationGroupPermId adminGroupId = new AuthorizationGroupPermId(adminGroupCode);
         Map<String, RoleAssignment> spaceRoles = context.currentState.getCurrentSpaceRolesOfGroup(adminGroupCode);
         for (String user : usersToBeRemoved)
         {
@@ -438,9 +437,11 @@ public class UserManager
             removePersonFromAuthorizationGroup(context, adminGroupCode, user);
             for (RoleAssignment role : spaceRoles.values())
             {
-                if (role.getSpace().getCode().startsWith(groupCode + "_" + user))
+                Space space = role.getSpace();
+                if (space.getCode().startsWith(groupCode + "_" + user))
                 {
                     context.delete(role.getId());
+                    context.report.unassignRoleFrom(adminGroupId, role.getRole(), space.getPermId());
                 }
             }
         }
@@ -634,255 +635,6 @@ public class UserManager
         }
     }
 
-    private void manageUsers(String sessionToken, Map<IPersonId, Person> currentUsers, UserManagerReport report)
-    {
-        Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByGroupCodes = getUsersAndSpacesByGroupCodes(sessionToken);
-        Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByAdminGroupCodes = getUsersAndSpacesByAdminGroupCodes(sessionToken);
-        for (UserInfo userInfo : userInfosByUserId.values())
-        {
-            try
-            {
-                manageUser(sessionToken, userInfo, currentUsers, currentUsersAndSpacesByGroupCodes, currentUsersAndSpacesByAdminGroupCodes, report);
-            } catch (Exception e)
-            {
-                String message = String.format("Couldn't manage user '%s' because of the following error: %s",
-                        userInfo.getPrincipal().getUserId(), e);
-                report.addErrorMessage(message);
-                logger.log(LogLevel.ERROR, message, e);
-            }
-        }
-
-        for (String groupCode : currentUsersAndSpacesByGroupCodes.keySet())
-        {
-            try
-            {
-                manageUsersRemovedFromGroup(sessionToken, groupCode, currentUsersAndSpacesByGroupCodes,
-                        currentUsersAndSpacesByAdminGroupCodes, report);
-            } catch (Exception e)
-            {
-                String message = String.format("Couldn't manage users removed from group %s because of the following error: %s",
-                        groupCode, e);
-                report.addErrorMessage(message);
-                logger.log(LogLevel.ERROR, message, e);
-            }
-        }
-    }
-
-    private void manageUsersRemovedFromGroup(String sessionToken, String groupCode,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByGroupCodes,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByAdminGroupCodes,
-            UserManagerReport report)
-    {
-        Set<String> currentUsers = currentUsersAndSpacesByGroupCodes.get(groupCode).users;
-        Set<String> newUsers = usersByGroupCode.get(groupCode).keySet();
-        Context context = new Context(sessionToken, service, null, report);
-        for (String currentUser : currentUsers)
-        {
-            if (newUsers.contains(currentUser) == false)
-            {
-                removePersonFromAuthorizationGroup(context, currentUsersAndSpacesByGroupCodes, groupCode, currentUser, report);
-                String adminGroupCode = createAdminGroupCode(groupCode);
-                removePersonFromAuthorizationGroup(context, currentUsersAndSpacesByAdminGroupCodes, adminGroupCode, currentUser, report);
-            }
-        }
-        context.executeOperations();
-    }
-
-    private void manageKnownGroup(Context context, String groupCode, Map<IPersonId, Person> currentUsers, UserManagerReport report)
-    {
-        String adminGroupCode = createAdminGroupCode(groupCode);
-        Map<String, UsersAndRoleAssignments> usersAndSpacesByAdminGroupCodes = getUsersAndSpacesByAdminGroupCodes(context.getSessionToken());
-        UsersAndRoleAssignments usersAndSpaces = usersAndSpacesByAdminGroupCodes.get(adminGroupCode);
-        Collection<Principal> users = usersByGroupCode.get(groupCode).values();
-        if (usersAndSpaces != null && users != null)
-        {
-            for (Principal user : users)
-            {
-                String userId = user.getUserId();
-                Person knownUser = currentUsers.get(new PersonPermId(userId));
-                if (knownUser != null)
-                {
-                    Space homeSpace = knownUser.getSpace();
-                    if (homeSpace != null)
-                    {
-                        RoleAssignment roleAssignment = usersAndSpaces.getRoleAssignment(homeSpace.getCode());
-                        if (roleAssignment != null)
-                        {
-                            context.delete(roleAssignment.getId());
-                            report.unassignRoleFrom(new AuthorizationGroupPermId(adminGroupCode), Role.ADMIN, homeSpace.getPermId());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void assertAuthorizationGroupDoesNotExist(Context context, String adminGroup)
-    {
-        if (service.getAuthorizationGroups(context.getSessionToken(), Arrays.asList(new AuthorizationGroupPermId(adminGroup)),
-                new AuthorizationGroupFetchOptions()).isEmpty() == false)
-        {
-            throw new IllegalStateException("Authorization group " + adminGroup + " already exists.");
-        }
-    }
-
-    private void manageUser(String sessionToken, UserInfo userInfo, Map<IPersonId, Person> knownUsers,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByGroupCodes,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByAdminGroupCodes,
-            UserManagerReport report)
-    {
-        Context context = new Context(sessionToken, service, null, report);
-        Person knownUser = knownUsers.get(new PersonPermId(userInfo.getPrincipal().getUserId()));
-        if (knownUser != null)
-        {
-            manageKnownUser(context, userInfo, knownUser, currentUsersAndSpacesByGroupCodes,
-                    currentUsersAndSpacesByAdminGroupCodes, report);
-        } else
-        {
-            manageNewUser(context, userInfo, userInfo.getPrincipal().getUserId().toUpperCase(),
-                    currentUsersAndSpacesByGroupCodes, currentUsersAndSpacesByAdminGroupCodes, report);
-        }
-        context.executeOperations();
-    }
-
-    private void manageKnownUser(Context context, UserInfo userInfo, Person knownUser,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByGroupCodes,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByAdminGroupCodes,
-            UserManagerReport report)
-    {
-        int numberOfHomeSpaces = getNumberOfHomeSpaces(context, knownUser);
-        if (knownUser.isActive() == false)
-        {
-            String homeSpaceCode = knownUser.getUserId().toUpperCase() + "_" + (numberOfHomeSpaces + 1);
-            manageNewUser(context, userInfo, homeSpaceCode, currentUsersAndSpacesByGroupCodes,
-                    currentUsersAndSpacesByAdminGroupCodes, report);
-        } else
-        {
-            String userId = userInfo.principal.getUserId();
-            for (GroupInfo groupInfo : userInfo.getGroupInfosByGroupKey().values())
-            {
-                String groupCode = groupInfo.getKey();
-                addPersonToAuthorizationGroup(context, currentUsersAndSpacesByGroupCodes, groupCode, userId, report);
-                String adminGroupCode = createAdminGroupCode(groupCode);
-                String homeSpaceCode = knownUser.getUserId().toUpperCase() + (numberOfHomeSpaces > 1 ? "_" + numberOfHomeSpaces : "");
-                UsersAndRoleAssignments usersAndSpaces = currentUsersAndSpacesByAdminGroupCodes.get(adminGroupCode);
-                if (usersAndSpaces != null && usersAndSpaces.getRoleAssignment(homeSpaceCode) == null)
-                {
-                    AuthorizationGroupPermId adminGroupId = new AuthorizationGroupPermId(adminGroupCode);
-                    SpacePermId homeSpaceId = new SpacePermId(homeSpaceCode);
-                    createRoleAssignment(context, adminGroupId, Role.ADMIN, homeSpaceId);
-                }
-                if (groupInfo.isAdmin())
-                {
-                    addPersonToAuthorizationGroup(context, currentUsersAndSpacesByAdminGroupCodes, adminGroupCode, userId, report);
-                } else if (isCurrentAdminUser(currentUsersAndSpacesByAdminGroupCodes, adminGroupCode, userId))
-                {
-                    removePersonFromAuthorizationGroup(context, currentUsersAndSpacesByAdminGroupCodes, adminGroupCode, userId, report);
-                }
-            }
-        }
-    }
-
-    private int getNumberOfHomeSpaces(Context context, Person knownUser)
-    {
-        SpaceSearchCriteria searchCriteria = new SpaceSearchCriteria();
-        searchCriteria.withCode().thatStartsWith(knownUser.getUserId().toUpperCase());
-        return service.searchSpaces(context.getSessionToken(), searchCriteria, new SpaceFetchOptions()).getTotalCount();
-    }
-
-    private boolean isCurrentAdminUser(Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByAdminGroupCodes,
-            String groupCode, String userId)
-    {
-        Set<String> users = currentUsersAndSpacesByAdminGroupCodes.get(groupCode).users;
-        return users == null ? false : users.contains(userId);
-    }
-
-    private void manageNewUser(Context context, UserInfo userInfo, String homeSpaceCode,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByGroupCodes,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByAdminGroupCodes,
-            UserManagerReport report)
-    {
-        String userId = userInfo.getPrincipal().getUserId();
-        if (getSpaces(context.getSessionToken(), Arrays.asList(homeSpaceCode)).isEmpty() == false)
-        {
-            throw new IllegalStateException("There is already a space with code " + homeSpaceCode + ".");
-        }
-
-        ISpaceId homeSpaceId = createSpace(context, homeSpaceCode);
-        createUserWithHomeSpace(context, userId, homeSpaceId, report);
-
-        for (GroupInfo groupInfo : userInfo.getGroupInfosByGroupKey().values())
-        {
-            String groupCode = groupInfo.getKey();
-            addPersonToAuthorizationGroup(context, currentUsersAndSpacesByGroupCodes, groupCode, userId, report);
-            String adminGroupCode = createAdminGroupCode(groupCode);
-            createRoleAssignment(context, new AuthorizationGroupPermId(adminGroupCode), Role.ADMIN, homeSpaceId);
-            if (groupInfo.isAdmin())
-            {
-                addPersonToAuthorizationGroup(context, currentUsersAndSpacesByAdminGroupCodes, adminGroupCode, userId, report);
-            }
-        }
-    }
-
-    private void createUserWithHomeSpace(Context context, String userId, ISpaceId homeSpaceId, UserManagerReport report)
-    {
-        PersonPermId personPermId = new PersonPermId(userId);
-        PersonFetchOptions fetchOptions = new PersonFetchOptions();
-        if (service.getPersons(context.getSessionToken(), Arrays.asList(personPermId), fetchOptions).isEmpty())
-        {
-            PersonCreation personCreation = new PersonCreation();
-            personCreation.setUserId(userId);
-            context.add(personCreation);
-            report.addUser(userId);
-        } else
-        {
-            report.reuseUser(userId);
-        }
-        assignHomeSpace(context, personPermId, homeSpaceId);
-        RoleAssignmentCreation roleCreation = new RoleAssignmentCreation();
-        roleCreation.setUserId(personPermId);
-        roleCreation.setRole(Role.ADMIN);
-        roleCreation.setSpaceId(homeSpaceId);
-        context.add(roleCreation);
-    }
-
-    private void addPersonToAuthorizationGroup(Context context,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByGroupCodes,
-            String groupCode, String userId, UserManagerReport report)
-    {
-        Set<String> users = currentUsersAndSpacesByGroupCodes.get(groupCode).users;
-        if (users == null || users.contains(userId) == false)
-        {
-            AuthorizationGroupUpdate groupUpdate = new AuthorizationGroupUpdate();
-            groupUpdate.setAuthorizationGroupId(new AuthorizationGroupPermId(groupCode));
-            groupUpdate.getUserIds().add(new PersonPermId(userId));
-            context.add(groupUpdate);
-            report.addUserToGroup(groupCode, userId);
-        }
-    }
-
-    private void removePersonFromAuthorizationGroup(Context context,
-            Map<String, UsersAndRoleAssignments> currentUsersAndSpacesByGroupCodes,
-            String groupCode, String userId, UserManagerReport report)
-    {
-        Set<String> users = currentUsersAndSpacesByGroupCodes.get(groupCode).users;
-        if (users == null || users.contains(userId))
-        {
-            AuthorizationGroupUpdate groupUpdate = new AuthorizationGroupUpdate();
-            groupUpdate.setAuthorizationGroupId(new AuthorizationGroupPermId(groupCode));
-            groupUpdate.getUserIds().remove(new PersonPermId(userId));
-            context.add(groupUpdate);
-            report.removeUserFromGroup(groupCode, userId);
-        }
-    }
-
-    private void removeSpaceAdminRoleFromAuthorizationGroup(Context context, String groupCode, String userId, UserManagerReport report)
-    {
-
-        AuthorizationGroupUpdate groupUpdate = new AuthorizationGroupUpdate();
-        groupUpdate.setAuthorizationGroupId(new AuthorizationGroupPermId(groupCode));
-    }
-
     private ISpaceId createSpace(Context context, String spaceCode)
     {
         SpaceCreation spaceCreation = new SpaceCreation();
@@ -903,53 +655,10 @@ public class UserManager
         return groupCode + "_ADMIN";
     }
 
-    private AuthorizationGroupPermId createAdminGroupId(String groupCode)
-    {
-        return new AuthorizationGroupPermId(createAdminGroupCode(groupCode));
-    }
-
     private Map<ISpaceId, Space> getSpaces(String sessionToken, Collection<String> spaceCodes)
     {
         SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
         return service.getSpaces(sessionToken, spaceCodes.stream().map(SpacePermId::new).collect(Collectors.toList()), fetchOptions);
-    }
-
-    private Map<IPersonId, Person> getUsersWithRoleAssigments(String sessionToken)
-    {
-        Function<String, PersonPermId> mapper = userId -> new PersonPermId(userId);
-        List<PersonPermId> userIds = userInfosByUserId.keySet().stream().map(mapper).collect(Collectors.toList());
-        PersonFetchOptions fetchOptions = new PersonFetchOptions();
-        fetchOptions.withSpace();
-        fetchOptions.withRoleAssignments().withSpace();
-        Map<IPersonId, Person> users = service.getPersons(sessionToken, userIds, fetchOptions);
-        return users;
-    }
-
-    private Map<String, UsersAndRoleAssignments> getUsersAndSpacesByGroupCodes(String sessionToken)
-    {
-        return getUsersAndSpacesByGroupCodes(sessionToken, groupCode -> new AuthorizationGroupPermId(groupCode));
-    }
-
-    private Map<String, UsersAndRoleAssignments> getUsersAndSpacesByAdminGroupCodes(String sessionToken)
-    {
-        return getUsersAndSpacesByGroupCodes(sessionToken, groupCode -> createAdminGroupId(groupCode));
-    }
-
-    private Map<String, UsersAndRoleAssignments> getUsersAndSpacesByGroupCodes(String sessionToken, Function<String, AuthorizationGroupPermId> mapper)
-    {
-        List<AuthorizationGroupPermId> groupPermIds = groupCodes.stream().map(mapper).collect(Collectors.toList());
-        AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
-        fetchOptions.withUsers();
-        fetchOptions.withRoleAssignments().withSpace();
-        Map<String, UsersAndRoleAssignments> usersByGroupCodes = new TreeMap<>();
-        for (AuthorizationGroup group : service.getAuthorizationGroups(sessionToken, groupPermIds, fetchOptions).values())
-        {
-            Set<String> users = group.getUsers().stream().map(Person::getUserId).collect(Collectors.toSet());
-            List<RoleAssignment> roleAssignments = group.getRoleAssignments().stream()
-                    .filter(ra -> ra.getSpace() != null).collect(Collectors.toList());
-            usersByGroupCodes.put(group.getCode(), new UsersAndRoleAssignments(users, roleAssignments));
-        }
-        return usersByGroupCodes;
     }
 
     private Set<String> asSet(List<String> users)
@@ -966,11 +675,6 @@ public class UserManager
         public UserInfo(Principal principal)
         {
             this.principal = principal;
-        }
-
-        public Principal getPrincipal()
-        {
-            return principal;
         }
 
         public void addGroupInfo(GroupInfo groupInfo)
@@ -1016,33 +720,6 @@ public class UserManager
         public String toString()
         {
             return key + (admin ? "*" : "");
-        }
-    }
-
-    private static final class UsersAndRoleAssignments
-    {
-        private Set<String> users;
-
-        private Map<String, RoleAssignment> roleAssignmentsBySpace = new TreeMap<>();
-
-        UsersAndRoleAssignments(Set<String> users, List<RoleAssignment> roleAssignments)
-        {
-            this.users = users;
-            for (RoleAssignment roleAssignment : roleAssignments)
-            {
-                roleAssignmentsBySpace.put(roleAssignment.getSpace().getCode(), roleAssignment);
-            }
-        }
-
-        RoleAssignment getRoleAssignment(String spaceCode)
-        {
-            return roleAssignmentsBySpace.get(spaceCode);
-        }
-
-        @Override
-        public String toString()
-        {
-            return "users: " + users + ", spaces: " + roleAssignmentsBySpace.keySet();
         }
     }
 
