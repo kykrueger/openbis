@@ -192,6 +192,28 @@ $.extend(DefaultProfile.prototype, {
     	    		});
 		}
 		
+		this.getSampleConfigSpacePrefix = function(sample) {
+			var prefix = null;
+			var spaceCode = sample.spaceCode;
+			for(var ssIdx = 0; ssIdx < this.settingsSpaces.length; ssIdx++){
+				var settingsSpaceCode = this.settingsSpaces[ssIdx];
+				var spacePrefixIndexOf = settingsSpaceCode.indexOf(this.settingsSpacesPostFixes[0]);
+				if(spacePrefixIndexOf !== -1) {
+					var spacePrefix = settingsSpaceCode.substring(0, spacePrefixIndexOf);
+					if(spaceCode.startsWith(spacePrefix) && (prefix === null || (spacePrefix.length > prefix.length))) {
+						prefix = spacePrefix;
+					}
+				}
+			}
+			
+			return prefix;
+		}
+		
+		this.getStorageConfigCollectionForConfigSample = function(sample) {
+			var prefix = this.getSampleConfigSpacePrefix(sample);
+			return "/" + prefix + "ELN_SETTINGS/" + prefix + "STORAGES/" + prefix + "STORAGES_COLLECTION";
+		}
+		
 		this.searchSamplesUsingV3OnDropbox = false;
 		this.searchSamplesUsingV3OnDropboxRunCustom = false;
 		
