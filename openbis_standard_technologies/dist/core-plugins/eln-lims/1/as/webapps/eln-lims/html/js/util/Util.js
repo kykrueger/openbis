@@ -696,9 +696,20 @@ var Util = new function() {
 	    main.css("left", mouseX);
 	    drag.css("left", mouseX);
     };
+    
+    this.elementEndsWithArrayElement = function(element, elementsToEndWith) {
+    		for(var aIdx = 0; aIdx < elementsToEndWith.length; aIdx++) {
+    			if(element.endsWith(elementsToEndWith[aIdx])) {
+    				return true;
+    			}
+    		}
+    		return false;
+	}
 }
 
 
+
+			
 String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
