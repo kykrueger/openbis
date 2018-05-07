@@ -195,7 +195,7 @@ $.extend(DefaultProfile.prototype, {
 		this.getSampleConfigSpacePrefix = function(sample) {
 			var prefix = null;
 			var spaceCode = sample.spaceCode;
-			for(var ssIdx = 0; ssIdx < this.settingsSpaces.length; ssIdx++){
+			for(var ssIdx = 0; ssIdx < this.settingsSpaces.length; ssIdx++) {
 				var settingsSpaceCode = this.settingsSpaces[ssIdx];
 				var spacePrefixIndexOf = settingsSpaceCode.indexOf(this.settingsSpacesPostFixes[0]);
 				if(spacePrefixIndexOf !== -1) {
@@ -214,16 +214,29 @@ $.extend(DefaultProfile.prototype, {
 			return "/" + prefix + "ELN_SETTINGS/" + prefix + "STORAGES/" + prefix + "STORAGES_COLLECTION";
 		}
 		
+		this.getStorageSpaceForSample = function(sample) {
+			var storageSpaceCode = null;
+			var prefixIndexOf = sample.spaceCode.indexOf("_"); // This is a euristic that only works if the prefixes can't contain "_"
+			if(prefixIndexOf !== -1) {
+				var prefix = sample.spaceCode.substring(0, prefixIndexOf);
+				for(var ssIdx = 0; ssIdx < this.storageSpaces.length; ssIdx++) {
+					if(this.storageSpaces[ssIdx].startsWith(prefix)) {
+						storageSpaceCode = this.storageSpaces[ssIdx];
+					}
+				}
+			}
+			if(storageSpaceCode === null) { // Look for a default storage
+				for(var ssIdx = 0; ssIdx < this.storageSpaces.length; ssIdx++) {
+					if(this.storageSpaces[ssIdx] === this.storageSpacesPostFixes[0]) {
+						storageSpaceCode = this.storageSpaces[ssIdx];
+					}
+				}
+			}
+			return storageSpaceCode;
+		}
+		
 		this.searchSamplesUsingV3OnDropbox = false;
 		this.searchSamplesUsingV3OnDropboxRunCustom = false;
-		
-		this.getFirstStorageSpace = function() {
-			var first = null;
-			if(this.storageSpaces.length > 0) {
-				first = this.storageSpaces[0];
-			}
-			return first;
-		}
 		
 		this.isSampleTypeWithStorage = function(sampleTypeCode) {
 			return this.sampleTypeDefinitionsExtension[sampleTypeCode] && this.sampleTypeDefinitionsExtension[sampleTypeCode]["ENABLE_STORAGE"];
