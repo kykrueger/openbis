@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.ethz.sis.benchmark.Benchmark;
+import ch.ethz.sis.benchmark.util.RandomWord;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
@@ -20,7 +21,8 @@ public class CreateSpacesBenchmark extends Benchmark {
         List<SpaceCreation> spaceCreations = new ArrayList<SpaceCreation>();
         for(int i = 0; i < spacesToCreate; i++) {
         		SpaceCreation spaceCreation = new SpaceCreation();
-        		spaceCreation.setCode("SPACE_" + (i+20000));
+        		String spaceCode = "SPACE_" + RandomWord.getRandomWord() + "_" + RandomWord.getRandomWord();
+        		spaceCreation.setCode(spaceCode);
         		spaceCreations.add(spaceCreation);
         }
         v3.createSpaces(sessionToken, spaceCreations);
