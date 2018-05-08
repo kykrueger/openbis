@@ -422,7 +422,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				mainController.serverFacade.deleteSamples(samplesToDelete,  "Deleted to trashcan from eln sample form " + _this._sampleFormModel.sample.identifier, 
 															function(response) {
 																if(response.error) {
-																	Util.showError("Deletes failed, other changes where commited: " + response.error.message, callbackOk);
+																	Util.showError("Deletions failed, other changes were committed: " + response.error.message, callbackOk);
 																} else {
 																	Util.showSuccess(message, callbackOk);
 																}
