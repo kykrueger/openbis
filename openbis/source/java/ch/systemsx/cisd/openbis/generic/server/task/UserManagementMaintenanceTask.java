@@ -34,6 +34,7 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.logging.LogLevel;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
@@ -187,13 +188,23 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         return (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
     }
 
-    protected UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
+    private UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
     {
-        UserManager userManager = new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
-                logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+        UserManager userManager = createUserManager(logger);
         userManager.setGlobalSpaces(config.getGlobalSpaces());
-        userManager.setCommonSpacesByRole(config.getCommonSpaces());
-        userManager.setSamplesByType(config.getCommonSamples());
+        try
+        {
+            userManager.setCommonSpacesAndSamples(config.getCommonSpaces(), config.getCommonSamples());
+        } catch (ConfigurationFailureException e)
+        {
+            notificationLog.error(e.getMessage());
+        }
         return userManager;
+    }
+
+    protected UserManager createUserManager(Log4jSimpleLogger logger)
+    {
+        return new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
+                logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
     }
 }
