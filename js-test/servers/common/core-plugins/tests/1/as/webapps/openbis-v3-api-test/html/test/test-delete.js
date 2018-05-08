@@ -301,6 +301,11 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var c = new common(assert, openbis);
 			testDeleteWithoutTrash(c, c.createSemanticAnnotation, c.findSemanticAnnotation, c.deleteSemanticAnnotation);
 		});
+		
+		QUnit.test("deleteQueries()", function(assert) {
+			var c = new common(assert, openbis);
+			testDeleteWithoutTrash(c, c.createQuery, c.findQuery, c.deleteQuery);
+		});
 
 	}
 

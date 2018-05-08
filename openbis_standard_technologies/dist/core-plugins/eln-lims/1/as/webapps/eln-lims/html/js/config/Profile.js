@@ -118,7 +118,7 @@ $.extend(DefaultProfile.prototype, {
 
 //		BigDataLink EDMs config
 		this.EDMSs = {
-//				"EXAMPLE-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
+//				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
 		}
 		
 //		Jupyter integration config
@@ -128,6 +128,12 @@ $.extend(DefaultProfile.prototype, {
 		this.systemProperties = ["ANNOTATIONS_STATE"];
 		this.forcedDisableRTF = ["FREEFORM_TABLE_STATE","NAME", "SEQUENCE"];
 		this.forceMonospaceFont = ["SEQUENCE"];
+		
+		this.isRTF = function(propertytype) {
+			return (propertytype && 
+					propertytype.dataType === "MULTILINE_VARCHAR" &&
+					$.inArray(propertytype.code, this.forcedDisableRTF) === -1)
+		}
 		
 		this.isSystemProperty = function(propertytype) {
 			return (propertytype && $.inArray(propertytype.code, this.systemProperties) !== -1);
@@ -142,8 +148,92 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.searchDomains = [ { "@id" : -1, "@type" : "GobalSearch", label : "Global", name : "global"}];
-		this.inventorySpaces = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"];
-		this.inventorySpacesReadOnly = ["ELN_SETTINGS", "STOCK_ORDERS"];
+		
+		//Ending in "MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"
+		this.inventorySpacesPostFixes = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"];
+		this.inventorySpaces = []; 
+		//Ending in "ELN_SETTINGS", "STOCK_ORDERS"
+		this.inventorySpacesReadOnlyPostFixes = ["ELN_SETTINGS", "STOCK_ORDERS"];
+		this.inventorySpacesReadOnly = []; 
+		//Ending in "STORAGE"
+		this.storageSpacesPostFixes = ["STORAGE"];
+		this.storageSpaces = [];
+		//Ending in "ELN_SETTINGS"
+		this.settingsSpacesPostFixes = ["ELN_SETTINGS"];
+		this.settingsSpaces = [];
+		//Ending in "ELN_SETTINGS", "STORAGE"
+		this.hideSpacesPostFixes = ["ELN_SETTINGS", "STORAGE"];
+		this.hideSpaces = []; 
+		
+		this.initSpaces = function(callback) {
+			var _this = this;
+			var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
+			
+    	    		mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(spacesSearchResult) {
+    	    			for(var sIdx = 0; sIdx < spacesSearchResult.objects.length; sIdx++) {
+    	    				var space = spacesSearchResult.objects[sIdx];
+    	    				if(Util.elementEndsWithArrayElement(space.code, _this.inventorySpacesPostFixes)) {
+						_this.inventorySpaces.push(space.code);
+					}
+					if(Util.elementEndsWithArrayElement(space.code, _this.inventorySpacesReadOnlyPostFixes)) {
+						_this.inventorySpacesReadOnly.push(space.code);
+					}
+					if(Util.elementEndsWithArrayElement(space.code, _this.storageSpacesPostFixes)) {
+						_this.storageSpaces.push(space.code);
+					}
+					if(Util.elementEndsWithArrayElement(space.code, _this.settingsSpacesPostFixes)) {
+						_this.settingsSpaces.push(space.code);
+					}
+					if(Util.elementEndsWithArrayElement(space.code, _this.hideSpacesPostFixes)) {
+						_this.hideSpaces.push(space.code);
+					}
+    	    			}
+    	    			callback();
+    	    		});
+		}
+		
+		this.getSampleConfigSpacePrefix = function(sample) {
+			var prefix = null;
+			var spaceCode = sample.spaceCode;
+			for(var ssIdx = 0; ssIdx < this.settingsSpaces.length; ssIdx++) {
+				var settingsSpaceCode = this.settingsSpaces[ssIdx];
+				var spacePrefixIndexOf = settingsSpaceCode.indexOf(this.settingsSpacesPostFixes[0]);
+				if(spacePrefixIndexOf !== -1) {
+					var spacePrefix = settingsSpaceCode.substring(0, spacePrefixIndexOf);
+					if(spaceCode.startsWith(spacePrefix) && (prefix === null || (spacePrefix.length > prefix.length))) {
+						prefix = spacePrefix;
+					}
+				}
+			}
+			
+			return prefix;
+		}
+		
+		this.getStorageConfigCollectionForConfigSample = function(sample) {
+			var prefix = this.getSampleConfigSpacePrefix(sample);
+			return "/" + prefix + "ELN_SETTINGS/" + prefix + "STORAGES/" + prefix + "STORAGES_COLLECTION";
+		}
+		
+		this.getStorageSpaceForSample = function(sample) {
+			var storageSpaceCode = null;
+			var prefixIndexOf = sample.spaceCode.indexOf("_"); // This is a euristic that only works if the prefixes can't contain "_"
+			if(prefixIndexOf !== -1) {
+				var prefix = sample.spaceCode.substring(0, prefixIndexOf);
+				for(var ssIdx = 0; ssIdx < this.storageSpaces.length; ssIdx++) {
+					if(this.storageSpaces[ssIdx].startsWith(prefix)) {
+						storageSpaceCode = this.storageSpaces[ssIdx];
+					}
+				}
+			}
+			if(storageSpaceCode === null) { // Look for a default storage
+				for(var ssIdx = 0; ssIdx < this.storageSpaces.length; ssIdx++) {
+					if(this.storageSpaces[ssIdx] === this.storageSpacesPostFixes[0]) {
+						storageSpaceCode = this.storageSpaces[ssIdx];
+					}
+				}
+			}
+			return storageSpaceCode;
+		}
 		
 		this.searchSamplesUsingV3OnDropbox = false;
 		this.searchSamplesUsingV3OnDropboxRunCustom = false;
@@ -162,7 +252,14 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.isInventorySpace = function(spaceCode) {
-			return ($.inArray(spaceCode, this.inventorySpaces) !== -1) || ($.inArray(spaceCode, this.inventorySpacesReadOnly) !== -1);
+			var inventorySpacesPostFixes = this.inventorySpaces.concat(this.inventorySpacesReadOnly);
+			for(var iIdx = 0; iIdx < inventorySpacesPostFixes.length; iIdx++) {
+				if(spaceCode.endsWith(inventorySpacesPostFixes[iIdx])) {
+					return true;
+				}
+			}
+			
+			return false;
 		}
 		
 		this.isFileAuthenticationService = false;
@@ -178,7 +275,7 @@ $.extend(DefaultProfile.prototype, {
 				"sampleTypeCodes" : ["GENERAL_ELN_SETTINGS", "STORAGE_POSITION", "STORAGE"],
 				"experimentTypeCodes" : []
 		}
-		this.hideSpaces = ["ELN_SETTINGS", "STORAGE"];
+		
 		
 		this.propertyReplacingCode = "NAME";
 		
@@ -837,15 +934,16 @@ $.extend(DefaultProfile.prototype, {
 								_this.initDatasetTypeCodes(function() {
 									_this.initAuth(function() {
 										_this.isFileAuthUser(function() {
-											_this.initSettings(function() {
-												//Check if the new storage system can be enabled
-												var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");
-												var storagePositionType = _this.getSampleTypeForSampleTypeCode("STORAGE_POSITION");										
-												_this.storagesConfiguration = { 
-														"isEnabled" : storageRack && storagePositionType
-												};
-												
-												callbackWhenDone();
+											_this.initSpaces(function() {
+												_this.initSettings(function() {
+													//Check if the new storage system can be enabled
+													var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");
+													var storagePositionType = _this.getSampleTypeForSampleTypeCode("STORAGE_POSITION");										
+													_this.storagesConfiguration = { 
+															"isEnabled" : storageRack && storagePositionType
+													};
+													callbackWhenDone();
+												});
 											});
 										});
 									});

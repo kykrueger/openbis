@@ -150,6 +150,7 @@ public class RevokeUserAccessMaintenanceTask implements IMaintenanceTask
             // Change userId and disable
             person.setUserId(person.getUserId() + "-" + getTimeStamp());
             person.setActive(false);
+            person.setDisplaySettings(null);
             personDAO.updatePerson(person);
 
             operationLog.info("person " + userIdToRevoke + " has been revoked.");

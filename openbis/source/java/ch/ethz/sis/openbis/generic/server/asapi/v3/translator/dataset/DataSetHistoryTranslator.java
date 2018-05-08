@@ -210,6 +210,7 @@ public class DataSetHistoryTranslator extends HistoryTranslator implements IData
     {
         HistoryContentCopyRecord contentCopyRecord = (HistoryContentCopyRecord) record;
         ContentCopyHistoryEntry entry = new ContentCopyHistoryEntry();
+        entry.setFetchOptions(new HistoryEntryFetchOptions());
         entry.setExternalCode(contentCopyRecord.externalCode);
         entry.setPath(contentCopyRecord.path);
         entry.setGitCommitHash(contentCopyRecord.gitCommitHash);

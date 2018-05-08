@@ -29,7 +29,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	this._sampleTypeDefinitionsHintsTableModels = {}; // key: sample type; value: table model
 
 	this.repaint = function(views, profileToEdit) {
-
+		var _this = this;
 		this._profileToEdit = profileToEdit;
 		var $container = views.content;
 
@@ -53,7 +53,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			if(this._settingsFormModel.mode === FormMode.VIEW) {
 				//Edit
 				var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
-					mainController.changeView("showEditSettingsPage");
+					mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
 				});
 				toolbarModel.push({ component : $editButton, tooltip: "Edit" });
 			} else { //Create and Edit
@@ -136,7 +136,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		var $fieldset = this._getFieldset($container, text.title, "settings-section-storages");
 		$fieldset.append(FormUtil.getInfoText(text.info));
 
-		var experimentIdentifier = "/ELN_SETTINGS/STORAGES/STORAGES_COLLECTION";
+		var experimentIdentifier = profile.getStorageConfigCollectionForConfigSample(this._settingsFormModel.settingsSample); //"/ELN_SETTINGS/STORAGES/STORAGES_COLLECTION";
 
 		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 			var argsMap = {
@@ -325,7 +325,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	this._paintSampleTypesDefinition = function($container, text) {
 		var $fieldset = this._getFieldset($container, text.title, "settings-section-sampletype-definitions");
 		$fieldset.append(FormUtil.getInfoText(text.info));
-		for (var sampleType of this._profileToEdit.getAllSampleTypes(true)) {
+		for (var sampleType of this._profileToEdit.getAllSampleTypes(false)) {
 			// layout
 			var $div = $("<div>").css("padding-left", "15px");
 			var displayName = Util.getDisplayNameFromCode(sampleType.code);
@@ -389,6 +389,10 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				name : "Enable Storage",
 				enabled : sampleTypeSettings["ENABLE_STORAGE"]
 			});
+			tableModel.addRow({
+				name : "Show",
+				enabled : sampleTypeSettings["SHOW"]
+			});
 		} else { // default values
 			tableModel.addRow({
 				name : "Use as Protocol",
@@ -407,6 +411,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					settings["USE_AS_PROTOCOL"] = rowValues["enabled"];
 				} else if (rowValues["Options"] === "Enable Storage") {
 					settings["ENABLE_STORAGE"] = rowValues["enabled"];
+				} else if (rowValues["Options"] === "Show") {
+					settings["SHOW"] = rowValues["enabled"];
 				}
 			}
 			return settings;

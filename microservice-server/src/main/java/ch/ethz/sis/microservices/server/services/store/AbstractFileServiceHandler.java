@@ -5,7 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +19,6 @@ import ch.ethz.sis.microservices.server.logging.LogManager;
 import ch.ethz.sis.microservices.server.logging.Logger;
 import ch.ethz.sis.microservices.server.services.Service;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
@@ -26,6 +29,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import lombok.Value;
 
 public abstract class AbstractFileServiceHandler extends Service
 {
@@ -106,17 +110,68 @@ public abstract class AbstractFileServiceHandler extends Service
         }
         return null;
     }
+    
+    /*
+     * Less recently used cache
+     * Keeps maxSize items
+     */
+    @Value
+    private static class LRUCache<KEY, VALUE> {
+
+        int maxSize;
+        Map<KEY, VALUE> cacheByKey = new ConcurrentHashMap<>();
+        Deque<KEY> cachePriority = new ConcurrentLinkedDeque<>();
+
+        public LRUCache(int maxSize) {
+            this.maxSize = maxSize;
+        }
+
+        public void add(KEY key, VALUE value) {
+            // Remove if existing
+            if(cacheByKey.containsKey(key)) {
+                cacheByKey.remove(key);
+                cachePriority.remove(key);
+            }
+
+            // Add again
+            cacheByKey.put(key, value);
+            cachePriority.addFirst(key);
+
+            // Remove oldest if the list grow too much
+            if(cachePriority.size() > maxSize) {
+                cacheByKey.remove(cachePriority.removeLast());
+            }
+        }
+
+        public VALUE get(KEY key) {
+            // Refresh Prio
+            if(cacheByKey.containsKey(key)) {
+                cachePriority.remove(key);
+                cachePriority.addFirst(key);
+            }
+
+            return cacheByKey.get(key);
+        }
+
+    }
+
+    private static LRUCache<String, List<DataSetFile>> cache = new LRUCache<>(1000);
 
     private DataSetFile getDatasetFile(String datastoreURL, int datastoreTimeout, String sessionToken, String datasetPermId,
             String datasetPathToFile)
     {
-        IDataStoreServerApi v3Dss = HttpInvokerUtils.createServiceStub(IDataStoreServerApi.class, datastoreURL, datastoreTimeout);
-
-        DataSetFileSearchCriteria searchCriteria = new DataSetFileSearchCriteria();
-        searchCriteria.withDataSet().withCode().thatEquals(datasetPermId);
-        DataSetFileFetchOptions fetchOptions = new DataSetFileFetchOptions();
-        SearchResult<DataSetFile> files = v3Dss.searchFiles(sessionToken, searchCriteria, fetchOptions);
-        for (DataSetFile file : files.getObjects())
+        List<DataSetFile> files = cache.get(datasetPermId);
+        
+        if(files == null) {
+            IDataStoreServerApi v3Dss = HttpInvokerUtils.createServiceStub(IDataStoreServerApi.class, datastoreURL, datastoreTimeout);
+            DataSetFileSearchCriteria searchCriteria = new DataSetFileSearchCriteria();
+            searchCriteria.withDataSet().withCode().thatEquals(datasetPermId);
+            DataSetFileFetchOptions fetchOptions = new DataSetFileFetchOptions();
+            files = v3Dss.searchFiles(sessionToken, searchCriteria, fetchOptions).getObjects();
+            cache.add(datasetPermId, files);
+        }
+        
+        for (DataSetFile file : files)
         {
             if (file.getPath().equals(datasetPathToFile))
             {

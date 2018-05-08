@@ -19,10 +19,17 @@ function SettingsManager(serverFacade) {
 	}
 
 	this.loadSettings = function(callback) {
-		this._serverFacade.searchSamples({ "sampleIdentifier" : "/ELN_SETTINGS/GENERAL_ELN_SETTINGS", "withProperties" : true }, (function(data) {
-			if (data && data[0] && data[0].properties && data[0].properties.ELN_SETTINGS) {
-				var settings = JSON.parse(data[0].properties.ELN_SETTINGS);
-				callback(settings);
+		this._serverFacade.searchSamples({ 	"sampleTypeCode" : "GENERAL_ELN_SETTINGS",
+											"withProperties" : true }, (function(settingsObjects) {
+			if(settingsObjects && settingsObjects.length > 0) {
+				settingsObjects.sort(function(a, b) {
+				    if(a.identifier === "/ELN_SETTINGS/GENERAL_ELN_SETTINGS") { // Global settings are applied first to be overriden by others
+				    		return 1;
+				    } else {
+				    		return -1;
+				    }
+				});
+				callback(settingsObjects);
 			} else {
 				callback();
 			}
@@ -32,15 +39,23 @@ function SettingsManager(serverFacade) {
 
 	// Loads settings and logs validation errors to console.
 	// Applies the settings to the profile even if they are invalid.
-    this.loadSettingsAndApplyToProfile = function(doneCallback) {
-		this.loadSettings((function(settings) {
-			if (settings) {
-				var errors = this._validateSettings(settings);
-				if (errors.length > 0) {
-					console.log("The settings contain the following errors:");
-					console.log(errors);
+    this.loadSettingsAndApplyToProfile = function(doneCallback, profileToEditOrNull) {
+		this.loadSettings((function(settingsObjects) {
+			if(settingsObjects) {
+				for(var sIdx = 0; sIdx < settingsObjects.length; sIdx++) {
+					var settingsObject = settingsObjects[sIdx];
+					if (settingsObject && settingsObject.properties && settingsObject.properties.ELN_SETTINGS) {
+						var settings = JSON.parse(settingsObject.properties.ELN_SETTINGS);
+						if (settings) {
+							var errors = this._validateSettings(settings);
+							if (errors.length > 0) {
+								console.log("The settings contain the following errors:");
+								console.log(errors);
+							}
+							this.applySettingsToProfile(settings, (profileToEditOrNull)?profileToEditOrNull:profile);
+						}
+					}
 				}
-				this.applySettingsToProfile(settings, profile);
 			}
 			doneCallback();
 		}).bind(this));
@@ -71,27 +86,47 @@ function SettingsManager(serverFacade) {
 	}
 
 	this.applySettingsToProfile = function(settings, targetProfile) {
-		// fields to be overwritten
-		var fields = [
+		// fields that get overwritten with settings if found
+		var fieldsToOverride = [
 			"dataSetTypeForFileNameMap",
 			"forcedDisableRTF",
-			"forceMonospaceFont",
-			"inventorySpaces",
+			"forceMonospaceFont"
 		];
-		for (var field of fields) {
+		for (var field of fieldsToOverride) {
 			if (settings[field]) {
 				targetProfile[field] = settings[field];
 			}
 		}
-		// main menu
+		
+		// array fields to add values to defaults
+		var fieldsToAdd = [
+			"inventorySpaces"
+		];
+		for (var field of fieldsToAdd) {
+			if (settings[field]) {
+				for(var fIdx = 0; fIdx < settings[field].length; fIdx++) {
+					var settingsValue = settings[field][fIdx];
+					if(($.inArray(settingsValue, targetProfile[field]) === -1)) {
+						targetProfile[field].push(settingsValue);
+					}
+				}
+			}
+		}
+		
+		// main menu, checks menu items one by one to keep new ones
 		for (var menuItem of Object.keys(targetProfile.mainMenu)) {
 			if (settings.mainMenu[menuItem] != undefined) {
 				targetProfile.mainMenu[menuItem] = settings.mainMenu[menuItem];
 			}
 		}
-		// sampleTypeDefinitionsExtension
+		
+		// sampleTypeDefinitionsExtension gets overwritten with settings if found
 		for (var sampleType of Object.keys(settings.sampleTypeDefinitionsExtension)) {
 			profile.sampleTypeDefinitionsExtension[sampleType] = settings.sampleTypeDefinitionsExtension[sampleType];
+			// Add the types to hide == not show
+			if(!settings.sampleTypeDefinitionsExtension[sampleType].SHOW) {
+				targetProfile.hideTypes["sampleTypeCodes"].push(sampleType);
+			}
 		}
 	}
 

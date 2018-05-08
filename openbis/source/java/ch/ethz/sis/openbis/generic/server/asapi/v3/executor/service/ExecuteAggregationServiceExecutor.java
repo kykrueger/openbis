@@ -21,13 +21,14 @@ import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.IDataStoreId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AggregationServiceExecutionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.TableModel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.TableModelTranslator;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
@@ -55,7 +56,7 @@ public class ExecuteAggregationServiceExecutor extends AbstractDssServiceExecuto
         DssServicePermId permId = (DssServicePermId) serviceId;
         String key = permId.getPermId();
         String datastoreCode = ((DataStorePermId) permId.getDataStoreId()).getPermId();
-        return translate(dataSetTable.createReportFromAggregationService(key, datastoreCode, options.getParameters()));
+        return new TableModelTranslator().translate(dataSetTable.createReportFromAggregationService(key, datastoreCode, options.getParameters()));
     }
 
     @Override

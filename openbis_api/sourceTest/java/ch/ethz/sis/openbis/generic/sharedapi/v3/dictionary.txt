@@ -2133,3 +2133,64 @@ WebApp Settings Fetch Options Settings Handler
 custom Import
 general Import
 I Import Service
+
+create Queries
+Create Queries Operation
+Create Queries Operation Result
+Database Id Search Criteria
+delete Queries
+Delete Queries Operation
+Delete Queries Operation Result
+Description Search Criteria
+Entity Type Code Pattern Search Criteria
+execute Query
+Execute Query Operation
+Execute Query Operation Result
+execute Sql
+Execute Sql Operation
+Execute Sql Operation Result
+GENERIC
+get DatabaseId
+get Entity Type Code Pattern
+get Queries
+Get Queries Operation
+Get Queries Operation Result
+get Query Id
+get Query Type
+get Sql
+I Query Database Id
+I Query Id
+is Public
+Query
+Query Creation
+Query Database Name
+Query Deletion Options
+Query Execution Options
+Query Fetch Options
+Query Name
+Query Search Criteria
+Query Sort Options
+Query Tech Id
+Query Type
+Query Type Search Criteria
+Query Update
+search Queries
+Search Queries Operation
+Search Queries Operation Result
+set Database Id
+set Entity Type Code Pattern
+set Public
+set Query Id
+set Query Type
+set Sql
+Sql Execution Options
+Sql Search Criteria
+update Queries
+Update Queries Operation
+Update Queries Operation Result
+with Database Id
+with Description
+with Entity Type Code Pattern
+with Parameters
+with Query Type
+with Sql

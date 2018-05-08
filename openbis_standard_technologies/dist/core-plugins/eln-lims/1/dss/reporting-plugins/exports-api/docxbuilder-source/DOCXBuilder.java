@@ -1,141 +1,185 @@
 package ch.ethz.sis;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Base64;
 
-import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.contenttype.ContentType;
+import org.docx4j.convert.in.xhtml.XHTMLImporterImpl;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.CTAltChunk;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-public class DOCXBuilder
-{
-    public static void main(String[] args) throws Exception
-    {
-        DOCXBuilder docx = new DOCXBuilder();
-        docx.addTitle("TitleA");
-        docx.addHeader("MetaA");
-        docx.addProperty("PropertyA", "ValueA");
-        docx.addProperty("PropertyB", "ValueB");
-        docx.addProperty("PropertyC",
-                "<p>I am normal</p><p style=\"color:red;\">I am red</p><p style=\"color:blue;\">I am blue</p><p style=\"font-size:36px;\">I am big</p>");
+import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 
-        FileOutputStream out = new FileOutputStream(new File("wordFromHTML.docx"));
-        out.write(docx.getDocBytes());
-        out.close();
-    }
+public class DOCXBuilder {
+	public static void main(String[] args) throws Exception {
+		DOCXBuilder docx = new DOCXBuilder();
+		docx.addTitle("TitleA");
+		docx.addHeader("MetaA");
+		docx.addProperty("PropertyA", "ValueA");
+		docx.addProperty("PropertyB", "ValueB");
+		docx.addProperty("PropertyC",
+				"<p>I am normal</p><p style=\"color:red;\">I am red</p><p style=\"color:blue;\">I am blue</p><p style=\"font-size:36px;\">I am big</p>");
 
-    private static final String START_RICH_TEXT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<html><head></head><body>";
+		FileOutputStream out = new FileOutputStream(new File("wordFromHTML.docx"));
+		out.write(docx.getDocBytes());
+		out.close();
+	}
 
-    private static final String END_RICH_TEXT = "</body></html>";
+	private static final String START_RICH_TEXT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<html><head></head><body>";
 
-    private StringBuffer doc;
+	private static final String END_RICH_TEXT = "</body></html>";
 
-    private boolean closed;
+	private StringBuffer doc;
 
-    public DOCXBuilder()
-    {
-        closed = false;
-        doc = new StringBuffer();
-        startDoc();
-    }
+	private boolean closed;
 
-    private void startDoc()
-    {
-        if (!closed)
-        {
-            doc.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
-            doc.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
-            doc.append("<head></head>");
-            doc.append("<body>");
-        }
-    }
+	public DOCXBuilder() {
+		System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
+		closed = false;
+		doc = new StringBuffer();
+		startDoc();
+	}
 
-    private void endDoc()
-    {
-        if (!closed)
-        {
-            doc.append("</body>");
-            doc.append("</html>");
-            closed = true;
-        }
-    }
+	public void setDocument(String doc) {
+		this.doc = new StringBuffer(doc);
+		closed = true;
+	}
+	
+	private void startDoc() {
+		if (!closed) {
+			doc.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
+			doc.append("<html xmlns=\"http://www.w3.org/1999/xhtml\">");
+			doc.append("<head></head>");
+			doc.append("<body>");
+		}
+	}
 
-    public void addProperty(String key, String value)
-    {
-        if (!closed)
-        {
-            value = cleanXMLEnvelope(value);
-            doc.append("<p>").append("<b>").append(key).append(": ").append("</b>").append(value).append("</p>");
-        }
-    }
+	private void endDoc() {
+		if (!closed) {
+			doc.append("</body>");
+			doc.append("</html>");
+			closed = true;
+		}
+	}
 
+	public void addProperty(String key, String value) {
+		if (!closed) {
+			doc.append("<p>").append("<b>").append(key).append(": ").append("</b>").append("</p>");
+			addParagraph(value);
+		}
+	}
+	
     public void addParagraph(String value)
     {
         if (!closed)
         {
             value = cleanXMLEnvelope(value);
-            doc.append("<p>").append(value).append("</p>");
+            doc.append("<p>").append(fixImageSizes(value)).append("</p>");
         }
     }
 
-    public void addTitle(String title)
-    {
-        if (!closed)
-        {
-            doc.append("<h1>").append(title).append("</h1>");
-        }
-    }
+	public void addTitle(String title) {
+		if (!closed) {
+			doc.append("<h1>").append(title).append("</h1>");
+		}
+	}
 
-    public void addHeader(String header)
-    {
-        if (!closed)
-        {
-            doc.append("<h2>").append(header).append("</h2>");
-        }
-    }
+	public void addHeader(String header) {
+		if (!closed) {
+			doc.append("<h2>").append(header).append("</h2>");
+		}
+	}
 
-    public byte[] getHTMLBytes() throws Exception
-    {
-        endDoc();
-        return doc.toString().getBytes();
-    }
+	public byte[] getHTMLBytes() throws Exception {
+		if (!closed) {
+			endDoc();
+		}
+		String docWithImg = encodeImgAsBase64(doc.toString());
+		return docWithImg.getBytes();
+	}
 
-    public byte[] getDocBytes() throws Exception
-    {
-        // .. Finish Document
-        endDoc();
+	public byte[] getDocBytes() throws Exception {
+		// .. Finish Document
+		if (!closed) {
+			endDoc();
+		}
+		
+		Document xhtmldoc = Jsoup.parse(doc.toString());
+		xhtmldoc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+		
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+		XHTMLImporterImpl XHTMLImporter = new XHTMLImporterImpl(wordMLPackage);
+		wordMLPackage.getMainDocumentPart().getContent().addAll(XHTMLImporter.convert( xhtmldoc.html(), null) );
 
-        // .. HTML Code
-        WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
-        AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(new PartName("/hw.html"));
-        afiPart.setBinaryData(doc.toString().getBytes());
-        afiPart.setContentType(new ContentType("text/html"));
-        Relationship altChunkRel = wordMLPackage.getMainDocumentPart().addTargetPart(afiPart);
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+		wordMLPackage.save(outStream);
 
-        // .. the bit in document body
-        CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
-        ac.setId(altChunkRel.getId());
-        wordMLPackage.getMainDocumentPart().addObject(ac);
-
-        // .. content type
-        wordMLPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        wordMLPackage.save(outStream);
-
-        return outStream.toByteArray();
-    }
-
-    private String cleanXMLEnvelope(String value)
-    {
-        if (value.startsWith(START_RICH_TEXT) && value.endsWith(END_RICH_TEXT))
-        {
-            value = value.substring(START_RICH_TEXT.length() + 3, value.length() - END_RICH_TEXT.length());
-        }
-        return value;
+		return outStream.toByteArray();
+	}
+	
+	private String cleanXMLEnvelope(String value) {
+		if (value.startsWith(START_RICH_TEXT) && value.endsWith(END_RICH_TEXT)) {
+			value = value.substring(START_RICH_TEXT.length() + 3, value.length() - END_RICH_TEXT.length());
+		}
+		return value;
+	}
+	
+	private String fixImageSizes(String value) {
+		Document doc = Jsoup.parse(value);
+		doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+		Elements elements = doc.select("img");
+		
+		for (Element element : elements) {
+			String style = element.attr("style");
+			if (style != null) {
+				String[] rules = style.split(";");
+				if(rules != null) {
+					for (int rIdx = 0; rIdx < rules.length; rIdx++) {
+						String rule = rules[rIdx];
+						String[] ruleElements = rule.split(":");
+						if (ruleElements != null && ruleElements.length == 2) {
+							String ruleKey = ruleElements[0].trim();
+							String ruleValue = ruleElements[1].trim();
+							if ((ruleKey.toLowerCase().equals("width") || ruleKey.toLowerCase().equals("height"))
+									&& ruleValue.endsWith("px")) {
+								element.attr(ruleKey, ruleValue.substring(0, ruleValue.length() - 2));
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return doc.html();
+	}
+	
+	private String encodeImgAsBase64(String value) {
+		Document doc = Jsoup.parse(value);
+		doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+		Elements elements = doc.select("img");
+		
+		for (Element element : elements) {
+			String src = element.attr("src");
+			try {
+				element.attr("src", getDataUriFromUri(src));
+			} catch(Exception ex) {
+				
+			}
+		}
+		
+		return doc.html();
+	}
+	
+	private static String getDataUriFromUri(String url) throws Exception {
+		HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request requestEntity = client.newRequest(url).method("GET");
+        ContentResponse contentResponse = requestEntity.send();
+        return "data:"+contentResponse.getMediaType()+";base64,"+Base64.getEncoder().encodeToString(contentResponse.getContent());
     }
 }

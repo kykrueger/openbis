@@ -35,6 +35,7 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
+import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
 /**
@@ -42,18 +43,24 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
  */
 public class UserManagementMaintenanceTask implements IMaintenanceTask
 {
-    private static final String CONFIGURATION_FILE_PATH_PROPERTY = "configuration-file-path";
+    static final String CONFIGURATION_FILE_PATH_PROPERTY = "configuration-file-path";
 
-    private static final String DEFAULT_CONFIGURATION_FILE_PATH = "etc/user-management-maintenance-config.json";
+    static final String DEFAULT_CONFIGURATION_FILE_PATH = "etc/user-management-maintenance-config.json";
+
+    static final String AUDIT_LOG_FILE_PATH_PROPERTY = "audit-log-file-path";
+
+    static final String DEFAULT_AUDIT_LOG_FILE_PATH = "logs/user-management-audit_log.txt";
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             UserManagementMaintenanceTask.class);
 
     private static final Logger notificationLog = LogFactory.getLogger(LogCategory.NOTIFY,
             UserManagementMaintenanceTask.class);
-    
+
     private File configurationFile;
-    
+
+    private File auditLogFile;
+
     private LDAPAuthenticationService ldapService;
 
     @Override
@@ -66,8 +73,12 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
             throw new ConfigurationFailureException("Configuration file '" + configurationFile.getAbsolutePath()
                     + "' doesn't exist or is a directory.");
         }
-        
-        ldapService = (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
+        auditLogFile = new File(properties.getProperty(AUDIT_LOG_FILE_PATH_PROPERTY, DEFAULT_AUDIT_LOG_FILE_PATH));
+        if (auditLogFile.isDirectory())
+        {
+            throw new ConfigurationFailureException("Audit log file '" + auditLogFile.getAbsolutePath() + "' is a directory.");
+        }
+        ldapService = getLdapAuthenticationService();
         if (ldapService.isConfigured() == false)
         {
             throw new ConfigurationFailureException("There is no LDAP authentication service configured. "
@@ -75,7 +86,6 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
                     + "'ldap.security.principal.password' have to be specified in 'service.properties'.");
         }
         operationLog.info("Plugin '" + pluginName + "' initialized. Configuration file: " + configurationFile.getAbsolutePath());
-        
     }
 
     @Override
@@ -86,47 +96,21 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         {
             return;
         }
+        operationLog.info("manage " + config.getGroups().size() + " groups");
         Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
-        UserManager userManager = new UserManager(CommonServiceProvider.getApplicationServerApi(), config.getCommonSpaces(), logger);
+        UserManager userManager = createUserManager(config, logger);
         for (UserGroup group : config.getGroups())
         {
-            String key = group.getKey();
-            List<String> ldapGroupKeys = group.getLdapGroupKeys();
-            if (ldapGroupKeys == null || ldapGroupKeys.isEmpty())
+            if (addGroup(userManager, group) == false)
             {
-                operationLog.error("No ldapGroupKeys specified for group '" + key + "'. Task aborted.");
                 return;
             }
-            Map<String, Principal> principalsByUserId = new TreeMap<>();
-            for (String ldapGroupKey : ldapGroupKeys)
-            {
-                if (StringUtils.isBlank(ldapGroupKey))
-                {
-                    operationLog.error("Empty ldapGroupKey for group '" + key + "'. Task aborted.");
-                    return;
-                    
-                }
-                List<Principal> principals = ldapService.listPrincipalsByKeyValue("ou", ldapGroupKey);
-                if (principals.isEmpty())
-                {
-                    operationLog.error("No users found for ldapGroupKey '" + ldapGroupKey + "' for group '" + key + "'. Task aborted.");
-                    return;
-                }
-                for (Principal principal : principals)
-                {
-                    principalsByUserId.put(principal.getUserId(), principal);
-                }
-            }
-            userManager.addGroup(key, group, principalsByUserId);
         }
-        String errorReport = userManager.manageUsers();
-        if (StringUtils.isNotBlank(errorReport))
-        {
-            notificationLog.error("User management failed for the following reasons:\n\n" + errorReport);
-        }
+        UserManagerReport userManagerReport = userManager.manage();
+        handleReport(userManagerReport);
         operationLog.info("finished");
     }
-    
+
     private UserManagerConfig readGroupDefinitions()
     {
         if (configurationFile.isFile() == false)
@@ -137,17 +121,79 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         String serializedConfig = FileUtilities.loadToString(configurationFile);
         try
         {
-            return deserialize(serializedConfig);
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(serializedConfig, UserManagerConfig.class);
         } catch (Exception e)
         {
             operationLog.error("Invalid content of configuration file '" + configurationFile.getAbsolutePath() + "': " + e, e);
             return null;
         }
     }
-
-    private UserManagerConfig deserialize(String serializedConfig) throws Exception
+    
+    private boolean addGroup(UserManager userManager, UserGroup group)
     {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(serializedConfig, UserManagerConfig.class);
+        String key = group.getKey();
+        List<String> ldapGroupKeys = group.getLdapGroupKeys();
+        if (ldapGroupKeys == null || ldapGroupKeys.isEmpty())
+        {
+            operationLog.error("No ldapGroupKeys specified for group '" + key + "'. Task aborted.");
+            return false;
+        }
+        Map<String, Principal> principalsByUserId = new TreeMap<>();
+        for (String ldapGroupKey : ldapGroupKeys)
+        {
+            if (StringUtils.isBlank(ldapGroupKey))
+            {
+                operationLog.error("Empty ldapGroupKey for group '" + key + "'. Task aborted.");
+                return false;
+
+            }
+            List<Principal> principals = getUsersOfGroup(ldapGroupKey);
+            if (principals.isEmpty())
+            {
+                operationLog.error("No users found for ldapGroupKey '" + ldapGroupKey + "' for group '" + key + "'. Task aborted.");
+                return false;
+            }
+            for (Principal principal : principals)
+            {
+                principalsByUserId.put(principal.getUserId(), principal);
+            }
+        }
+        userManager.addGroup(group, principalsByUserId);
+        return true;
+    }
+
+    private void handleReport(UserManagerReport report)
+    {
+        String errorReport = report.getErrorReport();
+        if (StringUtils.isNotBlank(errorReport))
+        {
+            notificationLog.error("User management failed for the following reason(s):\n\n" + errorReport);
+        }
+        String auditLog = report.getAuditLog();
+        if (StringUtils.isNotBlank(auditLog))
+        {
+            FileUtilities.appendToFile(auditLogFile, auditLog, true);
+        }
+    }
+
+    protected List<Principal> getUsersOfGroup(String ldapGroupKey)
+    {
+        return ldapService.listPrincipalsByKeyValue("ou", ldapGroupKey);
+    }
+
+    protected LDAPAuthenticationService getLdapAuthenticationService()
+    {
+        return (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
+    }
+
+    protected UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
+    {
+        UserManager userManager = new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
+                logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+        userManager.setGlobalSpaces(config.getGlobalSpaces());
+        userManager.setCommonSpacesByRole(config.getCommonSpaces());
+        userManager.setSamplesByType(config.getCommonSamples());
+        return userManager;
     }
 }

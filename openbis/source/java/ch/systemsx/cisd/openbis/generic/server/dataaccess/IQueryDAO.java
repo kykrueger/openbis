@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.dao.DataAccessException;
@@ -38,5 +39,15 @@ public interface IQueryDAO extends IGenericDAO<QueryPE>
      * Creates a query in home database instance.
      */
     public void createQuery(QueryPE query) throws DataAccessException;
+
+    /**
+     * List queries by ids.
+     */
+    List<QueryPE> listByIDs(Collection<Long> ids);
+
+    /**
+     * List queries by names.
+     */
+    List<QueryPE> listByNames(Collection<String> names);
 
 }

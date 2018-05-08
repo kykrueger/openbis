@@ -39,7 +39,7 @@ public class PersonAuthorizationExecutor implements IPersonAuthorizationExecutor
     public void canGet(IOperationContext context)
     {
     }
-    
+
     @Override
     @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
     @Capability("CREATE_PERSON")
@@ -55,9 +55,16 @@ public class PersonAuthorizationExecutor implements IPersonAuthorizationExecutor
     }
 
     @Override
+    @RolesAllowed(RoleWithHierarchy.INSTANCE_ADMIN)
+    @Capability("ACTIVATE_PERSON")
+    public void canActivate(IOperationContext context)
+    {
+    }
+
+    @Override
     @RolesAllowed(RoleWithHierarchy.SPACE_ADMIN)
     @Capability("UPDATE_HOME_SPACE")
-    public void canUpdateHomeSpace(IOperationContext context, 
+    public void canUpdateHomeSpace(IOperationContext context,
             @AuthorizationGuard(guardClass = SpacePEPredicate.class) SpacePE newHomeSpace)
     {
     }

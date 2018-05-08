@@ -657,6 +657,21 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
+		
+		this.createQueries = function(creations) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "createQueries",
+					"params" : [ thisFacade._private.sessionToken, creations ]
+				},
+				returnType : {
+					name : "List",
+					arguments : [ "QueryTechId" ]
+				}
+			});
+		}
 
 		this.updateSpaces = function(updates) {
 			var thisFacade = this;
@@ -873,6 +888,17 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				url : openbisUrl,
 				data : {
 					"method" : "updateSemanticAnnotations",
+					"params" : [ thisFacade._private.sessionToken, updates ]
+				}
+			});
+		}
+		
+		this.updateQueries = function(updates) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "updateQueries",
 					"params" : [ thisFacade._private.sessionToken, updates ]
 				}
 			});
@@ -1129,6 +1155,21 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : {
 					name : "Map",
 					arguments : [ "IOperationExecutionId", "OperationExecution" ]
+				}
+			});
+		}
+		
+		this.getQueries = function(ids, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "getQueries",
+					"params" : [ thisFacade._private.sessionToken, ids, fetchOptions ]
+				},
+				returnType : {
+					name : "Map",
+					arguments : [ "IQueryId", "Query" ]
 				}
 			});
 		}
@@ -1492,6 +1533,18 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : "SearchResult"
 			});
 		}
+		
+		this.searchQueries = function(criteria, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "searchQueries",
+					"params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+				},
+				returnType : "SearchResult"
+			});
+		}
 
 		this.deleteSpaces = function(ids, deletionOptions) {
 			var thisFacade = this;
@@ -1715,6 +1768,17 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
+		
+		this.deleteQueries = function(ids, deletionOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "deleteQueries",
+					"params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+				}
+			});
+		}
 
 		this.searchDeletions = function(criteria, fetchOptions) {
 			var thisFacade = this;
@@ -1784,7 +1848,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 					"method" : "executeAggregationService",
 					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
 				},
-				returnType : "SearchResult"
+				returnType : "TableModel"
 			});
 		}
 		
@@ -1796,7 +1860,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 					"method" : "executeReportingService",
 					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
 				},
-				returnType : "SearchResult"
+				returnType : "TableModel"
 			});
 		}
 		
@@ -1807,6 +1871,28 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				data : {
 					"method" : "executeProcessingService",
 					"params" : [ thisFacade._private.sessionToken, serviceId, options ]
+				}
+			});
+		}
+		
+		this.executeQuery = function(queryId, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeQuery",
+					"params" : [ thisFacade._private.sessionToken, queryId, options ]
+				}
+			});
+		}
+		
+		this.executeSql = function(sql, options) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "executeSql",
+					"params" : [ thisFacade._private.sessionToken, sql, options ]
 				}
 			});
 		}

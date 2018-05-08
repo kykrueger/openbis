@@ -257,15 +257,22 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    switch(type) {
     	    	case "LAB_NOTEBOOK":
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
-    	    			var USERID = mainController.serverFacade.getUserId().toUpperCase();
+    	    		mainController.serverFacade.getPersons([mainController.serverFacade.getUserId()], function(persons) {
+    	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
+    	    			var HOME_SPACE = null;
+    	    			if(persons !== null) {
+    	    				HOME_SPACE = (persons[0].getSpace()?persons[0].getSpace().getCode():null);
+    	    			}
+    	    			if(HOME_SPACE === null) {
+    	    				HOME_SPACE = mainController.serverFacade.getUserId().toUpperCase();
+    	    			}
     	    			var results = [];
     	    			var spaces = searchResult.objects;
     	                for (var i = 0; i < spaces.length; i++) {
     	                    var space = spaces[i];
     	                    var isInventorySpace = profile.isInventorySpace(space.code);
     	                    var isHiddenSpace = profile.isHiddenSpace(space.code);
-        	                if(!isInventorySpace && (space.code === USERID) && !isHiddenSpace) {
+        	                if(!isInventorySpace && (space.code === HOME_SPACE) && !isHiddenSpace) {
         	                	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	var spaceLink = _this.getLinkForNode("My Space (" + normalizedSpaceTitle + ")", space.getCode(), "showSpacePage", space.getCode());
         	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
@@ -275,19 +282,27 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                
 	                    results.push({ title : "Others", entityType: "LAB_NOTEBOOK_OTHERS", key : "LAB_NOTEBOOK_OTHERS", folder : true, lazy : true, view : "showLabNotebookPage" });
     	                dfd.resolve(results);
+    	    			});
     	    		});
     	    		break;
     	    	case "LAB_NOTEBOOK_OTHERS":
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
-    	    			var USERID = mainController.serverFacade.getUserId().toUpperCase();
+    	    		mainController.serverFacade.getPersons([mainController.serverFacade.getUserId()], function(persons) {
+    	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
+    	    			var HOME_SPACE = null;
+    	    			if(persons !== null) {
+    	    				HOME_SPACE = (persons[0].getSpace()?persons[0].getSpace().getCode():null);
+    	    			}
+    	    			if(HOME_SPACE === null) {
+    	    				HOME_SPACE = mainController.serverFacade.getUserId().toUpperCase();
+    	    			}
     	    			var results = [];
     	    			var spaces = searchResult.objects;
     	                for (var i = 0; i < spaces.length; i++) {
     	                    var space = spaces[i];
     	                    var isInventorySpace = profile.isInventorySpace(space.code);
     	                    var isHiddenSpace = profile.isHiddenSpace(space.code);
-        	                if(!isInventorySpace && (space.code !== USERID) && !isHiddenSpace) {
+        	                if(!isInventorySpace && (space.code !== HOME_SPACE) && !isHiddenSpace) {
         	                	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
         	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
@@ -295,6 +310,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	                }
     	                }
     	                dfd.resolve(results);
+    	    			});
     	    		});
     	    		break;
     	    	case "INVENTORY":
