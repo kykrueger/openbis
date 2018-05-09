@@ -34,7 +34,6 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.logging.LogLevel;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
@@ -194,7 +193,7 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         userManager.setGlobalSpaces(config.getGlobalSpaces());
         try
         {
-            userManager.setCommonSpacesAndSamples(config.getCommonSpaces(), config.getCommonSamples());
+            userManager.setCommon(config.getCommonSpaces(), config.getCommonSamples(), config.getCommonExperiments());
         } catch (ConfigurationFailureException e)
         {
             notificationLog.error(e.getMessage());

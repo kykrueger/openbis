@@ -37,6 +37,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.Authorization
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
@@ -86,6 +89,8 @@ class UserManagerExpectationsBuilder
 
     private Map<String, List<String>> sampleIdentifiersByType = new TreeMap<>();
 
+    private Map<String, List<String>> experimentIdentifiersByType = new TreeMap<>();
+    
     private Map<String, Map<AuthorizationLevel, Set<String>>> usersByLevelBySpace = new TreeMap<>();
 
     UserManagerExpectationsBuilder(IApplicationServerInternalApi v3api, UserManagerTestService testService,
@@ -137,13 +142,23 @@ class UserManagerExpectationsBuilder
 
     UserManagerExpectationsBuilder samples(String type, String... sampleIdentifiers)
     {
-        List<String> list = sampleIdentifiersByType.get(type);
+        return addIdentifiers(sampleIdentifiersByType, type, sampleIdentifiers);
+    }
+
+    UserManagerExpectationsBuilder experiments(String type, String... experimentIdentifiers)
+    {
+        return addIdentifiers(experimentIdentifiersByType, type, experimentIdentifiers);
+    }
+    
+    private UserManagerExpectationsBuilder addIdentifiers(Map<String, List<String>> identifiersByType, String type, String... identifiers)
+    {
+        List<String> list = identifiersByType.get(type);
         if (list == null)
         {
             list = new ArrayList<String>();
-            sampleIdentifiersByType.put(type, list);
+            identifiersByType.put(type, list);
         }
-        list.addAll(Arrays.asList(sampleIdentifiers));
+        list.addAll(Arrays.asList(identifiers));
         return this;
     }
 
@@ -174,6 +189,7 @@ class UserManagerExpectationsBuilder
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         assertSamples(sessionToken);
+        assertExperiments(sessionToken);
         assertSpaces(sessionToken);
         assertUnknownUsers(sessionToken);
         assertUsers(sessionToken);
@@ -206,8 +222,7 @@ class UserManagerExpectationsBuilder
     {
         if (sampleIdentifiersByType.isEmpty() == false)
         {
-            Set<Entry<String, List<String>>> entrySet = sampleIdentifiersByType.entrySet();
-            for (Entry<String, List<String>> entry : entrySet)
+            for (Entry<String, List<String>> entry : sampleIdentifiersByType.entrySet())
             {
                 String typeCode = entry.getKey();
                 List<String> sampleIdentifiers = entry.getValue();
@@ -220,6 +235,28 @@ class UserManagerExpectationsBuilder
                 Collections.sort(actualIdentifiers);
                 assertEquals(actualIdentifiers.toString(), sampleIdentifiers.toString());
                 samples.forEach(s -> assertEquals(s.getType().getCode(), typeCode, "Type of sample " + s.getIdentifier()));
+            }
+        }
+    }
+    
+    private void assertExperiments(String sessionToken)
+    {
+        if (experimentIdentifiersByType.isEmpty() == false)
+        {
+            Set<Entry<String, List<String>>> entrySet = experimentIdentifiersByType.entrySet();
+            for (Entry<String, List<String>> entry : entrySet)
+            {
+                String typeCode = entry.getKey();
+                List<String> identifiers = entry.getValue();
+                Collections.sort(identifiers);
+                List<ExperimentIdentifier> experimentIds = identifiers.stream().map(ExperimentIdentifier::new).collect(Collectors.toList());
+                ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+                fetchOptions.withType();
+                Collection<Experiment> experiments = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).values();
+                List<String> actualIdentifiers = experiments.stream().map(e -> e.getIdentifier().getIdentifier()).collect(Collectors.toList());
+                Collections.sort(actualIdentifiers);
+                assertEquals(actualIdentifiers.toString(), identifiers.toString());
+                experiments.forEach(s -> assertEquals(s.getType().getCode(), typeCode, "Type of experiment " + s.getIdentifier()));
             }
         }
     }
@@ -246,7 +283,7 @@ class UserManagerExpectationsBuilder
     private void assertSpaces(String sessionToken)
     {
         Set<String> spaceCodes = usersByLevelBySpace.keySet();
-        assertEquals(spaceCodes.isEmpty(), false);
+        assertEquals(spaceCodes.isEmpty(), false, "Spaces");
         List<SpacePermId> spaceIds = spaceCodes.stream().map(SpacePermId::new).collect(Collectors.toList());
         Collection<Space> spaces = v3api.getSpaces(sessionToken, spaceIds, new SpaceFetchOptions()).values();
         List<String> actualSpaces = spaces.stream().map(Space::getCode).collect(Collectors.toList());

@@ -31,6 +31,8 @@ class UserManagerConfig
 
     private Map<String, String> commonSamples = new HashMap<>();
 
+    private Map<String, String> commonExperiments = new HashMap<>();
+
     private List<UserGroup> groups;
 
     public List<String> getGlobalSpaces()
@@ -61,6 +63,16 @@ class UserManagerConfig
     public void setCommonSamples(Map<String, String> commonSamples)
     {
         this.commonSamples = commonSamples;
+    }
+
+    public Map<String, String> getCommonExperiments()
+    {
+        return commonExperiments;
+    }
+
+    public void setCommonExperiments(Map<String, String> commonExperiments)
+    {
+        this.commonExperiments = commonExperiments;
     }
 
     public List<UserGroup> getGroups()

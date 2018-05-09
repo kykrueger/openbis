@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
@@ -90,9 +92,19 @@ public class UserManagerReport
         log("ADD-SPACES", spaceCreations.stream().map(SpaceCreation::getCode).collect(Collectors.toList()).toString());
     }
 
-    void addSample(SamplePermId sampleId)
+    void addSample(ISampleId sampleId)
     {
         log("ADD-SAMPLE", sampleId);
+    }
+
+    void addProject(ProjectIdentifier identifier)
+    {
+        log("ADD-PROJECT", identifier);
+    }
+
+    void addExperiment(ExperimentIdentifier identifier)
+    {
+        log("ADD-EXPERIMENT", identifier);
     }
 
     void assignRoleTo(AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)

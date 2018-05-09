@@ -190,6 +190,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - No ldapGroupKeys specified for group 'ABC'. Task aborted.",
                 logRecorder.getLogContent());
     }
@@ -214,6 +215,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - Empty ldapGroupKey for group 'ABC'. Task aborted.",
                 logRecorder.getLogContent());
     }
@@ -238,6 +240,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - No users found for ldapGroupKey 'a1' for group 'ABC'. Task aborted.",
                 logRecorder.getLogContent());
     }
@@ -265,7 +268,41 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {A=B}\n"
-                + "ERROR NOTIFY.UserManagementMaintenanceTask - No common space for common sample 'A'.\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "ERROR NOTIFY.UserManagementMaintenanceTask - Identifier template 'A' is invalid "
+                + "(reason: No common space for common sample). Template schema: <common space code>/<common sample code>\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
+                logRecorder.getLogContent());
+    }
+    
+    @Test
+    public void testExecuteInvalidCommonExperiments()
+    {
+        // Given
+        UserManagerReport report = new UserManagerReport(new MockTimeProvider(0, 1000));
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
+                .withUserManagerReport(report);
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},\"commonExperiments\":{\"ALPHA/B\":\"B\"},"
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"]}]}");
+        
+        // When
+        task.execute();
+        
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {ALPHA/B=B}\n"
+                + "ERROR NOTIFY.UserManagementMaintenanceTask - Identifier template 'ALPHA/B' is invalid. "
+                + "Template schema: <common space code>/<common project code>/<common experiment code>\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:null] with users [u1=u1]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
@@ -285,7 +322,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         FileUtilities.writeToFile(configFile, "");
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"globalSpaces\":[\"ES\"],\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
-                + "\"commonSamples\":{\"ALPHA\":\"B\"},"
+                + "\"commonSamples\":{\"ALPHA/B\":\"B\"},\"commonExperiments\":{\"ALPHA/P/E\":\"E\"},"
                 + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]}]}");
 
         // When
@@ -298,7 +335,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: [ES]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {ALPHA=B}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {ALPHA/B=B}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {ALPHA/P/E=E}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:[u2]] with users [u1=u1]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
                 + "ERROR NOTIFY.UserManagementMaintenanceTask - User management failed for the following reason(s):\n\n"
@@ -393,11 +431,13 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             }
 
             @Override
-            public void setCommonSpacesAndSamples(Map<Role, List<String>> commonSpacesByRole, Map<String, String> commonSamplesByCode)
+            public void setCommon(Map<Role, List<String>> commonSpacesByRole, Map<String, String> commonSamples,
+                    Map<String, String> commonExperiments)
             {
                 logger.log(LogLevel.INFO, "Common spaces: " + commonSpacesByRole);
-                logger.log(LogLevel.INFO, "Common samples: " + commonSamplesByCode);
-                super.setCommonSpacesAndSamples(commonSpacesByRole, commonSamplesByCode);
+                logger.log(LogLevel.INFO, "Common samples: " + commonSamples);
+                logger.log(LogLevel.INFO, "Common experiments: " + commonExperiments);
+                super.setCommon(commonSpacesByRole, commonSamples, commonExperiments);
             }
 
             @Override

@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,6 +34,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.LinkedMap;
+import org.apache.commons.lang.StringUtils;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create.AuthorizationGroupCreation;
@@ -44,6 +46,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.Author
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.UpdateAuthorizationGroupsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.CreateExperimentsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.CreatePersonsOperation;
@@ -53,6 +59,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.PersonUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.CreateProjectsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel;
@@ -64,7 +75,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.IRoleAssignmen
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.CreateSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.CreateSpacesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
@@ -107,7 +118,9 @@ public class UserManager
 
     private Map<Role, List<String>> commonSpacesByRole = new HashMap<>();
 
-    private Map<String, String> commonSamplesByCode = new HashMap<>();
+    private Map<String, String> commonSamples = new HashMap<>();
+
+    private Map<String, String> commonExperiments;
 
     private Map<String, HomeSpaceRequest> requestedHomeSpaceByUserId = new TreeMap<>();
 
@@ -125,19 +138,40 @@ public class UserManager
         this.globalSpaces = globalSpaces;
     }
 
-    public void setCommonSpacesAndSamples(Map<Role, List<String>> commonSpacesByRole, Map<String, String> commonSamplesByCode)
+    public void setCommon(Map<Role, List<String>> commonSpacesByRole, Map<String, String> commonSamples,
+            Map<String, String> commonExperiments)
     {
         this.commonSpacesByRole = commonSpacesByRole;
-        this.commonSamplesByCode = commonSamplesByCode;
+        this.commonSamples = commonSamples;
+        this.commonExperiments = commonExperiments;
         Set<String> commonSpaces = new HashSet<>();
         commonSpacesByRole.values().forEach(spaces -> commonSpaces.addAll(spaces));
-        for (String sampleCode : commonSamplesByCode.keySet())
+        checkIdentifierTemplates(commonSamples, commonSpaces, "sample", "<common space code>/<common sample code>");
+        checkIdentifierTemplates(commonExperiments, commonSpaces, "experiment",
+                "<common space code>/<common project code>/<common experiment code>");
+    }
+
+    private void checkIdentifierTemplates(Map<String, String> commonEntities, Set<String> commonSpaces,
+            String entityKind, String templateSchema)
+    {
+        for (String identifierTemplate : commonEntities.keySet())
         {
-            if (commonSpaces.contains(sampleCode) == false)
+            String[] parts = identifierTemplate.split("/");
+            if (commonSpaces.contains(parts[0]) == false)
             {
-                throw new ConfigurationFailureException("No common space for common sample '" + sampleCode + "'.");
+                throw createConfigException(identifierTemplate, templateSchema, "No common space for common " + entityKind);
+            }
+            if (parts.length != templateSchema.split("/").length)
+            {
+                throw createConfigException(identifierTemplate, templateSchema, "");
             }
         }
+    }
+
+    private ConfigurationFailureException createConfigException(String identifierTemplate, String templateSchema, String message)
+    {
+        return new ConfigurationFailureException("Identifier template '" + identifierTemplate + "' is invalid"
+                + (StringUtils.isBlank(message) ? ". " : " (reason: " + message + "). ") + "Template schema: " + templateSchema);
     }
 
     public void addGroup(UserGroup group, Map<String, Principal> principalsByUserId)
@@ -173,7 +207,8 @@ public class UserManager
             for (Entry<String, Map<String, Principal>> entry : usersByGroupCode.entrySet())
             {
                 String groupCode = entry.getKey();
-                manageGroup(sessionToken, groupCode, entry.getValue(), currentState, report);
+                Map<String, Principal> users = entry.getValue();
+                manageGroup(sessionToken, groupCode, users, currentState, report);
             }
             updateHomeSpaces(sessionToken, currentState, report);
 
@@ -383,6 +418,7 @@ public class UserManager
                 manageNewGroup(context, groupCode, groupUsers);
             }
             createSamples(context, groupCode);
+            createExperiments(context, groupCode);
             context.executeOperations();
         } catch (Exception e)
         {
@@ -395,18 +431,22 @@ public class UserManager
 
     private void createSamples(Context context, String groupCode)
     {
-        if (commonSamplesByCode.isEmpty() == false)
+        if (commonSamples.isEmpty() == false)
         {
+            Set<SampleIdentifier> sampleIdentifiers = new LinkedHashSet<>();
             String sessionToken = context.getSessionToken();
-            for (Entry<String, String> entry : commonSamplesByCode.entrySet())
+            for (Entry<String, String> entry : commonSamples.entrySet())
             {
                 String sampleType = entry.getValue();
-                String spaceCode = createCommonSpaceCode(groupCode, entry.getKey());
-                SamplePermId sampleId = new SamplePermId("/" + spaceCode + "/" + spaceCode);
+                String[] identifierTemplateParts = entry.getKey().split("/");
+                String spaceCode = createCommonSpaceCode(groupCode, identifierTemplateParts[0]);
+                String sampleCode = createCommonSpaceCode(groupCode, identifierTemplateParts[1]);
+                SampleIdentifier sampleId = new SampleIdentifier(spaceCode, null, sampleCode);
+                sampleIdentifiers.add(sampleId);
                 if (service.getSamples(sessionToken, Arrays.asList(sampleId), new SampleFetchOptions()).isEmpty())
                 {
                     SampleCreation sampleCreation = new SampleCreation();
-                    sampleCreation.setCode(spaceCode);
+                    sampleCreation.setCode(sampleCode);
                     sampleCreation.setTypeId(new EntityTypePermId(sampleType));
                     sampleCreation.setSpaceId(new SpacePermId(spaceCode));
                     context.add(sampleCreation);
@@ -416,8 +456,56 @@ public class UserManager
         }
     }
 
+    private void createExperiments(Context context, String groupCode)
+    {
+        if (commonExperiments.isEmpty() == false)
+        {
+            Set<ProjectIdentifier> projectIdentifiers = new LinkedHashSet<>();
+            Set<String> keySet = commonExperiments.keySet();
+            for (String identifierTemplate : keySet)
+            {
+                String[] identifierTemplateParts = identifierTemplate.split("/");
+                String spaceCode = createCommonSpaceCode(groupCode, identifierTemplateParts[0]);
+                String projectCode = createCommonSpaceCode(groupCode, identifierTemplateParts[1]);
+                projectIdentifiers.add(new ProjectIdentifier(spaceCode, projectCode));
+            }
+            String sessionToken = context.getSessionToken();
+            Set<IProjectId> existingProjects =
+                    service.getProjects(sessionToken, new ArrayList<>(projectIdentifiers), new ProjectFetchOptions()).keySet();
+            projectIdentifiers.removeAll(existingProjects);
+            for (ProjectIdentifier identifier : projectIdentifiers)
+            {
+                ProjectCreation projectCreation = new ProjectCreation();
+                String[] spaceCodeAndProjectCode = identifier.getIdentifier().split("/");
+                projectCreation.setSpaceId(new SpacePermId(spaceCodeAndProjectCode[1]));
+                projectCreation.setCode(spaceCodeAndProjectCode[2]);
+                context.add(projectCreation);
+                context.getReport().addProject(identifier);
+            }
+            for (Entry<String, String> entry : commonExperiments.entrySet())
+            {
+                String experimentType = entry.getValue();
+                String[] identifierTemplateParts = entry.getKey().split("/");
+                String spaceCode = createCommonSpaceCode(groupCode, identifierTemplateParts[0]);
+                String projectCode = createCommonSpaceCode(groupCode, identifierTemplateParts[1]);
+                String experimentCode = createCommonSpaceCode(groupCode, identifierTemplateParts[2]);
+                ExperimentIdentifier identifier = new ExperimentIdentifier(spaceCode, projectCode, experimentCode);
+                if (service.getExperiments(sessionToken, Arrays.asList(identifier), new ExperimentFetchOptions()).isEmpty())
+                {
+                    ExperimentCreation experimentCreation = new ExperimentCreation();
+                    experimentCreation.setProjectId(new ProjectIdentifier(spaceCode, projectCode));
+                    experimentCreation.setCode(experimentCode);
+                    experimentCreation.setTypeId(new EntityTypePermId(experimentType));
+                    context.add(experimentCreation);
+                    context.getReport().addExperiment(identifier);
+                }
+            }
+        }
+    }
+
     private void manageKnownGroup(Context context, String groupCode, Map<String, Principal> groupUsers)
     {
+        createCommonSpaces(context, groupCode);
         manageUsers(context, groupCode, groupUsers);
     }
 
@@ -426,21 +514,31 @@ public class UserManager
         String adminGroupCode = createAdminGroupCode(groupCode);
         assertNoCommonSpaceExists(context, groupCode);
 
-        AuthorizationGroupPermId groupId = createAuthorizationGroup(context, groupCode);
-        AuthorizationGroupPermId adminGroupId = createAuthorizationGroup(context, adminGroupCode);
+        createAuthorizationGroup(context, groupCode);
+        createAuthorizationGroup(context, adminGroupCode);
 
+        createCommonSpaces(context, groupCode);
+        
+        manageUsers(context, groupCode, groupUsers);
+    }
+
+    private void createCommonSpaces(Context context, String groupCode)
+    {
         for (Entry<Role, List<String>> entry : commonSpacesByRole.entrySet())
         {
             Role role = entry.getKey();
-            for (String space : entry.getValue())
+            for (String commonSpaceCode : entry.getValue())
             {
-                ISpaceId spaceId = createSpace(context, createCommonSpaceCode(groupCode, space));
-                createRoleAssignment(context, groupId, role, spaceId);
-                createRoleAssignment(context, adminGroupId, Role.ADMIN, spaceId);
+                String spaceCode = createCommonSpaceCode(groupCode, commonSpaceCode);
+                Space space = context.getCurrentState().getSpace(spaceCode);
+                if (space == null)
+                {
+                    ISpaceId spaceId = createSpace(context, spaceCode);
+                    createRoleAssignment(context, new AuthorizationGroupPermId(groupCode), role, spaceId);
+                    createRoleAssignment(context, new AuthorizationGroupPermId(createAdminGroupCode(groupCode)), Role.ADMIN, spaceId);
+                }
             }
         }
-
-        manageUsers(context, groupCode, groupUsers);
     }
 
     private void manageUsers(Context context, String groupCode, Map<String, Principal> groupUsers)
@@ -654,6 +752,11 @@ public class UserManager
             return newUsers.contains(userId) || usersById.containsKey(userId);
         }
 
+        public Space getSpace(String spaceCode)
+        {
+            return spacesByCode.get(spaceCode);
+        }
+
         public int getNumberOfSpacesStartingWith(String userSpaceCode)
         {
             Predicate<String> predicate = code -> code.startsWith(userSpaceCode);
@@ -817,7 +920,11 @@ public class UserManager
 
         private List<SpaceCreation> spaceCreations = new ArrayList<>();
 
+        private List<ProjectCreation> projectCreations = new ArrayList<>();
+
         private List<SampleCreation> sampleCreations = new ArrayList<>();
+
+        private List<ExperimentCreation> experimentCreations = new ArrayList<>();
 
         private List<AuthorizationGroupCreation> groupCreations = new ArrayList<>();
 
@@ -866,9 +973,19 @@ public class UserManager
             spaceCreations.add(spaceCreation);
         }
 
+        public void add(ProjectCreation projectCreation)
+        {
+            projectCreations.add(projectCreation);
+        }
+
         public void add(SampleCreation sampleCreation)
         {
             sampleCreations.add(sampleCreation);
+        }
+
+        public void add(ExperimentCreation experimentCreation)
+        {
+            experimentCreations.add(experimentCreation);
         }
 
         public void add(AuthorizationGroupCreation creation)
@@ -902,9 +1019,17 @@ public class UserManager
             {
                 operations.add(new CreateSpacesOperation(spaceCreations));
             }
+            if (projectCreations.isEmpty() == false)
+            {
+                operations.add(new CreateProjectsOperation(projectCreations));
+            }
             if (sampleCreations.isEmpty() == false)
             {
                 operations.add(new CreateSamplesOperation(sampleCreations));
+            }
+            if (experimentCreations.isEmpty() == false)
+            {
+                operations.add(new CreateExperimentsOperation(experimentCreations));
             }
             if (groupCreations.isEmpty() == false)
             {
