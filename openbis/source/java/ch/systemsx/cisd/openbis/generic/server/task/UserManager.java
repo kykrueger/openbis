@@ -599,6 +599,11 @@ public class UserManager
         {
             removePersonFromAuthorizationGroup(context, groupCode, userId);
             removePersonFromAuthorizationGroup(context, adminGroupCode, userId);
+            AuthorizationGroup globalGroup = context.currentState.getGlobalGroup();
+            if (globalGroup != null)
+            {
+                removePersonFromAuthorizationGroup(context, globalGroup.getCode(), userId);
+            }
             Person user = context.currentState.getUser(userId);
             Space homeSpace = user.getSpace();
             for (RoleAssignment roleAssignment : user.getRoleAssignments())

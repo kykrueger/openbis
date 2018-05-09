@@ -131,6 +131,46 @@ public class UserManagerTest extends AbstractTest
     }
 
     @Test
+    public void testAddAndRemoveAUserWhichAlreadyHasAHomeSpace()
+    {
+        // Given
+        // 1. create user U2 with home space TEST-SPACE and SPACE_ADMIN on this space
+        createUserForTestSpace(U2);
+        // 2. create groip G1 with users U1 (admin) and U2
+        MockLogger logger = new MockLogger();
+        Map<Role, List<String>> commonSpaces = commonSpaces();
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.setGlobalSpaces(Arrays.asList("A"));
+        userManager.addGroup(group("G1", U1.getUserId(), "blabla"), users(U1, U2));
+        assertEquals(manage(userManager).getErrorReport(), "");
+        createBuilder().groups("G1").space("A").observer(U1, U2).assertExpectations();
+        // 3. remove U2 from G1
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.setGlobalSpaces(Arrays.asList("A"));
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1));
+
+        // When
+        UserManagerReport report = manage(userManager);
+
+        // Then
+        assertEquals(report.getErrorReport(), "");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G1, user: u2\n"
+                + "1970-01-01 01:00:01 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: ALL_GROUPS, user: u2\n"
+                + "1970-01-01 01:00:02 [UNASSIGN-ROLE-FORM-USER] user: u2, role: SPACE_ADMIN for G1_U2\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1").commonSpaces(commonSpaces).users(U1, U2);
+        builder.space("A").observer(U1).non(U2);
+        builder.space("G1_ALPHA").admin(U1).non(U2);
+        builder.space("G1_BETA").admin(U1).non(U2);
+        builder.space("G1_GAMMA").admin(U1).non(U2);
+        builder.space("G1_U1").admin(U1).non(U2);
+        builder.space("G1_U2").admin(U1).non(U2);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "TEST-SPACE");
+        builder.assertExpectations();
+    }
+
+    @Test
     public void testAddGlobalSpacesAndCommonSpacesSamplesAndExperiments()
     {
         // Given
@@ -486,10 +526,13 @@ public class UserManagerTest extends AbstractTest
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
         UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        List<String> globalSpaces = Arrays.asList("A", "B");
+        userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. remove U2 from group G2
         userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(group("G2", U1.getUserId()), users(U1, U3));
 
         // When
@@ -498,11 +541,14 @@ public class UserManagerTest extends AbstractTest
         // Then
         assertEquals(report.getErrorReport(), "");
         assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2, user: u2\n"
-                + "1970-01-01 01:00:01 [UNASSIGN-ROLE-FORM-USER] user: u2, role: SPACE_ADMIN for G2_U2\n"
-                + "1970-01-01 01:00:02 [REMOVE-HOME-SPACE-FROM-USER] u2\n");
+                + "1970-01-01 01:00:01 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: ALL_GROUPS, user: u2\n"
+                + "1970-01-01 01:00:02 [UNASSIGN-ROLE-FORM-USER] user: u2, role: SPACE_ADMIN for G2_U2\n"
+                + "1970-01-01 01:00:03 [REMOVE-HOME-SPACE-FROM-USER] u2\n");
         UserManagerExpectationsBuilder builder = createBuilder();
         builder.groups("G2").commonSpaces(commonSpaces).users(U1, U3);
         builder.usersWithoutAuthentication(U2);
+        builder.space("A").observer(U1).observer(U3);
+        builder.space("B").observer(U1).observer(U3);
         builder.space("G2_ALPHA").admin(U1).user(U3);
         builder.space("G2_BETA").admin(U1).user(U3);
         builder.space("G2_GAMMA").admin(U1).observer(U3);
