@@ -18,11 +18,13 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,6 +33,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnsupportedObjectIdException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDataSetTypeAuthorizationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IExperimentTypeAuthorizationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IMaterialTypeAuthorizationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISampleTypeAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.IListObjectById;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.MapObjectById;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.EntityKindConverter;
@@ -49,6 +55,18 @@ public class MapEntityTypeByIdExecutor implements IMapEntityTypeByIdExecutor
 
     @Autowired
     private IDAOFactory daoFactory;
+
+    @Autowired
+    private IExperimentTypeAuthorizationExecutor experimentTypeAuthorizationExecutor;
+
+    @Autowired
+    private ISampleTypeAuthorizationExecutor sampleTypeAuthorizationExecutor;
+
+    @Autowired
+    private IDataSetTypeAuthorizationExecutor dataSetTypeAuthorizationExecutor;
+
+    @Autowired
+    private IMaterialTypeAuthorizationExecutor materialTypeAuthorizationExecutor;
 
     @SuppressWarnings("unused")
     private MapEntityTypeByIdExecutor()
@@ -114,6 +132,8 @@ public class MapEntityTypeByIdExecutor implements IMapEntityTypeByIdExecutor
             }
         }
 
+        checkAccess(context, entityTypeIdsWithEntityKinds);
+
         List<IListObjectById<? extends IEntityTypeId, EntityTypePE>> listers =
                 new LinkedList<IListObjectById<? extends IEntityTypeId, EntityTypePE>>();
         listers.add(new ListEntityTypeByPermId(daoFactory));
@@ -130,6 +150,36 @@ public class MapEntityTypeByIdExecutor implements IMapEntityTypeByIdExecutor
         }
 
         return mapWithOriginalIds;
+    }
+
+    private void checkAccess(IOperationContext context, Collection<? extends IEntityTypeId> entityTypeIds)
+    {
+        Set<ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind> entityKinds = new HashSet<>();
+
+        for (IEntityTypeId entityTypeId : entityTypeIds)
+        {
+            entityKinds.add(((EntityTypePermId) entityTypeId).getEntityKind());
+        }
+
+        if (entityKinds.contains(ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.EXPERIMENT))
+        {
+            experimentTypeAuthorizationExecutor.canGet(context);
+        }
+
+        if (entityKinds.contains(ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE))
+        {
+            sampleTypeAuthorizationExecutor.canGet(context);
+        }
+
+        if (entityKinds.contains(ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.DATA_SET))
+        {
+            dataSetTypeAuthorizationExecutor.canGet(context);
+        }
+
+        if (entityKinds.contains(ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.MATERIAL))
+        {
+            materialTypeAuthorizationExecutor.canGet(context);
+        }
     }
 
 }

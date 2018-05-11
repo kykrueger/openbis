@@ -67,8 +67,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyTypeH
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISampleHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISamplesHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISemanticAnnotationsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISpaceHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ITagsHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IValidationPluginHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
@@ -366,6 +368,30 @@ public class AbstractTest extends SystemTestCase
                 public void execute()
                 {
                     propertyAssignmentsHolder.getPropertyAssignments();
+                }
+            });
+    }
+
+    protected void assertSemanticAnnotationsNotFetched(final ISemanticAnnotationsHolder annotationsHolder)
+    {
+        assertNotFetched(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    annotationsHolder.getSemanticAnnotations();
+                }
+            });
+    }
+
+    protected void assertValidationPluginNotFetched(final IValidationPluginHolder pluginHolder)
+    {
+        assertNotFetched(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    pluginHolder.getValidationPlugin();
                 }
             });
     }

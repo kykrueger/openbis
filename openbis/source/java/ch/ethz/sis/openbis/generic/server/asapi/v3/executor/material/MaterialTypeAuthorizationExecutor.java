@@ -43,11 +43,18 @@ public class MaterialTypeAuthorizationExecutor implements IMaterialTypeAuthoriza
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @Capability("GET_MATERIAL_TYPE")
+    public void canGet(IOperationContext context)
+    {
+    }
+
+    @Override
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     @Capability("SEARCH_MATERIAL_TYPE")
     public void canSearch(IOperationContext context)
     {
     }
-    
+
     @Override
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
     @Capability("UPDATE_MATERIAL_TYPE")
@@ -63,5 +70,5 @@ public class MaterialTypeAuthorizationExecutor implements IMaterialTypeAuthoriza
     public void canDelete(IOperationContext context)
     {
     }
-    
+
 }

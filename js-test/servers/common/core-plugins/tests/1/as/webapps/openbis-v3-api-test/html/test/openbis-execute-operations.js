@@ -264,17 +264,33 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 		this.getExperiments = function(ids, fetchOptions) {
 			return this._executeGetOperation(new c.GetExperimentsOperation(ids, fetchOptions));
 		}
+		
+		this.getExperimentTypes = function(ids, fetchOptions) {
+			return this._executeGetOperation(new c.GetExperimentTypesOperation(ids, fetchOptions));
+		}
 
 		this.getSamples = function(ids, fetchOptions) {
 			return this._executeGetOperation(new c.GetSamplesOperation(ids, fetchOptions));
+		}
+		
+		this.getSampleTypes = function(ids, fetchOptions) {
+			return this._executeGetOperation(new c.GetSampleTypesOperation(ids, fetchOptions));
 		}
 
 		this.getDataSets = function(ids, fetchOptions) {
 			return this._executeGetOperation(new c.GetDataSetsOperation(ids, fetchOptions));
 		}
+		
+		this.getDataSetTypes = function(ids, fetchOptions) {
+			return this._executeGetOperation(new c.GetDataSetTypesOperation(ids, fetchOptions));
+		}
 
 		this.getMaterials = function(ids, fetchOptions) {
 			return this._executeGetOperation(new c.GetMaterialsOperation(ids, fetchOptions));
+		}
+		
+		this.getMaterialTypes = function(ids, fetchOptions) {
+			return this._executeGetOperation(new c.GetMaterialTypesOperation(ids, fetchOptions));
 		}
 
 		this.getPropertyTypes = function(ids, fetchOptions) {

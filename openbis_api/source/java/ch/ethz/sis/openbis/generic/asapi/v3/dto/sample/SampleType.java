@@ -29,6 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationD
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyAssignmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISemanticAnnotationsHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IValidationPluginHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
@@ -41,7 +42,8 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.sample.SampleType")
-public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder, IEntityType, IModificationDateHolder, IPermIdHolder, IPropertyAssignmentsHolder, ISemanticAnnotationsHolder
+public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder, IEntityType, IModificationDateHolder, IPermIdHolder,
+        IPropertyAssignmentsHolder, ISemanticAnnotationsHolder, IValidationPluginHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -86,7 +88,7 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
 
     @JsonProperty
     private List<SemanticAnnotation> semanticAnnotations;
-    
+
     @JsonProperty
     private Plugin validationPlugin;
 
@@ -258,8 +260,7 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
         if (getFetchOptions() != null && getFetchOptions().hasPropertyAssignments())
         {
             return propertyAssignments;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Property assigments have not been fetched.");
         }
@@ -279,8 +280,7 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
         if (getFetchOptions() != null && getFetchOptions().hasSemanticAnnotations())
         {
             return semanticAnnotations;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Semantic annotations have not been fetched.");
         }
@@ -298,8 +298,7 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
         if (getFetchOptions() != null && getFetchOptions().hasValidationPlugin())
         {
             return validationPlugin;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Validation plugin has not been fetched.");
         }

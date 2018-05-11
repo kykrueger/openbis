@@ -43,21 +43,28 @@ public class DataSetTypeAuthorizationExecutor implements IDataSetTypeAuthorizati
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @Capability("GET_DATASET_TYPE")
+    public void canGet(IOperationContext context)
+    {
+    }
+
+    @Override
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     @Capability("SEARCH_DATASET_TYPE")
     public void canSearch(IOperationContext context)
     {
     }
 
     @Override
-    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN})
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
     @Capability("UPDATE_DATASET_TYPE")
     @DatabaseUpdateModification(value = ObjectKind.DATASET_TYPE)
     public void canUpdate(IOperationContext context)
     {
     }
-    
+
     @Override
-    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN})
+    @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
     @Capability("DELETE_DATASET_TYPE")
     @DatabaseCreateOrDeleteModification(value = ObjectKind.DATASET_TYPE)
     public void canDelete(IOperationContext context)

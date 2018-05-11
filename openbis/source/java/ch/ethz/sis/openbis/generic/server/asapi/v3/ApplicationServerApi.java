@@ -63,6 +63,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DeleteDataSetsOpe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DeleteDataSetsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.get.GetDataSetTypesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.get.GetDataSetTypesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.get.GetDataSetsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.get.GetDataSetsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
@@ -113,6 +115,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDele
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.get.GetExperimentTypesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.get.GetExperimentTypesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.get.GetExperimentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.get.GetExperimentsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
@@ -162,6 +166,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletion
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.get.GetMaterialTypesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.get.GetMaterialTypesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.get.GetMaterialsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.get.GetMaterialsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
@@ -315,6 +321,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOpti
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.get.GetSampleTypesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.get.GetSampleTypesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.get.GetSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.get.GetSamplesOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
@@ -862,11 +870,28 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    public Map<IEntityTypeId, ExperimentType> getExperimentTypes(String sessionToken, List<? extends IEntityTypeId> experimentTypeIds,
+            ExperimentTypeFetchOptions fetchOptions)
+    {
+        GetExperimentTypesOperationResult result = executeOperation(sessionToken, new GetExperimentTypesOperation(experimentTypeIds, fetchOptions));
+        return result.getObjectMap();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Map<ISampleId, Sample> getSamples(String sessionToken, List<? extends ISampleId> sampleIds,
             SampleFetchOptions fetchOptions)
     {
         GetSamplesOperationResult result = executeOperation(sessionToken, new GetSamplesOperation(sampleIds, fetchOptions));
+        return result.getObjectMap();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<IEntityTypeId, SampleType> getSampleTypes(String sessionToken, List<? extends IEntityTypeId> sampleTypeIds,
+            SampleTypeFetchOptions fetchOptions)
+    {
+        GetSampleTypesOperationResult result = executeOperation(sessionToken, new GetSampleTypesOperation(sampleTypeIds, fetchOptions));
         return result.getObjectMap();
     }
 
@@ -880,9 +905,27 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
 
     @Override
     @Transactional(readOnly = true)
+    public Map<IEntityTypeId, DataSetType> getDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds,
+            DataSetTypeFetchOptions fetchOptions)
+    {
+        GetDataSetTypesOperationResult result = executeOperation(sessionToken, new GetDataSetTypesOperation(dataSetTypeIds, fetchOptions));
+        return result.getObjectMap();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Map<IMaterialId, Material> getMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions)
     {
         GetMaterialsOperationResult result = executeOperation(sessionToken, new GetMaterialsOperation(materialIds, fetchOptions));
+        return result.getObjectMap();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<IEntityTypeId, MaterialType> getMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds,
+            MaterialTypeFetchOptions fetchOptions)
+    {
+        GetMaterialTypesOperationResult result = executeOperation(sessionToken, new GetMaterialTypesOperation(materialTypeIds, fetchOptions));
         return result.getObjectMap();
     }
 

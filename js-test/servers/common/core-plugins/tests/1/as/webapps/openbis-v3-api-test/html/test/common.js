@@ -207,9 +207,13 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.GetSpacesOperation = dtos.GetSpacesOperation;
 		this.GetProjectsOperation = dtos.GetProjectsOperation;
 		this.GetExperimentsOperation = dtos.GetExperimentsOperation;
+		this.GetExperimentTypesOperation = dtos.GetExperimentTypesOperation;
 		this.GetSamplesOperation = dtos.GetSamplesOperation;
+		this.GetSampleTypesOperation = dtos.GetSampleTypesOperation;
 		this.GetDataSetsOperation = dtos.GetDataSetsOperation;
+		this.GetDataSetTypesOperation = dtos.GetDataSetTypesOperation;
 		this.GetMaterialsOperation = dtos.GetMaterialsOperation;
+		this.GetMaterialTypesOperation = dtos.GetMaterialTypesOperation;
 		this.GetPluginsOperation = dtos.GetPluginsOperation;
 		this.GetPropertyTypesOperation = dtos.GetPropertyTypesOperation;
 		this.GetVocabulariesOperation = dtos.GetVocabulariesOperation;

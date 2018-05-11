@@ -570,6 +570,14 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public Map<IEntityTypeId, ExperimentType> getExperimentTypes(String sessionToken, List<? extends IEntityTypeId> experimentTypeIds,
+            ExperimentTypeFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-experiment-types", "EXPERIMENT_TYPE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(experimentTypeIds), fetchOptions);
+        return null;
+    }
+
+    @Override
     public Map<ISampleId, Sample> getSamples(String sessionToken,
             List<? extends ISampleId> sampleIds, SampleFetchOptions fetchOptions)
     {
@@ -578,9 +586,25 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public Map<IEntityTypeId, SampleType> getSampleTypes(String sessionToken, List<? extends IEntityTypeId> sampleTypeIds,
+            SampleTypeFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-sample-types", "SAMPLE_TYPE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(sampleTypeIds), fetchOptions);
+        return null;
+    }
+
+    @Override
     public Map<IMaterialId, Material> getMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "get-materials", "MATERIAL_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(materialIds), fetchOptions);
+        return null;
+    }
+
+    @Override
+    public Map<IEntityTypeId, MaterialType> getMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds,
+            MaterialTypeFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-material-types", "MATERIAL_TYPE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(materialTypeIds), fetchOptions);
         return null;
     }
 
@@ -658,6 +682,14 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public Map<IDataSetId, DataSet> getDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "get-data-sets", "DATA_SET_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(dataSetIds), fetchOptions);
+        return null;
+    }
+
+    @Override
+    public Map<IEntityTypeId, DataSetType> getDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds,
+            DataSetTypeFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-data-set-types", "DATA_SET_TYPE_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(dataSetTypeIds), fetchOptions);
         return null;
     }
 

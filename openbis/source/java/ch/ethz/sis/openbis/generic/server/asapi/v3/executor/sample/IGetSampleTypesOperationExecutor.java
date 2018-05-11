@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IObjectAuthorizationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IOperationExecutor;
 
 /**
  * @author pkupczyk
  */
-public interface IDataSetTypeAuthorizationExecutor extends IObjectAuthorizationExecutor
+public interface IGetSampleTypesOperationExecutor extends IOperationExecutor
 {
-
-    void canCreate(IOperationContext context);
-
-    void canGet(IOperationContext context);
-
-    void canSearch(IOperationContext context);
-
-    void canUpdate(IOperationContext context);
-
-    void canDelete(IOperationContext context);
 
 }

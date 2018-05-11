@@ -37,6 +37,7 @@ import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.DataProvider;
 
 import ch.systemsx.cisd.common.servlet.SpringRequestContextProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
@@ -97,7 +98,7 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     protected static final String TEST_POWER_USER_CISD = "test_role";
 
     protected static final String TEST_INSTANCE_ETLSERVER = "etlserver";
-    
+
     protected static final String TEST_GROUP_OBSERVER = "observer";
 
     protected static final String TEST_INSTANCE_OBSERVER = "instance_observer";
@@ -113,6 +114,10 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     protected static final String PASSWORD = "password";
 
     protected static final String SESSION_KEY = "session-key";
+
+    protected static final String PROVIDER_BOOLEAN = "provider-boolean";
+
+    protected static final String PROVIDER_BOOLEAN_BOOLEAN = "provider-boolean-boolean";
 
     protected IDAOFactory daoFactory;
 
@@ -562,6 +567,18 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         }
         throw new IllegalArgumentException("No assignment for " + entityTypeCode + " with "
                 + propertyTypeCode + ".");
+    }
+
+    @DataProvider(name = PROVIDER_BOOLEAN)
+    protected Object[][] provideBoolean()
+    {
+        return new Object[][] { { true }, { false } };
+    }
+
+    @DataProvider(name = PROVIDER_BOOLEAN_BOOLEAN)
+    protected Object[][] provideBooleanBoolean()
+    {
+        return new Object[][] { { true, true }, { true, false }, { false, true }, { false, false } };
     }
 
 }
