@@ -18,23 +18,30 @@ package ch.systemsx.cisd.openbis.systemtest.task;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
+import java.util.TreeSet;
 
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.AbstractTest;
 import ch.systemsx.cisd.authentication.NullAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
+import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.MockLogger;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
@@ -48,6 +55,10 @@ import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
  */
 public class UserManagerTest extends AbstractTest
 {
+    private static final String EXPERIMENT_TYPE = "DELETION_TEST";
+
+    private static final String SAMPLE_TYPE = "NORMAL";
+
     private static final Principal U1 = new Principal("u1", "Albert", "Einstein", "a.e@abc.de");
 
     private static final Principal U2 = new Principal("u2", "Isaac", "Newton", "i.n@abc.de");
@@ -71,13 +82,15 @@ public class UserManagerTest extends AbstractTest
     }
 
     @Test
-    public void testCreateOneGroupWithAUserWhichAlreadyTriedLoggedIn()
+    public void testCreateOneGroupWithAUserWhichAlreadyHasAHomeSpace()
     {
         // Given
-        assertEquals(v3api.login(U2.getUserId(), PASSWORD), null);
+        // 1. create user U2 with home space TEST-SPACE and SPACE_ADMIN on this space
+        createUserForTestSpace(U2);
+        // 2. create groip G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId(), "blabla"), users(U1, U2));
 
         // When
@@ -98,25 +111,192 @@ public class UserManagerTest extends AbstractTest
                 + "1970-01-01 01:00:10 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_GAMMA\n"
                 + "1970-01-01 01:00:11 [ADD-SPACE] G1_U1\n"
                 + "1970-01-01 01:00:12 [ADD-USER] u1\n"
-                + "1970-01-01 01:00:13 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u1\n"
-                + "1970-01-01 01:00:14 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, user: u1\n"
-                + "1970-01-01 01:00:15 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U1\n"
+                + "1970-01-01 01:00:13 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U1\n"
+                + "1970-01-01 01:00:14 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u1\n"
+                + "1970-01-01 01:00:15 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, user: u1\n"
                 + "1970-01-01 01:00:16 [ADD-SPACE] G1_U2\n"
-                + "1970-01-01 01:00:17 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u2\n"
-                + "1970-01-01 01:00:18 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U2\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G1");
-        builder.user(U2, "G1");
+                + "1970-01-01 01:00:17 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U2\n"
+                + "1970-01-01 01:00:18 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u2\n"
+                + "1970-01-01 01:00:19 [ASSIGN-HOME-SPACE-FOR-USER] user: u1, home space: G1_U1\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1").commonSpaces(commonSpaces).users(U1, U2);
+        builder.space("G1_ALPHA").admin(U1).user(U2);
+        builder.space("G1_BETA").admin(U1).user(U2);
+        builder.space("G1_GAMMA").admin(U1).observer(U2);
+        builder.space("G1_U1").admin(U1).non(U2);
+        builder.space("G1_U2").admin(U1, U2);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "TEST-SPACE");
         builder.assertExpectations();
     }
 
     @Test
-    public void testCreateTwoGroupsWithDistinctUsers()
+    public void testAddAndRemoveAUserWhichAlreadyHasAHomeSpace()
+    {
+        // Given
+        // 1. create user U2 with home space TEST-SPACE and SPACE_ADMIN on this space
+        createUserForTestSpace(U2);
+        // 2. create groip G1 with users U1 (admin) and U2
+        MockLogger logger = new MockLogger();
+        Map<Role, List<String>> commonSpaces = commonSpaces();
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.setGlobalSpaces(Arrays.asList("A"));
+        userManager.addGroup(group("G1", U1.getUserId(), "blabla"), users(U1, U2));
+        assertEquals(manage(userManager).getErrorReport(), "");
+        createBuilder().groups("G1").space("A").observer(U1, U2).assertExpectations();
+        // 3. remove U2 from G1
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.setGlobalSpaces(Arrays.asList("A"));
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1));
+
+        // When
+        UserManagerReport report = manage(userManager);
+
+        // Then
+        assertEquals(report.getErrorReport(), "");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G1, user: u2\n"
+                + "1970-01-01 01:00:01 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: ALL_GROUPS, user: u2\n"
+                + "1970-01-01 01:00:02 [UNASSIGN-ROLE-FORM-USER] user: u2, role: SPACE_ADMIN for G1_U2\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1").commonSpaces(commonSpaces).users(U1, U2);
+        builder.space("A").observer(U1).non(U2);
+        builder.space("G1_ALPHA").admin(U1).non(U2);
+        builder.space("G1_BETA").admin(U1).non(U2);
+        builder.space("G1_GAMMA").admin(U1).non(U2);
+        builder.space("G1_U1").admin(U1).non(U2);
+        builder.space("G1_U2").admin(U1).non(U2);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "TEST-SPACE");
+        builder.assertExpectations();
+    }
+
+    @Test
+    public void testAddGlobalSpacesAndCommonSpacesSamplesAndExperiments()
+    {
+        // Given
+        // 1. create group G1 with users U1 (admin) and U2
+        MockLogger logger = new MockLogger();
+        Map<Role, List<String>> commonSpaces = new EnumMap<>(Role.class);
+        commonSpaces.put(Role.USER, Arrays.asList("ALPHA", "BETA"));
+        commonSpaces.put(Role.OBSERVER, Arrays.asList("GAMMA"));
+        UserManager userManager = new UserManagerBuilder(v3api, logger)
+                .commonSpaces(commonSpaces).commonSample("GAMMA/G", SAMPLE_TYPE)
+                .commonExperiment("ALPHA/P1/E1", EXPERIMENT_TYPE).get();
+        userManager.setGlobalSpaces(Arrays.asList("A", "B"));
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1));
+        assertEquals(manage(userManager).getErrorReport(), "");
+        createBuilder().groups("G1").samples(SAMPLE_TYPE, "/G1_GAMMA/G1_G").space("G1_ALPHA").assertExpectations();
+        // 2. add common spaces, samples and experiments
+        commonSpaces.put(Role.OBSERVER, Arrays.asList("GAMMA", "DELTA"));
+        userManager = new UserManagerBuilder(v3api, logger)
+                .commonSpaces(commonSpaces).commonSample("GAMMA/G", SAMPLE_TYPE).commonSample("ALPHA/G", SAMPLE_TYPE)
+                .commonExperiment("ALPHA/P1/E1", EXPERIMENT_TYPE).commonExperiment("ALPHA/P1/E2", EXPERIMENT_TYPE)
+                .commonExperiment("BETA/P1/E1", EXPERIMENT_TYPE).get();
+        userManager.setGlobalSpaces(Arrays.asList("A", "C"));
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1));
+
+        // When
+        UserManagerReport report = manage(userManager);
+
+        // Then
+        assertEquals(report.getErrorReport(), "");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-SPACES] [C]\n"
+                + "1970-01-01 01:00:01 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: ALL_GROUPS, role: SPACE_OBSERVER for C\n"
+                + "1970-01-01 01:00:02 [ADD-SPACE] G1_DELTA\n"
+                + "1970-01-01 01:00:03 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1, role: SPACE_OBSERVER for G1_DELTA\n"
+                + "1970-01-01 01:00:04 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_DELTA\n"
+                + "1970-01-01 01:00:05 [ADD-SAMPLE] /G1_ALPHA/G1_G\n"
+                + "1970-01-01 01:00:06 [ADD-PROJECT] /G1_BETA/G1_P1\n"
+                + "1970-01-01 01:00:07 [ADD-EXPERIMENT] /G1_ALPHA/G1_P1/G1_E2\n"
+                + "1970-01-01 01:00:08 [ADD-EXPERIMENT] /G1_BETA/G1_P1/G1_E1\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.globalSpaces(Arrays.asList("A", "B", "C")).groups("G1").commonSpaces(commonSpaces).users(U1);
+        builder.samples(SAMPLE_TYPE, "/G1_GAMMA/G1_G", "/G1_ALPHA/G1_G");
+        builder.experiments(EXPERIMENT_TYPE, "/G1_ALPHA/G1_P1/G1_E1", "/G1_ALPHA/G1_P1/G1_E2", "/G1_BETA/G1_P1/G1_E1");
+        builder.space("A").observer(U1);
+        builder.space("B").observer(U1);
+        builder.space("C").observer(U1);
+        builder.space("G1_ALPHA").admin(U1);
+        builder.space("G1_BETA").admin(U1);
+        builder.space("G1_GAMMA").admin(U1);
+        builder.space("G1_DELTA").admin(U1);
+        builder.space("G1_U1").admin(U1);
+        builder.homeSpace(U1, "G1_U1");
+        builder.assertExpectations();
+    }
+
+    private void createUserForTestSpace(Principal user)
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PersonCreation personCreation = new PersonCreation();
+        personCreation.setUserId(user.getUserId());
+        SpacePermId spaceId = new SpacePermId("TEST-SPACE");
+        personCreation.setSpaceId(spaceId);
+        v3api.createPersons(sessionToken, Arrays.asList(personCreation));
+        RoleAssignmentCreation assignmentCreation = new RoleAssignmentCreation();
+        assignmentCreation.setUserId(new PersonPermId(user.getUserId()));
+        assignmentCreation.setRole(Role.ADMIN);
+        assignmentCreation.setSpaceId(spaceId);
+        v3api.createRoleAssignments(sessionToken, Arrays.asList(assignmentCreation));
+    }
+
+    @Test
+    public void testCreateOneGroupWithAUserWhichAlreadyTriedToLogin()
+    {
+        // Given
+        assertEquals(v3api.login(U2.getUserId(), PASSWORD), null);
+        MockLogger logger = new MockLogger();
+        Map<Role, List<String>> commonSpaces = commonSpaces();
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G1", U1.getUserId(), "blabla"), users(U1, U2));
+
+        // When
+        UserManagerReport report = manage(userManager);
+
+        // Then
+        assertEquals(report.getErrorReport(), "");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] G1\n"
+                + "1970-01-01 01:00:01 [ADD-AUTHORIZATION-GROUP] G1_ADMIN\n"
+                + "1970-01-01 01:00:02 [ADD-SPACE] G1_ALPHA\n"
+                + "1970-01-01 01:00:03 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1, role: SPACE_USER for G1_ALPHA\n"
+                + "1970-01-01 01:00:04 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_ALPHA\n"
+                + "1970-01-01 01:00:05 [ADD-SPACE] G1_BETA\n"
+                + "1970-01-01 01:00:06 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1, role: SPACE_USER for G1_BETA\n"
+                + "1970-01-01 01:00:07 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_BETA\n"
+                + "1970-01-01 01:00:08 [ADD-SPACE] G1_GAMMA\n"
+                + "1970-01-01 01:00:09 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1, role: SPACE_OBSERVER for G1_GAMMA\n"
+                + "1970-01-01 01:00:10 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_GAMMA\n"
+                + "1970-01-01 01:00:11 [ADD-SPACE] G1_U1\n"
+                + "1970-01-01 01:00:12 [ADD-USER] u1\n"
+                + "1970-01-01 01:00:13 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U1\n"
+                + "1970-01-01 01:00:14 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u1\n"
+                + "1970-01-01 01:00:15 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, user: u1\n"
+                + "1970-01-01 01:00:16 [ADD-SPACE] G1_U2\n"
+                + "1970-01-01 01:00:17 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U2\n"
+                + "1970-01-01 01:00:18 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u2\n"
+                + "1970-01-01 01:00:19 [ASSIGN-HOME-SPACE-FOR-USER] user: u1, home space: G1_U1\n"
+                + "1970-01-01 01:00:20 [ASSIGN-HOME-SPACE-FOR-USER] user: u2, home space: G1_U2\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1").commonSpaces(commonSpaces).users(U1, U2);
+        builder.space("G1_ALPHA").admin(U1).user(U2);
+        builder.space("G1_BETA").admin(U1).user(U2);
+        builder.space("G1_GAMMA").admin(U1).observer(U2);
+        builder.space("G1_U1").admin(U1).non(U2);
+        builder.space("G1_U2").admin(U1, U2);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G1_U2");
+        builder.assertExpectations();
+    }
+
+    @Test
+    public void testCreateTwoGroupsWithSamplesExperimentsDistinctUsers()
     {
         // Given
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger)
+                .commonSpaces(commonSpaces).commonSample("GAMMA/G", SAMPLE_TYPE)
+                .commonExperiment("ALPHA/ST/STC", EXPERIMENT_TYPE).get();
         List<String> globalSpaces = Arrays.asList("A", "B");
         userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(group("G1", U1.getUserId(), "blabla"), users(U3, U1, U2));
@@ -158,29 +338,53 @@ public class UserManagerTest extends AbstractTest
                 + "1970-01-01 01:00:28 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U3\n"
                 + "1970-01-01 01:00:29 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u3\n"
                 + "1970-01-01 01:00:30 [ADD-USER-TO-AUTHORIZATION-GROUP] group: ALL_GROUPS, user: u3\n"
-                + "1970-01-01 01:00:31 [ADD-AUTHORIZATION-GROUP] G2\n"
-                + "1970-01-01 01:00:32 [ADD-AUTHORIZATION-GROUP] G2_ADMIN\n"
-                + "1970-01-01 01:00:33 [ADD-SPACE] G2_ALPHA\n"
-                + "1970-01-01 01:00:34 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_USER for G2_ALPHA\n"
-                + "1970-01-01 01:00:35 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_ALPHA\n"
-                + "1970-01-01 01:00:36 [ADD-SPACE] G2_BETA\n"
-                + "1970-01-01 01:00:37 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_USER for G2_BETA\n"
-                + "1970-01-01 01:00:38 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_BETA\n"
-                + "1970-01-01 01:00:39 [ADD-SPACE] G2_GAMMA\n"
-                + "1970-01-01 01:00:40 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_OBSERVER for G2_GAMMA\n"
-                + "1970-01-01 01:00:41 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_GAMMA\n"
-                + "1970-01-01 01:00:42 [ADD-SPACE] G2_U4\n"
-                + "1970-01-01 01:00:43 [ADD-USER] u4\n"
-                + "1970-01-01 01:00:44 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U4\n"
-                + "1970-01-01 01:00:45 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u4\n"
-                + "1970-01-01 01:00:46 [ADD-USER-TO-AUTHORIZATION-GROUP] group: ALL_GROUPS, user: u4\n"
-                + "1970-01-01 01:00:47 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u4\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.setGlobalSpaces(globalSpaces);
-        builder.adminUser(U1, "G1");
-        builder.user(U2, "G1");
-        builder.user(U3, "G1");
-        builder.adminUser(U4, "G2");
+                + "1970-01-01 01:00:31 [ADD-SAMPLE] /G1_GAMMA/G1_G\n"
+                + "1970-01-01 01:00:32 [ADD-PROJECT] /G1_ALPHA/G1_ST\n"
+                + "1970-01-01 01:00:33 [ADD-EXPERIMENT] /G1_ALPHA/G1_ST/G1_STC\n"
+                + "1970-01-01 01:00:34 [ADD-AUTHORIZATION-GROUP] G2\n"
+                + "1970-01-01 01:00:35 [ADD-AUTHORIZATION-GROUP] G2_ADMIN\n"
+                + "1970-01-01 01:00:36 [ADD-SPACE] G2_ALPHA\n"
+                + "1970-01-01 01:00:37 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_USER for G2_ALPHA\n"
+                + "1970-01-01 01:00:38 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_ALPHA\n"
+                + "1970-01-01 01:00:39 [ADD-SPACE] G2_BETA\n"
+                + "1970-01-01 01:00:40 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_USER for G2_BETA\n"
+                + "1970-01-01 01:00:41 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_BETA\n"
+                + "1970-01-01 01:00:42 [ADD-SPACE] G2_GAMMA\n"
+                + "1970-01-01 01:00:43 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_OBSERVER for G2_GAMMA\n"
+                + "1970-01-01 01:00:44 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_GAMMA\n"
+                + "1970-01-01 01:00:45 [ADD-SPACE] G2_U4\n"
+                + "1970-01-01 01:00:46 [ADD-USER] u4\n"
+                + "1970-01-01 01:00:47 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U4\n"
+                + "1970-01-01 01:00:48 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u4\n"
+                + "1970-01-01 01:00:49 [ADD-USER-TO-AUTHORIZATION-GROUP] group: ALL_GROUPS, user: u4\n"
+                + "1970-01-01 01:00:50 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u4\n"
+                + "1970-01-01 01:00:51 [ADD-SAMPLE] /G2_GAMMA/G2_G\n"
+                + "1970-01-01 01:00:52 [ADD-PROJECT] /G2_ALPHA/G2_ST\n"
+                + "1970-01-01 01:00:53 [ADD-EXPERIMENT] /G2_ALPHA/G2_ST/G2_STC\n"
+                + "1970-01-01 01:00:54 [ASSIGN-HOME-SPACE-FOR-USER] user: u1, home space: G1_U1\n"
+                + "1970-01-01 01:00:55 [ASSIGN-HOME-SPACE-FOR-USER] user: u2, home space: G1_U2\n"
+                + "1970-01-01 01:00:56 [ASSIGN-HOME-SPACE-FOR-USER] user: u3, home space: G1_U3\n"
+                + "1970-01-01 01:00:57 [ASSIGN-HOME-SPACE-FOR-USER] user: u4, home space: G2_U4\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.globalSpaces(globalSpaces).groups("G1", "G2").commonSpaces(commonSpaces).users(U1, U2, U3, U4);
+        builder.samples(SAMPLE_TYPE, "/G1_GAMMA/G1_G", "/G2_GAMMA/G2_G");
+        builder.experiments(EXPERIMENT_TYPE, "/G1_ALPHA/G1_ST/G1_STC", "/G2_ALPHA/G2_ST/G2_STC");
+        builder.space("A").observer(U1, U2, U3, U4);
+        builder.space("B").observer(U1, U2, U3, U4);
+        builder.space("G1_ALPHA").admin(U1).user(U2, U3).non(U4);
+        builder.space("G1_BETA").admin(U1).user(U2, U3).non(U4);
+        builder.space("G1_GAMMA").admin(U1).observer(U2, U3).non(U4);
+        builder.space("G1_U1").admin(U1).non(U2, U3, U4);
+        builder.space("G1_U2").admin(U1, U2).non(U3, U4);
+        builder.space("G1_U3").admin(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_ALPHA").non(U1, U2, U3).admin(U4);
+        builder.space("G2_BETA").non(U1, U2, U3).admin(U4);
+        builder.space("G2_GAMMA").non(U1, U2, U3).admin(U4);
+        builder.space("G2_U4").non(U1, U2, U3).admin(U4);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G1_U2");
+        builder.homeSpace(U3, "G1_U3");
+        builder.homeSpace(U4, "G2_U4");
         builder.assertExpectations();
     }
 
@@ -190,7 +394,7 @@ public class UserManagerTest extends AbstractTest
         // Given
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2, U3));
         userManager.addGroup(group("G2", U3.getUserId(), U4.getUserId()), users(U2, U3, U4));
 
@@ -245,13 +449,29 @@ public class UserManagerTest extends AbstractTest
                 + "1970-01-01 01:00:43 [ADD-USER] u4\n"
                 + "1970-01-01 01:00:44 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U4\n"
                 + "1970-01-01 01:00:45 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u4\n"
-                + "1970-01-01 01:00:46 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u4\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G1");
-        builder.user(U2, "G1", "G2");
-        builder.user(U3, "G1");
-        builder.adminUser(U3, "G2");
-        builder.adminUser(U4, "G2");
+                + "1970-01-01 01:00:46 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u4\n"
+                + "1970-01-01 01:00:47 [ASSIGN-HOME-SPACE-FOR-USER] user: u1, home space: G1_U1\n"
+                + "1970-01-01 01:00:48 [ASSIGN-HOME-SPACE-FOR-USER] user: u2, home space: G1_U2\n"
+                + "1970-01-01 01:00:49 [ASSIGN-HOME-SPACE-FOR-USER] user: u3, home space: G1_U3\n"
+                + "1970-01-01 01:00:50 [ASSIGN-HOME-SPACE-FOR-USER] user: u4, home space: G2_U4\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1", "G2").commonSpaces(commonSpaces).users(U1, U2, U3, U4);
+        builder.space("G1_ALPHA").admin(U1).user(U2, U3).non(U4);
+        builder.space("G1_BETA").admin(U1).user(U2, U3).non(U4);
+        builder.space("G1_GAMMA").admin(U1).observer(U2, U3).non(U4);
+        builder.space("G1_U1").admin(U1).non(U2, U3, U4);
+        builder.space("G1_U2").admin(U1, U2).non(U3, U4);
+        builder.space("G1_U3").admin(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_ALPHA").non(U1).user(U2).admin(U3, U4);
+        builder.space("G2_BETA").non(U1).user(U2).admin(U3, U4);
+        builder.space("G2_GAMMA").non(U1).observer(U2).admin(U3, U4);
+        builder.space("G2_U2").non(U1).admin(U2, U3, U4);
+        builder.space("G2_U3").non(U1, U2).admin(U3, U4);
+        builder.space("G2_U4").non(U1, U2).admin(U3, U4);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G1_U2");
+        builder.homeSpace(U3, "G1_U3");
+        builder.homeSpace(U4, "G2_U4");
         builder.assertExpectations();
     }
 
@@ -262,12 +482,11 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with user U1 (admin)
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G2", U1.getUserId(), "blabla"), users(U1));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").assertExpectations();
         // 2. add users U2 and U3 to group G2
-        userManager = createUserManager(commonSpaces, logger);
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
 
         // When
@@ -282,11 +501,20 @@ public class UserManagerTest extends AbstractTest
                 + "1970-01-01 01:00:04 [ADD-SPACE] G2_U3\n"
                 + "1970-01-01 01:00:05 [ADD-USER] u3\n"
                 + "1970-01-01 01:00:06 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U3\n"
-                + "1970-01-01 01:00:07 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u3\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G2");
-        builder.user(U2, "G2");
-        builder.user(U3, "G2");
+                + "1970-01-01 01:00:07 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u3\n"
+                + "1970-01-01 01:00:08 [ASSIGN-HOME-SPACE-FOR-USER] user: u2, home space: G2_U2\n"
+                + "1970-01-01 01:00:09 [ASSIGN-HOME-SPACE-FOR-USER] user: u3, home space: G2_U3\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G2_ALPHA").admin(U1).user(U2, U3);
+        builder.space("G2_BETA").admin(U1).user(U2, U3);
+        builder.space("G2_GAMMA").admin(U1).observer(U2, U3);
+        builder.space("G2_U1").admin(U1).non(U2, U3);
+        builder.space("G2_U2").admin(U1, U2).non(U3);
+        builder.space("G2_U3").admin(U1).non(U2).admin(U3);
+        builder.homeSpace(U1, "G2_U1");
+        builder.homeSpace(U2, "G2_U2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -297,12 +525,14 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        List<String> globalSpaces = Arrays.asList("A", "B");
+        userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
         // 2. remove U2 from group G2
-        userManager = createUserManager(commonSpaces, logger);
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(group("G2", U1.getUserId()), users(U1, U3));
 
         // When
@@ -310,11 +540,24 @@ public class UserManagerTest extends AbstractTest
 
         // Then
         assertEquals(report.getErrorReport(), "");
-        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2, user: u2\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G2");
-        builder.disabledUser(U2, "G2");
-        builder.user(U3, "G2");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2, user: u2\n"
+                + "1970-01-01 01:00:01 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: ALL_GROUPS, user: u2\n"
+                + "1970-01-01 01:00:02 [UNASSIGN-ROLE-FORM-USER] user: u2, role: SPACE_ADMIN for G2_U2\n"
+                + "1970-01-01 01:00:03 [REMOVE-HOME-SPACE-FROM-USER] u2\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U3);
+        builder.usersWithoutAuthentication(U2);
+        builder.space("A").observer(U1).observer(U3);
+        builder.space("B").observer(U1).observer(U3);
+        builder.space("G2_ALPHA").admin(U1).user(U3);
+        builder.space("G2_BETA").admin(U1).user(U3);
+        builder.space("G2_GAMMA").admin(U1).observer(U3);
+        builder.space("G2_U1").admin(U1).non(U3);
+        builder.space("G2_U2").admin(U1).non(U3);
+        builder.space("G2_U3").admin(U1).admin(U3);
+        builder.homeSpace(U1, "G2_U1");
+        builder.homeSpace(U2, null);
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -325,15 +568,13 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1, U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
-        UserGroup group = group("G2");
-        userManager.addGroup(group, users(U1, U2, U3));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2"), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).user(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
+        createBuilder().groups("G2").space("G2_ALPHA").user(U1, U2, U3).assertExpectations();
         // 2. make U1 admin
-        userManager = createUserManager(commonSpaces, logger);
-        group = group("G2", U1.getUserId());
-        userManager.addGroup(group, users(U1, U2, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
 
         // When
         UserManagerReport report = manage(userManager);
@@ -341,29 +582,34 @@ public class UserManagerTest extends AbstractTest
         // Then
         assertEquals(report.getErrorReport(), "");
         assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u1\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G2");
-        builder.user(U2, "G2");
-        builder.user(U3, "G2");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G2_ALPHA").admin(U1).user(U2, U3);
+        builder.space("G2_BETA").admin(U1).user(U2, U3);
+        builder.space("G2_GAMMA").admin(U1).observer(U2, U3);
+        builder.space("G2_U1").admin(U1).non(U2, U3);
+        builder.space("G2_U2").admin(U1, U2).non(U3);
+        builder.space("G2_U3").admin(U1).non(U2).admin(U3);
+        builder.homeSpace(U1, "G2_U1");
+        builder.homeSpace(U2, "G2_U2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
     @Test
-    public void testChangeAdminUserToNormalAdmin()
+    public void testChangeAdminUserToNormal()
     {
         // Given
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
-        UserGroup group = group("G2", U1.getUserId());
-        userManager.addGroup(group, users(U1, U2, U3));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
+        createBuilder().groups("G2").space("G2_ALPHA").admin(U1).user(U2, U3).assertExpectations();
         // 2. make U1 normal user
-        userManager = createUserManager(commonSpaces, logger);
-        group = group("G2");
-        userManager.addGroup(group, users(U1, U2, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2"), users(U1, U2, U3));
 
         // When
         UserManagerReport report = manage(userManager);
@@ -371,10 +617,17 @@ public class UserManagerTest extends AbstractTest
         // Then
         assertEquals(report.getErrorReport(), "");
         assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u1\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.user(U1, "G2");
-        builder.user(U2, "G2");
-        builder.user(U3, "G2");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G2_ALPHA").user(U1, U2, U3);
+        builder.space("G2_BETA").user(U1, U2, U3);
+        builder.space("G2_GAMMA").observer(U1, U2, U3);
+        builder.space("G2_U1").admin(U1).non(U2, U3);
+        builder.space("G2_U2").non(U1).admin(U2).non(U3);
+        builder.space("G2_U3").non(U1, U2).admin(U3);
+        builder.homeSpace(U1, "G2_U1");
+        builder.homeSpace(U2, "G2_U2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -385,29 +638,40 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
-        UserGroup group = group("G2", U1.getUserId(), "blabla");
-        userManager.addGroup(group, users(U1, U2, U3));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
+        createBuilder().groups("G2").space("G2_GAMMA").admin(U1).observer(U2, U3).assertExpectations();
         // 2. remove U2 from group G2
-        userManager = createUserManager(commonSpaces, logger);
-        userManager.addGroup(group, users(U1, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").disabledUser(U2, "G2").user(U3, "G2").assertExpectations();
+        createBuilder().groups("G2").usersWithoutAuthentication(U2).space("G2_U2").admin(U1).non(U3).assertExpectations();
         // 3. add U2 again to group G2
-        userManager = createUserManager(commonSpaces, logger);
-        userManager.addGroup(group, users(U1, U2, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
 
         // When
         UserManagerReport report = manage(userManager);
 
         // Then
         assertEquals(report.getErrorReport(), "");
-        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G2");
-        builder.user(U2, "G2");
-        builder.user(U3, "G2");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-SPACE] G2_U2_2\n"
+                + "1970-01-01 01:00:01 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U2_2\n"
+                + "1970-01-01 01:00:02 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
+                + "1970-01-01 01:00:03 [ASSIGN-HOME-SPACE-FOR-USER] user: u2, home space: G2_U2_2\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G2_ALPHA").admin(U1).user(U2, U3);
+        builder.space("G2_BETA").admin(U1).user(U2, U3);
+        builder.space("G2_GAMMA").admin(U1).observer(U2, U3);
+        builder.space("G2_U1").admin(U1).non(U2, U3);
+        builder.space("G2_U2").admin(U1).non(U2, U3);
+        builder.space("G2_U2_2").admin(U1, U2).non(U3);
+        builder.space("G2_U3").admin(U1).non(U2).admin(U3);
+        builder.homeSpace(U1, "G2_U1");
+        builder.homeSpace(U2, "G2_U2_2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -418,14 +682,13 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
-        UserGroup group = group("G2", U1.getUserId(), "blabla");
-        userManager.addGroup(group, users(U1, U2, U3));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
+        createBuilder().groups("G2").space("G2_U1").admin(U1).non(U2, U3).assertExpectations();
         // 2. remove U1 from group G2
-        userManager = createUserManager(commonSpaces, logger);
-        userManager.addGroup(group, users(U2, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U2, U3));
 
         // When
         UserManagerReport report = manage(userManager);
@@ -433,11 +696,21 @@ public class UserManagerTest extends AbstractTest
         // Then
         assertEquals(report.getErrorReport(), "");
         assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2, user: u1\n"
-                + "1970-01-01 01:00:01 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u1\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.disabledUser(U1, "G2");
-        builder.user(U2, "G2");
-        builder.user(U3, "G2");
+                + "1970-01-01 01:00:01 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u1\n"
+                + "1970-01-01 01:00:02 [UNASSIGN-ROLE-FORM-USER] user: u1, role: SPACE_ADMIN for G2_U1\n"
+                + "1970-01-01 01:00:03 [REMOVE-HOME-SPACE-FROM-USER] u1\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U2, U3);
+        builder.usersWithoutAuthentication(U1);
+        builder.space("G2_ALPHA").user(U2, U3);
+        builder.space("G2_BETA").user(U2, U3);
+        builder.space("G2_GAMMA").observer(U2, U3);
+        builder.space("G2_U1").non(U2, U3);
+        builder.space("G2_U2").admin(U2).non(U3);
+        builder.space("G2_U3").non(U2).admin(U3);
+        builder.homeSpace(U1, null);
+        builder.homeSpace(U2, "G2_U2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -448,31 +721,40 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
-        UserGroup group = group("G2", U1.getUserId(), "blabla");
-        userManager.addGroup(group, users(U1, U2, U3));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
         // 2. remove U1 from group G2
-        userManager = createUserManager(commonSpaces, logger);
-        userManager.addGroup(group, users(U2, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).disabledUser(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
-        // 3. add U1 again to group G2
-        userManager = createUserManager(commonSpaces, logger);
-        userManager.addGroup(group, users(U1, U2, U3));
+        createBuilder().groups("G2").usersWithoutAuthentication(U1).space("G2_U1").non(U2, U3).assertExpectations();
+        // 3. add U1 again to group G2 as admin
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
 
         // When
         UserManagerReport report = manage(userManager);
 
         // Then
         assertEquals(report.getErrorReport(), "");
-        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u1\n"
-                + "1970-01-01 01:00:01 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u1\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G2");
-        builder.user(U2, "G2");
-        builder.user(U3, "G2");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-SPACE] G2_U1_2\n"
+                + "1970-01-01 01:00:01 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U1_2\n"
+                + "1970-01-01 01:00:02 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u1\n"
+                + "1970-01-01 01:00:03 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u1\n"
+                + "1970-01-01 01:00:04 [ASSIGN-HOME-SPACE-FOR-USER] user: u1, home space: G2_U1_2\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G2_ALPHA").admin(U1).user(U2, U3);
+        builder.space("G2_BETA").admin(U1).user(U2, U3);
+        builder.space("G2_GAMMA").admin(U1).observer(U2, U3);
+        builder.space("G2_U1").admin(U1).non(U2, U3);
+        builder.space("G2_U1_2").admin(U1).non(U2, U3);
+        builder.space("G2_U2").admin(U1, U2).non(U3);
+        builder.space("G2_U3").admin(U1).non(U2).admin(U3);
+        builder.homeSpace(U1, "G2_U1_2");
+        builder.homeSpace(U2, "G2_U2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -483,12 +765,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G1").user(U2, "G1").unknownUser(U3).assertExpectations();
+        createBuilder().groups("G1").space("G1_U2").admin(U1, U2).assertExpectations();
         // 2. create group G2 with users U2 and U3 (admin)
-        userManager = createUserManager(commonSpaces, logger);
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
         userManager.addGroup(group("G2", U3.getUserId()), users(U2, U3));
 
@@ -508,16 +790,30 @@ public class UserManagerTest extends AbstractTest
                 + "1970-01-01 01:00:08 [ADD-SPACE] G2_GAMMA\n"
                 + "1970-01-01 01:00:09 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_OBSERVER for G2_GAMMA\n"
                 + "1970-01-01 01:00:10 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_GAMMA\n"
-                + "1970-01-01 01:00:11 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
-                + "1970-01-01 01:00:12 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U2\n"
-                + "1970-01-01 01:00:13 [ADD-USER] u3 (home space: U3)\n"
-                + "1970-01-01 01:00:14 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u3\n"
-                + "1970-01-01 01:00:15 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U3\n"
-                + "1970-01-01 01:00:16 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u3\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G1");
-        builder.user(U2, "G1", "G2");
-        builder.adminUser(U3, "G2");
+                + "1970-01-01 01:00:11 [ADD-SPACE] G2_U2\n"
+                + "1970-01-01 01:00:12 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U2\n"
+                + "1970-01-01 01:00:13 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
+                + "1970-01-01 01:00:14 [ADD-SPACE] G2_U3\n"
+                + "1970-01-01 01:00:15 [ADD-USER] u3\n"
+                + "1970-01-01 01:00:16 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U3\n"
+                + "1970-01-01 01:00:17 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u3\n"
+                + "1970-01-01 01:00:18 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u3\n"
+                + "1970-01-01 01:00:19 [ASSIGN-HOME-SPACE-FOR-USER] user: u3, home space: G2_U3\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1", "G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G1_ALPHA").admin(U1).user(U2).non(U3);
+        builder.space("G1_BETA").admin(U1).user(U2).non(U3);
+        builder.space("G1_GAMMA").admin(U1).observer(U2).non(U3);
+        builder.space("G1_U1").admin(U1).non(U2, U3);
+        builder.space("G1_U2").admin(U1, U2).non(U3);
+        builder.space("G2_ALPHA").non(U1).user(U2).admin(U3);
+        builder.space("G2_BETA").non(U1).user(U2).admin(U3);
+        builder.space("G2_GAMMA").non(U1).observer(U2).admin(U3);
+        builder.space("G2_U2").non(U1).admin(U2, U3);
+        builder.space("G2_U3").non(U1).non(U2).admin(U3);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G1_U2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -528,12 +824,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G1").user(U2, "G1").unknownUser(U3).assertExpectations();
+        createBuilder().groups("G1").space("G1_U1").admin(U1).non(U2).assertExpectations();
         // 2. create group G2 with users U1 (admin) and U3
-        userManager = createUserManager(commonSpaces, logger);
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
         userManager.addGroup(group("G2", U1.getUserId()), users(U1, U3));
 
@@ -553,16 +849,30 @@ public class UserManagerTest extends AbstractTest
                 + "1970-01-01 01:00:08 [ADD-SPACE] G2_GAMMA\n"
                 + "1970-01-01 01:00:09 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_OBSERVER for G2_GAMMA\n"
                 + "1970-01-01 01:00:10 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_GAMMA\n"
-                + "1970-01-01 01:00:11 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u1\n"
-                + "1970-01-01 01:00:12 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U1\n"
-                + "1970-01-01 01:00:13 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u1\n"
-                + "1970-01-01 01:00:14 [ADD-USER] u3 (home space: U3)\n"
-                + "1970-01-01 01:00:15 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u3\n"
-                + "1970-01-01 01:00:16 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U3\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G1", "G2");
-        builder.user(U2, "G1");
-        builder.user(U3, "G2");
+                + "1970-01-01 01:00:11 [ADD-SPACE] G2_U1\n"
+                + "1970-01-01 01:00:12 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U1\n"
+                + "1970-01-01 01:00:13 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u1\n"
+                + "1970-01-01 01:00:14 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u1\n"
+                + "1970-01-01 01:00:15 [ADD-SPACE] G2_U3\n"
+                + "1970-01-01 01:00:16 [ADD-USER] u3\n"
+                + "1970-01-01 01:00:17 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U3\n"
+                + "1970-01-01 01:00:18 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u3\n"
+                + "1970-01-01 01:00:19 [ASSIGN-HOME-SPACE-FOR-USER] user: u3, home space: G2_U3\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1", "G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G1_ALPHA").admin(U1).user(U2).non(U3);
+        builder.space("G1_BETA").admin(U1).user(U2).non(U3);
+        builder.space("G1_GAMMA").admin(U1).observer(U2).non(U3);
+        builder.space("G1_U1").admin(U1).non(U2, U3);
+        builder.space("G1_U2").admin(U1, U2).non(U3);
+        builder.space("G2_ALPHA").admin(U1).non(U2).user(U3);
+        builder.space("G2_BETA").admin(U1).non(U2).user(U3);
+        builder.space("G2_GAMMA").admin(U1).non(U2).observer(U3);
+        builder.space("G2_U1").admin(U1).non(U2, U3);
+        builder.space("G2_U3").admin(U1).non(U2).admin(U3);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G1_U2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -573,12 +883,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G1").user(U2, "G1").unknownUser(U3).assertExpectations();
+        createBuilder().groups("G1").space("G1_U1").admin(U1).non(U2).assertExpectations();
         // 2. create group G2 with users U2 (admin) and U3
-        userManager = createUserManager(commonSpaces, logger);
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
         userManager.addGroup(group("G2", U2.getUserId()), users(U2, U3));
 
@@ -598,39 +908,50 @@ public class UserManagerTest extends AbstractTest
                 + "1970-01-01 01:00:08 [ADD-SPACE] G2_GAMMA\n"
                 + "1970-01-01 01:00:09 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2, role: SPACE_OBSERVER for G2_GAMMA\n"
                 + "1970-01-01 01:00:10 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_GAMMA\n"
-                + "1970-01-01 01:00:11 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
-                + "1970-01-01 01:00:12 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U2\n"
-                + "1970-01-01 01:00:13 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u2\n"
-                + "1970-01-01 01:00:14 [ADD-USER] u3 (home space: U3)\n"
-                + "1970-01-01 01:00:15 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u3\n"
-                + "1970-01-01 01:00:16 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U3\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G1");
-        builder.user(U2, "G1");
-        builder.adminUser(U2, "G2");
-        builder.user(U3, "G2");
+                + "1970-01-01 01:00:11 [ADD-SPACE] G2_U2\n"
+                + "1970-01-01 01:00:12 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U2\n"
+                + "1970-01-01 01:00:13 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
+                + "1970-01-01 01:00:14 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, user: u2\n"
+                + "1970-01-01 01:00:15 [ADD-SPACE] G2_U3\n"
+                + "1970-01-01 01:00:16 [ADD-USER] u3\n"
+                + "1970-01-01 01:00:17 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U3\n"
+                + "1970-01-01 01:00:18 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u3\n"
+                + "1970-01-01 01:00:19 [ASSIGN-HOME-SPACE-FOR-USER] user: u3, home space: G2_U3\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1", "G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G1_ALPHA").admin(U1).user(U2).non(U3);
+        builder.space("G1_BETA").admin(U1).user(U2).non(U3);
+        builder.space("G1_GAMMA").admin(U1).observer(U2).non(U3);
+        builder.space("G1_U1").admin(U1).non(U2, U3);
+        builder.space("G1_U2").admin(U1, U2).non(U3);
+        builder.space("G2_ALPHA").non(U1).admin(U2).user(U3);
+        builder.space("G2_BETA").non(U1).admin(U2).user(U3);
+        builder.space("G2_GAMMA").non(U1).admin(U2).observer(U3);
+        builder.space("G2_U2").non(U1).admin(U2).non(U3);
+        builder.space("G2_U3").non(U1).admin(U2).admin(U3);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G1_U2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
     @Test
-    public void testCreateTwoGroupsAndMoveUserBetweenGroups()
+    public void testCreateTwoGroupsAndMoveUserFromFirstGroupToSecondGroup()
     {
         // Given
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G1").user(U2, "G1").unknownUser(U3).assertExpectations();
         // 2. create group G2 with users U3 (admin) and U4
-        userManager = createUserManager(commonSpaces, logger);
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
         userManager.addGroup(group("G2", U3.getUserId()), users(U3, U4));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G1").user(U2, "G1").adminUser(U3, "G2").user(U4, "G2").assertExpectations();
         // 3. Move U2 from G1 -> G2
-        userManager = createUserManager(commonSpaces, logger);
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
         userManager.addGroup(group("G1", U1.getUserId()), users(U1));
         userManager.addGroup(group("G2", U3.getUserId()), users(U2, U3, U4));
 
@@ -639,14 +960,132 @@ public class UserManagerTest extends AbstractTest
 
         // Then
         assertEquals(report.getErrorReport(), "");
-        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
-                + "1970-01-01 01:00:01 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U2\n"
-                + "1970-01-01 01:00:02 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G1, user: u2\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G1");
-        builder.user(U2, "G2");
-        builder.adminUser(U3, "G2");
-        builder.user(U4, "G2");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G1, user: u2\n"
+                + "1970-01-01 01:00:01 [UNASSIGN-ROLE-FORM-USER] user: u2, role: SPACE_ADMIN for G1_U2\n"
+                + "1970-01-01 01:00:02 [ADD-SPACE] G2_U2\n"
+                + "1970-01-01 01:00:03 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U2\n"
+                + "1970-01-01 01:00:04 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
+                + "1970-01-01 01:00:05 [ASSIGN-HOME-SPACE-FOR-USER] user: u2, home space: G2_U2\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1", "G2").commonSpaces(commonSpaces).users(U1, U2, U3, U4);
+        builder.space("G1_ALPHA").admin(U1).non(U2, U3, U4);
+        builder.space("G1_BETA").admin(U1).non(U2, U3, U4);
+        builder.space("G1_GAMMA").admin(U1).non(U2, U3, U4);
+        builder.space("G1_U1").admin(U1).non(U2, U3, U4);
+        builder.space("G1_U2").admin(U1).non(U2, U3, U4);
+        builder.space("G2_ALPHA").non(U1).user(U2).admin(U3).user(U4);
+        builder.space("G2_BETA").non(U1).user(U2).admin(U3).user(U4);
+        builder.space("G2_GAMMA").non(U1).observer(U2).admin(U3).observer(U4);
+        builder.space("G2_U2").non(U1).admin(U2).admin(U3).non(U4);
+        builder.space("G2_U3").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_U4").non(U1).non(U2).admin(U3).admin(U4);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G2_U2");
+        builder.homeSpace(U3, "G2_U3");
+        builder.homeSpace(U4, "G2_U4");
+        builder.assertExpectations();
+    }
+
+    @Test
+    public void testCreateTwoGroupsAndMoveUserFromSecondGroupToFirstGroup()
+    {
+        // Given
+        // 1. create group G1 with users U1 (admin) and U2
+        MockLogger logger = new MockLogger();
+        Map<Role, List<String>> commonSpaces = commonSpaces();
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
+        assertEquals(manage(userManager).getErrorReport(), "");
+        // 2. create group G2 with users U3 (admin) and U4
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
+        userManager.addGroup(group("G2", U3.getUserId()), users(U3, U4));
+        assertEquals(manage(userManager).getErrorReport(), "");
+        // 3. Move U4 from G2 -> G1
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2, U4));
+        userManager.addGroup(group("G2", U3.getUserId()), users(U3));
+
+        // When
+        UserManagerReport report = manage(userManager);
+
+        // Then
+        assertEquals(report.getErrorReport(), "");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-SPACE] G1_U4\n"
+                + "1970-01-01 01:00:01 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U4\n"
+                + "1970-01-01 01:00:02 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u4\n"
+                + "1970-01-01 01:00:03 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2, user: u4\n"
+                + "1970-01-01 01:00:04 [UNASSIGN-ROLE-FORM-USER] user: u4, role: SPACE_ADMIN for G2_U4\n"
+                + "1970-01-01 01:00:05 [ASSIGN-HOME-SPACE-FOR-USER] user: u4, home space: G1_U4\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1", "G2").commonSpaces(commonSpaces).users(U1, U2, U3, U4);
+        builder.space("G1_ALPHA").admin(U1).user(U2).non(U3).user(U4);
+        builder.space("G1_BETA").admin(U1).user(U2).non(U3).user(U4);
+        builder.space("G1_GAMMA").admin(U1).observer(U2).non(U3).observer(U4);
+        builder.space("G1_U1").admin(U1).non(U2).non(U3).non(U4);
+        builder.space("G1_U2").admin(U1).admin(U2).non(U3).non(U4);
+        builder.space("G1_U4").admin(U1).non(U2).non(U3).admin(U4);
+        builder.space("G2_ALPHA").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_BETA").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_GAMMA").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_U3").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_U4").non(U1).non(U2).admin(U3).non(U4);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G1_U2");
+        builder.homeSpace(U3, "G2_U3");
+        builder.homeSpace(U4, "G1_U4");
+        builder.assertExpectations();
+    }
+
+    @Test
+    public void testCreateTwoGroupsAndMoveUserWithTestSpaceAsHomeSpaceFromSecondGroupToFirstGroup()
+    {
+        // Given
+        // 1. create user U4 with home space TEST-SPACE and SPACE_ADMIN on this space
+        createUserForTestSpace(U4);
+        // 2. create group G1 with users U1 (admin) and U2
+        MockLogger logger = new MockLogger();
+        Map<Role, List<String>> commonSpaces = commonSpaces();
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
+        assertEquals(manage(userManager).getErrorReport(), "");
+        // 3. create group G2 with users U3 (admin) and U4
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2));
+        userManager.addGroup(group("G2", U3.getUserId()), users(U3, U4));
+        assertEquals(manage(userManager).getErrorReport(), "");
+        // 4. Move U4 from G2 -> G1
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G1", U1.getUserId()), users(U1, U2, U4));
+        userManager.addGroup(group("G2", U3.getUserId()), users(U3));
+
+        // When
+        UserManagerReport report = manage(userManager);
+
+        // Then
+        assertEquals(report.getErrorReport(), "");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-SPACE] G1_U4\n"
+                + "1970-01-01 01:00:01 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G1_ADMIN, role: SPACE_ADMIN for G1_U4\n"
+                + "1970-01-01 01:00:02 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G1, user: u4\n"
+                + "1970-01-01 01:00:03 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2, user: u4\n"
+                + "1970-01-01 01:00:04 [UNASSIGN-ROLE-FORM-USER] user: u4, role: SPACE_ADMIN for G2_U4\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G1", "G2").commonSpaces(commonSpaces).users(U1, U2, U3, U4);
+        builder.space("G1_ALPHA").admin(U1).user(U2).non(U3).user(U4);
+        builder.space("G1_BETA").admin(U1).user(U2).non(U3).user(U4);
+        builder.space("G1_GAMMA").admin(U1).observer(U2).non(U3).observer(U4);
+        builder.space("G1_U1").admin(U1).non(U2).non(U3).non(U4);
+        builder.space("G1_U2").admin(U1).admin(U2).non(U3).non(U4);
+        builder.space("G1_U4").admin(U1).non(U2).non(U3).admin(U4);
+        builder.space("G2_ALPHA").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_BETA").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_GAMMA").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_U3").non(U1).non(U2).admin(U3).non(U4);
+        builder.space("G2_U4").non(U1).non(U2).admin(U3).non(U4);
+        builder.homeSpace(U1, "G1_U1");
+        builder.homeSpace(U2, "G1_U2");
+        builder.homeSpace(U3, "G2_U3");
+        builder.homeSpace(U4, "TEST-SPACE");
         builder.assertExpectations();
     }
 
@@ -657,13 +1096,11 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
-        UserGroup group = group("G2", U1.getUserId(), "blabla");
-        userManager.addGroup(group, users(U1, U2, U3));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
         // 2. U2 is no longer known by the authentication service
-        userManager = createUserManager(commonSpaces, logger, U2);
+        userManager = new UserManagerBuilder(v3api, logger).unknownUser(U2).commonSpaces(commonSpaces).get();
 
         // When
         UserManagerReport report = manage(userManager);
@@ -671,10 +1108,17 @@ public class UserManagerTest extends AbstractTest
         // Then
         assertEquals(report.getErrorReport(), "");
         assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [DEACTIVATE-USER] u2\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G2");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U3);
+        builder.space("G2_ALPHA").admin(U1).user(U3);
+        builder.space("G2_BETA").admin(U1).user(U3);
+        builder.space("G2_GAMMA").admin(U1).observer(U3);
+        builder.space("G2_U1").admin(U1).non(U3);
+        builder.space("G2_U2").admin(U1).non(U3);
+        builder.space("G2_U3").admin(U1).admin(U3);
+        builder.homeSpace(U1, "G2_U1");
         builder.unknownUser(U2);
-        builder.user(U3, "G2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -685,32 +1129,39 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
-        UserGroup group = group("G2", U1.getUserId(), "blabla");
-        userManager.addGroup(group, users(U1, U2, U3));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
         // 2. U2 is no longer known by the authentication service
-        userManager = createUserManager(commonSpaces, logger, U2);
-        userManager.addGroup(group, users(U1, U3));
+        userManager = new UserManagerBuilder(v3api, logger).unknownUser(U2).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").unknownUser(U2).user(U3, "G2").assertExpectations();
         // 3. U2 is reused and added to group G2
-        userManager = createUserManager(commonSpaces, logger);
-        userManager.addGroup(group, users(U1, U2, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
 
         // When
         UserManagerReport report = manage(userManager);
 
         // Then
         assertEquals(report.getErrorReport(), "");
-        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REUSE-USER] u2 (home space: U2_2)\n"
-                + "1970-01-01 01:00:01 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
-                + "1970-01-01 01:00:02 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U2_2\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G2");
-        builder.user(reuse(U2, "U2_2"), "G2");
-        builder.user(U3, "G2");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-SPACE] G2_U2_2\n"
+                + "1970-01-01 01:00:01 [REUSE-USER] u2\n"
+                + "1970-01-01 01:00:02 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U2_2\n"
+                + "1970-01-01 01:00:03 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
+                + "1970-01-01 01:00:04 [ASSIGN-HOME-SPACE-FOR-USER] user: u2, home space: G2_U2_2\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G2_ALPHA").admin(U1).user(U2).user(U3);
+        builder.space("G2_BETA").admin(U1).user(U2).user(U3);
+        builder.space("G2_GAMMA").admin(U1).observer(U2).observer(U3);
+        builder.space("G2_U1").admin(U1).non(U2).non(U3);
+        builder.space("G2_U2").admin(U1).non(U2).non(U3);
+        builder.space("G2_U2_2").admin(U1).admin(U2).non(U3);
+        builder.space("G2_U3").admin(U1).non(U2).admin(U3);
+        builder.homeSpace(U1, "G2_U1");
+        builder.homeSpace(U2, "G2_U2_2");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
@@ -721,76 +1172,54 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = createUserManager(commonSpaces, logger);
-        UserGroup group = group("G2", U1.getUserId(), "blabla");
-        userManager.addGroup(group, users(U1, U2, U3));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").user(U2, "G2").user(U3, "G2").assertExpectations();
         // 2. U2 is no longer known by the authentication service
-        userManager = createUserManager(commonSpaces, logger, U2);
-        userManager.addGroup(group, users(U1, U3));
+        userManager = new UserManagerBuilder(v3api, logger).unknownUser(U2).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").unknownUser(U2).user(U3, "G2").assertExpectations();
         // 3. U2 is reused and added to group G2
-        userManager = createUserManager(commonSpaces, logger);
-        userManager.addGroup(group, users(U1, U2, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").user(reuse(U2, "U2_2"), "G2").user(U3, "G2").assertExpectations();
         // 4. U2 is no longer known by the authentication service
-        userManager = createUserManager(commonSpaces, logger, U2);
-        userManager.addGroup(group, users(U1, U3));
+        userManager = new UserManagerBuilder(v3api, logger).unknownUser(U2).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
-        createBuilder(commonSpaces).adminUser(U1, "G2").unknownUser(U2).user(U3, "G2").assertExpectations();
         // 5. U2 is reused and added to group G2
-        userManager = createUserManager(commonSpaces, logger);
-        userManager.addGroup(group, users(U1, U2, U3));
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
 
         // When
         UserManagerReport report = manage(userManager);
 
         // Then
         assertEquals(report.getErrorReport(), "");
-        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [REUSE-USER] u2 (home space: U2_3)\n"
-                + "1970-01-01 01:00:01 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
-                + "1970-01-01 01:00:02 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for U2_3\n");
-        UserManagerExpectationsBuilder builder = createBuilder(commonSpaces);
-        builder.adminUser(U1, "G2");
-        builder.user(reuse(U2, "U2_3"), "G2");
-        builder.user(U3, "G2");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [ADD-SPACE] G2_U2_3\n"
+                + "1970-01-01 01:00:01 [REUSE-USER] u2\n"
+                + "1970-01-01 01:00:02 [ASSIGN-ROLE-TO-AUTHORIZATION-GROUP] group: G2_ADMIN, role: SPACE_ADMIN for G2_U2_3\n"
+                + "1970-01-01 01:00:03 [ADD-USER-TO-AUTHORIZATION-GROUP] group: G2, user: u2\n"
+                + "1970-01-01 01:00:04 [ASSIGN-HOME-SPACE-FOR-USER] user: u2, home space: G2_U2_3\n");
+        UserManagerExpectationsBuilder builder = createBuilder();
+        builder.groups("G2").commonSpaces(commonSpaces).users(U1, U2, U3);
+        builder.space("G2_ALPHA").admin(U1).user(U2).user(U3);
+        builder.space("G2_BETA").admin(U1).user(U2).user(U3);
+        builder.space("G2_GAMMA").admin(U1).observer(U2).observer(U3);
+        builder.space("G2_U1").admin(U1).non(U2).non(U3);
+        builder.space("G2_U2").admin(U1).non(U2).non(U3);
+        builder.space("G2_U2_2").admin(U1).non(U2).non(U3);
+        builder.space("G2_U2_3").admin(U1).admin(U2).non(U3);
+        builder.space("G2_U3").admin(U1).non(U2).admin(U3);
+        builder.homeSpace(U1, "G2_U1");
+        builder.homeSpace(U2, "G2_U2_3");
+        builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
     }
 
-    private Principal reuse(Principal user, String userSpacePostfix)
+    private UserManagerExpectationsBuilder createBuilder()
     {
-        Map<String, String> props = new TreeMap<>();
-        props.put(UserManagerExpectationsBuilder.USER_SPACE_POSTFIX_KEY, userSpacePostfix);
-        return new Principal(user.getUserId(), user.getFirstName(), user.getLastName(), user.getEmail(), true, props);
-    }
-
-    private UserManager createUserManager(Map<Role, List<String>> commonSpaces, MockLogger logger,
-            Principal... usersUnknownByAuthenticationService)
-    {
-        Set<String> unknownUsers = Arrays.asList(usersUnknownByAuthenticationService).stream().map(Principal::getUserId).collect(Collectors.toSet());
-        NullAuthenticationService authenticationService = new NullAuthenticationService()
-            {
-                @Override
-                public Principal getPrincipal(String user) throws IllegalArgumentException
-                {
-                    if (unknownUsers.contains(user))
-                    {
-                        throw new IllegalArgumentException("Unknown user " + user);
-                    }
-                    return new Principal(user, "John", "Doe", "jd@abc.de");
-                }
-            };
-        UserManager userManager = new UserManager(authenticationService, v3api, logger, new MockTimeProvider(0, 1000));
-        userManager.setCommonSpacesByRole(commonSpaces);
-        return userManager;
-    }
-
-    private UserManagerExpectationsBuilder createBuilder(Map<Role, List<String>> commonSpaces)
-    {
-        return new UserManagerExpectationsBuilder(v3api, testService, sessionManager, commonSpaces);
+        return new UserManagerExpectationsBuilder(v3api, testService, sessionManager);
     }
 
     private UserManagerReport manage(UserManager userManager)
@@ -817,4 +1246,72 @@ public class UserManagerTest extends AbstractTest
         userGroup.setAdmins(Arrays.asList(admins));
         return userGroup;
     }
+
+    private static class UserManagerBuilder
+    {
+        private IApplicationServerInternalApi service;
+
+        private ISimpleLogger logger;
+
+        private Set<String> usersUnknownByAuthenticationService = new TreeSet<>();
+
+        private List<String> globalSpaces = new ArrayList<>();
+
+        private Map<Role, List<String>> commonSpacesByRole = new TreeMap<>();
+
+        private Map<String, String> commonSamples = new TreeMap<>();
+
+        private Map<String, String> commonExperiments = new TreeMap<>();
+
+        UserManagerBuilder(IApplicationServerInternalApi service, ISimpleLogger logger)
+        {
+            this.service = service;
+            this.logger = logger;
+        }
+
+        UserManager get()
+        {
+            NullAuthenticationService authenticationService = new NullAuthenticationService()
+                {
+                    @Override
+                    public Principal getPrincipal(String user) throws IllegalArgumentException
+                    {
+                        if (usersUnknownByAuthenticationService.contains(user))
+                        {
+                            throw new IllegalArgumentException("Unknown user " + user);
+                        }
+                        return new Principal(user, "John", "Doe", "jd@abc.de");
+                    }
+                };
+            UserManager userManager = new UserManager(authenticationService, service, logger, new MockTimeProvider(0, 1000));
+            userManager.setGlobalSpaces(globalSpaces);
+            userManager.setCommon(commonSpacesByRole, commonSamples, commonExperiments);
+            return userManager;
+        }
+
+        private UserManagerBuilder unknownUser(Principal user)
+        {
+            usersUnknownByAuthenticationService.add(user.getUserId());
+            return this;
+        }
+
+        private UserManagerBuilder commonSpaces(Map<Role, List<String>> commonSpaces)
+        {
+            commonSpacesByRole = commonSpaces;
+            return this;
+        }
+
+        private UserManagerBuilder commonSample(String sampleIdentifierTemplate, String sampleType)
+        {
+            commonSamples.put(sampleIdentifierTemplate, sampleType);
+            return this;
+        }
+
+        private UserManagerBuilder commonExperiment(String experimentIdentifierTemplate, String experimentType)
+        {
+            commonExperiments.put(experimentIdentifierTemplate, experimentType);
+            return this;
+        }
+    }
+
 }

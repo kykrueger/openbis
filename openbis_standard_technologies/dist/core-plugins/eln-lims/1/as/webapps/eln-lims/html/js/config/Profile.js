@@ -148,21 +148,95 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.searchDomains = [ { "@id" : -1, "@type" : "GobalSearch", label : "Global", name : "global"}];
-		this.inventorySpacesPostFixes = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG", "ELN_SETTINGS", "STOCK_ORDERS"];
-		this.inventorySpaces = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"];
-		this.inventorySpacesReadOnly = ["ELN_SETTINGS", "STOCK_ORDERS"];
-		this.storageSpaces = []; // Ending in "STORAGE"
+		
+		//Ending in "MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"
+		this.inventorySpacesPostFixes = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"];
+		this.inventorySpaces = []; 
+		//Ending in "ELN_SETTINGS", "STOCK_ORDERS"
+		this.inventorySpacesReadOnlyPostFixes = ["ELN_SETTINGS", "STOCK_ORDERS"];
+		this.inventorySpacesReadOnly = []; 
+		//Ending in "STORAGE"
+		this.storageSpacesPostFixes = ["STORAGE"];
+		this.storageSpaces = [];
+		//Ending in "ELN_SETTINGS"
+		this.settingsSpacesPostFixes = ["ELN_SETTINGS"];
+		this.settingsSpaces = [];
+		//Ending in "ELN_SETTINGS", "STORAGE"
+		this.hideSpacesPostFixes = ["ELN_SETTINGS", "STORAGE"];
+		this.hideSpaces = []; 
+		
+		this.initSpaces = function(callback) {
+			var _this = this;
+			var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
+			
+    	    		mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(spacesSearchResult) {
+    	    			for(var sIdx = 0; sIdx < spacesSearchResult.objects.length; sIdx++) {
+    	    				var space = spacesSearchResult.objects[sIdx];
+    	    				if(Util.elementEndsWithArrayElement(space.code, _this.inventorySpacesPostFixes)) {
+						_this.inventorySpaces.push(space.code);
+					}
+					if(Util.elementEndsWithArrayElement(space.code, _this.inventorySpacesReadOnlyPostFixes)) {
+						_this.inventorySpacesReadOnly.push(space.code);
+					}
+					if(Util.elementEndsWithArrayElement(space.code, _this.storageSpacesPostFixes)) {
+						_this.storageSpaces.push(space.code);
+					}
+					if(Util.elementEndsWithArrayElement(space.code, _this.settingsSpacesPostFixes)) {
+						_this.settingsSpaces.push(space.code);
+					}
+					if(Util.elementEndsWithArrayElement(space.code, _this.hideSpacesPostFixes)) {
+						_this.hideSpaces.push(space.code);
+					}
+    	    			}
+    	    			callback();
+    	    		});
+		}
+		
+		this.getSampleConfigSpacePrefix = function(sample) {
+			var prefix = null;
+			var spaceCode = sample.spaceCode;
+			for(var ssIdx = 0; ssIdx < this.settingsSpaces.length; ssIdx++) {
+				var settingsSpaceCode = this.settingsSpaces[ssIdx];
+				var spacePrefixIndexOf = settingsSpaceCode.indexOf(this.settingsSpacesPostFixes[0]);
+				if(spacePrefixIndexOf !== -1) {
+					var spacePrefix = settingsSpaceCode.substring(0, spacePrefixIndexOf);
+					if(spaceCode.startsWith(spacePrefix) && (prefix === null || (spacePrefix.length > prefix.length))) {
+						prefix = spacePrefix;
+					}
+				}
+			}
+			
+			return prefix;
+		}
+		
+		this.getStorageConfigCollectionForConfigSample = function(sample) {
+			var prefix = this.getSampleConfigSpacePrefix(sample);
+			return "/" + prefix + "ELN_SETTINGS/" + prefix + "STORAGES/" + prefix + "STORAGES_COLLECTION";
+		}
+		
+		this.getStorageSpaceForSample = function(sample) {
+			var storageSpaceCode = null;
+			var prefixIndexOf = sample.spaceCode.indexOf("_"); // This is a euristic that only works if the prefixes can't contain "_"
+			if(prefixIndexOf !== -1) {
+				var prefix = sample.spaceCode.substring(0, prefixIndexOf);
+				for(var ssIdx = 0; ssIdx < this.storageSpaces.length; ssIdx++) {
+					if(this.storageSpaces[ssIdx].startsWith(prefix)) {
+						storageSpaceCode = this.storageSpaces[ssIdx];
+					}
+				}
+			}
+			if(storageSpaceCode === null) { // Look for a default storage
+				for(var ssIdx = 0; ssIdx < this.storageSpaces.length; ssIdx++) {
+					if(this.storageSpaces[ssIdx] === this.storageSpacesPostFixes[0]) {
+						storageSpaceCode = this.storageSpaces[ssIdx];
+					}
+				}
+			}
+			return storageSpaceCode;
+		}
 		
 		this.searchSamplesUsingV3OnDropbox = false;
 		this.searchSamplesUsingV3OnDropboxRunCustom = false;
-		
-		this.getFirstStorageSpace = function() {
-			var first = null;
-			if(this.storageSpaces.length > 0) {
-				first = this.storageSpaces[0];
-			}
-			return first;
-		}
 		
 		this.isSampleTypeWithStorage = function(sampleTypeCode) {
 			return this.sampleTypeDefinitionsExtension[sampleTypeCode] && this.sampleTypeDefinitionsExtension[sampleTypeCode]["ENABLE_STORAGE"];
@@ -178,8 +252,9 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.isInventorySpace = function(spaceCode) {
-			for(var iIdx = 0; iIdx < this.inventorySpacesPostFixes.length; iIdx++) {
-				if(spaceCode.endsWith(this.inventorySpacesPostFixes[iIdx])) {
+			var inventorySpacesPostFixes = this.inventorySpaces.concat(this.inventorySpacesReadOnly);
+			for(var iIdx = 0; iIdx < inventorySpacesPostFixes.length; iIdx++) {
+				if(spaceCode.endsWith(inventorySpacesPostFixes[iIdx])) {
 					return true;
 				}
 			}
@@ -200,7 +275,7 @@ $.extend(DefaultProfile.prototype, {
 				"sampleTypeCodes" : ["GENERAL_ELN_SETTINGS", "STORAGE_POSITION", "STORAGE"],
 				"experimentTypeCodes" : []
 		}
-		this.hideSpaces = ["ELN_SETTINGS", "STORAGE"];
+		
 		
 		this.propertyReplacingCode = "NAME";
 		
@@ -824,21 +899,6 @@ $.extend(DefaultProfile.prototype, {
 			}));
 		}
 		
-		this.initStorages = function(callback) {
-			var _this = this;
-			var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(spacesSearchResult) {
-    	    			for(var sIdx = 0; sIdx < spacesSearchResult.objects.length; sIdx++) {
-    	    				var space = spacesSearchResult.objects[sIdx];
-    	    				if(space.code.endsWith("STORAGE")) {
-    	    					_this.storageSpaces.push(space.code);
-    	    					_this.inventorySpaces.push(space.code);
-    	    				}
-    	    			}
-    	    			callback();
-    	    		});
-		}
-		
 		this.initAuth = function(callback) {
 			var _this = this;
 			this.serverFacade.getOpenbisV3(function(openbisV3) {
@@ -874,7 +934,7 @@ $.extend(DefaultProfile.prototype, {
 								_this.initDatasetTypeCodes(function() {
 									_this.initAuth(function() {
 										_this.isFileAuthUser(function() {
-											_this.initStorages(function() {
+											_this.initSpaces(function() {
 												_this.initSettings(function() {
 													//Check if the new storage system can be enabled
 													var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");

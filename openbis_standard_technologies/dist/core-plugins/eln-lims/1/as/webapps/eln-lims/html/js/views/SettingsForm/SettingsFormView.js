@@ -136,7 +136,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		var $fieldset = this._getFieldset($container, text.title, "settings-section-storages");
 		$fieldset.append(FormUtil.getInfoText(text.info));
 
-		var experimentIdentifier = "/ELN_SETTINGS/STORAGES/STORAGES_COLLECTION";
+		var experimentIdentifier = profile.getStorageConfigCollectionForConfigSample(this._settingsFormModel.settingsSample); //"/ELN_SETTINGS/STORAGES/STORAGES_COLLECTION";
 
 		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 			var argsMap = {

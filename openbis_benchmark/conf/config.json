@@ -1,0 +1,12 @@
+[{	
+	"className" : "ch.ethz.sis.benchmark.impl.CreateSpacesBenchmark",
+	"user" : "admin",
+	"password" : "test",
+	"openbisURL" : "http://localhost:8888/openbis/openbis/rmi-application-server-v3",
+	"openbisTimeout" : "3600000",
+	"datastoreURL" : "http://localhost:8889/datastore_server/rmi-data-store-server-v3",
+	"datastoreTimeout" : "3600000",
+	"parameters" : {
+		"SPACES_TO_CREATE" : 5000
+	}
+}]

@@ -63,6 +63,7 @@ from ch.ethz.sis.openbis.generic.server.sharedapi.v3.json import GenericObjectMa
 from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer
 from ch.systemsx.cisd.common.shared.basic.string import StringUtils
 
+from ch.ethz.sis import PersistentKeyValueStore 
 #from ch.systemsx.cisd.common.ssl import SslCertificateHelper;
 
 #Plasmapper server used
@@ -198,7 +199,9 @@ def process(tr, parameters, tableBuilder):
 	tr.setUserId(userId);
 	
 	if method == "init":
-		isOk = init(tr, parameters, tableBuilder);
+		if PersistentKeyValueStore.get("$isELNInitDone") != True:
+			isOk = init(tr, parameters, tableBuilder);
+			PersistentKeyValueStore.put("$isELNInitDone", True);
 	if method == "isFileAuthUser":
 		result = isFileAuthUser(tr, parameters, tableBuilder);
 		isOk = True;

@@ -87,23 +87,39 @@ function SettingsManager(serverFacade) {
 
 	this.applySettingsToProfile = function(settings, targetProfile) {
 		// fields that get overwritten with settings if found
-		var fields = [
+		var fieldsToOverride = [
 			"dataSetTypeForFileNameMap",
 			"forcedDisableRTF",
-			"forceMonospaceFont",
-			"inventorySpaces",
+			"forceMonospaceFont"
 		];
-		for (var field of fields) {
+		for (var field of fieldsToOverride) {
 			if (settings[field]) {
 				targetProfile[field] = settings[field];
 			}
 		}
+		
+		// array fields to add values to defaults
+		var fieldsToAdd = [
+			"inventorySpaces"
+		];
+		for (var field of fieldsToAdd) {
+			if (settings[field]) {
+				for(var fIdx = 0; fIdx < settings[field].length; fIdx++) {
+					var settingsValue = settings[field][fIdx];
+					if(($.inArray(settingsValue, targetProfile[field]) === -1)) {
+						targetProfile[field].push(settingsValue);
+					}
+				}
+			}
+		}
+		
 		// main menu, checks menu items one by one to keep new ones
 		for (var menuItem of Object.keys(targetProfile.mainMenu)) {
 			if (settings.mainMenu[menuItem] != undefined) {
 				targetProfile.mainMenu[menuItem] = settings.mainMenu[menuItem];
 			}
 		}
+		
 		// sampleTypeDefinitionsExtension gets overwritten with settings if found
 		for (var sampleType of Object.keys(settings.sampleTypeDefinitionsExtension)) {
 			profile.sampleTypeDefinitionsExtension[sampleType] = settings.sampleTypeDefinitionsExtension[sampleType];

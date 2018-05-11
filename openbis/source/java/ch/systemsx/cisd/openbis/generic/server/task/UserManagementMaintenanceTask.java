@@ -187,13 +187,23 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         return (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
     }
 
-    protected UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
+    private UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
     {
-        UserManager userManager = new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
-                logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+        UserManager userManager = createUserManager(logger);
         userManager.setGlobalSpaces(config.getGlobalSpaces());
-        userManager.setCommonSpacesByRole(config.getCommonSpaces());
-        userManager.setSamplesByType(config.getCommonSamples());
+        try
+        {
+            userManager.setCommon(config.getCommonSpaces(), config.getCommonSamples(), config.getCommonExperiments());
+        } catch (ConfigurationFailureException e)
+        {
+            notificationLog.error(e.getMessage());
+        }
         return userManager;
+    }
+
+    protected UserManager createUserManager(Log4jSimpleLogger logger)
+    {
+        return new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
+                logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
     }
 }

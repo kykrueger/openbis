@@ -22,7 +22,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
@@ -74,29 +77,44 @@ public class UserManagerReport
         log("ADD-USER", userId);
     }
 
-    public void reuseUser(String userId)
+    void reuseUser(String userId)
     {
         log("REUSE-USER", userId);
     }
-    
+
     void addSpace(ISpaceId spaceId)
     {
         log("ADD-SPACE", spaceId);
     }
-    
+
     void addSpaces(List<SpaceCreation> spaceCreations)
     {
         log("ADD-SPACES", spaceCreations.stream().map(SpaceCreation::getCode).collect(Collectors.toList()).toString());
+    }
+
+    void addSample(ISampleId sampleId)
+    {
+        log("ADD-SAMPLE", sampleId);
+    }
+
+    void addProject(ProjectIdentifier identifier)
+    {
+        log("ADD-PROJECT", identifier);
+    }
+
+    void addExperiment(ExperimentIdentifier identifier)
+    {
+        log("ADD-EXPERIMENT", identifier);
     }
 
     void assignRoleTo(AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)
     {
         log("ASSIGN-ROLE-TO-AUTHORIZATION-GROUP", "group: " + groupId + ", role: SPACE_" + role + " for " + spaceId);
     }
-    
-    public void unassignRoleFrom(AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)
+
+    void unassignRoleFrom(String userId, Role role, ISpaceId spaceId)
     {
-        log("UNASSIGN-ROLE-FORM-AUTHORIZATION-GROUP", "group: " + groupId + ", role: SPACE_" + role + " for " + spaceId);
+        log("UNASSIGN-ROLE-FORM-USER", "user: " + userId + ", role: SPACE_" + role + " for " + spaceId);
     }
 
     void addUserToGroup(String groupCode, String userId)
@@ -107,6 +125,17 @@ public class UserManagerReport
     void removeUserFromGroup(String groupCode, String userId)
     {
         log("REMOVE-USER-FROM-AUTHORIZATION-GROUP", "group: " + groupCode + ", user: " + userId);
+    }
+
+    void assignHomeSpace(String userId, ISpaceId spaceIdOrNull)
+    {
+        if (spaceIdOrNull == null)
+        {
+            log("REMOVE-HOME-SPACE-FROM-USER", userId);
+        } else
+        {
+            log("ASSIGN-HOME-SPACE-FOR-USER", "user: " + userId + ", home space: " + spaceIdOrNull);
+        }
     }
 
     private void log(String action, Object details)
