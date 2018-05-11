@@ -327,7 +327,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	                	
         	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
         	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
-        	                    if(!space.getCode().endsWith("STOCK_CATALOG") && !space.endsWith("STOCK_ORDERS")) {
+        	                    if(!space.getCode().endsWith("STOCK_CATALOG") && !space.getCode().endsWith("STOCK_ORDERS")) {
         	                    		results.push(spaceNode);
         	                    }
         	                }

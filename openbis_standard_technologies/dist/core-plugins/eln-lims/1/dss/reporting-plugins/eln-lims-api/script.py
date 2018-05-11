@@ -199,7 +199,7 @@ def process(tr, parameters, tableBuilder):
 	tr.setUserId(userId);
 	
 	if method == "init":
-		if PersistentKeyValueStore.get("$isELNInitDone") is None:
+		if PersistentKeyValueStore.get("$isELNInitDone") != True:
 			isOk = init(tr, parameters, tableBuilder);
 			PersistentKeyValueStore.put("$isELNInitDone", True);
 	if method == "isFileAuthUser":

@@ -4,8 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Base64;
 
-import org.docx4j.convert.in.xhtml.XHTMLImporterImpl;
+import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.CTAltChunk;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -37,6 +42,8 @@ public class DOCXBuilder {
 
 	private StringBuffer doc;
 
+	private String closedDoc;
+	
 	private boolean closed;
 
 	public DOCXBuilder() {
@@ -65,6 +72,7 @@ public class DOCXBuilder {
 			doc.append("</body>");
 			doc.append("</html>");
 			closed = true;
+			closedDoc = fixImages(doc);
 		}
 	}
 
@@ -80,7 +88,7 @@ public class DOCXBuilder {
         if (!closed)
         {
             value = cleanXMLEnvelope(value);
-            doc.append("<p>").append(fixImageSizes(value)).append("</p>");
+            doc.append("<p>").append(value).append("</p>");
         }
     }
 
@@ -100,8 +108,7 @@ public class DOCXBuilder {
 		if (!closed) {
 			endDoc();
 		}
-		String docWithImg = encodeImgAsBase64(doc.toString());
-		return docWithImg.getBytes();
+		return closedDoc.getBytes();
 	}
 
 	public byte[] getDocBytes() throws Exception {
@@ -110,16 +117,23 @@ public class DOCXBuilder {
 			endDoc();
 		}
 		
-		Document xhtmldoc = Jsoup.parse(doc.toString());
-		xhtmldoc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-		
+		// .. HTML Code
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
-		XHTMLImporterImpl XHTMLImporter = new XHTMLImporterImpl(wordMLPackage);
-		wordMLPackage.getMainDocumentPart().getContent().addAll(XHTMLImporter.convert( xhtmldoc.html(), null) );
+		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(new PartName("/hw.html"));
+		afiPart.setBinaryData(closedDoc.getBytes());
+		afiPart.setContentType(new ContentType("text/html"));
+		Relationship altChunkRel = wordMLPackage.getMainDocumentPart().addTargetPart(afiPart);
 
+		// .. the bit in document body
+		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
+		ac.setId(altChunkRel.getId());
+		wordMLPackage.getMainDocumentPart().addObject(ac);
+
+		// .. content type
+		wordMLPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		wordMLPackage.save(outStream);
-
+				
 		return outStream.toByteArray();
 	}
 	
@@ -130,11 +144,12 @@ public class DOCXBuilder {
 		return value;
 	}
 	
-	private String fixImageSizes(String value) {
-		Document doc = Jsoup.parse(value);
-		doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-		Elements elements = doc.select("img");
+	private String fixImages(StringBuffer buffer) {
+		Document jsoupDoc = Jsoup.parse(buffer.toString());
+		jsoupDoc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+		Elements elements = jsoupDoc.select("img");
 		
+		// Fixes images sizes
 		for (Element element : elements) {
 			String style = element.attr("style");
 			if (style != null) {
@@ -154,17 +169,8 @@ public class DOCXBuilder {
 					}
 				}
 			}
-		}
-		
-		return doc.html();
-	}
-	
-	private String encodeImgAsBase64(String value) {
-		Document doc = Jsoup.parse(value);
-		doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
-		Elements elements = doc.select("img");
-		
-		for (Element element : elements) {
+			
+			// Converts to Base64
 			String src = element.attr("src");
 			try {
 				element.attr("src", getDataUriFromUri(src));
@@ -173,8 +179,25 @@ public class DOCXBuilder {
 			}
 		}
 		
-		return doc.html();
+		return jsoupDoc.html();
 	}
+	
+//	private String encodeImgAsBase64(String value) {
+//		Document doc = Jsoup.parse(value);
+//		doc.outputSettings().syntax(Document.OutputSettings.Syntax.xml);
+//		Elements elements = doc.select("img");
+//		
+//		for (Element element : elements) {
+//			String src = element.attr("src");
+//			try {
+//				element.attr("src", getDataUriFromUri(src));
+//			} catch(Exception ex) {
+//				
+//			}
+//		}
+//		
+//		return doc.html();
+//	}
 	
 	private static String getDataUriFromUri(String url) throws Exception {
 		HttpClient client = JettyHttpClientFactory.getHttpClient();
