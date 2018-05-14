@@ -5,16 +5,17 @@ import ch.ethz.sis.logging.Logger;
 
 public abstract class Benchmark
 {
-    private BenchmarkConfig benchmarkConfig;
-    private static Logger logger = LogManager.getLogger(Benchmark.class);
+	protected BenchmarkConfig benchmarkConfig;
+    protected Logger logger;
     
     public void start() {
+    		logger = LogManager.getLogger(this.getClass());
     		long start = System.currentTimeMillis();
-    		logger.traceAccess("Starting Benchmark:", benchmarkConfig);
+    		logger.traceAccess(null, benchmarkConfig);
     		startInternal();
     		logger.traceExit(benchmarkConfig);
     		long end = System.currentTimeMillis();
-    		logger.info("Benchmark took: " + (end-start) + " millis", null);
+    		logger.info("Benchmark took: " + (end-start) + " millis");
     }
     public abstract void startInternal();
     
