@@ -312,12 +312,16 @@ class GitDataMgmt(AbstractDataMgmt):
         return CommandResult(returncode=0, output=output)
 
     def commit_metadata_updates(self, msg_fragment=None):
-        properties_path = self.config_resolver.local_public_properties_path()
-        status = self.git_wrapper.git_status(properties_path)
-        if len(status.output.strip()) < 1:
+        properties_paths = self.config_resolver.local_public_properties_paths()
+        total_status = ''
+        for properties_path in properties_paths:
+            status = self.git_wrapper.git_status(properties_path).output.strip()
+            total_status += status
+            if len(status) > 0:
+                self.git_wrapper.git_add(properties_path)
+        if len(total_status) < 1:
             # Nothing to commit
             return CommandResult(returncode=0, output="")
-        self.git_wrapper.git_add(properties_path)
         if msg_fragment is None:
             msg = "OBIS: Update openBIS metadata cache."
         else:
@@ -329,9 +333,10 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def restore(self):
         self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
-        properties_path = self.config_resolver.local_public_properties_path()
-        self.git_wrapper.git_checkout(properties_path)
-        self.git_wrapper.git_delete_if_untracked('.obis/properties.json')
+        properties_paths = self.config_resolver.local_public_properties_paths()
+        for properties_path in properties_paths:
+            self.git_wrapper.git_checkout(properties_path)
+            self.git_wrapper.git_delete_if_untracked(properties_path)
 
     def clone(self, data_set_id, ssh_user, content_copy_index):
         cmd = Clone(self, data_set_id, ssh_user, content_copy_index)

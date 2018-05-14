@@ -71,79 +71,6 @@ def cli(ctx, quiet, skip_verification):
         ctx.obj['verify_certificates'] = False
 
 
-@cli.command()
-@click.pass_context
-@click.argument('repository', type=click.Path(exists=True))
-def addref(ctx, repository):
-    """Add the given repository as a reference to openBIS.
-    """
-    with cd(repository):
-        data_mgmt = shared_data_mgmt(ctx.obj)
-        return check_result("addref", run(data_mgmt.addref))
-
-
-@cli.command()
-@click.pass_context
-@click.argument('repository', type=click.Path(exists=True))
-def removeref(ctx, repository):
-    """Remove the reference to the given repository from openBIS.
-    """
-    with cd(repository):
-        data_mgmt = shared_data_mgmt(ctx.obj)
-        return check_result("addref", run(data_mgmt.removeref))
-
-
-@cli.command()
-@click.pass_context
-@click.option('-u', '--ssh_user', default=None, help='User to connect to remote systems via ssh')
-@click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to clone from in case there are multiple copies')
-@click.argument('data_set_id')
-def clone(ctx, ssh_user, content_copy_index, data_set_id):
-    """Clone the repository found in the given data set id.
-    """
-    data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("clone", run(lambda: data_mgmt.clone(data_set_id, ssh_user, content_copy_index)))
-
-
-@cli.command()
-@click.pass_context
-@click.option('-m', '--msg', prompt=True, help='A message explaining what was done.')
-@click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.')
-@click.option('-i', '--ignore_missing_parent', default=True, is_flag=True, help='If parent data set is missing, ignore it.')
-def commit(ctx, msg, auto_add, ignore_missing_parent):
-    """Commit the repository to git and inform openBIS.
-    """
-    data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("commit", run(lambda: data_mgmt.commit(msg, auto_add, ignore_missing_parent)))
-
-
-@cli.command()
-@click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
-@click.option('-p', '--is_data_set_property', default=False, is_flag=True, help='Configure data set property.')
-@click.argument('prop', default="")
-@click.argument('value', default="")
-@click.pass_context
-def config(ctx, is_global, is_data_set_property, prop, value):
-    """Configure the openBIS setup.
-
-    Configure the openBIS server url, the data set type, and the data set properties.
-    """
-    data_mgmt = shared_data_mgmt(ctx.obj)
-    config_internal(data_mgmt, is_global, is_data_set_property, prop, value)
-
-
-@cli.command()
-@click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to download from.')
-@click.option('-f', '--file', help='File in the data set to download - downloading all if not given.')
-@click.argument('data_set_id')
-@click.pass_context
-def download(ctx, content_copy_index, file, data_set_id):
-    """ Download files of a linked data set.
-    """
-    data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("download", run(lambda: data_mgmt.download(data_set_id, content_copy_index, file)))
-
-
 def config_internal(data_mgmt, is_global, is_data_set_property, prop, value):
     resolver = data_mgmt.config_resolver
     if is_global:
@@ -212,6 +139,126 @@ def init_handle_cleanup(result, object_id, collection_id, folder, data_mgmt):
             return check_result("init_data", set_property(data_mgmt, 'collection_id', collection_id, False, False))
 
 
+# setting commands
+# obis [type] [get|set] [-g]? [-p]? [[key]+ | [key=value]+]?
+
+
+class GetOrSet(click.ParamType):
+    name = 'get_or_set'
+
+    def convert(self, value, param, ctx):
+        result = {}
+        result['get'] = value == 'get'
+        result['set'] = value == 'set'
+        if result['get'] == False and result['set'] == False:
+            self.fail(param=param, message='Parameter has to be \'get\' or \'set\'.')
+        return result
+
+
+class Settings(click.ParamType):
+    name = 'settings'
+
+    def convert(self, value, param, ctx):
+        print(value)
+        try:
+            properties = {}
+            split = list(filter(lambda term: len(term) > 0, value.split(',')))
+            for setting in split:
+                setting_split = setting.split('=')
+                if len(setting_split) != 2:
+                    self._fail(param)
+                key = setting_split[0]
+                value = setting_split[1]
+                properties[key] = value
+            return properties
+        except:
+            self._fail(param)
+
+    def _fail(self, param):
+            self.fail(param=param, message='Settings must be in the format: key1=value1, key2=value2, ...')
+
+
+def _join_settings(setting_dicts):
+    joined = {}
+    for setting_dict in setting_dicts:
+        for key, value in setting_dict.items():
+            joined[key] = value
+    return joined
+
+
+@cli.command()
+@click.argument('get_or_set', type=GetOrSet())
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
+@click.argument('settings', type=Settings(), nargs=-1)
+@click.pass_context
+def repository(ctx, get_or_set, is_global, settings):
+    print(get_or_set)
+    print(is_global)
+    settings_dict = _join_settings(settings)
+    print(settings_dict)
+    for prop, value in settings_dict.items():
+        config(ctx, is_global, False, prop, value)
+
+
+## repository -> properties.json
+### repository_id
+### external_dms_id
+### data_set_id
+
+## config -> config.json
+### fileservice_url
+### git_annex_hash_as_checksum
+### hostname
+### openbis_url
+### user
+### verify_certificates
+
+## object -> config.json
+### id
+
+## collection -> config.json
+### id
+
+## data_set -> config.json
+### type
+### properties
+
+
+# TODO replace by multiple commands
+@cli.command()
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
+@click.option('-p', '--is_data_set_property', default=False, is_flag=True, help='Configure data set property.')
+@click.argument('prop', default="")
+@click.argument('value', default="")
+@click.pass_context
+def config(ctx, is_global, is_data_set_property, prop, value):
+    """Configure the openBIS setup.
+
+    Configure the openBIS server url, the data set type, and the data set properties.
+    """
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    config_internal(data_mgmt, is_global, is_data_set_property, prop, value)
+
+
+# repository commands: status, sync, commit, init, addref, removeref, init_analysis
+
+
+# TODO commit from without repository
+# TODO add optional repository receiver
+@cli.command()
+@click.pass_context
+@click.option('-m', '--msg', prompt=True, help='A message explaining what was done.')
+@click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.')
+@click.option('-i', '--ignore_missing_parent', default=True, is_flag=True, help='If parent data set is missing, ignore it.')
+def commit(ctx, msg, auto_add, ignore_missing_parent):
+    """Commit the repository to git and inform openBIS.
+    """
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    return check_result("commit", run(lambda: data_mgmt.commit(msg, auto_add, ignore_missing_parent)))
+
+
+# TODO allow init from within repository
+# TODO add optional repository receiver
 @cli.command()
 @click.pass_context
 @click.option('-oi', '--object_id', help='Set the id of the owning sample.')
@@ -223,17 +270,7 @@ def init(ctx, object_id, collection_id, folder, description):
     return init_data_impl(ctx, object_id, collection_id, folder, description)
 
 
-@cli.command()
-@click.pass_context
-@click.option('-oi', '--object_id', help='Set the id of the owning sample.')
-@click.option('-ci', '--collection_id', help='Set the id of the owning experiment.')
-@click.argument('folder', type=click.Path(exists=False, file_okay=False))
-@click.argument('description', default="")
-def init_data(ctx, object_id, collection_id, folder, description):
-    """Initialize the folder as a data folder."""
-    return init_data_impl(ctx, object_id, collection_id, folder, description)
-
-
+# TODO add optional repository receiver
 @cli.command()
 @click.pass_context
 @click.option('-p', '--parent', type=click.Path(exists=False, file_okay=False))
@@ -246,6 +283,8 @@ def init_analysis(ctx, parent, object_id, collection_id, folder, description):
     return init_analysis_impl(ctx, parent, object_id, collection_id, folder, description)
 
 
+# TODO allow from without repository with repository folder as parameter
+# TODO add optional repository receiver
 @cli.command()
 @click.pass_context
 def status(ctx):
@@ -256,6 +295,8 @@ def status(ctx):
     click.echo(result.output)
 
 
+# TODO allow from without repository with repository folder as parameter
+# TODO add optional repository receiver
 @cli.command()
 @click.pass_context
 @click.option('-i', '--ignore_missing_parent', default=True, is_flag=True, help='If parent data set is missing, ignore it.')
@@ -264,6 +305,60 @@ def sync(ctx, ignore_missing_parent):
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("sync", run(lambda: data_mgmt.sync(ignore_missing_parent)))
+
+
+# TODO allow to addref from within repository without argument
+# TODO add optional repository receiver
+@cli.command()
+@click.pass_context
+@click.argument('repository', type=click.Path(exists=True))
+def addref(ctx, repository):
+    """Add the given repository as a reference to openBIS.
+    """
+    with cd(repository):
+        data_mgmt = shared_data_mgmt(ctx.obj)
+        return check_result("addref", run(data_mgmt.addref))
+
+
+# TODO allow to removeref from within repository without argument
+# TODO add optional repository receiver
+@cli.command()
+@click.pass_context
+@click.argument('repository', type=click.Path(exists=True))
+def removeref(ctx, repository):
+    """Remove the reference to the given repository from openBIS.
+    """
+    with cd(repository):
+        data_mgmt = shared_data_mgmt(ctx.obj)
+        return check_result("addref", run(data_mgmt.removeref))
+
+
+# data set commands: download / clone
+
+# TODO obis data_set? clone data_set_id
+@cli.command()
+@click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to download from.')
+@click.option('-f', '--file', help='File in the data set to download - downloading all if not given.')
+@click.argument('data_set_id')
+@click.pass_context
+def download(ctx, content_copy_index, file, data_set_id):
+    """ Download files of a linked data set.
+    """
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    return check_result("download", run(lambda: data_mgmt.download(data_set_id, content_copy_index, file)))
+
+
+# TODO obis dataset? clone data_set_id
+@cli.command()
+@click.pass_context
+@click.option('-u', '--ssh_user', default=None, help='User to connect to remote systems via ssh')
+@click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to clone from in case there are multiple copies')
+@click.argument('data_set_id')
+def clone(ctx, ssh_user, content_copy_index, data_set_id):
+    """Clone the repository found in the given data set id.
+    """
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    return check_result("clone", run(lambda: data_mgmt.clone(data_set_id, ssh_user, content_copy_index)))
 
 
 def main():

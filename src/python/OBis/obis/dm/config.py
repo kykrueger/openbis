@@ -123,7 +123,15 @@ class ConfigEnv(object):
         return True
 
 
-class PropertiesEnv(ConfigEnv):
+class DataSetEnv(ConfigEnv):
+
+    # TODO remove data_set from property names
+    def initialize_params(self):
+        self.add_param(ConfigParam(name='data_set_type', private=False))
+        self.add_param(ConfigParam(name='data_set_properties', private=False, is_json=True))        
+
+
+class RepositoryEnv(ConfigEnv):
     """ These are properties which are not configured by the user but set by obis. """
 
     def initialize_params(self):
@@ -290,7 +298,7 @@ class ConfigResolver(object):
     def __init__(self, location_resolver=None):
         self.resolvers = []
         self.resolvers.append(ConfigResolverImpl(location_resolver=location_resolver, env=ConfigEnv()))
-        self.resolvers.append(ConfigResolverImpl(location_resolver=location_resolver, env=PropertiesEnv(), config_file='properties.json'))
+        self.resolvers.append(ConfigResolverImpl(location_resolver=location_resolver, env=RepositoryEnv(), config_file='reposiory.json'))
 
     def config_dict(self, local_only=False):
         combined_dict = {}
@@ -309,10 +317,13 @@ class ConfigResolver(object):
             if json_param_name in resolver.env.params:
                 return resolver.set_value_for_json_parameter(json_param_name, name, value, loc)
 
-    def local_public_properties_path(self):
+    # TODO return a list
+    def local_public_properties_paths(self, get_usersettings=False):
+        paths = []
         for resolver in self.resolvers:
-            if not resolver.is_usersetting():
-                return resolver.local_public_properties_path()        
+            if get_usersettings == resolver.is_usersetting():
+                paths.append(resolver.local_public_properties_path())
+        return paths
 
     def copy_global_to_local(self):
         for resolver in self.resolvers:
