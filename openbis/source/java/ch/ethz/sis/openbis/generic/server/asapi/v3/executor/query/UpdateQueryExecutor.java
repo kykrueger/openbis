@@ -36,6 +36,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
+import ch.systemsx.cisd.openbis.plugin.query.server.DAO;
 
 /**
  * @author pkupczyk
@@ -84,9 +85,14 @@ public class UpdateQueryExecutor extends AbstractUpdateEntityExecutor<QueryUpdat
         {
             throw new UserFailureException("Database id cannot be null.");
         }
-        if (update.getSql() != null && update.getSql().isModified() && StringUtils.isEmpty(update.getSql().getValue()))
+        if (update.getSql() != null && update.getSql().isModified())
         {
-            throw new UserFailureException("Sql cannot be empty.");
+            if (StringUtils.isEmpty(update.getSql().getValue()))
+            {
+                throw new UserFailureException("Sql cannot be empty.");
+            }
+
+            DAO.checkQuery(update.getSql().getValue());
         }
         if (update.getQueryType() != null && update.getQueryType().isModified() && update.getQueryType().getValue() == null)
         {

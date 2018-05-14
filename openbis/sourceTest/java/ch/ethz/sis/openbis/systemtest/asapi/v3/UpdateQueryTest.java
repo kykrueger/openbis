@@ -320,6 +320,37 @@ public class UpdateQueryTest extends AbstractQueryTest
     }
 
     @Test
+    public void testUpdateWithNonSelectSql()
+    {
+        QueryCreation creation = testCreation();
+        Query query = createQuery(TEST_USER, PASSWORD, creation);
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    QueryUpdate update = new QueryUpdate();
+                    update.setQueryId(query.getPermId());
+                    update.setSql("update spaces set code = 'YOU_HAVE_BEEN_HACKED' where code = 'CISD'");
+                    updateQuery(TEST_USER, PASSWORD, update);
+                }
+            }, "Sorry, only select statements are allowed");
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    QueryUpdate update = new QueryUpdate();
+                    update.setQueryId(query.getPermId());
+                    update.setSql("select * from spaces; update spaces set code = 'YOU_HAVE_BEEN_HACKED' where code = 'CISD'");
+                    updateQuery(TEST_USER, PASSWORD, update);
+                }
+            }, "Sorry, only one query statement is allowed: A ';' somewhere in the middle has been found.");
+    }
+
+    @Test
     public void testUpdateWithDatabaseWithSpaceNullAndDefaultCreatorRoleUsingSpaceObserver()
     {
         QueryCreation creation = testCreation();
