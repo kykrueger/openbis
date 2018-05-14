@@ -296,9 +296,12 @@ class ConfigResolver(object):
     """ This class functions as a wrapper since we have multiple config resolvers. """
     
     def __init__(self, location_resolver=None):
+        self.repository_resolver = ConfigResolverImpl(location_resolver=location_resolver, env=RepositoryEnv(), config_file='repository.json')
+        # TODO remove config_resolver in the end
+        self.config_resolver = ConfigResolverImpl(location_resolver=location_resolver, env=ConfigEnv())
         self.resolvers = []
-        self.resolvers.append(ConfigResolverImpl(location_resolver=location_resolver, env=ConfigEnv()))
-        self.resolvers.append(ConfigResolverImpl(location_resolver=location_resolver, env=RepositoryEnv(), config_file='reposiory.json'))
+        self.resolvers.append(self.config_resolver)
+        self.resolvers.append(self.repository_resolver)
 
     def config_dict(self, local_only=False):
         combined_dict = {}
