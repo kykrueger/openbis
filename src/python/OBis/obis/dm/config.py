@@ -155,7 +155,7 @@ class LocationResolver(object):
         return os.path.join(root, location.basename)
 
 
-class ConfigResolverImpl(object):
+class ConfigResolver(object):
     """Construct a config dictionary."""
 
     def __init__(self, env=None, location_resolver=None, config_file='config.json'):
@@ -292,13 +292,13 @@ class ConfigResolverImpl(object):
         return self.env.is_usersetting()
 
 
-class ConfigResolver(object):
+class SettingsResolver(object):
     """ This class functions as a wrapper since we have multiple config resolvers. """
-    
+
     def __init__(self, location_resolver=None):
-        self.repository_resolver = ConfigResolverImpl(location_resolver=location_resolver, env=RepositoryEnv(), config_file='repository.json')
+        self.repository_resolver = ConfigResolver(location_resolver=location_resolver, env=RepositoryEnv(), config_file='repository.json')
         # TODO remove config_resolver in the end
-        self.config_resolver = ConfigResolverImpl(location_resolver=location_resolver, env=ConfigEnv())
+        self.config_resolver = ConfigResolver(location_resolver=location_resolver, env=ConfigEnv())
         self.resolvers = []
         self.resolvers.append(self.config_resolver)
         self.resolvers.append(self.repository_resolver)

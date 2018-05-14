@@ -72,7 +72,7 @@ def cli(ctx, quiet, skip_verification):
 
 
 def config_internal(data_mgmt, is_global, is_data_set_property, prop, value):
-    resolver = data_mgmt.config_resolver
+    resolver = data_mgmt.settings_resolver
     if is_global:
         resolver.set_location_search_order(['global'])
     else:
@@ -98,7 +98,7 @@ def config_internal(data_mgmt, is_global, is_data_set_property, prop, value):
 def set_property(data_mgmt, prop, value, is_global, is_data_set_property):
     """Helper function to implement the property setting semantics."""
     loc = 'global' if is_global else 'local'
-    resolver = data_mgmt.config_resolver
+    resolver = data_mgmt.settings_resolver
     try:
         if is_data_set_property:
             resolver.set_value_for_json_parameter('data_set_properties', prop, value, loc)
@@ -197,7 +197,33 @@ def repository(ctx, get_or_set, is_global, settings):
     settings_dict = _join_settings(settings)
     print(settings_dict)
     for prop, value in settings_dict.items():
-        config(ctx, is_global, False, prop, value)
+        data_mgmt = shared_data_mgmt(ctx.obj)
+        resolver = data_mgmt.settings_resolver.properties_resolver
+        config_internal_new(data_mgmt, resolver, is_global, False, prop, value)
+
+
+def config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, value):
+    if is_global:
+        resolver.set_location_search_order(['global'])
+    else:
+        top_level_path = data_mgmt.git_wrapper.git_top_level_path()
+        if top_level_path.success():
+            resolver.set_resolver_location_roots('data_set', top_level_path.output)
+            resolver.set_location_search_order(['local'])
+        else:
+            resolver.set_location_search_order(['global'])
+
+    config_dict = resolver.config_dict()
+    if not prop:
+        config_str = json.dumps(config_dict, indent=4, sort_keys=True)
+        click.echo("{}".format(config_str))
+    elif not value:
+        little_dict = {prop: config_dict[prop]}
+        config_str = json.dumps(little_dict, indent=4, sort_keys=True)
+        click.echo("{}".format(config_str))
+    else:
+        return check_result("config", set_property(data_mgmt, prop, value, is_global, is_data_set_property))
+
 
 
 ## repository -> properties.json

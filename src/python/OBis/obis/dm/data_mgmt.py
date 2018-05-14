@@ -32,7 +32,7 @@ from ..scripts import cli
 
 
 # noinspection PyPep8Naming
-def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config={}, openbis=None):
+def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_config={}, openbis=None):
     """Factory method for DataMgmt instances"""
 
     echo_func = echo_func if echo_func is not None else default_echo
@@ -40,16 +40,16 @@ def DataMgmt(echo_func=None, config_resolver=None, openbis_config={}, git_config
     complete_git_config(git_config)
     git_wrapper = GitWrapper(**git_config)
     if not git_wrapper.can_run():
-        return NoGitDataMgmt(config_resolver, None, git_wrapper, openbis)
+        return NoGitDataMgmt(settings_resolver, None, git_wrapper, openbis)
 
-    if config_resolver is None:
-        config_resolver = dm_config.ConfigResolver()
+    if settings_resolver is None:
+        settings_resolver = dm_config.SettingsResolver()
         result = git_wrapper.git_top_level_path()
         if result.success():
-            config_resolver.set_resolver_location_roots('data_set', result.output)
-    complete_openbis_config(openbis_config, config_resolver)
+            settings_resolver.set_resolver_location_roots('data_set', result.output)
+    complete_openbis_config(openbis_config, settings_resolver)
 
-    return GitDataMgmt(config_resolver, openbis_config, git_wrapper, openbis)
+    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis)
 
 
 class AbstractDataMgmt(metaclass=abc.ABCMeta):
@@ -58,8 +58,8 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, config_resolver, openbis_config, git_wrapper, openbis):
-        self.config_resolver = config_resolver
+    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis):
+        self.settings_resolver = settings_resolver
         self.openbis_config = openbis_config
         self.git_wrapper = git_wrapper
         self.openbis = openbis
@@ -195,9 +195,9 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def setup_local_config(self, config, path):
         with cd(path):
-            self.config_resolver.set_resolver_location_roots('data_set', '.')
+            self.settings_resolver.set_resolver_location_roots('data_set', '.')
             for key, value in config.items():
-                self.config_resolver.set_value_for_parameter(key, value, 'local')
+                self.settings_resolver.set_value_for_parameter(key, value, 'local')
 
 
     def check_repository_state(self, path):
@@ -213,11 +213,11 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def get_data_set_id(self, path):
         with cd(path):
-            return self.config_resolver.config_dict().get('data_set_id')
+            return self.settings_resolver.config_dict().get('data_set_id')
 
     def get_config(self, path, key):
         with cd(path):
-            return self.config_resolver.config_dict().get(key)
+            return self.settings_resolver.config_dict().get(key)
 
     def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:
@@ -230,8 +230,8 @@ class GitDataMgmt(AbstractDataMgmt):
             return result
         with cd(path):
             # Update the resolvers location
-            self.config_resolver.set_resolver_location_roots('data_set', '.')
-            self.config_resolver.copy_global_to_local()
+            self.settings_resolver.set_resolver_location_roots('data_set', '.')
+            self.settings_resolver.copy_global_to_local()
             self.commit_metadata_updates('local with global')
         return result
 
@@ -312,7 +312,7 @@ class GitDataMgmt(AbstractDataMgmt):
         return CommandResult(returncode=0, output=output)
 
     def commit_metadata_updates(self, msg_fragment=None):
-        properties_paths = self.config_resolver.local_public_properties_paths()
+        properties_paths = self.settings_resolver.local_public_properties_paths()
         total_status = ''
         for properties_path in properties_paths:
             status = self.git_wrapper.git_status(properties_path).output.strip()
@@ -333,7 +333,7 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def restore(self):
         self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
-        properties_paths = self.config_resolver.local_public_properties_paths()
+        properties_paths = self.settings_resolver.local_public_properties_paths()
         for properties_path in properties_paths:
             self.git_wrapper.git_checkout(properties_path)
             self.git_wrapper.git_delete_if_untracked(properties_path)

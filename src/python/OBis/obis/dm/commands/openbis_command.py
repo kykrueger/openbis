@@ -16,8 +16,8 @@ class OpenbisCommand(object):
         self.data_mgmt = dm
         self.openbis = dm.openbis
         self.git_wrapper = dm.git_wrapper
-        self.config_resolver = dm.config_resolver
-        self.config_dict = dm.config_resolver.config_dict()
+        self.settings_resolver = dm.settings_resolver
+        self.config_dict = dm.settings_resolver.config_dict()
 
         if self.openbis is None and dm.openbis_config.get('url') is not None:
             self.openbis = pybis.Openbis(**dm.openbis_config)
@@ -96,7 +96,7 @@ class OpenbisCommand(object):
         if result.failure():
             return result
         external_dms = result.output
-        self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
+        self.settings_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
         self.config_dict['external_dms_id'] = external_dms.code
         return result
 
@@ -157,7 +157,7 @@ class OpenbisCommand(object):
         """
         Use global config only.
         """
-        resolver = dm_config.ConfigResolver()
+        resolver = dm_config.SettingsResolver()
         config = {}
         complete_openbis_config(config, resolver, False)
         dm.openbis_config = config

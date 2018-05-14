@@ -71,7 +71,7 @@ class OpenbisSync(OpenbisCommand):
         repository_id = self.repository_id()
         if self.repository_id() is None:
             repository_id = str(uuid.uuid4())
-            self.config_resolver.set_value_for_parameter('repository_id', repository_id, 'local')
+            self.settings_resolver.set_value_for_parameter('repository_id', repository_id, 'local')
         return CommandResult(returncode=0, output=repository_id)
 
 
@@ -159,7 +159,7 @@ class OpenbisSync(OpenbisCommand):
         self.commit_metadata_updates()
 
         # Update data set id as last commit so we can easily revert it on failure
-        self.config_resolver.set_value_for_parameter('data_set_id', data_set_code, 'local')
+        self.settings_resolver.set_value_for_parameter('data_set_id', data_set_code, 'local')
         self.commit_metadata_updates("data set id")
 
         # create a data set, using the existing data set as a parent, if there is one
