@@ -21,11 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -51,7 +50,7 @@ public class IdentifierAttributeMappingManager
 {
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, IdentifierAttributeMappingManager.class);
 
-    private final Map<String, Attributes> attributesMap = new HashMap<String, Attributes>();
+    private List<Attributes> attributesList = new ArrayList<>();
 
     private final boolean createArchives;
 
@@ -69,34 +68,34 @@ public class IdentifierAttributeMappingManager
         if (StringUtils.isBlank(mappingFilePathOrNull))
         {
             mappingFileOrNull = null;
-        }
-        else
+        } else
         {
             mappingFileOrNull = new File(mappingFilePathOrNull);
             if (mappingFileOrNull.exists() == false)
             {
                 throw new IllegalArgumentException("Mapping file '" + mappingFileOrNull + "' does not exist.");
             }
-            getAttributesMap(); // loads and validates mapping data
+            getAttributesList(); // loads and validates mapping data
         }
     }
 
-    private Map<String, Attributes> getAttributesMap()
+    private List<Attributes> getAttributesList()
     {
         if (mappingFileOrNull != null)
         {
             long lastModified = mappingFileOrNull.lastModified();
             if (lastModified != mappingFileLastModified)
             {
-                loadMappingFile(mappingFileOrNull);
+                attributesList = loadMappingFile(mappingFileOrNull);
                 mappingFileLastModified = lastModified;
             }
         }
-        return attributesMap;
+        return attributesList;
     }
 
-    private void loadMappingFile(File mappingFile)
+    private List<Attributes> loadMappingFile(File mappingFile)
     {
+        List<Attributes> newAttributesList = new ArrayList<>();
         CsvReader reader = null;
         try
         {
@@ -122,17 +121,15 @@ public class IdentifierAttributeMappingManager
                     throw new IllegalArgumentException("Invalid number of row elements in mapping file '"
                             + mappingFile + "': " + Arrays.asList(row));
                 }
-                String identifier = row[0].toUpperCase();
-                String shareID = row[1];
-                if (StringUtils.isBlank(shareID))
-                {
-                    shareID = null;
-                }
-                List<String> shareIds = getShareIds(identifier, row);
-                ArchiveFolders archiveFolders = getArchiveFolders(identifier, row);
-                attributesMap.put(identifier, new Attributes(shareIds, archiveFolders));
+                Pattern identifierPattern = getIdentifierPattern(row[0]);
+                List<String> shareIds = getShareIds(row[1]);
+                ArchiveFolders archiveFolders = getArchiveFolder(row[2]);
+                Attributes attributes = new Attributes(identifierPattern, shareIds, archiveFolders);
+                newAttributesList.add(attributes);
             }
+            attributesList = newAttributesList;
             operationLog.info("Mapping file '" + mappingFile + "' successfully loaded.");
+            return newAttributesList;
         } catch (Exception ex)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(ex);
@@ -157,27 +154,31 @@ public class IdentifierAttributeMappingManager
         return true;
     }
 
-    private ArchiveFolders getArchiveFolders(String identifier, String[] row)
+    private Pattern getIdentifierPattern(String regex)
     {
-        if (StringUtils.isBlank(row[2]))
+        return Pattern.compile(StringUtils.isBlank(regex) ? ".*" : regex.toUpperCase());
+    }
+
+    private ArchiveFolders getArchiveFolder(String folders)
+    {
+        if (StringUtils.isBlank(folders))
         {
             return null;
         } else
         {
-            String[] folderPaths = row[2].split(",");
+            String[] folderPaths = folders.split(",");
             return ArchiveFolders.create(folderPaths, createArchives, smallDataSetsSizeLimit);
         }
     }
 
-    private List<String> getShareIds(String identifier, String[] row)
+    private List<String> getShareIds(String shareIds)
     {
-        String idsAttribute = row[1];
         List<String> ids = new ArrayList<String>();
-        if (StringUtils.isBlank(idsAttribute))
+        if (StringUtils.isBlank(shareIds))
         {
             return ids;
         }
-        String[] splittedIds = idsAttribute.split(",");
+        String[] splittedIds = shareIds.split(",");
         for (String id : splittedIds)
         {
             ids.add(id.trim());
@@ -188,7 +189,7 @@ public class IdentifierAttributeMappingManager
     public Collection<File> getAllFolders()
     {
         Set<File> folders = new HashSet<File>();
-        for (Attributes attributes : getAttributesMap().values())
+        for (Attributes attributes : getAttributesList())
         {
             ArchiveFolders archiveFolders = attributes.getArchiveFolders();
 
@@ -275,7 +276,7 @@ public class IdentifierAttributeMappingManager
             return null;
         }
         String identifier = new ExperimentIdentifier(spaceCode, projectCode, experimentCode).toString();
-        return getAttributesMap().get(identifier);
+        return tryGetAttributes(identifier);
     }
 
     private Attributes tryGetProjectAttributes(String spaceCode, String projectCode)
@@ -285,25 +286,45 @@ public class IdentifierAttributeMappingManager
             return null;
         }
         String identifier = new ProjectIdentifier(spaceCode, projectCode).toString();
-        return getAttributesMap().get(identifier);
+        return tryGetAttributes(identifier);
     }
 
     private Attributes tryGetSpaceAttributes(String spaceCode)
     {
-        return getAttributesMap().get(new SpaceIdentifier(spaceCode).toString());
+        return tryGetAttributes(new SpaceIdentifier(spaceCode).toString());
+    }
+
+    private Attributes tryGetAttributes(String identifier)
+    {
+
+        for (Attributes attributes : getAttributesList())
+        {
+            if (attributes.getIdentifierPattern().matcher(identifier).matches())
+            {
+                return attributes;
+            }
+        }
+        return null;
     }
 
     private static final class Attributes
     {
+        private final Pattern identifierPattern;
 
         private final ArchiveFolders archiveFolders;
 
         private final List<String> shareIds;
 
-        Attributes(List<String> shareIds, ArchiveFolders archiveFolders)
+        Attributes(Pattern identifierPattern, List<String> shareIds, ArchiveFolders archiveFolders)
         {
+            this.identifierPattern = identifierPattern;
             this.shareIds = shareIds;
             this.archiveFolders = archiveFolders;
+        }
+
+        public Pattern getIdentifierPattern()
+        {
+            return identifierPattern;
         }
 
         public List<String> getShareIds()
