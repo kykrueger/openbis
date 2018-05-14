@@ -218,4 +218,30 @@ public class CreateQueryTest extends AbstractQueryTest
             }, "Sql cannot be empty");
     }
 
+    @Test
+    public void testCreateWithNonSelectSql()
+    {
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    QueryCreation creation = testCreation();
+                    creation.setSql("update spaces set code = 'YOU_HAVE_BEEN_HACKED' where code = 'CISD'");
+                    createQuery(TEST_USER, PASSWORD, creation);
+                }
+            }, "Sorry, only select statements are allowed");
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    QueryCreation creation = testCreation();
+                    creation.setSql("select * from spaces; update spaces set code = 'YOU_HAVE_BEEN_HACKED' where code = 'CISD'");
+                    createQuery(TEST_USER, PASSWORD, creation);
+                }
+            }, "Sorry, only one query statement is allowed: A ';' somewhere in the middle has been found.");
+    }
+
 }

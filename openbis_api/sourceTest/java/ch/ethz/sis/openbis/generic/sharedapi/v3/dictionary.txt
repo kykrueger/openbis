@@ -2194,6 +2194,8 @@ with Entity Type Code Pattern
 with Parameters
 with Query Type
 with Sql
+get Database Label
+set Database Label
 
 get Data Set Types
 Get Data Set Types Operation

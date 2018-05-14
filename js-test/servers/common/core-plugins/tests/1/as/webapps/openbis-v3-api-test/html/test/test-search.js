@@ -1897,7 +1897,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			creation.setName(c.generateId("query"));
 			creation.setDatabaseId(new c.QueryDatabaseName("openbisDB"));
 			creation.setQueryType(c.QueryType.GENERIC);
-			creation.setSql("some sql");
+			creation.setSql("select * from spaces");
 
 			var fSearch = function(facade) {
 				return facade.createQueries([creation]).then(function(techIds) {
@@ -1922,7 +1922,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			creation.setName(c.generateId("query"));
 			creation.setDatabaseId(new c.QueryDatabaseName("openbisDB"));
 			creation.setQueryType(c.QueryType.GENERIC);
-			creation.setSql("some sql");
+			creation.setSql("select * from spaces");
 
 			var fSearch = function(facade) {
 				return facade.createQueries([creation]).then(function(techIds) {
@@ -1948,7 +1948,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			creation.setDatabaseId(new c.QueryDatabaseName("openbisDB"));
 			creation.setQueryType(c.QueryType.EXPERIMENT);
 			creation.setEntityTypeCodePattern(c.generateId("pattern"))
-			creation.setSql("some sql");
+			creation.setSql("select * from experiments where perm_id = ${key}");
 			
 			var fSearch = function(facade) {
 				return facade.createQueries([creation]).then(function(techIds) {

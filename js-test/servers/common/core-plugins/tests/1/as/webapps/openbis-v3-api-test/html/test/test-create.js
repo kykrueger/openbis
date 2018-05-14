@@ -841,7 +841,8 @@ define(
 						c.assertNotNull(query.getPermId(), "Perm Id");
 						c.assertEqual(query.getName(), queryCreation.getName(), "Name");
 						c.assertEqual(query.getDescription(), queryCreation.getDescription(), "Description");
-						c.assertEqual(query.getDatabaseId().getName(), queryCreation.getDatabaseId().getName(), "Database");
+						c.assertEqual(query.getDatabaseId().getName(), queryCreation.getDatabaseId().getName(), "Database id");
+						c.assertEqual(query.getDatabaseLabel(), "openBIS meta data", "Database label");
 						c.assertEqual(query.getQueryType(), queryCreation.getQueryType(), "Query type");
 						c.assertEqual(query.getEntityTypeCodePattern(), queryCreation.getEntityTypeCodePattern(), "Entity type code pattern");
 						c.assertEqual(query.getSql(), queryCreation.getSql(), "Sql");
