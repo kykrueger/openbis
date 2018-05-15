@@ -24,8 +24,7 @@ class OpenbisSync(OpenbisCommand):
         if self.data_set_type() is None:
             missing_config_settings.append('data_set type')
         if self.object_id() is None and self.collection_id() is None:
-            missing_config_settings.append('object_id')
-            missing_config_settings.append('collection_id')
+            missing_config_settings.append('object id or collection id')
         if len(missing_config_settings) > 0:
             return CommandResult(returncode=-1,
                                  output="Missing configuration settings for {}.".format(missing_config_settings))
@@ -71,7 +70,7 @@ class OpenbisSync(OpenbisCommand):
         repository_id = self.repository_id()
         if self.repository_id() is None:
             repository_id = str(uuid.uuid4())
-            self.settings_resolver.repository_resolver.set_value_for_parameter('repository_id', repository_id, 'local')
+            self.settings_resolver.repository_resolver.set_value_for_parameter('id', repository_id, 'local')
         return CommandResult(returncode=0, output=repository_id)
 
 

@@ -217,7 +217,7 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def get_repository_id(self, path):
         with cd(path):
-            return self.settings_resolver.repository_resolver.config_dict().get('repository_id')
+            return self.settings_resolver.repository_resolver.config_dict().get('id')
 
     def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:

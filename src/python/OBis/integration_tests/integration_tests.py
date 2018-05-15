@@ -57,11 +57,11 @@ def test_obis(tmpdir):
             result = cmd('obis status')
             assert '?? .obis/config.json' in result
             assert '?? file' in result
-            cmd('obis object set object_id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
-            assert len(settings['repository']['repository_id']) == 36
+            assert len(settings['repository']['id']) == 36
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data1')
@@ -75,7 +75,7 @@ def test_obis(tmpdir):
             assert settings['repository']['data_set_id'] != settings_before['repository']['data_set_id']
             assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
             assert settings['repository']['external_dms_id'] == settings_before['repository']['external_dms_id']
-            assert settings['repository']['repository_id'] == settings_before['repository']['repository_id']
+            assert settings['repository']['id'] == settings_before['repository']['id']
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             result = cmd('git annex info big_file')
             assert 'file: big_file' in result
@@ -88,15 +88,15 @@ def test_obis(tmpdir):
         output_buffer = '=================== 4. Second repository ===================\n'
         cmd('obis init data2')
         with cd('data2'):
-            cmd('obis object set object_id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/DEFAULT/DEFAULT')
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
             with cd('../data1'): settings_data1 = get_settings()
             settings = get_settings()
             assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
             assert settings['repository']['external_dms_id'] == settings_data1['repository']['external_dms_id']
-            assert len(settings['repository']['repository_id']) == 36
-            assert settings['repository']['repository_id'] != settings_data1['repository']['repository_id']
+            assert len(settings['repository']['id']) == 36
+            assert settings['repository']['id'] != settings_data1['repository']['id']
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data2')
@@ -106,15 +106,15 @@ def test_obis(tmpdir):
     with cd(tmpdir + '/obis_data_b'):
         cmd('obis init data3')
         with cd('data3'):
-            cmd('obis object set object_id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/DEFAULT/DEFAULT')
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
             with cd('../../obis_data/data1'): settings_data1 = get_settings()
             settings = get_settings()
             assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
             assert settings['repository']['external_dms_id'] != settings_data1['repository']['external_dms_id']
-            assert len(settings['repository']['repository_id']) == 36
-            assert settings['repository']['repository_id'] != settings_data1['repository']['repository_id']
+            assert len(settings['repository']['id']) == 36
+            assert settings['repository']['id'] != settings_data1['repository']['id']
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data_b/data3')
@@ -125,10 +125,10 @@ def test_obis(tmpdir):
         with cd('data4'):
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
-            assert 'Missing configuration settings for [\'object_id\', \'collection_id\'].' in result
+            assert 'Missing configuration settings for [\'object id or collection id\'].' in result
             result = cmd('obis status')
             assert '?? file' in result
-            cmd('obis object set object_id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
@@ -139,11 +139,11 @@ def test_obis(tmpdir):
         cmd('obis init data5')
         with cd('data5'):
             cmd('touch file')
-            cmd('obis collection set collection_id=/DEFAULT/DEFAULT/DEFAULT')
+            cmd('obis collection set id=/DEFAULT/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
-            assert len(settings['repository']['repository_id']) == 36
+            assert len(settings['repository']['id']) == 36
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data5')
@@ -178,15 +178,15 @@ def test_obis(tmpdir):
         output_buffer = '=================== 11. Init analysis ===================\n'
         cmd('obis init_analysis -p data1 analysis1')
         with cd('analysis1'):
-            cmd('obis object set object_id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/DEFAULT/DEFAULT')
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
         with cd('data1'): settings_data1 = get_settings()
         with cd('analysis1'):
             settings_analysis1 = get_settings()
             assert "Created data set {}.".format(settings_analysis1['repository']['data_set_id']) in result
-            assert len(settings_analysis1['repository']['repository_id']) == 36
-            assert settings_analysis1['repository']['repository_id'] != settings_data1['repository']['repository_id']
+            assert len(settings_analysis1['repository']['id']) == 36
+            assert settings_analysis1['repository']['id'] != settings_data1['repository']['id']
             assert settings_analysis1['repository']['data_set_id'] != settings_data1['repository']['data_set_id']
             data_set = o.get_dataset(settings_analysis1['repository']['data_set_id']).data
             assert_matching(settings_analysis1, data_set, tmpdir, 'obis_data/analysis1')
@@ -194,13 +194,13 @@ def test_obis(tmpdir):
         with cd('data1'):
             cmd('obis init_analysis analysis2')
             with cd('analysis2'):
-                cmd('obis object set object_id=/DEFAULT/DEFAULT')
+                cmd('obis object set id=/DEFAULT/DEFAULT')
                 cmd('touch file')
                 result = cmd('obis commit -m \'commit-message\'')
                 settings_analysis2 = get_settings()
                 assert "Created data set {}.".format(settings_analysis2['repository']['data_set_id']) in result
-                assert len(settings_analysis2['repository']['repository_id']) == 36
-                assert settings_analysis2['repository']['repository_id'] != settings_data1['repository']['repository_id']
+                assert len(settings_analysis2['repository']['id']) == 36
+                assert settings_analysis2['repository']['id'] != settings_data1['repository']['id']
                 assert settings_analysis2['repository']['data_set_id'] != settings_data1['repository']['data_set_id']
                 data_set = o.get_dataset(settings_analysis2['repository']['data_set_id']).data
                 assert_matching(settings_analysis2, data_set, tmpdir, 'obis_data/data1/analysis2')
@@ -211,14 +211,14 @@ def test_obis(tmpdir):
         output_buffer = '=================== 12. Metadata only commit ===================\n'
         cmd('obis init data7')
         with cd('data7'):
-            cmd('obis object set object_id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/DEFAULT/DEFAULT')
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data7')
-            cmd('obis collection set collection_id=/DEFAULT/DEFAULT/DEFAULT')
+            cmd('obis collection set id=/DEFAULT/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
@@ -272,7 +272,7 @@ def test_obis(tmpdir):
         cmd('obis init data10')
         with cd('data10'):
             cmd('touch file')
-            cmd('obis object set object_id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/DEFAULT/DEFAULT')
             # use MD5 form git annex by default
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
@@ -298,7 +298,7 @@ def test_obis(tmpdir):
         cmd('obis init data9')
         with cd('data9'):
             cmd('touch file')
-            cmd('obis object set object_id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
@@ -354,8 +354,8 @@ def assert_matching(settings, data_set, tmpdir, path):
     assert data_set['type']['code'] == settings['data_set']['type']
     assert content_copy['externalDms']['code'] == settings['repository']['external_dms_id']
     assert content_copy['gitCommitHash'] == cmd('git rev-parse --short HEAD')
-    assert content_copy['gitRepositoryId'] == settings['repository']['repository_id']
-    if settings['object']['object_id'] is not None:
-        assert data_set['sample']['identifier']['identifier'] == settings['object']['object_id']
-    if settings['collection']['collection_id'] is not None:
-        assert data_set['experiment']['identifier']['identifier'] == settings['collection']['collection_id']
+    assert content_copy['gitRepositoryId'] == settings['repository']['id']
+    if settings['object']['id'] is not None:
+        assert data_set['sample']['identifier']['identifier'] == settings['object']['id']
+    if settings['collection']['id'] is not None:
+        assert data_set['experiment']['identifier']['identifier'] == settings['collection']['id']

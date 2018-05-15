@@ -34,10 +34,10 @@ class OpenbisCommand(object):
         self.config_dict['repository']['external_dms_id'] = value
 
     def repository_id(self):
-        return self.config_dict['repository']['repository_id']
+        return self.config_dict['repository']['id']
 
     def set_repository_id(self, value):
-        self.config_dict['repository']['repository_id'] = value
+        self.config_dict['repository']['id'] = value
 
     def data_set_id(self):
         return self.config_dict['repository']['data_set_id']
@@ -58,16 +58,16 @@ class OpenbisCommand(object):
         self.config_dict['data_set']['properties'] = value
 
     def object_id(self):
-        return self.config_dict['object']['object_id']
+        return self.config_dict['object']['id']
 
     def set_object_id(self, value):
-        self.config_dict['object']['object_id'] = value
+        self.config_dict['object']['id'] = value
 
     def collection_id(self):
-        return self.config_dict['collection']['collection_id']
+        return self.config_dict['collection']['id']
 
     def set_collection_id(self, value):
-        self.config_dict['collection']['collection_id'] = value
+        self.config_dict['collection']['id'] = value
 
     def user(self):
         return self.config_dict['config']['user']

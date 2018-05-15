@@ -122,13 +122,13 @@ class ConfigEnv(object):
 class CollectionEnv(ConfigEnv):
 
     def initialize_params(self):
-        self.add_param(ConfigParam(name='collection_id', private=False, ignore_global=True))
+        self.add_param(ConfigParam(name='id', private=False, ignore_global=True))
 
 
 class ObjectEnv(ConfigEnv):
 
     def initialize_params(self):
-        self.add_param(ConfigParam(name='object_id', private=False, ignore_global=True))
+        self.add_param(ConfigParam(name='id', private=False, ignore_global=True))
 
 
 class DataSetEnv(ConfigEnv):
@@ -142,9 +142,8 @@ class RepositoryEnv(ConfigEnv):
     """ These are properties which are not configured by the user but set by obis. """
 
     def initialize_params(self):
+        self.add_param(ConfigParam(name='id', private=True))
         self.add_param(ConfigParam(name='external_dms_id', private=True))
-        # TODO remove repository_
-        self.add_param(ConfigParam(name='repository_id', private=True))
         self.add_param(ConfigParam(name='data_set_id', private=False))
 
     def is_usersetting(self):

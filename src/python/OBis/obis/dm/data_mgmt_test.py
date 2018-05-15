@@ -153,7 +153,7 @@ def test_child_data_set(tmpdir):
         child_ds_code = dm.settings_resolver.config_dict()['repository']['data_set_id']
         assert parent_ds_code != child_ds_code
         commit_id = dm.git_wrapper.git_commit_hash().output
-        repository_id = dm.settings_resolver.config_dict()['repository']['repository_id']
+        repository_id = dm.settings_resolver.config_dict()['repository']['id']
         assert repository_id is not None
 
         contents = git.GitRepoFileInfo(dm.git_wrapper).contents(git_annex_hash_as_checksum=True)
@@ -230,7 +230,7 @@ def test_init_analysis(tmpdir):
             child_ds_code = dm.settings_resolver.config_dict()['repository']['data_set_id']
             assert parent_ds_code != child_ds_code
             commit_id = dm.git_wrapper.git_commit_hash().output
-            repository_id = dm.settings_resolver.config_dict()['repository']['repository_id']
+            repository_id = dm.settings_resolver.config_dict()['repository']['id']
             assert repository_id is not None
 
             contents = git.GitRepoFileInfo(dm.git_wrapper).contents(git_annex_hash_as_checksum=True)
@@ -245,7 +245,7 @@ def set_registration_configuration(dm, properties=None):
     resolver.config_resolver.set_value_for_parameter('openbis_url', "http://localhost:8888", 'local')
     resolver.config_resolver.set_value_for_parameter('user', "auser", 'local')
     resolver.data_set_resolver.set_value_for_parameter('type', "DS_TYPE", 'local')
-    resolver.object_resolver.set_value_for_parameter('object_id', "/SAMPLE/ID", 'local')
+    resolver.object_resolver.set_value_for_parameter('id', "/SAMPLE/ID", 'local')
     if properties is not None:
         resolver.data_set_resolver.set_value_for_parameter('properties', properties, 'local')
 

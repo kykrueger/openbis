@@ -110,10 +110,10 @@ def init_handle_cleanup(result, object_id, collection_id, folder, data_mgmt):
     with dm.cd(folder):
         if object_id:
             resolver = data_mgmt.object_resolver
-            return check_result("init_data", set_property(data_mgmt, resolver, 'object_id', object_id, False, False))
+            return check_result("init_data", set_property(data_mgmt, resolver, 'id', object_id, False, False))
         if collection_id:
             resolver = data_mgmt.collection_resolver
-            return check_result("init_data", set_property(data_mgmt, resolver, 'collection_id', collection_id, False, False))
+            return check_result("init_data", set_property(data_mgmt, resolver, 'id', collection_id, False, False))
 
 
 # settings commands
