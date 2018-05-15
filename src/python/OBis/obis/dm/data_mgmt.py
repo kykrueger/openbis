@@ -213,11 +213,11 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def get_data_set_id(self, path):
         with cd(path):
-            return self.settings_resolver.repository_resolver.config_dict().get('data_set_id')
+            return self.settings_resolver.repository.config_dict().get('data_set_id')
 
     def get_repository_id(self, path):
         with cd(path):
-            return self.settings_resolver.repository_resolver.config_dict().get('id')
+            return self.settings_resolver.repository.config_dict().get('id')
 
     def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:
@@ -258,7 +258,7 @@ class GitDataMgmt(AbstractDataMgmt):
             return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
         # set data_set_id to analysis repository so it will be used as parent when committing
         with cd(path):
-            cli.set_property(self, self.settings_resolver.repository_resolver, "data_set_id", parent_data_set_id, False, False)
+            cli.set_property(self, self.settings_resolver.repository, "data_set_id", parent_data_set_id, False, False)
         return result
 
 

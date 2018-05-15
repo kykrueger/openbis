@@ -135,7 +135,7 @@ class OpenbisCommand(object):
         if result.failure():
             return result
         external_dms = result.output
-        self.settings_resolver.repository_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
+        self.settings_resolver.repository.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
         self.set_external_dms_id(external_dms.code)
         return result
 

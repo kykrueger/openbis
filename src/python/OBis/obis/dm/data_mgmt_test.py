@@ -242,12 +242,12 @@ def test_init_analysis(tmpdir):
 
 def set_registration_configuration(dm, properties=None):
     resolver = dm.settings_resolver
-    resolver.config_resolver.set_value_for_parameter('openbis_url', "http://localhost:8888", 'local')
-    resolver.config_resolver.set_value_for_parameter('user', "auser", 'local')
-    resolver.data_set_resolver.set_value_for_parameter('type', "DS_TYPE", 'local')
-    resolver.object_resolver.set_value_for_parameter('id', "/SAMPLE/ID", 'local')
+    resolver.config.set_value_for_parameter('openbis_url', "http://localhost:8888", 'local')
+    resolver.config.set_value_for_parameter('user', "auser", 'local')
+    resolver.data_set.set_value_for_parameter('type', "DS_TYPE", 'local')
+    resolver.object.set_value_for_parameter('id', "/SAMPLE/ID", 'local')
     if properties is not None:
-        resolver.data_set_resolver.set_value_for_parameter('properties', properties, 'local')
+        resolver.data_set.set_value_for_parameter('properties', properties, 'local')
 
 
 def prepare_registration_expectations(dm):

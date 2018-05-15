@@ -109,10 +109,10 @@ def init_handle_cleanup(result, object_id, collection_id, folder, data_mgmt):
         return check_result("init_data", result)
     with dm.cd(folder):
         if object_id:
-            resolver = data_mgmt.object_resolver
+            resolver = data_mgmt.object
             return check_result("init_data", set_property(data_mgmt, resolver, 'id', object_id, False, False))
         if collection_id:
-            resolver = data_mgmt.collection_resolver
+            resolver = data_mgmt.collection
             return check_result("init_data", set_property(data_mgmt, resolver, 'id', collection_id, False, False))
 
 
@@ -272,7 +272,7 @@ def repository(ctx, is_global):
     """
     ctx.obj['is_global'] = is_global
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
-    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.repository_resolver
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.repository
 
 
 @repository.command('set')
@@ -302,7 +302,7 @@ def data_set(ctx, is_global, is_data_set_property):
     ctx.obj['is_global'] = is_global
     ctx.obj['is_data_set_property'] = is_data_set_property
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
-    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.data_set_resolver
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.data_set
 
 
 @data_set.command('set')
@@ -330,7 +330,7 @@ def object(ctx, is_global):
     """
     ctx.obj['is_global'] = is_global
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
-    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.object_resolver
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.object
 
 
 @object.command('set')
@@ -358,7 +358,7 @@ def collection(ctx, is_global):
     """
     ctx.obj['is_global'] = is_global
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
-    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.collection_resolver
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.collection
 
 
 @collection.command('set')
@@ -386,7 +386,7 @@ def config(ctx, is_global):
     """
     ctx.obj['is_global'] = is_global
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
-    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.config_resolver
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.config
 
 
 @config.command('set')

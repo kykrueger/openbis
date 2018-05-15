@@ -38,7 +38,7 @@ def configure_resolver_for_test(resolver, tmpdir):
 
 def test_read_config(tmpdir):
     copy_user_config_test_data(tmpdir)
-    resolver = config.SettingsResolver().config_resolver
+    resolver = config.SettingsResolver().config
     configure_resolver_for_test(resolver, tmpdir)
     config_dict = resolver.config_dict()
     assert config_dict is not None
@@ -50,7 +50,7 @@ def test_read_config(tmpdir):
 
 def test_write_config(tmpdir):
     copy_user_config_test_data(tmpdir)
-    resolver = config.SettingsResolver().config_resolver
+    resolver = config.SettingsResolver().config
     configure_resolver_for_test(resolver, tmpdir)
     config_dict = resolver.config_dict()
     assert config_dict is not None
