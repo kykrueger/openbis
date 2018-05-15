@@ -24,7 +24,7 @@ class Addref(OpenbisCommand):
 
 
     def update_external_dms_id(self):
-        self.config_dict['external_dms_id'] = None
+        self.set_external_dms_id(None)
         self.prepare_external_dms()
 
 

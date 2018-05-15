@@ -213,11 +213,11 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def get_data_set_id(self, path):
         with cd(path):
-            return self.settings_resolver.config_dict().get('data_set_id')
+            return self.settings_resolver.repository_resolver.config_dict().get('data_set_id')
 
-    def get_config(self, path, key):
+    def get_repository_id(self, path):
         with cd(path):
-            return self.settings_resolver.config_dict().get(key)
+            return self.settings_resolver.repository_resolver.config_dict().get('repository_id')
 
     def init_data(self, path, desc=None, create=True, apply_config=False):
         if not os.path.exists(path) and create:
@@ -242,7 +242,7 @@ class GitDataMgmt(AbstractDataMgmt):
         parent_folder = parent if parent is not None and len(parent) > 0 else "."
         parent_data_set_id = self.get_data_set_id(parent_folder)
         # check that parent repository has been added to openBIS
-        if self.get_config(parent_folder, 'repository_id') is None:
+        if self.get_repository_id(parent_folder) is None:
             return CommandResult(returncode=-1, output="Parent data set must be committed to openBIS before creating an analysis data set.")
         # check that analysis repository does not already exist
         if os.path.exists(path):

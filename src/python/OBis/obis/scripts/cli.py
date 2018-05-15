@@ -256,12 +256,7 @@ def settings(ctx, is_global):
 @click.pass_context
 def settings_get(ctx):
     data_mgmt = shared_data_mgmt(ctx.obj)
-    settings = {}
-    for resolver in data_mgmt.settings_resolver.resolvers:
-        if ctx.obj['is_global']:
-            resolver.set_location_search_order(['global'])
-        key = resolver.config_file.split('.')[0]
-        settings[key] = resolver.config_dict()
+    settings = data_mgmt.settings_resolver.config_dict()
     settings_str = json.dumps(settings, indent=4, sort_keys=True)
     click.echo("{}".format(settings_str))
 

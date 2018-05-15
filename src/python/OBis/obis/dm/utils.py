@@ -6,7 +6,7 @@ from .command_result import CommandResult, CommandException
 
 def complete_openbis_config(config, resolver, local_only=True):
     """Add default values for empty entries in the config."""
-    config_dict = resolver.config_dict(local_only)
+    config_dict = resolver.config_resolver.config_dict(local_only)
     if config.get('url') is None:
         config['url'] = config_dict['openbis_url']
     if config.get('verify_certificates') is None:

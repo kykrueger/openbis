@@ -310,6 +310,7 @@ class ConfigResolver(object):
 class SettingsResolver(object):
     """ This class functions as a wrapper since we have multiple config resolvers. """
     # TODO make sure all methods work with this and individual resolvers
+    # TODO search for properties.json and config.json - they should only be mentioned in this file
     def __init__(self, location_resolver=None):
         self.repository_resolver = ConfigResolver(location_resolver=location_resolver, env=RepositoryEnv(), config_file='repository.json')
         self.data_set_resolver = ConfigResolver(location_resolver=location_resolver, env=DataSetEnv(), config_file='data_set.json')
@@ -326,7 +327,8 @@ class SettingsResolver(object):
     def config_dict(self, local_only=False):
         combined_dict = {}
         for resolver in self.resolvers:
-            combined_dict.update(resolver.config_dict(local_only=local_only))
+            key = resolver.config_file.split('.')[0]
+            combined_dict[key] = resolver.config_dict(local_only=local_only)
         return combined_dict
 
     def set_value_for_parameter(self, name, value, loc):

@@ -28,37 +28,76 @@ class OpenbisCommand(object):
 
 
     def external_dms_id(self):
-        return self.config_dict.get('external_dms_id')
+        return self.config_dict['repository']['external_dms_id']
+
+    def set_external_dms_id(self, value):
+        self.config_dict['repository']['external_dms_id'] = value
 
     def repository_id(self):
-        return self.config_dict.get('repository_id')
+        return self.config_dict['repository']['repository_id']
 
-    def data_set_type(self):
-        return self.config_dict.get('data_set_type')
+    def set_repository_id(self, value):
+        self.config_dict['repository']['repository_id'] = value
 
     def data_set_id(self):
-        return self.config_dict.get('data_set_id')
+        return self.config_dict['repository']['data_set_id']
+
+    def set_data_set_id(self, value):
+        self.config_dict['repository']['data_set_id'] = value
+
+    def data_set_type(self):
+        return self.config_dict['data_set']['data_set_type']
+
+    def set_data_set_type(self, value):
+        self.config_dict['data_set']['data_set_type'] = value
 
     def data_set_properties(self):
-        return self.config_dict.get('data_set_properties')
+        return self.config_dict['data_set']['data_set_properties']
+
+    def set_data_set_properties(self, value):
+        self.config_dict['data_set']['data_set_properties'] = value
 
     def object_id(self):
-        return self.config_dict.get('object_id')
+        return self.config_dict['object']['object_id']
+
+    def set_object_id(self, value):
+        self.config_dict['object']['object_id'] = value
 
     def collection_id(self):
-        return self.config_dict.get('collection_id')
+        return self.config_dict['collection']['collection_id']
+
+    def set_collection_id(self, value):
+        self.config_dict['collection']['collection_id'] = value
 
     def user(self):
-        return self.config_dict.get('user')
+        return self.config_dict['config']['user']
+
+    def set_user(self, value):
+        self.config_dict['config']['user'] = value
 
     def hostname(self):
-        return self.config_dict.get('hostname')
+        return self.config_dict['config']['hostname']
+
+    def set_hostname(self, value):
+        self.config_dict['config']['hostname'] = value
 
     def fileservice_url(self):
-        return self.config_dict.get('fileservice_url')
+        return self.config_dict['config']['fileservice_url']
+
+    def set_fileservice_url(self, value):
+        self.config_dict['config']['fileservice_url'] = value
 
     def git_annex_hash_as_checksum(self):
-        return self.config_dict.get('git_annex_hash_as_checksum')
+        return self.config_dict['config']['git_annex_hash_as_checksum']
+
+    def set_git_annex_hash_as_checksum(self, value):
+        self.config_dict['config']['git_annex_hash_as_checksum'] = value
+
+    def openbis_url(self):
+        return self.config_dict['config']['openbis_url']
+
+    def set_openbis_url(self, value):
+        self.config_dict['config']['openbis_url'] = value
 
     def prepare_run(self):
         result = self.check_configuration()
@@ -86,7 +125,7 @@ class OpenbisCommand(object):
         try:
             self.openbis.login(user, passwd, save_token=True)
         except ValueError:
-            msg = "Could not log into openbis {}".format(self.config_dict['openbis_url'])
+            msg = "Could not log into openbis {}".format(self.openbis_url())
             return CommandResult(returncode=-1, output=msg)
         return CommandResult(returncode=0, output='')
 
@@ -97,7 +136,7 @@ class OpenbisCommand(object):
             return result
         external_dms = result.output
         self.settings_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
-        self.config_dict['external_dms_id'] = external_dms.code
+        self.set_external_dms_id(external_dms.code)
         return result
 
     def generate_external_data_management_system_code(self, user, hostname, edms_path):
