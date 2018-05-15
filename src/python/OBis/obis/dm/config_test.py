@@ -45,8 +45,7 @@ def test_read_config(tmpdir):
     with open(os.path.join(user_config_test_data_path(), ".obis", "config.json")) as f:
         expected_dict = json.load(f)
     assert config_dict['user'] == expected_dict['user']
-
-    assert './.obis/repository.json' in resolver.local_public_properties_path()
+    assert './.obis/config.json' == resolver.local_public_properties_path()
 
 
 def test_write_config(tmpdir):
