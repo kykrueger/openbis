@@ -386,10 +386,11 @@ public class UserManager
         List<PersonUpdate> updates = new ArrayList<>();
         PersonSearchCriteria searchCriteria = new PersonSearchCriteria();
         PersonFetchOptions fetchOptions = new PersonFetchOptions();
+        fetchOptions.withRegistrator();
         List<Person> persons = service.searchPersons(sessionToken, searchCriteria, fetchOptions).getObjects();
         for (Person person : persons)
         {
-            if (person.isActive())
+            if (person.isActive() & person.getRegistrator() != null) // user 'system' has no registrator
             {
                 try
                 {

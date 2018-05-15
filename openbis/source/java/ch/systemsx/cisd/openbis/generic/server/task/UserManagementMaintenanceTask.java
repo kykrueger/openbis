@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ch.systemsx.cisd.authentication.IAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
@@ -206,7 +207,7 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
     protected LDAPAuthenticationService getLdapAuthenticationService()
     {
-        return (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
+        return (LDAPAuthenticationService) CommonServiceProvider.tryToGetBean("ldap-authentication-service");
     }
 
     private UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
@@ -225,7 +226,8 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
     protected UserManager createUserManager(Log4jSimpleLogger logger)
     {
-        return new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(), shareIdsMappingFile, 
+        IAuthenticationService authenticationService = (IAuthenticationService) CommonServiceProvider.tryToGetBean("authentication-service");
+        return new UserManager(authenticationService, CommonServiceProvider.getApplicationServerApi(), shareIdsMappingFile, 
                 logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
     }
 }
