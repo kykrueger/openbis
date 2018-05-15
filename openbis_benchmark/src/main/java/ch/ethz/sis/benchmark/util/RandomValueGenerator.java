@@ -1,6 +1,7 @@
 package ch.ethz.sis.benchmark.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +15,12 @@ public class RandomValueGenerator<V> {
 		if(!valuesAsMap.contains(value)) {
 			valuesAsMap.add(value);
 			valuesAsList.add(value);
+		}
+	}
+	
+	public void addAll(Collection<V> values) {
+		for(V value:values) {
+			add(value);
 		}
 	}
 	

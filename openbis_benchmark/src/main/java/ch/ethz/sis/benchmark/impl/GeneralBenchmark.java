@@ -11,15 +11,25 @@ import ch.ethz.sis.benchmark.util.RandomValueGenerator;
 import ch.ethz.sis.benchmark.util.RandomWord;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 
 public class GeneralBenchmark extends Benchmark {
 	
 	private enum Parameters { SPACES_TO_CREATE, SAMPLES_TO_CREATE }
+	private enum Prefix { SPACE_, COLLECTION_, PROJECT_, OBJECT_ }
 	
 	@Override
 	public void startInternal() {
@@ -27,39 +37,115 @@ public class GeneralBenchmark extends Benchmark {
         String sessionToken = v3.login(getConfiguration().getUser(), getConfiguration().getPassword());
         
         //
-        // Setup - Create Type
+        // Setup - Create Property Types
+        //
+        String propertyTypeCode1 = "BENCHMARK_STRING_1";
+        PropertyTypeCreation propertyTypeCreation1 = new PropertyTypeCreation();
+        propertyTypeCreation1.setCode(propertyTypeCode1);
+        propertyTypeCreation1.setDataType(DataType.MULTILINE_VARCHAR);
+        propertyTypeCreation1.setLabel("Benchmark String 1 label");
+        propertyTypeCreation1.setDescription("Benchmark String 1 description");
+        
+        String propertyTypeCode2 = "BENCHMARK_STRING_2";
+        PropertyTypeCreation propertyTypeCreation2 = new PropertyTypeCreation();
+        propertyTypeCreation2.setCode(propertyTypeCode2);
+        propertyTypeCreation2.setDataType(DataType.MULTILINE_VARCHAR);
+        propertyTypeCreation2.setLabel("Benchmark String 2 label");
+        propertyTypeCreation2.setDescription("Benchmark String 2 description");
+        
+        v3.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation1, propertyTypeCreation2));
+        
+        //
+        // Setup - Create Sample Type
         //
         EntityTypePermId sampleTypeCode = new EntityTypePermId("BENCHMARK_OBJECT");
         SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
         sampleTypeCreation.setCode(sampleTypeCode.getPermId());
+        
+        PropertyAssignmentCreation propertyAssignmentCreation1 = new PropertyAssignmentCreation();
+        propertyAssignmentCreation1.setPropertyTypeId(new PropertyTypePermId(propertyTypeCode1));
+        
+        PropertyAssignmentCreation propertyAssignmentCreation2 = new PropertyAssignmentCreation();
+        propertyAssignmentCreation2.setPropertyTypeId(new PropertyTypePermId(propertyTypeCode2));
+        
+        sampleTypeCreation.setPropertyAssignments(Arrays.asList(propertyAssignmentCreation1, propertyAssignmentCreation2));
+        
         v3.createSampleTypes(sessionToken, Arrays.asList(sampleTypeCreation));
+        
+        //
+        // Setup - Create Experiment Type
+        //
+        EntityTypePermId experimentTypeCode = new EntityTypePermId("BENCHMARK_COLLECTION");
+        ExperimentTypeCreation experimentTypeCreation = new ExperimentTypeCreation();
+        experimentTypeCreation.setCode(experimentTypeCode.getPermId());
+        
+        v3.createExperimentTypes(sessionToken, Arrays.asList(experimentTypeCreation));
+        
+        //
+        // Setup - Create codes
+        //
+        Set<String> codes = new HashSet<String>();
+        int spacesToCreate = Integer.parseInt(this.getConfiguration().getParameters().get(Parameters.SPACES_TO_CREATE.name()));
+        for(int i = 0; i < spacesToCreate; i++) {
+	        	String code = null;
+	    		while(code == null || codes.contains(code)) {
+	    			code = RandomWord.getRandomWord() + "_" + RandomWord.getRandomWord();
+	    		}
+	    		codes.add(code);
+        }
+        RandomValueGenerator<String> randomValueGenerator = new RandomValueGenerator<>();
+        randomValueGenerator.addAll(codes);
         
         //
         // Part 1 - Creating Spaces
         //
         long start1 = System.currentTimeMillis();
-        RandomValueGenerator<String> spaceCodes = new RandomValueGenerator<String>();
-        int spacesToCreate = Integer.parseInt(this.getConfiguration().getParameters().get(Parameters.SPACES_TO_CREATE.name()));
         List<SpaceCreation> spaceCreations = new ArrayList<SpaceCreation>();
-        for(int i = 0; i < spacesToCreate; i++) {
-        		SpaceCreation spaceCreation = new SpaceCreation();
-        		String spaceCode = null;
-        		while(spaceCode == null || spaceCodes.contains(spaceCode)) {
-        			spaceCode = "SPACE_" + RandomWord.getRandomWord() + "_" + RandomWord.getRandomWord();
-        		}
-        		spaceCodes.add(spaceCode);
-        		spaceCreation.setCode(spaceCode);
-        		spaceCreations.add(spaceCreation);
+        for(String code:codes) {
+        		SpaceCreation creation = new SpaceCreation();
+        		creation.setCode(Prefix.SPACE_ + code);
+        		spaceCreations.add(creation);
         }
         v3.createSpaces(sessionToken, spaceCreations);
         long end1 = System.currentTimeMillis();
         logger.info("Create " + spacesToCreate + " Spaces took: " + (end1-start1) + " millis - " + ((end1-start1)/spacesToCreate) + " millis/space");
         
         //
-        // Part 2 - Creating Samples
+        // Part 2 - Creating Projects
         //
         long start2 = System.currentTimeMillis();
-        long lapStart2 = System.currentTimeMillis();
+        List<ProjectCreation> projectCreations = new ArrayList<ProjectCreation>();
+        for(String code:codes) {
+        		ProjectCreation creation = new ProjectCreation();
+        		creation.setCode(Prefix.PROJECT_ + code);
+        		creation.setSpaceId(new SpacePermId(Prefix.SPACE_ + code));
+        		projectCreations.add(creation);
+        }
+        v3.createProjects(sessionToken, projectCreations);
+        long end2 = System.currentTimeMillis();
+        logger.info("Create " + spacesToCreate + " Projects took: " + (end2-start2) + " millis - " + ((end2-start2)/spacesToCreate) + " millis/project");
+        
+        //
+        // Part 3 - Creating Experiments
+        //
+        long start3 = System.currentTimeMillis();
+        List<ExperimentCreation> experimentCreations = new ArrayList<ExperimentCreation>();
+        for(String code:codes) {
+        		ExperimentCreation creation = new ExperimentCreation();
+        		creation.setCode(Prefix.COLLECTION_ + code);
+        		creation.setProjectId(new ProjectIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code));
+        		creation.setTypeId(experimentTypeCode);
+        		experimentCreations.add(creation);
+        }
+        v3.createExperiments(sessionToken, experimentCreations);
+        long end3 = System.currentTimeMillis();
+        logger.info("Create " + spacesToCreate + " Collections took: " + (end3-start3) + " millis - " + ((end3-start3)/spacesToCreate) + " millis/collection");
+        
+        //
+        // Part 4 - Creating Samples
+        //
+        long start4 = System.currentTimeMillis();
+        long lapStart4 = System.currentTimeMillis();
         Set<String> sampleCodes = new HashSet<String>();
         int sampleBatchSize = 5000;
         int samplesToCreate = Integer.parseInt(this.getConfiguration().getParameters().get(Parameters.SAMPLES_TO_CREATE.name()));
@@ -72,19 +158,23 @@ public class GeneralBenchmark extends Benchmark {
         		}
         		sampleCreation.setTypeId(sampleTypeCode);
         		sampleCreation.setCode(sampleCode);
-        		sampleCreation.setSpaceId(new SpacePermId(spaceCodes.getRandom())); // Spaces are distributed randomly
+        		sampleCreation.setProperty(propertyTypeCode1, RandomWord.getRandomWord() + " " + RandomWord.getRandomWord());
+        		sampleCreation.setProperty(propertyTypeCode2, RandomWord.getRandomWord() + " " + RandomWord.getRandomWord());
+        		
+        		String code = randomValueGenerator.getRandom();
+        		sampleCreation.setSpaceId(new SpacePermId(Prefix.SPACE_ + code)); // Spaces are distributed randomly
+        		sampleCreation.setExperimentId(new ExperimentIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code + "/" + Prefix.COLLECTION_ + code));
         		sampleCreations.add(sampleCreation);
         		if(i % sampleBatchSize == 0) { // Every 5000, send to openBIS
         			v3.createSamples(sessionToken, sampleCreations);
-        			long lapEnd2 = System.currentTimeMillis();
-        			logger.info("Create " + sampleCreations.size() + " Samples took: " + (lapEnd2 - lapStart2) + " millis - " + ((lapEnd2-lapStart2)/sampleCreations.size()) + " millis/sample");
+        			long lapEnd4 = System.currentTimeMillis();
+        			logger.info("Create " + sampleCreations.size() + " Samples took: " + (lapEnd4 - lapStart4) + " millis - " + ((lapEnd4-lapStart4)/sampleCreations.size()) + " millis/sample");
         			sampleCreations.clear();
-        			lapStart2 = System.currentTimeMillis();
+        			lapStart4 = System.currentTimeMillis();
         		}
         }
-        long end2 = System.currentTimeMillis();
-        logger.info("Create " + samplesToCreate + " Samples took: " + (end2-start2) + " millis - " + ((end2-start2)/samplesToCreate) + " millis/sample");
-        
+        long end4 = System.currentTimeMillis();
+        logger.info("Create " + samplesToCreate + " Samples took: " + (end4-start4) + " millis - " + ((end4-start4)/samplesToCreate) + " millis/sample");
 	}
 
 }
