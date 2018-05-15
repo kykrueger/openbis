@@ -39,13 +39,13 @@ def test_obis(tmpdir):
     cmd('obis config -g set user=admin')
     cmd('obis config -g set verify_certificates=false')
     cmd('obis config -g set hostname=' + socket.gethostname())
-    cmd('obis data_set -g set data_set_type=UNKNOWN')
+    cmd('obis data_set -g set type=UNKNOWN')
     settings = get_settings_global()
     assert settings['config']['openbis_url'] == 'https://obisserver:8443'
     assert settings['config']['user'] == 'admin'
     assert settings['config']['verify_certificates'] == False
     assert settings['config']['hostname'] == socket.gethostname()
-    assert settings['data_set']['data_set_type'] == 'UNKNOWN'
+    assert settings['data_set']['type'] == 'UNKNOWN'
 
     with cd(tmpdir): cmd('mkdir obis_data')
     with cd(tmpdir + '/obis_data'):
@@ -243,12 +243,12 @@ def test_obis(tmpdir):
         with cd('data8'):
             result = cmd('obis data_set -p set a=0')
             settings = get_settings()
-            assert settings['data_set']['data_set_properties'] == { 'A': '0' }
-            cmd('obis data_set set data_set_properties={"a":"0","b":"1","c":"2"}')
+            assert settings['data_set']['properties'] == { 'A': '0' }
+            cmd('obis data_set set properties={"a":"0","b":"1","c":"2"}')
             cmd('obis data_set -p set c=3')
             settings = get_settings()
-            assert settings['data_set']['data_set_properties'] == { 'A': '0', 'B': '1', 'C': '3' }
-            result = cmd('obis data_set set data_set_properties={"a":"0","A":"1"}')
+            assert settings['data_set']['properties'] == { 'A': '0', 'B': '1', 'C': '3' }
+            result = cmd('obis data_set set properties={"a":"0","A":"1"}')
             assert 'Duplicate key after capitalizing JSON config: A' in result
 
         output_buffer = '=================== 15. Removeref ===================\n'
@@ -303,7 +303,7 @@ def test_obis(tmpdir):
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             cmd('touch file2')
-            cmd('obis config user=watney')
+            cmd('obis config set user=watney')
             # expect timeout because obis is asking for the password of the new user
             try:
                 timeout = False
@@ -351,7 +351,7 @@ def get_cmd_result(completed_process, tmpdir=''):
 def assert_matching(settings, data_set, tmpdir, path):
     content_copies = data_set['linkedData']['contentCopies']
     content_copy = list(filter(lambda cc: cc['path'].endswith(path) == 1, content_copies))[0]
-    assert data_set['type']['code'] == settings['data_set']['data_set_type']
+    assert data_set['type']['code'] == settings['data_set']['type']
     assert content_copy['externalDms']['code'] == settings['repository']['external_dms_id']
     assert content_copy['gitCommitHash'] == cmd('git rev-parse --short HEAD')
     assert content_copy['gitRepositoryId'] == settings['repository']['repository_id']

@@ -133,10 +133,9 @@ class ObjectEnv(ConfigEnv):
 
 class DataSetEnv(ConfigEnv):
 
-    # TODO remove data_set from property names
     def initialize_params(self):
-        self.add_param(ConfigParam(name='data_set_type', private=False))
-        self.add_param(ConfigParam(name='data_set_properties', private=False, is_json=True))        
+        self.add_param(ConfigParam(name='type', private=False))
+        self.add_param(ConfigParam(name='properties', private=False, is_json=True))        
 
 
 class RepositoryEnv(ConfigEnv):
@@ -331,18 +330,11 @@ class SettingsResolver(object):
             combined_dict[key] = resolver.config_dict(local_only=local_only)
         return combined_dict
 
-    def set_value_for_parameter(self, name, value, loc):
-        for resolver in self.resolvers:
-            if name in resolver.env.params:
-                return resolver.set_value_for_parameter(name, value, loc)
-        raise ValueError('Config does not exist: ' + name)
-
     def set_value_for_json_parameter(self, json_param_name, name, value, loc):
         for resolver in self.resolvers:
             if json_param_name in resolver.env.params:
                 return resolver.set_value_for_json_parameter(json_param_name, name, value, loc)
 
-    # TODO return a list
     def local_public_properties_paths(self, get_usersettings=False):
         paths = []
         for resolver in self.resolvers:

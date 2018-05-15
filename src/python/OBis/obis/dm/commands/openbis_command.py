@@ -46,16 +46,16 @@ class OpenbisCommand(object):
         self.config_dict['repository']['data_set_id'] = value
 
     def data_set_type(self):
-        return self.config_dict['data_set']['data_set_type']
+        return self.config_dict['data_set']['type']
 
     def set_data_set_type(self, value):
-        self.config_dict['data_set']['data_set_type'] = value
+        self.config_dict['data_set']['type'] = value
 
     def data_set_properties(self):
-        return self.config_dict['data_set']['data_set_properties']
+        return self.config_dict['data_set']['properties']
 
     def set_data_set_properties(self, value):
-        self.config_dict['data_set']['data_set_properties'] = value
+        self.config_dict['data_set']['properties'] = value
 
     def object_id(self):
         return self.config_dict['object']['object_id']
@@ -135,7 +135,7 @@ class OpenbisCommand(object):
         if result.failure():
             return result
         external_dms = result.output
-        self.settings_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
+        self.settings_resolver.repository_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
         self.set_external_dms_id(external_dms.code)
         return result
 

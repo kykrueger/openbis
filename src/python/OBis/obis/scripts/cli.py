@@ -71,13 +71,12 @@ def cli(ctx, quiet, skip_verification):
         ctx.obj['verify_certificates'] = False
 
 
-def set_property(data_mgmt, prop, value, is_global, is_data_set_property):
+def set_property(data_mgmt, resolver, prop, value, is_global, is_data_set_property=False):
     """Helper function to implement the property setting semantics."""
     loc = 'global' if is_global else 'local'
-    resolver = data_mgmt.settings_resolver
     try:
         if is_data_set_property:
-            resolver.set_value_for_json_parameter('data_set_properties', prop, value, loc)
+            resolver.set_value_for_json_parameter('properties', prop, value, loc)
         else:
             resolver.set_value_for_parameter(prop, value, loc)
     except ValueError as e:
@@ -110,9 +109,11 @@ def init_handle_cleanup(result, object_id, collection_id, folder, data_mgmt):
         return check_result("init_data", result)
     with dm.cd(folder):
         if object_id:
-            return check_result("init_data", set_property(data_mgmt, 'object_id', object_id, False, False))
+            resolver = data_mgmt.object_resolver
+            return check_result("init_data", set_property(data_mgmt, resolver, 'object_id', object_id, False, False))
         if collection_id:
-            return check_result("init_data", set_property(data_mgmt, 'collection_id', collection_id, False, False))
+            resolver = data_mgmt.collection_resolver
+            return check_result("init_data", set_property(data_mgmt, resolver, 'collection_id', collection_id, False, False))
 
 
 # settings commands
@@ -202,7 +203,7 @@ def _config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop,
 
     config_dict = resolver.config_dict()
     if is_data_set_property:
-        config_dict = config_dict['data_set_properties']
+        config_dict = config_dict['properties']
     if not prop:
         config_str = json.dumps(config_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
@@ -211,7 +212,7 @@ def _config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop,
         config_str = json.dumps(little_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
     else:
-        return check_result("config", set_property(data_mgmt, prop, value, is_global, is_data_set_property))
+        return check_result("config", set_property(data_mgmt, resolver, prop, value, is_global, is_data_set_property))
 
 
 def _set(ctx, settings):

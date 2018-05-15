@@ -258,7 +258,7 @@ class GitDataMgmt(AbstractDataMgmt):
             return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
         # set data_set_id to analysis repository so it will be used as parent when committing
         with cd(path):
-            cli.set_property(self, "data_set_id", parent_data_set_id, False, False)
+            cli.set_property(self, self.settings_resolver.repository_resolver, "data_set_id", parent_data_set_id, False, False)
         return result
 
 
