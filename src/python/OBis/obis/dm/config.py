@@ -178,6 +178,9 @@ class ConfigResolver(object):
     def set_location_search_order(self, order):
         self.location_search_order = order
 
+    def set_resolver_location_roots(self, key, value):
+        self.location_resolver.location_roots[key] = value
+
     def initialize_location_cache(self):
         env = self.env
         for k, v in env.locations.items():

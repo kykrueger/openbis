@@ -221,7 +221,9 @@ def _set(ctx, settings):
     is_global = ctx.obj['is_global']
     data_mgmt = ctx.obj['data_mgmt']
     resolver = ctx.obj['resolver']
-    is_data_set_property = ctx.obj['is_data_set_property'] == True
+    is_data_set_property = False
+    if 'is_data_set_property' in ctx.obj:
+        is_data_set_property = ctx.obj['is_data_set_property']
     settings_dict = _join_settings_set(settings)
     for prop, value in settings_dict.items():
         _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, value)
@@ -231,15 +233,32 @@ def _get(ctx, settings):
     is_global = ctx.obj['is_global']
     data_mgmt = ctx.obj['data_mgmt']
     resolver = ctx.obj['resolver']
+    is_data_set_property = False
     if 'is_data_set_property' in ctx.obj:
         is_data_set_property = ctx.obj['is_data_set_property']
-    else:
-        is_data_set_property = False
     settings_list = _join_settings_get(settings)
     if len(settings_list) == 0:
         settings_list = [None]
     for prop in settings_list:
         _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, None)
+
+# TODO add documentation for all commands
+# TODO error when trying to set a non-existent setting
+## get all settings
+
+@cli.group()
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Get global or local.')
+@click.pass_context
+def settings(ctx, is_global):
+    ctx.obj['is_global'] = is_global
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver
+
+
+@settings.command('get')
+@click.pass_context
+def settings_get(ctx):
+    _get(ctx, [])
 
 
 ## repository: repository_id, external_dms_id, data_set_id
