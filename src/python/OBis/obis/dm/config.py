@@ -165,13 +165,13 @@ class LocationResolver(object):
 class ConfigResolver(object):
     """Construct a config dictionary."""
 
-    def __init__(self, env=None, location_resolver=None, config_file='config.json'):
+    def __init__(self, env=None, location_resolver=None, categoty='config'):
         self.env = env if env is not None else ConfigEnv()
         self.location_resolver = location_resolver if location_resolver is not None else LocationResolver()
         self.location_search_order = ['global', 'local']
         self.location_cache = {}
         self.is_initialized = False
-        self.config_file = config_file
+        self.categoty = categoty
 
     def set_location_search_order(self, order):
         self.location_search_order = order
@@ -191,7 +191,7 @@ class ConfigResolver(object):
                 self.initialize_location(k, v, cache[key])
         else:
             root_path = self.location_resolver.resolve_location(loc)
-            config_path = os.path.join(root_path, self.config_file)
+            config_path = os.path.join(root_path, self.categoty + '.json')
             if os.path.exists(config_path):
                 with open(config_path) as f:
                     config = json.load(f)
@@ -224,6 +224,9 @@ class ConfigResolver(object):
         :param loc: Either 'local' or 'global'
         :return:
         """
+        if not name in self.env.params:
+            raise ValueError("Unknown setting {} for {}.".format(name, self.categoty))
+
         if not self.is_initialized:
             self.initialize_location_cache()
 
@@ -235,7 +238,7 @@ class ConfigResolver(object):
         location_dir_path = self.location_resolver.resolve_location(location)
         if not os.path.exists(location_dir_path):
             os.makedirs(location_dir_path)
-        config_path = os.path.join(location_dir_path, self.config_file)
+        config_path = os.path.join(location_dir_path, self.categoty + '.json')
         with open(config_path, "w") as f:
             json.dump(location_config_dict, f, sort_keys=True)
 
@@ -286,7 +289,7 @@ class ConfigResolver(object):
 
     def local_public_properties_path(self):
         loc = self.env.location_at_path(['local', 'public'])
-        return self.location_resolver.resolve_location(loc) + '/' + self.config_file
+        return self.location_resolver.resolve_location(loc) + '/' + self.categoty + '.json'
 
     def copy_global_to_local(self):
         config = self.config_dict(False)
@@ -307,13 +310,11 @@ class ConfigResolver(object):
 
 class SettingsResolver(object):
     """ This class functions as a wrapper since we have multiple config resolvers. """
-    # TODO make sure all methods work with this and individual resolvers
-    # TODO search for properties.json and config.json - they should only be mentioned in this file
     def __init__(self, location_resolver=None):
-        self.repository = ConfigResolver(location_resolver=location_resolver, env=RepositoryEnv(), config_file='repository.json')
-        self.data_set = ConfigResolver(location_resolver=location_resolver, env=DataSetEnv(), config_file='data_set.json')
-        self.object = ConfigResolver(location_resolver=location_resolver, env=ObjectEnv(), config_file='object.json')
-        self.collection = ConfigResolver(location_resolver=location_resolver, env=CollectionEnv(), config_file='collection.json')
+        self.repository = ConfigResolver(location_resolver=location_resolver, env=RepositoryEnv(), categoty='repository')
+        self.data_set = ConfigResolver(location_resolver=location_resolver, env=DataSetEnv(), categoty='data_set')
+        self.object = ConfigResolver(location_resolver=location_resolver, env=ObjectEnv(), categoty='object')
+        self.collection = ConfigResolver(location_resolver=location_resolver, env=CollectionEnv(), categoty='collection')
         self.config = ConfigResolver(location_resolver=location_resolver, env=ConfigEnv())
         self.resolvers = []
         self.resolvers.append(self.repository)
@@ -325,14 +326,8 @@ class SettingsResolver(object):
     def config_dict(self, local_only=False):
         combined_dict = {}
         for resolver in self.resolvers:
-            key = resolver.config_file.split('.')[0]
-            combined_dict[key] = resolver.config_dict(local_only=local_only)
+            combined_dict[resolver.categoty] = resolver.config_dict(local_only=local_only)
         return combined_dict
-
-    def set_value_for_json_parameter(self, json_param_name, name, value, loc):
-        for resolver in self.resolvers:
-            if json_param_name in resolver.env.params:
-                return resolver.set_value_for_json_parameter(json_param_name, name, value, loc)
 
     def local_public_properties_paths(self, get_usersettings=False):
         paths = []
@@ -352,8 +347,3 @@ class SettingsResolver(object):
     def set_location_search_order(self, order):
         for resolver in self.resolvers:
             resolver.location_search_order = order
-
-    def is_usersetting(self, name):
-        for resolver in self.resolvers:
-            if name in resolver.env.params:
-                return resolver.is_usersetting()

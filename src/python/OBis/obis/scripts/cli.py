@@ -208,6 +208,8 @@ def _config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop,
         config_str = json.dumps(config_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
     elif not value:
+        if not prop in config_dict:
+            raise ValueError("Unknown setting {} for {}.".format(prop, resolver.categoty))
         little_dict = {prop: config_dict[prop]}
         config_str = json.dumps(little_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
@@ -225,6 +227,7 @@ def _set(ctx, settings):
     settings_dict = _join_settings_set(settings)
     for prop, value in settings_dict.items():
         _config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, value)
+    return CommandResult(returncode=0, output='')
 
 
 def _get(ctx, settings):
@@ -239,8 +242,9 @@ def _get(ctx, settings):
         settings_list = [None]
     for prop in settings_list:
         _config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, None)
+    return CommandResult(returncode=0, output='')
 
-# TODO add documentation for all commands
+
 # TODO error when trying to set a non-existent setting
 ## get all settings
 
@@ -279,14 +283,14 @@ def repository(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def repository_set(ctx, settings):
-    _set(ctx, settings)
+    return check_result("repository_set", run(lambda: _set(ctx, settings)))
 
 
 @repository.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def repository_get(ctx, settings):
-    _get(ctx, settings)
+    return check_result("repository_get", run(lambda: _get(ctx, settings)))
 
 
 ## data_set: type, properties
@@ -309,14 +313,14 @@ def data_set(ctx, is_global, is_data_set_property):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def data_set_set(ctx, settings):
-    _set(ctx, settings)
+    return check_result("data_set_set", run(lambda: _set(ctx, settings)))
 
 
 @data_set.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def data_set_get(ctx, settings):
-    _get(ctx, settings)
+    return check_result("data_set_get", run(lambda: _get(ctx, settings)))
 
 
 ## object: object_id
@@ -337,14 +341,14 @@ def object(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def object_set(ctx, settings):
-    _set(ctx, settings)
+    return check_result("object_set", run(lambda: _set(ctx, settings)))
 
 
 @object.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def object_get(ctx, settings):
-    _get(ctx, settings)
+    return check_result("object_get", run(lambda: _get(ctx, settings)))
 
 
 ## collection: collection_id
@@ -365,14 +369,14 @@ def collection(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def collection_set(ctx, settings):
-    _set(ctx, settings)
+    return check_result("collection_set", run(lambda: _set(ctx, settings)))
 
 
 @collection.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def collection_get(ctx, settings):
-    _get(ctx, settings)
+    return check_result("collection_get", run(lambda: _get(ctx, settings)))
 
 
 ## config: fileservice_url, git_annex_hash_as_checksum, hostname, openbis_url, user, verify_certificates
@@ -393,14 +397,14 @@ def config(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def config_set(ctx, settings):
-    _set(ctx, settings)
+    return check_result("config_set", run(lambda: _set(ctx, settings)))
 
 
 @config.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def config_get(ctx, settings):
-    _get(ctx, settings)
+    return check_result("config_get", run(lambda: _get(ctx, settings)))
 
 
 # repository commands: status, sync, commit, init, addref, removeref, init_analysis
