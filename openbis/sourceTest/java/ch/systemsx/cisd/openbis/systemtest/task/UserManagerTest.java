@@ -515,7 +515,7 @@ public class UserManagerTest extends AbstractTest
         assertEquals(manage(userManager).getErrorReport(), "");
         assertEquals(FileUtilities.loadToString(mappingFile), "Identifier\tShare IDs\tArchive Folder\n/G2_.*\t2, 3\t\n");
         // 2. add users U2 and U3 to group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).shareIdsMappingFile(mappingFile).get();
         group = group("G2", U1.getUserId());
         group.setShareIds(Arrays.asList("4"));
         userManager.addGroup(group, users(U1, U2, U3));
