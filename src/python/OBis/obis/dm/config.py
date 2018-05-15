@@ -309,14 +309,13 @@ class ConfigResolver(object):
 
 class SettingsResolver(object):
     """ This class functions as a wrapper since we have multiple config resolvers. """
-
+    # TODO make sure all methods work with this and individual resolvers
     def __init__(self, location_resolver=None):
         self.repository_resolver = ConfigResolver(location_resolver=location_resolver, env=RepositoryEnv(), config_file='repository.json')
         self.data_set_resolver = ConfigResolver(location_resolver=location_resolver, env=DataSetEnv(), config_file='data_set.json')
         self.object_resolver = ConfigResolver(location_resolver=location_resolver, env=ObjectEnv(), config_file='object.json')
         self.collection_resolver = ConfigResolver(location_resolver=location_resolver, env=CollectionEnv(), config_file='collection.json')
         self.config_resolver = ConfigResolver(location_resolver=location_resolver, env=ConfigEnv())
-        # TODO remove self.resolvers and all methods
         self.resolvers = []
         self.resolvers.append(self.repository_resolver)
         self.resolvers.append(self.data_set_resolver)

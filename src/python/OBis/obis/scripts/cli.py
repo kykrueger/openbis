@@ -161,6 +161,7 @@ class SettingsSet(click.ParamType):
 
     def convert(self, value, param, ctx):
         try:
+            value = self._encode_json(value)
             settings = {}
             split = list(filter(lambda term: len(term) > 0, value.split(',')))
             for setting in split:
@@ -169,10 +170,29 @@ class SettingsSet(click.ParamType):
                     self._fail(param)
                 key = setting_split[0]
                 value = setting_split[1]
-                settings[key] = value
+                settings[key] = self._decode_json(value)
             return settings
         except:
             self._fail(param)
+
+    def _encode_json(self, value):
+        encoded = ''
+        SEEK = 0
+        ENCODE = 1
+        mode = SEEK
+        for char in value:
+            if char == '{':
+                mode = ENCODE
+            elif char == '}':
+                mode = SEEK
+            if mode == SEEK:
+                encoded += char
+            elif mode == ENCODE:
+                encoded += char.replace(',', '|')
+        return encoded
+
+    def _decode_json(self, value):
+        return value.replace('|', ',')
 
     def _fail(self, param):
             self.fail(param=param, message='Settings must be in the format: key1=value1, key2=value2, ...')
@@ -251,14 +271,20 @@ def _get(ctx, settings):
 @click.pass_context
 def settings(ctx, is_global):
     ctx.obj['is_global'] = is_global
-    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
-    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver
 
 
 @settings.command('get')
 @click.pass_context
 def settings_get(ctx):
-    _get(ctx, [])
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    settings = {}
+    for resolver in data_mgmt.settings_resolver.resolvers:
+        if ctx.obj['is_global']:
+            resolver.set_location_search_order(['global'])
+        key = resolver.config_file.split('.')[0]
+        settings[key] = resolver.config_dict()
+    settings_str = json.dumps(settings, indent=4, sort_keys=True)
+    click.echo("{}".format(settings_str))
 
 
 ## repository: repository_id, external_dms_id, data_set_id
