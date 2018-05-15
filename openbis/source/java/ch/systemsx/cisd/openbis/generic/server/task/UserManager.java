@@ -16,6 +16,9 @@
 
 package ch.systemsx.cisd.openbis.generic.server.task;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +37,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.LinkedMap;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
@@ -86,9 +90,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.authentication.IAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 
 /**
@@ -124,11 +130,16 @@ public class UserManager
 
     private Map<String, HomeSpaceRequest> requestedHomeSpaceByUserId = new TreeMap<>();
 
+    private File shareIdsMappingFileOrNull;
+    
+    private List<MappingAttributes> mappingAttributesList = new ArrayList<>(); 
+
     public UserManager(IAuthenticationService authenticationService, IApplicationServerInternalApi service,
-            ISimpleLogger logger, ITimeProvider timeProvider)
+            File shareIdsMappingFileOrNull, ISimpleLogger logger, ITimeProvider timeProvider)
     {
         this.authenticationService = authenticationService;
         this.service = service;
+        this.shareIdsMappingFileOrNull = shareIdsMappingFileOrNull;
         this.logger = logger;
         this.timeProvider = timeProvider;
     }
@@ -173,12 +184,13 @@ public class UserManager
         return new ConfigurationFailureException("Identifier template '" + identifierTemplate + "' is invalid"
                 + (StringUtils.isBlank(message) ? ". " : " (reason: " + message + "). ") + "Template schema: " + templateSchema);
     }
-
+    
     public void addGroup(UserGroup group, Map<String, Principal> principalsByUserId)
     {
         String groupCode = group.getKey().toUpperCase();
         usersByGroupCode.put(groupCode, principalsByUserId);
         groupCodes.add(groupCode);
+        mappingAttributesList.add(new MappingAttributes(groupCode, group.getShareIds()));
         Set<String> admins = asSet(group.getAdmins());
         for (Principal principal : principalsByUserId.values())
         {
@@ -201,6 +213,7 @@ public class UserManager
         {
             String sessionToken = service.loginAsSystem();
 
+            updateMappingFile();
             manageGlobalSpaces(sessionToken, report);
             revokeUsersUnkownByAuthenticationService(sessionToken, report);
             CurrentState currentState = loadCurrentState(sessionToken, service);
@@ -219,6 +232,37 @@ public class UserManager
             logger.log(LogLevel.ERROR, "", e);
         }
         return report;
+    }
+    
+    private void updateMappingFile()
+    {
+        if (shareIdsMappingFileOrNull != null && mappingAttributesList.isEmpty() == false)
+        {
+            File newFile = new File(shareIdsMappingFileOrNull.getParentFile(), shareIdsMappingFileOrNull.getName() + ".new");
+            PrintWriter printWriter = null;
+            try
+            {
+                printWriter = new PrintWriter(newFile);
+                printWriter.println("Identifier\tShare IDs\tArchive Folder");
+                for (MappingAttributes attributes: mappingAttributesList)
+                {
+                    CommaSeparatedListBuilder builder = new CommaSeparatedListBuilder();
+                    List<String> shareIds = attributes.getShareIds();
+                    if (shareIds != null && shareIds.isEmpty() == false)
+                    {
+                        shareIds.forEach(id -> builder.append(id));
+                        printWriter.println(String.format("/%s_.*\t%s\t", attributes.getGroupCode(), builder.toString()));
+                    }
+                }
+            } catch (IOException e)
+            {
+                throw CheckedExceptionTunnel.wrapIfNecessary(e);
+            } finally
+            {
+                IOUtils.closeQuietly(printWriter);
+            }
+            newFile.renameTo(shareIdsMappingFileOrNull);
+        }
     }
 
     private void updateHomeSpaces(String sessionToken, CurrentState currentState, UserManagerReport report)
@@ -884,6 +928,28 @@ public class UserManager
         public String toString()
         {
             return key + (admin ? "*" : "");
+        }
+    }
+
+    private static final class MappingAttributes
+    {
+        private String groupCode;
+        private List<String> shareIds;
+
+        public MappingAttributes(String groupCode, List<String> shareIds)
+        {
+            this.groupCode = groupCode;
+            this.shareIds = shareIds;
+        }
+
+        public String getGroupCode()
+        {
+            return groupCode;
+        }
+
+        public List<String> getShareIds()
+        {
+            return shareIds;
         }
     }
 

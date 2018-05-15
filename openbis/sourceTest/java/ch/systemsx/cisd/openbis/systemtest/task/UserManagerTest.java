@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.systemtest.task;
 
 import static org.testng.Assert.assertEquals;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -30,6 +31,7 @@ import java.util.TreeSet;
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
@@ -41,6 +43,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi
 import ch.ethz.sis.openbis.systemtest.asapi.v3.AbstractTest;
 import ch.systemsx.cisd.authentication.NullAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.MockLogger;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;
@@ -55,6 +58,8 @@ import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
  */
 public class UserManagerTest extends AbstractTest
 {
+    private static final File UNIT_TEST_ROOT_DIRECTORY = new File("targets", "unit-test-wd");
+
     private static final String EXPERIMENT_TYPE = "DELETION_TEST";
 
     private static final String SAMPLE_TYPE = "NORMAL";
@@ -73,12 +78,26 @@ public class UserManagerTest extends AbstractTest
     @Resource(name = ComponentNames.SESSION_MANAGER)
     private IOpenBisSessionManager sessionManager;
 
+    private File workingDir;
+
+    private File mappingFile;
+
     private static Map<Role, List<String>> commonSpaces()
     {
         Map<Role, List<String>> commonSpacesByRole = new EnumMap<>(Role.class);
         commonSpacesByRole.put(Role.USER, Arrays.asList("ALPHA", "BETA"));
         commonSpacesByRole.put(Role.OBSERVER, Arrays.asList("GAMMA"));
         return commonSpacesByRole;
+    }
+
+    @BeforeMethod
+    public void createFreshWorkingDirectory()
+    {
+        workingDir = new File(UNIT_TEST_ROOT_DIRECTORY, getClass().getName());
+        workingDir.delete();
+        FileUtilities.deleteRecursively(workingDir);
+        workingDir.mkdirs();
+        mappingFile = new File(workingDir, "mapping.txt");
     }
 
     @Test
@@ -289,18 +308,22 @@ public class UserManagerTest extends AbstractTest
     }
 
     @Test
-    public void testCreateTwoGroupsWithSamplesExperimentsDistinctUsers()
+    public void testCreateTwoGroupsWithSamplesExperimentsShareIdsAndDistinctUsers()
     {
         // Given
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
         UserManager userManager = new UserManagerBuilder(v3api, logger)
                 .commonSpaces(commonSpaces).commonSample("GAMMA/G", SAMPLE_TYPE)
-                .commonExperiment("ALPHA/ST/STC", EXPERIMENT_TYPE).get();
+                .commonExperiment("ALPHA/ST/STC", EXPERIMENT_TYPE).shareIdsMappingFile(mappingFile).get();
         List<String> globalSpaces = Arrays.asList("A", "B");
         userManager.setGlobalSpaces(globalSpaces);
-        userManager.addGroup(group("G1", U1.getUserId(), "blabla"), users(U3, U1, U2));
-        userManager.addGroup(group("G2", U4.getUserId()), users(U4));
+        UserGroup group1 = group("G1", U1.getUserId(), "blabla");
+        group1.setShareIds(Arrays.asList("1", "2"));
+        userManager.addGroup(group1, users(U3, U1, U2));
+        UserGroup group2 = group("G2", U4.getUserId());
+        group2.setShareIds(Arrays.asList("3"));
+        userManager.addGroup(group2, users(U4));
 
         // When
         UserManagerReport report = manage(userManager);
@@ -386,6 +409,9 @@ public class UserManagerTest extends AbstractTest
         builder.homeSpace(U3, "G1_U3");
         builder.homeSpace(U4, "G2_U4");
         builder.assertExpectations();
+        assertEquals(FileUtilities.loadToString(mappingFile), "Identifier\tShare IDs\tArchive Folder\n"
+                + "/G1_.*\t1, 2\t\n"
+                + "/G2_.*\t3\t\n");
     }
 
     @Test
@@ -482,12 +508,17 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with user U1 (admin)
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
-        userManager.addGroup(group("G2", U1.getUserId(), "blabla"), users(U1));
+        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).shareIdsMappingFile(mappingFile).get();
+        UserGroup group = group("G2", U1.getUserId(), "blabla");
+        group.setShareIds(Arrays.asList("2", "3"));
+        userManager.addGroup(group, users(U1));
         assertEquals(manage(userManager).getErrorReport(), "");
+        assertEquals(FileUtilities.loadToString(mappingFile), "Identifier\tShare IDs\tArchive Folder\n/G2_.*\t2, 3\t\n");
         // 2. add users U2 and U3 to group G2
         userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
-        userManager.addGroup(group("G2", U1.getUserId()), users(U1, U2, U3));
+        group = group("G2", U1.getUserId());
+        group.setShareIds(Arrays.asList("4"));
+        userManager.addGroup(group, users(U1, U2, U3));
 
         // When
         UserManagerReport report = manage(userManager);
@@ -516,6 +547,8 @@ public class UserManagerTest extends AbstractTest
         builder.homeSpace(U2, "G2_U2");
         builder.homeSpace(U3, "G2_U3");
         builder.assertExpectations();
+        assertEquals(FileUtilities.loadToString(mappingFile), "Identifier\tShare IDs\tArchive Folder\n"
+                + "/G2_.*\t4\t\n");
     }
 
     @Test
@@ -1263,6 +1296,8 @@ public class UserManagerTest extends AbstractTest
 
         private Map<String, String> commonExperiments = new TreeMap<>();
 
+        private File shareIdsMappingFile;
+
         UserManagerBuilder(IApplicationServerInternalApi service, ISimpleLogger logger)
         {
             this.service = service;
@@ -1283,7 +1318,7 @@ public class UserManagerTest extends AbstractTest
                         return new Principal(user, "John", "Doe", "jd@abc.de");
                     }
                 };
-            UserManager userManager = new UserManager(authenticationService, service, logger, new MockTimeProvider(0, 1000));
+            UserManager userManager = new UserManager(authenticationService, service, shareIdsMappingFile, logger, new MockTimeProvider(0, 1000));
             userManager.setGlobalSpaces(globalSpaces);
             userManager.setCommon(commonSpacesByRole, commonSamples, commonExperiments);
             return userManager;
@@ -1310,6 +1345,12 @@ public class UserManagerTest extends AbstractTest
         private UserManagerBuilder commonExperiment(String experimentIdentifierTemplate, String experimentType)
         {
             commonExperiments.put(experimentIdentifierTemplate, experimentType);
+            return this;
+        }
+
+        private UserManagerBuilder shareIdsMappingFile(File file)
+        {
+            shareIdsMappingFile = file;
             return this;
         }
     }
