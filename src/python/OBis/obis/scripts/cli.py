@@ -213,7 +213,6 @@ def _join_settings_get(setting_lists):
     return joined
 
 
-# TODO also get for is_data_set_property
 def _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, value):
     if is_global:
         resolver.set_location_search_order(['global'])
@@ -226,6 +225,8 @@ def _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, p
             resolver.set_location_search_order(['global'])
 
     config_dict = resolver.config_dict()
+    if is_data_set_property:
+        config_dict = config_dict['data_set_properties']
     if not prop:
         config_str = json.dumps(config_dict, indent=4, sort_keys=True)
         click.echo("{}".format(config_str))
