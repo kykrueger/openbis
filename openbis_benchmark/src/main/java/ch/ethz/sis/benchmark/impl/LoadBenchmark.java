@@ -26,13 +26,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCrea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 
-public class GeneralBenchmark extends Benchmark {
+public class LoadBenchmark extends Benchmark {
 	
 	private enum Parameters { SPACES_TO_CREATE, SAMPLES_TO_CREATE }
 	private enum Prefix { SPACE_, COLLECTION_, PROJECT_, OBJECT_ }
 	
 	@Override
-	public void startInternal() {
+	public void startInternal() throws Exception {
         IApplicationServerApi v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, getConfiguration().getOpenbisURL(), getConfiguration().getOpenbisTimeout());
         String sessionToken = v3.login(getConfiguration().getUser(), getConfiguration().getPassword());
         
@@ -99,13 +99,14 @@ public class GeneralBenchmark extends Benchmark {
         //
         // Part 1 - Creating Spaces
         //
-        long start1 = System.currentTimeMillis();
+        
         List<SpaceCreation> spaceCreations = new ArrayList<SpaceCreation>();
         for(String code:codes) {
         		SpaceCreation creation = new SpaceCreation();
         		creation.setCode(Prefix.SPACE_ + code);
         		spaceCreations.add(creation);
         }
+        long start1 = System.currentTimeMillis();
         v3.createSpaces(sessionToken, spaceCreations);
         long end1 = System.currentTimeMillis();
         logger.info("Create " + spacesToCreate + " Spaces took: " + (end1-start1) + " millis - " + ((end1-start1)/spacesToCreate) + " millis/space");
@@ -113,7 +114,6 @@ public class GeneralBenchmark extends Benchmark {
         //
         // Part 2 - Creating Projects
         //
-        long start2 = System.currentTimeMillis();
         List<ProjectCreation> projectCreations = new ArrayList<ProjectCreation>();
         for(String code:codes) {
         		ProjectCreation creation = new ProjectCreation();
@@ -121,6 +121,7 @@ public class GeneralBenchmark extends Benchmark {
         		creation.setSpaceId(new SpacePermId(Prefix.SPACE_ + code));
         		projectCreations.add(creation);
         }
+        long start2 = System.currentTimeMillis();
         v3.createProjects(sessionToken, projectCreations);
         long end2 = System.currentTimeMillis();
         logger.info("Create " + spacesToCreate + " Projects took: " + (end2-start2) + " millis - " + ((end2-start2)/spacesToCreate) + " millis/project");
@@ -128,7 +129,6 @@ public class GeneralBenchmark extends Benchmark {
         //
         // Part 3 - Creating Experiments
         //
-        long start3 = System.currentTimeMillis();
         List<ExperimentCreation> experimentCreations = new ArrayList<ExperimentCreation>();
         for(String code:codes) {
         		ExperimentCreation creation = new ExperimentCreation();
@@ -137,6 +137,7 @@ public class GeneralBenchmark extends Benchmark {
         		creation.setTypeId(experimentTypeCode);
         		experimentCreations.add(creation);
         }
+        long start3 = System.currentTimeMillis();
         v3.createExperiments(sessionToken, experimentCreations);
         long end3 = System.currentTimeMillis();
         logger.info("Create " + spacesToCreate + " Collections took: " + (end3-start3) + " millis - " + ((end3-start3)/spacesToCreate) + " millis/collection");
@@ -145,7 +146,7 @@ public class GeneralBenchmark extends Benchmark {
         // Part 4 - Creating Samples
         //
         long start4 = System.currentTimeMillis();
-        long lapStart4 = System.currentTimeMillis();
+        
         Set<String> sampleCodes = new HashSet<String>();
         int sampleBatchSize = 5000;
         int samplesToCreate = Integer.parseInt(this.getConfiguration().getParameters().get(Parameters.SAMPLES_TO_CREATE.name()));
@@ -166,11 +167,11 @@ public class GeneralBenchmark extends Benchmark {
         		sampleCreation.setExperimentId(new ExperimentIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code + "/" + Prefix.COLLECTION_ + code));
         		sampleCreations.add(sampleCreation);
         		if(i % sampleBatchSize == 0) { // Every 5000, send to openBIS
+        			long lapStart4 = System.currentTimeMillis();
         			v3.createSamples(sessionToken, sampleCreations);
         			long lapEnd4 = System.currentTimeMillis();
         			logger.info("Create " + sampleCreations.size() + " Samples took: " + (lapEnd4 - lapStart4) + " millis - " + ((lapEnd4-lapStart4)/sampleCreations.size()) + " millis/sample");
         			sampleCreations.clear();
-        			lapStart4 = System.currentTimeMillis();
         		}
         }
         long end4 = System.currentTimeMillis();

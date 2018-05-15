@@ -1,0 +1,723 @@
+16:28:39.550 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 4973 samples containting 'soc' in 4310 millis.
+16:28:40.343 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 25891 samples containting 'den' in 12294 millis.
+16:28:40.441 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 326 samples containting 'subsidiaries' in 3776 millis.
+16:28:40.491 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1368 samples containting 'instruction' in 10154 millis.
+16:28:40.794 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 435 samples containting 'snake' in 3848 millis.
+16:28:40.960 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 321 samples containting 'bold' in 3060 millis.
+16:28:41.134 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 321 samples containting 'saints' in 2560 millis.
+16:28:41.541 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 586 samples containting 'about' in 1991 millis.
+16:28:41.662 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 298 samples containting 'recognized' in 2827 millis.
+16:28:42.070 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1829 samples containting 'interact' in 1727 millis.
+16:28:42.181 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 5428 samples containting 'organ' in 4461 millis.
+16:28:42.273 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 290 samples containting 'vanilla' in 1782 millis.
+16:28:42.350 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 441 samples containting 'methodology' in 1908 millis.
+16:28:42.628 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 446 samples containting 'linux' in 1834 millis.
+16:28:42.864 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 386 samples containting 'yards' in 1730 millis.
+16:28:42.865 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 393 samples containting 'paintings' in 1905 millis.
+16:28:42.919 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 482 samples containting 'makeup' in 1378 millis.
+16:28:43.755 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 788 samples containting 'inside' in 1684 millis.
+16:28:43.950 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2378 samples containting 'kings' in 1085 millis.
+16:28:44.243 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 4471 samples containting 'demo' in 2581 millis.
+16:28:45.073 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 5287 samples containting 'aus' in 2800 millis.
+16:28:45.222 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 416 samples containting 'advocate' in 2358 millis.
+16:28:46.015 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 3561 samples containting 'take' in 3387 millis.
+16:28:46.880 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 3055 samples containting 'right' in 4699 millis.
+16:28:47.282 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 505 samples containting 'elizabeth' in 3527 millis.
+16:28:47.781 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1185 samples containting 'charm' in 3831 millis.
+16:28:47.979 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 379 samples containting 'liberal' in 3736 millis.
+16:28:48.516 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 407 samples containting 'june' in 3443 millis.
+16:28:49.152 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 287 samples containting 'mariah' in 3930 millis.
+16:28:49.602 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 11048 samples containting 'air' in 6683 millis.
+16:28:49.628 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 494 samples containting 'vacancies' in 3613 millis.
+16:28:49.977 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 423 samples containting 'charlotte' in 3097 millis.
+16:28:51.776 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 601 samples containting 'hk' in 3995 millis.
+16:28:52.358 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1397 samples containting 'bp' in 4379 millis.
+16:28:52.398 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 400 samples containting 'society' in 3882 millis.
+16:28:53.197 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 397 samples containting 'cheque' in 3595 millis.
+16:28:53.224 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 951 samples containting 'death' in 4072 millis.
+16:28:53.929 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 395 samples containting 'screw' in 3952 millis.
+16:28:54.065 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 378 samples containting 'snapshot' in 4437 millis.
+16:28:54.660 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 518 samples containting 'tickets' in 2884 millis.
+16:28:56.466 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 282 samples containting 'encryption' in 4108 millis.
+16:28:57.190 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1374 samples containting 'into' in 4792 millis.
+16:28:57.539 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 411 samples containting 'pulled' in 4342 millis.
+16:28:59.652 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 304 samples containting 'unions' in 5723 millis.
+16:28:59.876 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 719 samples containting 'movement' in 6652 millis.
+16:29:00.379 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 331 samples containting 'comics' in 6314 millis.
+16:29:01.489 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 506 samples containting 'cooperative' in 6829 millis.
+16:29:01.757 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 100000 samples containting 'ing' in 65361 millis.
+16:29:02.201 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 315 samples containting 'coins' in 5011 millis.
+16:29:02.526 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1778 samples containting 'metal' in 4987 millis.
+16:29:03.409 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 543 samples containting 'conversations' in 3757 millis.
+16:29:03.411 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 449 samples containting 'curtis' in 3535 millis.
+16:29:05.373 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 9450 samples containting 'its' in 8907 millis.
+16:29:05.520 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1212 samples containting 'prospect' in 5141 millis.
+16:29:05.723 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1912 samples containting 'partner' in 4234 millis.
+16:29:06.130 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 443 samples containting 'botswana' in 4373 millis.
+16:29:06.293 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 335 samples containting 'strips' in 4092 millis.
+16:29:06.897 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 321 samples containting 'performances' in 4371 millis.
+16:29:07.198 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1779 samples containting 'mt' in 3788 millis.
+16:29:07.308 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 562 samples containting 'terry' in 3897 millis.
+16:29:08.120 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 506 samples containting 'hewlett' in 2747 millis.
+16:29:08.258 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 423 samples containting 'lawyers' in 2738 millis.
+16:29:09.033 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1476 samples containting 'manufacture' in 1725 millis.
+16:29:09.470 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 398 samples containting 'undertaken' in 3176 millis.
+16:29:10.142 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 320 samples containting 'hardware' in 3245 millis.
+16:29:10.837 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 416 samples containting 'exciting' in 1367 millis.
+16:29:11.291 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 576 samples containting 'linked' in 5567 millis.
+16:29:11.662 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 320 samples containting 'laser' in 3542 millis.
+16:29:12.384 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2035 samples containting 'short' in 4126 millis.
+16:29:12.723 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 13924 samples containting 'rb' in 6593 millis.
+16:29:12.768 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 383 samples containting 'outside' in 3735 millis.
+16:29:13.274 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 360 samples containting 'diego' in 6076 millis.
+16:29:13.701 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 579 samples containting 'quoted' in 2864 millis.
+16:29:13.761 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1197 samples containting 'reel' in 3619 millis.
+16:29:14.429 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 715 samples containting 'russia' in 3138 millis.
+16:29:14.464 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 387 samples containting 'kijiji' in 2802 millis.
+16:29:15.673 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 626 samples containting 'deposit' in 3289 millis.
+16:29:16.814 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2032 samples containting 'receive' in 2349 millis.
+16:29:16.930 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 418 samples containting 'arthur' in 3656 millis.
+16:29:17.868 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 507 samples containting 'stones' in 4167 millis.
+16:29:17.881 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 565 samples containting 'occurs' in 4119 millis.
+16:29:19.052 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 323 samples containting 'biology' in 6329 millis.
+16:29:20.089 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 523 samples containting 'stopped' in 4416 millis.
+16:29:20.454 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 13221 samples containting 'qui' in 6025 millis.
+16:29:20.771 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 6631 samples containting 'book' in 8003 millis.
+16:29:20.848 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 331 samples containting 'physics' in 4034 millis.
+16:29:21.920 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 602 samples containting 'wilderness' in 1466 millis.
+16:29:21.924 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 422 samples containting 'licensed' in 4056 millis.
+16:29:21.945 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 492 samples containting 'boost' in 4064 millis.
+16:29:22.596 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 402 samples containting 'yen' in 5666 millis.
+16:29:22.612 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 389 samples containting 'marco' in 2522 millis.
+16:29:23.407 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 632 samples containting 'crm' in 2559 millis.
+16:29:23.433 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 666 samples containting 'dynamic' in 2660 millis.
+16:29:23.594 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2573 samples containting 'charge' in 4542 millis.
+16:29:24.337 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 678 samples containting 'cached' in 2413 millis.
+16:29:24.666 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1373 samples containting 'retail' in 2721 millis.
+16:29:25.104 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 322 samples containting 'holdings' in 2508 millis.
+16:29:25.342 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 286 samples containting 'travesti' in 2730 millis.
+16:29:25.972 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 406 samples containting 'sought' in 2564 millis.
+16:29:26.186 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 413 samples containting 'staying' in 2753 millis.
+16:29:28.352 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 288 samples containting 'charges' in 4015 millis.
+16:29:28.360 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 406 samples containting 'patients' in 4766 millis.
+16:29:29.061 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 298 samples containting 'cups' in 3957 millis.
+16:29:29.266 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 398 samples containting 'baptist' in 4600 millis.
+16:29:30.670 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 386 samples containting 'newfoundland' in 5327 millis.
+16:29:30.675 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 430 samples containting 'brilliant' in 4703 millis.
+16:29:33.743 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 300 samples containting 'steering' in 7557 millis.
+16:29:33.743 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 310 samples containting 'cologne' in 5391 millis.
+16:29:34.724 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 497 samples containting 'chosen' in 6364 millis.
+16:29:34.907 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1288 samples containting 'enjoy' in 5846 millis.
+16:29:35.666 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 416 samples containting 'likelihood' in 6400 millis.
+16:29:35.686 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 507 samples containting 'sleeps' in 5016 millis.
+16:29:36.762 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 412 samples containting 'guardian' in 6087 millis.
+16:29:36.768 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 457 samples containting 'valves' in 3025 millis.
+16:29:38.311 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 315 samples containting 'personality' in 4568 millis.
+16:29:39.625 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1227 samples containting 'reveal' in 4718 millis.
+16:29:40.446 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1137 samples containting 'amber' in 4780 millis.
+16:29:40.515 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 7063 samples containting 'mate' in 5791 millis.
+16:29:41.649 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 803 samples containting 'juan' in 4887 millis.
+16:29:41.926 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2718 samples containting 'access' in 6240 millis.
+16:29:42.421 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 100000 samples containting 'ph' in 55138 millis.
+16:29:42.785 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1047 samples containting 'were' in 6017 millis.
+16:29:43.528 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 434 samples containting 'parking' in 3903 millis.
+16:29:43.528 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 472 samples containting 'instructional' in 5217 millis.
+16:29:45.350 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 596 samples containting 'accidents' in 4904 millis.
+16:29:45.679 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 393 samples containting 'guys' in 4029 millis.
+16:29:46.101 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 462 samples containting 'beatles' in 4175 millis.
+16:29:46.475 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 487 samples containting 'cabinets' in 4054 millis.
+16:29:46.937 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 675 samples containting 'further' in 4152 millis.
+16:29:47.633 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 350 samples containting 'intermediate' in 4105 millis.
+16:29:47.993 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1451 samples containting 'attach' in 4464 millis.
+16:29:48.372 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 650 samples containting 'delivers' in 3021 millis.
+16:29:48.636 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 317 samples containting 'knitting' in 2956 millis.
+16:29:49.407 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 521 samples containting 'alot' in 2932 millis.
+16:29:49.426 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1055 samples containting 'entity' in 3325 millis.
+16:29:50.303 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 737 samples containting 'quad' in 3365 millis.
+16:29:51.317 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 625 samples containting 'auction' in 3324 millis.
+16:29:52.232 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 5206 samples containting 'gui' in 4599 millis.
+16:29:52.558 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 819 samples containting 'buck' in 4186 millis.
+16:29:55.943 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 537 samples containting 'reflected' in 7307 millis.
+16:29:56.120 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1615 samples containting 'office' in 6713 millis.
+16:29:57.081 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 582 samples containting 'heading' in 7655 millis.
+16:29:57.371 [Thread-6] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 803 samples containting 'searches' in 7068 millis.
+16:29:57.647 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 501 samples containting 'teens' in 6330 millis.
+16:29:58.297 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 422 samples containting 'wifi' in 5739 millis.
+16:29:58.854 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 386 samples containting 'mice' in 2911 millis.
+16:29:59.435 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 321 samples containting 'assists' in 3315 millis.
+16:29:59.580 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 100000 samples containting 'nt' in 77230 millis.
+16:30:01.904 [Thread-7] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 8787 samples containting 'line' in 9672 millis.
+16:30:01.971 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 341 samples containting 'selecting' in 4890 millis.
+16:30:02.474 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 410 samples containting 'howto' in 4826 millis.
+16:30:03.052 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 643 samples containting 'impressive' in 4755 millis.
+16:30:03.546 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 319 samples containting 'fantasy' in 4692 millis.
+16:30:03.809 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 382 samples containting 'soccer' in 4374 millis.
+16:30:04.898 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2310 samples containting 'mom' in 5317 millis.
+16:30:05.774 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 490 samples containting 'monica' in 3803 millis.
+16:30:06.445 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 95818 samples containting 'th' in 44524 millis.
+16:30:06.572 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 425 samples containting 'trading' in 4098 millis.
+16:30:07.086 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 783 samples containting 'pf' in 4034 millis.
+16:30:07.525 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 556 samples containting 'afraid' in 3979 millis.
+16:30:08.426 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1204 samples containting 'film' in 4616 millis.
+16:30:11.060 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2530 samples containting 'logical' in 6162 millis.
+16:30:11.199 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1450 samples containting 'beat' in 5425 millis.
+16:30:11.419 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 58615 samples containting 'tin' in 30904 millis.
+16:30:11.852 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 429 samples containting 'tokyo' in 5407 millis.
+16:30:12.023 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 505 samples containting 'nuke' in 5451 millis.
+16:30:12.193 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 574 samples containting 'sitemap' in 5107 millis.
+16:30:12.453 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 383 samples containting 'hansen' in 4928 millis.
+16:30:12.828 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 308 samples containting 'headlines' in 1768 millis.
+16:30:12.879 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 771 samples containting 'direction' in 4453 millis.
+16:30:13.597 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 412 samples containting 'organizations' in 2398 millis.
+16:30:13.600 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 435 samples containting 'assessed' in 1748 millis.
+16:30:13.996 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 487 samples containting 'reproduction' in 2576 millis.
+16:30:18.954 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 345 samples containting 'critical' in 6931 millis.
+16:30:22.119 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 315 samples containting 'suse' in 9666 millis.
+16:30:22.122 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 314 samples containting 'newsletters' in 9929 millis.
+16:30:32.482 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1478 samples containting 'oops' in 19654 millis.
+16:30:43.187 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 354 samples containting 'sierra' in 30308 millis.
+16:30:43.263 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 433 samples containting 'colombia' in 29666 millis.
+16:32:03.432 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 415 samples containting 'luxembourg' in 109832 millis.
+16:32:06.553 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 5206 samples containting 'nm' in 112557 millis.
+16:32:22.892 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 842 samples containting 'cf' in 120773 millis.
+16:32:25.885 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 721 samples containting 'viewed' in 123763 millis.
+16:32:26.530 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 518 samples containting 'provincial' in 114048 millis.
+16:32:26.843 [Thread-1] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 315 samples containting 'worldwide' in 103656 millis.
+16:32:27.635 [Thread-10] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1265 samples containting 'most' in 104372 millis.
+16:32:28.253 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 29426 samples containting 'act' in 129297 millis.
+16:32:33.234 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 336 samples containting 'horrible' in 26681 millis.
+16:32:33.289 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 845 samples containting 'winner' in 10397 millis.
+Exception in thread "Thread-7" java.lang.ClassCastException: java.lang.OutOfMemoryError cannot be cast to java.lang.Exception
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.copyCauseException(ExceptionUtils.java:71)
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.createMasqueradingExceptionIfNeeded(ExceptionUtils.java:128)
+	at ch.systemsx.cisd.common.spring.ServiceExceptionTranslator.afterThrowing(ServiceExceptionTranslator.java:49)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invokeHandlerMethod(ThrowsAdviceInterceptor.java:145)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invoke(ThrowsAdviceInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy180.searchSamples(Unknown Source)
+	at sun.reflect.GeneratedMethodAccessor586.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.remoting.support.RemoteInvocation.invoke(RemoteInvocation.java:212)
+	at org.springframework.remoting.support.DefaultRemoteInvocationExecutor.invoke(DefaultRemoteInvocationExecutor.java:39)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invoke(RemoteInvocationBasedExporter.java:78)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invokeAndCreateResult(RemoteInvocationBasedExporter.java:114)
+	at org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter.handleRequest(HttpInvokerServiceExporter.java:74)
+	at ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApiServer.handleRequest(ApplicationServerApiServer.java:55)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:51)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:943)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:877)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:966)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:868)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:842)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:487)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1097)
+	at ch.systemsx.cisd.common.servlet.AbstractCrossOriginFilter.doFilter(AbstractCrossOriginFilter.java:124)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.openbis.generic.server.CacheFilter.doFilter(CacheFilter.java:69)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.HeaderFilter.doFilter(HeaderFilter.java:65)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.MethodFilter.doFilter(MethodFilter.java:63)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:360)
+	at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
+	at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:181)
+	at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:729)
+	at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:405)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.handler.RequestLogHandler.handle(RequestLogHandler.java:49)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.Server.handle(Server.java:324)
+	at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:505)
+	at org.mortbay.jetty.HttpConnection$RequestHandler.content(HttpConnection.java:843)
+	at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:647)
+	at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:211)
+	at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:380)
+	at org.mortbay.io.nio.SelectChannelEndPoint.run(SelectChannelEndPoint.java:395)
+	at org.mortbay.thread.QueuedThreadPool$PoolThread.run(QueuedThreadPool.java:488)
+	at org.springframework.remoting.support.RemoteInvocationUtils.fillInClientStackTraceIfPossible(RemoteInvocationUtils.java:45)
+	at org.springframework.remoting.support.RemoteInvocationResult.recreate(RemoteInvocationResult.java:149)
+	at org.springframework.remoting.support.RemoteInvocationBasedAccessor.recreateRemoteInvocationResult(RemoteInvocationBasedAccessor.java:85)
+	at org.springframework.remoting.httpinvoker.HttpInvokerClientInterceptor.invoke(HttpInvokerClientInterceptor.java:150)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy7.searchSamples(Unknown Source)
+	at ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark$1.run(FullTextSearchBenchmark.java:46)
+16:33:46.192 [Thread-2] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 10528 samples containting 'del' in 102760 millis.
+16:33:46.192 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 471 samples containting 'purse' in 72958 millis.
+16:33:46.244 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 437 samples containting 'arcade' in 79714 millis.
+Exception in thread "Thread-1" java.lang.ClassCastException: java.lang.OutOfMemoryError cannot be cast to java.lang.Exception
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.copyCauseException(ExceptionUtils.java:71)
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.createMasqueradingExceptionIfNeeded(ExceptionUtils.java:128)
+	at ch.systemsx.cisd.common.spring.ServiceExceptionTranslator.afterThrowing(ServiceExceptionTranslator.java:49)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invokeHandlerMethod(ThrowsAdviceInterceptor.java:145)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invoke(ThrowsAdviceInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy180.searchSamples(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.remoting.support.RemoteInvocation.invoke(RemoteInvocation.java:212)
+	at org.springframework.remoting.support.DefaultRemoteInvocationExecutor.invoke(DefaultRemoteInvocationExecutor.java:39)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invoke(RemoteInvocationBasedExporter.java:78)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invokeAndCreateResult(RemoteInvocationBasedExporter.java:114)
+	at org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter.handleRequest(HttpInvokerServiceExporter.java:74)
+	at ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApiServer.handleRequest(ApplicationServerApiServer.java:55)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:51)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:943)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:877)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:966)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:868)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:842)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:487)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1097)
+	at ch.systemsx.cisd.common.servlet.AbstractCrossOriginFilter.doFilter(AbstractCrossOriginFilter.java:124)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.openbis.generic.server.CacheFilter.doFilter(CacheFilter.java:69)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.HeaderFilter.doFilter(HeaderFilter.java:65)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.MethodFilter.doFilter(MethodFilter.java:63)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:360)
+	at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
+	at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:181)
+	at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:729)
+	at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:405)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.handler.RequestLogHandler.handle(RequestLogHandler.java:49)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.Server.handle(Server.java:324)
+	at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:505)
+	at org.mortbay.jetty.HttpConnection$RequestHandler.content(HttpConnection.java:843)
+	at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:647)
+	at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:211)
+	at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:380)
+	at org.mortbay.io.nio.SelectChannelEndPoint.run(SelectChannelEndPoint.java:395)
+	at org.mortbay.thread.QueuedThreadPool$PoolThread.run(QueuedThreadPool.java:488)
+	at org.springframework.remoting.support.RemoteInvocationUtils.fillInClientStackTraceIfPossible(RemoteInvocationUtils.java:45)
+	at org.springframework.remoting.support.RemoteInvocationResult.recreate(RemoteInvocationResult.java:149)
+	at org.springframework.remoting.support.RemoteInvocationBasedAccessor.recreateRemoteInvocationResult(RemoteInvocationBasedAccessor.java:85)
+	at org.springframework.remoting.httpinvoker.HttpInvokerClientInterceptor.invoke(HttpInvokerClientInterceptor.java:150)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy7.searchSamples(Unknown Source)
+	at ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark$1.run(FullTextSearchBenchmark.java:46)
+Exception in thread "Thread-2" java.lang.ClassCastException: java.lang.OutOfMemoryError cannot be cast to java.lang.Exception
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.copyCauseException(ExceptionUtils.java:71)
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.createMasqueradingExceptionIfNeeded(ExceptionUtils.java:128)
+	at ch.systemsx.cisd.common.spring.ServiceExceptionTranslator.afterThrowing(ServiceExceptionTranslator.java:49)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invokeHandlerMethod(ThrowsAdviceInterceptor.java:145)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invoke(ThrowsAdviceInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy180.searchSamples(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.remoting.support.RemoteInvocation.invoke(RemoteInvocation.java:212)
+	at org.springframework.remoting.support.DefaultRemoteInvocationExecutor.invoke(DefaultRemoteInvocationExecutor.java:39)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invoke(RemoteInvocationBasedExporter.java:78)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invokeAndCreateResult(RemoteInvocationBasedExporter.java:114)
+	at org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter.handleRequest(HttpInvokerServiceExporter.java:74)
+	at ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApiServer.handleRequest(ApplicationServerApiServer.java:55)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:51)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:943)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:877)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:966)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:868)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:842)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:487)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1097)
+	at ch.systemsx.cisd.common.servlet.AbstractCrossOriginFilter.doFilter(AbstractCrossOriginFilter.java:124)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.openbis.generic.server.CacheFilter.doFilter(CacheFilter.java:69)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.HeaderFilter.doFilter(HeaderFilter.java:65)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.MethodFilter.doFilter(MethodFilter.java:63)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:360)
+	at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
+	at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:181)
+	at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:729)
+	at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:405)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.handler.RequestLogHandler.handle(RequestLogHandler.java:49)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.Server.handle(Server.java:324)
+	at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:505)
+	at org.mortbay.jetty.HttpConnection$RequestHandler.content(HttpConnection.java:843)
+	at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:647)
+	at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:211)
+	at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:380)
+	at org.mortbay.io.nio.SelectChannelEndPoint.run(SelectChannelEndPoint.java:395)
+	at org.mortbay.thread.QueuedThreadPool$PoolThread.run(QueuedThreadPool.java:488)
+	at org.springframework.remoting.support.RemoteInvocationUtils.fillInClientStackTraceIfPossible(RemoteInvocationUtils.java:45)
+	at org.springframework.remoting.support.RemoteInvocationResult.recreate(RemoteInvocationResult.java:149)
+	at org.springframework.remoting.support.RemoteInvocationBasedAccessor.recreateRemoteInvocationResult(RemoteInvocationBasedAccessor.java:85)
+	at org.springframework.remoting.httpinvoker.HttpInvokerClientInterceptor.invoke(HttpInvokerClientInterceptor.java:150)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy7.searchSamples(Unknown Source)
+	at ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark$1.run(FullTextSearchBenchmark.java:46)
+Exception in thread "Thread-6" java.lang.ClassCastException: java.lang.OutOfMemoryError cannot be cast to java.lang.Exception
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.copyCauseException(ExceptionUtils.java:71)
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.createMasqueradingExceptionIfNeeded(ExceptionUtils.java:128)
+	at ch.systemsx.cisd.common.spring.ServiceExceptionTranslator.afterThrowing(ServiceExceptionTranslator.java:49)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invokeHandlerMethod(ThrowsAdviceInterceptor.java:145)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invoke(ThrowsAdviceInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy180.searchSamples(Unknown Source)
+	at sun.reflect.GeneratedMethodAccessor586.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.remoting.support.RemoteInvocation.invoke(RemoteInvocation.java:212)
+	at org.springframework.remoting.support.DefaultRemoteInvocationExecutor.invoke(DefaultRemoteInvocationExecutor.java:39)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invoke(RemoteInvocationBasedExporter.java:78)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invokeAndCreateResult(RemoteInvocationBasedExporter.java:114)
+	at org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter.handleRequest(HttpInvokerServiceExporter.java:74)
+	at ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApiServer.handleRequest(ApplicationServerApiServer.java:55)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:51)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:943)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:877)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:966)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:868)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:842)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:487)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1097)
+	at ch.systemsx.cisd.common.servlet.AbstractCrossOriginFilter.doFilter(AbstractCrossOriginFilter.java:124)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.openbis.generic.server.CacheFilter.doFilter(CacheFilter.java:69)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.HeaderFilter.doFilter(HeaderFilter.java:65)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.MethodFilter.doFilter(MethodFilter.java:63)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:360)
+	at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
+	at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:181)
+	at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:729)
+	at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:405)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.handler.RequestLogHandler.handle(RequestLogHandler.java:49)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.Server.handle(Server.java:324)
+	at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:505)
+	at org.mortbay.jetty.HttpConnection$RequestHandler.content(HttpConnection.java:843)
+	at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:647)
+	at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:211)
+	at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:380)
+	at org.mortbay.io.nio.SelectChannelEndPoint.run(SelectChannelEndPoint.java:395)
+	at org.mortbay.thread.QueuedThreadPool$PoolThread.run(QueuedThreadPool.java:488)
+	at org.springframework.remoting.support.RemoteInvocationUtils.fillInClientStackTraceIfPossible(RemoteInvocationUtils.java:45)
+	at org.springframework.remoting.support.RemoteInvocationResult.recreate(RemoteInvocationResult.java:149)
+	at org.springframework.remoting.support.RemoteInvocationBasedAccessor.recreateRemoteInvocationResult(RemoteInvocationBasedAccessor.java:85)
+	at org.springframework.remoting.httpinvoker.HttpInvokerClientInterceptor.invoke(HttpInvokerClientInterceptor.java:150)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy7.searchSamples(Unknown Source)
+	at ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark$1.run(FullTextSearchBenchmark.java:46)
+Exception in thread "Thread-10" java.lang.ClassCastException: java.lang.OutOfMemoryError cannot be cast to java.lang.Exception
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.copyCauseException(ExceptionUtils.java:71)
+	at ch.systemsx.cisd.common.exceptions.ExceptionUtils.createMasqueradingExceptionIfNeeded(ExceptionUtils.java:128)
+	at ch.systemsx.cisd.common.spring.ServiceExceptionTranslator.afterThrowing(ServiceExceptionTranslator.java:49)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invokeHandlerMethod(ThrowsAdviceInterceptor.java:145)
+	at org.springframework.aop.framework.adapter.ThrowsAdviceInterceptor.invoke(ThrowsAdviceInterceptor.java:130)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy180.searchSamples(Unknown Source)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:497)
+	at org.springframework.remoting.support.RemoteInvocation.invoke(RemoteInvocation.java:212)
+	at org.springframework.remoting.support.DefaultRemoteInvocationExecutor.invoke(DefaultRemoteInvocationExecutor.java:39)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invoke(RemoteInvocationBasedExporter.java:78)
+	at org.springframework.remoting.support.RemoteInvocationBasedExporter.invokeAndCreateResult(RemoteInvocationBasedExporter.java:114)
+	at org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter.handleRequest(HttpInvokerServiceExporter.java:74)
+	at ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApiServer.handleRequest(ApplicationServerApiServer.java:55)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:51)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:943)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:877)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:966)
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:868)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:637)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:842)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:717)
+	at org.mortbay.jetty.servlet.ServletHolder.handle(ServletHolder.java:487)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1097)
+	at ch.systemsx.cisd.common.servlet.AbstractCrossOriginFilter.doFilter(AbstractCrossOriginFilter.java:124)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.openbis.generic.server.CacheFilter.doFilter(CacheFilter.java:69)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.HeaderFilter.doFilter(HeaderFilter.java:65)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at ch.systemsx.cisd.common.servlet.MethodFilter.doFilter(MethodFilter.java:63)
+	at org.mortbay.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1088)
+	at org.mortbay.jetty.servlet.ServletHandler.handle(ServletHandler.java:360)
+	at org.mortbay.jetty.security.SecurityHandler.handle(SecurityHandler.java:216)
+	at org.mortbay.jetty.servlet.SessionHandler.handle(SessionHandler.java:181)
+	at org.mortbay.jetty.handler.ContextHandler.handle(ContextHandler.java:729)
+	at org.mortbay.jetty.webapp.WebAppContext.handle(WebAppContext.java:405)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.handler.RequestLogHandler.handle(RequestLogHandler.java:49)
+	at org.mortbay.jetty.handler.HandlerWrapper.handle(HandlerWrapper.java:152)
+	at org.mortbay.jetty.Server.handle(Server.java:324)
+	at org.mortbay.jetty.HttpConnection.handleRequest(HttpConnection.java:505)
+	at org.mortbay.jetty.HttpConnection$RequestHandler.content(HttpConnection.java:843)
+	at org.mortbay.jetty.HttpParser.parseNext(HttpParser.java:647)
+	at org.mortbay.jetty.HttpParser.parseAvailable(HttpParser.java:211)
+	at org.mortbay.jetty.HttpConnection.handle(HttpConnection.java:380)
+	at org.mortbay.io.nio.SelectChannelEndPoint.run(SelectChannelEndPoint.java:395)
+	at org.mortbay.thread.QueuedThreadPool$PoolThread.run(QueuedThreadPool.java:488)
+	at org.springframework.remoting.support.RemoteInvocationUtils.fillInClientStackTraceIfPossible(RemoteInvocationUtils.java:45)
+	at org.springframework.remoting.support.RemoteInvocationResult.recreate(RemoteInvocationResult.java:149)
+	at org.springframework.remoting.support.RemoteInvocationBasedAccessor.recreateRemoteInvocationResult(RemoteInvocationBasedAccessor.java:85)
+	at org.springframework.remoting.httpinvoker.HttpInvokerClientInterceptor.invoke(HttpInvokerClientInterceptor.java:150)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:179)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:207)
+	at com.sun.proxy.$Proxy7.searchSamples(Unknown Source)
+	at ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark$1.run(FullTextSearchBenchmark.java:46)
+16:35:35.417 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 834 samples containting 'selection' in 109173 millis.
+16:35:36.111 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 338 samples containting 'conducted' in 182822 millis.
+16:35:36.202 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 596 samples containting 'cowboy' in 187949 millis.
+16:35:36.204 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 679 samples containting 'logging' in 787 millis.
+16:35:36.214 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 691 samples containting 'benefit' in 110022 millis.
+16:35:37.101 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 293 samples containting 'envelope' in 899 millis.
+16:35:37.102 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 311 samples containting 'brighton' in 991 millis.
+16:35:37.108 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 338 samples containting 'phpbb' in 894 millis.
+16:35:37.135 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 454 samples containting 'guinea' in 931 millis.
+16:35:37.697 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 378 samples containting 'bookings' in 596 millis.
+16:35:37.751 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 402 samples containting 'utah' in 643 millis.
+16:35:37.767 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 416 samples containting 'almost' in 664 millis.
+16:35:37.806 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 448 samples containting 'coverage' in 671 millis.
+16:35:38.393 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 358 samples containting 'epson' in 696 millis.
+16:35:38.706 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1165 samples containting 'chance' in 939 millis.
+16:35:38.772 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2236 samples containting 'matt' in 1021 millis.
+16:35:38.941 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 942 samples containting 'entered' in 1135 millis.
+16:35:39.319 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 390 samples containting 'totally' in 613 millis.
+16:35:39.615 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 325 samples containting 'achievements' in 1222 millis.
+16:35:39.624 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 294 samples containting 'changing' in 852 millis.
+16:35:39.781 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 758 samples containting 'opponent' in 840 millis.
+16:35:40.940 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 544 samples containting 'examines' in 1324 millis.
+16:35:40.998 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1952 samples containting 'make' in 1217 millis.
+16:35:41.011 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2247 samples containting 'download' in 1387 millis.
+16:35:41.150 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 3074 samples containting 'right' in 1831 millis.
+16:35:42.898 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 342 samples containting 'singer' in 1887 millis.
+16:35:42.898 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 496 samples containting 'exhaust' in 1958 millis.
+16:35:43.058 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 390 samples containting 'merely' in 1908 millis.
+16:35:43.390 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 437 samples containting 'phentermine' in 2392 millis.
+16:35:47.425 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 296 samples containting 'saw' in 4367 millis.
+16:35:47.430 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 330 samples containting 'peas' in 4532 millis.
+16:35:47.434 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 398 samples containting 'namely' in 4536 millis.
+16:35:47.513 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1042 samples containting 'machine' in 4123 millis.
+16:35:48.426 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 341 samples containting 'georgia' in 992 millis.
+16:35:48.769 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 392 samples containting 'sleeve' in 1256 millis.
+16:35:48.986 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2318 samples containting 'stock' in 1561 millis.
+16:35:49.581 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 404 samples containting 'bandwidth' in 1155 millis.
+16:35:49.835 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 407 samples containting 'plaintiff' in 1066 millis.
+16:35:49.852 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 594 samples containting 'accepted' in 866 millis.
+16:35:50.636 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 333 samples containting 'morning' in 1055 millis.
+16:35:51.168 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2852 samples containting 'mid' in 1333 millis.
+16:35:51.396 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1534 samples containting 'involve' in 1543 millis.
+16:35:51.638 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 511 samples containting 'likes' in 1002 millis.
+16:35:52.236 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 334 samples containting 'elements' in 1068 millis.
+16:35:52.250 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 327 samples containting 'legacy' in 854 millis.
+16:35:52.819 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 733 samples containting 'survey' in 1181 millis.
+16:35:53.768 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 321 samples containting 'zimbabwe' in 1532 millis.
+16:35:53.778 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 301 samples containting 'magnitude' in 1528 millis.
+16:35:54.112 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 313 samples containting 'killing' in 1292 millis.
+16:35:54.876 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 707 samples containting 'horn' in 1108 millis.
+16:35:55.343 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 323 samples containting 'panels' in 1231 millis.
+16:35:55.743 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 317 samples containting 'blocks' in 867 millis.
+16:35:57.800 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 488 samples containting 'dans' in 2457 millis.
+16:35:58.213 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 384 samples containting 'norwegian' in 2470 millis.
+16:35:58.536 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 524 samples containting 'rolls' in 735 millis.
+16:35:59.938 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 322 samples containting 'occasions' in 1725 millis.
+16:36:00.049 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 30550 samples containting 'age' in 12619 millis.
+16:36:00.124 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 845 samples containting 'poster' in 1588 millis.
+16:36:01.299 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 14867 samples containting 'sm' in 7521 millis.
+16:36:01.529 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 420 samples containting 'hydrogen' in 1480 millis.
+16:36:01.577 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 916 samples containting 'magnet' in 1453 millis.
+16:36:01.610 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1093 samples containting 'editorial' in 1672 millis.
+16:36:02.273 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 377 samples containting 'evident' in 974 millis.
+16:36:03.247 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 409 samples containting 'increases' in 1670 millis.
+16:36:03.885 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 368 samples containting 'turbo' in 1612 millis.
+16:36:03.919 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 736 samples containting 'cg' in 672 millis.
+16:36:05.033 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1074 samples containting 'drop' in 1148 millis.
+16:36:06.239 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 417 samples containting 'genuine' in 2319 millis.
+16:36:06.645 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 808 samples containting 'walt' in 1612 millis.
+16:36:07.534 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 14538 samples containting 'dd' in 5923 millis.
+16:36:11.066 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 401 samples containting 'varieties' in 4827 millis.
+16:36:11.066 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 321 samples containting 'everyday' in 4421 millis.
+16:36:11.067 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 509 samples containting 'mitchell' in 3533 millis.
+16:36:12.937 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 320 samples containting 'maximum' in 1871 millis.
+16:36:12.956 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 404 samples containting 'bend' in 1890 millis.
+16:36:13.196 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1319 samples containting 'effective' in 2128 millis.
+16:36:13.685 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 330 samples containting 'finland' in 748 millis.
+16:36:13.716 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 414 samples containting 'grammar' in 760 millis.
+16:36:14.095 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 313 samples containting 'scottish' in 899 millis.
+16:36:14.696 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 610 samples containting 'company' in 1011 millis.
+16:36:14.738 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 429 samples containting 'affects' in 1021 millis.
+16:36:15.226 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 912 samples containting 'identify' in 1131 millis.
+16:36:15.742 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 845 samples containting 'jacket' in 1004 millis.
+16:36:16.311 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 3200 samples containting 'employ' in 1614 millis.
+16:36:16.344 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 303 samples containting 'librarian' in 1117 millis.
+16:36:17.002 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 343 samples containting 'installations' in 1260 millis.
+16:36:17.070 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 341 samples containting 'boys' in 759 millis.
+16:36:17.855 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 824 samples containting 'olympic' in 1511 millis.
+16:36:17.869 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 399 samples containting 'kentucky' in 799 millis.
+16:36:17.921 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 949 samples containting 'tooth' in 919 millis.
+16:36:18.721 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 818 samples containting 'resume' in 800 millis.
+16:36:18.993 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 636 samples containting 'newsletter' in 1124 millis.
+16:36:19.068 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2344 samples containting 'board' in 1212 millis.
+16:36:19.530 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 295 samples containting 'kingdom' in 809 millis.
+16:36:19.631 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 375 samples containting 'patches' in 638 millis.
+16:36:20.156 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 941 samples containting 'preview' in 1088 millis.
+16:36:20.779 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 303 samples containting 'steering' in 1249 millis.
+16:36:21.101 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 758 samples containting 'burning' in 1469 millis.
+16:36:21.509 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2070 samples containting 'expo' in 1353 millis.
+16:36:22.119 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 464 samples containting 'zinc' in 1018 millis.
+16:36:24.018 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 695 samples containting 'heads' in 2509 millis.
+16:36:24.425 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 406 samples containting 'subsidiary' in 2306 millis.
+16:36:26.968 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 424 samples containting 'moderate' in 2949 millis.
+16:36:26.977 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 509 samples containting 'globe' in 2552 millis.
+16:36:27.934 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 320 samples containting 'genome' in 966 millis.
+16:36:28.402 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 3105 samples containting 'format' in 1425 millis.
+16:36:28.656 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 489 samples containting 'janet' in 722 millis.
+16:36:29.927 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 406 samples containting 'sacrifice' in 1524 millis.
+16:36:32.522 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2375 samples containting 'ears' in 3866 millis.
+16:36:33.126 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 326 samples containting 'columnists' in 3199 millis.
+16:36:35.181 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 287 samples containting 'laundry' in 2055 millis.
+16:36:35.417 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1657 samples containting 'route' in 2895 millis.
+16:36:36.432 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 100000 samples containting 'ri' in 250547 millis.
+16:36:36.476 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 766 samples containting 'drum' in 1059 millis.
+16:36:37.095 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 483 samples containting 'rrp' in 663 millis.
+16:36:37.506 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 395 samples containting 'lifetime' in 1030 millis.
+16:36:38.090 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 327 samples containting 'bk' in 584 millis.
+16:36:39.856 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2586 samples containting 'nw' in 2761 millis.
+16:36:40.201 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1966 samples containting 'yes' in 2111 millis.
+16:36:41.941 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 423 samples containting 'younger' in 2085 millis.
+16:36:42.681 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 390 samples containting 'orgy' in 740 millis.
+16:36:43.834 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 312 samples containting 'undefined' in 1153 millis.
+16:36:44.671 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 325 samples containting 'farmers' in 836 millis.
+16:36:45.605 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 519 samples containting 'grab' in 934 millis.
+16:36:46.429 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 305 samples containting 'bread' in 823 millis.
+16:36:50.109 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 332 samples containting 'unavailable' in 3680 millis.
+16:36:52.697 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 100000 samples containting 'la' in 51168 millis.
+16:36:52.911 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 287 samples containting 'laundry' in 2802 millis.
+16:36:53.948 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 404 samples containting 'improving' in 1251 millis.
+16:36:59.169 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 9664 samples containting 'disc' in 6258 millis.
+16:36:59.775 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 10486 samples containting 'mod' in 5826 millis.
+16:37:01.545 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1032 samples containting 'closed' in 2376 millis.
+16:37:01.831 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 303 samples containting 'supplemental' in 2056 millis.
+16:37:02.452 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 327 samples containting 'guyana' in 907 millis.
+16:37:05.728 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 636 samples containting 'berry' in 3276 millis.
+16:37:05.757 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1337 samples containting 'consistent' in 3926 millis.
+16:37:07.054 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 100000 samples containting 'om' in 46275 millis.
+16:37:07.852 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 392 samples containting 'infrared' in 2094 millis.
+16:37:07.870 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 422 samples containting 'suffered' in 816 millis.
+16:37:07.880 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 715 samples containting 'mounts' in 2152 millis.
+16:37:08.903 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1059 samples containting 'attorney' in 1023 millis.
+16:37:09.110 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2059 samples containting 'assess' in 1240 millis.
+16:37:09.119 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2240 samples containting 'lows' in 1267 millis.
+16:37:10.331 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 288 samples containting 'harvey' in 1427 millis.
+16:37:10.407 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 729 samples containting 'fellow' in 1288 millis.
+16:37:10.433 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 965 samples containting 'steven' in 1323 millis.
+16:37:11.605 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 744 samples containting 'pants' in 1198 millis.
+16:37:11.610 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1226 samples containting 'dish' in 1279 millis.
+16:37:11.894 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2461 samples containting 'prep' in 1461 millis.
+16:37:12.236 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 323 samples containting 'sean' in 626 millis.
+16:37:15.156 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1323 samples containting 'effective' in 3262 millis.
+16:37:15.309 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 341 samples containting 'including' in 3072 millis.
+16:37:18.272 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 843 samples containting 'trademark' in 3116 millis.
+16:37:18.272 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 787 samples containting 'publisher' in 2963 millis.
+16:37:19.096 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 727 samples containting 'shopper' in 824 millis.
+16:37:20.043 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 563 samples containting 'dover' in 947 millis.
+16:37:20.280 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 22326 samples containting 'des' in 8674 millis.
+16:37:20.776 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 400 samples containting 'dishes' in 733 millis.
+16:37:20.814 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 100000 samples containting 'jose' in 45633 millis.
+16:37:20.821 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 312 samples containting 'lobby' in 541 millis.
+16:37:21.510 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 569 samples containting 'peace' in 733 millis.
+16:37:22.070 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1905 samples containting 'relation' in 1249 millis.
+16:37:22.581 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 869 samples containting 'airport' in 1071 millis.
+16:37:22.734 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 14924 samples containting 'tar' in 4461 millis.
+16:37:22.930 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 327 samples containting 'upgrading' in 860 millis.
+16:37:23.306 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 6620 samples containting 'wing' in 2492 millis.
+16:37:23.355 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 533 samples containting 'crystal' in 774 millis.
+16:37:24.562 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 324 samples containting 'recruitment' in 1632 millis.
+16:37:24.569 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 311 samples containting 'wonderful' in 1214 millis.
+16:37:26.078 [Thread-5] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1481 samples containting 'males' in 1516 millis.
+16:37:26.078 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 6769 samples containting 'add' in 2772 millis.
+16:37:27.089 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 415 samples containting 'gateway' in 1011 millis.
+16:37:27.253 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 4735 samples containting 'heat' in 2684 millis.
+16:37:28.697 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 410 samples containting 'acoustic' in 1444 millis.
+16:37:28.699 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 415 samples containting 'centuries' in 1610 millis.
+16:37:31.273 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 296 samples containting 'pockets' in 2574 millis.
+16:37:31.301 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 968 samples containting 'setting' in 2604 millis.
+16:37:32.686 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 24697 samples containting 'por' in 9952 millis.
+16:37:33.866 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 582 samples containting 'moss' in 1180 millis.
+16:37:33.898 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 617 samples containting 'html' in 2597 millis.
+16:37:34.203 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 442 samples containting 'tripadvisor' in 2930 millis.
+16:37:34.749 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 425 samples containting 'gordon' in 883 millis.
+16:37:34.773 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 530 samples containting 'diploma' in 875 millis.
+16:37:34.980 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 509 samples containting 'globe' in 777 millis.
+16:37:35.365 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 347 samples containting 'bytes' in 616 millis.
+16:37:35.617 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 415 samples containting 'reunion' in 844 millis.
+16:37:35.672 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 303 samples containting 'excerpt' in 692 millis.
+16:37:36.376 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 379 samples containting 'abroad' in 759 millis.
+16:37:36.683 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 322 samples containting 'assists' in 1011 millis.
+16:37:36.917 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1872 samples containting 'announce' in 1552 millis.
+16:37:37.567 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 298 samples containting 'saw' in 884 millis.
+16:37:38.559 [Thread-3] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1322 samples containting 'chick' in 1641 millis.
+16:37:40.394 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 4668 samples containting 'pie' in 2827 millis.
+16:37:43.912 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 2322 samples containting 'thy' in 3518 millis.
+16:37:44.640 [Thread-8] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 472 samples containting 'mixer' in 728 millis.
+16:37:56.330 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 34329 samples containting 'ide' in 19954 millis.
+16:37:57.455 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 100000 samples containting 'ch' in 77254 millis.
+16:37:58.442 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1272 samples containting 'most' in 2112 millis.
+16:38:07.547 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 569 samples containting 'stickers' in 9105 millis.
+16:38:28.269 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 17295 samples containting 'hr' in 30814 millis.
+16:38:29.890 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 430 samples containting 'from' in 22343 millis.
+16:38:42.345 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 314 samples containting 'barely' in 14076 millis.
+16:38:42.346 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 420 samples containting 'regime' in 12456 millis.
+16:38:53.377 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 312 samples containting 'jersey' in 11032 millis.
+16:38:53.475 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 315 samples containting 'nicholas' in 11129 millis.
+16:38:54.504 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 405 samples containting 'enemies' in 1127 millis.
+16:38:54.892 [Thread-9] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1174 samples containting 'tradition' in 1417 millis.
+16:39:03.851 [Thread-4] INFO  ch.ethz.sis.benchmark.impl.FullTextSearchBenchmark - Found 1347 samples containting 'solution' in 9346 millis.

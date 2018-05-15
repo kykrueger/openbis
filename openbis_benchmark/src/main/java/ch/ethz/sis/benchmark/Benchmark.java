@@ -12,12 +12,16 @@ public abstract class Benchmark
     		logger = LogManager.getLogger(this.getClass());
     		long start = System.currentTimeMillis();
     		logger.traceAccess(null, benchmarkConfig);
-    		startInternal();
+    		try {
+    			startInternal();
+    		} catch(Throwable throwable) {
+    			logger.catching(throwable);
+    		}
     		logger.traceExit(benchmarkConfig);
     		long end = System.currentTimeMillis();
     		logger.info("Benchmark took: " + (end-start) + " millis");
     }
-    public abstract void startInternal();
+    public abstract void startInternal() throws Exception;
     
     public BenchmarkConfig getConfiguration()
     {
