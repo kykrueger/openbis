@@ -71,30 +71,6 @@ def cli(ctx, quiet, skip_verification):
         ctx.obj['verify_certificates'] = False
 
 
-def config_internal(data_mgmt, is_global, is_data_set_property, prop, value):
-    resolver = data_mgmt.settings_resolver
-    if is_global:
-        resolver.set_location_search_order(['global'])
-    else:
-        top_level_path = data_mgmt.git_wrapper.git_top_level_path()
-        if top_level_path.success():
-            resolver.set_resolver_location_roots('data_set', top_level_path.output)
-            resolver.set_location_search_order(['local'])
-        else:
-            resolver.set_location_search_order(['global'])
-
-    config_dict = resolver.config_dict()
-    if not prop:
-        config_str = json.dumps(config_dict, indent=4, sort_keys=True)
-        click.echo("{}".format(config_str))
-    elif not value:
-        little_dict = {prop: config_dict[prop]}
-        config_str = json.dumps(little_dict, indent=4, sort_keys=True)
-        click.echo("{}".format(config_str))
-    else:
-        return check_result("config", set_property(data_mgmt, prop, value, is_global, is_data_set_property))
-
-
 def set_property(data_mgmt, prop, value, is_global, is_data_set_property):
     """Helper function to implement the property setting semantics."""
     loc = 'global' if is_global else 'local'
@@ -213,7 +189,7 @@ def _join_settings_get(setting_lists):
     return joined
 
 
-def _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, value):
+def _config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, value):
     if is_global:
         resolver.set_location_search_order(['global'])
     else:
@@ -247,7 +223,7 @@ def _set(ctx, settings):
         is_data_set_property = ctx.obj['is_data_set_property']
     settings_dict = _join_settings_set(settings)
     for prop, value in settings_dict.items():
-        _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, value)
+        _config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, value)
 
 
 def _get(ctx, settings):
@@ -261,7 +237,7 @@ def _get(ctx, settings):
     if len(settings_list) == 0:
         settings_list = [None]
     for prop in settings_list:
-        _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, None)
+        _config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, None)
 
 # TODO add documentation for all commands
 # TODO error when trying to set a non-existent setting
@@ -271,6 +247,8 @@ def _get(ctx, settings):
 @click.option('-g', '--is_global', default=False, is_flag=True, help='Get global or local.')
 @click.pass_context
 def settings(ctx, is_global):
+    """ Get all settings.
+    """
     ctx.obj['is_global'] = is_global
 
 
@@ -294,6 +272,8 @@ def settings_get(ctx):
 @click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
 @click.pass_context
 def repository(ctx, is_global):
+    """ Get/set settings related to the repository.
+    """
     ctx.obj['is_global'] = is_global
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.repository_resolver
@@ -321,6 +301,8 @@ def repository_get(ctx, settings):
 @click.option('-p', '--is_data_set_property', default=False, is_flag=True, help='Configure data set property.')
 @click.pass_context
 def data_set(ctx, is_global, is_data_set_property):
+    """ Get/set settings related to the data set.
+    """
     ctx.obj['is_global'] = is_global
     ctx.obj['is_data_set_property'] = is_data_set_property
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
@@ -348,6 +330,8 @@ def data_set_get(ctx, settings):
 @click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
 @click.pass_context
 def object(ctx, is_global):
+    """ Get/set settings related to the object.
+    """
     ctx.obj['is_global'] = is_global
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.object_resolver
@@ -374,6 +358,8 @@ def object_get(ctx, settings):
 @click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
 @click.pass_context
 def collection(ctx, is_global):
+    """ Get/set settings related to the collection.
+    """
     ctx.obj['is_global'] = is_global
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.collection_resolver
@@ -400,6 +386,8 @@ def collection_get(ctx, settings):
 @click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
 @click.pass_context
 def config(ctx, is_global):
+    """ Get/set configurations.
+    """
     ctx.obj['is_global'] = is_global
     ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.config_resolver
@@ -417,22 +405,6 @@ def config_set(ctx, settings):
 @click.pass_context
 def config_get(ctx, settings):
     _get(ctx, settings)
-
-
-# TODO replace by multiple commands
-# @cli.command()
-# @click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
-# @click.option('-p', '--is_data_set_property', default=False, is_flag=True, help='Configure data set property.')
-# @click.argument('prop', default="")
-# @click.argument('value', default="")
-# @click.pass_context
-# def config(ctx, is_global, is_data_set_property, prop, value):
-#     """Configure the openBIS setup.
-
-#     Configure the openBIS server url, the data set type, and the data set properties.
-#     """
-#     data_mgmt = shared_data_mgmt(ctx.obj)
-#     config_internal(data_mgmt, is_global, is_data_set_property, prop, value)
 
 
 # repository commands: status, sync, commit, init, addref, removeref, init_analysis
