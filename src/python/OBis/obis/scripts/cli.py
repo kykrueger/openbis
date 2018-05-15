@@ -139,29 +139,29 @@ def init_handle_cleanup(result, object_id, collection_id, folder, data_mgmt):
             return check_result("init_data", set_property(data_mgmt, 'collection_id', collection_id, False, False))
 
 
-# setting commands
-# obis [type] [get|set] [-g]? [-p]? [[key]+ | [key=value]+]?
+# settings commands
 
 
-class GetOrSet(click.ParamType):
-    name = 'get_or_set'
-
-    def convert(self, value, param, ctx):
-        result = {}
-        result['get'] = value == 'get'
-        result['set'] = value == 'set'
-        if result['get'] == False and result['set'] == False:
-            self.fail(param=param, message='Parameter has to be \'get\' or \'set\'.')
-        return result
-
-
-class Settings(click.ParamType):
-    name = 'settings'
+class SettingsGet(click.ParamType):
+    name = 'settings_get'
 
     def convert(self, value, param, ctx):
-        print(value)
         try:
-            properties = {}
+            split = list(filter(lambda term: len(term) > 0, value.split(',')))
+            return split
+        except:
+            self._fail(param)
+
+    def _fail(self, param):
+            self.fail(param=param, message='Settings must be in the format: key1, key2, ...')
+
+
+class SettingsSet(click.ParamType):
+    name = 'settings_set'
+
+    def convert(self, value, param, ctx):
+        try:
+            settings = {}
             split = list(filter(lambda term: len(term) > 0, value.split(',')))
             for setting in split:
                 setting_split = setting.split('=')
@@ -169,8 +169,8 @@ class Settings(click.ParamType):
                     self._fail(param)
                 key = setting_split[0]
                 value = setting_split[1]
-                properties[key] = value
-            return properties
+                settings[key] = value
+            return settings
         except:
             self._fail(param)
 
@@ -178,7 +178,7 @@ class Settings(click.ParamType):
             self.fail(param=param, message='Settings must be in the format: key1=value1, key2=value2, ...')
 
 
-def _join_settings(setting_dicts):
+def _join_settings_set(setting_dicts):
     joined = {}
     for setting_dict in setting_dicts:
         for key, value in setting_dict.items():
@@ -186,23 +186,15 @@ def _join_settings(setting_dicts):
     return joined
 
 
-@cli.command()
-@click.argument('get_or_set', type=GetOrSet())
-@click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
-@click.argument('settings', type=Settings(), nargs=-1)
-@click.pass_context
-def repository(ctx, get_or_set, is_global, settings):
-    print(get_or_set)
-    print(is_global)
-    settings_dict = _join_settings(settings)
-    print(settings_dict)
-    for prop, value in settings_dict.items():
-        data_mgmt = shared_data_mgmt(ctx.obj)
-        resolver = data_mgmt.settings_resolver.properties_resolver
-        config_internal_new(data_mgmt, resolver, is_global, False, prop, value)
+def _join_settings_get(setting_lists):
+    joined = []
+    for setting_list in setting_lists:
+        joined += setting_list
+    return joined
 
 
-def config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, value):
+# TODO also get for is_data_set_property
+def _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, value):
     if is_global:
         resolver.set_location_search_order(['global'])
     else:
@@ -225,45 +217,176 @@ def config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, pr
         return check_result("config", set_property(data_mgmt, prop, value, is_global, is_data_set_property))
 
 
+def _set(ctx, settings):
+    is_global = ctx.obj['is_global']
+    data_mgmt = ctx.obj['data_mgmt']
+    resolver = ctx.obj['resolver']
+    is_data_set_property = ctx.obj['is_data_set_property'] == True
+    settings_dict = _join_settings_set(settings)
+    for prop, value in settings_dict.items():
+        _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, value)
 
-## repository -> properties.json
-### repository_id
-### external_dms_id
-### data_set_id
 
-## config -> config.json
-### fileservice_url
-### git_annex_hash_as_checksum
-### hostname
-### openbis_url
-### user
-### verify_certificates
+def _get(ctx, settings):
+    is_global = ctx.obj['is_global']
+    data_mgmt = ctx.obj['data_mgmt']
+    resolver = ctx.obj['resolver']
+    if 'is_data_set_property' in ctx.obj:
+        is_data_set_property = ctx.obj['is_data_set_property']
+    else:
+        is_data_set_property = False
+    settings_list = _join_settings_get(settings)
+    if len(settings_list) == 0:
+        settings_list = [None]
+    for prop in settings_list:
+        _config_internal_new(data_mgmt, resolver, is_global, is_data_set_property, prop, None)
 
-## object -> config.json
-### id
 
-## collection -> config.json
-### id
+## repository: repository_id, external_dms_id, data_set_id
 
-## data_set -> config.json
-### type
-### properties
+@cli.group()
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
+@click.pass_context
+def repository(ctx, is_global):
+    ctx.obj['is_global'] = is_global
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.repository_resolver
+
+
+@repository.command('set')
+@click.argument('settings', type=SettingsSet(), nargs=-1)
+@click.pass_context
+def repository_set(ctx, settings):
+    _set(ctx, settings)
+
+
+@repository.command('get')
+@click.argument('settings', type=SettingsGet(), nargs=-1)
+@click.pass_context
+def repository_get(ctx, settings):
+    _get(ctx, settings)
+
+
+## data_set: type, properties
+
+
+@cli.group()
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
+@click.option('-p', '--is_data_set_property', default=False, is_flag=True, help='Configure data set property.')
+@click.pass_context
+def data_set(ctx, is_global, is_data_set_property):
+    ctx.obj['is_global'] = is_global
+    ctx.obj['is_data_set_property'] = is_data_set_property
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.data_set_resolver
+
+
+@data_set.command('set')
+@click.argument('settings', type=SettingsSet(), nargs=-1)
+@click.pass_context
+def data_set_set(ctx, settings):
+    _set(ctx, settings)
+
+
+@data_set.command('get')
+@click.argument('settings', type=SettingsGet(), nargs=-1)
+@click.pass_context
+def data_set_get(ctx, settings):
+    _get(ctx, settings)
+
+
+## object: object_id
+
+
+@cli.group()
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
+@click.pass_context
+def object(ctx, is_global):
+    ctx.obj['is_global'] = is_global
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.object_resolver
+
+
+@object.command('set')
+@click.argument('settings', type=SettingsSet(), nargs=-1)
+@click.pass_context
+def object_set(ctx, settings):
+    _set(ctx, settings)
+
+
+@object.command('get')
+@click.argument('settings', type=SettingsGet(), nargs=-1)
+@click.pass_context
+def object_get(ctx, settings):
+    _get(ctx, settings)
+
+
+## collection: collection_id
+
+
+@cli.group()
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
+@click.pass_context
+def collection(ctx, is_global):
+    ctx.obj['is_global'] = is_global
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.collection_resolver
+
+
+@collection.command('set')
+@click.argument('settings', type=SettingsSet(), nargs=-1)
+@click.pass_context
+def collection_set(ctx, settings):
+    _set(ctx, settings)
+
+
+@collection.command('get')
+@click.argument('settings', type=SettingsGet(), nargs=-1)
+@click.pass_context
+def collection_get(ctx, settings):
+    _get(ctx, settings)
+
+
+## config: fileservice_url, git_annex_hash_as_checksum, hostname, openbis_url, user, verify_certificates
+
+
+@cli.group()
+@click.option('-g', '--is_global', default=False, is_flag=True, help='Set/get global or local.')
+@click.pass_context
+def config(ctx, is_global):
+    ctx.obj['is_global'] = is_global
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.config_resolver
+
+
+@config.command('set')
+@click.argument('settings', type=SettingsSet(), nargs=-1)
+@click.pass_context
+def config_set(ctx, settings):
+    _set(ctx, settings)
+
+
+@config.command('get')
+@click.argument('settings', type=SettingsGet(), nargs=-1)
+@click.pass_context
+def config_get(ctx, settings):
+    _get(ctx, settings)
 
 
 # TODO replace by multiple commands
-@cli.command()
-@click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
-@click.option('-p', '--is_data_set_property', default=False, is_flag=True, help='Configure data set property.')
-@click.argument('prop', default="")
-@click.argument('value', default="")
-@click.pass_context
-def config(ctx, is_global, is_data_set_property, prop, value):
-    """Configure the openBIS setup.
+# @cli.command()
+# @click.option('-g', '--is_global', default=False, is_flag=True, help='Configure global or local.')
+# @click.option('-p', '--is_data_set_property', default=False, is_flag=True, help='Configure data set property.')
+# @click.argument('prop', default="")
+# @click.argument('value', default="")
+# @click.pass_context
+# def config(ctx, is_global, is_data_set_property, prop, value):
+#     """Configure the openBIS setup.
 
-    Configure the openBIS server url, the data set type, and the data set properties.
-    """
-    data_mgmt = shared_data_mgmt(ctx.obj)
-    config_internal(data_mgmt, is_global, is_data_set_property, prop, value)
+#     Configure the openBIS server url, the data set type, and the data set properties.
+#     """
+#     data_mgmt = shared_data_mgmt(ctx.obj)
+#     config_internal(data_mgmt, is_global, is_data_set_property, prop, value)
 
 
 # repository commands: status, sync, commit, init, addref, removeref, init_analysis

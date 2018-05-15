@@ -103,10 +103,6 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='fileservice_url', private=False))
         self.add_param(ConfigParam(name='user', private=True))
         self.add_param(ConfigParam(name='verify_certificates', private=True, is_json=True, default_value=True))
-        self.add_param(ConfigParam(name='object_id', private=False, ignore_global=True))
-        self.add_param(ConfigParam(name='collection_id', private=False, ignore_global=True))
-        self.add_param(ConfigParam(name='data_set_type', private=False))
-        self.add_param(ConfigParam(name='data_set_properties', private=False, is_json=True))
         self.add_param(ConfigParam(name='hostname', private=False))
         self.add_param(ConfigParam(name='git_annex_hash_as_checksum', private=False, is_json=True, default_value=True))
 
@@ -123,6 +119,18 @@ class ConfigEnv(object):
         return True
 
 
+class CollectionEnv(ConfigEnv):
+
+    def initialize_params(self):
+        self.add_param(ConfigParam(name='collection_id', private=False, ignore_global=True))
+
+
+class ObjectEnv(ConfigEnv):
+
+    def initialize_params(self):
+        self.add_param(ConfigParam(name='object_id', private=False, ignore_global=True))
+
+
 class DataSetEnv(ConfigEnv):
 
     # TODO remove data_set from property names
@@ -136,6 +144,7 @@ class RepositoryEnv(ConfigEnv):
 
     def initialize_params(self):
         self.add_param(ConfigParam(name='external_dms_id', private=True))
+        # TODO remove repository_
         self.add_param(ConfigParam(name='repository_id', private=True))
         self.add_param(ConfigParam(name='data_set_id', private=False))
 
@@ -165,6 +174,9 @@ class ConfigResolver(object):
         self.location_cache = {}
         self.is_initialized = False
         self.config_file = config_file
+
+    def set_location_search_order(self, order):
+        self.location_search_order = order
 
     def initialize_location_cache(self):
         env = self.env
@@ -297,11 +309,17 @@ class SettingsResolver(object):
 
     def __init__(self, location_resolver=None):
         self.repository_resolver = ConfigResolver(location_resolver=location_resolver, env=RepositoryEnv(), config_file='repository.json')
-        # TODO remove config_resolver in the end
+        self.data_set_resolver = ConfigResolver(location_resolver=location_resolver, env=DataSetEnv(), config_file='data_set.json')
+        self.object_resolver = ConfigResolver(location_resolver=location_resolver, env=ObjectEnv(), config_file='object.json')
+        self.collection_resolver = ConfigResolver(location_resolver=location_resolver, env=CollectionEnv(), config_file='collection.json')
         self.config_resolver = ConfigResolver(location_resolver=location_resolver, env=ConfigEnv())
+        # TODO remove self.resolvers and all methods
         self.resolvers = []
-        self.resolvers.append(self.config_resolver)
         self.resolvers.append(self.repository_resolver)
+        self.resolvers.append(self.data_set_resolver)
+        self.resolvers.append(self.object_resolver)
+        self.resolvers.append(self.collection_resolver)
+        self.resolvers.append(self.config_resolver)
 
     def config_dict(self, local_only=False):
         combined_dict = {}
