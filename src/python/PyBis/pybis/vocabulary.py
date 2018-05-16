@@ -137,7 +137,7 @@ class VocabularyTerm(OpenBisObject):
                 [attrs]
             ]
         }
-        return json.dumps(request)
+        return request
 
 
     def vocabularyTermId(self):
@@ -179,3 +179,9 @@ class VocabularyTerm(OpenBisObject):
             )
             self._set_data(data)
 
+
+    def delete(self, reason='no particular reason'):
+        self.openbis.delete_openbis_entity(
+            entity='VocabularyTerm', objectId=self.data['permId'], reason=reason
+        )
+        if VERBOSE: print("VocabularyTerm successfully deleted.")
