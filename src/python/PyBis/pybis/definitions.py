@@ -14,6 +14,10 @@ def openbis_definitions(entity):
             "attrs": "code permId description registrator registrationDate modificationDate".split(),
             "multi": "".split(),
             "identifier": "spaceId",
+            "create": { "@type": "as.dto.space.create.SpaceCreation"},
+            "update": { "@type": "as.dto.space.upate.SpaceUpdate"},
+            "delete": { "@type": "as.dto.space.delete.SpaceDeletionOptions"},
+            "fetch":  { "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
         },
         "Project": {
             "attrs_new": "code description space attachments".split(),
@@ -92,6 +96,10 @@ def openbis_definitions(entity):
             "attrs": "code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyId",
+            "create": { "@type": "as.dto.vocabulary.create.VocabularyCreation"}, 
+            "update": { "@type": "as.dto.vocabulary.upate.VocabularyUpdate"},
+            "delete": { "@type": "as.dto.vocabulary.delete.VocabularyDeletionOptions"},
+            "fetch":  { "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions"},
         },
         "VocabularyTerm": {
             "attrs_new": "code vocabularyCode label description official ordinal".split(),
@@ -99,6 +107,10 @@ def openbis_definitions(entity):
             "attrs": "code vocabularyCode label description official ordinal registrationDate modificationDate registrator".split(),
             "multi": "".split(),
             "identifier": "vocabularyTermId",
+            "create": { "@type": "as.dto.vocabulary.create.VocabularyTermCreation"},
+            "update": { "@type": "as.dto.vocabulary.upate.VocabularyTermUpdate"},
+            "delete": { "@type": "as.dto.vocabulary.delete.VocabularyTermDeletionOptions"},
+            "fetch":  { "@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"},
         },
         "Plugin": {
             "attrs_new": "name description available script available script pluginType pluginKind entityKinds".split(),
@@ -234,3 +246,16 @@ def get_fetchoption_for_entity(entity):
         return fetch_option[entity]
     except KeyError as e:
         return {}
+
+def get_type_for_entity(entity, action):
+    if action not in "create update delete fetch".split():
+        raise ValueError('unknown action: {}'.format(action))
+
+    definition = openbis_definitions(entity)
+    return definition[action]
+
+def get_method_for_entity(entity, action):
+    if action == "Vocabulary":
+        return "{}Vocabularies".format(action)
+
+    return "{}{}s".format(action, entity)
