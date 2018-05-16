@@ -59,6 +59,9 @@ class AttrHolder():
                 if isinstance(self.__dict__['_' + attr], dict):
                     self.__dict__['_' + attr].pop('@id')
 
+            elif attr == 'vocabularyCode':
+                self.__dict__['_'+attr] = data.get('permId', {}).get(attr, None)
+
             elif attr in ["space"]:
                 d = data.get(attr, None)
                 if d is not None:
