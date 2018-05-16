@@ -2,7 +2,6 @@ package ch.ethz.sis.startup;
 
 import java.io.File;
 import java.io.FileInputStream;
-
 import ch.ethz.sis.benchmark.Benchmark;
 import ch.ethz.sis.benchmark.BenchmarkConfig;
 import ch.ethz.sis.json.jackson.JacksonObjectMapper;
@@ -19,11 +18,11 @@ public class Main
     }
 
     private static Logger logger = LogManager.getLogger(Main.class);
-
+    
     public static void main(String[] args) throws Exception
     {
-        logger.info("Current Workspace: " + (new File("").getAbsolutePath()));
-
+    		logger.info("Current Workspace: " + (new File("").getAbsolutePath()));
+    		
         File configFile;
         if (args.length < 1)
         {
