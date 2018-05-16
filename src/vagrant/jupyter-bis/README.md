@@ -83,6 +83,7 @@ This process describes how to upgrade your openBIS instance in your virtual mach
 10. do the openBIS upgrade: `bin/upgrade.sh`
 11. switch back to vagrant user: `logout` or CTRL-D
 11. start openBIS: `sync/initialize/start_services.sh`
+12. optionally delete previous installations (to save diskspace): `rm -rf backup/*`
 
 ## start openBIS and JupyterHub
 

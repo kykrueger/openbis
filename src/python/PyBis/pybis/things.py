@@ -5,11 +5,13 @@ class Things():
        
     """
 
-    def __init__(self, openbis_obj, entity, df, identifier_name='code'):
+    def __init__(self, openbis_obj, entity, df, 
+        identifier_name='code', additional_identifier=None):
         self.openbis = openbis_obj
         self.entity = entity
         self.df = df
         self.identifier_name = identifier_name
+        self.additional_identifier = additional_identifier
 
     def __repr__(self):
         return tabulate(self.df, headers=list(self.df))
@@ -101,6 +103,11 @@ class Things():
                 return Things(self.openbis, 'dataset', DataFrame(), 'permId')
 
     def __getitem__(self, key):
+        """ elegant way to fetch a certain element from the displayed list.
+        If an integer value is given, we choose the row.
+        If the key is a list, we return the desired columns (normal dataframe behaviour)
+        If the key is a non-integer value, we treat it as a primary-key lookup
+        """
         if self.df is not None and len(self.df) > 0:
             row = None
             if isinstance(key, int):
@@ -115,7 +122,14 @@ class Things():
 
             if row is not None:
                 # invoke the openbis.get_<entity>() method
-                return getattr(self.openbis, 'get_' + self.entity)(row[self.identifier_name].values[0])
+                if self.additional_identifier is None:
+                    return getattr(self.openbis, 'get_' + self.entity)(row[self.identifier_name].values[0])
+                ## get an entry using two keys
+                else:
+                    return getattr(self.openbis, 'get_' + self.entity)(
+                            row[self.identifier_name].values[0],
+                            row[self.additional_identifier].values[0]
+                    )
 
     def __iter__(self):
         for item in self.df[[self.identifier_name]][self.identifier_name].iteritems():

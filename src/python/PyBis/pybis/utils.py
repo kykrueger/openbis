@@ -18,7 +18,7 @@ def parse_jackson(input_json):
     interesting=['tags', 'registrator', 'modifier', 'owner', 'type', 'parents', 
         'children', 'containers', 'properties', 'experiment', 'sample',
         'project', 'space', 'propertyType', 'entityType', 'propertyType', 'propertyAssignment',
-        'externalDms', 'roleAssignments', 'user', 'authorizationGroup'
+        'externalDms', 'roleAssignments', 'user', 'authorizationGroup', 'vocabulary'
     ]
     found = {} 
     def build_cache(graph):
@@ -150,6 +150,15 @@ def extract_deletion(obj):
             "type": deleted_object["id"]["@type"]
         })
     return del_objs
+
+
+def extract_attr(attr):
+    def attr_func(obj):
+        if isinstance(obj, dict):
+            return obj.get(attr, '')
+        else:
+            return str(obj)
+    return attr_func
 
 
 def extract_identifier(ident):

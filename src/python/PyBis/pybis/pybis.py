@@ -28,11 +28,11 @@ from tabulate import tabulate
 
 from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
-from .utils import extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
+from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
 from .property import PropertyHolder, PropertyAssignments
-from .masterdata import Vocabulary
+from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
-from .definitions import fetch_option
+from .definitions import get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
 
 # import the various openBIS entities
 from .things import Things
@@ -555,6 +555,9 @@ class Openbis:
             "get_tag(tagId)",
             "new_tag(code, description)",
             "get_terms()",
+            "get_term()",
+            "get_vocabularies()",
+            "get_vocabulary()",
             "new_person(userId, space)",
             "get_persons()",
             "get_person(userId)",
@@ -1623,7 +1626,24 @@ class Openbis:
                 }
             ]
         }
-        self._post_request(self.as_v3, request)
+        resp = self._post_request(self.as_v3, request)
+
+
+    def delete_openbis_entity(self, entity, objectId, reason='No reason given'):
+        method = get_method_for_entity(entity, 'delete')
+        delete_options = get_type_for_entity(entity, 'delete')
+        delete_options['reason'] = reason
+
+        request = {
+           "method": method,
+           "params": [
+                self.token,
+                [ objectId ],
+                delete_options
+            ]
+        }
+        resp = self._post_request(self.as_v3, request)
+        return
 
 
     def get_deletions(self):
@@ -1774,7 +1794,8 @@ class Openbis:
         return request
 
     def get_terms(self, vocabulary=None):
-        """ Returns information about vocabulary, including its controlled vocabulary
+        """ Returns information about existing vocabulary terms. 
+        If a vocabulary code is provided, it only returns the terms of that vocabulary.
         """
 
         search_request = {}
@@ -1787,18 +1808,140 @@ class Openbis:
                 }]
             })
 
-        fetch_options = {
-            "vocabulary": {"@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions"},
-            "@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"
-        }
+        fetchopts = fetch_option['vocabularyTerm']
 
         request = {
             "method": "searchVocabularyTerms",
-            "params": [self.token, search_request, fetch_options]
+            "params": [self.token, search_request, fetchopts]
         }
         resp = self._post_request(self.as_v3, request)
-        parse_jackson(resp)
-        return Vocabulary(resp)
+
+        attrs = 'code vocabularyCode label description registrationDate modificationDate official ordinal'.split()
+
+        if len(resp['objects']) == 0:
+            terms = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
+            terms = DataFrame(objects)
+            terms['vocabularyCode'] = terms['permId'].map(extract_attr('vocabularyCode'))
+            terms['registrationDate'] = terms['registrationDate'].map(format_timestamp)
+            terms['modificationDate'] = terms['modificationDate'].map(format_timestamp)
+
+        return Things(self, 'term', terms[attrs], 
+            identifier_name='code', additional_identifier='vocabularyCode')
+        
+
+    def new_term(self, code, vocabularyCode, label=None, description=None):
+        return VocabularyTerm(
+            self, data=None, 
+            code=code, vocabularyCode=vocabularyCode, 
+            label=label, description=description
+        )
+
+
+    def get_term(self, code, vocabularyCode=None, only_data=False):
+        entity_def = get_definition_for_entity('VocabularyTerm')
+        search_request = {
+            "code": code,
+            "vocabularyCode": vocabularyCode,
+            "@type": "as.dto.vocabulary.id.VocabularyTermPermId"
+        }
+        fetchopts = get_fetchoption_for_entity('VocabularyTerm')
+        for opt in ['registrator']:
+            fetchopts[opt] = get_fetchoption_for_entity(opt)
+        
+        request = {
+            "method": 'getVocabularyTerms',
+            "params": [
+                self.token,
+                [search_request],
+                fetchopts
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+
+        if resp is None or len(resp) == 0:
+            raise ValueError("no VocabularyTerm found with code='{}' and vocabularyCode='{}'".format(code, vocabularyCode))
+        else:
+            parse_jackson(resp)
+            for ident in resp:
+                if only_data:
+                    return resp[ident]
+                else:
+                    return VocabularyTerm(self, resp[ident])
+
+
+    def get_any_entity(self, identifier, entity, only_data=False, method=None):
+
+        entity_def = get_definition_for_entity(entity)
+
+        # guess the method to fetch an entity
+        if method is None:
+            method = 'get' + entity + 's'
+
+        search_request = search_request_for_identifier(identifier, entity)
+        fetchopts = get_fetchoption_for_entity(entity)
+        
+        request = {
+            "method": method,
+            "params": [
+                self.token,
+                [search_request],
+                fetchopts
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+
+        if resp is None or len(resp) == 0:
+            raise ValueError('no {} found with identifier: {}'.format(entity, identifier))
+        else:
+            parse_jackson(resp)
+            for ident in resp:
+                if only_data:
+                    return resp[ident]
+                else:
+                    # get a dynamic instance of that class
+                    klass = globals()[entity]
+                    return klass(self, resp[ident])
+
+
+    def get_vocabularies(self):
+        """ Returns information about vocabulary
+        """
+
+        search_request = {}
+
+        fetchopts = fetch_option['vocabulary']
+        for option in ['registrator']:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "searchVocabularies",
+            "params": [self.token, search_request, fetchopts]
+        }
+        resp = self._post_request(self.as_v3, request)
+
+        attrs = 'code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modificationDate'.split()
+
+        if len(resp['objects']) == 0:
+            vocs = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(resp)
+            vocs = DataFrame(objects)
+            vocs['registrationDate'] = vocs['registrationDate'].map(format_timestamp)
+            vocs['modificationDate'] = vocs['modificationDate'].map(format_timestamp)
+            vocs['registrator']      = vocs['registrator'].map(extract_person)
+
+        return Things(self, 'vocabulary', vocs[attrs], 'code')
+
+
+    def get_vocabulary(self, code, only_data=False):
+        """ Returns the details of a given vocabulary (including vocabulary terms)
+        """
+        return self.get_any_entity(code, 'Vocabulary', only_data=only_data, method='getVocabularies')
+
 
     def new_tag(self, code, description=None):
         """ Creates a new tag (for this user)
@@ -2262,7 +2405,7 @@ class Openbis:
         for key in ['parents','children','container','components']:
             fetchopts[key] = {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"}
 
-        sample_request = {
+        request = {
             "method": "getSamples",
             "params": [
                 self.token,
@@ -2271,7 +2414,7 @@ class Openbis:
             ],
         }
 
-        resp = self._post_request(self.as_v3, sample_request)
+        resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
 
         if resp is None or len(resp) == 0:
@@ -2435,6 +2578,26 @@ class Openbis:
             openbis_obj=self, isNew=True, 
             entityType=entityType, propertyType=propertyType, **kwargs
         )    
+
+    def new_vocabulary(self, code, terms, managedInternally=False, internalNameSpace=False, chosenFromList=True, **kwargs):
+        """ Creates a new vocabulary
+        Usage::
+            new_vocabulary(
+                code = 'vocabulary_code',
+                description = '',
+                terms = [
+                    { "code": "term1", "label": "label1", "description": "description1" },
+                    { "code": "term2", "label": "label2", "description": "description2" },
+                ]
+            )
+        """
+        kwargs['code'] = code
+        kwargs['managedInternally'] = managedInternally
+        kwargs['internalNameSpace'] = internalNameSpace
+        kwargs['chosenFromList'] = chosenFromList
+        return Vocabulary(self, data=None, terms=terms, **kwargs)
+
+        
 
     def _get_dss_url(self, dss_code=None):
         """ internal method to get the downloadURL of a datastore.

@@ -23,6 +23,15 @@ def test_wrong_login(openbis_instance):
     assert new_instance.is_session_active() is False
 
 
+def test_http_only(openbis_instance):
+    with pytest.raises(Exception):
+        new_instance = Openbis('http://localhost')
+        assert new_instance is None
+
+    new_instance = Openbis(url='http://localhost', allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True)
+    assert new_instance is not None
+
+
 def test_cached_token(openbis_instance):
     openbis_instance.save_token()
     assert openbis_instance.token_path is not None
@@ -33,8 +42,6 @@ def test_cached_token(openbis_instance):
 
     openbis_instance.delete_token()
     assert openbis_instance._get_cached_token() is None
-
-
 
 
 def test_get_dataset_parents(openbis_instance):

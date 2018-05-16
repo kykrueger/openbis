@@ -57,7 +57,7 @@ class Space(OpenBisObject):
         return self.openbis.new_sample(space=self, **kwargs)
 
     def delete(self, reason):
-        self.openbis.delete_entity('Space', self.permId, reason)
+        self.openbis.delete_entity(entity='Space', id=self.permId, reason=reason)
         if VERBOSE: print("Space {} has been sucsessfully deleted.".format(self.permId))
 
     def save(self):
