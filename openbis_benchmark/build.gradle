@@ -23,7 +23,7 @@ dependencies {
 }
 
 
-mainClassName = "ch.ethz.sis.microservices.server.startup.Main"
+mainClassName = "ch.ethz.sis.startup.Main"
 
 distZip {
     into(project.name) {
