@@ -239,10 +239,10 @@ class AttrHolder():
                     "@type": "as.dto.common.update.IdListUpdateValue" 
                 }
 
-            elif attr == 'description':
-                # alway update description
-                up_obj['description'] = {
-                    "value": self.__dict__['_description'],
+            elif attr in 'description label official ordinal'.split():
+                # alway update common fields
+                up_obj[attr] = {
+                    "value": self.__dict__['_'+attr],
                     "isModified": True,
                     "@type": "as.dto.common.update.FieldUpdateValue"
                 }
@@ -269,7 +269,7 @@ class AttrHolder():
                     value = self.__dict__.get('_' + attr, {})
                     if value is None:
                         pass
-                    elif len(value) == 0:
+                    elif isinstance(value, dict) and len(value) == 0:
                         # value is {}: it means that we want this attribute to be
                         # deleted, not updated.
                         up_obj[attr2ids[attr]] = {
