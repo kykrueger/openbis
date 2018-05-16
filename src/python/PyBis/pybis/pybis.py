@@ -32,7 +32,7 @@ from .utils import extract_attr, extract_permid, extract_code,extract_deletion,e
 from .property import PropertyHolder, PropertyAssignments
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
-from .definitions import get_definition_for_entity, fetch_option, get_fetchoption_for_entity
+from .definitions import get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
 
 # import the various openBIS entities
 from .things import Things
@@ -1626,7 +1626,24 @@ class Openbis:
                 }
             ]
         }
-        self._post_request(self.as_v3, request)
+        resp = self._post_request(self.as_v3, request)
+
+
+    def delete_openbis_entity(self, entity, objectId, reason='No reason given'):
+        method = get_method_for_entity(entity, 'delete')
+        delete_options = get_type_for_entity(entity, 'delete')
+        delete_options['reason'] = reason
+
+        request = {
+           "method": method,
+           "params": [
+                self.token,
+                [ objectId ],
+                delete_options
+            ]
+        }
+        resp = self._post_request(self.as_v3, request)
+        return
 
 
     def get_deletions(self):
