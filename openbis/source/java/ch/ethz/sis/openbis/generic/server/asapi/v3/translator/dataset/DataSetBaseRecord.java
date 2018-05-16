@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset;
 
 import java.util.Date;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.common.ObjectBaseRecord;
 
 /**

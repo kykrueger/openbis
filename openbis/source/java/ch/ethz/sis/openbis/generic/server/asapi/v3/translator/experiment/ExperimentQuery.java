@@ -42,20 +42,24 @@ public interface ExperimentQuery extends ObjectQuery
             + "where e.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ExperimentBaseRecord> getExperiments(LongSet experimentIds);
 
-    @Select(sql = "select e.id as objectId, e.exty_id as relatedId from experiments e where e.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select e.id as objectId, e.exty_id as relatedId from experiments e where e.id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getTypeIds(LongSet experimentIds);
 
     @Select(sql = "select et.id, et.code, et.description, et.modification_timestamp as modificationDate "
             + "from experiment_types et where et.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ExperimentTypeBaseRecord> getTypes(LongSet experimentTypeIds);
 
-    @Select(sql = "select e.id as objectId, e.proj_id as relatedId from experiments e where e.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select e.id as objectId, e.proj_id as relatedId from experiments e where e.id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getProjectIds(LongSet experimentIds);
 
-    @Select(sql = "select s.expe_id as objectId, s.id as relatedId from samples s where s.expe_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select s.expe_id as objectId, s.id as relatedId from samples s where s.expe_id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getSampleIds(LongSet experimentIds);
 
-    @Select(sql = "select d.expe_id as objectId, d.id as relatedId from data d where d.expe_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select d.expe_id as objectId, d.id as relatedId from data d where d.expe_id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getDataSetIds(LongSet experimentIds);
 
     // PropertyQueryGenerator was used to generate this query
@@ -88,26 +92,31 @@ public interface ExperimentQuery extends ObjectQuery
     @Select(sql = "select erh.main_expe_id as objectId, erh.pers_id_author as authorId, erh.relation_type as relationType, "
             + "erh.entity_perm_id as relatedObjectId, erh.valid_from_timestamp as validFrom, erh.valid_until_timestamp as validTo, "
             + "erh.proj_id as projectId, erh.samp_id as sampleId, erh.data_id as dataSetId "
-            + "from experiment_relationships_history erh where erh.valid_until_timestamp is not null and erh.main_expe_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+            + "from experiment_relationships_history erh where erh.valid_until_timestamp is not null and erh.main_expe_id = any(?{1})", parameterBindings = {
+                    LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ExperimentRelationshipRecord> getRelationshipsHistory(LongSet experimentIds);
 
-    @Select(sql = "select e.id as objectId, e.pers_id_registerer as relatedId from experiments e where e.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select e.id as objectId, e.pers_id_registerer as relatedId from experiments e where e.id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getRegistratorIds(LongSet experimentIds);
 
-    @Select(sql = "select e.id as objectId, e.pers_id_modifier as relatedId from experiments e where e.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select e.id as objectId, e.pers_id_modifier as relatedId from experiments e where e.id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getModifierIds(LongSet experimentIds);
 
-    @Select(sql = "select ma.expe_id as objectId, ma.mepr_id as relatedId from metaproject_assignments ma where ma.expe_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select ma.expe_id as objectId, ma.mepr_id as relatedId from metaproject_assignments ma where ma.expe_id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getTagIds(LongSet experimentIds);
 
-    @Select(sql = "select exty_id as objectId, id as relatedId from experiment_type_property_types where exty_id = any(?{1})",
-            parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select exty_id as objectId, id as relatedId from experiment_type_property_types where exty_id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getPropertyAssignmentIds(LongSet experimentTypeIds);
 
-    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from experiment_types t where t.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from experiment_types t where t.id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getValidationPluginIds(LongSet experimentTypeIds);
 
-    @Select(sql = "select pt.code as prty_code, 'EXPERIMENT' as kind_code, et.id as type_id, et.code as type_code, etpt.* from experiment_type_property_types etpt, property_types pt, experiment_types et where etpt.id = any(?{1}) and etpt.prty_id = pt.id and etpt.exty_id = et.id", parameterBindings = {
+    @Select(sql = "select pt.code as prty_code, pt.is_internal_namespace as prty_is_internal_namespace, 'EXPERIMENT' as kind_code, et.id as type_id, et.code as type_code, etpt.* from experiment_type_property_types etpt, property_types pt, experiment_types et where etpt.id = any(?{1}) and etpt.prty_id = pt.id and etpt.exty_id = et.id", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PropertyAssignmentRecord> getPropertyAssignments(LongSet experimentTypePropertyTypeIds);
 }

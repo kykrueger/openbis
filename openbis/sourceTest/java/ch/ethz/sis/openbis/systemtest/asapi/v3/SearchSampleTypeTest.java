@@ -457,8 +457,9 @@ public class SearchSampleTypeTest extends AbstractTest
         SampleType type = searchResult.getObjects().get(0);
         assertEquals(type.getCode(), "MASTER_PLATE");
         assertEquals(type.getPropertyAssignments().size(), 2);
-        assertEquals(type.getPropertyAssignments().get(0).getPropertyType().getCode(), "DESCRIPTION");
-        assertEquals(type.getPropertyAssignments().get(1).getPropertyType().getCode(), "PLATE_GEOMETRY");
+        assertEquals(type.getPropertyAssignments().get(0).getPropertyType().getCode(), "$PLATE_GEOMETRY");
+        assertEquals(type.getPropertyAssignments().get(1).getPropertyType().getCode(), "DESCRIPTION");
+        
     }
 
     @Test
@@ -638,7 +639,7 @@ public class SearchSampleTypeTest extends AbstractTest
     @Test
     public void testSearchWithSemanticAnnotationsFetchedForSamplePropertyAssignmentsAndSemanticAnnotationsDefinedAtBothSamplePropertyAssignmentAndPropertyTypeLevels()
     {
-        testSearchWithSemanticAnnotationsFetchedForSamplePropertyAssignments("MASTER_PLATE", "PLATE_GEOMETRY", 3);
+        testSearchWithSemanticAnnotationsFetchedForSamplePropertyAssignments("MASTER_PLATE", "$PLATE_GEOMETRY", 3);
     }
 
     @SuppressWarnings("null")

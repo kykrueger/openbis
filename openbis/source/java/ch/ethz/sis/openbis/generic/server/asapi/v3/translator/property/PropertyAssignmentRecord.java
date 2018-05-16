@@ -34,10 +34,12 @@ public class PropertyAssignmentRecord extends ObjectBaseRecord
 
     public String prty_code;
 
+    public boolean prty_is_internal_namespace;
+
     public Long type_id;
-    
+
     public String type_code;
-    
+
     public String kind_code;
 
     public Boolean is_mandatory;

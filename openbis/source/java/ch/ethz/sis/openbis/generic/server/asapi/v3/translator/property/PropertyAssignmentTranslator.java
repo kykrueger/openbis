@@ -52,6 +52,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person.IPersonTran
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleTypeTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.SampleQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.semanticannotation.ISemanticAnnotationTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.lemnik.eodsql.QueryTool;
@@ -110,7 +111,8 @@ public class PropertyAssignmentTranslator implements IPropertyAssignmentTranslat
         {
             EntityKind entityKind = EntityKind.valueOf(assignmentRecord.kind_code);
             IEntityTypeId entityTypeId = new EntityTypePermId(assignmentRecord.type_code, entityKind);
-            IPropertyTypeId propertyTypeId = new PropertyTypePermId(assignmentRecord.prty_code);
+            IPropertyTypeId propertyTypeId =
+                    new PropertyTypePermId(CodeConverter.tryToBusinessLayer(assignmentRecord.prty_code, assignmentRecord.prty_is_internal_namespace));
 
             PropertyAssignment assignment = new PropertyAssignment();
             assignment.setPermId(new PropertyAssignmentPermId(entityTypeId, propertyTypeId));

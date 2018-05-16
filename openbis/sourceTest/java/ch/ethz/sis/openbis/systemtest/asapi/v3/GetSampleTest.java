@@ -1089,7 +1089,7 @@ public class GetSampleTest extends AbstractSampleTest
         assertEquals(type.getCode(), "MASTER_PLATE");
         assertEquals(type.getFetchOptions().hasPropertyAssignments(), true);
         List<PropertyAssignment> propertyAssignments = type.getPropertyAssignments();
-        assertEquals(propertyAssignments.get(0).getPropertyType().getCode(), "PLATE_GEOMETRY");
+        assertEquals(propertyAssignments.get(0).getPropertyType().getCode(), "$PLATE_GEOMETRY");
         assertEquals(propertyAssignments.get(0).getPropertyType().getLabel(), "Plate Geometry");
         assertEquals(propertyAssignments.get(0).getPropertyType().getDescription(), "Plate Geometry");
         assertEquals(propertyAssignments.get(0).getPropertyType().isInternalNameSpace(), Boolean.TRUE);
@@ -1102,6 +1102,28 @@ public class GetSampleTest extends AbstractSampleTest
         assertEquals(propertyAssignments.get(1).getPropertyType().getDataType(), DataType.VARCHAR);
         assertEquals(propertyAssignments.get(1).isMandatory(), Boolean.FALSE);
         assertEquals(propertyAssignments.size(), 2);
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testGetWithPropertyWithInternalNamespace()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+
+        List<SamplePermId> sampleIds = Collections.singletonList(new SamplePermId("200811050919915-8"));
+        Map<ISampleId, Sample> map = v3api.getSamples(sessionToken, sampleIds, fetchOptions);
+        List<Sample> samples = new ArrayList<Sample>(map.values());
+
+        assertEquals(samples.size(), 1);
+
+        Sample sample = samples.get(0);
+        assertEquals(sample.getPermId().getPermId(), "200811050919915-8");
+
+        Map<String, String> properties = sample.getProperties();
+        assertEquals(properties.get("$PLATE_GEOMETRY"), "384_WELLS_16X24");
         v3api.logout(sessionToken);
     }
 

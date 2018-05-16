@@ -33,6 +33,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
@@ -248,6 +249,36 @@ public abstract class AbstractGetEntityTypeTest extends AbstractTest
         assertEquals(((EntityTypePermId) type.getPermId()).getPermId(), permId.getPermId());
         assertEquals(type.getCode(), permId.getPermId());
         assertPropertyAssignments(type.getPropertyAssignments(), "ENTITY_TEST_TYPE.DESCRIPTION");
+
+        assertValidationPluginNotFetched(type);
+    }
+
+    @Test
+    public void testGetByIdsWithInternalPropertyAssignments()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        String entityTypeCode = "ENTITY_TEST_TYPE";
+        String propertyTypeCodeWithDolar = "$PLATE_GEOMETRY";
+
+        PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
+        assignmentCreation.setPropertyTypeId(new PropertyTypePermId(propertyTypeCodeWithDolar));
+
+        EntityTypePermId permId = createEntityType(sessionToken, entityTypeCode, Arrays.asList(assignmentCreation), null);
+
+        Map<IEntityTypeId, ? extends IEntityType> map = getEntityTypes(sessionToken, Arrays.asList(permId), createFetchOptions(true, false));
+
+        IEntityType type = map.get(permId);
+
+        assertEquals(((EntityTypePermId) type.getPermId()).getPermId(), permId.getPermId());
+        assertEquals(type.getCode(), permId.getPermId());
+
+        assertEquals(type.getPropertyAssignments().size(), 1);
+        PropertyAssignment assignment = type.getPropertyAssignments().get(0);
+        assertEquals(assignment.getPermId().getEntityTypeId(), new EntityTypePermId(entityTypeCode, getEntityKind()));
+        assertEquals(((PropertyTypePermId) assignment.getPermId().getPropertyTypeId()).getPermId(), propertyTypeCodeWithDolar);
+        assertEquals(assignment.getPropertyType().getCode(), propertyTypeCodeWithDolar);
+        assertEquals(((PropertyTypePermId) assignment.getPropertyType().getPermId()).getPermId(), propertyTypeCodeWithDolar);
 
         assertValidationPluginNotFetched(type);
     }
