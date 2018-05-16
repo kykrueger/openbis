@@ -21,12 +21,14 @@ import java.util.List;
 public class UserGroup
 {
     private String name;
-    
+
     private String key;
 
     private List<String> ldapGroupKeys;
 
     private List<String> admins;
+
+    private List<String> shareIds;
 
     public String getName()
     {
@@ -52,9 +54,20 @@ public class UserGroup
     {
         this.admins = admins;
     }
-    
+
     public List<String> getLdapGroupKeys()
     {
         return ldapGroupKeys;
     }
+
+    public List<String> getShareIds()
+    {
+        return shareIds;
+    }
+
+    public void setShareIds(List<String> shareIds)
+    {
+        this.shareIds = shareIds;
+    }
+
 }

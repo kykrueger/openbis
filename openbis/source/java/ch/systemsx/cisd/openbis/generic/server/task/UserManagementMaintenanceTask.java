@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ch.systemsx.cisd.authentication.IAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
@@ -50,6 +51,8 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
     static final String AUDIT_LOG_FILE_PATH_PROPERTY = "audit-log-file-path";
 
     static final String DEFAULT_AUDIT_LOG_FILE_PATH = "logs/user-management-audit_log.txt";
+    
+    static final String SHARES_MAPPING_FILE_PATH_PROPERTY = "shares-mapping-file-path";
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             UserManagementMaintenanceTask.class);
@@ -62,6 +65,8 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
     private File auditLogFile;
 
     private LDAPAuthenticationService ldapService;
+
+    private File shareIdsMappingFile;
 
     @Override
     public void setUp(String pluginName, Properties properties)
@@ -84,6 +89,15 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
             throw new ConfigurationFailureException("There is no LDAP authentication service configured. "
                     + "At least 'ldap.server.url', 'ldap.security.principal.distinguished.name', "
                     + "'ldap.security.principal.password' have to be specified in 'service.properties'.");
+        }
+        String shareIdsMappingFilePath = properties.getProperty(SHARES_MAPPING_FILE_PATH_PROPERTY);
+        if (shareIdsMappingFilePath != null)
+        {
+            shareIdsMappingFile = new File(shareIdsMappingFilePath);
+            if (shareIdsMappingFile.isDirectory())
+            {
+                throw new ConfigurationFailureException("Share ids mapping file '" + shareIdsMappingFile.getAbsolutePath() + "' is a directory.");
+            }
         }
         operationLog.info("Plugin '" + pluginName + "' initialized. Configuration file: " + configurationFile.getAbsolutePath());
     }
@@ -133,6 +147,15 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
     private boolean addGroup(UserManager userManager, UserGroup group)
     {
         String key = group.getKey();
+        if (shareIdsMappingFile != null)
+        {
+            List<String> shareIds = group.getShareIds();
+            if (shareIds == null || shareIds.isEmpty())
+            {
+                operationLog.error("No shareIds specified for group '" + key + "'. Task aborted.");
+                return false;
+            }
+        }
         List<String> ldapGroupKeys = group.getLdapGroupKeys();
         if (ldapGroupKeys == null || ldapGroupKeys.isEmpty())
         {
@@ -184,7 +207,7 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
     protected LDAPAuthenticationService getLdapAuthenticationService()
     {
-        return (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
+        return (LDAPAuthenticationService) CommonServiceProvider.tryToGetBean("ldap-authentication-service");
     }
 
     private UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
@@ -203,7 +226,8 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
     protected UserManager createUserManager(Log4jSimpleLogger logger)
     {
-        return new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
+        IAuthenticationService authenticationService = (IAuthenticationService) CommonServiceProvider.tryToGetBean("authentication-service");
+        return new UserManager(authenticationService, CommonServiceProvider.getApplicationServerApi(), shareIdsMappingFile, 
                 logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
     }
 }

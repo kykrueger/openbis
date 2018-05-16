@@ -1,6 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
+applicationDefaultJvmArgs = ["-Xms1024m", "-Xmx1024m"]
+
 task wrapper(type: Wrapper) {
     gradleVersion = '4.5'
 }
@@ -19,11 +21,11 @@ dependencies {
 			'fasterxml:jackson-annotations:2.0.2',
 			'fasterxml:jackson-core:2.0.2',
 			'fasterxml:jackson-databind:2.0.2',
-			'openbis:openbis-v3-api-batteries-included:S269'
+			'openbis:openbis-v3-api-batteries-included:S275'
 }
 
 
-mainClassName = "ch.ethz.sis.microservices.server.startup.Main"
+mainClassName = "ch.ethz.sis.startup.Main"
 
 distZip {
     into(project.name) {

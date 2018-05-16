@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server.task;
 
 import static ch.systemsx.cisd.common.test.AssertionUtil.assertContains;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -46,7 +47,6 @@ import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;
 import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
-import de.schlichtherle.io.File;
 
 /**
  * @author Franz-Josef Elmer
@@ -61,6 +61,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
 
     private File auditLogFile;
 
+    private File mappingFile;
+
     private Properties properties;
 
     @BeforeMethod
@@ -70,6 +72,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         configFile = new File(workingDirectory, "config.json");
         auditLogFile = new File(workingDirectory, "audit_log.txt");
+        mappingFile = new File(workingDirectory, "mapping-file.txt");
         properties = new Properties();
         properties.setProperty(UserManagementMaintenanceTask.CONFIGURATION_FILE_PATH_PROPERTY, configFile.getPath());
         properties.setProperty(UserManagementMaintenanceTask.AUDIT_LOG_FILE_PATH_PROPERTY, auditLogFile.getPath());
@@ -107,6 +110,19 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
 
         // When + Then
         assertConfigFailure(task, auditLogFile.getPath() + "' is a directory.");
+    }
+
+    @Test
+    public void testSetUpFailedBecauseMappingFileIsADirectory()
+    {
+        // Given
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks();
+        FileUtilities.writeToFile(configFile, "");
+        properties.setProperty(UserManagementMaintenanceTask.SHARES_MAPPING_FILE_PATH_PROPERTY, mappingFile.getPath());
+        mappingFile.mkdirs();
+
+        // When + Then
+        assertConfigFailure(task, "Share ids mapping file '" + mappingFile.getAbsolutePath() + "' is a directory.");
     }
 
     @Test
@@ -246,6 +262,60 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
     }
 
     @Test
+    public void testExecuteMissingShareIds()
+    {
+        // Given
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1);
+        properties.setProperty(UserManagementMaintenanceTask.SHARES_MAPPING_FILE_PATH_PROPERTY, mappingFile.getPath());
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]}]}");
+
+        // When
+        task.execute();
+
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "ERROR OPERATION.UserManagementMaintenanceTask - No shareIds specified for group 'SIS'. Task aborted.",
+                logRecorder.getLogContent());
+    }
+
+    @Test
+    public void testExecuteEmptyShareIds()
+    {
+        // Given
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1);
+        properties.setProperty(UserManagementMaintenanceTask.SHARES_MAPPING_FILE_PATH_PROPERTY, mappingFile.getPath());
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"],\"shareIds\":[]}]}");
+        
+        // When
+        task.execute();
+        
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "ERROR OPERATION.UserManagementMaintenanceTask - No shareIds specified for group 'SIS'. Task aborted.",
+                logRecorder.getLogContent());
+    }
+    
+    @Test
     public void testExecuteInvalidCommonSample()
     {
         // Given
@@ -276,7 +346,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
                 logRecorder.getLogContent());
     }
-    
+
     @Test
     public void testExecuteInvalidCommonExperiments()
     {
@@ -288,10 +358,10 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},\"commonExperiments\":{\"ALPHA/B\":\"B\"},"
                 + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"]}]}");
-        
+
         // When
         task.execute();
-        
+
         // Then
         assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
@@ -419,7 +489,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
 
             MockUserManager(ISimpleLogger logger)
             {
-                super(null, null, logger, null);
+                super(null, null, null, logger, null);
                 this.logger = logger;
             }
 
