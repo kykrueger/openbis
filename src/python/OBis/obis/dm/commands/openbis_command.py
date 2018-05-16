@@ -175,7 +175,8 @@ class OpenbisCommand(object):
         # ask user
         hostname = self.ask_for_hostname(socket.gethostname())
         # store
-        cli.config_internal(self.data_mgmt, True, False, 'hostname', hostname)
+        resolver = self.data_mgmt.settings_resolver.config
+        cli.config_internal(self.data_mgmt, resolver, True, False, 'hostname', hostname)
         return hostname
 
     def ask_for_hostname(self, hostname):
