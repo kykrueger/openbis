@@ -1,4 +1,12 @@
 def openbis_definitions(entity):
+    """
+    attrs_new: Attributes, that can appear when creating new entities
+    attrs_up: Attributes that can be updated
+    attrs: Attributes that are displayed when fetched
+    multi: multivalue-elements which appear in an entity. E.g. parents or children in a Sample.
+    identifier: to update entities, the identifier must be specified. Usually identityName + "Id"
+    (Entity-Name in camel-case, starting with lowercase letter, with «Id» added)
+    """
     entities = {
         "Space": {
             "attrs_new": "code description".split(),
@@ -6,6 +14,10 @@ def openbis_definitions(entity):
             "attrs": "code permId description registrator registrationDate modificationDate".split(),
             "multi": "".split(),
             "identifier": "spaceId",
+            "create": { "@type": "as.dto.space.create.SpaceCreation"},
+            "update": { "@type": "as.dto.space.upate.SpaceUpdate"},
+            "delete": { "@type": "as.dto.space.delete.SpaceDeletionOptions"},
+            "fetch":  { "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
         },
         "Project": {
             "attrs_new": "code description space attachments".split(),
@@ -78,6 +90,28 @@ def openbis_definitions(entity):
             "multi": "".split(),
             "identifier": "tagId",
         },
+        "Vocabulary": {
+            "attrs_new": "code description managedInternally internalNameSpace chosenFromList urlTemplate".split(),
+            "attrs_up": "description managedInternally internalNameSpace chosenFromList urlTemplate".split(),
+            "attrs": "code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modificationDate".split(),
+            "multi": "".split(),
+            "identifier": "vocabularyId",
+            "create": { "@type": "as.dto.vocabulary.create.VocabularyCreation"}, 
+            "update": { "@type": "as.dto.vocabulary.upate.VocabularyUpdate"},
+            "delete": { "@type": "as.dto.vocabulary.delete.VocabularyDeletionOptions"},
+            "fetch":  { "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions"},
+        },
+        "VocabularyTerm": {
+            "attrs_new": "code vocabularyCode label description official ordinal".split(),
+            "attrs_up": "label description official ordinal".split(),
+            "attrs": "code vocabularyCode label description official ordinal registrationDate modificationDate registrator".split(),
+            "multi": "".split(),
+            "identifier": "vocabularyTermId",
+            "create": { "@type": "as.dto.vocabulary.create.VocabularyTermCreation"},
+            "update": { "@type": "as.dto.vocabulary.upate.VocabularyTermUpdate"},
+            "delete": { "@type": "as.dto.vocabulary.delete.VocabularyTermDeletionOptions"},
+            "fetch":  { "@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"},
+        },
         "Plugin": {
             "attrs_new": "name description available script available script pluginType pluginKind entityKinds".split(),
             "attrs_up": "description, available script available script pluginType pluginKind entityKinds".split(),
@@ -132,6 +166,8 @@ def openbis_definitions(entity):
         },
     }
     return entities[entity]
+
+get_definition_for_entity = openbis_definitions   # Alias
 
 
 fetch_option = {
@@ -195,4 +231,31 @@ fetch_option = {
     "history": {"@type": "as.dto.history.fetchoptions.HistoryEntryFetchOptions"},
     "dataStore": {"@type": "as.dto.datastore.fetchoptions.DataStoreFetchOptions"},
     "plugin": {"@type": "as.dto.plugin.fetchoptions.PluginFetchOptions"},
+    "vocabulary": {
+        "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
+        "terms": {
+            "@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"
+        },
+    },
+    "vocabularyTerm": {"@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"},
 }
+
+def get_fetchoption_for_entity(entity):
+    entity = entity[0].lower() + entity[1:]   # make first character lowercase
+    try:
+        return fetch_option[entity]
+    except KeyError as e:
+        return {}
+
+def get_type_for_entity(entity, action):
+    if action not in "create update delete fetch".split():
+        raise ValueError('unknown action: {}'.format(action))
+
+    definition = openbis_definitions(entity)
+    return definition[action]
+
+def get_method_for_entity(entity, action):
+    if action == "Vocabulary":
+        return "{}Vocabularies".format(action)
+
+    return "{}{}s".format(action, entity)

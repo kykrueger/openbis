@@ -288,6 +288,49 @@ tag.get_samples()
 tag.delete()
 ```
 
+## Vocabualry and VocabularyTerms
+
+Vocabulary consists of many VocabularyTerms. They are used to control the Terms in a Property field. So for example, you want to add a property called **Animal** to a Sample and you want to control which terms are used in this Property. For this you need to do a couple of steps:
+
+1. create a new vocabulary *AnimalVocabulary*
+2. add terms to that vocabulary: *Cat, Dog, Mouse*
+3. create a new PropertyType (e.g. *Animal*) of DataType *CONTROLLEDVOCABULARY* and assign the *AnimalVocabulary* to it
+4. create a new SampleType (e.g. *Pet*) and *assign* the created PropertyType to that Sample type.
+5. If you now create a new Sample of type *Pet* you will be able to add a property *Animal* to it which only accepts the terms *Cat, Dog* or *Mouse*.
+
+
+**create new Vocabulary with three VocabularyTerms**
+
+```
+voc = o.new_vocabulary(
+    code = 'BBB',
+    description = 'description of vocabulary aaa',
+    urlTemplate = 'https://ethz.ch',
+    terms = [
+        { "code": 'term_code1', "label": "term_label1", "description": "term_description1"},
+        { "code": 'term_code2', "label": "term_label2", "description": "term_description2"},
+        { "code": 'term_code3', "label": "term_label3", "description": "term_description3"}
+    ]   
+)
+voc.save()
+```
+
+**create additional VocabularyTerms**
+
+```
+term = o.new_term(
+	code='TERM_CODE_XXX', 
+	vocabularyCode='BBB', 
+	label='here comes a label',
+	description='here is a meandingful description'
+)
+term.save()
+```
+
+**fetching Vocabulary and VocabularyTerms**
+
+
+
 
 # Requirements and organization
 

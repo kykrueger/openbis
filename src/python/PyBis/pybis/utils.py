@@ -153,12 +153,12 @@ def extract_deletion(obj):
 
 
 def extract_attr(attr):
-    def attr(obj):
+    def attr_func(obj):
         if isinstance(obj, dict):
             return obj.get(attr, '')
         else:
             return str(obj)
-    return attr 
+    return attr_func
 
 
 def extract_identifier(ident):
