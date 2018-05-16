@@ -16,8 +16,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentType
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
@@ -36,50 +39,62 @@ public class LoadBenchmark extends Benchmark {
         IApplicationServerApi v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, getConfiguration().getOpenbisURL(), getConfiguration().getOpenbisTimeout());
         String sessionToken = v3.login(getConfiguration().getUser(), getConfiguration().getPassword());
         
-        //
-        // Setup - Create Property Types
-        //
         String propertyTypeCode1 = "BENCHMARK_STRING_1";
-        PropertyTypeCreation propertyTypeCreation1 = new PropertyTypeCreation();
-        propertyTypeCreation1.setCode(propertyTypeCode1);
-        propertyTypeCreation1.setDataType(DataType.MULTILINE_VARCHAR);
-        propertyTypeCreation1.setLabel("Benchmark String 1 label");
-        propertyTypeCreation1.setDescription("Benchmark String 1 description");
-        
         String propertyTypeCode2 = "BENCHMARK_STRING_2";
-        PropertyTypeCreation propertyTypeCreation2 = new PropertyTypeCreation();
-        propertyTypeCreation2.setCode(propertyTypeCode2);
-        propertyTypeCreation2.setDataType(DataType.MULTILINE_VARCHAR);
-        propertyTypeCreation2.setLabel("Benchmark String 2 label");
-        propertyTypeCreation2.setDescription("Benchmark String 2 description");
-        
-        v3.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation1, propertyTypeCreation2));
-        
-        //
-        // Setup - Create Sample Type
-        //
         EntityTypePermId sampleTypeCode = new EntityTypePermId("BENCHMARK_OBJECT");
-        SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
-        sampleTypeCreation.setCode(sampleTypeCode.getPermId());
-        
-        PropertyAssignmentCreation propertyAssignmentCreation1 = new PropertyAssignmentCreation();
-        propertyAssignmentCreation1.setPropertyTypeId(new PropertyTypePermId(propertyTypeCode1));
-        
-        PropertyAssignmentCreation propertyAssignmentCreation2 = new PropertyAssignmentCreation();
-        propertyAssignmentCreation2.setPropertyTypeId(new PropertyTypePermId(propertyTypeCode2));
-        
-        sampleTypeCreation.setPropertyAssignments(Arrays.asList(propertyAssignmentCreation1, propertyAssignmentCreation2));
-        
-        v3.createSampleTypes(sessionToken, Arrays.asList(sampleTypeCreation));
-        
-        //
-        // Setup - Create Experiment Type
-        //
         EntityTypePermId experimentTypeCode = new EntityTypePermId("BENCHMARK_COLLECTION");
-        ExperimentTypeCreation experimentTypeCreation = new ExperimentTypeCreation();
-        experimentTypeCreation.setCode(experimentTypeCode.getPermId());
         
-        v3.createExperimentTypes(sessionToken, Arrays.asList(experimentTypeCreation));
+        SampleTypeSearchCriteria stsc = new SampleTypeSearchCriteria();
+        stsc.withCode().thatEquals(sampleTypeCode.getPermId());
+        SampleTypeFetchOptions stfo = new SampleTypeFetchOptions();
+        List<SampleType> types = v3.searchSampleTypes(sessionToken, stsc, stfo).getObjects();
+        
+        if(types.isEmpty()) {
+        		//
+            // Setup - Create Property Types
+            //
+            
+            PropertyTypeCreation propertyTypeCreation1 = new PropertyTypeCreation();
+            propertyTypeCreation1.setCode(propertyTypeCode1);
+            propertyTypeCreation1.setDataType(DataType.MULTILINE_VARCHAR);
+            propertyTypeCreation1.setLabel("Benchmark String 1 label");
+            propertyTypeCreation1.setDescription("Benchmark String 1 description");
+            
+            
+            PropertyTypeCreation propertyTypeCreation2 = new PropertyTypeCreation();
+            propertyTypeCreation2.setCode(propertyTypeCode2);
+            propertyTypeCreation2.setDataType(DataType.MULTILINE_VARCHAR);
+            propertyTypeCreation2.setLabel("Benchmark String 2 label");
+            propertyTypeCreation2.setDescription("Benchmark String 2 description");
+            
+            v3.createPropertyTypes(sessionToken, Arrays.asList(propertyTypeCreation1, propertyTypeCreation2));
+            
+            //
+            // Setup - Create Sample Type
+            //
+            
+            SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+            sampleTypeCreation.setCode(sampleTypeCode.getPermId());
+            
+            PropertyAssignmentCreation propertyAssignmentCreation1 = new PropertyAssignmentCreation();
+            propertyAssignmentCreation1.setPropertyTypeId(new PropertyTypePermId(propertyTypeCode1));
+            
+            PropertyAssignmentCreation propertyAssignmentCreation2 = new PropertyAssignmentCreation();
+            propertyAssignmentCreation2.setPropertyTypeId(new PropertyTypePermId(propertyTypeCode2));
+            
+            sampleTypeCreation.setPropertyAssignments(Arrays.asList(propertyAssignmentCreation1, propertyAssignmentCreation2));
+            
+            v3.createSampleTypes(sessionToken, Arrays.asList(sampleTypeCreation));
+            
+            //
+            // Setup - Create Experiment Type
+            //
+            
+            ExperimentTypeCreation experimentTypeCreation = new ExperimentTypeCreation();
+            experimentTypeCreation.setCode(experimentTypeCode.getPermId());
+            
+            v3.createExperimentTypes(sessionToken, Arrays.asList(experimentTypeCreation));
+        }
         
         //
         // Setup - Create codes

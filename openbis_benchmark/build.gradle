@@ -1,6 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
+applicationDefaultJvmArgs = ["-Xms1024m", "-Xmx1024m"]
+
 task wrapper(type: Wrapper) {
     gradleVersion = '4.5'
 }
