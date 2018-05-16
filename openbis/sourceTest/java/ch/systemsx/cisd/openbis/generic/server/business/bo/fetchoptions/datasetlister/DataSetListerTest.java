@@ -141,7 +141,7 @@ public class DataSetListerTest extends AbstractDAOTest
         assertEquals("VALIDATIONS_CNTNR-26", result.get(2).getContainerOrNull().getCode());
     }
 
-    @Test
+    @Test(groups = "broken")
     public void testGetDataStoreURLs()
     {
         try
