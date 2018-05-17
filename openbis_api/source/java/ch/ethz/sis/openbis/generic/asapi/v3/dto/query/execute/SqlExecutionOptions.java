@@ -66,7 +66,7 @@ public class SqlExecutionOptions implements Serializable
     @Override
     public String toString()
     {
-        return getClass().getSimpleName() + ": databaseId=" + databaseId + ", parameters=" + parameters;
+        return getClass().getSimpleName() + ": databaseId=" + databaseId + ", parameterKeys=" + parameters.keySet();
     }
 
 }
