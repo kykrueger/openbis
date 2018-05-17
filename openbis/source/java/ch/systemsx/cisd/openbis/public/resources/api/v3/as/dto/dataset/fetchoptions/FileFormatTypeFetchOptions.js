@@ -2,6 +2,9 @@
  * Class automatically generated with
  * {@link ch.ethz.sis.openbis.generic.shared.api.v3.dto.generators.DtoGenerator}
  */
+/*
+ * @Deprecated
+ */
 define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/dataset/fetchoptions/FileFormatTypeSortOptions" ], function(stjs, FetchOptions) {
 	var FileFormatTypeFetchOptions = function() {
 	};

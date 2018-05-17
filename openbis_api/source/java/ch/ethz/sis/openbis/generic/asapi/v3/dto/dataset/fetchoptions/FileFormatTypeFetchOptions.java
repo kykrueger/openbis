@@ -26,6 +26,7 @@ import java.io.Serializable;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.dataset.fetchoptions.FileFormatTypeFetchOptions")
+@Deprecated
 public class FileFormatTypeFetchOptions extends FetchOptions<FileFormatType> implements Serializable
 {
     private static final long serialVersionUID = 1L;

@@ -28,7 +28,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResul
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.FileFormatType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LinkedData;
@@ -336,14 +335,13 @@ public class Generator extends AbstractGenerator
         gen.addStringField("location");
         gen.addSimpleField(Long.class, "size");
         gen.addFetchedField(StorageFormat.class, "storageFormat", "Storage format", StorageFormatFetchOptions.class);
-        gen.addFetchedField(FileFormatType.class, "fileFormatType", "File Format Type", FileFormatTypeFetchOptions.class);
+        gen.addFetchedField(FileFormatType.class, "fileFormatType", "File Format Type", FileFormatTypeFetchOptions.class).deprecated();
         gen.addFetchedField(LocatorType.class, "locatorType", "Locator Type", LocatorTypeFetchOptions.class);
         gen.addSimpleField(Complete.class, "complete");
         gen.addSimpleField(ArchivingStatus.class, "status");
         gen.addBooleanField("presentInArchive");
         gen.addBooleanField("storageConfirmation");
         gen.addSimpleField(Integer.class, "speedHint");
-        gen.addSimpleField(DataSetKind.class, "kind");
 
         gen.setToStringMethod("\"PhysicalData \" + location");
 
@@ -364,8 +362,7 @@ public class Generator extends AbstractGenerator
 
     private static DtoGenerator createFileFormatType()
     {
-        DtoGenerator gen = new DtoGenerator("dataset", "FileFormatType", FileFormatTypeFetchOptions.class);
-
+        DtoGenerator gen = new DtoGenerator("dataset", "FileFormatType", FileFormatTypeFetchOptions.class).deprecated();
         addCode(gen);
         gen.addStringField("description");
 

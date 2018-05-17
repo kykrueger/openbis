@@ -46,6 +46,8 @@ public class DtoGenerator
 
     private Set<String> implementedInterfaces;
 
+    private boolean deprecated;
+
     public DtoGenerator(String subPackage, String className, Class<?> fetchOptionsClass)
     {
         this.subPackage = subPackage;
@@ -104,6 +106,8 @@ public class DtoGenerator
 
         Class<?> interfaceClass;
 
+        boolean deprecated;
+
         private DTOField(String fieldName, Class<?> fieldClass, String description, Class<?> fetchOptions, String fetchOptionsFieldName,
                 boolean plural)
         {
@@ -160,6 +164,12 @@ public class DtoGenerator
         {
             addImplementedInterfaceGeneric(i);
             interfaceClass = i;
+        }
+
+        DTOField deprecated()
+        {
+            deprecated = true;
+            return this;
         }
     }
 
@@ -254,6 +264,12 @@ public class DtoGenerator
     {
         implementedInterfaces.add(i.getSimpleName() + "<" + className + ">");
         additionalImports.add(i.getName());
+    }
+
+    public DtoGenerator deprecated()
+    {
+        deprecated = true;
+        return this;
     }
 
     public void setToStringMethod(String toStringContent)
@@ -552,6 +568,8 @@ public class DtoGenerator
         {
             print("@Override");
         }
+
+        printDeprecated(field.deprecated);
     }
 
     private void printGetterAnnotation(DTOField field)
@@ -569,6 +587,8 @@ public class DtoGenerator
         {
             print("@Override");
         }
+
+        printDeprecated(field.deprecated);
     }
 
     private void printGetterWithFetchOptions(DTOField field)
@@ -658,6 +678,7 @@ public class DtoGenerator
     private void printFetchOptionsAccessors(DTOField field)
     {
         printMethodJavaDoc();
+        printDeprecated(field.deprecated);
         print("public %s with%s()", field.fetchOptions.getSimpleName(), field.getCapitalizedName());
         startBlock();
         print("if (%s == null)", field.getPersistentName());
@@ -669,6 +690,7 @@ public class DtoGenerator
         print("");
 
         printMethodJavaDoc();
+        printDeprecated(field.deprecated);
         print("public %s with%sUsing(%s fetchOptions)", field.fetchOptions.getSimpleName(), field.getCapitalizedName(),
                 field.fetchOptions.getSimpleName());
         startBlock();
@@ -677,6 +699,7 @@ public class DtoGenerator
         print("");
 
         printMethodJavaDoc();
+        printDeprecated(field.deprecated);
         print("public boolean has%s()", field.getCapitalizedName());
         startBlock();
         print("return %s != null;", field.getPersistentName());
@@ -710,6 +733,8 @@ public class DtoGenerator
         print(" * Class automatically generated with %s", this.getClass().getSimpleName());
         print(" */");
         print("@JsonObject(\"as.dto.%s.%s\")", jsonPackage, className);
+
+        printDeprecated(deprecated);
 
         String extendsStr = "";
         if (extendsClass != null)
@@ -757,6 +782,9 @@ public class DtoGenerator
     private void printField(DTOField field)
     {
         printJsonPropertyAnnotation(field);
+
+        printDeprecated(field.deprecated);
+
         print("private %s %s;", field.definitionClassName, field.getPersistentName());
         print("");
     }
@@ -781,6 +809,9 @@ public class DtoGenerator
     private void printFetchOptionField(DTOField field)
     {
         printJsonPropertyAnnotation(field);
+
+        printDeprecated(field.deprecated);
+
         print("private %s %s;", field.fetchOptions.getSimpleName(), field.getPersistentName());
         print("");
     }
@@ -862,6 +893,14 @@ public class DtoGenerator
             print("import %s;", s);
         }
         print("");
+    }
+
+    private void printDeprecated(boolean deprecated)
+    {
+        if (deprecated)
+        {
+            print("@Deprecated");
+        }
     }
 
     private void printPackage(String p)

@@ -46,6 +46,7 @@ public class PhysicalDataCreation implements ICreation
     private IStorageFormatId storageFormatId;
 
     @JsonProperty
+    @Deprecated
     private IFileFormatTypeId fileFormatTypeId;
 
     @JsonProperty
@@ -101,11 +102,13 @@ public class PhysicalDataCreation implements ICreation
         this.storageFormatId = storageFormatId;
     }
 
+    @Deprecated
     public IFileFormatTypeId getFileFormatTypeId()
     {
         return fileFormatTypeId;
     }
 
+    @Deprecated
     public void setFileFormatTypeId(IFileFormatTypeId fileFormatTypeId)
     {
         this.fileFormatTypeId = fileFormatTypeId;
