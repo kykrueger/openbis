@@ -193,11 +193,13 @@ def with_restore(f):
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
-    def setup_local_config(self, config, path):
+    def setup_local_settings(self, all_settings, path):
         with cd(path):
             self.settings_resolver.set_resolver_location_roots('data_set', '.')
-            for key, value in config.items():
-                self.settings_resolver.set_value_for_parameter(key, value, 'local')
+            for resolver_type, settings in all_settings.items():
+                resolver = getattr(self.settings_resolver, resolver_type)
+                for key, value in settings.items():
+                    resolver.set_value_for_parameter(key, value, 'local')
 
 
     def check_repository_state(self, path):
