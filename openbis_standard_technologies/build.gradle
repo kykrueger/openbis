@@ -1,3 +1,25 @@
+buildscript {
+    apply from: '../gradle/repository.gradle'
+    
+    repositories repositoryConfig
+    
+    dependencies {
+        classpath 'apache:commons-codec:+',
+                  'owasp:dependency-check-gradle-full:+'
+    }
+}
+
+plugins {
+  id "org.owasp.dependencycheck" version "3.1.2"
+}
+
+dependencyCheck {
+  failBuildOnCVSS = 7 // 0 - 4 = low, 4 - 7 = medium, 7 - 9 = high, 9-10 = critical
+  analyzers{
+    assemblyEnabled = false
+  }
+}
+
 evaluationDependsOn(':commonbase')
 evaluationDependsOn(':common')
 evaluationDependsOn(':openbis_api')
@@ -11,6 +33,7 @@ evaluationDependsOn(':screening')
 evaluationDependsOn(':rtd_yeastx')
 evaluationDependsOn(':deep_sequencing_unit')
 evaluationDependsOn(':plasmid')
+
 
 apply from: '../gradle/javaproject.gradle'
 apply from: 'query-api.gradle'
@@ -78,16 +101,6 @@ dependencies {
 
 	javadoc_compilation	project(path:':rtd_phosphonetx'),
 				    	project(path:':screening')
-}
-
-buildscript {
-    apply from: '../gradle/repository.gradle'
-    
-    repositories repositoryConfig
-    
-    dependencies {
-        classpath 'apache:commons-codec:+'
-    }
 }
 
 task compileGwt (dependsOn: classes, type: JavaExec) {
