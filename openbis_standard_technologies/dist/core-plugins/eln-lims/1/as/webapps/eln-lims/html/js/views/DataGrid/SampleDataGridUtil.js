@@ -118,14 +118,44 @@ var SampleDataGridUtil = new function() {
 			label : 'Parents',
 			property : 'parents',
 			isExportable: true,
-			sortable : false
+			sortable : false,
+			render : function(data, grid) {
+				var output = $("<span>");
+				if(data.parents) {
+					var elements = data.parents.split(", ");
+					for (var eIdx = 0; eIdx < elements.length; eIdx++) {
+						var eIdentifier = elements[eIdx];
+						var eComponent = (isLinksDisabled)?eIdentifier:FormUtil.getFormLink(eIdentifier, "Sample", eIdentifier, null);
+						if(eIdx != 0) {
+							output.append(", ");
+						}
+						output.append(eComponent);
+					}
+				}
+				return output;
+			}
 		});
 		
 		columnsFirst.push({
 			label : 'Children',
 			property : 'children',
 			isExportable: false,
-			sortable : false
+			sortable : false,
+			render : function(data, grid) {
+				var output = $("<span>");
+				if(data.children) {
+					var elements = data.children.split(", ");
+					for (var eIdx = 0; eIdx < elements.length; eIdx++) {
+						var eIdentifier = elements[eIdx];
+						var eComponent = (isLinksDisabled)?eIdentifier:FormUtil.getFormLink(eIdentifier, "Sample", eIdentifier, null);
+						if(eIdx != 0) {
+							output.append(", ");
+						}
+						output.append(eComponent);
+					}
+				}
+				return output;
+			}
 		});
 		
 		columnsFirst.push({
