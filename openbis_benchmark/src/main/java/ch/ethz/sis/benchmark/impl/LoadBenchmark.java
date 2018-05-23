@@ -181,7 +181,7 @@ public class LoadBenchmark extends Benchmark {
         		sampleCreation.setSpaceId(new SpacePermId(Prefix.SPACE_ + code)); // Spaces are distributed randomly
         		sampleCreation.setExperimentId(new ExperimentIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code + "/" + Prefix.COLLECTION_ + code));
         		sampleCreations.add(sampleCreation);
-        		if(i % sampleBatchSize == 0) { // Every 5000, send to openBIS
+        		if((i+1) % sampleBatchSize == 0) { // Every 5000, send to openBIS
         			long lapStart4 = System.currentTimeMillis();
         			v3.createSamples(sessionToken, sampleCreations);
         			long lapEnd4 = System.currentTimeMillis();
