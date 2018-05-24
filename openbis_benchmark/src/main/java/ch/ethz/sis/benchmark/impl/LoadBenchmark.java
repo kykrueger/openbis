@@ -9,7 +9,6 @@ import java.util.Set;
 import ch.ethz.sis.benchmark.Benchmark;
 import ch.ethz.sis.benchmark.util.RandomValueGenerator;
 import ch.ethz.sis.benchmark.util.RandomWord;
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
@@ -27,7 +26,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
-import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 
 public class LoadBenchmark extends Benchmark {
 	
@@ -36,8 +34,7 @@ public class LoadBenchmark extends Benchmark {
 	
 	@Override
 	public void startInternal() throws Exception {
-        IApplicationServerApi v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, getConfiguration().getOpenbisURL(), getConfiguration().getOpenbisTimeout());
-        String sessionToken = v3.login(getConfiguration().getUser(), getConfiguration().getPassword());
+        login();
         
         String propertyTypeCode1 = "BENCHMARK_STRING_1";
         String propertyTypeCode2 = "BENCHMARK_STRING_2";
@@ -157,6 +154,7 @@ public class LoadBenchmark extends Benchmark {
         long end3 = System.currentTimeMillis();
         logger.info("Create " + spacesToCreate + " Collections took: " + (end3-start3) + " millis - " + ((end3-start3)/spacesToCreate) + " millis/collection");
         
+        logout();
         //
         // Part 4 - Creating Samples
         //
@@ -182,9 +180,11 @@ public class LoadBenchmark extends Benchmark {
         		sampleCreation.setExperimentId(new ExperimentIdentifier("/" + Prefix.SPACE_ + code + "/" + Prefix.PROJECT_ + code + "/" + Prefix.COLLECTION_ + code));
         		sampleCreations.add(sampleCreation);
         		if((i+1) % sampleBatchSize == 0) { // Every 5000, send to openBIS
+        			login();
         			long lapStart4 = System.currentTimeMillis();
         			v3.createSamples(sessionToken, sampleCreations);
         			long lapEnd4 = System.currentTimeMillis();
+        			logout();
         			logger.info("Create " + sampleCreations.size() + " Samples took: " + (lapEnd4 - lapStart4) + " millis - " + ((lapEnd4-lapStart4)/sampleCreations.size()) + " millis/sample");
         			sampleCreations.clear();
         		}

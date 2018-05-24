@@ -2,6 +2,9 @@ package ch.ethz.sis.startup;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import ch.ethz.sis.benchmark.Benchmark;
 import ch.ethz.sis.benchmark.BenchmarkConfig;
 import ch.ethz.sis.json.jackson.JacksonObjectMapper;
@@ -42,9 +45,36 @@ public class Main
 
         BenchmarkConfig[] benchmarkConfigs = JacksonObjectMapper.getInstance().readValue(new FileInputStream(configFile), BenchmarkConfig[].class);
         for(BenchmarkConfig benchmarkConfig:benchmarkConfigs) {
-        		Benchmark benchmark = (Benchmark) Class.forName(benchmarkConfig.getClassName()).newInstance();
-        		benchmark.setConfiguration(benchmarkConfig);
-        		benchmark.start();
+        		List<BenchmarkThread> threadsToJoin = new ArrayList<>();
+        		for(int t = 0; t < benchmarkConfig.getThreads(); t++) {
+        			BenchmarkThread thread = new BenchmarkThread(benchmarkConfig) {
+        				public void run() {
+        					Benchmark benchmark = null;
+        					try {
+        						benchmark = (Benchmark) Class.forName(benchmarkConfig.getClassName()).newInstance();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+        					benchmark.setConfiguration(benchmarkConfig);
+        	        			benchmark.start();
+        				}
+        			};
+        			threadsToJoin.add(thread);
+        			thread.start();
+        		}
+                
+        		for(BenchmarkThread thread:threadsToJoin) {
+        			thread.join();
+        		}
         }
+    }
+    
+    static private abstract class BenchmarkThread extends Thread {
+    		private final BenchmarkConfig benchmarkConfig;
+    		
+    		public BenchmarkThread(BenchmarkConfig benchmarkConfig) {
+    			super();
+    			this.benchmarkConfig = benchmarkConfig;
+    		}
     }
 }
