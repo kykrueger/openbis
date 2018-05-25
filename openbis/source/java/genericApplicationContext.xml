@@ -130,6 +130,7 @@
 			<bean class="ch.systemsx.cisd.openbis.generic.server.SessionFactory">
 				<constructor-arg ref="dao-factory" />
 				<constructor-arg ref="dss-factory" />
+				<constructor-arg ref="session-workspace-provider" />
 			</bean>
 		</constructor-arg>
 		<constructor-arg>

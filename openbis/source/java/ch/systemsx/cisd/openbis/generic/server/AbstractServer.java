@@ -171,6 +171,9 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
     @Autowired
     private IAuthorizationConfig authorizationConfig;
 
+    @Autowired
+    private ISessionWorkspaceProvider sessionWorkspaceProvider;
+
     private IApplicationServerApi v3Api;
 
     protected String CISDHelpdeskEmail;
@@ -407,6 +410,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         try
         {
             sessionManager.closeSession(sessionToken);
+            sessionWorkspaceProvider.deleteSessionWorkspace(sessionToken);
             SessionFactory.cleanUpSessionOnDataStoreServers(sessionToken,
                     daoFactory.getDataStoreDAO(), dssFactory);
         } catch (InvalidSessionException e)
@@ -422,6 +426,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         try
         {
             sessionManager.expireSession(sessionToken);
+            sessionWorkspaceProvider.deleteSessionWorkspace(sessionToken);
             SessionFactory.cleanUpSessionOnDataStoreServers(sessionToken,
                     daoFactory.getDataStoreDAO(), dssFactory);
         } catch (InvalidSessionException e)
@@ -929,8 +934,9 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         if (person != null)
         {
             SpacePE homeGroup =
-                    groupIdOrNull == null ? null : getDAOFactory().getSpaceDAO().getByTechId(
-                            groupIdOrNull);
+                    groupIdOrNull == null ? null
+                            : getDAOFactory().getSpaceDAO().getByTechId(
+                                    groupIdOrNull);
             person.setHomeSpace(homeGroup);
             getDAOFactory().getPersonDAO().updatePerson(person);
         }

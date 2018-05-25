@@ -45,15 +45,18 @@ public final class SessionFactory implements ISessionFactory<Session>
 
     private final IDataStoreServiceFactory dssFactory;
 
+    private final ISessionWorkspaceProvider sessionWorkspaceProvider;
+
     public SessionFactory()
     {
-        this(null, null);
+        this(null, null, null);
     }
 
-    public SessionFactory(IDAOFactory daoFactory, IDataStoreServiceFactory dssFactory)
+    public SessionFactory(IDAOFactory daoFactory, IDataStoreServiceFactory dssFactory, ISessionWorkspaceProvider sessionWorkspaceProvider)
     {
         this.datastoreDAO = (daoFactory != null) ? daoFactory.getDataStoreDAO() : null;
         this.dssFactory = dssFactory;
+        this.sessionWorkspaceProvider = sessionWorkspaceProvider;
     }
 
     //
@@ -75,6 +78,7 @@ public final class SessionFactory implements ISessionFactory<Session>
                     @Override
                     public void cleanup()
                     {
+                        sessionWorkspaceProvider.deleteSessionWorkspace(sessionToken);
                         cleanUpSessionOnDataStoreServers(sessionToken, datastoreDAO, dssFactory);
                     }
                 });

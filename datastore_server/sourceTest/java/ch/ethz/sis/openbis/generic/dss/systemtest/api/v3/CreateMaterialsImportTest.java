@@ -45,6 +45,7 @@ public class CreateMaterialsImportTest extends ObjectsImportTest
             ImportFile file = new ImportFile("code", "DESCRIPTION");
             file.addLine(materialPermId.getCode(), "imported description");
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+            assertUploadedFiles(sessionToken, file.toString());
 
             Material material = getObject(sessionToken, materialPermId);
             assertNull(material);
@@ -75,6 +76,9 @@ public class CreateMaterialsImportTest extends ObjectsImportTest
                 assertEquals("Registration/update of 1 material(s) is complete.", message);
                 assertNoEmails(timestamp);
             }
+
+            assertUploadedFiles(sessionToken);
+
         } finally
         {
             MaterialDeletionOptions options = new MaterialDeletionOptions();

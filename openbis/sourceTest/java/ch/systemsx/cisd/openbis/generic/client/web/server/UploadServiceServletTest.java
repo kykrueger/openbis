@@ -39,8 +39,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.server.UploadServiceServlet.S
  * 
  * @author Izabela Adamczyk
  */
-@Friend(toClasses =
-{ UploadServiceServlet.class, ISessionFilesSetter.class, SessionFilesSetter.class })
+@Friend(toClasses = { UploadServiceServlet.class, ISessionFilesSetter.class, SessionFilesSetter.class })
 public final class UploadServiceServletTest extends AssertJUnit
 {
 
@@ -231,8 +230,8 @@ public final class UploadServiceServletTest extends AssertJUnit
                         one(multipartHttpServletRequest).getParameter(SESSION_KEY_PREFIX + i);
                         will(returnValue(sessionKey));
 
-                        one(sessionFilesSetter).addFilesToSession(httpSession,
-                                multipartHttpServletRequest, sessionKey);
+                        one(sessionFilesSetter).addFilesToSession("", httpSession,
+                                multipartHttpServletRequest, sessionKey, null);
                         will(returnValue(false));
                     }
 
@@ -269,8 +268,8 @@ public final class UploadServiceServletTest extends AssertJUnit
                         one(multipartHttpServletRequest).getParameter(SESSION_KEY_PREFIX + i);
                         will(returnValue(sessionKey));
 
-                        one(sessionFilesSetter).addFilesToSession(httpSession,
-                                multipartHttpServletRequest, sessionKey);
+                        one(sessionFilesSetter).addFilesToSession("", httpSession,
+                                multipartHttpServletRequest, sessionKey, null);
                         will(returnValue(true));
                     }
                     expectSendResponse(this);
@@ -299,8 +298,8 @@ public final class UploadServiceServletTest extends AssertJUnit
                         one(multipartHttpServletRequest).getParameter(SESSION_KEY_PREFIX + i);
                         will(returnValue(sessionKey));
 
-                        one(sessionFilesSetter).addFilesToSession(httpSession,
-                                multipartHttpServletRequest, sessionKey);
+                        one(sessionFilesSetter).addFilesToSession("", httpSession,
+                                multipartHttpServletRequest, sessionKey, null);
                         will(returnValue(i != numberOfSessionKeys - 1));
                     }
                     expectSendResponse(this);
