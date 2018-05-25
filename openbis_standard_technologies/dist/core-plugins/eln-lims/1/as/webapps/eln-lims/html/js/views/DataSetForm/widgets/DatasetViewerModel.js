@@ -83,9 +83,10 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
     }
 
 	this._isIconableImage = function(pathInDataSet) {
-        return this._hasExtension(pathInDataSet, ["jpg", "jpeg", "png", "gif"]);
+        var filename = pathInDataSet.split('/').slice(-1)[0];
+        return !filename.startsWith('.') && this._hasExtension(pathInDataSet, ["jpg", "jpeg", "png", "gif"]);
     }
-	
+
 	this._isJupyterNotebook = function(pathInDataSet) {
         return this._hasExtension(pathInDataSet, ["ipynb"]);
     }
