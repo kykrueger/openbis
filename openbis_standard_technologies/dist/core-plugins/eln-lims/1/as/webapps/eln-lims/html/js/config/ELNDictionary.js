@@ -50,7 +50,7 @@ ELNDictionary.settingsView = {
 		},
 		dataSetTypeForFileName : {
 			title : "Dataset types for filenames",
-			info : "When listing a combination of file extension / " + ELNDictionary.Sample + " Type on this section the Dataset uploader will select a Dataset Type by default. This decision can be overridden by users afterwards but provides a nice default to avoid mistakes.",
+			info : "When listing a combination of file extension / Dataset Type on this section the Dataset uploader will select a Dataset Type by default. This decision can be overridden by users afterwards but provides a nice default to avoid mistakes.",
 		},
 		sampleTypeDefinitionsExtension : {
 			title : ELNDictionary.Sample +" Type definitions Extension",
