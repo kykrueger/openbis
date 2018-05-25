@@ -58,6 +58,9 @@ function ImagePreviewIconLoader() {
     }
 
     this._initLoading = function(node) {
+
+        node.data.previewLoading = true;
+
         var $span = $(node.span);
 
         var $imageContainer = $("<span>", { id : "image-container" }).css({
@@ -88,8 +91,6 @@ function ImagePreviewIconLoader() {
      * @param params.done - callback when loaded
      */
     this._loadImagePreview = function(params) {
-
-        params.node.data.previewLoading = true;
 
         var $span = $(params.node.span);
         var $imageContainer = $span.children("#image-container");
