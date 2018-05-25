@@ -143,6 +143,10 @@ class SettingsGet(click.ParamType):
             self.fail(param=param, message='Settings must be in the format: key1, key2, ...')
 
 
+class SettingsClear(SettingsGet):
+    pass
+
+
 class SettingsSet(click.ParamType):
     name = 'settings_set'
 
@@ -200,7 +204,22 @@ def _join_settings_get(setting_lists):
     return joined
 
 
-def config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, value):
+def config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop=None, value=None, set=False, get=False, clear=False):
+    if set == True:
+        assert get == False
+        assert clear == False
+        assert prop is not None
+        assert value is not None
+    elif get == True:
+        assert set == False
+        assert clear == False
+        assert value is None
+    elif clear == True:
+        assert get == False
+        assert set == False
+        assert value is None
+
+    assert set == True or get == True or clear == True
     if is_global:
         resolver.set_location_search_order(['global'])
     else:
@@ -214,44 +233,60 @@ def config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, 
     config_dict = resolver.config_dict()
     if is_data_set_property:
         config_dict = config_dict['properties']
-    if not prop:
-        config_str = json.dumps(config_dict, indent=4, sort_keys=True)
-        click.echo("{}".format(config_str))
-    elif not value:
-        if not prop in config_dict:
-            raise ValueError("Unknown setting {} for {}.".format(prop, resolver.categoty))
-        little_dict = {prop: config_dict[prop]}
-        config_str = json.dumps(little_dict, indent=4, sort_keys=True)
-        click.echo("{}".format(config_str))
-    else:
+    if get == True:
+        if prop is None:
+            config_str = json.dumps(config_dict, indent=4, sort_keys=True)
+            click.echo("{}".format(config_str))
+        else:
+            if not prop in config_dict:
+                raise ValueError("Unknown setting {} for {}.".format(prop, resolver.categoty))
+            little_dict = {prop: config_dict[prop]}
+            config_str = json.dumps(little_dict, indent=4, sort_keys=True)
+            click.echo("{}".format(config_str))            
+    elif set == True:
         return check_result("config", set_property(data_mgmt, resolver, prop, value, is_global, is_data_set_property))
+    elif clear == True:
+        if prop is None:
+            returncode = 0
+            for prop in config_dict.keys():
+                returncode += check_result("config", set_property(data_mgmt, resolver, prop, None, is_global, is_data_set_property))
+            return returncode
+        else:
+            return check_result("config", set_property(data_mgmt, resolver, prop, None, is_global, is_data_set_property))
 
 
-def _set(ctx, settings):
+def _access_settings(ctx, prop=None, value=None, set=False, get=False, clear=False):
     is_global = ctx.obj['is_global']
     data_mgmt = ctx.obj['data_mgmt']
     resolver = ctx.obj['resolver']
     is_data_set_property = False
     if 'is_data_set_property' in ctx.obj:
         is_data_set_property = ctx.obj['is_data_set_property']
+    config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop=prop, value=value, set=set, get=get, clear=clear)
+
+
+def _set(ctx, settings):
     settings_dict = _join_settings_set(settings)
     for prop, value in settings_dict.items():
-        config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, value)
+        _access_settings(ctx, prop=prop, value=value, set=True)
     return CommandResult(returncode=0, output='')
 
 
 def _get(ctx, settings):
-    is_global = ctx.obj['is_global']
-    data_mgmt = ctx.obj['data_mgmt']
-    resolver = ctx.obj['resolver']
-    is_data_set_property = False
-    if 'is_data_set_property' in ctx.obj:
-        is_data_set_property = ctx.obj['is_data_set_property']
     settings_list = _join_settings_get(settings)
     if len(settings_list) == 0:
         settings_list = [None]
     for prop in settings_list:
-        config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop, None)
+        _access_settings(ctx, prop=prop, get=True)
+    return CommandResult(returncode=0, output='')
+
+
+def _clear(ctx, settings):
+    settings_list = _join_settings_get(settings)
+    if len(settings_list) == 0:
+        settings_list = [None]
+    for prop in settings_list:
+        _access_settings(ctx, prop=prop, clear=True)
     return CommandResult(returncode=0, output='')
 
 
@@ -302,6 +337,13 @@ def repository_get(ctx, settings):
     return check_result("repository_get", run(lambda: _get(ctx, settings)))
 
 
+@repository.command('clear')
+@click.argument('settings', type=SettingsClear(), nargs=-1)
+@click.pass_context
+def repository_clear(ctx, settings):
+    return check_result("repository_clear", run(lambda: _clear(ctx, settings)))
+
+
 ## data_set: type, properties
 
 
@@ -332,6 +374,13 @@ def data_set_get(ctx, settings):
     return check_result("data_set_get", run(lambda: _get(ctx, settings)))
 
 
+@data_set.command('clear')
+@click.argument('settings', type=SettingsClear(), nargs=-1)
+@click.pass_context
+def data_set_clear(ctx, settings):
+    return check_result("data_set_clear", run(lambda: _clear(ctx, settings)))
+
+
 ## object: object_id
 
 
@@ -358,6 +407,13 @@ def object_set(ctx, settings):
 @click.pass_context
 def object_get(ctx, settings):
     return check_result("object_get", run(lambda: _get(ctx, settings)))
+
+
+@object.command('clear')
+@click.argument('settings', type=SettingsClear(), nargs=-1)
+@click.pass_context
+def object_clear(ctx, settings):
+    return check_result("object_clear", run(lambda: _clear(ctx, settings)))
 
 
 ## collection: collection_id
@@ -388,6 +444,13 @@ def collection_get(ctx, settings):
     return check_result("collection_get", run(lambda: _get(ctx, settings)))
 
 
+@collection.command('clear')
+@click.argument('settings', type=SettingsClear(), nargs=-1)
+@click.pass_context
+def collection_clear(ctx, settings):
+    return check_result("collection_clear", run(lambda: _clear(ctx, settings)))
+
+
 ## config: fileservice_url, git_annex_hash_as_checksum, hostname, openbis_url, user, verify_certificates
 
 
@@ -414,6 +477,13 @@ def config_set(ctx, settings):
 @click.pass_context
 def config_get(ctx, settings):
     return check_result("config_get", run(lambda: _get(ctx, settings)))
+
+
+@config.command('clear')
+@click.argument('settings', type=SettingsClear(), nargs=-1)
+@click.pass_context
+def config_clear(ctx, settings):
+    return check_result("config_clear", run(lambda: _clear(ctx, settings)))
 
 
 # repository commands: status, sync, commit, init, addref, removeref, init_analysis

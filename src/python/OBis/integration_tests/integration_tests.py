@@ -79,7 +79,7 @@ def test_obis(tmpdir):
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             result = cmd('git annex info big_file')
             assert 'file: big_file' in result
-            assert 'key: MD5-s1000000--879f4bba57ed37c9ec5e5aedf9864698' in result
+            assert 'key: SHA256E-s1000000--d29751f2649b32ff572b5e0a9f541ea660a50f94ff0beedfb0b692b924cc8025' in result
             assert 'present: true' in result
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data1')
@@ -273,15 +273,15 @@ def test_obis(tmpdir):
         with cd('data10'):
             cmd('touch file')
             cmd('obis object set id=/DEFAULT/DEFAULT')
-            # use MD5 form git annex by default
+            # use SHA256 form git annex by default
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             search_result = o.search_files(settings['repository']['data_set_id'])
             files = list(filter(lambda file: file['fileLength'] > 0, search_result['objects']))
             assert len(files) == 5
             for file in files:
-                assert file['checksumType'] == "MD5"
-                assert len(file['checksum']) == 32
+                assert file['checksumType'] == "SHA256"
+                assert len(file['checksum']) == 64
             # don't use git annex hash - use default CRC32
             cmd('obis config set git_annex_hash_as_checksum=false')
             result = cmd('obis commit -m \'commit-message\'')
@@ -293,6 +293,17 @@ def test_obis(tmpdir):
                 assert file['checksumType'] is None
                 assert file['checksum'] is None
                 assert file['checksumCRC32'] != 0
+
+        output_buffer = '=================== 19. Clearing settings ===================\n'
+        cmd('obis init data11')
+        with cd('data11'):
+            assert get_settings()['repository'] == {'id': None, 'external_dms_id': None, 'data_set_id': None}
+            cmd('obis repository set id=0, external_dms_id=1, data_set_id=2')
+            assert get_settings()['repository'] == {'id': '0', 'external_dms_id': '1', 'data_set_id': '2'}
+            cmd('obis repository clear external_dms_id, data_set_id')
+            assert get_settings()['repository'] == {'id': '0', 'external_dms_id': None, 'data_set_id': None}
+            cmd('obis repository clear')
+            assert get_settings()['repository'] == {'id': None, 'external_dms_id': None, 'data_set_id': None}
 
         output_buffer = '=================== 16. User switch ===================\n'
         cmd('obis init data9')
