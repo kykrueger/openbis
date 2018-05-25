@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import hashlib
 import json
 import shutil
@@ -151,20 +152,42 @@ class ChecksumGeneratorCrc32(object):
         }
 
 
-class ChecksumGeneratorMd5(object):
+class ChecksumGeneratorHashlib(ABC):
+    @abstractmethod
+    def hash_function(self):
+        pass
+    @abstractmethod
+    def hash_type(self):
+        pass
+
     def get_checksum(self, file):
         return {
-            'checksum': self.md5(file),
-            'checksumType': 'MD5',
+            'checksum': self._checksum(file),
+            'checksumType': self.hash_type(),
             'fileLength': os.path.getsize(file),
             'path': file
         }
-    def md5(self, file):
-        hash_md5 = hashlib.md5()
+
+    def _checksum(self, file):
+        hash_function = self.hash_function()
         with open(file, "rb") as f:
             for chunk in iter(lambda: f.read(4096), b""):
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()
+                hash_function.update(chunk)
+        return hash_function.hexdigest()
+
+
+class ChecksumGeneratorSha256(ChecksumGeneratorHashlib):
+    def hash_function(self):
+        return hashlib.sha256()
+    def hash_type(self):
+        return 'SHA256'
+
+
+class ChecksumGeneratorMd5(ChecksumGeneratorHashlib):
+    def hash_function(self):
+        return hashlib.md5()
+    def hash_type(self):
+        return "MD5"
 
 
 class ChecksumGeneratorWORM(object):
@@ -187,7 +210,9 @@ class ChecksumGeneratorGitAnnex(object):
         self.backend = self._get_annex_backend()
         self.checksum_generator_replacement = ChecksumGeneratorCrc32() if self.backend is None else None
         # define which generator to use for files which are not handled by annex
-        if self.backend == 'MD5':
+        if self.backend == 'SHA256':
+            self.checksum_generator_supplement = ChecksumGeneratorSha256()
+        elif self.backend == 'MD5':
             self.checksum_generator_supplement = ChecksumGeneratorMd5()
         elif self.backend == 'WORM':
             self.checksum_generator_supplement = ChecksumGeneratorWORM()
@@ -208,13 +233,13 @@ class ChecksumGeneratorGitAnnex(object):
             return self.checksum_generator_supplement.get_checksum(file)
         return {
             'checksum': self._get_checksum_from_annex_info(annex_info),
-            'checksumType': annex_info['key'].split('-')[0],
+            'checksumType': self.backend,
             'fileLength': os.path.getsize(file),
             'path': file
         }
 
     def _get_checksum_from_annex_info(self, annex_info):
-        if self.backend == 'MD5':
+        if self.backend in ['MD5', 'SHA256']:
             return annex_info['key'].split('--')[1]
         elif self.backend == 'WORM':
             return annex_info['key'][5:]
@@ -225,5 +250,8 @@ class ChecksumGeneratorGitAnnex(object):
         with open('.gitattributes') as gitattributes:
             for line in gitattributes.readlines():
                 if 'annex.backend' in line:
-                    return line.split('=')[1].strip()
+                    backend = line.split('=')[1].strip()
+                    if backend == 'SHA256E':
+                        backend = 'SHA256'
+                    return backend
         return None

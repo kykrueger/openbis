@@ -1,4 +1,4 @@
-* annex.backend=MD5
+* annex.backend=SHA256E
 * annex.largefiles=(largerthan=100kb)
 *.zip annex.largefiles=anything
 *.gz annex.largefiles=anything
