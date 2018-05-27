@@ -33,8 +33,8 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.UploadServiceServlet.ISessionFilesSetter;
 import ch.systemsx.cisd.openbis.generic.client.web.server.UploadServiceServlet.SessionFilesSetter;
-import ch.systemsx.cisd.openbis.generic.server.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 
 /**
  * Tests for {@link UploadServiceServlet}.

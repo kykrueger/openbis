@@ -52,6 +52,7 @@ import ch.systemsx.cisd.openbis.generic.server.plugin.ISampleTypeSlaveServerPlug
 import ch.systemsx.cisd.openbis.generic.shared.AbstractServerTestCase;
 import ch.systemsx.cisd.openbis.generic.shared.CommonTestUtils;
 import ch.systemsx.cisd.openbis.generic.shared.IDataStoreService;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BatchOperationKind;
@@ -165,6 +166,8 @@ public final class CommonServerTest extends AbstractServerTestCase
 
     private org.hibernate.Session hibernateSession;
 
+    private ISessionWorkspaceProvider sessionWorkspaceProvider;
+
     private final CommonServer createServer()
     {
         CommonServer server =
@@ -189,6 +192,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         server.setDataSetTypeSlaveServerPlugin(dataSetTypeSlaveServerPlugin);
         server.setBaseIndexURL(SESSION_TOKEN, BASE_INDEX_URL);
         server.setDisplaySettingsProvider(new DisplaySettingsProvider());
+        server.setSessionWorkspaceProvider(sessionWorkspaceProvider);
         return server;
     }
 
@@ -215,6 +219,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         hotDeploymentController = context.mock(IHotDeploymentController.class);
         hibernateSessionFactory = context.mock(SessionFactory.class);
         hibernateSession = context.mock(org.hibernate.Session.class);
+        sessionWorkspaceProvider = context.mock(ISessionWorkspaceProvider.class);
     }
 
     @Test
@@ -275,6 +280,8 @@ public final class CommonServerTest extends AbstractServerTestCase
                     will(returnValue(dataStoreService));
 
                     one(dataStoreService).cleanupSession(SESSION_TOKEN);
+
+                    one(sessionWorkspaceProvider).deleteSessionWorkspace(SESSION_TOKEN);
                 }
             });
 

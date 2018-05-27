@@ -27,8 +27,8 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
-import ch.systemsx.cisd.openbis.generic.server.ISessionWorkspaceProvider;
-import ch.systemsx.cisd.openbis.generic.server.SessionWorkspaceProvider;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
+import ch.systemsx.cisd.openbis.generic.shared.SessionWorkspaceProvider;
 
 /**
  * @author pkupczyk

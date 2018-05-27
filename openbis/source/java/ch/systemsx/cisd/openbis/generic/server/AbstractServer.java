@@ -65,6 +65,7 @@ import ch.systemsx.cisd.openbis.generic.server.plugin.SampleServerPluginRegistry
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.IRemoteHostValidator;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.IAuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.EntityVisitComparatorByTimeStamp;
@@ -208,6 +209,12 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
     public void setDisplaySettingsProvider(DisplaySettingsProvider displaySettingsProvider)
     {
         this.displaySettingsProvider = displaySettingsProvider;
+    }
+
+    // For unit tests - in production Spring will inject this object.
+    public void setSessionWorkspaceProvider(ISessionWorkspaceProvider sessionWorkspaceProvider)
+    {
+        this.sessionWorkspaceProvider = sessionWorkspaceProvider;
     }
 
     // For unit tests - in production Spring will inject this object.

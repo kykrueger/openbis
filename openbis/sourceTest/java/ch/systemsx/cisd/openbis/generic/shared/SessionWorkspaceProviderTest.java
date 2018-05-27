@@ -1,4 +1,4 @@
-package ch.systemsx.cisd.openbis.generic.server;
+package ch.systemsx.cisd.openbis.generic.shared;
 
 import java.io.File;
 import java.util.Map;
@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
+import ch.systemsx.cisd.openbis.generic.shared.SessionWorkspaceProvider;
 
 public class SessionWorkspaceProviderTest extends AbstractFileSystemTestCase
 {
