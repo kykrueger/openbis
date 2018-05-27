@@ -64,7 +64,7 @@ public final class UploadedFilesBean
             final File tempFile = createTempFile(sessionToken, sessionWorkspaceProvider);
             multipartFile.transferTo(tempFile);
 
-            operationLog.info("Uploaded file '" + multipartFile.getOriginalFilename() + "' to '" + tempFile.getCanonicalPath() + "'");
+            operationLog.info("Uploaded file '" + multipartFile.getOriginalFilename() + "' to session workspace");
 
             final FileMultipartFileAdapter multipartFileAdapter =
                     new FileMultipartFileAdapter(multipartFile, tempFile);

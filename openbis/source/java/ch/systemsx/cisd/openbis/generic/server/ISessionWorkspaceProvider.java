@@ -17,12 +17,15 @@
 package ch.systemsx.cisd.openbis.generic.server;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  * @author pkupczyk
  */
 public interface ISessionWorkspaceProvider
 {
+
+    Map<String, File> getSessionWorkspaces();
 
     File getSessionWorkspace(String sessionToken);
 

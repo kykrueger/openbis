@@ -17,7 +17,10 @@
 package ch.systemsx.cisd.openbis.generic.server;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -34,28 +37,36 @@ import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 /**
  * @author pkupczyk
  */
-@Component(value = "session-workspace-provider")
+@Component(value = SessionWorkspaceProvider.INTERNAL_SERVICE_NAME)
 public class SessionWorkspaceProvider implements ISessionWorkspaceProvider
 {
 
-    private static final String SESSION_WORKSPACE_ROOT_DIR_KEY = "session-workspace-root-dir";
+    public static final String INTERNAL_SERVICE_NAME = "session-workspace-provider";
 
-    private static final String SESSION_WORKSPACE_ROOT_DIR_DEFAULT = "sessionWorkspace";
+    public static final String SESSION_WORKSPACE_ROOT_DIR_KEY = "session-workspace-root-dir";
 
-    private static final String SESSION_WORKSPACE_SHREDDER_QUEUE_FILE = ".shredder";
+    public static final String SESSION_WORKSPACE_ROOT_DIR_DEFAULT = "sessionWorkspace";
+
+    public static final String SESSION_WORKSPACE_SHREDDER_QUEUE_FILE = ".shredder";
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, SessionWorkspaceProvider.class);
 
-    @Resource(name = ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME)
-    private ExposablePropertyPlaceholderConfigurer servicePropertiesPlaceholder;
+    private Properties serviceProperties;
 
     private File sessionWorkspaceRootDir;
 
-    @PostConstruct
-    private void init() throws Exception
+    public SessionWorkspaceProvider()
     {
-        Properties serviceProperties = servicePropertiesPlaceholder.getResolvedProps();
+    }
 
+    SessionWorkspaceProvider(Properties serviceProperties)
+    {
+        this.serviceProperties = serviceProperties;
+    }
+
+    @PostConstruct
+    void init() throws Exception
+    {
         String sessionWorkspaceRootDirString =
                 PropertyUtils.getProperty(serviceProperties, SESSION_WORKSPACE_ROOT_DIR_KEY, SESSION_WORKSPACE_ROOT_DIR_DEFAULT);
         sessionWorkspaceRootDir = new File(sessionWorkspaceRootDirString);
@@ -73,6 +84,31 @@ public class SessionWorkspaceProvider implements ISessionWorkspaceProvider
     }
 
     @Override
+    public Map<String, File> getSessionWorkspaces()
+    {
+        File[] sessionWorkspaces = sessionWorkspaceRootDir.listFiles(new FileFilter()
+            {
+                @Override
+                public boolean accept(File file)
+                {
+                    return false == file.isHidden();
+                }
+            });
+
+        Map<String, File> map = new TreeMap<String, File>();
+
+        if (sessionWorkspaces != null)
+        {
+            for (File sessionWorkspace : sessionWorkspaces)
+            {
+                map.put(sessionWorkspace.getName(), sessionWorkspace);
+            }
+        }
+
+        return map;
+    }
+
+    @Override
     public File getSessionWorkspace(String sessionToken)
     {
         File sessionWorkspace = new File(sessionWorkspaceRootDir, sessionToken);
@@ -80,7 +116,7 @@ public class SessionWorkspaceProvider implements ISessionWorkspaceProvider
         if (false == sessionWorkspace.exists())
         {
             sessionWorkspace.mkdirs();
-            operationLog.info("Session workspace '" + sessionToken + "' created");
+            operationLog.info("Session workspace created");
         }
 
         return sessionWorkspace;
@@ -96,12 +132,18 @@ public class SessionWorkspaceProvider implements ISessionWorkspaceProvider
             if (sessionWorkspace.exists())
             {
                 QueueingPathRemoverService.removeRecursively(sessionWorkspace);
-                operationLog.info("Session workspace '" + sessionToken + "' added to shredder queue");
+                operationLog.info("Session workspace added to shredder queue");
             }
         } catch (Exception e)
         {
-            operationLog.warn("Session workspace '" + sessionToken + "' could not be shredded", e);
+            operationLog.warn("Session workspace could not be shredded", e);
         }
+    }
+
+    @Resource(name = ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME)
+    private void setServicePropertiesPlaceholder(ExposablePropertyPlaceholderConfigurer servicePropertiesPlaceholder)
+    {
+        serviceProperties = servicePropertiesPlaceholder.getResolvedProps();
     }
 
 }
