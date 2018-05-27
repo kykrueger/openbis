@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 
 import ch.systemsx.cisd.openbis.generic.client.web.server.UploadedFilesBean;
+import ch.systemsx.cisd.openbis.generic.server.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
@@ -41,8 +42,11 @@ public class GenericSystemTestCase extends SystemTestCase
     @SuppressWarnings("hiding")
     @Autowired
     protected IGenericServer genericServer;
+    
+    @Autowired
+    protected ISessionWorkspaceProvider sessionWorkspaceProvider;
 
-    protected void addMultiPartFile(String sessionAttributeKey, String fileName, byte[] data)
+    protected void addMultiPartFile(String sessionToken, String sessionAttributeKey, String fileName, byte[] data)
     {
         HttpSession session = request.getSession();
         UploadedFilesBean uploadedFilesBean =
@@ -53,7 +57,7 @@ public class GenericSystemTestCase extends SystemTestCase
             session.setAttribute(sessionAttributeKey, uploadedFilesBean);
         }
         MockMultipartFile multipartFile = new MockMultipartFile(fileName, fileName, "", data);
-        uploadedFilesBean.addMultipartFile(multipartFile);
+        uploadedFilesBean.addMultipartFile(sessionToken, multipartFile, sessionWorkspaceProvider);
     }
 
     protected IEntityProperty property(String type, String value)

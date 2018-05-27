@@ -40,6 +40,7 @@ import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.openbis.generic.client.web.server.AbstractClientServiceTest;
 import ch.systemsx.cisd.openbis.generic.client.web.server.UploadedFilesBean;
+import ch.systemsx.cisd.openbis.generic.server.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.CommonTestUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -66,7 +67,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedBasicExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UpdatedExperimentsWithType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.translator.MaterialTypeTranslator;
-import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServer;
 import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServerInternal;
 
 /**
@@ -85,6 +85,8 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
     private IGenericServerInternal genericServer;
 
     private GenericClientService genericClientService;
+
+    private ISessionWorkspaceProvider sessionWorkspaceProvider;
 
     private final static NewSample createNewSample(final String sampleIdentifier,
             final String sampleTypeCode, final IEntityProperty[] properties)
@@ -133,6 +135,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
         super.setUp();
         genericServer = context.mock(IGenericServerInternal.class);
         multipartFile = context.mock(MultipartFile.class);
+        sessionWorkspaceProvider = context.mock(ISessionWorkspaceProvider.class);
         genericClientService = new GenericClientService(genericServer, requestContextProvider);
     }
 
@@ -272,8 +275,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
         newSample.setIdentifier("MP1");
         newSample.setContainerIdentifier("MP2");
         newSample.setParentIdentifier("MP3");
-        newSample.setProperties(new IEntityProperty[]
-        { createSampleProperty("prop1", "RED"), createSampleProperty("prop2", "1") });
+        newSample.setProperties(new IEntityProperty[] { createSampleProperty("prop1", "RED"), createSampleProperty("prop2", "1") });
         final SampleType sampleType = createSampleType("MASTER_PLATE");
         final String fileName = "originalFileName.txt";
 
@@ -287,12 +289,15 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     prepareGetHttpSession(this);
                     prepareGetSessionToken(this);
 
+                    allowing(sessionWorkspaceProvider).getSessionWorkspace(SESSION_TOKEN);
+                    will(returnValue(getSessionWorkspaceDir()));
+
                     allowing(httpSession).getAttribute(sessionKey);
                     will(returnValue(uploadedFilesBean));
 
                     allowing(httpSession).removeAttribute(sessionKey);
 
-                    exactly(1).of(multipartFile).getOriginalFilename();
+                    allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
                     one(multipartFile).transferTo(with(any(File.class)));
@@ -315,8 +320,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         {
 
                             @Override
-                            @SuppressWarnings(
-                            { "unchecked" })
+                            @SuppressWarnings({ "unchecked" })
                             public Object invoke(Invocation invocation) throws Throwable
                             {
                                 final List<NewSamplesWithTypes> samplesSecions =
@@ -342,7 +346,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         });
                 }
             });
-        uploadedFilesBean.addMultipartFile(multipartFile);
+        uploadedFilesBean.addMultipartFile(SESSION_TOKEN, multipartFile, sessionWorkspaceProvider);
         final List<BatchRegistrationResult> result =
                 genericClientService.registerSamples(sampleType, sessionKey, false, null, null, false);
         assertEquals(1, result.size());
@@ -360,8 +364,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
         final String sessionKey = "uploaded-files";
         final NewSample newSample = new NewSample();
         newSample.setIdentifier("MP");
-        newSample.setParentsOrNull(new String[]
-        { "MP_1", "MP_2" });
+        newSample.setParentsOrNull(new String[] { "MP_1", "MP_2" });
         newSample.setProperties(new IEntityProperty[0]);
         final SampleType sampleType = createSampleType("MASTER_PLATE");
         final String fileName = "originalFileName.txt";
@@ -375,13 +378,16 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                 {
                     prepareGetHttpSession(this);
                     prepareGetSessionToken(this);
+                    
+                    allowing(sessionWorkspaceProvider).getSessionWorkspace(SESSION_TOKEN);
+                    will(returnValue(getSessionWorkspaceDir()));
 
                     allowing(httpSession).getAttribute(sessionKey);
                     will(returnValue(uploadedFilesBean));
 
                     allowing(httpSession).removeAttribute(sessionKey);
 
-                    exactly(1).of(multipartFile).getOriginalFilename();
+                    allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
                     one(multipartFile).transferTo(with(any(File.class)));
@@ -403,8 +409,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         {
 
                             @Override
-                            @SuppressWarnings(
-                            { "unchecked" })
+                            @SuppressWarnings({ "unchecked" })
                             public Object invoke(Invocation invocation) throws Throwable
                             {
                                 final List<NewSamplesWithTypes> samplesSecions =
@@ -427,7 +432,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         });
                 }
             });
-        uploadedFilesBean.addMultipartFile(multipartFile);
+        uploadedFilesBean.addMultipartFile(SESSION_TOKEN, multipartFile, sessionWorkspaceProvider);
         final List<BatchRegistrationResult> result =
                 genericClientService.registerSamples(sampleType, sessionKey, false, null, null, false);
         assertEquals(1, result.size());
@@ -453,13 +458,16 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                 {
                     prepareGetHttpSession(this);
                     prepareGetSessionToken(this);
+                    
+                    allowing(sessionWorkspaceProvider).getSessionWorkspace(SESSION_TOKEN);
+                    will(returnValue(getSessionWorkspaceDir()));
 
                     allowing(httpSession).getAttribute(sessionKey);
                     will(returnValue(uploadedFilesBean));
 
                     allowing(httpSession).removeAttribute(sessionKey);
 
-                    exactly(1).of(multipartFile).getOriginalFilename();
+                    allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
                     one(multipartFile).transferTo(with(any(File.class)));
@@ -483,8 +491,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         {
 
                             @Override
-                            @SuppressWarnings(
-                            { "unchecked", "deprecation" })
+                            @SuppressWarnings({ "unchecked", "deprecation" })
                             public Object invoke(Invocation invocation) throws Throwable
                             {
                                 final List<NewSamplesWithTypes> samplesSecions =
@@ -517,7 +524,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         });
                 }
             });
-        uploadedFilesBean.addMultipartFile(multipartFile);
+        uploadedFilesBean.addMultipartFile(SESSION_TOKEN, multipartFile, sessionWorkspaceProvider);
         final List<BatchRegistrationResult> result =
                 genericClientService.updateSamples(sampleType, sessionKey, false, null, defaultGroupIdentifier);
         assertEquals(1, result.size());
@@ -542,13 +549,16 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                 {
                     prepareGetHttpSession(this);
                     prepareGetSessionToken(this);
+                    
+                    allowing(sessionWorkspaceProvider).getSessionWorkspace(SESSION_TOKEN);
+                    will(returnValue(getSessionWorkspaceDir()));
 
                     allowing(httpSession).getAttribute(sessionKey);
                     will(returnValue(uploadedFilesBean));
 
                     allowing(httpSession).removeAttribute(sessionKey);
 
-                    exactly(1).of(multipartFile).getOriginalFilename();
+                    allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
                     one(multipartFile).transferTo(with(any(File.class)));
@@ -596,7 +606,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         });
                 }
             });
-        uploadedFilesBean.addMultipartFile(multipartFile);
+        uploadedFilesBean.addMultipartFile(SESSION_TOKEN, multipartFile, sessionWorkspaceProvider);
         final List<BatchRegistrationResult> result =
                 genericClientService.updateSamples(sampleType, sessionKey, false, null, defaultGroupIdentifier);
         assertEquals(1, result.size());
@@ -672,11 +682,14 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
             {
                 {
                     prepareGetSessionToken(this);
+                    
+                    allowing(sessionWorkspaceProvider).getSessionWorkspace(SESSION_TOKEN);
+                    will(returnValue(getSessionWorkspaceDir()));
 
                     allowing(httpSession).getAttribute(sessionKey);
                     will(returnValue(uploadedFilesBean));
 
-                    one(multipartFile).getOriginalFilename();
+                    allowing(multipartFile).getOriginalFilename();
                     will(returnValue("file name"));
 
                     one(multipartFile).transferTo(with(any(File.class)));
@@ -699,7 +712,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                     will(returnValue(updateCount));
                 }
             });
-        uploadedFilesBean.addMultipartFile(multipartFile);
+        uploadedFilesBean.addMultipartFile(SESSION_TOKEN, multipartFile, sessionWorkspaceProvider);
     }
 
     @Test
@@ -768,13 +781,16 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                 {
                     prepareGetHttpSession(this);
                     prepareGetSessionToken(this);
+                    
+                    allowing(sessionWorkspaceProvider).getSessionWorkspace(SESSION_TOKEN);
+                    will(returnValue(getSessionWorkspaceDir()));
 
                     allowing(httpSession).getAttribute(sessionKey);
                     will(returnValue(uploadedFilesBean));
 
                     allowing(httpSession).removeAttribute(sessionKey);
 
-                    exactly(1).of(multipartFile).getOriginalFilename();
+                    allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
                     one(multipartFile).transferTo(with(any(File.class)));
@@ -825,7 +841,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         });
                 }
             });
-        uploadedFilesBean.addMultipartFile(multipartFile);
+        uploadedFilesBean.addMultipartFile(SESSION_TOKEN, multipartFile, sessionWorkspaceProvider);
         final List<BatchRegistrationResult> result =
                 genericClientService.updateExperiments(experimentType, sessionKey, false, null);
         assertEquals(1, result.size());
@@ -849,13 +865,16 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                 {
                     prepareGetHttpSession(this);
                     prepareGetSessionToken(this);
+                    
+                    allowing(sessionWorkspaceProvider).getSessionWorkspace(SESSION_TOKEN);
+                    will(returnValue(getSessionWorkspaceDir()));
 
                     allowing(httpSession).getAttribute(sessionKey);
                     will(returnValue(uploadedFilesBean));
 
                     allowing(httpSession).removeAttribute(sessionKey);
 
-                    exactly(1).of(multipartFile).getOriginalFilename();
+                    allowing(multipartFile).getOriginalFilename();
                     will(returnValue(fileName));
 
                     one(multipartFile).transferTo(with(any(File.class)));
@@ -911,7 +930,7 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
                         });
                 }
             });
-        uploadedFilesBean.addMultipartFile(multipartFile);
+        uploadedFilesBean.addMultipartFile(SESSION_TOKEN, multipartFile, sessionWorkspaceProvider);
         final List<BatchRegistrationResult> result =
                 genericClientService.updateExperiments(experimentType, sessionKey, false, null);
         assertEquals(1, result.size());
@@ -1032,5 +1051,15 @@ public final class GenericClientServiceTest extends AbstractClientServiceTest
             }
             return true;
         }
+    }
+
+    private File getSessionWorkspaceDir()
+    {
+        File dir = new File("targets/sessionWorkspace");
+        if (false == dir.exists())
+        {
+            dir.mkdirs();
+        }
+        return dir;
     }
 }

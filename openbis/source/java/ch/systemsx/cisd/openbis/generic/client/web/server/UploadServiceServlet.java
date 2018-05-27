@@ -82,17 +82,20 @@ public final class UploadServiceServlet extends AbstractController
     private ISessionWorkspaceProvider sessionWorkspaceProvider;
 
     @Private
-    UploadServiceServlet(ISessionFilesSetter sessionFilesSetter)
+    UploadServiceServlet(ISessionFilesSetter sessionFilesSetter, IOpenBisSessionManager sessionManager,
+            ISessionWorkspaceProvider sessionWorkspaceProvider)
     {
         // super(UploadedFilesBean.class);
         setSynchronizeOnSession(true);
         setRequireSession(false); // To allow upload a file for usage from an API given a session token.
         this.sessionFilesSetter = sessionFilesSetter;
+        this.sessionManager = sessionManager;
+        this.sessionWorkspaceProvider = sessionWorkspaceProvider;
     }
 
     public UploadServiceServlet()
     {
-        this(new SessionFilesSetter());
+        this(new SessionFilesSetter(), null, null);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -195,6 +198,11 @@ public final class UploadServiceServlet extends AbstractController
             {
                 response.setStatus(500);
                 throw new HttpSessionRequiredException("Pre-existing session required but none found");
+            } else
+            {
+                sessionToken = (String) session.getAttribute(SessionConstants.OPENBIS_SESSION_TOKEN_ATTRIBUTE_KEY);
+                // check and touch the session
+                getSession(sessionToken);
             }
 
             final MultipartHttpServletRequest multipartRequest =
@@ -211,7 +219,7 @@ public final class UploadServiceServlet extends AbstractController
             {
                 // Note: addFilesToSession has a side effect - adds extracted files to the session
                 boolean fileExtracted =
-                        sessionFilesSetter.addFilesToSession(sessionToken, session, multipartRequest, sessionKey, sessionWorkspaceProvider);
+                        sessionFilesSetter.addFilesToSession(session, multipartRequest, sessionKey, sessionWorkspaceProvider);
                 atLeastOneFileUploaded = atLeastOneFileUploaded || fileExtracted;
             }
             if (atLeastOneFileUploaded == false)
@@ -249,7 +257,7 @@ public final class UploadServiceServlet extends AbstractController
          * 
          * @return <code>true</code> if at least one file has been found and added
          */
-        public boolean addFilesToSession(String sessionToken, final HttpSession session,
+        public boolean addFilesToSession(final HttpSession session,
                 final MultipartHttpServletRequest multipartRequest, String sessionKey, ISessionWorkspaceProvider sessionWorkspaceProvider);
     }
 
@@ -257,20 +265,23 @@ public final class UploadServiceServlet extends AbstractController
     static class SessionFilesSetter implements ISessionFilesSetter
     {
         @Override
-        public boolean addFilesToSession(String sessionToken, final HttpSession session,
+        public boolean addFilesToSession(final HttpSession session,
                 final MultipartHttpServletRequest multipartRequest, String sessionKey, ISessionWorkspaceProvider sessionWorkspaceProvider)
         {
-            return addFilesToSessionUsingBean(sessionToken, session, multipartRequest, sessionKey,
+            return addFilesToSessionUsingBean(session, multipartRequest, sessionKey,
                     new UploadedFilesBean(), sessionWorkspaceProvider);
         }
 
         @Private
-        boolean addFilesToSessionUsingBean(String sessionToken, final HttpSession session,
+        boolean addFilesToSessionUsingBean(final HttpSession session,
                 final MultipartHttpServletRequest multipartRequest, String sessionKey,
                 final UploadedFilesBean uploadedFiles, ISessionWorkspaceProvider sessionWorkspaceProvider)
         {
             assert StringUtils.isBlank(sessionKey) == false;
             boolean fileUploaded = false;
+
+            String sessionToken = (String) session.getAttribute(SessionConstants.OPENBIS_SESSION_TOKEN_ATTRIBUTE_KEY);
+
             for (final Iterator<String> iterator = cast(multipartRequest.getFileNames()); iterator
                     .hasNext(); /**/)
             {

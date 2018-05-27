@@ -29,6 +29,7 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.MultiPartContentProvider;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -69,24 +70,29 @@ public class UploadServletTest extends SystemTestCase
     }
 
     @BeforeMethod
-    private void beforeMethod()
+    private void beforeMethod() throws Exception
     {
         JettyHttpClientFactory.getHttpClient().getCookieStore().removeAll();
+        cleanOSTempFolder();
+    }
+
+    @AfterMethod
+    private void afterMethod() throws Exception
+    {
+        assertOSTempFolderFiles();
     }
 
     @Test(dataProvider = FALSE_TRUE_PROVIDER)
-    public void testUploadSingleFile(boolean withSessionToken) throws Exception
+    public void testUploadSingleFile(boolean withSessionTokenParam) throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
 
-        if (withSessionToken)
-        {
-            cleanSessionWorkspace(sessionToken);
-        } else
+        if (false == withSessionTokenParam)
         {
             initHttpSession(sessionToken);
-            cleanOSTempFolder();
         }
+
+        cleanSessionWorkspace(sessionToken);
 
         MultiPartContentProvider multipart = new MultiPartContentProvider();
         multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
@@ -94,7 +100,7 @@ public class UploadServletTest extends SystemTestCase
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
-        if (withSessionToken)
+        if (withSessionTokenParam)
         {
             request.param(PARAM_SESSION_ID, sessionToken);
         }
@@ -104,28 +110,20 @@ public class UploadServletTest extends SystemTestCase
 
         request.send();
 
-        if (withSessionToken)
-        {
-            assertSessionWorkspaceFiles(sessionToken, "testContent");
-        } else
-        {
-            assertOSTempFolderFiles("testContent");
-        }
+        assertSessionWorkspaceFiles(sessionToken, "testContent");
     }
 
     @Test(dataProvider = FALSE_TRUE_PROVIDER)
-    public void testUploadMultipleFilesUnderOneSessionKey(boolean withSessionToken) throws Exception
+    public void testUploadMultipleFilesUnderOneSessionKey(boolean withSessionTokenParam) throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
 
-        if (withSessionToken)
-        {
-            cleanSessionWorkspace(sessionToken);
-        } else
+        if (false == withSessionTokenParam)
         {
             initHttpSession(sessionToken);
-            cleanOSTempFolder();
         }
+
+        cleanSessionWorkspace(sessionToken);
 
         MultiPartContentProvider multipart = new MultiPartContentProvider();
         multipart.addFilePart("testFieldName1", "testFileName1", new StringContentProvider("testContent1"), null);
@@ -134,7 +132,7 @@ public class UploadServletTest extends SystemTestCase
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
-        if (withSessionToken)
+        if (withSessionTokenParam)
         {
             request.param(PARAM_SESSION_ID, sessionToken);
         }
@@ -144,28 +142,20 @@ public class UploadServletTest extends SystemTestCase
 
         request.send();
 
-        if (withSessionToken)
-        {
-            assertSessionWorkspaceFiles(sessionToken, "testContent1", "testContent2");
-        } else
-        {
-            assertOSTempFolderFiles("testContent1", "testContent2");
-        }
+        assertSessionWorkspaceFiles(sessionToken, "testContent1", "testContent2");
     }
 
     @Test(dataProvider = FALSE_TRUE_PROVIDER)
-    public void testUploadMultipleFilesUnderMultipleSessionKeys(boolean withSessionToken) throws Exception
+    public void testUploadMultipleFilesUnderMultipleSessionKeys(boolean withSessionTokenParam) throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
 
-        if (withSessionToken)
-        {
-            cleanSessionWorkspace(sessionToken);
-        } else
+        if (false == withSessionTokenParam)
         {
             initHttpSession(sessionToken);
-            cleanOSTempFolder();
         }
+
+        cleanSessionWorkspace(sessionToken);
 
         MultiPartContentProvider multipart = new MultiPartContentProvider();
         multipart.addFilePart("testFieldName1", "testFileName1", new StringContentProvider("testContent1"), null);
@@ -174,7 +164,7 @@ public class UploadServletTest extends SystemTestCase
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
         Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
-        if (withSessionToken)
+        if (withSessionTokenParam)
         {
             request.param(PARAM_SESSION_ID, sessionToken);
         }
@@ -185,83 +175,156 @@ public class UploadServletTest extends SystemTestCase
 
         request.send();
 
-        if (withSessionToken)
-        {
-            assertSessionWorkspaceFiles(sessionToken, "testContent1", "testContent2");
-        } else
-        {
-            assertOSTempFolderFiles("testContent1", "testContent2");
-        }
+        assertSessionWorkspaceFiles(sessionToken, "testContent1", "testContent2");
     }
 
     @Test
-    public void testUploadWithHttpSessionAndWithoutSessionToken() throws Exception
+    public void testUploadWithHttpSessionValidAndWithoutSessionTokenParam() throws Exception
+    {
+        String sessionToken = as.login(USER, PASSWORD);
+        initHttpSession(sessionToken);
+        cleanSessionWorkspace(sessionToken);
+        upload(null, "testContent");
+        assertSessionWorkspaceFiles(sessionToken, "testContent");
+    }
+
+    @Test
+    public void testUploadWithHttpSessionValidAndWithSessionTokenParamInvalid() throws Exception
+    {
+        String sessionToken1 = as.login(USER, PASSWORD);
+
+        initHttpSession(sessionToken1);
+
+        String sessionToken2 = "admin-invalidtoken";
+
+        cleanSessionWorkspace(sessionToken1);
+        cleanSessionWorkspace(sessionToken2);
+
+        ContentResponse response = upload(sessionToken2, "testContent");
+
+        assertEquals("<message type=\"error\">Session token '" + sessionToken2 + "' is invalid: user is not logged in.</message>",
+                response.getContentAsString());
+
+        assertSessionWorkspaceFiles(sessionToken1);
+        assertSessionWorkspaceFiles(sessionToken2);
+    }
+
+    @Test
+    public void testUploadWithHttpSessionValidAndWithSessionTokenParamValid() throws Exception
+    {
+        String sessionToken1 = as.login(USER, PASSWORD);
+
+        initHttpSession(sessionToken1);
+
+        String sessionToken2 = as.login(USER, PASSWORD);
+
+        cleanSessionWorkspace(sessionToken1);
+        cleanSessionWorkspace(sessionToken2);
+
+        upload(sessionToken2, "testContent");
+
+        assertSessionWorkspaceFiles(sessionToken1);
+        assertSessionWorkspaceFiles(sessionToken2, "testContent");
+    }
+
+    @Test
+    public void testUploadWithHttpSessionInvalidAndWithoutSessionTokenParam() throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
 
         initHttpSession(sessionToken);
 
+        // invalidate the session
+        as.logout(sessionToken);
+
         cleanSessionWorkspace(sessionToken);
-        cleanOSTempFolder();
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
-        multipart.close();
+        ContentResponse response = upload(null, "testContent");
 
-        HttpClient client = JettyHttpClientFactory.getHttpClient();
-        Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
-        request.param(PARAM_SESSION_KEYS_NUMBER, "1");
-        request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
-
-        request.send();
+        assertEquals("<message type=\"error\">Session token '" + sessionToken + "' is invalid: user is not logged in.</message>",
+                response.getContentAsString());
 
         assertSessionWorkspaceFiles(sessionToken);
-        assertOSTempFolderFiles("testContent");
     }
 
     @Test
-    public void testUploadWithoutHttpSessionAndWithoutSessionToken() throws Exception
+    public void testUploadWithHttpSessionInvalidAndWithSessionTokenParamValid() throws Exception
     {
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
-        multipart.close();
+        String sessionToken1 = as.login(USER, PASSWORD);
 
-        HttpClient client = JettyHttpClientFactory.getHttpClient();
-        Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
-        request.param(PARAM_SESSION_KEYS_NUMBER, "1");
-        request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
+        initHttpSession(sessionToken1);
 
-        ContentResponse response = request.send();
+        // invalidate the session
+        as.logout(sessionToken1);
+
+        String sessionToken2 = as.login(USER, PASSWORD);
+
+        cleanSessionWorkspace(sessionToken1);
+        cleanSessionWorkspace(sessionToken2);
+
+        upload(sessionToken2, "testContent");
+
+        assertSessionWorkspaceFiles(sessionToken1);
+        assertSessionWorkspaceFiles(sessionToken2, "testContent");
+    }
+
+    @Test
+    public void testUploadWithHttpSessionInvalidAndWithSessionTokenParamInvalid() throws Exception
+    {
+        String sessionToken1 = as.login(USER, PASSWORD);
+
+        initHttpSession(sessionToken1);
+
+        // invalidate the session
+        as.logout(sessionToken1);
+
+        String sessionToken2 = "admin-invalidtoken";
+
+        cleanSessionWorkspace(sessionToken1);
+        cleanSessionWorkspace(sessionToken2);
+
+        ContentResponse response = upload(sessionToken2, "testContent");
+
+        assertEquals("<message type=\"error\">Session token '" + sessionToken2 + "' is invalid: user is not logged in.</message>",
+                response.getContentAsString());
+
+        assertSessionWorkspaceFiles(sessionToken1);
+        assertSessionWorkspaceFiles(sessionToken2);
+    }
+
+    @Test
+    public void testUploadWithoutHttpSessionAndWithoutSessionTokenParam() throws Exception
+    {
+        ContentResponse response = upload(null, "testContent");
         assertEquals("<message type=\"error\">Pre-existing session required but none found</message>", response.getContentAsString());
     }
 
     @Test
-    public void testUploadWithoutHttpSessionAndWithSessionToken() throws Exception
+    public void testUploadWithoutHttpSessionAndWithSessionTokenParamValid() throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
-
         cleanSessionWorkspace(sessionToken);
-
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
-        multipart.close();
-
-        HttpClient client = JettyHttpClientFactory.getHttpClient();
-        Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
-        request.param(PARAM_SESSION_ID, sessionToken);
-        request.param(PARAM_SESSION_KEYS_NUMBER, "1");
-        request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
-
-        request.send();
-
+        upload(sessionToken, "testContent");
         assertSessionWorkspaceFiles(sessionToken, "testContent");
     }
 
     @Test
-    public void testUploadWithoutSessionKeysNumber() throws Exception
+    public void testUploadWithoutHttpSessionAndWithSessionTokenParamInvalid() throws Exception
+    {
+        String sessionToken = "admin-invalidtoken";
+
+        cleanSessionWorkspace(sessionToken);
+
+        ContentResponse response = upload(sessionToken, "testContent");
+
+        assertEquals("<message type=\"error\">Session token '" + sessionToken + "' is invalid: user is not logged in.</message>",
+                response.getContentAsString());
+
+        assertSessionWorkspaceFiles(sessionToken);
+    }
+
+    @Test
+    public void testUploadWithoutSessionKeysNumberParam() throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
 
@@ -281,7 +344,7 @@ public class UploadServletTest extends SystemTestCase
     }
 
     @Test
-    public void testUploadWithIncorrectSessionKeysNumberFormat() throws Exception
+    public void testUploadWithIncorrectSessionKeysNumberParamFormat() throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
 
@@ -302,7 +365,7 @@ public class UploadServletTest extends SystemTestCase
     }
 
     @Test
-    public void testUploadWithoutSessionKeyPrefix() throws Exception
+    public void testUploadWithoutSessionKeyPrefixParam() throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
 
@@ -323,7 +386,7 @@ public class UploadServletTest extends SystemTestCase
     }
 
     @Test
-    public void testUploadWithTooFewSessionKeyPrefixes() throws Exception
+    public void testUploadWithTooFewSessionKeyPrefixParams() throws Exception
     {
         String sessionToken = as.login(USER, PASSWORD);
 
@@ -349,18 +412,7 @@ public class UploadServletTest extends SystemTestCase
     {
         String sessionToken = as.login(USER, PASSWORD);
 
-        MultiPartContentProvider multipart = new MultiPartContentProvider();
-        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider("testContent"), null);
-        multipart.close();
-
-        HttpClient client = JettyHttpClientFactory.getHttpClient();
-        Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
-        request.param(PARAM_SESSION_ID, sessionToken);
-        request.param(PARAM_SESSION_KEYS_NUMBER, "1");
-        request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
-        request.content(multipart);
-
-        request.send();
+        upload(sessionToken, "testContent");
 
         assertSessionWorkspaceFiles(sessionToken, "testContent");
 
@@ -407,6 +459,25 @@ public class UploadServletTest extends SystemTestCase
         request.content(multipart);
 
         request.send();
+    }
+
+    private ContentResponse upload(String sessionToken, String fileContent) throws Exception
+    {
+        MultiPartContentProvider multipart = new MultiPartContentProvider();
+        multipart.addFilePart("testFieldName", "testFileName", new StringContentProvider(fileContent), null);
+        multipart.close();
+
+        HttpClient client = JettyHttpClientFactory.getHttpClient();
+        Request request = client.newRequest(SERVICE_URL).method(HttpMethod.POST);
+        if (sessionToken != null)
+        {
+            request.param(PARAM_SESSION_ID, sessionToken);
+        }
+        request.param(PARAM_SESSION_KEYS_NUMBER, "1");
+        request.param(PARAM_SESSION_KEY_PREFIX + "0", "testFieldName");
+        request.content(multipart);
+
+        return request.send();
     }
 
     private File getOSTempFolder() throws Exception
