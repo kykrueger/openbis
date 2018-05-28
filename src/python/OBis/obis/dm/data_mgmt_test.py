@@ -32,7 +32,10 @@ def generate_perm_id():
 
 
 def shared_dm():
-    dm = data_mgmt.DataMgmt()
+    openbis_config = {
+        'allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks': True
+    }
+    dm = data_mgmt.DataMgmt(openbis_config=openbis_config)
     return dm
 
 
