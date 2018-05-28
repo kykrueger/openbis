@@ -103,6 +103,7 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='fileservice_url', private=False))
         self.add_param(ConfigParam(name='user', private=True))
         self.add_param(ConfigParam(name='verify_certificates', private=True, is_json=True, default_value=True))
+        self.add_param(ConfigParam(name='allow_only_https', private=True, is_json=True, default_value=True))
         self.add_param(ConfigParam(name='hostname', private=False))
         self.add_param(ConfigParam(name='git_annex_hash_as_checksum', private=False, is_json=True, default_value=True))
 

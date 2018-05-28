@@ -13,6 +13,8 @@ def complete_openbis_config(config, resolver, local_only=True):
         config['verify_certificates'] = config_dict['verify_certificates']
     if config.get('token') is None:
         config['token'] = None
+    if config.get('allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks') is None:
+        config['allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks'] = not config_dict['allow_only_https']
 
 
 def complete_git_config(config):
