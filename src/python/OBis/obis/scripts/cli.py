@@ -708,7 +708,7 @@ def data_set_download(ctx, content_copy_index, file, data_set_id):
 def download(ctx, content_copy_index, file, data_set_id):
     """ Download files of a linked data set.
     """
-    ctx.invoke(download, content_copy_index=content_copy_index, file=file, data_set_id=data_set_id)
+    ctx.invoke(data_set_download, content_copy_index=content_copy_index, file=file, data_set_id=data_set_id)
 
 ## clone
 
