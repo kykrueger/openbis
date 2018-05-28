@@ -290,7 +290,16 @@ tag.delete()
 
 ## Vocabualry and VocabularyTerms
 
-Vocabulary consists of many VocabularyTerms. They are used to control the Terms in a Property field. So for example, you want to add a property called **Animal** to a Sample and you want to control which terms are used in this Property. For this you need to do a couple of steps:
+An entity such as Sample (Object), Experiment (Collection), Material or DataSet can be of a specific type:
+
+* Sample Type
+* Experiment Type
+* DataSet Type
+* Material Type
+
+Every type defines which Properties may be defined. Properties are like Attributes, but they are Type specific. Properties can contain all sorts of information, such as free text, XML, Hyperlink, Boolean and also *Controlled Vocabulary*. Such a Controlled Vocabulary consists of many VocabularyTerms. They are used to check the terms entered in a Property field.
+
+So for example, you want to add a property called **Animal** to a Sample and you want to control which terms are entered in this Property field. For this you need to do a couple of steps:
 
 1. create a new vocabulary *AnimalVocabulary*
 2. add terms to that vocabulary: *Cat, Dog, Mouse*
