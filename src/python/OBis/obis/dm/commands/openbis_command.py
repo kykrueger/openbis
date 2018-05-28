@@ -4,6 +4,9 @@ import os
 import socket
 import pybis
 from ..command_result import CommandResult
+from ..command_result import CommandException
+from .. import config as dm_config
+from ..utils import complete_openbis_config
 from ...scripts import cli
 
 
@@ -13,38 +16,88 @@ class OpenbisCommand(object):
         self.data_mgmt = dm
         self.openbis = dm.openbis
         self.git_wrapper = dm.git_wrapper
-        self.config_resolver = dm.config_resolver
-        self.config_dict = dm.config_resolver.config_dict()
+        self.settings_resolver = dm.settings_resolver
+        self.config_dict = dm.settings_resolver.config_dict()
 
         if self.openbis is None and dm.openbis_config.get('url') is not None:
             self.openbis = pybis.Openbis(**dm.openbis_config)
+            if self.user() is not None:
+                result = self.login()
+                if result.failure():
+                    raise CommandException(result)
+
 
     def external_dms_id(self):
-        return self.config_dict.get('external_dms_id')
+        return self.config_dict['repository']['external_dms_id']
+
+    def set_external_dms_id(self, value):
+        self.config_dict['repository']['external_dms_id'] = value
 
     def repository_id(self):
-        return self.config_dict.get('repository_id')
+        return self.config_dict['repository']['id']
 
-    def data_set_type(self):
-        return self.config_dict.get('data_set_type')
+    def set_repository_id(self, value):
+        self.config_dict['repository']['id'] = value
 
     def data_set_id(self):
-        return self.config_dict.get('data_set_id')
+        return self.config_dict['repository']['data_set_id']
+
+    def set_data_set_id(self, value):
+        self.config_dict['repository']['data_set_id'] = value
+
+    def data_set_type(self):
+        return self.config_dict['data_set']['type']
+
+    def set_data_set_type(self, value):
+        self.config_dict['data_set']['type'] = value
 
     def data_set_properties(self):
-        return self.config_dict.get('data_set_properties')
+        return self.config_dict['data_set']['properties']
+
+    def set_data_set_properties(self, value):
+        self.config_dict['data_set']['properties'] = value
 
     def object_id(self):
-        return self.config_dict.get('object_id')
+        return self.config_dict['object']['id']
+
+    def set_object_id(self, value):
+        self.config_dict['object']['id'] = value
 
     def collection_id(self):
-        return self.config_dict.get('collection_id')
+        return self.config_dict['collection']['id']
+
+    def set_collection_id(self, value):
+        self.config_dict['collection']['id'] = value
 
     def user(self):
-        return self.config_dict.get('user')
+        return self.config_dict['config']['user']
+
+    def set_user(self, value):
+        self.config_dict['config']['user'] = value
 
     def hostname(self):
-        return self.config_dict.get('hostname')
+        return self.config_dict['config']['hostname']
+
+    def set_hostname(self, value):
+        self.config_dict['config']['hostname'] = value
+
+    def fileservice_url(self):
+        return self.config_dict['config']['fileservice_url']
+
+    def set_fileservice_url(self, value):
+        self.config_dict['config']['fileservice_url'] = value
+
+    def git_annex_hash_as_checksum(self):
+        return self.config_dict['config']['git_annex_hash_as_checksum']
+
+    def set_git_annex_hash_as_checksum(self, value):
+        self.config_dict['config']['git_annex_hash_as_checksum'] = value
+
+    def openbis_url(self):
+        return self.config_dict['config']['openbis_url']
+
+    def set_openbis_url(self, value):
+        self.config_dict['config']['openbis_url'] = value
 
     def prepare_run(self):
         result = self.check_configuration()
@@ -62,14 +115,17 @@ class OpenbisCommand(object):
 
 
     def login(self):
-        if self.openbis.is_session_active():
-            return CommandResult(returncode=0, output="")
         user = self.user()
+        if self.openbis.is_session_active():
+            if self.openbis.token.startswith(user):
+                return CommandResult(returncode=0, output="")
+            else:
+                self.openbis.logout()
         passwd = getpass.getpass("Password for {}:".format(user))
         try:
             self.openbis.login(user, passwd, save_token=True)
         except ValueError:
-            msg = "Could not log into openbis {}".format(self.config_dict['openbis_url'])
+            msg = "Could not log into openbis {}".format(self.openbis_url())
             return CommandResult(returncode=-1, output=msg)
         return CommandResult(returncode=0, output='')
 
@@ -79,8 +135,8 @@ class OpenbisCommand(object):
         if result.failure():
             return result
         external_dms = result.output
-        self.config_resolver.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
-        self.config_dict['external_dms_id'] = external_dms.code
+        self.settings_resolver.repository.set_value_for_parameter('external_dms_id', external_dms.code, 'local')
+        self.set_external_dms_id(external_dms.code)
         return result
 
     def generate_external_data_management_system_code(self, user, hostname, edms_path):
@@ -119,7 +175,8 @@ class OpenbisCommand(object):
         # ask user
         hostname = self.ask_for_hostname(socket.gethostname())
         # store
-        cli.config_internal(self.data_mgmt, True, 'hostname', hostname)
+        resolver = self.data_mgmt.settings_resolver.config
+        cli.config_internal(self.data_mgmt, resolver, True, False, 'hostname', hostname)
         return hostname
 
     def ask_for_hostname(self, hostname):
@@ -129,3 +186,70 @@ class OpenbisCommand(object):
             return hostname_input
         else:
             return hostname
+
+    def path(self):
+        result = self.git_wrapper.git_top_level_path()
+        if result.failure():
+            return result
+        return result.output
+
+    def load_global_config(self, dm):
+        """
+        Use global config only.
+        """
+        resolver = dm_config.SettingsResolver()
+        config = {}
+        complete_openbis_config(config, resolver, False)
+        dm.openbis_config = config
+
+
+class ContentCopySelector(object):
+
+
+    def __init__(self, data_set, content_copy_index, get_index=False):
+        self.data_set = data_set
+        self.content_copy_index = content_copy_index
+        self.get_index = get_index
+
+
+    def select(self):
+        content_copy_index = self.select_index()
+        if self.get_index == True:
+            return content_copy_index
+        else:
+            return self.data_set.data['linkedData']['contentCopies'][content_copy_index]
+
+
+    def select_index(self):
+        if self.data_set.data['kind'] != 'LINK':
+            raise ValueError('Data set is of type ' + self.data_set.data['kind'] + ' but should be LINK.')
+        content_copies = self.data_set.data['linkedData']['contentCopies']
+        if len(content_copies) == 0:
+            raise ValueError("Data set has no content copies.")
+        elif len(content_copies) == 1:
+            return 0
+        else:
+            return self.select_content_copy_index(content_copies)
+
+
+    def select_content_copy_index(self, content_copies):
+        if self.content_copy_index is not None:
+            # use provided content_copy_index
+            if self.content_copy_index >= 0 and self.content_copy_index < len(content_copies):
+                return self.content_copy_index
+            else:
+                raise ValueError("Invalid content copy index.")
+        else:
+            # ask user
+            while True:
+                print('From which location should the files be copied?')
+                for i, content_copy in enumerate(content_copies):
+                    host = content_copy['externalDms']['address'].split(":")[0]
+                    path = content_copy['path']
+                    print("  {}) {}:{}".format(i, host, path))
+
+                copy_index_string = input('> ')
+                if copy_index_string.isdigit():
+                    copy_index_int = int(copy_index_string)
+                    if copy_index_int >= 0 and copy_index_int < len(content_copies):
+                        return copy_index_int

@@ -1,19 +1,16 @@
 import subprocess
 import os
 from contextlib import contextmanager
-from .command_result import CommandResult
+from .command_result import CommandResult, CommandException
 
 
 def complete_openbis_config(config, resolver, local_only=True):
     """Add default values for empty entries in the config."""
-    config_dict = resolver.config_dict(local_only)
+    config_dict = resolver.config.config_dict(local_only)
     if config.get('url') is None:
         config['url'] = config_dict['openbis_url']
     if config.get('verify_certificates') is None:
-        if config_dict.get('verify_certificates') is not None:
-            config['verify_certificates'] = config_dict['verify_certificates']
-        else:
-            config['verify_certificates'] = True
+        config['verify_certificates'] = config_dict['verify_certificates']
     if config.get('token') is None:
         config['token'] = None
 
@@ -37,8 +34,11 @@ def default_echo(details):
         print(details['message'])
 
 
-def run_shell(args, shell=False):
-    return CommandResult(subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell))
+def run_shell(args, shell=False, strip_leading_whitespace=True, raise_exception_on_failure=False):
+    result = CommandResult(subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=shell), strip_leading_whitespace=strip_leading_whitespace)
+    if raise_exception_on_failure == True and result.failure():
+        raise CommandException(result)
+    return result
 
 
 def locate_command(command):

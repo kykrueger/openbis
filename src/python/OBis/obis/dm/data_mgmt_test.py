@@ -59,14 +59,14 @@ def git_status(path=None, annex=False):
 
 def check_correct_config_semantics():
     # This how things should work
-    with open('.obis/properties.json') as f:
+    with open('.obis/repository.json') as f:
         config_local = json.load(f)
     assert config_local.get('data_set_id') is not None
 
 
 def check_workaround_config_semantics():
     # This how things should work
-    with open('.obis/properties.json') as f:
+    with open('.obis/repository.json') as f:
         config_local = json.load(f)
     assert config_local.get('data_set_id') is None
 
@@ -93,7 +93,7 @@ def test_data_use_case(tmpdir):
         raw_status = git_status()
         status = dm.status()
         assert raw_status.returncode == status.returncode
-        assert raw_status.output == status.output
+        assert raw_status.output + '\nNot yet synchronized with openBIS.' == status.output
         assert len(status.output) > 0
 
         result = dm.commit("Added data.")
@@ -120,7 +120,7 @@ def test_data_use_case(tmpdir):
         assert stat.st_nlink == 1
 
         status = dm.status()
-        assert len(status.output) == 0
+        assert status.output == 'There are git commits which have not been synchronized.'
 
         check_correct_config_semantics()
 
@@ -142,7 +142,7 @@ def test_child_data_set(tmpdir):
 
         result = dm.commit("Added data.")
         assert result.returncode == 0
-        parent_ds_code = dm.config_resolver.config_dict()['data_set_id']
+        parent_ds_code = dm.settings_resolver.config_dict()['repository']['data_set_id']
 
         update_test_data(tmpdir)
         properties = {'DESCRIPTION': 'Updated content.'}
@@ -150,13 +150,13 @@ def test_child_data_set(tmpdir):
         prepare_new_data_set_expectations(dm, properties)
         result = dm.commit("Updated data.")
         assert result.returncode == 0
-        child_ds_code = dm.config_resolver.config_dict()['data_set_id']
+        child_ds_code = dm.settings_resolver.config_dict()['repository']['data_set_id']
         assert parent_ds_code != child_ds_code
         commit_id = dm.git_wrapper.git_commit_hash().output
-        repository_id = dm.config_resolver.config_dict()['repository_id']
+        repository_id = dm.settings_resolver.config_dict()['repository']['id']
         assert repository_id is not None
 
-        contents = git.GitRepoFileInfo(dm.git_wrapper).contents()
+        contents = git.GitRepoFileInfo(dm.git_wrapper).contents(git_annex_hash_as_checksum=True)
         check_new_data_set_expectations(dm, tmp_dir_path, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, 
                                         properties, contents)
 
@@ -190,7 +190,7 @@ def test_undo_commit_when_sync_fails(tmpdir):
     dm.git_wrapper.git_top_level_path = MagicMock(return_value = CommandResult(returncode=0, output=None))
     dm.git_wrapper.git_add = MagicMock(return_value = CommandResult(returncode=0, output=None))
     dm.git_wrapper.git_commit = MagicMock(return_value = CommandResult(returncode=0, output=None))
-    dm.sync = lambda: CommandResult(returncode=-1, output="dummy error")
+    dm._sync = lambda: CommandResult(returncode=-1, output="dummy error")
     # when
     result = dm.commit("Added data.")
     # then
@@ -215,7 +215,7 @@ def test_init_analysis(tmpdir):
 
         result = dm.commit("Added data.")
         assert result.returncode == 0
-        parent_ds_code = dm.config_resolver.config_dict()['data_set_id']
+        parent_ds_code = dm.settings_resolver.config_dict()['repository']['data_set_id']
 
         analysis_repo = "analysis"
         result = dm.init_analysis(analysis_repo, None)
@@ -227,13 +227,13 @@ def test_init_analysis(tmpdir):
             prepare_new_data_set_expectations(dm)
             result = dm.commit("Analysis.")
             assert result.returncode == 0
-            child_ds_code = dm.config_resolver.config_dict()['data_set_id']
+            child_ds_code = dm.settings_resolver.config_dict()['repository']['data_set_id']
             assert parent_ds_code != child_ds_code
             commit_id = dm.git_wrapper.git_commit_hash().output
-            repository_id = dm.config_resolver.config_dict()['repository_id']
+            repository_id = dm.settings_resolver.config_dict()['repository']['id']
             assert repository_id is not None
 
-            contents = git.GitRepoFileInfo(dm.git_wrapper).contents()
+            contents = git.GitRepoFileInfo(dm.git_wrapper).contents(git_annex_hash_as_checksum=True)
             check_new_data_set_expectations(dm, tmp_dir_path + '/' + analysis_repo, commit_id, repository_id, ANY, child_ds_code, parent_ds_code, 
                                             None, contents)
 
@@ -241,13 +241,13 @@ def test_init_analysis(tmpdir):
 # TODO Test that if the data set registration fails, the data_set_id is reverted
 
 def set_registration_configuration(dm, properties=None):
-    resolver = dm.config_resolver
-    resolver.set_value_for_parameter('openbis_url', "http://localhost:8888", 'local')
-    resolver.set_value_for_parameter('user', "auser", 'local')
-    resolver.set_value_for_parameter('data_set_type', "DS_TYPE", 'local')
-    resolver.set_value_for_parameter('object_id', "/SAMPLE/ID", 'local')
+    resolver = dm.settings_resolver
+    resolver.config.set_value_for_parameter('openbis_url', "http://localhost:8888", 'local')
+    resolver.config.set_value_for_parameter('user', "auser", 'local')
+    resolver.data_set.set_value_for_parameter('type', "DS_TYPE", 'local')
+    resolver.object.set_value_for_parameter('id', "/SAMPLE/ID", 'local')
     if properties is not None:
-        resolver.set_value_for_parameter('data_set_properties', properties, 'local')
+        resolver.data_set.set_value_for_parameter('properties', properties, 'local')
 
 
 def prepare_registration_expectations(dm):

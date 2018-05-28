@@ -38,20 +38,19 @@ def configure_resolver_for_test(resolver, tmpdir):
 
 def test_read_config(tmpdir):
     copy_user_config_test_data(tmpdir)
-    resolver = config.ConfigResolver()
+    resolver = config.SettingsResolver().config
     configure_resolver_for_test(resolver, tmpdir)
     config_dict = resolver.config_dict()
     assert config_dict is not None
     with open(os.path.join(user_config_test_data_path(), ".obis", "config.json")) as f:
         expected_dict = json.load(f)
     assert config_dict['user'] == expected_dict['user']
-
-    assert './.obis/properties.json' == resolver.local_public_properties_path()
+    assert './.obis/config.json' == resolver.local_public_properties_path()
 
 
 def test_write_config(tmpdir):
     copy_user_config_test_data(tmpdir)
-    resolver = config.ConfigResolver()
+    resolver = config.SettingsResolver().config
     configure_resolver_for_test(resolver, tmpdir)
     config_dict = resolver.config_dict()
     assert config_dict is not None

@@ -38,6 +38,8 @@ class GitDataSetCreation(object):
         :param contents: A list of dicts that describe the contents:
             {'fileLength': [file length],
              'crc32': [crc32 checksum],
+             'checksum': [checksum other than crc32],
+             'checksumType': [checksum type if fiels checksum is used],
              'directory': [is path a directory?]
              'path': [the relative path string]}
 
@@ -172,6 +174,8 @@ class GitDataSetCreation(object):
         result = {}
         transfer_to_file_creation(content, result, 'fileLength')
         transfer_to_file_creation(content, result, 'crc32', 'checksumCRC32')
+        transfer_to_file_creation(content, result, 'checksum', 'checksum')
+        transfer_to_file_creation(content, result, 'checksumType', 'checksumType')
         transfer_to_file_creation(content, result, 'directory')
         transfer_to_file_creation(content, result, 'path')
         return result
@@ -179,30 +183,34 @@ class GitDataSetCreation(object):
 
 class GitDataSetUpdate(object):
 
-    def __init__(self, openbis, path, commit_id, repository_id, edms_id, data_set_id):
+    def __init__(self, openbis, data_set_id):
         """Initialize the command object with the necessary parameters.
         :param openbis: The openBIS API object.
-        :param path: The path to the git repository
-        :param commit_id: The git commit id
-        :param repository_id: The git repository id - same for copies
-        :param edms_id: If of the external data managment system
         :param data_set_id: Id of the data set to be updated
         """
         self.openbis = openbis
+        self.data_set_id = data_set_id
+
+    def new_content_copy(self, path, commit_id, repository_id, edms_id):
+        """ Create a data set update for adding a content copy.
+        :return: A DataSetUpdate object
+        """
         self.path = path
         self.commit_id = commit_id
         self.repository_id = repository_id
         self.edms_id =edms_id
-        self.data_set_id = data_set_id
-
-
-    def new_content_copy(self):
-        """ Create a data set update for adding a content copy.
-        :return: A DataSetUpdate object
-        """
-        data_set_update = self.get_data_set_update()
+        
+        content_copy_actions = self.get_actions_add_content_copy()
+        data_set_update = self.get_data_set_update(content_copy_actions)
         self.send_request(data_set_update)
 
+    def delete_content_copy(self, content_copy):
+        """ Deletes the given content_copy from openBIS.
+        :param content_copy: Content copy to be deleted.
+        """
+        content_copy_actions = self.get_actions_remove_content_copy(content_copy)
+        data_set_update = self.get_data_set_update(content_copy_actions)
+        self.send_request(data_set_update)
 
     def send_request(self, data_set_update):
         request = {
@@ -215,11 +223,11 @@ class GitDataSetUpdate(object):
         self.openbis._post_request(self.openbis.as_v3, request)
 
 
-    def get_data_set_update(self):
+    def get_data_set_update(self, content_copy_actions=[]):
         return {
             "@type": "as.dto.dataset.update.DataSetUpdate",
             "dataSetId": self.get_data_set_id(),
-            "linkedData": self.get_linked_data()
+            "linkedData": self.get_linked_data(content_copy_actions)
         }
 
 
@@ -230,7 +238,7 @@ class GitDataSetUpdate(object):
         }
 
 
-    def get_linked_data(self):
+    def get_linked_data(self, actions):
         return {
             "@type": "as.dto.common.update.FieldUpdateValue",
             "isModified": True,
@@ -238,14 +246,23 @@ class GitDataSetUpdate(object):
                 "@type": "as.dto.dataset.update.LinkedDataUpdate",
                 "contentCopies": {
                     "@type": "as.dto.dataset.update.ContentCopyListUpdateValue",
-                    "actions": [ {
-                        "@type": "as.dto.common.update.ListUpdateActionAdd",
-                        "items": [ self.get_content_copy_creation() ]
-                    } ]
+                    "actions": actions,
                 }
             }
         }
 
+
+    def get_actions_add_content_copy(self):
+        return [{
+                    "@type": "as.dto.common.update.ListUpdateActionAdd",
+                    "items": [ self.get_content_copy_creation() ]
+                }]
+
+    def get_actions_remove_content_copy(self, content_copy):
+        return [{
+                    "@type": "as.dto.common.update.ListUpdateActionRemove",
+                    "items": [ content_copy["id"] ]
+                }]
 
     def get_content_copy_creation(self):
         return {
@@ -258,3 +275,64 @@ class GitDataSetUpdate(object):
             "gitCommitHash": self.commit_id,
             "gitRepositoryId" : self.repository_id,
         }
+
+
+class GitDataSetFileSearch(object):
+
+    def __init__(self, openbis, data_set_id, dss_code=None):
+        """Initialize the command object with the necessary parameters.
+        :param openbis: The openBIS API object.
+        :param data_set_id: Id of the data set to be updated
+        :param dss_code: Code for the DSS -- defaults to the first dss if none is supplied.
+        """
+        self.openbis = openbis
+        self.data_set_id = data_set_id
+        self.dss_code = dss_code
+
+    def search_files(self):
+        request = {
+            "method": "searchFiles",
+            "params": [
+                self.openbis.token,
+                self.get_data_set_file_search_criteria(),
+                self.get_data_set_file_fetch_options(),
+            ]
+        }
+        server_url = self.data_store_url()
+        return self.openbis._post_request_full_url(server_url, request)
+
+    def get_data_set_file_search_criteria(self):
+        return {
+            "@type": "dss.dto.datasetfile.search.DataSetFileSearchCriteria",
+            "operator": "AND",
+            "criteria": [
+                {
+                    "@type": "as.dto.dataset.search.DataSetSearchCriteria",
+                    "relation": "DATASET",
+                    "operator": "OR",
+                    "criteria": [
+                        {
+                            "fieldName": "code",
+                            "fieldType": "ATTRIBUTE",
+                            "fieldValue": {
+                                "value": self.data_set_id,
+                                "@type": "as.dto.common.search.StringEqualToValue"
+                            },
+                            "@type": "as.dto.common.search.CodeSearchCriteria"
+                        }
+                    ],
+                }
+            ],
+        }
+
+    def get_data_set_file_fetch_options(self):
+        return {
+            "@type": "dss.dto.datasetfile.fetchoptions.DataSetFileFetchOptions",
+        }
+
+    def data_store_url(self):
+        data_stores = self.openbis.get_datastores()
+        if self.dss_code is None:
+            self.dss_code = self.openbis.get_datastores()['code'][0]
+        data_store = data_stores[data_stores['code'] == self.dss_code]
+        return "{}/datastore_server/rmi-data-store-server-v3.json".format(data_store['hostUrl'][0])

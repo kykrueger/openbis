@@ -1,6 +1,10 @@
+from abc import ABC, abstractmethod
+import hashlib
+import json
 import shutil
 import os
 from .utils import run_shell
+from .command_result import CommandException
 
 
 class GitWrapper(object):
@@ -29,9 +33,9 @@ class GitWrapper(object):
 
     def git_status(self, path=None):
         if path is None:
-            return run_shell([self.git_path, "status", "--porcelain"])
+            return run_shell([self.git_path, "status", "--porcelain"], strip_leading_whitespace=False)
         else:
-            return run_shell([self.git_path, "status", "--porcelain", path])
+            return run_shell([self.git_path, "status", "--porcelain", path], strip_leading_whitespace=False)
 
     def git_annex_init(self, path, desc):
         cmd = [self.git_path, "-C", path, "annex", "init", "--version=6"]
@@ -86,6 +90,10 @@ class GitWrapper(object):
                 gitignore.write(path)
                 gitignore.write("\n")
 
+    def git_delete_if_untracked(self, file):
+        result = run_shell([self.git_path, 'ls-files', '--error-unmatch', file])
+        if 'did not match' in result.output:
+            run_shell(['rm', file])
 
 class GitRepoFileInfo(object):
     """Class that gathers checksums and file lengths for all files in the repo."""
@@ -93,16 +101,18 @@ class GitRepoFileInfo(object):
     def __init__(self, git_wrapper):
         self.git_wrapper = git_wrapper
 
-    def contents(self):
+    def contents(self, git_annex_hash_as_checksum=False):
         """Return a list of dicts describing the contents of the repo.
         :return: A list of dictionaries
           {'crc32': checksum,
+           'checksum': checksum other than crc32
+           'checksumType': type of checksum
            'fileLength': size of the file,
            'path': path relative to repo root.
            'directory': False
           }"""
         files = self.file_list()
-        cksum = self.cksum(files)
+        cksum = self.cksum(files, git_annex_hash_as_checksum)
         return cksum
 
     def file_list(self):
@@ -113,20 +123,135 @@ class GitRepoFileInfo(object):
         files = [line.split("\t")[-1].strip() for line in lines]
         return files
 
-    def cksum(self, files):
-        cmd = ['cksum']
-        cmd.extend(files)
-        result = run_shell(cmd)
-        if result.failure():
-            return []
-        lines = result.output.split("\n")
-        return [self.checksum_line_to_dict(line) for line in lines]
+    def cksum(self, files, git_annex_hash_as_checksum=False):
 
-    @staticmethod
-    def checksum_line_to_dict(line):
-        fields = line.split(" ")
+        if git_annex_hash_as_checksum == False:
+            checksum_generator = ChecksumGeneratorCrc32()
+        else:
+            checksum_generator = ChecksumGeneratorGitAnnex()
+
+        checksums = []
+
+        for file in files:
+            checksum = checksum_generator.get_checksum(file)
+            checksums.append(checksum)
+
+        return checksums
+
+
+class ChecksumGeneratorCrc32(object):
+    def get_checksum(self, file):
+        result = run_shell(['cksum', file])
+        if result.failure():
+            raise CommandException(result)
+        fields = result.output.split(" ")
         return {
             'crc32': int(fields[0]),
             'fileLength': int(fields[1]),
-            'path': fields[2]
+            'path': file
         }
+
+
+class ChecksumGeneratorHashlib(ABC):
+    @abstractmethod
+    def hash_function(self):
+        pass
+    @abstractmethod
+    def hash_type(self):
+        pass
+
+    def get_checksum(self, file):
+        return {
+            'checksum': self._checksum(file),
+            'checksumType': self.hash_type(),
+            'fileLength': os.path.getsize(file),
+            'path': file
+        }
+
+    def _checksum(self, file):
+        hash_function = self.hash_function()
+        with open(file, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_function.update(chunk)
+        return hash_function.hexdigest()
+
+
+class ChecksumGeneratorSha256(ChecksumGeneratorHashlib):
+    def hash_function(self):
+        return hashlib.sha256()
+    def hash_type(self):
+        return 'SHA256'
+
+
+class ChecksumGeneratorMd5(ChecksumGeneratorHashlib):
+    def hash_function(self):
+        return hashlib.md5()
+    def hash_type(self):
+        return "MD5"
+
+
+class ChecksumGeneratorWORM(object):
+    def get_checksum(self, file):
+        return {
+            'checksum': self.worm(file),
+            'checksumType': 'WORM',
+            'fileLength': os.path.getsize(file),
+            'path': file
+        }        
+    def worm(self, file):
+        modification_time = int(os.path.getmtime(file))
+        size = os.path.getsize(file)
+        return "WORM-s{}-m{}--{}".format(size, modification_time, file)
+
+
+class ChecksumGeneratorGitAnnex(object):
+
+    def __init__(self):
+        self.backend = self._get_annex_backend()
+        self.checksum_generator_replacement = ChecksumGeneratorCrc32() if self.backend is None else None
+        # define which generator to use for files which are not handled by annex
+        if self.backend == 'SHA256':
+            self.checksum_generator_supplement = ChecksumGeneratorSha256()
+        elif self.backend == 'MD5':
+            self.checksum_generator_supplement = ChecksumGeneratorMd5()
+        elif self.backend == 'WORM':
+            self.checksum_generator_supplement = ChecksumGeneratorWORM()
+        else:
+            self.checksum_generator_supplement = ChecksumGeneratorCrc32()
+
+    def get_checksum(self, file):
+        if self.checksum_generator_replacement is not None:
+            return self.checksum_generator_replacement.get_checksum(file)
+        return self._get_checksum(file)
+
+    def _get_checksum(self, file):
+        annex_result = run_shell(['git', 'annex', 'info', '-j', file], raise_exception_on_failure=True)
+        if 'Not a valid object name' in annex_result.output:
+            return self.checksum_generator_supplement.get_checksum(file)
+        annex_info = json.loads(annex_result.output)
+        if annex_info['present'] != True:
+            return self.checksum_generator_supplement.get_checksum(file)
+        return {
+            'checksum': self._get_checksum_from_annex_info(annex_info),
+            'checksumType': self.backend,
+            'fileLength': os.path.getsize(file),
+            'path': file
+        }
+
+    def _get_checksum_from_annex_info(self, annex_info):
+        if self.backend in ['MD5', 'SHA256']:
+            return annex_info['key'].split('--')[1]
+        elif self.backend == 'WORM':
+            return annex_info['key'][5:]
+        else:
+            raise ValueError("Git annex backend not supported: " + self.backend)
+
+    def _get_annex_backend(self):
+        with open('.gitattributes') as gitattributes:
+            for line in gitattributes.readlines():
+                if 'annex.backend' in line:
+                    backend = line.split('=')[1].strip()
+                    if backend == 'SHA256E':
+                        backend = 'SHA256'
+                    return backend
+        return None
