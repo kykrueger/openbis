@@ -52,7 +52,7 @@ public class QueryExecutionOptions implements Serializable
     @Override
     public String toString()
     {
-        return getClass().getSimpleName() + ": parameterKeys=" + parameters.keySet();
+        return getClass().getSimpleName() + ": parameterKeys=" + (parameters != null ? parameters.keySet() : "[]");
     }
 
 }
