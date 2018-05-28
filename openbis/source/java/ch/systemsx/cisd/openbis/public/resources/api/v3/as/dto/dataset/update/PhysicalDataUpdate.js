@@ -9,11 +9,20 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		prototype['@type'] = 'as.dto.dataset.update.PhysicalDataUpdate';
 		constructor.serialVersionUID = 1;
 
+		/*
+		 * @Deprecated
+		 */
 		prototype.fileFormatTypeId = null;
 
+		/*
+		 * @Deprecated
+		 */
 		prototype.getFileFormatTypeId = function() {
 			return this.fileFormatTypeId;
 		};
+		/*
+		 * @Deprecated
+		 */
 		prototype.setFileFormatTypeId = function(fileFormatTypeId) {
 			this.fileFormatTypeId.setValue(fileFormatTypeId);
 		};

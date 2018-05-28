@@ -60,6 +60,7 @@ public class UpdateMaterialsImportTest extends ObjectsImportTest
             ImportFile file = new ImportFile("code", "DESCRIPTION");
             file.addLine(materialPermId.getCode(), "imported description");
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+            assertUploadedFiles(sessionToken, file.toString());
 
             Map<String, Object> parameters = new HashMap<String, Object>();
             parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
@@ -87,6 +88,9 @@ public class UpdateMaterialsImportTest extends ObjectsImportTest
                 assertEquals("1 material(s) updated.", message);
                 assertNoEmails(timestamp);
             }
+
+            assertUploadedFiles(sessionToken);
+
         } finally
         {
             MaterialDeletionOptions options = new MaterialDeletionOptions();

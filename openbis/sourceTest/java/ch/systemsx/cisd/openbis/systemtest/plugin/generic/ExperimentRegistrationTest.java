@@ -32,6 +32,7 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.string.UnicodeUtils;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListSampleDisplayCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ResultSetWithEntityTypes;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.SessionContext;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.GridRowModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
@@ -89,8 +90,7 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
         String experimentCode = commonClientService.generateCode("EXP", EntityKind.EXPERIMENT);
         String experimentIdentifier = "/cisd/default/" + experimentCode;
         NewExperiment newExperiment = new NewExperiment(experimentIdentifier, "SIRNA_HCS");
-        newExperiment.setProperties(new IEntityProperty[]
-        { property("DESCRIPTION", "my éxpériment") });
+        newExperiment.setProperties(new IEntityProperty[] { property("DESCRIPTION", "my éxpériment") });
         genericClientService.registerExperiment(ATTACHMENTS_SESSION_KEY, SAMPLES_SESSION_KEY,
                 newExperiment);
 
@@ -113,10 +113,8 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
         String experimentCode = commonClientService.generateCode("EXP", EntityKind.EXPERIMENT);
         String experimentIdentifier = "/cisd/default/" + experimentCode;
         NewExperiment newExperiment = new NewExperiment(experimentIdentifier, "SIRNA_HCS");
-        newExperiment.setProperties(new IEntityProperty[]
-        { property("DESCRIPTION", "my experiment") });
-        newExperiment.setSamples(new String[]
-        { "3vcp8" });
+        newExperiment.setProperties(new IEntityProperty[] { property("DESCRIPTION", "my experiment") });
+        newExperiment.setSamples(new String[] { "3vcp8" });
         genericClientService.registerExperiment(ATTACHMENTS_SESSION_KEY, SAMPLES_SESSION_KEY,
                 newExperiment);
 
@@ -136,15 +134,14 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
     @Test
     public void testRegisterExperimentAndSamples()
     {
-        logIntoCommonClientService();
+        SessionContext session = logIntoCommonClientService();
 
         String batchSamplesFileContent = "identifier\torganism\n" + "S1001\tfly\n" + "S1002\tdog\n";
-        addMultiPartFile(SAMPLES_SESSION_KEY, "samples.txt", batchSamplesFileContent.getBytes());
+        addMultiPartFile(session.getSessionID(), SAMPLES_SESSION_KEY, "samples.txt", batchSamplesFileContent.getBytes());
         String experimentCode = commonClientService.generateCode("EXP", EntityKind.EXPERIMENT);
         String experimentIdentifier = "/cisd/default/" + experimentCode;
         NewExperiment newExperiment = new NewExperiment(experimentIdentifier, "SIRNA_HCS");
-        newExperiment.setProperties(new IEntityProperty[]
-        { property("DESCRIPTION", "my experiment") });
+        newExperiment.setProperties(new IEntityProperty[] { property("DESCRIPTION", "my experiment") });
         newExperiment.setRegisterSamples(true);
         SampleType sampleType = new SampleType();
         sampleType.setCode("CELL_PLATE");
@@ -186,12 +183,11 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
     {
         String sessionToken = logIntoCommonClientService().getSessionID();
 
-        addMultiPartFile(ATTACHMENTS_SESSION_KEY, "hello.txt", "hello world".getBytes());
+        addMultiPartFile(sessionToken, ATTACHMENTS_SESSION_KEY, "hello.txt", "hello world".getBytes());
         String experimentCode = commonClientService.generateCode("EXP", EntityKind.EXPERIMENT);
         String experimentIdentifier = "/cisd/default/" + experimentCode;
         NewExperiment newExperiment = new NewExperiment(experimentIdentifier, "SIRNA_HCS");
-        newExperiment.setProperties(new IEntityProperty[]
-        { property("DESCRIPTION", "my experiment") });
+        newExperiment.setProperties(new IEntityProperty[] { property("DESCRIPTION", "my experiment") });
         newExperiment.setAttachments(Arrays.asList(new NewAttachment("hello.txt", "hello",
                 "test attachment")));
         genericClientService.registerExperiment(ATTACHMENTS_SESSION_KEY, SAMPLES_SESSION_KEY,
@@ -220,19 +216,17 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
     @Test(groups = "slow")
     public void testBulkUpdateExperiments() throws UnsupportedEncodingException
     {
-        logIntoCommonClientService();
+        SessionContext session = logIntoCommonClientService();
 
         int expCount = 10;
         // Create some experiments to update
         ArrayList<String> expIds = registerNewExperiments(expCount);
-        String[] codes = new String[]
-        { "DESCRIPTION" };
-        String[] values = new String[]
-        { "New déscription" };
+        String[] codes = new String[] { "DESCRIPTION" };
+        String[] values = new String[] { "New déscription" };
         String bulkUpdateString = createBulkUpdateString(expIds, codes, values);
 
         // Update the experiments
-        addMultiPartFile(EXPERIMENTS_SESSION_KEY, "experiments.txt",
+        addMultiPartFile(session.getSessionID(), EXPERIMENTS_SESSION_KEY, "experiments.txt",
                 bulkUpdateString.getBytes(UnicodeUtils.DEFAULT_UNICODE_CHARSET));
         ExperimentType experimentType = new ExperimentType();
         experimentType.setCode("SIRNA_HCS");
@@ -251,19 +245,17 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
     @Test
     public void testBulkUpdateExperimentsWithProjectChanges() throws UnsupportedEncodingException
     {
-        logIntoCommonClientService();
+        SessionContext session = logIntoCommonClientService();
 
         int expCount = 10;
         // Create some experiments to update
         ArrayList<String> expIds = registerNewExperiments(expCount);
-        String[] codes = new String[]
-        { "DESCRIPTION" };
-        String[] values = new String[]
-        { "New déscription" };
+        String[] codes = new String[] { "DESCRIPTION" };
+        String[] values = new String[] { "New déscription" };
         String bulkUpdateString = createBulkUpdateString(expIds, "/cisd/nemo", codes, values);
 
         // Update the experiments
-        addMultiPartFile(EXPERIMENTS_SESSION_KEY, "experiments.txt",
+        addMultiPartFile(session.getSessionID(), EXPERIMENTS_SESSION_KEY, "experiments.txt",
                 bulkUpdateString.getBytes(UnicodeUtils.DEFAULT_UNICODE_CHARSET));
         ExperimentType experimentType = new ExperimentType();
         experimentType.setCode("SIRNA_HCS");
@@ -287,18 +279,17 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
     @Test
     public void testBulkUpdateExperimentWithSamplesWithProjectChanges()
     {
-        logIntoCommonClientService();
+        SessionContext session = logIntoCommonClientService();
 
         // Create an experiment with samples
         String batchSamplesFileContent = "identifier\torganism\n" + "S2001\tfly\n" + "S2002\tdog\n";
-        addMultiPartFile(SAMPLES_SESSION_KEY, "samples.txt", batchSamplesFileContent.getBytes());
+        addMultiPartFile(session.getSessionID(), SAMPLES_SESSION_KEY, "samples.txt", batchSamplesFileContent.getBytes());
         String experimentCode =
                 commonClientService.generateCode("EXP-WITH-PROJ", EntityKind.EXPERIMENT);
         String experimentIdentifier = "/cisd/default/" + experimentCode;
         List<String> expIds = Collections.singletonList(experimentIdentifier);
         NewExperiment newExperiment = new NewExperiment(experimentIdentifier, "SIRNA_HCS");
-        newExperiment.setProperties(new IEntityProperty[]
-        { property("DESCRIPTION", "my experiment") });
+        newExperiment.setProperties(new IEntityProperty[] { property("DESCRIPTION", "my experiment") });
         newExperiment.setRegisterSamples(true);
         SampleType sampleType = new SampleType();
         sampleType.setCode("CELL_PLATE");
@@ -313,7 +304,7 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
                 createBulkUpdateString(expIds, "/testgroup/testproj", codes, values);
 
         // Update the experiments
-        addMultiPartFile(EXPERIMENTS_SESSION_KEY, "experiments.txt", bulkUpdateString.getBytes());
+        addMultiPartFile(session.getSessionID(), EXPERIMENTS_SESSION_KEY, "experiments.txt", bulkUpdateString.getBytes());
         ExperimentType experimentType = new ExperimentType();
         experimentType.setCode("SIRNA_HCS");
         List<BatchRegistrationResult> results =
@@ -355,17 +346,15 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
     @Test
     public void testBulkUpdateExperimentsDeletingMandatoryProperty()
     {
-        logIntoCommonClientService();
+        SessionContext session = logIntoCommonClientService();
 
         int expCount = 10;
         // Create some experiments to update
         ArrayList<String> expIds = registerNewExperiments(expCount);
-        String bulkUpdateString = createBulkUpdateString(expIds, new String[]
-        { "DESCRIPTION" }, new String[]
-        { "--DELETE--" });
+        String bulkUpdateString = createBulkUpdateString(expIds, new String[] { "DESCRIPTION" }, new String[] { "--DELETE--" });
 
         // Update the experiments
-        addMultiPartFile(EXPERIMENTS_SESSION_KEY, "experiments.txt", bulkUpdateString.getBytes());
+        addMultiPartFile(session.getSessionID(), EXPERIMENTS_SESSION_KEY, "experiments.txt", bulkUpdateString.getBytes());
         ExperimentType experimentType = new ExperimentType();
         experimentType.setCode("SIRNA_HCS");
         try
@@ -383,19 +372,17 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
     public void testBulkUpdateExperimentsDeletingNonMandatoryProperty()
             throws UnsupportedEncodingException
     {
-        logIntoCommonClientService();
+        SessionContext session = logIntoCommonClientService();
 
         int expCount = 10;
         // Create some experiments to update
         ArrayList<String> expIds = registerNewExperiments(expCount);
-        String[] codes = new String[]
-        { "DESCRIPTION", "GENDER" };
-        String[] values = new String[]
-        { "New déscription", "MALE" };
+        String[] codes = new String[] { "DESCRIPTION", "GENDER" };
+        String[] values = new String[] { "New déscription", "MALE" };
         String bulkUpdateString = createBulkUpdateString(expIds, codes, values);
 
         // Add/Modify some properties
-        addMultiPartFile(EXPERIMENTS_SESSION_KEY, "experiments.txt",
+        addMultiPartFile(session.getSessionID(), EXPERIMENTS_SESSION_KEY, "experiments.txt",
                 bulkUpdateString.getBytes(UnicodeUtils.DEFAULT_UNICODE_CHARSET));
         ExperimentType experimentType = new ExperimentType();
         experimentType.setCode("SIRNA_HCS");
@@ -404,19 +391,15 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
         verifyBulkUpdate(expIds, codes, values);
 
         // Delete some properties
-        codes = new String[]
-        { "GENDER" };
-        values = new String[]
-        { "__DELETE__" };
+        codes = new String[] { "GENDER" };
+        values = new String[] { "__DELETE__" };
         bulkUpdateString = createBulkUpdateString(expIds, codes, values);
 
-        addMultiPartFile(EXPERIMENTS_SESSION_KEY, "experiments.txt",
+        addMultiPartFile(session.getSessionID(), EXPERIMENTS_SESSION_KEY, "experiments.txt",
                 bulkUpdateString.getBytes(UnicodeUtils.DEFAULT_UNICODE_CHARSET));
         genericClientService.updateExperiments(experimentType, EXPERIMENTS_SESSION_KEY, false, null);
 
-        verifyBulkUpdate(expIds, new String[]
-        { "DESCRIPTION" }, new String[]
-        { "New déscription" });
+        verifyBulkUpdate(expIds, new String[] { "DESCRIPTION" }, new String[] { "New déscription" });
     }
 
     /**
@@ -431,8 +414,7 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
                     commonClientService.generateCode("BULK-EXP", EntityKind.EXPERIMENT);
             String experimentIdentifier = "/cisd/default/" + experimentCode;
             NewExperiment newExperiment = new NewExperiment(experimentIdentifier, "SIRNA_HCS");
-            newExperiment.setProperties(new IEntityProperty[]
-            { property("DESCRIPTION", "my éxpériment") });
+            newExperiment.setProperties(new IEntityProperty[] { property("DESCRIPTION", "my éxpériment") });
             genericClientService.registerExperiment(ATTACHMENTS_SESSION_KEY, SAMPLES_SESSION_KEY,
                     newExperiment);
             expIds.add(experimentIdentifier);

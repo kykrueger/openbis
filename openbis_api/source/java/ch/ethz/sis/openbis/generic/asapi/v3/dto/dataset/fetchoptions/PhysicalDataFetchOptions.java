@@ -37,6 +37,7 @@ public class PhysicalDataFetchOptions extends FetchOptions<PhysicalData> impleme
     private StorageFormatFetchOptions storageFormat;
 
     @JsonProperty
+    @Deprecated
     private FileFormatTypeFetchOptions fileFormatType;
 
     @JsonProperty
@@ -68,6 +69,7 @@ public class PhysicalDataFetchOptions extends FetchOptions<PhysicalData> impleme
     }
 
     // Method automatically generated with DtoGenerator
+    @Deprecated
     public FileFormatTypeFetchOptions withFileFormatType()
     {
         if (fileFormatType == null)
@@ -78,12 +80,14 @@ public class PhysicalDataFetchOptions extends FetchOptions<PhysicalData> impleme
     }
 
     // Method automatically generated with DtoGenerator
+    @Deprecated
     public FileFormatTypeFetchOptions withFileFormatTypeUsing(FileFormatTypeFetchOptions fetchOptions)
     {
         return fileFormatType = fetchOptions;
     }
 
     // Method automatically generated with DtoGenerator
+    @Deprecated
     public boolean hasFileFormatType()
     {
         return fileFormatType != null;

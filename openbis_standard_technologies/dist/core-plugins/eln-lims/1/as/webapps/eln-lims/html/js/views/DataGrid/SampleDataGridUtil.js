@@ -48,7 +48,38 @@ var SampleDataGridUtil = new function() {
 			label : 'Code',
 			property : 'code',
 			isExportable: false,
-			sortable : true
+			sortable : true,
+			render : function(data, grid) {
+				var paginationInfo = null;
+				if(isDynamic) {
+					var indexFound = null;
+					for(var idx = 0; idx < grid.lastReceivedData.objects.length; idx++) {
+						if(grid.lastReceivedData.objects[idx].permId === data.permId) {
+							indexFound = idx + (grid.lastUsedOptions.pageIndex * grid.lastUsedOptions.pageSize);
+							break;
+						}
+					}
+					
+					if(indexFound !== null) {
+						paginationInfo = {
+								pagFunction : _this.getDataListDynamic(samplesOrCriteria, false),
+								pagOptions : grid.lastUsedOptions,
+								currentIndex : indexFound,
+								totalCount : grid.lastReceivedData.totalCount
+						}
+					}
+				}
+				return (isLinksDisabled)?data.code:FormUtil.getFormLink(data.code, "Sample", data.permId, paginationInfo);
+			},
+			filter : function(data, filter) {
+				return data.identifier.toLowerCase().indexOf(filter) !== -1;
+			},
+			sort : function(data1, data2, asc) {
+				var value1 = data1.identifier;
+				var value2 = data2.identifier;
+				var sortDirection = (asc)? 1 : -1;
+				return sortDirection * naturalSort(value1, value2);
+			}
 		});
 		
 		columnsFirst.push({
@@ -87,14 +118,44 @@ var SampleDataGridUtil = new function() {
 			label : 'Parents',
 			property : 'parents',
 			isExportable: true,
-			sortable : false
+			sortable : false,
+			render : function(data, grid) {
+				var output = $("<span>");
+				if(data.parents) {
+					var elements = data.parents.split(", ");
+					for (var eIdx = 0; eIdx < elements.length; eIdx++) {
+						var eIdentifier = elements[eIdx];
+						var eComponent = (isLinksDisabled)?eIdentifier:FormUtil.getFormLink(eIdentifier, "Sample", eIdentifier, null);
+						if(eIdx != 0) {
+							output.append(", ");
+						}
+						output.append(eComponent);
+					}
+				}
+				return output;
+			}
 		});
 		
 		columnsFirst.push({
 			label : 'Children',
 			property : 'children',
 			isExportable: false,
-			sortable : false
+			sortable : false,
+			render : function(data, grid) {
+				var output = $("<span>");
+				if(data.children) {
+					var elements = data.children.split(", ");
+					for (var eIdx = 0; eIdx < elements.length; eIdx++) {
+						var eIdentifier = elements[eIdx];
+						var eComponent = (isLinksDisabled)?eIdentifier:FormUtil.getFormLink(eIdentifier, "Sample", eIdentifier, null);
+						if(eIdx != 0) {
+							output.append(", ");
+						}
+						output.append(eComponent);
+					}
+				}
+				return output;
+			}
 		});
 		
 		columnsFirst.push({

@@ -19,4 +19,5 @@ public class BenchmarkConfig
     private String datastoreURL;
     private int datastoreTimeout;
     private HashMap<String, String> parameters;
+    private int threads;
 }

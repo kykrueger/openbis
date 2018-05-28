@@ -21,11 +21,6 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	this._settingsManager = new SettingsManager(this._mainController.serverFacade);
 
 	this.init = function(views) {
-
-		if (!profile.isAdmin) {
-			return;
-		}
-
 		// apply settings to copy of profile, even if invalid, for editing
 		var profileToEdit = jQuery.extend(true, {}, profile);
 		this._settingsManager.loadSettingsAndApplyToProfile((function() {

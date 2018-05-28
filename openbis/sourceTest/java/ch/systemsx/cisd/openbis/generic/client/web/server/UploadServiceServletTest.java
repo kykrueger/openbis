@@ -33,14 +33,15 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.server.UploadServiceServlet.ISessionFilesSetter;
 import ch.systemsx.cisd.openbis.generic.client.web.server.UploadServiceServlet.SessionFilesSetter;
+import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 
 /**
  * Tests for {@link UploadServiceServlet}.
  * 
  * @author Izabela Adamczyk
  */
-@Friend(toClasses =
-{ UploadServiceServlet.class, ISessionFilesSetter.class, SessionFilesSetter.class })
+@Friend(toClasses = { UploadServiceServlet.class, ISessionFilesSetter.class, SessionFilesSetter.class })
 public final class UploadServiceServletTest extends AssertJUnit
 {
 
@@ -49,6 +50,8 @@ public final class UploadServiceServletTest extends AssertJUnit
     private static final String SESSION_KEY_PREFIX = "sessionKey_";
 
     private static final String SESSION_KEYS_NUMBER = "sessionKeysNumber";
+
+    private static final String SESSION_TOKEN_KEY = "openbis-session-token";
 
     private static final String SESSION_TOKEN = "sessionID";
 
@@ -62,7 +65,11 @@ public final class UploadServiceServletTest extends AssertJUnit
 
     protected HttpSession httpSession;
 
+    protected IOpenBisSessionManager sessionManager;
+
     protected ISessionFilesSetter sessionFilesSetter;
+
+    protected ISessionWorkspaceProvider sessionWorkspaceProvider;
 
     @BeforeMethod
     public void setUp()
@@ -72,7 +79,9 @@ public final class UploadServiceServletTest extends AssertJUnit
         multipartHttpServletRequest = context.mock(MultipartHttpServletRequest.class);
         servletResponse = context.mock(HttpServletResponse.class);
         httpSession = context.mock(HttpSession.class);
+        sessionManager = context.mock(IOpenBisSessionManager.class);
         sessionFilesSetter = context.mock(ISessionFilesSetter.class);
+        sessionWorkspaceProvider = context.mock(ISessionWorkspaceProvider.class);
     }
 
     @AfterMethod
@@ -85,7 +94,7 @@ public final class UploadServiceServletTest extends AssertJUnit
 
     private UploadServiceServlet createServlet()
     {
-        return new UploadServiceServlet(sessionFilesSetter);
+        return new UploadServiceServlet(sessionFilesSetter, sessionManager, sessionWorkspaceProvider);
     }
 
     private void expectSendResponse(Expectations exp)
@@ -98,6 +107,9 @@ public final class UploadServiceServletTest extends AssertJUnit
     {
         exp.one(multipartHttpServletRequest).getSession(false);
         exp.will(Expectations.returnValue(httpSession));
+        exp.one(httpSession).getAttribute(SESSION_TOKEN_KEY);
+        exp.will(Expectations.returnValue(SESSION_TOKEN));
+        exp.one(sessionManager).getSession(SESSION_TOKEN);
     }
 
     @Test
@@ -231,8 +243,7 @@ public final class UploadServiceServletTest extends AssertJUnit
                         one(multipartHttpServletRequest).getParameter(SESSION_KEY_PREFIX + i);
                         will(returnValue(sessionKey));
 
-                        one(sessionFilesSetter).addFilesToSession(httpSession,
-                                multipartHttpServletRequest, sessionKey);
+                        one(sessionFilesSetter).addFilesToSession(httpSession, multipartHttpServletRequest, sessionKey, sessionWorkspaceProvider);
                         will(returnValue(false));
                     }
 
@@ -269,8 +280,7 @@ public final class UploadServiceServletTest extends AssertJUnit
                         one(multipartHttpServletRequest).getParameter(SESSION_KEY_PREFIX + i);
                         will(returnValue(sessionKey));
 
-                        one(sessionFilesSetter).addFilesToSession(httpSession,
-                                multipartHttpServletRequest, sessionKey);
+                        one(sessionFilesSetter).addFilesToSession(httpSession, multipartHttpServletRequest, sessionKey, sessionWorkspaceProvider);
                         will(returnValue(true));
                     }
                     expectSendResponse(this);
@@ -299,8 +309,7 @@ public final class UploadServiceServletTest extends AssertJUnit
                         one(multipartHttpServletRequest).getParameter(SESSION_KEY_PREFIX + i);
                         will(returnValue(sessionKey));
 
-                        one(sessionFilesSetter).addFilesToSession(httpSession,
-                                multipartHttpServletRequest, sessionKey);
+                        one(sessionFilesSetter).addFilesToSession(httpSession, multipartHttpServletRequest, sessionKey, sessionWorkspaceProvider);
                         will(returnValue(i != numberOfSessionKeys - 1));
                     }
                     expectSendResponse(this);

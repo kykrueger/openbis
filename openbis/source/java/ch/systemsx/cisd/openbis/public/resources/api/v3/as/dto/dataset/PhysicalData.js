@@ -13,6 +13,9 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.location = null;
 		prototype.size = null;
 		prototype.storageFormat = null;
+		/*
+		 * @Deprecated
+		 */
 		prototype.fileFormatType = null;
 		prototype.locatorType = null;
 		prototype.complete = null;
@@ -55,6 +58,9 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setStorageFormat = function(storageFormat) {
 			this.storageFormat = storageFormat;
 		};
+		/*
+		 * @Deprecated
+		 */
 		prototype.getFileFormatType = function() {
 			if (this.getFetchOptions() && this.getFetchOptions().hasFileFormatType()) {
 				return this.fileFormatType;
@@ -62,6 +68,9 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 				throw new exceptions.NotFetchedException("File format type has not been fetched.");
 			}
 		};
+		/*
+		 * @Deprecated
+		 */
 		prototype.setFileFormatType = function(fileFormatType) {
 			this.fileFormatType = fileFormatType;
 		};

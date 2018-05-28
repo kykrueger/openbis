@@ -34,7 +34,7 @@ function ImagePreviewIconLoader() {
     }
 
     this._shouldLoadPreview = function(node) {
-        return ! node.data.previewLoaded && node.data.fileSize <= profile.datasetViewerMaxFilesizeForImagePreview;
+        return ! node.data.previewLoading && ! node.data.previewLoaded && node.data.fileSize <= profile.datasetViewerMaxFilesizeForImagePreview;
     }
 
     this._addToQueue = function(node) {
@@ -58,6 +58,9 @@ function ImagePreviewIconLoader() {
     }
 
     this._initLoading = function(node) {
+
+        node.data.previewLoading = true;
+
         var $span = $(node.span);
 
         var $imageContainer = $("<span>", { id : "image-container" }).css({
@@ -122,6 +125,7 @@ function ImagePreviewIconLoader() {
             $imageContainer.append($iconImg);
 
             params.node.data.previewLoaded = true;
+            params.node.data.previewLoading = false;
             params.done();
         });
     }

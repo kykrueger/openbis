@@ -50,6 +50,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.IServiceForDataStoreServer;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.GridRowModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
@@ -134,6 +135,9 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     protected MockHttpServletRequest request;
 
     protected String systemSessionToken;
+
+    @Autowired
+    protected ISessionWorkspaceProvider sessionWorkspaceProvider;
 
     @BeforeSuite
     public void beforeSuite()
@@ -371,11 +375,11 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         return new NewSampleBuilder(identifier);
     }
 
-    protected void uploadFile(String fileName, String fileContent)
+    protected void uploadFile(String sessionToken, String fileName, String fileContent)
     {
         UploadedFilesBean bean = new UploadedFilesBean();
-        bean.addMultipartFile(new MockMultipartFile(fileName, fileName, null, fileContent
-                .getBytes()));
+        bean.addMultipartFile(sessionToken, new MockMultipartFile(fileName, fileName, null, fileContent
+                .getBytes()), sessionWorkspaceProvider);
         HttpSession session = request.getSession();
         session.setAttribute(SESSION_KEY, bean);
     }

@@ -51,6 +51,7 @@ public class CustomImportTest extends ObjectsImportTest
             multiPart.close();
 
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, multiPart);
+            assertUploadedFiles(sessionToken, "test-file-content");
 
             DataSet dataSet = getObject(sessionToken, dataSetPermId);
             assertNull(dataSet);
@@ -80,6 +81,9 @@ public class CustomImportTest extends ObjectsImportTest
                 assertEquals("Import successfully completed.", message);
                 assertNoEmails(timestamp);
             }
+
+            assertUploadedFiles(sessionToken);
+
         } finally
         {
             DataSetDeletionOptions options = new DataSetDeletionOptions();

@@ -46,6 +46,7 @@ public class CreateSamplesImportTest extends ObjectsImportTest
             ImportFile file = new ImportFile("identifier", "COMMENT");
             file.addLine(sampleIdentifier.getIdentifier(), "imported comment");
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+            assertUploadedFiles(sessionToken, file.toString());
 
             Sample sample = getObject(sessionToken, sampleIdentifier);
             assertNull(sample);
@@ -76,6 +77,9 @@ public class CreateSamplesImportTest extends ObjectsImportTest
                 assertEquals("Registration of 1 sample(s) is complete.", message);
                 assertNoEmails(timestamp);
             }
+
+            assertUploadedFiles(sessionToken);
+
         } finally
         {
             SampleDeletionOptions options = new SampleDeletionOptions();

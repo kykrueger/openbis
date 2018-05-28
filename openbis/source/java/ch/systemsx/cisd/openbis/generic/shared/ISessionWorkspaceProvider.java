@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 ETH Zuerich, CISD
+ * Copyright 2018 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions;
+package ch.systemsx.cisd.openbis.generic.shared;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.FileFormatType;
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import java.io.File;
+import java.util.Map;
 
 /**
  * @author pkupczyk
  */
-@JsonObject("as.dto.dataset.fetchoptions.FileFormatTypeSortOptions")
-@Deprecated
-public class FileFormatTypeSortOptions extends SortOptions<FileFormatType>
+public interface ISessionWorkspaceProvider
 {
 
-    private static final long serialVersionUID = 1L;
+    Map<String, File> getSessionWorkspaces();
+
+    File getSessionWorkspace(String sessionToken);
+
+    void deleteSessionWorkspace(String sessionToken);
 
 }

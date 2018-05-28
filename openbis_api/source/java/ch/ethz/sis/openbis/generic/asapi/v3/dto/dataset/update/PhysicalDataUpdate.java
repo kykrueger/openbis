@@ -33,15 +33,18 @@ public class PhysicalDataUpdate implements IUpdate
     private static final long serialVersionUID = 1L;
 
     @JsonProperty
+    @Deprecated
     private FieldUpdateValue<IFileFormatTypeId> fileFormatTypeId = new FieldUpdateValue<IFileFormatTypeId>();
 
     @JsonIgnore
+    @Deprecated
     public FieldUpdateValue<IFileFormatTypeId> getFileFormatTypeId()
     {
         return fileFormatTypeId;
     }
 
     @JsonIgnore
+    @Deprecated
     public void setFileFormatTypeId(IFileFormatTypeId fileFormatTypeId)
     {
         this.fileFormatTypeId.setValue(fileFormatTypeId);

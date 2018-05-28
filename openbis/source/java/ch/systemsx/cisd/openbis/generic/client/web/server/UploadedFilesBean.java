@@ -23,11 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 import org.springframework.web.multipart.MultipartFile;
 
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.common.spring.IUncheckedMultipartFile;
 import ch.systemsx.cisd.openbis.common.spring.MultipartFileAdapter;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 
 /**
  * A bean that contains the uploaded files.
@@ -36,24 +40,31 @@ import ch.systemsx.cisd.openbis.common.spring.MultipartFileAdapter;
  */
 public final class UploadedFilesBean
 {
+
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, UploadedFilesBean.class);
+
     private static final String CLASS_SIMPLE_NAME = UploadedFilesBean.class.getSimpleName();
 
     private List<IUncheckedMultipartFile> multipartFiles = new ArrayList<IUncheckedMultipartFile>();
 
-    private final File createTempFile() throws IOException
+    private final File createTempFile(String sessionToken, ISessionWorkspaceProvider sessionWorkspaceProvider) throws IOException
     {
-        final File tempFile = File.createTempFile(CLASS_SIMPLE_NAME, null);
+        File tempFolder = sessionWorkspaceProvider.getSessionWorkspace(sessionToken);
+        final File tempFile = File.createTempFile(CLASS_SIMPLE_NAME, null, tempFolder);
         tempFile.deleteOnExit();
         return tempFile;
     }
 
-    public final void addMultipartFile(final MultipartFile multipartFile)
+    public final void addMultipartFile(String sessionToken, final MultipartFile multipartFile, ISessionWorkspaceProvider sessionWorkspaceProvider)
     {
         assert multipartFile != null : "Unspecified multipart file.";
         try
         {
-            final File tempFile = createTempFile();
+            final File tempFile = createTempFile(sessionToken, sessionWorkspaceProvider);
             multipartFile.transferTo(tempFile);
+
+            operationLog.info("Uploaded file '" + multipartFile.getOriginalFilename() + "' to session workspace");
+
             final FileMultipartFileAdapter multipartFileAdapter =
                     new FileMultipartFileAdapter(multipartFile, tempFile);
             multipartFiles.add(multipartFileAdapter);
