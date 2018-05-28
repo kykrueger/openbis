@@ -24,7 +24,7 @@ class Addref(OpenbisCommand):
 
 
     def update_external_dms_id(self):
-        self.config_dict['external_dms_id'] = None
+        self.set_external_dms_id(None)
         self.prepare_external_dms()
 
 
@@ -33,13 +33,6 @@ class Addref(OpenbisCommand):
             return CommandResult(returncode=0, output="")
         else:
             return CommandResult(returncode=-1, output="This is not an obis repository.")
-
-
-    def path(self):
-        result = self.git_wrapper.git_top_level_path()
-        if result.failure():
-            return result
-        return result.output
 
 
     def commit_id(self):

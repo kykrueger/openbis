@@ -9,6 +9,12 @@ from .openbis_command import OpenbisCommand
 class OpenbisSync(OpenbisCommand):
     """A command object for synchronizing with openBIS."""
 
+
+    def __init__(self, dm, ignore_missing_parent=False):
+        self.ignore_missing_parent = ignore_missing_parent
+        super(OpenbisSync, self).__init__(dm)
+
+
     def check_configuration(self):
         missing_config_settings = []
         if self.openbis is None:
@@ -16,10 +22,9 @@ class OpenbisSync(OpenbisCommand):
         if self.user() is None:
             missing_config_settings.append('user')
         if self.data_set_type() is None:
-            missing_config_settings.append('data_set_type')
+            missing_config_settings.append('data_set type')
         if self.object_id() is None and self.collection_id() is None:
-            missing_config_settings.append('object_id')
-            missing_config_settings.append('collection_id')
+            missing_config_settings.append('object id or collection id')
         if len(missing_config_settings) > 0:
             return CommandResult(returncode=-1,
                                  output="Missing configuration settings for {}.".format(missing_config_settings))
@@ -47,7 +52,7 @@ class OpenbisSync(OpenbisCommand):
         commit_id = result.output
         sample_id = self.object_id()
         experiment_id = self.collection_id()
-        contents = GitRepoFileInfo(self.git_wrapper).contents()
+        contents = GitRepoFileInfo(self.git_wrapper).contents(git_annex_hash_as_checksum=self.git_annex_hash_as_checksum())
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,
                                                      sample=sample_id, experiment=experiment_id, properties=properties, parents=parent_data_set_id,
@@ -65,7 +70,7 @@ class OpenbisSync(OpenbisCommand):
         repository_id = self.repository_id()
         if self.repository_id() is None:
             repository_id = str(uuid.uuid4())
-            self.config_resolver.set_value_for_parameter('repository_id', repository_id, 'local')
+            self.settings_resolver.repository.set_value_for_parameter('id', repository_id, 'local')
         return CommandResult(returncode=0, output=repository_id)
 
 
@@ -90,6 +95,10 @@ class OpenbisSync(OpenbisCommand):
         return False
 
     def continue_without_parent_data_set(self):
+
+        if self.ignore_missing_parent:
+            return True
+
         while True:
             print("The data set {} not found in openBIS".format(self.data_set_id()))
             print("Create new data set without parent? (y/n)")
@@ -100,7 +109,7 @@ class OpenbisSync(OpenbisCommand):
                 return False 
 
 
-    def run(self):
+    def run(self, info_only=False):
 
         ignore_parent = False
 
@@ -111,14 +120,19 @@ class OpenbisSync(OpenbisCommand):
                     return CommandResult(returncode=0, output="Nothing to sync.")
             except ValueError as e:
                 if 'no such dataset' in str(e):
+                    if info_only:
+                        return CommandResult(returncode=-1, output="Parent data set not found in openBIS.")
                     ignore_parent = self.continue_without_parent_data_set()
                     if not ignore_parent:
                         return CommandResult(returncode=-1, output="Parent data set not found in openBIS.")
-                elif 'Your session expired' in str(e):
-                    self.login()
-                    return self.run()
                 else:
                     raise e
+
+        if info_only:
+            if self.data_set_id() is None:
+                return CommandResult(returncode=-1, output="Not yet synchronized with openBIS.")
+            else:
+                return CommandResult(returncode=-1, output="There are git commits which have not been synchronized.")
 
         # TODO Write mementos in case openBIS is unreachable
         # - write a file to the .git/obis folder containing the commit id. Filename includes a timestamp so they can be sorted.
@@ -144,7 +158,7 @@ class OpenbisSync(OpenbisCommand):
         self.commit_metadata_updates()
 
         # Update data set id as last commit so we can easily revert it on failure
-        self.config_resolver.set_value_for_parameter('data_set_id', data_set_code, 'local')
+        self.settings_resolver.repository.set_value_for_parameter('data_set_id', data_set_code, 'local')
         self.commit_metadata_updates("data set id")
 
         # create a data set, using the existing data set as a parent, if there is one
