@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.HttpSessionRequiredException;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +46,7 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 
 /**
@@ -65,8 +67,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
  * @author Christian Ribeaud
  */
 @Controller
-@RequestMapping(
-{ "/upload", "/openbis/upload" })
+@RequestMapping({ "/upload", "/openbis/upload" })
 public final class UploadServiceServlet extends AbstractController
 {
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
@@ -77,22 +78,27 @@ public final class UploadServiceServlet extends AbstractController
     @Resource(name = ComponentNames.SESSION_MANAGER)
     protected IOpenBisSessionManager sessionManager;
 
+    @Autowired
+    private ISessionWorkspaceProvider sessionWorkspaceProvider;
+
     @Private
-    UploadServiceServlet(ISessionFilesSetter sessionFilesSetter)
+    UploadServiceServlet(ISessionFilesSetter sessionFilesSetter, IOpenBisSessionManager sessionManager,
+            ISessionWorkspaceProvider sessionWorkspaceProvider)
     {
         // super(UploadedFilesBean.class);
         setSynchronizeOnSession(true);
         setRequireSession(false); // To allow upload a file for usage from an API given a session token.
         this.sessionFilesSetter = sessionFilesSetter;
+        this.sessionManager = sessionManager;
+        this.sessionWorkspaceProvider = sessionWorkspaceProvider;
     }
 
     public UploadServiceServlet()
     {
-        this(new SessionFilesSetter());
+        this(new SessionFilesSetter(), null, null);
     }
 
-    @SuppressWarnings(
-    { "unchecked", "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private final static Iterator<String> cast(final Iterator iterator)
     {
         return iterator;
@@ -192,6 +198,11 @@ public final class UploadServiceServlet extends AbstractController
             {
                 response.setStatus(500);
                 throw new HttpSessionRequiredException("Pre-existing session required but none found");
+            } else
+            {
+                sessionToken = (String) session.getAttribute(SessionConstants.OPENBIS_SESSION_TOKEN_ATTRIBUTE_KEY);
+                // check and touch the session
+                getSession(sessionToken);
             }
 
             final MultipartHttpServletRequest multipartRequest =
@@ -208,7 +219,7 @@ public final class UploadServiceServlet extends AbstractController
             {
                 // Note: addFilesToSession has a side effect - adds extracted files to the session
                 boolean fileExtracted =
-                        sessionFilesSetter.addFilesToSession(session, multipartRequest, sessionKey);
+                        sessionFilesSetter.addFilesToSession(session, multipartRequest, sessionKey, sessionWorkspaceProvider);
                 atLeastOneFileUploaded = atLeastOneFileUploaded || fileExtracted;
             }
             if (atLeastOneFileUploaded == false)
@@ -247,7 +258,7 @@ public final class UploadServiceServlet extends AbstractController
          * @return <code>true</code> if at least one file has been found and added
          */
         public boolean addFilesToSession(final HttpSession session,
-                final MultipartHttpServletRequest multipartRequest, String sessionKey);
+                final MultipartHttpServletRequest multipartRequest, String sessionKey, ISessionWorkspaceProvider sessionWorkspaceProvider);
     }
 
     @Private
@@ -255,19 +266,22 @@ public final class UploadServiceServlet extends AbstractController
     {
         @Override
         public boolean addFilesToSession(final HttpSession session,
-                final MultipartHttpServletRequest multipartRequest, String sessionKey)
+                final MultipartHttpServletRequest multipartRequest, String sessionKey, ISessionWorkspaceProvider sessionWorkspaceProvider)
         {
             return addFilesToSessionUsingBean(session, multipartRequest, sessionKey,
-                    new UploadedFilesBean());
+                    new UploadedFilesBean(), sessionWorkspaceProvider);
         }
 
         @Private
         boolean addFilesToSessionUsingBean(final HttpSession session,
                 final MultipartHttpServletRequest multipartRequest, String sessionKey,
-                final UploadedFilesBean uploadedFiles)
+                final UploadedFilesBean uploadedFiles, ISessionWorkspaceProvider sessionWorkspaceProvider)
         {
             assert StringUtils.isBlank(sessionKey) == false;
             boolean fileUploaded = false;
+
+            String sessionToken = (String) session.getAttribute(SessionConstants.OPENBIS_SESSION_TOKEN_ATTRIBUTE_KEY);
+
             for (final Iterator<String> iterator = cast(multipartRequest.getFileNames()); iterator
                     .hasNext(); /**/)
             {
@@ -277,7 +291,7 @@ public final class UploadServiceServlet extends AbstractController
                     final MultipartFile multipartFile = multipartRequest.getFile(fileName);
                     if (multipartFile.isEmpty() == false)
                     {
-                        uploadedFiles.addMultipartFile(multipartFile);
+                        uploadedFiles.addMultipartFile(sessionToken, multipartFile, sessionWorkspaceProvider);
                         fileUploaded = true;
                     }
                 }

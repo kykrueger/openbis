@@ -36,6 +36,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.util.lang.
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.DisplayedOrSelectedIdHolderCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridRowModels;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListMaterialDisplayCriteria;
+import ch.systemsx.cisd.openbis.generic.client.web.client.dto.SessionContext;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TypedTableResultSet;
 import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.GridRowModel;
@@ -73,7 +74,7 @@ public class BatchMaterialRegistrationAndUpdateTest extends SystemTestCase
     @Test(groups = "slow")
     public void testBatchRegistrationWithManagedProperty()
     {
-        logIntoCommonClientService().getSessionID();
+        SessionContext session = logIntoCommonClientService();
         deleteTestMaterials();
         Script script = new Script();
         script.setScriptType(ScriptType.MANAGED_PROPERTY);
@@ -96,7 +97,7 @@ public class BatchMaterialRegistrationAndUpdateTest extends SystemTestCase
                 "code\tdescription\tsize\tcomment:a\tcomment:b\n" + "c1\tcompound 1\t42\tx\ty\n"
                         + "c2\tcompound 2\t43\ta\tb";
 
-        List<BatchRegistrationResult> result = registerMaterials(materialBatchData, MATERIAL_TYPE);
+        List<BatchRegistrationResult> result = registerMaterials(session.getSessionID(), materialBatchData, MATERIAL_TYPE);
 
         assertEquals("Registration/update of 2 material(s) is complete.", result.get(0)
                 .getMessage());
@@ -109,7 +110,7 @@ public class BatchMaterialRegistrationAndUpdateTest extends SystemTestCase
     @Test(groups = "slow")
     public void testUpdateOfPropertiesOfVariousTypes()
     {
-        logIntoCommonClientService();
+        SessionContext session = logIntoCommonClientService();
         deleteTestMaterials();
 
         NewETPTAssignment assignment = new NewETPTAssignment();
@@ -124,12 +125,12 @@ public class BatchMaterialRegistrationAndUpdateTest extends SystemTestCase
                 "code\tdescription\tsize\tgender\tbacterium\n"
                         + "c1\tcompound 1\t42\tfemale\tbacterium1\n"
                         + "c2\tcompound 2\t43\tmale\tbacterium-x";
-        registerMaterials(materialBatchData, MATERIAL_TYPE);
+        registerMaterials(session.getSessionID(), materialBatchData, MATERIAL_TYPE);
 
         long timeBeforeUpdate = System.currentTimeMillis();
 
         List<BatchRegistrationResult> result =
-                updateMaterials("code\tdescription\tgender\tbacterium\n"
+                updateMaterials(session.getSessionID(), "code\tdescription\tgender\tbacterium\n"
                         + "c1\tnew description\tmale\tbacterium2\n" + "c2\t\tmale\tbacterium-y",
                         MATERIAL_TYPE, false);
 
@@ -157,7 +158,7 @@ public class BatchMaterialRegistrationAndUpdateTest extends SystemTestCase
         assertEquals("[BACTERIUM: material:BACTERIUM-X [BACTERIUM]<a:2>]",
                 getMaterialPropertiesHistory(getMaterialOrNull("C2").getId()).toString());
 
-        updateMaterials("code\tdescription\tgender\tbacterium\n"
+        updateMaterials(session.getSessionID(), "code\tdescription\tgender\tbacterium\n"
                 + "c2\t--DELETE--\tfemale\tbacterium2\n", MATERIAL_TYPE, false);
 
         assertEquals(
@@ -169,14 +170,14 @@ public class BatchMaterialRegistrationAndUpdateTest extends SystemTestCase
     @Test
     public void testUpdateIgnoreUnregistered()
     {
-        logIntoCommonClientService();
+        SessionContext session = logIntoCommonClientService();
         deleteTestMaterials();
         String materialBatchData =
                 "code\tdescription\tsize\n" + "c1\tcompound 1\t42\n" + "c2\tcompound 2\t43";
-        registerMaterials(materialBatchData, MATERIAL_TYPE);
+        registerMaterials(session.getSessionID(), materialBatchData, MATERIAL_TYPE);
 
         List<BatchRegistrationResult> result =
-                updateMaterials("code\tdescription\tsize\n" + "c1\tcompound one\t\n"
+                updateMaterials(session.getSessionID(), "code\tdescription\tsize\n" + "c1\tcompound one\t\n"
                         + "c2\tcompound two\t4711\n" + "c3\t3\t\n", MATERIAL_TYPE, true);
 
         assertEquals("2 material(s) updated, 1 ignored.", result.get(0).getMessage());
@@ -259,20 +260,20 @@ public class BatchMaterialRegistrationAndUpdateTest extends SystemTestCase
         }
     }
 
-    private List<BatchRegistrationResult> registerMaterials(String materialBatchData,
+    private List<BatchRegistrationResult> registerMaterials(String sessionToken, String materialBatchData,
             String materialTypeCode)
     {
-        uploadFile("my-file", materialBatchData);
+        uploadFile(sessionToken, "my-file", materialBatchData);
         MaterialType materialType = new MaterialType();
         materialType.setCode(materialTypeCode);
         return genericClientService
                 .registerMaterials(materialType, false, SESSION_KEY, false, null);
     }
 
-    private List<BatchRegistrationResult> updateMaterials(String materialBatchData,
+    private List<BatchRegistrationResult> updateMaterials(String sessionToken, String materialBatchData,
             String materialTypeCode, boolean ignoreUnregistered)
     {
-        uploadFile("my-file", materialBatchData);
+        uploadFile(sessionToken, "my-file", materialBatchData);
         MaterialType materialType = new MaterialType();
         materialType.setCode(materialTypeCode);
         return genericClientService.updateMaterials(materialType, SESSION_KEY, ignoreUnregistered,

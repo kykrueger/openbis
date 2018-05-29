@@ -54,7 +54,7 @@ public class AttachmentUploadTest extends SystemTestCase
         Project project = projects.getResultSet().getList().extractOriginalObjects().get(0).getObjectOrNull();
         TechId projectID = TechId.create(project);
 
-        uploadFile(FILE_NAME, FILE_CONTENT);
+        uploadFile(sessionContext.getSessionID(), FILE_NAME, FILE_CONTENT);
         commonClientService.addAttachment(projectID, SESSION_KEY, AttachmentHolderKind.PROJECT,
                 new NewAttachment(FILE_NAME, "my file", "example file"));
 
@@ -70,7 +70,7 @@ public class AttachmentUploadTest extends SystemTestCase
         SessionContext sessionContext = logIntoCommonClientService();
         TechId experimentID = new TechId(2);
 
-        uploadFile(FILE_NAME, FILE_CONTENT);
+        uploadFile(sessionContext.getSessionID(), FILE_NAME, FILE_CONTENT);
         commonClientService.addAttachment(experimentID, SESSION_KEY, AttachmentHolderKind.EXPERIMENT,
                 new NewAttachment(FILE_NAME, "my file", "example file"));
 
@@ -86,7 +86,7 @@ public class AttachmentUploadTest extends SystemTestCase
         SessionContext sessionContext = logIntoCommonClientService();
         TechId sampleID = new TechId(1);
 
-        uploadFile(FILE_NAME, FILE_CONTENT);
+        uploadFile(sessionContext.getSessionID(), FILE_NAME, FILE_CONTENT);
         commonClientService.addAttachment(sampleID, SESSION_KEY, AttachmentHolderKind.SAMPLE,
                 new NewAttachment(FILE_NAME, "my file", "example file"));
 

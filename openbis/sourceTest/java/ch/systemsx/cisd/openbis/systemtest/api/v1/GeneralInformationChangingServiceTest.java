@@ -834,7 +834,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
 
         String sampleType = "CELL_PLATE";
 
-        uploadFile("testRegisterSamplesWithProjectAuthorization.txt",
+        uploadFile(session.getSessionID(), "testRegisterSamplesWithProjectAuthorization.txt",
                 "identifier\texperiment\tCOMMENT\n"
                         + "/TEST-SPACE/PA_UPLOAD\t/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST\ttest comment\n");
 
@@ -871,7 +871,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
 
         String sampleType = "CELL_PLATE";
 
-        uploadFile("testUpdateSamplesWithProjectAuthorization.txt",
+        uploadFile(session.getSessionID(), "testUpdateSamplesWithProjectAuthorization.txt",
                 "identifier\tCOMMENT\n"
                         + "/TEST-SPACE/FV-TEST\tupdated comment\n");
 
@@ -908,7 +908,7 @@ public class GeneralInformationChangingServiceTest extends SystemTestCase
 
         String sampleType = "CELL_PLATE";
 
-        uploadFile("testUploadedSamplesInfoWithProjectAuthorization.txt",
+        uploadFile(session.getSessionID(), "testUploadedSamplesInfoWithProjectAuthorization.txt",
                 "identifier\texperiment\tCOMMENT\n"
                         + "/TEST-SPACE/PA_UPLOAD\t/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST\ttest comment\n");
 

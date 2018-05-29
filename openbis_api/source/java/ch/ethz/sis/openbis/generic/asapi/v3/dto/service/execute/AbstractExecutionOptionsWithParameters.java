@@ -47,7 +47,7 @@ public abstract class AbstractExecutionOptionsWithParameters<EO extends Abstract
     @Override
     public String toString()
     {
-        return getClass().getSimpleName() + ": parameterKeys=" + parameters.keySet();
+        return getClass().getSimpleName() + ": parameterKeys=" + (parameters != null ? parameters.keySet() : "[]");
     }
 
 }

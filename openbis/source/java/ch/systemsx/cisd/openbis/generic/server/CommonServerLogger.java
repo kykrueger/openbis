@@ -1636,7 +1636,7 @@ final class CommonServerLogger extends AbstractServerLogger implements ICommonSe
             DatastoreServiceDescription serviceDescription, Map<String, Object> parameters)
     {
         logAccess(sessionToken, "createReportFromAggregationService",
-                "SERVICE(%s), PARAMETERS(%s)", serviceDescription, parameters);
+                "SERVICE(%s), PARAMETERS(%s)", serviceDescription, parameters != null ? parameters.keySet() : "[]");
         return null;
     }
 
