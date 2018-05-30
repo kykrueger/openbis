@@ -42,7 +42,7 @@ class TestCase(systemtest.testcase.TestCase):
         return openbisController
 
     def setThumbnailResolutions(self, openbisController, resolutions):
-        path = "%s/servers/core-plugins/microscopy/1/dss/drop-boxes/MicroscopyDropbox/GlobalSettings.py" % openbisController.installPath
+        path = "%s/servers/core-plugins/microscopy/2/dss/drop-boxes/MicroscopyDropbox/GlobalSettings.py" % openbisController.installPath
         with open(path, "r")  as f:
             content = f.readlines()
         with open(path, "w") as f:
