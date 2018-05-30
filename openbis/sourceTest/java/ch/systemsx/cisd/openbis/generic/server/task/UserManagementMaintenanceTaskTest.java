@@ -298,10 +298,10 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
                 + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"],\"shareIds\":[]}]}");
-        
+
         // When
         task.execute();
-        
+
         // Then
         assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
@@ -314,7 +314,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "ERROR OPERATION.UserManagementMaintenanceTask - No shareIds specified for group 'SIS'. Task aborted.",
                 logRecorder.getLogContent());
     }
-    
+
     @Test
     public void testExecuteInvalidCommonSample()
     {
@@ -341,7 +341,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
                 + "ERROR NOTIFY.UserManagementMaintenanceTask - Identifier template 'A' is invalid "
                 + "(reason: No common space for common sample). Template schema: <common space code>/<common sample code>\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, enabled:true, ldapGroupKeys:[s], admins:null] with users [u1=u1]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
                 logRecorder.getLogContent());
@@ -373,7 +373,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {ALPHA/B=B}\n"
                 + "ERROR NOTIFY.UserManagementMaintenanceTask - Identifier template 'ALPHA/B' is invalid. "
                 + "Template schema: <common space code>/<common project code>/<common experiment code>\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, enabled:true, ldapGroupKeys:[s], admins:null] with users [u1=u1]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
                 logRecorder.getLogContent());
@@ -393,7 +393,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"globalSpaces\":[\"ES\"],\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
                 + "\"commonSamples\":{\"ALPHA/B\":\"B\"},\"commonExperiments\":{\"ALPHA/P/E\":\"E\"},"
-                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]}]}");
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]},"
+                + "{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}");
 
         // When
         task.execute();
@@ -402,13 +403,15 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
                 + configFile.getAbsolutePath() + "\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 2 groups\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: [ES]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {ALPHA/B=B}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {ALPHA/P/E=E}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:[u2]] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, enabled:true, ldapGroupKeys:[s], admins:[u2]] with users [u1=u1]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:false, ldapGroupKeys:[a], admins:null] with users []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 0 users for group ABC\n"
                 + "ERROR NOTIFY.UserManagementMaintenanceTask - User management failed for the following reason(s):\n\n"
                 + "This is a test error message\n\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
@@ -513,8 +516,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             @Override
             public void addGroup(UserGroup group, Map<String, Principal> principalsByUserId)
             {
-                String renderedGroup = group.getKey() + "[name:" + group.getName() + ", ldapGroupKeys:"
-                        + group.getLdapGroupKeys() + ", admins:" + group.getAdmins() + "]";
+                String renderedGroup = group.getKey() + "[name:" + group.getName() + ", enabled:" + group.isEnabled()
+                        + ", ldapGroupKeys:" + group.getLdapGroupKeys() + ", admins:" + group.getAdmins() + "]";
                 CommaSeparatedListBuilder builder = new CommaSeparatedListBuilder();
                 for (Entry<String, Principal> entry : principalsByUserId.entrySet())
                 {

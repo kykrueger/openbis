@@ -172,7 +172,7 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
             }
             List<Principal> principals = getUsersOfGroup(ldapGroupKey);
-            if (principals.isEmpty())
+            if (group.isEnabled() && principals.isEmpty())
             {
                 operationLog.error("No users found for ldapGroupKey '" + ldapGroupKey + "' for group '" + key + "'. Task aborted.");
                 return false;
