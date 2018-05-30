@@ -2023,13 +2023,24 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
-		this.createPermIdStrings = function(amount) {
+		this.createPermIdStrings = function(count) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequest({
 				url : openbisUrl,
 				data : {
 					"method" : "createPermIdStrings",
-					"params" : [ thisFacade._private.sessionToken, amount ]
+					"params" : [ thisFacade._private.sessionToken, count ]
+				}
+			});
+		}
+		
+		this.createCodes = function(prefix, entityKind, count) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequest({
+				url : openbisUrl,
+				data : {
+					"method" : "createCodes",
+					"params" : [ thisFacade._private.sessionToken, prefix, entityKind, count ]
 				}
 			});
 		}

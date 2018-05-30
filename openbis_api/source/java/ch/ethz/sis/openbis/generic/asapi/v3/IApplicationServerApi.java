@@ -55,6 +55,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -580,5 +581,8 @@ public interface IApplicationServerApi extends IRpcService
     public Map<String, String> getServerInformation(String sessionToken);
 
     @TechPreview
-    public List<String> createPermIdStrings(String sessionToken, int amount);
+    public List<String> createPermIdStrings(String sessionToken, int count);
+
+    public List<String> createCodes(String sessionToken, String prefix, EntityKind entityKind, int count);
+
 }

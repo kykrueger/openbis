@@ -246,6 +246,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.CreateSemanticAnnotationsOperation = dtos.CreateSemanticAnnotationsOperation;
 		this.CreateExternalDmsOperation = dtos.CreateExternalDmsOperation;
 		this.CreateQueriesOperation = dtos.CreateQueriesOperation;
+		this.CreateCodesOperation = dtos.CreateCodesOperation;
 
 		this.UpdateSpacesOperation = dtos.UpdateSpacesOperation;
 		this.UpdateProjectsOperation = dtos.UpdateProjectsOperation;
