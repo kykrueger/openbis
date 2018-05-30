@@ -196,7 +196,7 @@ public class ImageChannelsUtils
         ImageTransformationParams transformationInfo = new ImageTransformationParams(true, mergeAllChannels,
                 transformationCode, transformationsPerChannel);
         List<AbsoluteImageReference> imageContents =
-                imageLoadingHelper.fetchImageContents(imageChannels, mergeAllChannels, false, transformationInfo);
+                imageLoadingHelper.fetchImageContents(imageChannels, mergeAllChannels, true, transformationInfo);
         return calculateBufferedImage(imageContents, transformationInfo);
     }
 
