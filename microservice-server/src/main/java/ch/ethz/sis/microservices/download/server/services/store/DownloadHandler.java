@@ -26,7 +26,9 @@ public class DownloadHandler extends AbstractFileServiceHandler
     		if(offsetP != null) {
     			offset = Long.parseLong(offsetP);
     		}
-        
+    		if(offset < 0) {
+                throw new IllegalArgumentException("offset can't be negative");
+        }
     		long size = Files.size(pathToFile) - offset;
     		if(size < 0) {
     			throw new IllegalArgumentException("offset to read starts beyond end of file");
@@ -35,15 +37,15 @@ public class DownloadHandler extends AbstractFileServiceHandler
     		// Response
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + pathToFile.getFileName().toString());
-        response.setHeader("Content-Length", Long.toString(Files.size(pathToFile)));
+        response.setHeader("Content-Length", Long.toString(size));
         
 		InputStream is = Files.newInputStream(pathToFile);
 		is.skip(offset);
 		copy(is, response.getOutputStream(), size);
-        
+
         response.setStatus(HttpServletResponse.SC_OK);
     }
-    
+
     private static final int BUFFER_SIZE = 1024;
     private static void copy(InputStream source, OutputStream destination, long sourceSize) throws IOException {
     		byte[] buf = new byte[BUFFER_SIZE];
