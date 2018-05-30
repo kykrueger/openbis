@@ -71,12 +71,12 @@ define([ "jquery" ], function($) {
 			var timeoutConfig = {};
 			var timeout = function() {
 
-				$("<img>").attr("width", width).attr("src", timeoutConfig.url).load(function() {
+				$("<img>").attr("width", width).attr("src", timeoutConfig.url).on("error load", function(e) {
 					if (thisLoader.timeoutConfig && thisLoader.timeoutConfig.id === timeoutConfig.id) {
 						var thisImage = this;
 
 						thisLoader.callbacks.forEach(function(callback) {
-							callback(thisImage);
+							callback(e.type === "error" ? "No image available" : thisImage);
 						});
 
 						thisLoader.timeoutConfig = null;
