@@ -20,7 +20,9 @@ import static ch.systemsx.cisd.common.test.AssertionUtil.assertContains;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -388,7 +390,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         report.addGroup("blabla");
         report.addUser("a");
         UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
-                .withUserManagerReport(report);
+                .withGroup("a", U1).withUserManagerReport(report);
         FileUtilities.writeToFile(configFile, "");
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"globalSpaces\":[\"ES\"],\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
@@ -410,14 +412,87 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {ALPHA/P/E=E}\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, enabled:true, ldapGroupKeys:[s], admins:[u2]] with users [u1=u1]\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:false, ldapGroupKeys:[a], admins:null] with users []\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - 0 users for group ABC\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:false, ldapGroupKeys:[a], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for disabled group ABC\n"
                 + "ERROR NOTIFY.UserManagementMaintenanceTask - User management failed for the following reason(s):\n\n"
                 + "This is a test error message\n\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
                 logRecorder.getLogContent());
+        String lastModified = new SimpleDateFormat(UserManagerReport.DATE_FORMAT).format(new Date(configFile.lastModified()));
         assertEquals("1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] blabla\n"
-                + "1970-01-01 01:00:01 [ADD-USER] a\n\n",
+                + "1970-01-01 01:00:01 [ADD-USER] a\n"
+                + "1970-01-01 01:00:02 [CONFIG-UPDATE-START] Last modified: " + lastModified + "\n"
+                + "{\"globalSpaces\":[\"ES\"],\"commonSpaces\":{\"USER\": [\"ALPHA\"]},\"commonSamples\":{\"ALPHA/B\":\"B\"},"
+                + "\"commonExperiments\":{\"ALPHA/P/E\":\"E\"},\"groups\": ["
+                + "{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]},"
+                + "{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}\n"
+                + "1970-01-01 01:00:03 [CONFIG-UPDATE-END] \n"
+                + "1970-01-01 01:00:04 [ADD-AUTHORIZATION-GROUP] dummy group\n\n",
+                FileUtilities.loadToString(auditLogFile));
+    }
+
+    @Test
+    public void testExecuteThriceWithConfigChangedAfterTheSecondRun()
+    {
+        // Given
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
+                .withGroup("a", U1);
+        // 1. first run
+        task.withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}");
+        String lastModified1 = new SimpleDateFormat(UserManagerReport.DATE_FORMAT).format(new Date(configFile.lastModified()));
+        task.execute();
+        // 2. second run (same config)
+        task.withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
+        task.execute();
+        // 3. second run (changed config)
+        task.withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
+        FileUtilities.writeToFile(configFile, "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"]}]}");
+        String lastModified2 = new SimpleDateFormat(UserManagerReport.DATE_FORMAT).format(new Date(configFile.lastModified()));
+
+        // When
+        task.execute();
+
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:false, ldapGroupKeys:[a], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for disabled group ABC\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:false, ldapGroupKeys:[a], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for disabled group ABC\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:true, ldapGroupKeys:[a], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group ABC\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
+                logRecorder.getLogContent());
+        assertEquals("1970-01-01 01:00:00 [CONFIG-UPDATE-START] Last modified: " + lastModified1 + "\n"
+                + "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}\n"
+                + "1970-01-01 01:00:01 [CONFIG-UPDATE-END] \n"
+                + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group\n\n"
+                + "1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] dummy group\n\n"
+                + "1970-01-01 01:00:00 [CONFIG-UPDATE-START] Last modified: " + lastModified2 + "\n"
+                + "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"]}]}\n"
+                + "1970-01-01 01:00:01 [CONFIG-UPDATE-END] \n"
+                + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group\n\n",
                 FileUtilities.loadToString(auditLogFile));
     }
 
@@ -463,9 +538,15 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         }
 
         @Override
-        protected UserManager createUserManager(Log4jSimpleLogger logger)
+        protected UserManagerReport createUserManagerReport()
         {
-            return new MockUserManager(logger);
+            return report == null ? super.createUserManagerReport() : report;
+        }
+
+        @Override
+        protected UserManager createUserManager(Log4jSimpleLogger logger, UserManagerReport report)
+        {
+            return new MockUserManager(logger, report);
         }
 
         private UserManagementMaintenanceTaskWithMocks withGroup(String groupCode, Principal... users)
@@ -490,9 +571,9 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         {
             private ISimpleLogger logger;
 
-            MockUserManager(ISimpleLogger logger)
+            MockUserManager(ISimpleLogger logger, UserManagerReport report)
             {
-                super(null, null, null, logger, null);
+                super(null, null, null, logger, report);
                 this.logger = logger;
             }
 
@@ -528,10 +609,11 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             }
 
             @Override
-            public UserManagerReport manage()
+            public void manage()
             {
-                return report;
+                report.addGroup("dummy group");
             }
+
         }
     }
 

@@ -95,7 +95,6 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
-import ch.systemsx.cisd.common.utilities.ITimeProvider;
 
 /**
  * @author Franz-Josef Elmer
@@ -112,7 +111,7 @@ public class UserManager
 
     private final ISimpleLogger logger;
 
-    private final ITimeProvider timeProvider;
+    private final UserManagerReport report; 
 
     private final Map<String, UserInfo> userInfosByUserId = new TreeMap<>();
 
@@ -132,16 +131,17 @@ public class UserManager
 
     private File shareIdsMappingFileOrNull;
     
-    private List<MappingAttributes> mappingAttributesList = new ArrayList<>(); 
+    private List<MappingAttributes> mappingAttributesList = new ArrayList<>();
+
 
     public UserManager(IAuthenticationService authenticationService, IApplicationServerInternalApi service,
-            File shareIdsMappingFileOrNull, ISimpleLogger logger, ITimeProvider timeProvider)
+            File shareIdsMappingFileOrNull, ISimpleLogger logger, UserManagerReport report)
     {
         this.authenticationService = authenticationService;
         this.service = service;
         this.shareIdsMappingFileOrNull = shareIdsMappingFileOrNull;
         this.logger = logger;
-        this.timeProvider = timeProvider;
+        this.report = report;
     }
 
     public void setGlobalSpaces(List<String> globalSpaces)
@@ -209,9 +209,8 @@ public class UserManager
         logger.log(LogLevel.INFO, principalsByUserId.size() + " users for " + (group.isEnabled() ? "": "disabled ") + "group " + groupCode);
     }
 
-    public UserManagerReport manage()
+    public void manage()
     {
-        UserManagerReport report = new UserManagerReport(timeProvider);
         try
         {
             String sessionToken = service.loginAsSystem();
@@ -234,7 +233,6 @@ public class UserManager
             report.addErrorMessage("Error: " + e.toString());
             logger.log(LogLevel.ERROR, "", e);
         }
-        return report;
     }
     
     private void updateMappingFile()

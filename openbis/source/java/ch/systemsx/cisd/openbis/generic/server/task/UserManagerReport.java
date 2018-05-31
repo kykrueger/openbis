@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,6 +36,8 @@ import ch.systemsx.cisd.common.utilities.ITimeProvider;
  */
 public class UserManagerReport
 {
+    static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     private StringBuilder errorReport = new StringBuilder();
 
     private StringBuilder auditLog = new StringBuilder();
@@ -44,7 +47,6 @@ public class UserManagerReport
     public UserManagerReport(ITimeProvider timeProvider)
     {
         this.timeProvider = timeProvider;
-
     }
 
     public String getErrorReport()
@@ -138,10 +140,17 @@ public class UserManagerReport
         }
     }
 
+    public void addChangedConfig(String serializedConfig, Date date)
+    {
+        log("CONFIG-UPDATE-START", "Last modified: " + new SimpleDateFormat(DATE_FORMAT).format(date));
+        auditLog.append(serializedConfig);
+        log("CONFIG-UPDATE-END", "");
+    }
+
     private void log(String action, Object details)
     {
         Date timeStamp = new Date(timeProvider.getTimeInMilliseconds());
-        MessageFormat messageFormat = new MessageFormat("{0,date,yyyy-MM-dd HH:mm:ss} [{1}] {2}\n");
+        MessageFormat messageFormat = new MessageFormat("{0,date," + DATE_FORMAT + "} [{1}] {2}\n");
         auditLog.append(messageFormat.format(new Object[] { timeStamp, action, details }));
     }
 
