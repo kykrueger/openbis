@@ -36,7 +36,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.installOpenbis(technologies = ['microscopy'])
         openbisController = self.createOpenbisController(databasesToDrop=['openbis', 'pathinfo'])
         self.setThumbnailResolutions(openbisController, ['256x256'])
-        openbisController.setDssMaxHeapSize("3g")
+        openbisController.setDssMaxHeapSize("4g")
         openbisController.createTestDatabase("openbis")
         openbisController.allUp()
         return openbisController
