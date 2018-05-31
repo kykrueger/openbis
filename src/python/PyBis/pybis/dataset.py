@@ -519,5 +519,5 @@ class DataSetDownloadQueue():
                     if chunk:  # filter out keep-alive new chunks
                         f.write(chunk)
 
-            assert os.path.getsize(filename) == int(file_size)
             self.download_queue.task_done()
+            assert os.path.getsize(filename) == int(file_size)
