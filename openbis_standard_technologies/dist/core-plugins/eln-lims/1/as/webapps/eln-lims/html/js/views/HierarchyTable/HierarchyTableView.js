@@ -32,7 +32,15 @@ function HierarchyTableView(controller, model) {
 		$containerColumn.append(this._container);
 		views.content.append($containerColumn);
 		
-		views.header.append($("<h1>").append("" + ELNDictionary.Sample + " Hierarchy Table for " + this._model.entity.identifier));
+		switch(this._model.entity["@type"]) {
+				case "as.dto.dataset.DataSet":
+					views.header.append($("<h1>").append("Dataset Hierarchy Table for " + this._model.entity.code));
+					break;
+				case "as.dto.sample.Sample":
+					views.header.append($("<h1>").append("" + ELNDictionary.Sample + " Hierarchy Table for " + this._model.entity.identifier));
+					break;
+		}
+		
 		this._hierarchyFilterController = new HierarchyFilterController(this._model.entity, function() { _this._dataGrid.refresh(); });
 		this._hierarchyFilterController.init(views.header);
 		this._showHierarchy();
@@ -42,50 +50,59 @@ function HierarchyTableView(controller, model) {
 	this._showHierarchy = function() {
 		var _this = this;
 		
-		var columns = [ {
+		var columns = [];
+		columns.push({
 			label : 'Level',
 			property : 'level',
 			sortable : true
-		} , {
+		});
+		columns.push({
 			label : "Type",
 			property : 'type',
 			sortable : true
-		} , {
-			label : 'Identifier',
-			property : 'identifier',
-			sortable : true
-		} , {
-			label : 'PermId',
-			property : 'permId',
-			sortable : true
-		}, {
-			label : 'Code',
-			property : 'code',
-			sortable : true
-		} , {
+		});
+		if(this._model.entity["@type"] === "as.dto.sample.Sample") {
+			columns.push({
+				label : 'Identifier',
+				property : 'identifier',
+				sortable : true
+			});
+		}
+		if(this._model.entity["@type"] === "as.dto.dataset.DataSet") {
+			columns.push({
+				label : 'Code',
+				property : 'code',
+				sortable : true
+			});
+		}
+		columns.push({
 			label : 'Name',
 			property : 'name',
 			sortable : true
-		} , {
+		});
+		columns.push({
 			label : 'Path',
 			property : 'path',
 			sortable : true
-		} , {
-			label : 'Parent/Annotations',
-			property : 'parentAnnotations',
-			sortable : true,
-			render : function(data) {
-				return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].parents, data.entity);
-			}
-		} , {
-			label : 'Children/Annotations',
-			property : 'childrenAnnotations',
-			sortable : true,
-			render : function(data) {
-				return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].children, data.entity);
-			}
-		}];
-		
+		});
+		if(this._model.entity["@type"] === "as.dto.sample.Sample") {
+			columns.push({
+				label : 'Parent/Annotations',
+				property : 'parentAnnotations',
+				sortable : true,
+				render : function(data) {
+					return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].parents, data.entity);
+				}
+			});
+			columns.push({
+				label : 'Children/Annotations',
+				property : 'childrenAnnotations',
+				sortable : true,
+				render : function(data) {
+					return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].children, data.entity);
+				}
+			});
+		}
 		var getDataList = function(callback) {
 			var data = _this._model.getData();
 			var parentsLimit = _this._hierarchyFilterController.getParentsLimit();
@@ -113,7 +130,7 @@ function HierarchyTableView(controller, model) {
 			}
 		}
 		
-		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, rowClick, false, "SAMPLE_HIERARCHY_TABLE");
+		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, rowClick, false, this._model.entity["@type"] + "_HIERARCHY_TABLE");
 		this._dataGrid.init(this._container);
 		this._container.prepend($("<legend>").append(" " + ELNDictionary.Sample + " Hierarchy"));
 	}
