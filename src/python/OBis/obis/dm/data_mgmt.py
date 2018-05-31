@@ -15,6 +15,8 @@ import shutil
 import traceback
 import pybis
 import requests
+import signal
+import sys
 from . import config as dm_config
 from .commands.addref import Addref
 from .commands.removeref import Removeref
@@ -176,10 +178,16 @@ class NoGitDataMgmt(AbstractDataMgmt):
         self.error_raise("download", "No git command found.")
 
 
+def restore_signal_handler(data_mgmt):
+    data_mgmt.restore()
+    sys.exit(0)
+
+
 def with_restore(f):
     def f_with_restore(self, *args):
         self.set_restorepoint()
         try:
+            signal.signal(signal.SIGINT, lambda signal, frame: restore_signal_handler(self))
             result = f(self, *args)
             if result.failure():
                 self.restore()
