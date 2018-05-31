@@ -34,7 +34,7 @@ from ..scripts import cli
 
 
 # noinspection PyPep8Naming
-def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_config={}, openbis=None):
+def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_config={}, openbis=None, debug=False):
     """Factory method for DataMgmt instances"""
 
     echo_func = echo_func if echo_func is not None else default_echo
@@ -51,7 +51,7 @@ def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_conf
             settings_resolver.set_resolver_location_roots('data_set', result.output)
     complete_openbis_config(openbis_config, settings_resolver)
 
-    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis)
+    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis, debug)
 
 
 class AbstractDataMgmt(metaclass=abc.ABCMeta):
@@ -60,11 +60,12 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis):
+    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis, debug=False):
         self.settings_resolver = settings_resolver
         self.openbis_config = openbis_config
         self.git_wrapper = git_wrapper
         self.openbis = openbis
+        self.debug = debug
 
     def error_raise(self, command, reason):
         """Raise an exception."""
@@ -194,6 +195,8 @@ def with_restore(f):
             return result
         except Exception as e:
             self.restore()
+            if self.debug == True:
+                raise e
             return CommandResult(returncode=-1, output="Error: " + str(e))
     return f_with_restore
 

@@ -49,7 +49,7 @@ def shared_data_mgmt(context={}):
     openbis_config = {}
     if context.get('verify_certificates') is not None:
         openbis_config['verify_certificates'] = context['verify_certificates']
-    return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config)
+    return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config, debug=context['debug'])
 
 
 def check_result(command, result):
@@ -60,23 +60,27 @@ def check_result(command, result):
     return result.returncode
 
 
-def run(function):
+def run(ctx, function):
     try:
         return function()
     except CommandException as e:
         return e.command_result
     except Exception as e:
+        if ctx.obj['debug'] == True:
+            raise e
         return CommandResult(returncode=-1, output="Error: " + str(e))
 
 
 @click.group()
 @click.option('-q', '--quiet', default=False, is_flag=True, help='Suppress status reporting.')
 @click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
+@click.option('-d', '--debug', default=False, is_flag=True, help="Show stack trace on error.")
 @click.pass_context
-def cli(ctx, quiet, skip_verification):
+def cli(ctx, quiet, skip_verification, debug):
     ctx.obj['quiet'] = quiet
     if skip_verification:
         ctx.obj['verify_certificates'] = False
+    ctx.obj['debug'] = debug
 
 
 def set_property(data_mgmt, resolver, prop, value, is_global, is_data_set_property=False):
@@ -88,6 +92,8 @@ def set_property(data_mgmt, resolver, prop, value, is_global, is_data_set_proper
         else:
             resolver.set_value_for_parameter(prop, value, loc)
     except ValueError as e:
+        if data_mgmt.debug ==  True:
+            raise e
         return CommandResult(returncode=-1, output="Error: " + str(e))
     if not is_global:
         return data_mgmt.commit_metadata_updates(prop)
@@ -102,7 +108,7 @@ def init_data_impl(ctx, object_id, collection_id, repository, desc):
     click_echo("init_data {}".format(repository))
     data_mgmt = shared_data_mgmt(ctx.obj)
     desc = desc if desc != "" else None
-    result = run(lambda: data_mgmt.init_data(repository, desc, create=True))
+    result = run(ctx, lambda: data_mgmt.init_data(repository, desc, create=True))
     init_handle_cleanup(result, object_id, collection_id, repository, data_mgmt)
 
 
@@ -110,7 +116,7 @@ def init_analysis_impl(ctx, parent, object_id, collection_id, repository, descri
     click_echo("init_analysis {}".format(repository))
     data_mgmt = shared_data_mgmt(ctx.obj)
     description = description if description != "" else None
-    result = run(lambda: data_mgmt.init_analysis(repository, parent, description, create=True))
+    result = run(ctx, lambda: data_mgmt.init_analysis(repository, parent, description, create=True))
     init_handle_cleanup(result, object_id, collection_id, repository, data_mgmt)
 
 
@@ -327,21 +333,21 @@ def repository(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def repository_set(ctx, settings):
-    return check_result("repository_set", run(lambda: _set(ctx, settings)))
+    return check_result("repository_set", run(ctx, lambda: _set(ctx, settings)))
 
 
 @repository.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def repository_get(ctx, settings):
-    return check_result("repository_get", run(lambda: _get(ctx, settings)))
+    return check_result("repository_get", run(ctx, lambda: _get(ctx, settings)))
 
 
 @repository.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def repository_clear(ctx, settings):
-    return check_result("repository_clear", run(lambda: _clear(ctx, settings)))
+    return check_result("repository_clear", run(ctx, lambda: _clear(ctx, settings)))
 
 
 ## data_set: type, properties
@@ -364,21 +370,21 @@ def data_set(ctx, is_global, is_data_set_property):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def data_set_set(ctx, settings):
-    return check_result("data_set_set", run(lambda: _set(ctx, settings)))
+    return check_result("data_set_set", run(ctx, lambda: _set(ctx, settings)))
 
 
 @data_set.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def data_set_get(ctx, settings):
-    return check_result("data_set_get", run(lambda: _get(ctx, settings)))
+    return check_result("data_set_get", run(ctx, lambda: _get(ctx, settings)))
 
 
 @data_set.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def data_set_clear(ctx, settings):
-    return check_result("data_set_clear", run(lambda: _clear(ctx, settings)))
+    return check_result("data_set_clear", run(ctx, lambda: _clear(ctx, settings)))
 
 
 ## object: object_id
@@ -399,21 +405,21 @@ def object(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def object_set(ctx, settings):
-    return check_result("object_set", run(lambda: _set(ctx, settings)))
+    return check_result("object_set", run(ctx, lambda: _set(ctx, settings)))
 
 
 @object.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def object_get(ctx, settings):
-    return check_result("object_get", run(lambda: _get(ctx, settings)))
+    return check_result("object_get", run(ctx, lambda: _get(ctx, settings)))
 
 
 @object.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def object_clear(ctx, settings):
-    return check_result("object_clear", run(lambda: _clear(ctx, settings)))
+    return check_result("object_clear", run(ctx, lambda: _clear(ctx, settings)))
 
 
 ## collection: collection_id
@@ -434,21 +440,21 @@ def collection(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def collection_set(ctx, settings):
-    return check_result("collection_set", run(lambda: _set(ctx, settings)))
+    return check_result("collection_set", run(ctx, lambda: _set(ctx, settings)))
 
 
 @collection.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def collection_get(ctx, settings):
-    return check_result("collection_get", run(lambda: _get(ctx, settings)))
+    return check_result("collection_get", run(ctx, lambda: _get(ctx, settings)))
 
 
 @collection.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def collection_clear(ctx, settings):
-    return check_result("collection_clear", run(lambda: _clear(ctx, settings)))
+    return check_result("collection_clear", run(ctx, lambda: _clear(ctx, settings)))
 
 
 ## config: fileservice_url, git_annex_hash_as_checksum, hostname, openbis_url, user, verify_certificates
@@ -469,21 +475,21 @@ def config(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def config_set(ctx, settings):
-    return check_result("config_set", run(lambda: _set(ctx, settings)))
+    return check_result("config_set", run(ctx, lambda: _set(ctx, settings)))
 
 
 @config.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def config_get(ctx, settings):
-    return check_result("config_get", run(lambda: _get(ctx, settings)))
+    return check_result("config_get", run(ctx, lambda: _get(ctx, settings)))
 
 
 @config.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def config_clear(ctx, settings):
-    return check_result("config_clear", run(lambda: _clear(ctx, settings)))
+    return check_result("config_clear", run(ctx, lambda: _clear(ctx, settings)))
 
 
 # repository commands: status, sync, commit, init, addref, removeref, init_analysis
@@ -499,7 +505,7 @@ _commit_params = [
 
 def _repository_commit(ctx, msg, auto_add, ignore_missing_parent):
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("commit", run(lambda: data_mgmt.commit(msg, auto_add, ignore_missing_parent)))
+    return check_result("commit", run(ctx, lambda: data_mgmt.commit(msg, auto_add, ignore_missing_parent)))
 
 @repository.command("commit")
 @click.pass_context
@@ -572,7 +578,7 @@ _status_params = [
 
 def _repository_status(ctx):
     data_mgmt = shared_data_mgmt(ctx.obj)
-    result = run(data_mgmt.status)
+    result = run(ctx, data_mgmt.status)
     click.echo(result.output)    
 
 @repository.command("status")
@@ -603,7 +609,7 @@ _sync_params = [
 
 def _repository_sync(ctx, ignore_missing_parent):
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("sync", run(lambda: data_mgmt.sync(ignore_missing_parent)))
+    return check_result("sync", run(ctx, lambda: data_mgmt.sync(ignore_missing_parent)))
 
 @repository.command("sync")
 @click.pass_context
@@ -632,7 +638,7 @@ _addref_params = [
 
 def _repository_addref(ctx):
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("addref", run(data_mgmt.addref))
+    return check_result("addref", run(ctx, data_mgmt.addref))
 
 @repository.command("addref")
 @click.pass_context
@@ -661,7 +667,7 @@ _removeref_params = [
 
 def _repository_removeref(ctx):
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("addref", run(data_mgmt.removeref))
+    return check_result("addref", run(ctx, data_mgmt.removeref))
 
 @repository.command("removeref")
 @click.pass_context
@@ -687,6 +693,8 @@ def removeref(ctx, repository):
 
 ## download
 
+# TODO --skip_integrity_check flag for download, clone and move
+
 _download_params = [
     click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to download from.'),
     click.option('-f', '--file', help='File in the data set to download - downloading all if not given.'),
@@ -700,7 +708,7 @@ def data_set_download(ctx, content_copy_index, file, data_set_id):
     """ Download files of a linked data set.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("download", run(lambda: data_mgmt.download(data_set_id, content_copy_index, file)))
+    return check_result("download", run(ctx, lambda: data_mgmt.download(data_set_id, content_copy_index, file)))
 
 @cli.command()
 @add_params(_download_params)
@@ -725,7 +733,7 @@ def data_set_clone(ctx, ssh_user, content_copy_index, data_set_id):
     """Clone the repository found in the given data set id.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("clone", run(lambda: data_mgmt.clone(data_set_id, ssh_user, content_copy_index)))
+    return check_result("clone", run(ctx, lambda: data_mgmt.clone(data_set_id, ssh_user, content_copy_index)))
 
 @cli.command()
 @click.pass_context

@@ -2,6 +2,7 @@ import socket
 import os
 import pybis
 from .openbis_command import OpenbisCommand, ContentCopySelector
+from ..checksum import validate_checksum
 from ..command_result import CommandResult
 from ..utils import cd
 from ..utils import run_shell
@@ -54,6 +55,8 @@ class Clone(OpenbisCommand):
         result = self.checkout_commit(content_copy, path)
         if result.failure():
             return result
+        data_set = self.openbis.get_dataset(self.data_set_id)
+        validate_checksum(self.openbis, data_set.file_list, data_set.permId, repository_folder)
         return self.add_content_copy_to_openbis(repository_folder)
 
 
