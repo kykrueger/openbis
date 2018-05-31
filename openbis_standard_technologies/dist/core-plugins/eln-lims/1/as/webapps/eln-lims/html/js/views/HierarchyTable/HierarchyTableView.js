@@ -56,6 +56,23 @@ function HierarchyTableView(controller, model) {
 			property : 'level',
 			sortable : true
 		});
+		if(this._model.entity["@type"] === "as.dto.dataset.DataSet") {
+			columns.push({
+				label : "Registration Date",
+				property : 'registrationDate',
+				sortable : true
+			});
+			columns.push({
+				label : "History Id",
+				property : 'historyId',
+				sortable : true
+			});
+			columns.push({
+				label : "Repository Id",
+				property : 'repositoryId',
+				sortable : true
+			});
+		}
 		columns.push({
 			label : "Type",
 			property : 'type',

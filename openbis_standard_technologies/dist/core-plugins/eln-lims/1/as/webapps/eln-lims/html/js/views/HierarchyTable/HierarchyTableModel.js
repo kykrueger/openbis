@@ -63,11 +63,25 @@ function HierarchyTableModel(entity) {
 	this._addRow = function(dataList, entity, level, path) {
 		var annotations = FormUtil.getAnnotationsFromSample(entity);
 		var relationShips = this.relationShipsMap[entity.permId.permId];
+		
+		var repositoryId = null;
+		if(entity.linkedData && entity.linkedData.contentCopies && entity.linkedData.contentCopies[0]) {
+			repositoryId = entity.linkedData.contentCopies[0].gitRepositoryId;
+		}
+		
+		var historyId = null;
+		if(entity.properties && entity.properties["HISTORY_ID"]) {
+			historyId = dataset.properties["HISTORY_ID"];
+		}
+		
 		dataList.push({
 			level : level,
+			registrationDate : Util.getFormatedDate(new Date(entity.registrationDate)),
 			type : entity.type.code,
 			identifier : (entity.identifier)?entity.identifier.identifier:undefined,
 			code : entity.code,
+			repositoryId : repositoryId,
+			historyId : historyId,
 			permId : entity.permId.permId,
 			path: path,
 			name : entity.properties["NAME"],
