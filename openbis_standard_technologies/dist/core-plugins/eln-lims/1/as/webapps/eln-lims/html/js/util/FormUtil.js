@@ -896,7 +896,7 @@ var FormUtil = new function() {
 				view = "showExperimentPageFromIdentifier";
 				break;
 			case "Sample":
-				if(permIdOrIdentifier.lastIndexOf(displayName) !== -1) {
+				if(permIdOrIdentifier.lastIndexOf("/") !== -1) {
 					view = "showViewSamplePageFromIdentifier";
 				} else {
 					view = "showViewSamplePageFromPermId";
