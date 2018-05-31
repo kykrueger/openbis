@@ -239,7 +239,9 @@ public class UserManager
     {
         if (shareIdsMappingFileOrNull != null && mappingAttributesList.isEmpty() == false)
         {
-            File newFile = new File(shareIdsMappingFileOrNull.getParentFile(), shareIdsMappingFileOrNull.getName() + ".new");
+            File parentFile = shareIdsMappingFileOrNull.getParentFile();
+            parentFile.mkdirs();
+            File newFile = new File(parentFile, shareIdsMappingFileOrNull.getName() + ".new");
             PrintWriter printWriter = null;
             try
             {
