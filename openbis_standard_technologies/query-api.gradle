@@ -167,19 +167,14 @@ publishing {
   }  
 }
 
-task "generateDescriptorFileForIvyApiV3" {
-  dependsOn "prepublish", "apiV3Jar"
-  ext.destination=""
-}
-
 task prepublish {
   doLast {
       if (publishRevision == "-1") {
-        throw new GradleException("No publish revision defined. Run this task like: ./gradlew :clean :publishApiV3 -PpublishRevision=S277 -PrepositoryRoot=/Users/juanf/git/openbis/ivy-repository")
+        throw new GradleException("No publish revision defined. Run this task like: ./gradlew clean publishApiV3 -PpublishRevision=S277 -PrepositoryRoot=/Users/juanf/git/openbis/ivy-repository")
       }
     
       if (repositoryRoot == "/non-existent") {
-        throw new GradleException("No repository root defined. Run this task like: ./gradlew :clean :publishApiV3 -PpublishRevision=S277 -PrepositoryRoot=/Users/juanf/git/openbis/ivy-repository")
+        throw new GradleException("No repository root defined. Run this task like: ./gradlew clean publishApiV3 -PpublishRevision=S277 -PrepositoryRoot=/Users/juanf/git/openbis/ivy-repository")
       }
   }
 }
@@ -187,7 +182,7 @@ task prepublish {
 def publishDir=new File("${repositoryRoot}/openbis/openbis-v3-api/${publishRevision}")
 
 task publishApiV3(type: Sync) {
-  dependsOn "generateDescriptorFileForIvyApiV3"
+  dependsOn "prepublish", "generateDescriptorFileForIvyApiV3Publication", "apiV3Jar"
   doFirst {
     publishDir.mkdirs()
   }
