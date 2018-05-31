@@ -139,12 +139,12 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
 		var isLinked = false;
 		
 		if(this.isLinkDataset(datasetCode)) {
-			directLinkComponent = "<span class='glyphicon glyphicon-link'></span>";
+			directLinkComponent = "<span onclick=\"mainController.changeView('showDatasetHierarchyTablePage', '" + datasetCode + "')\" class='glyphicon glyphicon-link'></span>";
 			isLinked = true;
 		}
 		
 		if(this.isHistoryDataset(datasetCode)) {
-			directLinkComponent = "<span class='glyphicon glyphicon-time'></span>";
+			directLinkComponent = "<span onclick=\"mainController.changeView('showDatasetHierarchyTablePage', '" + datasetCode + "')\" class='glyphicon glyphicon-time'></span>";
 		}
 		
 		if(!isLinked && profile.directLinkEnabled && profile.sftpFileServer) {
