@@ -51,6 +51,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.datastore.ISearchDat
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IConfirmDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IRevertDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.ISearchDeletionsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.ICreateCodesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IDeleteExperimentTypesOperationExecutor;
@@ -300,6 +301,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ICreateQueriesOperationExecutor createQueriesExecutor;
+
+    @Autowired
+    private ICreateCodesOperationExecutor createCodesExecutor;
 
     @Autowired
     private IUpdateSpacesOperationExecutor updateSpacesExecutor;
@@ -762,6 +766,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(createAuthorizationGroupsExecutor.execute(context, operations));
         resultMap.putAll(createRoleAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(createQueriesExecutor.execute(context, operations));
+        resultMap.putAll(createCodesExecutor.execute(context, operations));
     }
 
     private void executeDeletions(List<? extends IOperation> operations,

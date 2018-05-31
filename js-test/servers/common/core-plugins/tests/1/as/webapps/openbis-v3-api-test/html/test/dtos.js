@@ -279,6 +279,9 @@ var sources = [
 	'as/dto/deletion/search/SearchDeletionsOperation',
 	'as/dto/deletion/search/SearchDeletionsOperationResult',
 	
+	'as/dto/entity/create/CreateCodesOperation',
+	'as/dto/entity/create/CreateCodesOperationResult',
+	
 	'as/dto/entitytype/id/EntityTypePermId',
 	'as/dto/entitytype/fetchoptions/EntityTypeFetchOptions',
 	'as/dto/entitytype/fetchoptions/EntityTypeSortOptions',

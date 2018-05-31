@@ -98,6 +98,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.revert.RevertDeletionsO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.SearchDeletionsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.SearchDeletionsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entity.create.CreateCodesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entity.create.CreateCodesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -1633,6 +1636,32 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    @Transactional
+    public List<String> createPermIdStrings(String sessionToken, int count)
+    {
+        checkSession(sessionToken);
+        if (count > 100)
+        {
+            throw new UserFailureException("Cannot create more than 100 ids in one call (" + count + " requested)");
+        }
+
+        if (count <= 0)
+        {
+            throw new UserFailureException("Invalid count: " + count);
+        }
+
+        return getDAOFactory().getPermIdDAO().createPermIds(count);
+    }
+
+    @Override
+    @Transactional
+    public List<String> createCodes(String sessionToken, String prefix, EntityKind entityKind, int count)
+    {
+        CreateCodesOperationResult result = executeOperation(sessionToken, new CreateCodesOperation(prefix, entityKind, count));
+        return result.getCodes();
+    }
+
+    @Override
     public IApplicationServerApi createLogger(IInvocationLoggerContext context)
     {
         return new ApplicationServerApiLogger(sessionManager, context);
@@ -1650,21 +1679,4 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
         return 4;
     }
 
-    @Override
-    @Transactional
-    public List<String> createPermIdStrings(String sessionToken, int amount)
-    {
-        checkSession(sessionToken);
-        if (amount > 100)
-        {
-            throw new UserFailureException("Cannot create more than 100 ids in one call (" + amount + " requested)");
-        }
-
-        if (amount <= 0)
-        {
-            throw new UserFailureException("Invalid amount: " + amount);
-        }
-
-        return getDAOFactory().getPermIdDAO().createPermIds(amount);
-    }
 }

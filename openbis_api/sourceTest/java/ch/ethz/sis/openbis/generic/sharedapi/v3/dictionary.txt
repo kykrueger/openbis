@@ -2210,3 +2210,9 @@ get Sample Types
 Get Sample Types Operation
 Get Sample Types Operation Result
 I Validation Plugin Holder
+
+create Codes
+Create Codes Operation
+Create Codes Operation Result
+get Codes
+get Prefix
