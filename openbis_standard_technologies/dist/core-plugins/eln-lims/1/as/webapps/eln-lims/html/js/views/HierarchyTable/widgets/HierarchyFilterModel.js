@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-function HierarchyFilterModel(sample) {
-	this._sample = sample;
+function HierarchyFilterModel(entity) {
+	this._entity = entity;
 	
 	this.getTypes = function() {
 		var types = {};
@@ -42,16 +42,16 @@ function HierarchyFilterModel(sample) {
 				}
 			}
 		}
-		getTypesWithQueueRecursion(this._sample, types, visited);
+		getTypesWithQueueRecursion(this._entity, types, visited);
 		return types;
 	}
 	
 	this.getMaxChildrenDepth = function() {
-		var getMaxChildrenDepthWithQueueRecurion = function(sample, max) {
-			if (sample.children) {
+		var getMaxChildrenDepthWithQueueRecurion = function(entity, max) {
+			if (entity.children) {
 				var posibleNextMax = [];
-				for (var i = 0; i < sample.children.length; i++) {
-					var nextMax = getMaxChildrenDepthWithQueueRecurion(sample.children[i], (max + 1));
+				for (var i = 0; i < entity.children.length; i++) {
+					var nextMax = getMaxChildrenDepthWithQueueRecurion(entity.children[i], (max + 1));
 					posibleNextMax.push(nextMax);
 				}
 				for (var i = 0; i < posibleNextMax.length; i++) {
@@ -62,15 +62,15 @@ function HierarchyFilterModel(sample) {
 			}
 			return max;
 		}
-		return getMaxChildrenDepthWithQueueRecurion(this._sample, 0);
+		return getMaxChildrenDepthWithQueueRecurion(this._entity, 0);
 	}
 	
 	this.getMaxParentsDepth = function(sample) {
-		var getMaxParentsDepthWithQueueRecurion = function(sample, max) {
-			if (sample.parents) {
+		var getMaxParentsDepthWithQueueRecurion = function(entity, max) {
+			if (entity.parents) {
 				var posibleNextMax = [];
-				for (var i = 0; i < sample.parents.length; i++) {
-					var nextMax = getMaxParentsDepthWithQueueRecurion(sample.parents[i], (max + 1));
+				for (var i = 0; i < entity.parents.length; i++) {
+					var nextMax = getMaxParentsDepthWithQueueRecurion(entity.parents[i], (max + 1));
 					posibleNextMax.push(nextMax);
 				}
 				for (var i = 0; i < posibleNextMax.length; i++) {
@@ -81,7 +81,7 @@ function HierarchyFilterModel(sample) {
 			}
 			return max;
 		}
-		return getMaxParentsDepthWithQueueRecurion(this._sample, 0);
+		return getMaxParentsDepthWithQueueRecurion(this._entity, 0);
 	}
 	
 

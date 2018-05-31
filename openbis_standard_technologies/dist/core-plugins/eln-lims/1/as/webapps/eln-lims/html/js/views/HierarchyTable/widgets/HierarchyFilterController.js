@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-function HierarchyFilterController(sample, action) {
-	this._model = new HierarchyFilterModel(sample, action);
+function HierarchyFilterController(entity, action) {
+	this._model = new HierarchyFilterModel(entity, action);
 	this._view = new HierarchyFilterView(this, this._model);
 	
 	this.init = function(container) {
@@ -27,8 +27,8 @@ function HierarchyFilterController(sample, action) {
 			action();
 		});
 		
-		$('#sampleTypesSelector').multiselect();
-		$('#sampleTypesSelector').change(function(event){
+		$('#entityTypesSelector').multiselect();
+		$('#entityTypesSelector').change(function(event){
 			action();
 		});
 	}
@@ -41,12 +41,12 @@ function HierarchyFilterController(sample, action) {
 		return getSliderValue("childrenLimit");
 	}
 	
-	this.getSelectedSampleTypes = function() {
-		var selectedSampleTypes = $('#sampleTypesSelector').val();
-		if(selectedSampleTypes === null) {
-			selectedSampleTypes = [];
+	this.getSelectedEntityTypes = function() {
+		var selectedEntityTypes = $('#entityTypesSelector').val();
+		if(selectedEntityTypes === null) {
+			selectedEntityTypes = [];
 		}
-		return selectedSampleTypes;
+		return selectedEntityTypes;
 	}
 	
 	var getSliderValue = function(id) {

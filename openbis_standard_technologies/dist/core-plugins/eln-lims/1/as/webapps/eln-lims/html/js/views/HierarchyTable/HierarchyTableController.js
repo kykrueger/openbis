@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-function SampleHierarchyTableController(parentController, sample) {
+function HierarchyTableController(parentController, entity) {
 	this._parentController = parentController;
-	this._model = new SampleHierarchyTableModel(sample);
-	this._view = new SampleHierarchyTableView(this, this._model);
+	this._model = new HierarchyTableModel(entity);
+	this._view = new HierarchyTableView(this, this._model);
 	
 	this.init = function(views) {
 		this._view.repaint(views);

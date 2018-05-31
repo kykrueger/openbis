@@ -951,7 +951,7 @@ function MainController(profile) {
 		this.serverFacade.searchForSamplesAdvanced(dsCriteria, null, function(results) {
 			var dataset = results.objects[0];
 			var views = localInstance._getNewViewModel(true, true, false);
-			var hierarchyTableController = new SampleHierarchyTableController(this, dataset);
+			var hierarchyTableController = new HierarchyTableController(this, dataset);
 			hierarchyTableController.init(views);
 			localInstance.currentView = hierarchyTableController;
 		});
@@ -970,7 +970,7 @@ function MainController(profile) {
 		this.serverFacade.searchForDataSetsAdvanced(dsCriteria, null, function(results) {
 			var dataset = results.objects[0];
 			var views = localInstance._getNewViewModel(true, true, false);
-			var hierarchyTableController = new SampleHierarchyTableController(this, dataset);
+			var hierarchyTableController = new HierarchyTableController(this, dataset);
 			hierarchyTableController.init(views);
 			localInstance.currentView = hierarchyTableController;
 		});

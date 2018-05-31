@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-function SampleHierarchyTableView(controller, model) {
+function HierarchyTableView(controller, model) {
 	this._model = model;
 	this._controller = controller;
 	this._container = $("<div>");
@@ -32,8 +32,8 @@ function SampleHierarchyTableView(controller, model) {
 		$containerColumn.append(this._container);
 		views.content.append($containerColumn);
 		
-		views.header.append($("<h1>").append("" + ELNDictionary.Sample + " Hierarchy Table for " + this._model.sample.identifier));
-		this._hierarchyFilterController = new HierarchyFilterController(this._model.sample, function() { _this._dataGrid.refresh(); });
+		views.header.append($("<h1>").append("" + ELNDictionary.Sample + " Hierarchy Table for " + this._model.entity.identifier));
+		this._hierarchyFilterController = new HierarchyFilterController(this._model.entity, function() { _this._dataGrid.refresh(); });
 		this._hierarchyFilterController.init(views.header);
 		this._showHierarchy();
 		
@@ -47,12 +47,9 @@ function SampleHierarchyTableView(controller, model) {
 			property : 'level',
 			sortable : true
 		} , {
-			label : "" + ELNDictionary.Sample + " Type",
-			property : 'sampleType',
-			sortable : true,
-			render : function(data) {
-				return data.type;
-			}
+			label : "Type",
+			property : 'type',
+			sortable : true
 		} , {
 			label : 'Identifier',
 			property : 'identifier',
@@ -78,14 +75,14 @@ function SampleHierarchyTableView(controller, model) {
 			property : 'parentAnnotations',
 			sortable : true,
 			render : function(data) {
-				return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].parents, data.sample);
+				return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].parents, data.entity);
 			}
 		} , {
 			label : 'Children/Annotations',
 			property : 'childrenAnnotations',
 			sortable : true,
 			render : function(data) {
-				return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].children, data.sample);
+				return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].children, data.entity);
 			}
 		}];
 		
@@ -93,7 +90,7 @@ function SampleHierarchyTableView(controller, model) {
 			var data = _this._model.getData();
 			var parentsLimit = _this._hierarchyFilterController.getParentsLimit();
 			var childrenLimit = _this._hierarchyFilterController.getChildrenLimit();
-			var types = _this._hierarchyFilterController.getSelectedSampleTypes();
+			var types = _this._hierarchyFilterController.getSelectedEntityTypes();
 			var filteredData = [];
 			for (var i = 0; i < data.length; i++) {
 				var row = data[i];
@@ -106,7 +103,7 @@ function SampleHierarchyTableView(controller, model) {
 		}
 		
 		var rowClick = function(e) {
-			switch(e.data.sample["@type"]) {
+			switch(e.data.entity["@type"]) {
 				case "as.dto.dataset.DataSet":
 					mainController.changeView('showViewDataSetPageFromPermId', e.data.permId);
 					break;
@@ -121,11 +118,14 @@ function SampleHierarchyTableView(controller, model) {
 		this._container.prepend($("<legend>").append(" " + ELNDictionary.Sample + " Hierarchy"));
 	}
 	
-	this._annotationsRenderer = function(samples, sample) {
-		var annotations = FormUtil.getAnnotationsFromSample(sample);
+    /*
+	 * Only samples have annotations, if they are not samples, they will simply not be found
+	 */
+	this._annotationsRenderer = function(entities, entity) {
+		var annotations = FormUtil.getAnnotationsFromSample(entity);
 		var content = "";
 		var rowStarted = false;
-		AnnotationUtil.buildAnnotations(annotations, samples, {
+		AnnotationUtil.buildAnnotations(annotations, entities, {
 			startRow : function() {
 				if (content !== "") {
 					content += "<br /><br />";
