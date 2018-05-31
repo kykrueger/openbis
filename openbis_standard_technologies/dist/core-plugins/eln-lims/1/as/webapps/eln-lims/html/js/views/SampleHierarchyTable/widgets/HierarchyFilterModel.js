@@ -16,25 +16,34 @@
 function HierarchyFilterModel(sample) {
 	this._sample = sample;
 	
-	this.getSampleTypes = function() {
-		var sampleTypes = {};
-		var getSampleTypesWithQueueRecursion = function(sample, sampleTypes) {
-			if (!sampleTypes[sample.sampleTypeCode]) {
-				sampleTypes[sample.sampleTypeCode] = true;
+	this.getTypes = function() {
+		var types = {};
+		var visited = {};
+		var getTypesWithQueueRecursion = function(entity, types, visited) {
+			var permId = FormUtil.getPermId(entity);
+			var type = FormUtil.getType(entity);
+			
+			if(!visited[permId]) {
+				visited[permId] = true;
+			} else {
+				return;
 			}
-			if(sample.parents) {
-				for (var i = 0; i < sample.parents.length; i++) {
-					getSampleTypesWithQueueRecursion(sample.parents[i], sampleTypes);
+			if (!types[type]) {
+				types[type] = true;
+			}
+			if(entity.parents) {
+				for (var i = 0; i < entity.parents.length; i++) {
+					getTypesWithQueueRecursion(entity.parents[i], types, visited);
 				}
 			}
-			if (sample.children) {
-				for (var i = 0; i < sample.children.length; i++) {
-					getSampleTypesWithQueueRecursion(sample.children[i], sampleTypes);
+			if (entity.children) {
+				for (var i = 0; i < entity.children.length; i++) {
+					getTypesWithQueueRecursion(entity.children[i], types, visited);
 				}
 			}
 		}
-		getSampleTypesWithQueueRecursion(this._sample, sampleTypes);
-		return sampleTypes;
+		getTypesWithQueueRecursion(this._sample, types, visited);
+		return types;
 	}
 	
 	this.getMaxChildrenDepth = function() {

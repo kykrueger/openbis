@@ -62,12 +62,13 @@ function SampleHierarchyTableModel(sample) {
 	
 	this._addRow = function(dataList, sample, level, path) {
 		var annotations = FormUtil.getAnnotationsFromSample(sample);
-		var relationShips = this.relationShipsMap[sample.identifier];
+		var relationShips = this.relationShipsMap[sample.permId.permId];
 		dataList.push({
 			level : level,
-			sampleType : sample.sampleTypeCode,
-			identifier : sample.identifier,
-			permId : sample.permId,
+			type : sample.type.code,
+			identifier : (sample.identifier)?sample.identifier.identifier:undefined,
+			code : sample.code,
+			permId : sample.permId.permId,
 			path: path,
 			name : sample.properties["NAME"],
 			parentAnnotations : this._createAnnotations(annotations, relationShips.parents),

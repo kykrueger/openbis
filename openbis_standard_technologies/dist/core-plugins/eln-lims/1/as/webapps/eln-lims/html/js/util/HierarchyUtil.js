@@ -52,7 +52,7 @@ var HierarchyUtil = new function() {
 	}
 	
 	var getRelationShips = function(sample, relationShipsMap) {
-		var relationShips = relationShipsMap[sample.identifier];
+		var relationShips = relationShipsMap[sample.permId.permId];
 		if (typeof relationShips === 'undefined') {
 			relationShips = createRelationShipEntry(sample, relationShipsMap);
 		}
@@ -61,7 +61,7 @@ var HierarchyUtil = new function() {
 	
 	var createRelationShipEntry = function(sample, relationShipsMap) {
 		var relationShips = {parents: [], children: []};
-		relationShipsMap[sample.identifier] = relationShips;
+		relationShipsMap[sample.permId.permId] = relationShips;
 		return relationShips;
 	}
 	

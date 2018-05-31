@@ -38,7 +38,7 @@ function HierarchyFilterView(controller, model) {
 			$filtersFormSliderParents = 'No Parents';
 		}
 		
-		var sampleTypes = this._model.getSampleTypes();
+		var sampleTypes = this._model.getTypes();
 		var $filtersFormSampleTypes = $('<select>', { 'id' : 'sampleTypesSelector' , class : 'multiselect' , 'multiple' : 'multiple'});
 		for (var sampleType in sampleTypes) {
 			$filtersFormSampleTypes.append($('<option>', { 'value' : sampleType , 'selected' : ''}).html(sampleType));

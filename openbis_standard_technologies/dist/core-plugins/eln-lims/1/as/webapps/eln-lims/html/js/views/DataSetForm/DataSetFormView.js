@@ -97,6 +97,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			}, true);
 			toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
 			
+			//Hierarchy Table
+			var $hierarchyTable = FormUtil.getButtonWithIcon("glyphicon-list", function () {
+				mainController.changeView('showDatasetHierarchyTablePage', _this._dataSetFormModel.dataSet.code);
+			});
+			toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
+			
 			//Export
 			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
 				Util.blockUI();

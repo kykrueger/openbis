@@ -51,11 +51,19 @@ function SampleHierarchyTableView(controller, model) {
 			property : 'sampleType',
 			sortable : true,
 			render : function(data) {
-				return data.sample.sampleTypeCode;
+				return data.type;
 			}
 		} , {
 			label : 'Identifier',
 			property : 'identifier',
+			sortable : true
+		} , {
+			label : 'PermId',
+			property : 'permId',
+			sortable : true
+		}, {
+			label : 'Code',
+			property : 'code',
 			sortable : true
 		} , {
 			label : 'Name',
@@ -70,14 +78,14 @@ function SampleHierarchyTableView(controller, model) {
 			property : 'parentAnnotations',
 			sortable : true,
 			render : function(data) {
-				return _this._annotationsRenderer(_this._model.relationShipsMap[data.identifier].parents, data.sample);
+				return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].parents, data.sample);
 			}
 		} , {
 			label : 'Children/Annotations',
 			property : 'childrenAnnotations',
 			sortable : true,
 			render : function(data) {
-				return _this._annotationsRenderer(_this._model.relationShipsMap[data.identifier].children, data.sample);
+				return _this._annotationsRenderer(_this._model.relationShipsMap[data.permId].children, data.sample);
 			}
 		}];
 		
@@ -85,11 +93,11 @@ function SampleHierarchyTableView(controller, model) {
 			var data = _this._model.getData();
 			var parentsLimit = _this._hierarchyFilterController.getParentsLimit();
 			var childrenLimit = _this._hierarchyFilterController.getChildrenLimit();
-			var sampleTypes = _this._hierarchyFilterController.getSelectedSampleTypes();
+			var types = _this._hierarchyFilterController.getSelectedSampleTypes();
 			var filteredData = [];
 			for (var i = 0; i < data.length; i++) {
 				var row = data[i];
-				if (row.level == 0 || ($.inArray(row.sampleType, sampleTypes) >= 0 
+				if (row.level == 0 || ($.inArray(row.type, types) >= 0 
 						&& row.level <= childrenLimit && row.level >= -parentsLimit)) {
 					filteredData.push(row);
 				}
@@ -98,7 +106,14 @@ function SampleHierarchyTableView(controller, model) {
 		}
 		
 		var rowClick = function(e) {
-			mainController.changeView('showViewSamplePageFromPermId', e.data.permId);
+			switch(e.data.sample["@type"]) {
+				case "as.dto.dataset.DataSet":
+					mainController.changeView('showViewDataSetPageFromPermId', e.data.permId);
+					break;
+				case "as.dto.sample.Sample":
+					mainController.changeView('showViewSamplePageFromPermId', e.data.permId);
+					break;
+			}
 		}
 		
 		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, rowClick, false, "SAMPLE_HIERARCHY_TABLE");
@@ -130,7 +145,7 @@ function SampleHierarchyTableView(controller, model) {
 						label = propertyType.label;
 					}
 				}
-				content += "<b>" + label + "</b>:" + value;
+				content += "<b>" + label + "</b>: " + value;
 				rowStarted = false;
 			}
 		})

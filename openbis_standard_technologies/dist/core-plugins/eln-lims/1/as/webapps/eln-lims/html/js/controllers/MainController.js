@@ -495,6 +495,11 @@ function MainController(profile) {
 					this._showSampleHierarchyTablePage(arg);
 					//window.scrollTo(0,0);
 					break;
+				case "showDatasetHierarchyTablePage":
+					document.title = "Table Hierarchy " + arg;
+					this._showDatasetHierarchyTablePage(arg);
+					//window.scrollTo(0,0);
+					break;
 				case "showEditSamplePageFromPermId":
 					var _this = this;
 					var permId = null;
@@ -583,9 +588,10 @@ function MainController(profile) {
 					
 					this.serverFacade.searchForDataSetsAdvanced(dsCriteria, null, function(results) {
 						var datasetParentCodes = [];
-						if(results.objects[0]) {
-							for(var pIdx = 0; pIdx < results.objects[0].parents.length; pIdx++) {
-								datasetParentCodes.push(results.objects[0].parents[pIdx].code);
+						var dataset = results.objects[0];
+						if(dataset) {
+							for(var pIdx = 0; pIdx < dataset.parents.length; pIdx++) {
+								datasetParentCodes.push(dataset.parents[pIdx].code);
 							}
 						}
 						_this.serverFacade.searchDataSetWithUniqueId(arg, function(dataSetData) {
@@ -624,9 +630,10 @@ function MainController(profile) {
 					
 					this.serverFacade.searchForDataSetsAdvanced(dsCriteria, null, function(results) {
 						var datasetParentCodes = [];
-						if(results.objects[0]) {
-							for(var pIdx = 0; pIdx < results.objects[0].parents.length; pIdx++) {
-								datasetParentCodes.push(results.objects[0].parents[pIdx].code);
+						var dataset = results.objects[0];
+						if(dataset) {
+							for(var pIdx = 0; pIdx < dataset.parents.length; pIdx++) {
+								datasetParentCodes.push(dataset.parents[pIdx].code);
 							}
 						}
 						_this.serverFacade.searchDataSetWithUniqueId(arg, function(dataSetData) {
@@ -934,11 +941,38 @@ function MainController(profile) {
 	this._showSampleHierarchyTablePage = function(permId) {
 		//Show View
 		var localInstance = this;
-		this.serverFacade.searchWithUniqueId(permId, function(data) {
+		
+		var dsCriteria = { 	
+			entityKind : "SAMPLE", 
+			logicalOperator : "AND", 
+			rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : permId } }
+		};
+					
+		this.serverFacade.searchForSamplesAdvanced(dsCriteria, null, function(results) {
+			var dataset = results.objects[0];
 			var views = localInstance._getNewViewModel(true, true, false);
-			var sampleHierarchyTableController = new SampleHierarchyTableController(this, data[0]);
-			sampleHierarchyTableController.init(views);
-			localInstance.currentView = sampleHierarchyTableController;
+			var hierarchyTableController = new SampleHierarchyTableController(this, dataset);
+			hierarchyTableController.init(views);
+			localInstance.currentView = hierarchyTableController;
+		});
+	}
+	
+	this._showDatasetHierarchyTablePage = function(permId) {
+		//Show View
+		var localInstance = this;
+		
+		var dsCriteria = { 	
+			entityKind : "DATASET", 
+			logicalOperator : "AND", 
+			rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : permId } }
+		};
+					
+		this.serverFacade.searchForDataSetsAdvanced(dsCriteria, null, function(results) {
+			var dataset = results.objects[0];
+			var views = localInstance._getNewViewModel(true, true, false);
+			var hierarchyTableController = new SampleHierarchyTableController(this, dataset);
+			hierarchyTableController.init(views);
+			localInstance.currentView = hierarchyTableController;
 		});
 	}
 	
@@ -1036,17 +1070,17 @@ function MainController(profile) {
 		this.currentView = newView;
 	}
 	
-	this._showViewDataSetPage = function(sample, dataset) {
+	this._showViewDataSetPage = function(sampleOrExperiment, dataset) {
 		//Show Form
-		var newView = new DataSetFormController(this, FormMode.VIEW, sample, dataset);
+		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset);
 		var views = this._getNewViewModel(true, true, false);
 		newView.init(views);
 		this.currentView = newView;
 	}
 	
-	this._showEditDataSetPage = function(sample, dataset) {
+	this._showEditDataSetPage = function(sampleOrExperiment, dataset) {
 		//Show Form
-		var newView = new DataSetFormController(this, FormMode.EDIT, sample, dataset);
+		var newView = new DataSetFormController(this, FormMode.EDIT, sampleOrExperiment, dataset);
 		var views = this._getNewViewModel(true, true, false);
 		newView.init(views);
 		this.currentView = newView;
