@@ -283,7 +283,6 @@ class UserManagerExpectationsBuilder
     private void assertSpaces(String sessionToken)
     {
         Set<String> spaceCodes = usersByLevelBySpace.keySet();
-        assertEquals(spaceCodes.isEmpty(), false, "Spaces");
         List<SpacePermId> spaceIds = spaceCodes.stream().map(SpacePermId::new).collect(Collectors.toList());
         Collection<Space> spaces = v3api.getSpaces(sessionToken, spaceIds, new SpaceFetchOptions()).values();
         List<String> actualSpaces = spaces.stream().map(Space::getCode).collect(Collectors.toList());

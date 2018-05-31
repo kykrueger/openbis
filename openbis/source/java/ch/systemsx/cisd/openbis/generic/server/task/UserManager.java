@@ -188,22 +188,25 @@ public class UserManager
     public void addGroup(UserGroup group, Map<String, Principal> principalsByUserId)
     {
         String groupCode = group.getKey().toUpperCase();
-        usersByGroupCode.put(groupCode, principalsByUserId);
+        usersByGroupCode.put(groupCode, group.isEnabled() ? principalsByUserId : new HashMap<>());
         groupCodes.add(groupCode);
         mappingAttributesList.add(new MappingAttributes(groupCode, group.getShareIds()));
         Set<String> admins = asSet(group.getAdmins());
-        for (Principal principal : principalsByUserId.values())
+        if (group.isEnabled())
         {
-            String userId = principal.getUserId();
-            UserInfo userInfo = userInfosByUserId.get(userId);
-            if (userInfo == null)
+            for (Principal principal : principalsByUserId.values())
             {
-                userInfo = new UserInfo(principal);
-                userInfosByUserId.put(userId, userInfo);
+                String userId = principal.getUserId();
+                UserInfo userInfo = userInfosByUserId.get(userId);
+                if (userInfo == null)
+                {
+                    userInfo = new UserInfo(principal);
+                    userInfosByUserId.put(userId, userInfo);
+                }
+                userInfo.addGroupInfo(new GroupInfo(groupCode, admins.contains(userId)));
             }
-            userInfo.addGroupInfo(new GroupInfo(groupCode, admins.contains(userId)));
         }
-        logger.log(LogLevel.INFO, principalsByUserId.size() + " users for group " + groupCode);
+        logger.log(LogLevel.INFO, principalsByUserId.size() + " users for " + (group.isEnabled() ? "": "disabled ") + "group " + groupCode);
     }
 
     public UserManagerReport manage()
