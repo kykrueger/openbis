@@ -283,20 +283,13 @@ var Util = new function() {
 		};
 		
 		var isWindows = window.navigator.userAgent.toLowerCase().indexOf("windows") > -1;
-		var cifsLink = null;
 		var sftpLink = null;
 		
 		if(isWindows) {
-			if(profile.cifsFileServer) {
-				cifsLink = this.getDirectLinkWindows("cifs", profile.cifsFileServer, path);
-			}
 			if(profile.sftpFileServer) {
 				sftpLink = this.getDirectLinkUnix("sftp", profile.sftpFileServer, path);
 			}
 		} else {
-			if(profile.cifsFileServer) {
-				cifsLink = this.getDirectLinkUnix("cifs", profile.cifsFileServer, path);
-			}
 			if(profile.sftpFileServer) {
 				sftpLink = this.getDirectLinkUnix("sftp", profile.sftpFileServer, path);
 			}
@@ -314,20 +307,11 @@ var Util = new function() {
 		$window.css("margin-right", "10px");
 		
 		if(isWindows) {
-			if(profile.cifsFileServer) {
-				var $readOnlyInput = $("<input>", { class : "form-control", id : "windowsLink", readonly : "readonly", type : "text", value :  cifsLink, onClick : "this.setSelectionRange(0, this.value.length)" });
-				$window.append("<b>CIFS Link: </b>").append($readOnlyInput).append("NOTE: The CIFS link can be copied directly on windows explorer address bar.");
-				$window.append($("<br>")).append($("<br>"));
-			}
 			if(profile.sftpFileServer) {
 				$window.append("<b>SFTP Link: </b>").append($("<br>")).append($("<a>", { "href" : sftpLink, "target" : "_blank"}).append(sftpLink)).append($("<br>"));
 				$window.append("NOTE: The SFTP link can be opened with your favourite SFTP application, we recomend ").append($("<a>", { "href" : "https://cyberduck.io/", "target" : "_blank"}).append("Cyberduck")).append(".");
 			}
 		} else {
-			
-			if(profile.cifsFileServer) {
-				$window.append($("<b>CIFS Link: </b>")).append($("<a>", { "href" : cifsLink, "target" : "_blank"}).append(cifsLink)).append($("<br>"));
-			}
 			if(profile.sftpFileServer) {
 				$window.append($("<b>SFTP Link: </b>")).append($("<a>", { "href" : sftpLink, "target" : "_blank"}).append(sftpLink)).append($("<br>"));
 			}

@@ -147,7 +147,7 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
 			directLinkComponent = "<span class='glyphicon glyphicon-time'></span>";
 		}
 		
-		if(!isLinked && profile.directLinkEnabled && (profile.cifsFileServer || profile.sftpFileServer)) {
+		if(!isLinked && profile.directLinkEnabled && profile.sftpFileServer) {
 			var path = null;
 			
 			if(this.isExperiment()) {
