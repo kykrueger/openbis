@@ -12,10 +12,11 @@ class Download(OpenbisCommand):
     """
 
 
-    def __init__(self, dm, data_set_id, content_copy_index, file):
+    def __init__(self, dm, data_set_id, content_copy_index, file, skip_integrity_check):
         self.data_set_id = data_set_id
         self.content_copy_index = content_copy_index
         self.file = file
+        self.skip_integrity_check = skip_integrity_check
         self.load_global_config(dm)
         super(Download, self).__init__(dm)
 
@@ -29,5 +30,6 @@ class Download(OpenbisCommand):
         content_copy_index =  ContentCopySelector(data_set, self.content_copy_index, get_index=True).select()
         files = [self.file] if self.file is not None else data_set.file_list
         destination = data_set.download(files, linked_dataset_fileservice_url=self.fileservice_url(), content_copy_index=content_copy_index)
-        validate_checksum(self.openbis, files, data_set.permId, os.path.join(destination, data_set.permId))
+        if self.skip_integrity_check != True:
+            validate_checksum(self.openbis, files, data_set.permId, os.path.join(destination, data_set.permId))
         return CommandResult(returncode=0, output="Files downloaded to: %s" % os.path.join(destination, data_set.permId))

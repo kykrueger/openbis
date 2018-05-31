@@ -16,11 +16,12 @@ class Clone(OpenbisCommand):
     and adds the local copy as a new content copy using the addref command.
     """
 
-    def __init__(self, dm, data_set_id, ssh_user, content_copy_index):
+    def __init__(self, dm, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
         self.data_set_id = data_set_id
         self.ssh_user = ssh_user
         self.content_copy_index = content_copy_index
         self.load_global_config(dm)
+        self.skip_integrity_check = skip_integrity_check
         super(Clone, self).__init__(dm)
 
 
@@ -56,7 +57,8 @@ class Clone(OpenbisCommand):
         if result.failure():
             return result
         data_set = self.openbis.get_dataset(self.data_set_id)
-        validate_checksum(self.openbis, data_set.file_list, data_set.permId, repository_folder)
+        if self.skip_integrity_check != True:
+            validate_checksum(self.openbis, data_set.file_list, data_set.permId, repository_folder)
         return self.add_content_copy_to_openbis(repository_folder)
 
 

@@ -120,11 +120,12 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def clone(self, data_set_id, ssh_user, content_copy_index):
+    def clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
         """Clone / copy a repository related to the given data set id.
         :param data_set_id: 
         :param ssh_user: ssh user for remote clone (optional)
         :param content_copy_index: index of content copy in case there are multiple copies (optional)
+        :param skip_integrity_check: if true, the file checksums will not be checked
         :return: A CommandResult.
         """
         return
@@ -144,7 +145,13 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def download(self, data_set_id, content_copy_index, file):
+    def download(self, data_set_id, content_copy_index, file, skip_integrity_check):
+        """Download files of a repository without adding a content copy.
+        :param data_set_id: Id of the data set to download from.
+        :param content_copy_index: Index of the content copy to download from.
+        :param file: Path of a file in the data set to download. All files are downloaded if it is None.
+        :param skip_integrity_check: Checksums of files are not verified if true.
+        """
         return
 
 
@@ -166,7 +173,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def status(self):
         self.error_raise("status", "No git command found.")
 
-    def clone(self, data_set_id, ssh_user, content_copy_index):
+    def clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
         self.error_raise("clone", "No git command found.")
 
     def addref(self):
@@ -175,7 +182,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def removeref(self):
         self.error_raise("removeref", "No git command found.")
 
-    def download(self, data_set_id, content_copy_index, file):
+    def download(self, data_set_id, content_copy_index, file, skip_integrity_check):
         self.error_raise("download", "No git command found.")
 
 
@@ -351,8 +358,8 @@ class GitDataMgmt(AbstractDataMgmt):
             self.git_wrapper.git_checkout(properties_path)
             self.git_wrapper.git_delete_if_untracked(properties_path)
 
-    def clone(self, data_set_id, ssh_user, content_copy_index):
-        cmd = Clone(self, data_set_id, ssh_user, content_copy_index)
+    def clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
+        cmd = Clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check)
         return cmd.run()
 
     def addref(self):
@@ -363,6 +370,6 @@ class GitDataMgmt(AbstractDataMgmt):
         cmd = Removeref(self)
         return cmd.run()
 
-    def download(self, data_set_id, content_copy_index, file):
-        cmd = Download(self, data_set_id, content_copy_index, file)
+    def download(self, data_set_id, content_copy_index, file, skip_integrity_check):
+        cmd = Download(self, data_set_id, content_copy_index, file, skip_integrity_check)
         return cmd.run()

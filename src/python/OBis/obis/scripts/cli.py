@@ -693,55 +693,55 @@ def removeref(ctx, repository):
 
 ## download
 
-# TODO --skip_integrity_check flag for download, clone and move
-
 _download_params = [
     click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to download from.'),
     click.option('-f', '--file', help='File in the data set to download - downloading all if not given.'),
+    click.option('-s', '--skip_integrity_check', default=False, is_flag=True, help='Skip file integrity check with checksums.'),
     click.argument('data_set_id'),
 ]
 
 @data_set.command("download")
 @add_params(_download_params)
 @click.pass_context 
-def data_set_download(ctx, content_copy_index, file, data_set_id):
+def data_set_download(ctx, content_copy_index, file, data_set_id, skip_integrity_check):
     """ Download files of a linked data set.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("download", run(ctx, lambda: data_mgmt.download(data_set_id, content_copy_index, file)))
+    return check_result("download", run(ctx, lambda: data_mgmt.download(data_set_id, content_copy_index, file, skip_integrity_check)))
 
 @cli.command()
 @add_params(_download_params)
 @click.pass_context
-def download(ctx, content_copy_index, file, data_set_id):
+def download(ctx, content_copy_index, file, data_set_id, skip_integrity_check):
     """ Download files of a linked data set.
     """
-    ctx.invoke(data_set_download, content_copy_index=content_copy_index, file=file, data_set_id=data_set_id)
+    ctx.invoke(data_set_download, content_copy_index=content_copy_index, file=file, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 ## clone
 
 _clone_params = [
     click.option('-u', '--ssh_user', default=None, help='User to connect to remote systems via ssh'),
     click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to clone from in case there are multiple copies'),
+    click.option('-s', '--skip_integrity_check', default=False, is_flag=True, help='Skip file integrity check with checksums.'),
     click.argument('data_set_id'),
 ]
 
 @data_set.command("clone")
 @click.pass_context
 @add_params(_clone_params)
-def data_set_clone(ctx, ssh_user, content_copy_index, data_set_id):
+def data_set_clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
     """Clone the repository found in the given data set id.
     """
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("clone", run(ctx, lambda: data_mgmt.clone(data_set_id, ssh_user, content_copy_index)))
+    return check_result("clone", run(ctx, lambda: data_mgmt.clone(data_set_id, ssh_user, content_copy_index, skip_integrity_check)))
 
 @cli.command()
 @click.pass_context
 @add_params(_clone_params)
-def clone(ctx, ssh_user, content_copy_index, data_set_id):
+def clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
     """Clone the repository found in the given data set id.
     """
-    ctx.invoke(data_set_clone, ssh_user=ssh_user, content_copy_index=content_copy_index, data_set_id=data_set_id)
+    ctx.invoke(data_set_clone, ssh_user=ssh_user, content_copy_index=content_copy_index, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 
 def main():
