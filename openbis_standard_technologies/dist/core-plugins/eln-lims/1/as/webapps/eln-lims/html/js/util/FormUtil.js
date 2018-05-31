@@ -1249,5 +1249,24 @@ var FormUtil = new function() {
 			}
 		});
 	}
-
+	
+	this.getPermId = function(entity) {
+		var permId = null;
+		if(entity["@type"].startsWith("as.dto")) { //v3
+			permId = entity.permId.permId;
+		} else { // v1
+			permId = entity.permId;
+		}
+		return permId;
+	}
+	
+	this.getType = function(entity) {
+		var type = null;
+		if(entity["@type"].startsWith("as.dto")) { //v3
+			type = entity.type.code;
+		} else if(entity.sampleTypeCode) { // v1 sample
+			type = entity.sampleTypeCode;
+		}
+		return type;
+	}
 }

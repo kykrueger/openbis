@@ -81,6 +81,8 @@ public class UserManagerTest extends AbstractTest
     private File workingDir;
 
     private File mappingFile;
+    
+    private UserManagerReport report;
 
     private static Map<Role, List<String>> commonSpaces()
     {
@@ -109,7 +111,7 @@ public class UserManagerTest extends AbstractTest
         // 2. create groip G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId(), "blabla"), users(U1, U2));
 
         // When
@@ -158,13 +160,13 @@ public class UserManagerTest extends AbstractTest
         // 2. create groip G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.setGlobalSpaces(Arrays.asList("A"));
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId(), "blabla"), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G1").space("A").observer(U1, U2).assertExpectations();
         // 3. remove U2 from G1
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.setGlobalSpaces(Arrays.asList("A"));
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1));
 
@@ -198,7 +200,7 @@ public class UserManagerTest extends AbstractTest
         Map<Role, List<String>> commonSpaces = new EnumMap<>(Role.class);
         commonSpaces.put(Role.USER, Arrays.asList("ALPHA", "BETA"));
         commonSpaces.put(Role.OBSERVER, Arrays.asList("GAMMA"));
-        UserManager userManager = new UserManagerBuilder(v3api, logger)
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report())
                 .commonSpaces(commonSpaces).commonSample("GAMMA/G", SAMPLE_TYPE)
                 .commonExperiment("ALPHA/P1/E1", EXPERIMENT_TYPE).get();
         userManager.setGlobalSpaces(Arrays.asList("A", "B"));
@@ -207,7 +209,7 @@ public class UserManagerTest extends AbstractTest
         createBuilder().groups("G1").samples(SAMPLE_TYPE, "/G1_GAMMA/G1_G").space("G1_ALPHA").assertExpectations();
         // 2. add common spaces, samples and experiments
         commonSpaces.put(Role.OBSERVER, Arrays.asList("GAMMA", "DELTA"));
-        userManager = new UserManagerBuilder(v3api, logger)
+        userManager = new UserManagerBuilder(v3api, logger, report())
                 .commonSpaces(commonSpaces).commonSample("GAMMA/G", SAMPLE_TYPE).commonSample("ALPHA/G", SAMPLE_TYPE)
                 .commonExperiment("ALPHA/P1/E1", EXPERIMENT_TYPE).commonExperiment("ALPHA/P1/E2", EXPERIMENT_TYPE)
                 .commonExperiment("BETA/P1/E1", EXPERIMENT_TYPE).get();
@@ -266,7 +268,7 @@ public class UserManagerTest extends AbstractTest
         assertEquals(v3api.login(U2.getUserId(), PASSWORD), null);
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId(), "blabla"), users(U1, U2));
 
         // When
@@ -313,7 +315,7 @@ public class UserManagerTest extends AbstractTest
         // Given
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger)
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report())
                 .commonSpaces(commonSpaces).commonSample("GAMMA/G", SAMPLE_TYPE)
                 .commonExperiment("ALPHA/ST/STC", EXPERIMENT_TYPE).shareIdsMappingFile(mappingFile).get();
         List<String> globalSpaces = Arrays.asList("A", "B");
@@ -420,7 +422,7 @@ public class UserManagerTest extends AbstractTest
         // Given
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2, U3));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId(), U4.getUserId()), users(U2, U3, U4));
 
@@ -508,14 +510,14 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with user U1 (admin)
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).shareIdsMappingFile(mappingFile).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).shareIdsMappingFile(mappingFile).get();
         UserGroup group = new UserGroupAsBuilder("G2").admins(U1.getUserId(), "blabla");
         group.setShareIds(Arrays.asList("2", "3"));
         userManager.addGroup(group, users(U1));
         assertEquals(manage(userManager).getErrorReport(), "");
         assertEquals(FileUtilities.loadToString(mappingFile), "Identifier\tShare IDs\tArchive Folder\n/G2_.*\t2, 3\t\n");
         // 2. add users U2 and U3 to group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).shareIdsMappingFile(mappingFile).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).shareIdsMappingFile(mappingFile).get();
         group = new UserGroupAsBuilder("G2").admins(U1.getUserId());
         group.setShareIds(Arrays.asList("4"));
         userManager.addGroup(group, users(U1, U2, U3));
@@ -558,13 +560,13 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         List<String> globalSpaces = Arrays.asList("A", "B");
         userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. remove U2 from group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U3));
 
@@ -601,13 +603,13 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         List<String> globalSpaces = Arrays.asList("A", "B");
         userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. disable group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()).disable(), users(U1, U2, U3));
 
@@ -645,19 +647,19 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         List<String> globalSpaces = Arrays.asList("A", "B");
         userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. disable group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()).disable(), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G2").users().usersWithoutAuthentication(U1, U2, U3).assertExpectations();
         // 3. enable group G2 again
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.setGlobalSpaces(globalSpaces);
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
 
@@ -708,12 +710,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1, U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2"), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G2").space("G2_ALPHA").user(U1, U2, U3).assertExpectations();
         // 2. make U1 admin
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
 
         // When
@@ -743,12 +745,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G2").space("G2_ALPHA").admin(U1).user(U2, U3).assertExpectations();
         // 2. make U1 normal user
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2"), users(U1, U2, U3));
 
         // When
@@ -778,17 +780,17 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G2").space("G2_GAMMA").admin(U1).observer(U2, U3).assertExpectations();
         // 2. remove U2 from group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G2").usersWithoutAuthentication(U2).space("G2_U2").admin(U1).non(U3).assertExpectations();
         // 3. add U2 again to group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
 
         // When
@@ -822,12 +824,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G2").space("G2_U1").admin(U1).non(U2, U3).assertExpectations();
         // 2. remove U1 from group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U2, U3));
 
         // When
@@ -861,16 +863,16 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. remove U1 from group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G2").usersWithoutAuthentication(U1).space("G2_U1").non(U2, U3).assertExpectations();
         // 3. add U1 again to group G2 as admin
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
 
         // When
@@ -905,12 +907,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G1").space("G1_U2").admin(U1, U2).assertExpectations();
         // 2. create group G2 with users U2 and U3 (admin)
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId()), users(U2, U3));
 
@@ -964,12 +966,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G1").space("G1_U1").admin(U1).non(U2).assertExpectations();
         // 2. create group G2 with users U1 (admin) and U3
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U3));
 
@@ -1023,12 +1025,12 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
         createBuilder().groups("G1").space("G1_U1").admin(U1).non(U2).assertExpectations();
         // 2. create group G2 with users U2 (admin) and U3
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U2.getUserId()), users(U2, U3));
 
@@ -1082,16 +1084,16 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. create group G2 with users U3 (admin) and U4
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId()), users(U3, U4));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 3. Move U2 from G1 -> G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId()), users(U2, U3, U4));
 
@@ -1133,16 +1135,16 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. create group G2 with users U3 (admin) and U4
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId()), users(U3, U4));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 3. Move U4 from G2 -> G1
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2, U4));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId()), users(U3));
 
@@ -1186,16 +1188,16 @@ public class UserManagerTest extends AbstractTest
         // 2. create group G1 with users U1 (admin) and U2
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 3. create group G2 with users U3 (admin) and U4
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId()), users(U3, U4));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 4. Move U4 from G2 -> G1
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G1").admins(U1.getUserId()), users(U1, U2, U4));
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U3.getUserId()), users(U3));
 
@@ -1236,11 +1238,11 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. U2 is no longer known by the authentication service
-        userManager = new UserManagerBuilder(v3api, logger).unknownUser(U2).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).unknownUser(U2).commonSpaces(commonSpaces).get();
 
         // When
         UserManagerReport report = manage(userManager);
@@ -1269,15 +1271,15 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. U2 is no longer known by the authentication service
-        userManager = new UserManagerBuilder(v3api, logger).unknownUser(U2).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).unknownUser(U2).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 3. U2 is reused and added to group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
 
         // When
@@ -1312,23 +1314,23 @@ public class UserManagerTest extends AbstractTest
         // 1. create group G2 with users U1 (admin), U2 and U3
         MockLogger logger = new MockLogger();
         Map<Role, List<String>> commonSpaces = commonSpaces();
-        UserManager userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        UserManager userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 2. U2 is no longer known by the authentication service
-        userManager = new UserManagerBuilder(v3api, logger).unknownUser(U2).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).unknownUser(U2).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 3. U2 is reused and added to group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 4. U2 is no longer known by the authentication service
-        userManager = new UserManagerBuilder(v3api, logger).unknownUser(U2).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).unknownUser(U2).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U3));
         assertEquals(manage(userManager).getErrorReport(), "");
         // 5. U2 is reused and added to group G2
-        userManager = new UserManagerBuilder(v3api, logger).commonSpaces(commonSpaces).get();
+        userManager = new UserManagerBuilder(v3api, logger, report()).commonSpaces(commonSpaces).get();
         userManager.addGroup(new UserGroupAsBuilder("G2").admins(U1.getUserId()), users(U1, U2, U3));
 
         // When
@@ -1364,9 +1366,9 @@ public class UserManagerTest extends AbstractTest
 
     private UserManagerReport manage(UserManager userManager)
     {
-        UserManagerReport errorReport = userManager.manage();
+        userManager.manage();
         daoFactory.getSessionFactory().getCurrentSession().flush();
-        return errorReport;
+        return report;
     }
 
     private Map<String, Principal> users(Principal... principals)
@@ -1377,6 +1379,12 @@ public class UserManagerTest extends AbstractTest
             map.put(principal.getUserId(), principal);
         }
         return map;
+    }
+    
+    private UserManagerReport report()
+    {
+        report = new UserManagerReport(new MockTimeProvider(0, 1000));
+        return report;
     }
 
     private static class UserGroupAsBuilder extends UserGroup
@@ -1405,6 +1413,8 @@ public class UserManagerTest extends AbstractTest
 
         private ISimpleLogger logger;
 
+        private UserManagerReport report;
+        
         private Set<String> usersUnknownByAuthenticationService = new TreeSet<>();
 
         private List<String> globalSpaces = new ArrayList<>();
@@ -1417,10 +1427,11 @@ public class UserManagerTest extends AbstractTest
 
         private File shareIdsMappingFile;
 
-        UserManagerBuilder(IApplicationServerInternalApi service, ISimpleLogger logger)
+        UserManagerBuilder(IApplicationServerInternalApi service, ISimpleLogger logger, UserManagerReport report)
         {
             this.service = service;
             this.logger = logger;
+            this.report = report;
         }
 
         UserManager get()
@@ -1437,7 +1448,7 @@ public class UserManagerTest extends AbstractTest
                         return new Principal(user, "John", "Doe", "jd@abc.de");
                     }
                 };
-            UserManager userManager = new UserManager(authenticationService, service, shareIdsMappingFile, logger, new MockTimeProvider(0, 1000));
+            UserManager userManager = new UserManager(authenticationService, service, shareIdsMappingFile, logger, report);
             userManager.setGlobalSpaces(globalSpaces);
             userManager.setCommon(commonSpacesByRole, commonSamples, commonExperiments);
             return userManager;

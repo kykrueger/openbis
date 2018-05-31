@@ -89,7 +89,7 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		//
 		// Used to remove the type label when rendering
 		//
-		var selectedSampleTypes = this.hierarchyFilterController.getSelectedSampleTypes();
+		var selectedSampleTypes = this.hierarchyFilterController.getSelectedEntityTypes();
 		var inArray = function(value, array) {
 			for(var i = 0; i < array.length; i++) {
 				if(array[i] === value) {

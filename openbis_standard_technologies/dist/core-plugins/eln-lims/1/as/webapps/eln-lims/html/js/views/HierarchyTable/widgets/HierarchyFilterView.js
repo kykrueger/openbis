@@ -38,10 +38,10 @@ function HierarchyFilterView(controller, model) {
 			$filtersFormSliderParents = 'No Parents';
 		}
 		
-		var sampleTypes = this._model.getSampleTypes();
-		var $filtersFormSampleTypes = $('<select>', { 'id' : 'sampleTypesSelector' , class : 'multiselect' , 'multiple' : 'multiple'});
-		for (var sampleType in sampleTypes) {
-			$filtersFormSampleTypes.append($('<option>', { 'value' : sampleType , 'selected' : ''}).html(sampleType));
+		var types = this._model.getTypes();
+		var $filtersFormEntityTypes = $('<select>', { 'id' : 'entityTypesSelector' , class : 'multiselect' , 'multiple' : 'multiple'});
+		for (var type in types) {
+			$filtersFormEntityTypes.append($('<option>', { 'value' : type , 'selected' : ''}).html(type));
 		}
 		
 		$filtersForm
@@ -54,6 +54,6 @@ function HierarchyFilterView(controller, model) {
 			.append($filtersFormSliderParents)
 			.append("<span style='padding-right:15px;'></span>")
 			.append(' Show Types: ')
-			.append($filtersFormSampleTypes);
+			.append($filtersFormEntityTypes);
 	}
 }

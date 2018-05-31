@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -36,6 +37,7 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
+import ch.systemsx.cisd.common.string.StringUtilities;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
@@ -51,7 +53,7 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
     static final String AUDIT_LOG_FILE_PATH_PROPERTY = "audit-log-file-path";
 
     static final String DEFAULT_AUDIT_LOG_FILE_PATH = "logs/user-management-audit_log.txt";
-    
+
     static final String SHARES_MAPPING_FILE_PATH_PROPERTY = "shares-mapping-file-path";
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
@@ -105,14 +107,15 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
     @Override
     public void execute()
     {
-        UserManagerConfig config = readGroupDefinitions();
+        UserManagerReport report = createUserManagerReport();
+        UserManagerConfig config = readGroupDefinitions(report);
         if (config == null || config.getGroups() == null)
         {
             return;
         }
         operationLog.info("manage " + config.getGroups().size() + " groups");
         Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
-        UserManager userManager = createUserManager(config, logger);
+        UserManager userManager = createUserManager(config, logger, report);
         for (UserGroup group : config.getGroups())
         {
             if (addGroup(userManager, group) == false)
@@ -120,12 +123,12 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
                 return;
             }
         }
-        UserManagerReport userManagerReport = userManager.manage();
-        handleReport(userManagerReport);
+        userManager.manage();
+        handleReport(report);
         operationLog.info("finished");
     }
 
-    private UserManagerConfig readGroupDefinitions()
+    private UserManagerConfig readGroupDefinitions(UserManagerReport report)
     {
         if (configurationFile.isFile() == false)
         {
@@ -136,14 +139,33 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         try
         {
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(serializedConfig, UserManagerConfig.class);
+            UserManagerConfig config = mapper.readValue(serializedConfig, UserManagerConfig.class);
+            boolean hasChanged = hasChanged(serializedConfig);
+            if (hasChanged)
+            {
+                report.addChangedConfig(serializedConfig, new Date(configurationFile.lastModified()));
+            }
+            return config;
         } catch (Exception e)
         {
             operationLog.error("Invalid content of configuration file '" + configurationFile.getAbsolutePath() + "': " + e, e);
             return null;
         }
     }
-    
+
+    private boolean hasChanged(String serializedConfig)
+    {
+        String hash = StringUtilities.computeMD5Hash(configurationFile.lastModified() + serializedConfig);
+        File hashFile = new File(configurationFile.getParentFile(), configurationFile.getName() + ".hash");
+        String previousHash = null;
+        if (hashFile.isFile())
+        {
+            previousHash = FileUtilities.loadExactToString(hashFile);
+        }
+        FileUtilities.writeToFile(hashFile, hash);
+        return hash.equals(previousHash) == false;
+    }
+
     private boolean addGroup(UserManager userManager, UserGroup group)
     {
         String key = group.getKey();
@@ -210,9 +232,14 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         return (LDAPAuthenticationService) CommonServiceProvider.tryToGetBean("ldap-authentication-service");
     }
 
-    private UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
+    protected UserManagerReport createUserManagerReport()
     {
-        UserManager userManager = createUserManager(logger);
+        return new UserManagerReport(SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+    }
+
+    private UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger, UserManagerReport report)
+    {
+        UserManager userManager = createUserManager(logger, report);
         userManager.setGlobalSpaces(config.getGlobalSpaces());
         try
         {
@@ -224,10 +251,10 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         return userManager;
     }
 
-    protected UserManager createUserManager(Log4jSimpleLogger logger)
+    protected UserManager createUserManager(Log4jSimpleLogger logger, UserManagerReport report)
     {
         IAuthenticationService authenticationService = (IAuthenticationService) CommonServiceProvider.tryToGetBean("authentication-service");
-        return new UserManager(authenticationService, CommonServiceProvider.getApplicationServerApi(), shareIdsMappingFile, 
-                logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+        return new UserManager(authenticationService, CommonServiceProvider.getApplicationServerApi(), shareIdsMappingFile,
+                logger, report);
     }
 }

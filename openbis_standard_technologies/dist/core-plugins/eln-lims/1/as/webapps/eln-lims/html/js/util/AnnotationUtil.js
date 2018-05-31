@@ -17,7 +17,9 @@ var AnnotationUtil = new function() {
 	var isFound = function(samples, identifier) {
 		if (samples) {
 			for (var i = 0; i < samples.length; i++) {
-				if (samples[i].identifier === identifier) {
+				if (samples[i].identifier === identifier ||
+					(samples[i].identifier && samples[i].identifier.identifier === identifier)
+					) {
 					return true;
 				}
 			}

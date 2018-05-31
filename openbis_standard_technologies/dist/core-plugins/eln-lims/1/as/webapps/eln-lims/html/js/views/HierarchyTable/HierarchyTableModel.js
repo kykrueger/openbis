@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-function SampleHierarchyTableModel(sample) {
-	this.sample = sample;
-	this.relationShipsMap = HierarchyUtil.createRelationShipsMap(sample);
+function HierarchyTableModel(entity) {
+	this.entity = entity;
+	this.relationShipsMap = HierarchyUtil.createRelationShipsMap(entity);
 	
 	this.getData = function(dataList) {
 		var dataList = [];
-		this._addRow(dataList, this.sample, 0, "");
-		this._addAncestorData(dataList, this.sample, 0, "");
-		this._addDescendentData(dataList, this.sample, 0, "");
+		this._addRow(dataList, this.entity, 0, "");
+		this._addAncestorData(dataList, this.entity, 0, "");
+		this._addDescendentData(dataList, this.entity, 0, "");
 		dataList.sort(function (e1, e2) {
 			var l1 = e1.level;
 			var p1 = e1.identifier + e1.path;
@@ -36,11 +36,11 @@ function SampleHierarchyTableModel(sample) {
 		return dataList;
 	}
 	
-	this._addAncestorData = function(dataList, sample, level, path) {
-		if (sample.parents) {
-			for (var i = 0; i < sample.parents.length; i++) {
-				var parent = sample.parents[i];
-				var newPath = " → " + sample.code + path;
+	this._addAncestorData = function(dataList, entity, level, path) {
+		if (entity.parents) {
+			for (var i = 0; i < entity.parents.length; i++) {
+				var parent = entity.parents[i];
+				var newPath = " → " + entity.code + path;
 				var newLevel = level - 1;
 				this._addRow(dataList, parent, newLevel, newPath);
 				this._addAncestorData(dataList, parent, newLevel, newPath);
@@ -48,11 +48,11 @@ function SampleHierarchyTableModel(sample) {
 		}
 	}
 	
-	this._addDescendentData = function(dataList, sample, level, path) {
-		if (sample.children) {
-			for (var i = 0; i < sample.children.length; i++) {
-				var child = sample.children[i];
-				var newPath = " ← " + sample.code + path;
+	this._addDescendentData = function(dataList, entity, level, path) {
+		if (entity.children) {
+			for (var i = 0; i < entity.children.length; i++) {
+				var child = entity.children[i];
+				var newPath = " ← " + entity.code + path;
 				var newLevel = level + 1;
 				this._addRow(dataList, child, newLevel, newPath);
 				this._addDescendentData(dataList, child, newLevel, newPath);
@@ -60,27 +60,45 @@ function SampleHierarchyTableModel(sample) {
 		}
 	}
 	
-	this._addRow = function(dataList, sample, level, path) {
-		var annotations = FormUtil.getAnnotationsFromSample(sample);
-		var relationShips = this.relationShipsMap[sample.identifier];
+	this._addRow = function(dataList, entity, level, path) {
+		var annotations = FormUtil.getAnnotationsFromSample(entity);
+		var relationShips = this.relationShipsMap[entity.permId.permId];
+		
+		var repositoryId = null;
+		if(entity.linkedData && entity.linkedData.contentCopies && entity.linkedData.contentCopies[0]) {
+			repositoryId = entity.linkedData.contentCopies[0].gitRepositoryId;
+		}
+		
+		var historyId = null;
+		if(entity.properties && entity.properties["HISTORY_ID"]) {
+			historyId = dataset.properties["HISTORY_ID"];
+		}
+		
 		dataList.push({
 			level : level,
-			sampleType : sample.sampleTypeCode,
-			identifier : sample.identifier,
-			permId : sample.permId,
+			registrationDate : Util.getFormatedDate(new Date(entity.registrationDate)),
+			type : entity.type.code,
+			identifier : (entity.identifier)?entity.identifier.identifier:undefined,
+			code : entity.code,
+			repositoryId : repositoryId,
+			historyId : historyId,
+			permId : entity.permId.permId,
 			path: path,
-			name : sample.properties["NAME"],
+			name : entity.properties["NAME"],
 			parentAnnotations : this._createAnnotations(annotations, relationShips.parents),
 			childrenAnnotations : this._createAnnotations(annotations, relationShips.children),
-			sample : sample
+			entity : entity
 		});
 		
 	}
 	
-	this._createAnnotations = function(annotations, allSamples) {
+    /*
+	 * Only samples have annotations, if they are not samples, they will simply not be found
+	 */
+	this._createAnnotations = function(annotations, entities) {
 		var content = "";
 		var rowStarted = false;
-		AnnotationUtil.buildAnnotations(annotations, allSamples, {
+		AnnotationUtil.buildAnnotations(annotations, entities, {
 			startRow : function() {
 				if (content !== "") {
 					content += "\n";
