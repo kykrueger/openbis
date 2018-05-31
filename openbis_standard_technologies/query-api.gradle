@@ -175,11 +175,11 @@ task "generateDescriptorFileForIvyApiV3" {
 task prepublish {
   doLast {
       if (publishRevision == "-1") {
-        throw new GradleException("No publish revision defined. Run this task like: ./gradlew :clean :publish -PpublishRevision=S277 -PrepositoryRoot=/Users/juanf/git/openbis/ivy-repository")
+        throw new GradleException("No publish revision defined. Run this task like: ./gradlew :clean :publishApiV3 -PpublishRevision=S277 -PrepositoryRoot=/Users/juanf/git/openbis/ivy-repository")
       }
     
       if (repositoryRoot == "/non-existent") {
-        throw new GradleException("No repository root defined. Run this task like: ./gradlew :clean :publish -PpublishRevision=S277 -PrepositoryRoot=/Users/juanf/git/openbis/ivy-repository")
+        throw new GradleException("No repository root defined. Run this task like: ./gradlew :clean :publishApiV3 -PpublishRevision=S277 -PrepositoryRoot=/Users/juanf/git/openbis/ivy-repository")
       }
   }
 }
