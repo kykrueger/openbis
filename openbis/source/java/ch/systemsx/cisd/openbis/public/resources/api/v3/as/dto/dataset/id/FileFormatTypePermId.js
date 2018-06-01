@@ -3,6 +3,9 @@
  * 
  * @author pkupczyk
  */
+/*
+ * @Deprecated
+ */
 define([ "stjs", "as/dto/common/id/ObjectPermId", "as/dto/dataset/id/IFileFormatTypeId" ], function(stjs, ObjectPermId, IFileFormatTypeId) {
 	/**
 	 * @param permId

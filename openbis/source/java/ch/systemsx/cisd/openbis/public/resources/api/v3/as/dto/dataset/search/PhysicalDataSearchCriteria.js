@@ -28,6 +28,9 @@ define([ "require", "stjs", "as/dto/common/search/AbstractCompositeSearchCriteri
 			var StorageFormatSearchCriteria = require("as/dto/dataset/search/StorageFormatSearchCriteria");
 			return this.addCriteria(new StorageFormatSearchCriteria());
 		};
+		/*
+		 * @Deprecated
+		 */
 		prototype.withFileFormatType = function() {
 			var FileFormatTypeSearchCriteria = require("as/dto/dataset/search/FileFormatTypeSearchCriteria");
 			return this.addCriteria(new FileFormatTypeSearchCriteria());

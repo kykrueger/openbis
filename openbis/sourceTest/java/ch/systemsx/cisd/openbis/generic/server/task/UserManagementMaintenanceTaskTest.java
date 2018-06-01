@@ -18,8 +18,11 @@ package ch.systemsx.cisd.openbis.generic.server.task;
 
 import static ch.systemsx.cisd.common.test.AssertionUtil.assertContains;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +49,6 @@ import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;
 import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
-import de.schlichtherle.io.File;
 
 /**
  * @author Franz-Josef Elmer
@@ -61,6 +63,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
 
     private File auditLogFile;
 
+    private File mappingFile;
+
     private Properties properties;
 
     @BeforeMethod
@@ -70,6 +74,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         configFile = new File(workingDirectory, "config.json");
         auditLogFile = new File(workingDirectory, "audit_log.txt");
+        mappingFile = new File(workingDirectory, "mapping-file.txt");
         properties = new Properties();
         properties.setProperty(UserManagementMaintenanceTask.CONFIGURATION_FILE_PATH_PROPERTY, configFile.getPath());
         properties.setProperty(UserManagementMaintenanceTask.AUDIT_LOG_FILE_PATH_PROPERTY, auditLogFile.getPath());
@@ -107,6 +112,19 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
 
         // When + Then
         assertConfigFailure(task, auditLogFile.getPath() + "' is a directory.");
+    }
+
+    @Test
+    public void testSetUpFailedBecauseMappingFileIsADirectory()
+    {
+        // Given
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks();
+        FileUtilities.writeToFile(configFile, "");
+        properties.setProperty(UserManagementMaintenanceTask.SHARES_MAPPING_FILE_PATH_PROPERTY, mappingFile.getPath());
+        mappingFile.mkdirs();
+
+        // When + Then
+        assertConfigFailure(task, "Share ids mapping file '" + mappingFile.getAbsolutePath() + "' is a directory.");
     }
 
     @Test
@@ -189,7 +207,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Samples by type: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - No ldapGroupKeys specified for group 'ABC'. Task aborted.",
                 logRecorder.getLogContent());
     }
@@ -213,7 +232,8 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Samples by type: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - Empty ldapGroupKey for group 'ABC'. Task aborted.",
                 logRecorder.getLogContent());
     }
@@ -237,8 +257,127 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Samples by type: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
                 + "ERROR OPERATION.UserManagementMaintenanceTask - No users found for ldapGroupKey 'a1' for group 'ABC'. Task aborted.",
+                logRecorder.getLogContent());
+    }
+
+    @Test
+    public void testExecuteMissingShareIds()
+    {
+        // Given
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1);
+        properties.setProperty(UserManagementMaintenanceTask.SHARES_MAPPING_FILE_PATH_PROPERTY, mappingFile.getPath());
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]}]}");
+
+        // When
+        task.execute();
+
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "ERROR OPERATION.UserManagementMaintenanceTask - No shareIds specified for group 'SIS'. Task aborted.",
+                logRecorder.getLogContent());
+    }
+
+    @Test
+    public void testExecuteEmptyShareIds()
+    {
+        // Given
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1);
+        properties.setProperty(UserManagementMaintenanceTask.SHARES_MAPPING_FILE_PATH_PROPERTY, mappingFile.getPath());
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"],\"shareIds\":[]}]}");
+
+        // When
+        task.execute();
+
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "ERROR OPERATION.UserManagementMaintenanceTask - No shareIds specified for group 'SIS'. Task aborted.",
+                logRecorder.getLogContent());
+    }
+
+    @Test
+    public void testExecuteInvalidCommonSample()
+    {
+        // Given
+        UserManagerReport report = new UserManagerReport(new MockTimeProvider(0, 1000));
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
+                .withUserManagerReport(report);
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},\"commonSamples\":{\"A\":\"B\"},"
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"]}]}");
+
+        // When
+        task.execute();
+
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {A=B}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "ERROR NOTIFY.UserManagementMaintenanceTask - Identifier template 'A' is invalid "
+                + "(reason: No common space for common sample). Template schema: <common space code>/<common sample code>\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, enabled:true, ldapGroupKeys:[s], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
+                logRecorder.getLogContent());
+    }
+
+    @Test
+    public void testExecuteInvalidCommonExperiments()
+    {
+        // Given
+        UserManagerReport report = new UserManagerReport(new MockTimeProvider(0, 1000));
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
+                .withUserManagerReport(report);
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"commonSpaces\":{\"USER\": [\"ALPHA\"]},\"commonExperiments\":{\"ALPHA/B\":\"B\"},"
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"]}]}");
+
+        // When
+        task.execute();
+
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {ALPHA/B=B}\n"
+                + "ERROR NOTIFY.UserManagementMaintenanceTask - Identifier template 'ALPHA/B' is invalid. "
+                + "Template schema: <common space code>/<common project code>/<common experiment code>\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, enabled:true, ldapGroupKeys:[s], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
                 logRecorder.getLogContent());
     }
 
@@ -251,12 +390,67 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         report.addGroup("blabla");
         report.addUser("a");
         UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
-                .withUserManagerReport(report);
+                .withGroup("a", U1).withUserManagerReport(report);
         FileUtilities.writeToFile(configFile, "");
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"globalSpaces\":[\"ES\"],\"commonSpaces\":{\"USER\": [\"ALPHA\"]},"
-                + "\"commonSamples\":{\"A\":\"B\"},"
-                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]}]}");
+                + "\"commonSamples\":{\"ALPHA/B\":\"B\"},\"commonExperiments\":{\"ALPHA/P/E\":\"E\"},"
+                + "\"groups\": [{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]},"
+                + "{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}");
+
+        // When
+        task.execute();
+
+        // Then
+        assertEquals("INFO  OPERATION.UserManagementMaintenanceTask - Setup plugin \n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
+                + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 2 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: [ES]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {ALPHA/B=B}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {ALPHA/P/E=E}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, enabled:true, ldapGroupKeys:[s], admins:[u2]] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:false, ldapGroupKeys:[a], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for disabled group ABC\n"
+                + "ERROR NOTIFY.UserManagementMaintenanceTask - User management failed for the following reason(s):\n\n"
+                + "This is a test error message\n\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
+                logRecorder.getLogContent());
+        String lastModified = new SimpleDateFormat(UserManagerReport.DATE_FORMAT).format(new Date(configFile.lastModified()));
+        assertEquals("1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] blabla\n"
+                + "1970-01-01 01:00:01 [ADD-USER] a\n"
+                + "1970-01-01 01:00:02 [CONFIG-UPDATE-START] Last modified: " + lastModified + "\n"
+                + "{\"globalSpaces\":[\"ES\"],\"commonSpaces\":{\"USER\": [\"ALPHA\"]},\"commonSamples\":{\"ALPHA/B\":\"B\"},"
+                + "\"commonExperiments\":{\"ALPHA/P/E\":\"E\"},\"groups\": ["
+                + "{\"name\":\"sis\",\"key\":\"SIS\",\"ldapGroupKeys\": [\"s\"],\"admins\": [\"u2\"]},"
+                + "{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}\n"
+                + "1970-01-01 01:00:03 [CONFIG-UPDATE-END] \n"
+                + "1970-01-01 01:00:04 [ADD-AUTHORIZATION-GROUP] dummy group\n\n",
+                FileUtilities.loadToString(auditLogFile));
+    }
+
+    @Test
+    public void testExecuteThriceWithConfigChangedAfterTheSecondRun()
+    {
+        // Given
+        UserManagementMaintenanceTaskWithMocks task = new UserManagementMaintenanceTaskWithMocks().withGroup("s", U1)
+                .withGroup("a", U1);
+        // 1. first run
+        task.withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
+        FileUtilities.writeToFile(configFile, "");
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}");
+        String lastModified1 = new SimpleDateFormat(UserManagerReport.DATE_FORMAT).format(new Date(configFile.lastModified()));
+        task.execute();
+        // 2. second run (same config)
+        task.withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
+        task.execute();
+        // 3. second run (changed config)
+        task.withUserManagerReport(new UserManagerReport(new MockTimeProvider(0, 1000)));
+        FileUtilities.writeToFile(configFile, "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"]}]}");
+        String lastModified2 = new SimpleDateFormat(UserManagerReport.DATE_FORMAT).format(new Date(configFile.lastModified()));
 
         // When
         task.execute();
@@ -266,17 +460,39 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
                 + "INFO  OPERATION.UserManagementMaintenanceTask - Plugin '' initialized. Configuration file: "
                 + configFile.getAbsolutePath() + "\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: [ES]\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {USER=[ALPHA]}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Samples by type: {A=B}\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group SIS[name:sis, ldapGroupKeys:[s], admins:[u2]] with users [u1=u1]\n"
-                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group SIS\n"
-                + "ERROR NOTIFY.UserManagementMaintenanceTask - User management failed for the following reason(s):\n\n"
-                + "This is a test error message\n\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:false, ldapGroupKeys:[a], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for disabled group ABC\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:false, ldapGroupKeys:[a], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for disabled group ABC\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - finished\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - manage 1 groups\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Global spaces: []\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common spaces: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common samples: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Common experiments: {}\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - Add group ABC[name:abc, enabled:true, ldapGroupKeys:[a], admins:null] with users [u1=u1]\n"
+                + "INFO  OPERATION.UserManagementMaintenanceTask - 1 users for group ABC\n"
                 + "INFO  OPERATION.UserManagementMaintenanceTask - finished",
                 logRecorder.getLogContent());
-        assertEquals("1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] blabla\n"
-                + "1970-01-01 01:00:01 [ADD-USER] a\n\n",
+        assertEquals("1970-01-01 01:00:00 [CONFIG-UPDATE-START] Last modified: " + lastModified1 + "\n"
+                + "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"],\"enabled\": false}]}\n"
+                + "1970-01-01 01:00:01 [CONFIG-UPDATE-END] \n"
+                + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group\n\n"
+                + "1970-01-01 01:00:00 [ADD-AUTHORIZATION-GROUP] dummy group\n\n"
+                + "1970-01-01 01:00:00 [CONFIG-UPDATE-START] Last modified: " + lastModified2 + "\n"
+                + "{\"groups\": [{\"name\":\"abc\",\"key\":\"ABC\",\"ldapGroupKeys\": [\"a\"]}]}\n"
+                + "1970-01-01 01:00:01 [CONFIG-UPDATE-END] \n"
+                + "1970-01-01 01:00:02 [ADD-AUTHORIZATION-GROUP] dummy group\n\n",
                 FileUtilities.loadToString(auditLogFile));
     }
 
@@ -322,13 +538,15 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         }
 
         @Override
-        protected UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
+        protected UserManagerReport createUserManagerReport()
         {
-            MockUserManager userManager = new MockUserManager(logger);
-            userManager.setGlobalSpaces(config.getGlobalSpaces());
-            userManager.setCommonSpacesByRole(config.getCommonSpaces());
-            userManager.setSamplesByType(config.getCommonSamples());
-            return userManager;
+            return report == null ? super.createUserManagerReport() : report;
+        }
+
+        @Override
+        protected UserManager createUserManager(Log4jSimpleLogger logger, UserManagerReport report)
+        {
+            return new MockUserManager(logger, report);
         }
 
         private UserManagementMaintenanceTaskWithMocks withGroup(String groupCode, Principal... users)
@@ -353,9 +571,9 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         {
             private ISimpleLogger logger;
 
-            MockUserManager(ISimpleLogger logger)
+            MockUserManager(ISimpleLogger logger, UserManagerReport report)
             {
-                super(null, null, logger, null);
+                super(null, null, null, logger, report);
                 this.logger = logger;
             }
 
@@ -367,24 +585,20 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             }
 
             @Override
-            public void setCommonSpacesByRole(Map<Role, List<String>> commonSpacesByRole)
+            public void setCommon(Map<Role, List<String>> commonSpacesByRole, Map<String, String> commonSamples,
+                    Map<String, String> commonExperiments)
             {
                 logger.log(LogLevel.INFO, "Common spaces: " + commonSpacesByRole);
-                super.setCommonSpacesByRole(commonSpacesByRole);
-            }
-
-            @Override
-            public void setSamplesByType(Map<String, String> samplesByType)
-            {
-                logger.log(LogLevel.INFO, "Samples by type: " + samplesByType);
-                super.setSamplesByType(samplesByType);
+                logger.log(LogLevel.INFO, "Common samples: " + commonSamples);
+                logger.log(LogLevel.INFO, "Common experiments: " + commonExperiments);
+                super.setCommon(commonSpacesByRole, commonSamples, commonExperiments);
             }
 
             @Override
             public void addGroup(UserGroup group, Map<String, Principal> principalsByUserId)
             {
-                String renderedGroup = group.getKey() + "[name:" + group.getName() + ", ldapGroupKeys:"
-                        + group.getLdapGroupKeys() + ", admins:" + group.getAdmins() + "]";
+                String renderedGroup = group.getKey() + "[name:" + group.getName() + ", enabled:" + group.isEnabled()
+                        + ", ldapGroupKeys:" + group.getLdapGroupKeys() + ", admins:" + group.getAdmins() + "]";
                 CommaSeparatedListBuilder builder = new CommaSeparatedListBuilder();
                 for (Entry<String, Principal> entry : principalsByUserId.entrySet())
                 {
@@ -395,10 +609,11 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
             }
 
             @Override
-            public UserManagerReport manage()
+            public void manage()
             {
-                return report;
+                report.addGroup("dummy group");
             }
+
         }
     }
 

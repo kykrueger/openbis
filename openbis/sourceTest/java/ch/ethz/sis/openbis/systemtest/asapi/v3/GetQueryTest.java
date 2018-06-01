@@ -201,6 +201,7 @@ public class GetQueryTest extends AbstractQueryTest
         assertEquals(query.getName(), creation.getName());
         assertEquals(query.getDescription(), creation.getDescription());
         assertEquals(query.getDatabaseId(), creation.getDatabaseId());
+        assertEquals(query.getDatabaseLabel(), "openBIS meta data");
         assertEquals(query.getEntityTypeCodePattern(), creation.getEntityTypeCodePattern());
         assertEquals(query.getQueryType(), creation.getQueryType());
         assertEquals(query.isPublic(), creation.isPublic());

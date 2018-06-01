@@ -42,6 +42,7 @@ import ch.systemsx.cisd.common.maintenance.MaintenancePlugin;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskUtils;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
+import ch.systemsx.cisd.openbis.generic.server.task.SessionWorkspaceCleanUpMaintenanceTask;
 
 /**
  * Configures and starts maintenance tasks.
@@ -99,6 +100,15 @@ public class MaintenanceTaskStarter implements ApplicationContextAware, Initiali
                     operationExecutionConfig.getMarkTimedOutOrDeletedTaskName(),
                     false,
                     operationExecutionConfig.getMarkTimedOutOrDeletedTaskInterval());
+        }
+
+        if (false == isTaskConfigured(tasks, SessionWorkspaceCleanUpMaintenanceTask.class))
+        {
+            tasks = addTask(tasks,
+                    SessionWorkspaceCleanUpMaintenanceTask.class,
+                    SessionWorkspaceCleanUpMaintenanceTask.DEFAULT_MAINTENANCE_TASK_NAME,
+                    false,
+                    SessionWorkspaceCleanUpMaintenanceTask.DEFAULT_MAINTENANCE_TASK_INTERVAL);
         }
 
         plugins = MaintenanceTaskUtils.startupMaintenancePlugins(tasks);

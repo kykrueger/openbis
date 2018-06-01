@@ -32,8 +32,22 @@ define(
 					var c = new common(assert, openbis);
 					c.start();
 					c.createFacadeAndLogin().then(function(facade) {
-						facade.createPermIdStrings(7).then(function(permIds) {
+						return facade.createPermIdStrings(7).then(function(permIds) {
 							c.assertEqual(permIds.length, 7, "Number of perm ids");
+							c.finish();
+						});
+					}).fail(function(error) {
+						c.fail(error.message);
+						c.finish();
+					});
+				});
+
+				QUnit.test("createCodes", function(assert) {
+					var c = new common(assert, openbis);
+					c.start();
+					c.createFacadeAndLogin().then(function(facade) {
+						return facade.createCodes("ABC-", c.EntityKind.SAMPLE, 7).then(function(codes) {
+							c.assertEqual(codes.length, 7, "Number of codes");
 							c.finish();
 						});
 					}).fail(function(error) {
@@ -841,7 +855,8 @@ define(
 						c.assertNotNull(query.getPermId(), "Perm Id");
 						c.assertEqual(query.getName(), queryCreation.getName(), "Name");
 						c.assertEqual(query.getDescription(), queryCreation.getDescription(), "Description");
-						c.assertEqual(query.getDatabaseId().getName(), queryCreation.getDatabaseId().getName(), "Database");
+						c.assertEqual(query.getDatabaseId().getName(), queryCreation.getDatabaseId().getName(), "Database id");
+						c.assertEqual(query.getDatabaseLabel(), "openBIS meta data", "Database label");
 						c.assertEqual(query.getQueryType(), queryCreation.getQueryType(), "Query type");
 						c.assertEqual(query.getEntityTypeCodePattern(), queryCreation.getEntityTypeCodePattern(), "Entity type code pattern");
 						c.assertEqual(query.getSql(), queryCreation.getSql(), "Sql");

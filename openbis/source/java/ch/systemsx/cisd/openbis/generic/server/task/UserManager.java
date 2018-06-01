@@ -16,12 +16,17 @@
 
 package ch.systemsx.cisd.openbis.generic.server.task;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +37,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.LinkedMap;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create.AuthorizationGroupCreation;
@@ -42,15 +49,25 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.search.Author
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.AuthorizationGroupUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.UpdateAuthorizationGroupsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.CreateExperimentsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.CreatePersonsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.PersonUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update.UpdatePersonsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.CreateProjectsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel;
@@ -59,6 +76,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssign
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.delete.DeleteRoleAssignmentsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.delete.RoleAssignmentDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.IRoleAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.CreateSamplesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.CreateSpacesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
@@ -69,9 +90,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.authentication.IAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
+import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
-import ch.systemsx.cisd.common.utilities.ITimeProvider;
+import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 
 /**
  * @author Franz-Josef Elmer
@@ -88,7 +111,7 @@ public class UserManager
 
     private final ISimpleLogger logger;
 
-    private final ITimeProvider timeProvider;
+    private final UserManagerReport report; 
 
     private final Map<String, UserInfo> userInfosByUserId = new TreeMap<>();
 
@@ -100,15 +123,25 @@ public class UserManager
 
     private Map<Role, List<String>> commonSpacesByRole = new HashMap<>();
 
-    private Map<String, String> samplesByType = new HashMap<>();
+    private Map<String, String> commonSamples = new HashMap<>();
+
+    private Map<String, String> commonExperiments;
+
+    private Map<String, HomeSpaceRequest> requestedHomeSpaceByUserId = new TreeMap<>();
+
+    private File shareIdsMappingFileOrNull;
+    
+    private List<MappingAttributes> mappingAttributesList = new ArrayList<>();
+
 
     public UserManager(IAuthenticationService authenticationService, IApplicationServerInternalApi service,
-            ISimpleLogger logger, ITimeProvider timeProvider)
+            File shareIdsMappingFileOrNull, ISimpleLogger logger, UserManagerReport report)
     {
         this.authenticationService = authenticationService;
         this.service = service;
+        this.shareIdsMappingFileOrNull = shareIdsMappingFileOrNull;
         this.logger = logger;
-        this.timeProvider = timeProvider;
+        this.report = report;
     }
 
     public void setGlobalSpaces(List<String> globalSpaces)
@@ -116,51 +149,83 @@ public class UserManager
         this.globalSpaces = globalSpaces;
     }
 
-    public void setCommonSpacesByRole(Map<Role, List<String>> commonSpacesByRole)
+    public void setCommon(Map<Role, List<String>> commonSpacesByRole, Map<String, String> commonSamples,
+            Map<String, String> commonExperiments)
     {
         this.commonSpacesByRole = commonSpacesByRole;
+        this.commonSamples = commonSamples;
+        this.commonExperiments = commonExperiments;
+        Set<String> commonSpaces = new HashSet<>();
+        commonSpacesByRole.values().forEach(spaces -> commonSpaces.addAll(spaces));
+        checkIdentifierTemplates(commonSamples, commonSpaces, "sample", "<common space code>/<common sample code>");
+        checkIdentifierTemplates(commonExperiments, commonSpaces, "experiment",
+                "<common space code>/<common project code>/<common experiment code>");
     }
 
-    public void setSamplesByType(Map<String, String> samplesByType)
+    private void checkIdentifierTemplates(Map<String, String> commonEntities, Set<String> commonSpaces,
+            String entityKind, String templateSchema)
     {
-        this.samplesByType = samplesByType;
+        for (String identifierTemplate : commonEntities.keySet())
+        {
+            String[] parts = identifierTemplate.split("/");
+            if (commonSpaces.contains(parts[0]) == false)
+            {
+                throw createConfigException(identifierTemplate, templateSchema, "No common space for common " + entityKind);
+            }
+            if (parts.length != templateSchema.split("/").length)
+            {
+                throw createConfigException(identifierTemplate, templateSchema, "");
+            }
+        }
     }
 
+    private ConfigurationFailureException createConfigException(String identifierTemplate, String templateSchema, String message)
+    {
+        return new ConfigurationFailureException("Identifier template '" + identifierTemplate + "' is invalid"
+                + (StringUtils.isBlank(message) ? ". " : " (reason: " + message + "). ") + "Template schema: " + templateSchema);
+    }
+    
     public void addGroup(UserGroup group, Map<String, Principal> principalsByUserId)
     {
         String groupCode = group.getKey().toUpperCase();
-        usersByGroupCode.put(groupCode, principalsByUserId);
+        usersByGroupCode.put(groupCode, group.isEnabled() ? principalsByUserId : new HashMap<>());
         groupCodes.add(groupCode);
+        mappingAttributesList.add(new MappingAttributes(groupCode, group.getShareIds()));
         Set<String> admins = asSet(group.getAdmins());
-        for (Principal principal : principalsByUserId.values())
+        if (group.isEnabled())
         {
-            String userId = principal.getUserId();
-            UserInfo userInfo = userInfosByUserId.get(userId);
-            if (userInfo == null)
+            for (Principal principal : principalsByUserId.values())
             {
-                userInfo = new UserInfo(principal);
-                userInfosByUserId.put(userId, userInfo);
+                String userId = principal.getUserId();
+                UserInfo userInfo = userInfosByUserId.get(userId);
+                if (userInfo == null)
+                {
+                    userInfo = new UserInfo(principal);
+                    userInfosByUserId.put(userId, userInfo);
+                }
+                userInfo.addGroupInfo(new GroupInfo(groupCode, admins.contains(userId)));
             }
-            userInfo.addGroupInfo(new GroupInfo(groupCode, admins.contains(userId)));
         }
-        logger.log(LogLevel.INFO, principalsByUserId.size() + " users for group " + groupCode);
+        logger.log(LogLevel.INFO, principalsByUserId.size() + " users for " + (group.isEnabled() ? "": "disabled ") + "group " + groupCode);
     }
 
-    public UserManagerReport manage()
+    public void manage()
     {
-        UserManagerReport report = new UserManagerReport(timeProvider);
         try
         {
             String sessionToken = service.loginAsSystem();
 
+            updateMappingFile();
             manageGlobalSpaces(sessionToken, report);
             revokeUsersUnkownByAuthenticationService(sessionToken, report);
             CurrentState currentState = loadCurrentState(sessionToken, service);
             for (Entry<String, Map<String, Principal>> entry : usersByGroupCode.entrySet())
             {
                 String groupCode = entry.getKey();
-                manageGroup(sessionToken, groupCode, entry.getValue(), currentState, report);
+                Map<String, Principal> users = entry.getValue();
+                manageGroup(sessionToken, groupCode, users, currentState, report);
             }
+            updateHomeSpaces(sessionToken, currentState, report);
 
             service.logout(sessionToken);
         } catch (Throwable e)
@@ -168,7 +233,75 @@ public class UserManager
             report.addErrorMessage("Error: " + e.toString());
             logger.log(LogLevel.ERROR, "", e);
         }
-        return report;
+    }
+    
+    private void updateMappingFile()
+    {
+        if (shareIdsMappingFileOrNull != null && mappingAttributesList.isEmpty() == false)
+        {
+            File parentFile = shareIdsMappingFileOrNull.getParentFile();
+            parentFile.mkdirs();
+            File newFile = new File(parentFile, shareIdsMappingFileOrNull.getName() + ".new");
+            PrintWriter printWriter = null;
+            try
+            {
+                printWriter = new PrintWriter(newFile);
+                printWriter.println("Identifier\tShare IDs\tArchive Folder");
+                for (MappingAttributes attributes: mappingAttributesList)
+                {
+                    CommaSeparatedListBuilder builder = new CommaSeparatedListBuilder();
+                    List<String> shareIds = attributes.getShareIds();
+                    if (shareIds != null && shareIds.isEmpty() == false)
+                    {
+                        shareIds.forEach(id -> builder.append(id));
+                        printWriter.println(String.format("/%s_.*\t%s\t", attributes.getGroupCode(), builder.toString()));
+                    }
+                }
+            } catch (IOException e)
+            {
+                throw CheckedExceptionTunnel.wrapIfNecessary(e);
+            } finally
+            {
+                IOUtils.closeQuietly(printWriter);
+            }
+            newFile.renameTo(shareIdsMappingFileOrNull);
+        }
+    }
+
+    private void updateHomeSpaces(String sessionToken, CurrentState currentState, UserManagerReport report)
+    {
+        List<PersonUpdate> updates = new ArrayList<>();
+        for (Entry<String, HomeSpaceRequest> entry : requestedHomeSpaceByUserId.entrySet())
+        {
+            String userId = entry.getKey();
+            HomeSpaceRequest request = entry.getValue();
+            Person knownUser = currentState.getUser(userId);
+            SpacePermId requestedHomeSpace = request.getHomeSpace();
+            if (knownUser == null || knownUser.getSpace() == null)
+            {
+                if (requestedHomeSpace != null)
+                {
+                    updates.add(createPersonUpdate(userId, requestedHomeSpace, report));
+                }
+            } else if (request.shouldCurrentBeRemoved())
+            {
+                updates.add(createPersonUpdate(userId, requestedHomeSpace, report));
+            }
+        }
+        if (updates.isEmpty() == false)
+        {
+            service.updatePersons(sessionToken, updates);
+        }
+    }
+
+    private PersonUpdate createPersonUpdate(String userId, SpacePermId spacePermId, UserManagerReport report)
+    {
+        IPersonId personId = new PersonPermId(userId);
+        PersonUpdate personUpdate = new PersonUpdate();
+        personUpdate.setUserId(personId);
+        personUpdate.setSpaceId(spacePermId);
+        report.assignHomeSpace(userId, spacePermId);
+        return personUpdate;
     }
 
     private void manageGlobalSpaces(String sessionToken, UserManagerReport report)
@@ -256,10 +389,11 @@ public class UserManager
         List<PersonUpdate> updates = new ArrayList<>();
         PersonSearchCriteria searchCriteria = new PersonSearchCriteria();
         PersonFetchOptions fetchOptions = new PersonFetchOptions();
+        fetchOptions.withRegistrator();
         List<Person> persons = service.searchPersons(sessionToken, searchCriteria, fetchOptions).getObjects();
         for (Person person : persons)
         {
-            if (person.isActive())
+            if (person.isActive() & person.getRegistrator() != null) // user 'system' has no registrator
             {
                 try
                 {
@@ -331,6 +465,8 @@ public class UserManager
             {
                 manageNewGroup(context, groupCode, groupUsers);
             }
+            createSamples(context, groupCode);
+            createExperiments(context, groupCode);
             context.executeOperations();
         } catch (Exception e)
         {
@@ -341,8 +477,83 @@ public class UserManager
         }
     }
 
+    private void createSamples(Context context, String groupCode)
+    {
+        if (commonSamples.isEmpty() == false)
+        {
+            Set<SampleIdentifier> sampleIdentifiers = new LinkedHashSet<>();
+            String sessionToken = context.getSessionToken();
+            for (Entry<String, String> entry : commonSamples.entrySet())
+            {
+                String sampleType = entry.getValue();
+                String[] identifierTemplateParts = entry.getKey().split("/");
+                String spaceCode = createCommonSpaceCode(groupCode, identifierTemplateParts[0]);
+                String sampleCode = createCommonSpaceCode(groupCode, identifierTemplateParts[1]);
+                SampleIdentifier sampleId = new SampleIdentifier(spaceCode, null, sampleCode);
+                sampleIdentifiers.add(sampleId);
+                if (service.getSamples(sessionToken, Arrays.asList(sampleId), new SampleFetchOptions()).isEmpty())
+                {
+                    SampleCreation sampleCreation = new SampleCreation();
+                    sampleCreation.setCode(sampleCode);
+                    sampleCreation.setTypeId(new EntityTypePermId(sampleType));
+                    sampleCreation.setSpaceId(new SpacePermId(spaceCode));
+                    context.add(sampleCreation);
+                    context.getReport().addSample(sampleId);
+                }
+            }
+        }
+    }
+
+    private void createExperiments(Context context, String groupCode)
+    {
+        if (commonExperiments.isEmpty() == false)
+        {
+            Set<ProjectIdentifier> projectIdentifiers = new LinkedHashSet<>();
+            Set<String> keySet = commonExperiments.keySet();
+            for (String identifierTemplate : keySet)
+            {
+                String[] identifierTemplateParts = identifierTemplate.split("/");
+                String spaceCode = createCommonSpaceCode(groupCode, identifierTemplateParts[0]);
+                String projectCode = createCommonSpaceCode(groupCode, identifierTemplateParts[1]);
+                projectIdentifiers.add(new ProjectIdentifier(spaceCode, projectCode));
+            }
+            String sessionToken = context.getSessionToken();
+            Set<IProjectId> existingProjects =
+                    service.getProjects(sessionToken, new ArrayList<>(projectIdentifiers), new ProjectFetchOptions()).keySet();
+            projectIdentifiers.removeAll(existingProjects);
+            for (ProjectIdentifier identifier : projectIdentifiers)
+            {
+                ProjectCreation projectCreation = new ProjectCreation();
+                String[] spaceCodeAndProjectCode = identifier.getIdentifier().split("/");
+                projectCreation.setSpaceId(new SpacePermId(spaceCodeAndProjectCode[1]));
+                projectCreation.setCode(spaceCodeAndProjectCode[2]);
+                context.add(projectCreation);
+                context.getReport().addProject(identifier);
+            }
+            for (Entry<String, String> entry : commonExperiments.entrySet())
+            {
+                String experimentType = entry.getValue();
+                String[] identifierTemplateParts = entry.getKey().split("/");
+                String spaceCode = createCommonSpaceCode(groupCode, identifierTemplateParts[0]);
+                String projectCode = createCommonSpaceCode(groupCode, identifierTemplateParts[1]);
+                String experimentCode = createCommonSpaceCode(groupCode, identifierTemplateParts[2]);
+                ExperimentIdentifier identifier = new ExperimentIdentifier(spaceCode, projectCode, experimentCode);
+                if (service.getExperiments(sessionToken, Arrays.asList(identifier), new ExperimentFetchOptions()).isEmpty())
+                {
+                    ExperimentCreation experimentCreation = new ExperimentCreation();
+                    experimentCreation.setProjectId(new ProjectIdentifier(spaceCode, projectCode));
+                    experimentCreation.setCode(experimentCode);
+                    experimentCreation.setTypeId(new EntityTypePermId(experimentType));
+                    context.add(experimentCreation);
+                    context.getReport().addExperiment(identifier);
+                }
+            }
+        }
+    }
+
     private void manageKnownGroup(Context context, String groupCode, Map<String, Principal> groupUsers)
     {
+        createCommonSpaces(context, groupCode);
         manageUsers(context, groupCode, groupUsers);
     }
 
@@ -351,21 +562,31 @@ public class UserManager
         String adminGroupCode = createAdminGroupCode(groupCode);
         assertNoCommonSpaceExists(context, groupCode);
 
-        AuthorizationGroupPermId groupId = createAuthorizationGroup(context, groupCode);
-        AuthorizationGroupPermId adminGroupId = createAuthorizationGroup(context, adminGroupCode);
+        createAuthorizationGroup(context, groupCode);
+        createAuthorizationGroup(context, adminGroupCode);
 
+        createCommonSpaces(context, groupCode);
+        
+        manageUsers(context, groupCode, groupUsers);
+    }
+
+    private void createCommonSpaces(Context context, String groupCode)
+    {
         for (Entry<Role, List<String>> entry : commonSpacesByRole.entrySet())
         {
             Role role = entry.getKey();
-            for (String space : entry.getValue())
+            for (String commonSpaceCode : entry.getValue())
             {
-                ISpaceId spaceId = createSpace(context, createCommonSpaceCode(groupCode, space));
-                createRoleAssignment(context, groupId, role, spaceId);
-                createRoleAssignment(context, adminGroupId, Role.ADMIN, spaceId);
+                String spaceCode = createCommonSpaceCode(groupCode, commonSpaceCode);
+                Space space = context.getCurrentState().getSpace(spaceCode);
+                if (space == null)
+                {
+                    ISpaceId spaceId = createSpace(context, spaceCode);
+                    createRoleAssignment(context, new AuthorizationGroupPermId(groupCode), role, spaceId);
+                    createRoleAssignment(context, new AuthorizationGroupPermId(createAdminGroupCode(groupCode)), Role.ADMIN, spaceId);
+                }
             }
         }
-
-        manageUsers(context, groupCode, groupUsers);
     }
 
     private void manageUsers(Context context, String groupCode, Map<String, Principal> groupUsers)
@@ -382,7 +603,7 @@ public class UserManager
             PersonPermId personId = new PersonPermId(userId);
             if (currentUsersOfGroup.containsKey(userId) == false)
             {
-                ISpaceId userSpaceId = createUserSpace(context, groupCode, userId);
+                SpacePermId userSpaceId = createUserSpace(context, groupCode, userId);
                 Person knownUser = context.getCurrentState().getUser(userId);
                 if (context.getCurrentState().userExists(userId) == false)
                 {
@@ -391,18 +612,11 @@ public class UserManager
                     context.add(personCreation);
                     context.getCurrentState().addNewUser(userId);
                     context.getReport().addUser(userId);
-                    assignHomeSpace(context, personId, userSpaceId);
-                } else if (knownUser != null)
+                } else if (knownUser != null && knownUser.isActive() == false)
                 {
-                    if (knownUser.isActive() == false)
-                    {
-                        context.getReport().reuseUser(userId);
-                    }
-                    if (knownUser.getSpace() == null || knownUser.isActive() == false)
-                    {
-                        assignHomeSpace(context, personId, userSpaceId);
-                    }
+                    context.getReport().reuseUser(userId);
                 }
+                getHomeSpaceRequest(userId).setHomeSpace(userSpaceId);
                 RoleAssignmentCreation roleCreation = new RoleAssignmentCreation();
                 roleCreation.setUserId(personId);
                 roleCreation.setRole(Role.ADMIN);
@@ -425,29 +639,38 @@ public class UserManager
         }
         removeUsersFromGroup(context, groupCode, usersToBeRemoved);
     }
-    
+
     private void removeUsersFromGroup(Context context, String groupCode, Set<String> usersToBeRemoved)
     {
         String adminGroupCode = createAdminGroupCode(groupCode);
-        AuthorizationGroupPermId adminGroupId = new AuthorizationGroupPermId(adminGroupCode);
-        Map<String, RoleAssignment> spaceRoles = context.currentState.getCurrentSpaceRolesOfGroup(adminGroupCode);
-        for (String user : usersToBeRemoved)
+        for (String userId : usersToBeRemoved)
         {
-            removePersonFromAuthorizationGroup(context, groupCode, user);
-            removePersonFromAuthorizationGroup(context, adminGroupCode, user);
-            for (RoleAssignment role : spaceRoles.values())
+            removePersonFromAuthorizationGroup(context, groupCode, userId);
+            removePersonFromAuthorizationGroup(context, adminGroupCode, userId);
+            AuthorizationGroup globalGroup = context.currentState.getGlobalGroup();
+            if (globalGroup != null)
             {
-                Space space = role.getSpace();
-                if (space.getCode().startsWith(groupCode + "_" + user))
+                removePersonFromAuthorizationGroup(context, globalGroup.getCode(), userId);
+            }
+            Person user = context.currentState.getUser(userId);
+            Space homeSpace = user.getSpace();
+            for (RoleAssignment roleAssignment : user.getRoleAssignments())
+            {
+                Space space = roleAssignment.getSpace();
+                if (space != null && space.getCode().startsWith(createCommonSpaceCode(groupCode, userId.toUpperCase())))
                 {
-                    context.delete(role.getId());
-                    context.report.unassignRoleFrom(adminGroupId, role.getRole(), space.getPermId());
+                    context.delete(roleAssignment.getId());
+                    context.report.unassignRoleFrom(userId, roleAssignment.getRole(), space.getPermId());
+                    if (homeSpace != null && homeSpace.getCode().equals(space.getCode()))
+                    {
+                        getHomeSpaceRequest(userId).removeCurrentHomeSpace();
+                    }
                 }
             }
         }
     }
 
-    private ISpaceId createUserSpace(Context context, String groupCode, String userId)
+    private SpacePermId createUserSpace(Context context, String groupCode, String userId)
     {
         String userSpaceCode = createCommonSpaceCode(groupCode, userId.toUpperCase());
         int n = context.getCurrentState().getNumberOfSpacesStartingWith(userSpaceCode);
@@ -457,15 +680,18 @@ public class UserManager
         }
         return createSpace(context, userSpaceCode);
     }
-    
-    private void assignHomeSpace(Context context, PersonPermId personId, ISpaceId homeSpaceId)
+
+    private HomeSpaceRequest getHomeSpaceRequest(String userId)
     {
-        PersonUpdate personUpdate = new PersonUpdate();
-        personUpdate.setUserId(personId);
-        personUpdate.setSpaceId(homeSpaceId);
-        context.add(personUpdate);
+        HomeSpaceRequest homeSpaceRequest = requestedHomeSpaceByUserId.get(userId);
+        if (homeSpaceRequest == null)
+        {
+            homeSpaceRequest = new HomeSpaceRequest();
+            requestedHomeSpaceByUserId.put(userId, homeSpaceRequest);
+        }
+        return homeSpaceRequest;
     }
-    
+
     private boolean isAdmin(String userId, String groupCode)
     {
         UserInfo userInfo = userInfosByUserId.get(userId);
@@ -519,7 +745,7 @@ public class UserManager
         context.add(roleCreation);
         context.getReport().assignRoleTo(groupId, role, spaceId);
     }
-    
+
     private void assertNoCommonSpaceExists(Context context, String groupCode)
     {
         Set<String> commonSpaces = new TreeSet<>();
@@ -558,25 +784,6 @@ public class UserManager
             users.forEach(user -> usersById.put(user.getUserId(), user));
         }
 
-        public Map<String, RoleAssignment> getCurrentSpaceRolesOfGroup(String groupCode)
-        {
-            Map<String, RoleAssignment> result = new TreeMap<>();
-            AuthorizationGroup group = groupsByCode.get(groupCode);
-            if (group != null)
-            {
-                List<RoleAssignment> roleAssignments = group.getRoleAssignments();
-                for (RoleAssignment roleAssignment : roleAssignments)
-                {
-                    if (RoleLevel.SPACE.equals(roleAssignment.getRoleLevel()) && Role.OBSERVER.equals(roleAssignment.getRole()))
-                    {
-                        Space space = roleAssignment.getSpace();
-                        result.put(space.getCode(), roleAssignment);
-                    }
-                }
-            }
-            return result;
-        }
-
         public Map<String, Person> getCurrentUsersOfGroup(String groupCode)
         {
             Map<String, Person> result = new TreeMap<>();
@@ -596,6 +803,11 @@ public class UserManager
         public boolean userExists(String userId)
         {
             return newUsers.contains(userId) || usersById.containsKey(userId);
+        }
+
+        public Space getSpace(String spaceCode)
+        {
+            return spacesByCode.get(spaceCode);
         }
 
         public int getNumberOfSpacesStartingWith(String userSpaceCode)
@@ -635,7 +847,7 @@ public class UserManager
         }
     }
 
-    private ISpaceId createSpace(Context context, String spaceCode)
+    private SpacePermId createSpace(Context context, String spaceCode)
     {
         SpaceCreation spaceCreation = new SpaceCreation();
         spaceCreation.setCode(spaceCode);
@@ -723,15 +935,71 @@ public class UserManager
         }
     }
 
+    private static final class MappingAttributes
+    {
+        private String groupCode;
+        private List<String> shareIds;
+
+        public MappingAttributes(String groupCode, List<String> shareIds)
+        {
+            this.groupCode = groupCode;
+            this.shareIds = shareIds;
+        }
+
+        public String getGroupCode()
+        {
+            return groupCode;
+        }
+
+        public List<String> getShareIds()
+        {
+            return shareIds;
+        }
+    }
+
+    private static final class HomeSpaceRequest
+    {
+        private boolean shouldCurrentBeRemoved;
+
+        public boolean shouldCurrentBeRemoved()
+        {
+            return shouldCurrentBeRemoved;
+        }
+
+        public void removeCurrentHomeSpace()
+        {
+            this.shouldCurrentBeRemoved = true;
+        }
+
+        private SpacePermId homeSpace;
+
+        public SpacePermId getHomeSpace()
+        {
+            return homeSpace;
+        }
+
+        public void setHomeSpace(SpacePermId homeSpace)
+        {
+            if (this.homeSpace == null)
+            {
+                this.homeSpace = homeSpace;
+            }
+        }
+    }
+
     private static final class Context
     {
         private String sessionToken;
 
         private Map<String, PersonCreation> personCreations = new LinkedMap<>();
 
-        private List<PersonUpdate> personUpdates = new ArrayList<>();
-
         private List<SpaceCreation> spaceCreations = new ArrayList<>();
+
+        private List<ProjectCreation> projectCreations = new ArrayList<>();
+
+        private List<SampleCreation> sampleCreations = new ArrayList<>();
+
+        private List<ExperimentCreation> experimentCreations = new ArrayList<>();
 
         private List<AuthorizationGroupCreation> groupCreations = new ArrayList<>();
 
@@ -775,14 +1043,24 @@ public class UserManager
             personCreations.put(personCreation.getUserId(), personCreation);
         }
 
-        public void add(PersonUpdate personUpdate)
-        {
-            personUpdates.add(personUpdate);
-        }
-
         public void add(SpaceCreation spaceCreation)
         {
             spaceCreations.add(spaceCreation);
+        }
+
+        public void add(ProjectCreation projectCreation)
+        {
+            projectCreations.add(projectCreation);
+        }
+
+        public void add(SampleCreation sampleCreation)
+        {
+            sampleCreations.add(sampleCreation);
+        }
+
+        public void add(ExperimentCreation experimentCreation)
+        {
+            experimentCreations.add(experimentCreation);
         }
 
         public void add(AuthorizationGroupCreation creation)
@@ -812,13 +1090,21 @@ public class UserManager
             {
                 operations.add(new CreatePersonsOperation(new ArrayList<>(personCreations.values())));
             }
-            if (personUpdates.isEmpty() == false)
-            {
-                operations.add(new UpdatePersonsOperation(personUpdates));
-            }
             if (spaceCreations.isEmpty() == false)
             {
                 operations.add(new CreateSpacesOperation(spaceCreations));
+            }
+            if (projectCreations.isEmpty() == false)
+            {
+                operations.add(new CreateProjectsOperation(projectCreations));
+            }
+            if (sampleCreations.isEmpty() == false)
+            {
+                operations.add(new CreateSamplesOperation(sampleCreations));
+            }
+            if (experimentCreations.isEmpty() == false)
+            {
+                operations.add(new CreateExperimentsOperation(experimentCreations));
             }
             if (groupCreations.isEmpty() == false)
             {

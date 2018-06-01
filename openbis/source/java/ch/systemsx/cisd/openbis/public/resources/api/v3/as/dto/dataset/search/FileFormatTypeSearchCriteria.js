@@ -1,6 +1,9 @@
 /**
  * @author pkupczyk
  */
+/*
+ * @Deprecated
+ */
 define([ "require", "stjs", "as/dto/common/search/AbstractCompositeSearchCriteria", "as/dto/common/search/CodeSearchCriteria" ], function(require, stjs, AbstractCompositeSearchCriteria) {
 	var FileFormatTypeSearchCriteria = function() {
 		AbstractCompositeSearchCriteria.call(this);

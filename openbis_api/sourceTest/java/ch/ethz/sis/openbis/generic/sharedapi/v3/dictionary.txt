@@ -2194,3 +2194,25 @@ with Entity Type Code Pattern
 with Parameters
 with Query Type
 with Sql
+get Database Label
+set Database Label
+
+get Data Set Types
+Get Data Set Types Operation
+Get Data Set Types Operation Result
+get Experiment Types
+Get Experiment Types Operation
+Get Experiment Types Operation Result
+get Material Types
+Get Material Types Operation
+Get Material Types Operation Result
+get Sample Types
+Get Sample Types Operation
+Get Sample Types Operation Result
+I Validation Plugin Holder
+
+create Codes
+Create Codes Operation
+Create Codes Operation Result
+get Codes
+get Prefix

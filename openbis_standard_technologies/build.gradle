@@ -1,3 +1,27 @@
+buildscript {
+    apply from: '../gradle/repository.gradle'
+    
+    repositories repositoryConfig
+    
+    dependencies {
+        classpath 'apache:commons-codec:+',
+                  'owasp:dependency-check-gradle:+'
+    }
+}
+
+apply plugin: org.owasp.dependencycheck.gradle.DependencyCheckPlugin
+
+dependencyCheck {
+  failBuildOnCVSS = 7 // 0 - 4 = low, 4 - 7 = medium, 7 - 9 = high, 9-10 = critical
+  analyzers{
+    assemblyEnabled = false
+  }
+  proxy {
+   server = 'proxy.ethz.ch'
+   port = 3128
+  }
+}
+
 evaluationDependsOn(':commonbase')
 evaluationDependsOn(':common')
 evaluationDependsOn(':openbis_api')
@@ -11,6 +35,7 @@ evaluationDependsOn(':screening')
 evaluationDependsOn(':rtd_yeastx')
 evaluationDependsOn(':deep_sequencing_unit')
 evaluationDependsOn(':plasmid')
+
 
 apply from: '../gradle/javaproject.gradle'
 apply from: 'query-api.gradle'
@@ -78,16 +103,6 @@ dependencies {
 
 	javadoc_compilation	project(path:':rtd_phosphonetx'),
 				    	project(path:':screening')
-}
-
-buildscript {
-    apply from: '../gradle/repository.gradle'
-    
-    repositories repositoryConfig
-    
-    dependencies {
-        classpath 'apache:commons-codec:+'
-    }
 }
 
 task compileGwt (dependsOn: classes, type: JavaExec) {
@@ -257,9 +272,9 @@ def downloadFile(url, filename) {
 
 task zipCorePlugins(type: Zip) {
   archiveName 'core-plugins.zip'
-  downloadFile('https://github.com/aarpon/obit_flow_core_technology/archive/master.zip', 'flow.zip')
-  downloadFile('https://github.com/aarpon/obit_microscopy_core_technology/archive/master.zip', 'microscopy.zip')
-  downloadFile('https://github.com/aarpon/obit_shared_core_technology/archive/master.zip', 'shared.zip')
+  downloadFile('https://github.com/aarpon/obit_flow_core_technology/archive/release/18.x.zip', 'flow.zip')
+  downloadFile('https://github.com/aarpon/obit_microscopy_core_technology/archive/release/18.x.zip', 'microscopy.zip')
+  downloadFile('https://github.com/aarpon/obit_shared_core_technology/archive/release/18.x.zip', 'shared.zip')
   from project(':rtd_phosphonetx').fileTree(dir: 'source/core-plugins', includes:['proteomics/**', 'proteomics-optional/**'], excludes:['**/dss/**', '**/package-to-dist'])
   from project(':screening').fileTree(dir: 'source/core-plugins', includes:['screening/**', 'screening-optional/**'], excludes:['**/dss/**', '**/package-to-dist'])
   from project(':deep_sequencing_unit').fileTree(dir: 'source/core-plugins', includes:['illumina-ngs/**'], excludes:['**/dss/**', '**/package-to-dist'])

@@ -82,12 +82,12 @@ public class CreatePropertyTypeTest extends AbstractTest
             "xsl:styleshet");
 
     @Test
-    public void testCreateInternalNamespacePropertyType()
+    public void testCreateInternalNamespacePropertyTypeWithCodeWithDolarSign()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypeCreation creation = new PropertyTypeCreation();
-        creation.setCode("test-property");
+        creation.setCode("$test-property");
         creation.setDataType(DataType.REAL);
         creation.setDescription("only for testing");
         creation.setLabel("Test Property");
@@ -100,7 +100,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         // Then
         assertEquals(ids.toString(), "[$TEST-PROPERTY]");
         PropertyTypeSearchCriteria searchCriteria = new PropertyTypeSearchCriteria();
-        searchCriteria.withCode().thatEquals("$" + creation.getCode().toUpperCase());
+        searchCriteria.withCode().thatEquals(creation.getCode().toUpperCase());
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
         Map<IPropertyTypeId, PropertyType> types = v3api.getPropertyTypes(sessionToken, ids, fetchOptions);
         PropertyType propertyType = types.get(ids.get(0));
@@ -114,6 +114,73 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(types.size(), 1);
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testCreateInternalNamespacePropertyTypeWithCodeWithoutDolarSign()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("test-property");
+        creation.setLabel("Test Property");
+        creation.setDescription("only for testing");
+        creation.setDataType(DataType.REAL);
+        creation.setInternalNameSpace(true);
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
+                }
+            }, "Code of an internal namespace property type has to start with '$' prefix");
+    }
+
+    @Test
+    public void testCreateNonInternalNamespacePropertyTypeWithCodeWithDolarSign()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("$test-property");
+        creation.setLabel("Test Property");
+        creation.setDescription("only for testing");
+        creation.setDataType(DataType.REAL);
+        creation.setInternalNameSpace(false);
+
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
+                }
+            }, "'$' code prefix can be only used for the internal namespace property types");
+    }
+
+    @Test
+    public void testCreateNonInternalNamespacePropertyTypeWithCodeWithoutDolarSign()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("test-property");
+        creation.setLabel("Test Property");
+        creation.setDescription("only for testing");
+        creation.setDataType(DataType.REAL);
+        creation.setInternalNameSpace(false);
+
+        List<PropertyTypePermId> ids = v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
+        assertEquals(ids.toString(), "[TEST-PROPERTY]");
+
+        PropertyTypeSearchCriteria searchCriteria = new PropertyTypeSearchCriteria();
+        searchCriteria.withCode().thatEquals(creation.getCode().toUpperCase());
+
+        Map<IPropertyTypeId, PropertyType> types = v3api.getPropertyTypes(sessionToken, ids, new PropertyTypeFetchOptions());
+
+        PropertyType propertyType = types.get(ids.get(0));
+        assertEquals(propertyType.getCode(), creation.getCode().toUpperCase());
+        assertEquals(propertyType.getDataType(), creation.getDataType());
+        assertEquals(propertyType.isInternalNameSpace(), (Boolean) creation.isInternalNameSpace());
     }
 
     @Test(groups = "broken")

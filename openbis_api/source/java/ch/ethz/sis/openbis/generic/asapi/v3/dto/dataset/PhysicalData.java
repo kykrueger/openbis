@@ -51,6 +51,7 @@ public class PhysicalData implements Serializable
     private StorageFormat storageFormat;
 
     @JsonProperty
+    @Deprecated
     private FileFormatType fileFormatType;
 
     @JsonProperty
@@ -145,6 +146,7 @@ public class PhysicalData implements Serializable
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
+    @Deprecated
     public FileFormatType getFileFormatType()
     {
         if (getFetchOptions() != null && getFetchOptions().hasFileFormatType())
@@ -158,6 +160,7 @@ public class PhysicalData implements Serializable
     }
 
     // Method automatically generated with DtoGenerator
+    @Deprecated
     public void setFileFormatType(FileFormatType fileFormatType)
     {
         this.fileFormatType = fileFormatType;

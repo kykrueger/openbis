@@ -66,6 +66,7 @@ public class GeneralImportTest extends ObjectsImportTest
             multiPart.close();
 
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, multiPart);
+            assertUploadedFiles(sessionToken, FileUtils.readFileToString(materialsFile));
 
             Map<String, Object> parameters = new HashMap<String, Object>();
             parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
@@ -95,6 +96,9 @@ public class GeneralImportTest extends ObjectsImportTest
                 assertEquals("Registration/update of 2 material(s) is complete.\nRegistration of 0 sample(s) is complete.", message);
                 assertNoEmails(timestamp);
             }
+
+            assertUploadedFiles(sessionToken);
+
         } finally
         {
             deleteMaterials(sessionToken, materialPermId1, materialPermId2);

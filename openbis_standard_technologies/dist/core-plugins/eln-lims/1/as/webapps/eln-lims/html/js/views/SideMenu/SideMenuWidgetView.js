@@ -221,7 +221,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	treeModelUtils.push({ title : trashCanLink, entityType: "TRASHCAN", key : "TRASHCAN", folder : false, lazy : false, view : "showTrashcanPage", icon : "glyphicon glyphicon-trash" });
         }
         
-        if(profile.isAdmin && profile.mainMenu.showSettings) {
+        if(profile.mainMenu.showSettings) {
         	var settingsLink = _this.getLinkForNode("Settings", "SETTINGS", "showSettingsPage", null);
         	treeModelUtils.push({ title : settingsLink, entityType: "SETTINGS", key : "SETTINGS", folder : false, lazy : false, view : "showSettingsPage", icon : "glyphicon glyphicon-cog" });
         }
@@ -327,8 +327,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	                	
         	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
         	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
-        	                    if(space.getCode() !== "STOCK_CATALOG" && space.getCode() !== "STOCK_ORDERS") {
-        	                    	results.push(spaceNode);
+        	                    if(!space.getCode().endsWith("STOCK_CATALOG") && !space.getCode().endsWith("STOCK_ORDERS")) {
+        	                    		results.push(spaceNode);
         	                    }
         	                }
     	                }
@@ -342,7 +342,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                var spaces = searchResult.objects;
     	                for (var i = 0; i < spaces.length; i++) {
     	                    var space = spaces[i];
-    	                    if(space.getCode() === "STOCK_CATALOG" || space.getCode() === "STOCK_ORDERS") {
+    	                    if(space.getCode().endsWith("STOCK_CATALOG") || space.getCode().endsWith("STOCK_ORDERS")) {
     	                    	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
         	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };

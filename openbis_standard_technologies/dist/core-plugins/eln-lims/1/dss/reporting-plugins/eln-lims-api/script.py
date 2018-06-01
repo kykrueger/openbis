@@ -61,9 +61,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id import SamplePermId
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id import ExperimentIdentifier;
 from ch.ethz.sis.openbis.generic.server.sharedapi.v3.json import GenericObjectMapper;
 from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer
-from ch.systemsx.cisd.common.shared.basic.string import StringUtils
-
-from ch.ethz.sis import PersistentKeyValueStore 
+from ch.systemsx.cisd.common.shared.basic.string import StringUtils 
 #from ch.systemsx.cisd.common.ssl import SslCertificateHelper;
 
 #Plasmapper server used
@@ -199,9 +197,7 @@ def process(tr, parameters, tableBuilder):
 	tr.setUserId(userId);
 	
 	if method == "init":
-		if PersistentKeyValueStore.get("$isELNInitDone") is None:
-			isOk = init(tr, parameters, tableBuilder);
-			PersistentKeyValueStore.put("$isELNInitDone", True);
+		isOk = init(tr, parameters, tableBuilder);
 	if method == "isFileAuthUser":
 		result = isFileAuthUser(tr, parameters, tableBuilder);
 		isOk = True;

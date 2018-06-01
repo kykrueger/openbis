@@ -596,7 +596,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testGetManual(c, fCreate, fGet, fCheck);
 		});
-		
+
 		QUnit.test("getPersons() with all webAppSettings", function(assert) {
 			var WEB_APP_1 = "webApp1";
 			var WEB_APP_2 = "webApp2";
@@ -695,7 +695,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
 		});
-		
+
 		QUnit.test("getQueries()", function(assert) {
 			var c = new common(assert, openbis);
 			var fo = new c.QueryFetchOptions();
@@ -714,6 +714,98 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 
 			var fGetEmptyFetchOptions = function(facade, techIds) {
 				return facade.getQueries(techIds, new c.QueryFetchOptions());
+			}
+
+			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
+		});
+
+		QUnit.test("getExperimentTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			var fo = new c.ExperimentTypeFetchOptions();
+			var fechOptionsTestConfig = getConfigForFetchOptions(fo);
+
+			var fCreate = function(facade) {
+				return $.when(c.createExperimentType(facade), c.createExperimentType(facade)).then(function(permId1, permId2) {
+					return [ permId1, permId2 ];
+				});
+			}
+
+			var fGet = function(facade, permIds) {
+				testFetchOptionsAssignation(c, fo, fechOptionsTestConfig);
+				return facade.getExperimentTypes(permIds, fo);
+			}
+
+			var fGetEmptyFetchOptions = function(facade, permIds) {
+				return facade.getExperimentTypes(permIds, new c.ExperimentTypeFetchOptions());
+			}
+
+			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
+		});
+
+		QUnit.test("getSampleTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			var fo = new c.SampleTypeFetchOptions();
+			var fechOptionsTestConfig = getConfigForFetchOptions(fo);
+
+			var fCreate = function(facade) {
+				return $.when(c.createSampleType(facade), c.createSampleType(facade)).then(function(permId1, permId2) {
+					return [ permId1, permId2 ];
+				});
+			}
+
+			var fGet = function(facade, permIds) {
+				testFetchOptionsAssignation(c, fo, fechOptionsTestConfig);
+				return facade.getSampleTypes(permIds, fo);
+			}
+
+			var fGetEmptyFetchOptions = function(facade, permIds) {
+				return facade.getSampleTypes(permIds, new c.SampleTypeFetchOptions());
+			}
+
+			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
+		});
+
+		QUnit.test("getDataSetTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			var fo = new c.DataSetTypeFetchOptions();
+			var fechOptionsTestConfig = getConfigForFetchOptions(fo);
+
+			var fCreate = function(facade) {
+				return $.when(c.createDataSetType(facade), c.createDataSetType(facade)).then(function(permId1, permId2) {
+					return [ permId1, permId2 ];
+				});
+			}
+
+			var fGet = function(facade, permIds) {
+				testFetchOptionsAssignation(c, fo, fechOptionsTestConfig);
+				return facade.getDataSetTypes(permIds, fo);
+			}
+
+			var fGetEmptyFetchOptions = function(facade, permIds) {
+				return facade.getDataSetTypes(permIds, new c.DataSetTypeFetchOptions());
+			}
+
+			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
+		});
+
+		QUnit.test("getMaterialTypes()", function(assert) {
+			var c = new common(assert, openbis);
+			var fo = new c.MaterialTypeFetchOptions();
+			var fechOptionsTestConfig = getConfigForFetchOptions(fo);
+
+			var fCreate = function(facade) {
+				return $.when(c.createMaterialType(facade), c.createMaterialType(facade)).then(function(permId1, permId2) {
+					return [ permId1, permId2 ];
+				});
+			}
+
+			var fGet = function(facade, permIds) {
+				testFetchOptionsAssignation(c, fo, fechOptionsTestConfig);
+				return facade.getMaterialTypes(permIds, fo);
+			}
+
+			var fGetEmptyFetchOptions = function(facade, permIds) {
+				return facade.getMaterialTypes(permIds, new c.MaterialTypeFetchOptions());
 			}
 
 			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);

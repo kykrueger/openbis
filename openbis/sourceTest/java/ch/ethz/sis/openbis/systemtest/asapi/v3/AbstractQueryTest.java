@@ -236,7 +236,7 @@ public class AbstractQueryTest extends AbstractTest
     }
 
     @DataProvider(name = PROVIDER_TRUE_FALSE)
-    protected java.lang.Object[][] provideTrueFalse()
+    protected java.lang.Object[][] provideBoolean()
     {
         return new java.lang.Object[][] { { true }, { false } };
     }

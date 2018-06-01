@@ -24,13 +24,14 @@ import java.util.List;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.create.IEntityTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 
 /**
  * @author pkupczyk
@@ -231,6 +232,34 @@ public abstract class CreateEntityTypeTest<CREATION extends IEntityTypeCreation,
                     createTypes(sessionToken, Arrays.asList(type));
                 }
             }, "Object with PropertyTypePermId = [IDONTEXIST] has not been found");
+    }
+
+    @Test
+    public void testCreateWithPropertyTypeWithInternalNamespace()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        String entityTypeCode = "NEW_ENTITY_TYPE";
+        String propertyTypeCodeWithDolar = "$PLATE_GEOMETRY";
+
+        final CREATION typeCreation = newTypeCreation();
+        typeCreation.setCode(entityTypeCode);
+
+        PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
+        assignmentCreation.setPropertyTypeId(new PropertyTypePermId(propertyTypeCodeWithDolar));
+        typeCreation.setPropertyAssignments(Arrays.asList(assignmentCreation));
+
+        createTypes(sessionToken, Arrays.asList(typeCreation));
+        TYPE type = getType(sessionToken, typeCreation.getCode());
+
+        assertEquals(type.getPropertyAssignments().size(), 1);
+        PropertyAssignment assignment = type.getPropertyAssignments().get(0);
+
+        assertEquals(assignment.getPermId().getEntityTypeId(), new EntityTypePermId(entityTypeCode, getEntityKind()));
+        assertEquals(((PropertyTypePermId) assignment.getPermId().getPropertyTypeId()).getPermId(), propertyTypeCodeWithDolar);
+        assertEquals(assignment.getPropertyType().getCode(), propertyTypeCodeWithDolar);
+        assertEquals(((PropertyTypePermId) assignment.getPropertyType().getPermId()).getPermId(), propertyTypeCodeWithDolar);
+        assertEquals(assignment.getOrdinal(), Integer.valueOf(1));
     }
 
     @Test

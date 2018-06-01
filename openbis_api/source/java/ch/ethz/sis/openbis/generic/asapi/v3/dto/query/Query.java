@@ -56,6 +56,9 @@ public class Query implements Serializable, IDescriptionHolder, IModificationDat
     private IQueryDatabaseId databaseId;
 
     @JsonProperty
+    private String databaseLabel;
+
+    @JsonProperty
     private QueryType queryType;
 
     @JsonProperty
@@ -140,6 +143,19 @@ public class Query implements Serializable, IDescriptionHolder, IModificationDat
     public void setDatabaseId(IQueryDatabaseId databaseId)
     {
         this.databaseId = databaseId;
+    }
+
+    // Method automatically generated with DtoGenerator
+    @JsonIgnore
+    public String getDatabaseLabel()
+    {
+        return databaseLabel;
+    }
+
+    // Method automatically generated with DtoGenerator
+    public void setDatabaseLabel(String databaseLabel)
+    {
+        this.databaseLabel = databaseLabel;
     }
 
     // Method automatically generated with DtoGenerator

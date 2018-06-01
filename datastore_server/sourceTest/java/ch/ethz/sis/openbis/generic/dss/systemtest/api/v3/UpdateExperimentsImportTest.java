@@ -63,6 +63,7 @@ public class UpdateExperimentsImportTest extends ObjectsImportTest
             ImportFile file = new ImportFile("identifier", "DESCRIPTION");
             file.addLine(experimentIdentifier.getIdentifier(), "imported description");
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+            assertUploadedFiles(sessionToken, file.toString());
 
             Map<String, Object> parameters = new HashMap<String, Object>();
             parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
@@ -89,6 +90,9 @@ public class UpdateExperimentsImportTest extends ObjectsImportTest
                 assertEquals("Update of 1 experiment(s) is complete.", message);
                 assertNoEmails(timestamp);
             }
+
+            assertUploadedFiles(sessionToken);
+
         } finally
         {
             ExperimentDeletionOptions options = new ExperimentDeletionOptions();

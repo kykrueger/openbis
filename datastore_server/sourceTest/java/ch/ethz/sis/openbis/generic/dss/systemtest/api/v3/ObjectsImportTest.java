@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.dss.systemtest.api.v3;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentProvider;
 import org.eclipse.jetty.client.api.ContentResponse;
@@ -85,7 +87,7 @@ public class ObjectsImportTest extends AbstractFileTest
     protected static final String PARAM_UPDATE_EXISTING = "updateExisting";
 
     protected static final String PARAM_IGNORE_UNREGISTERED = "ignoreUnregistered";
-    
+
     protected static final String PARAM_CUSTOM_IMPORT_CODE = "customImportCode";
 
     protected IApplicationServerApi as;
@@ -127,6 +129,29 @@ public class ObjectsImportTest extends AbstractFileTest
         multiPart.close();
 
         return uploadFiles(sessionToken, uploadSessionKey, multiPart);
+    }
+
+    protected void assertUploadedFiles(String sessionToken, String... fileContents) throws Exception
+    {
+        File sessionWorkspaceRootDir = new File("targets/sessionWorkspace");
+        File sessionWorkspace = new File(sessionWorkspaceRootDir, sessionToken);
+        File[] files = sessionWorkspace.listFiles();
+
+        List<String> expectedContents = new ArrayList<String>(Arrays.asList(fileContents));
+        List<String> actualContents = new ArrayList<String>();
+
+        if (files != null)
+        {
+            for (File file : files)
+            {
+                actualContents.add(FileUtils.readFileToString(file));
+            }
+        }
+
+        expectedContents.sort(String.CASE_INSENSITIVE_ORDER);
+        actualContents.sort(String.CASE_INSENSITIVE_ORDER);
+
+        assertEquals(expectedContents, actualContents);
     }
 
     protected String executeImport(String sessionToken, String operation, Map<String, Object> parameters)
@@ -208,16 +233,28 @@ public class ObjectsImportTest extends AbstractFileTest
 
     protected void assertNoEmails(long timestamp)
     {
-        Email latestEmail = EmailUtil.findLatestEmail();
+        Email latestEmail = waitAndFindLatestEmail();
         assertTrue("Timestamp: " + timestamp + ", Latest email: " + latestEmail, latestEmail == null || latestEmail.timestamp < timestamp);
     }
 
     protected void assertEmail(long timestamp, String expectedEmail, String expectedSubject)
     {
-        Email latestEmail = EmailUtil.findLatestEmail();
+        Email latestEmail = waitAndFindLatestEmail();
         assertTrue("Timestamp: " + timestamp + ", Latest email: " + latestEmail, latestEmail != null && latestEmail.timestamp >= timestamp);
         assertEquals(expectedEmail, latestEmail.to);
         assertTrue(latestEmail.subject, latestEmail.subject.contains(expectedSubject));
+    }
+
+    private Email waitAndFindLatestEmail()
+    {
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            // silently ignored
+        }
+        return EmailUtil.findLatestEmail();
     }
 
     public static class ImportFile

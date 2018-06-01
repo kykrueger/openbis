@@ -27,6 +27,7 @@ import java.io.Serializable;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.dataset.FileFormatType")
+@Deprecated
 public class FileFormatType implements Serializable, ICodeHolder
 {
     private static final long serialVersionUID = 1L;

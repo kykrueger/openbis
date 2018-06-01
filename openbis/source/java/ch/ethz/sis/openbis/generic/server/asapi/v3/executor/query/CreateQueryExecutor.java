@@ -41,6 +41,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.QueryPE;
+import ch.systemsx.cisd.openbis.plugin.query.server.DAO;
 
 /**
  * @author pkupczyk
@@ -114,6 +115,9 @@ public class CreateQueryExecutor extends AbstractCreateEntityExecutor<QueryCreat
         {
             throw new UserFailureException("Sql cannot be empty.");
         }
+
+        DAO.checkQuery(creation.getSql());
+
         if (creation.getQueryType() == null)
         {
             throw new UserFailureException("Query type cannot be null.");

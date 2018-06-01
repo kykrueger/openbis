@@ -266,7 +266,6 @@ $.extend(DefaultProfile.prototype, {
 		this.isFileAuthenticationUser = false;
 		this.directLinkEnabled = true;
 		//To be set during initialization using info retrieved from the DSS configuration by the reporting plugin
-		this.cifsFileServer = null;
 		this.sftpFileServer = null;
 		
 		this.copyPastePlainText = false;
@@ -857,8 +856,7 @@ $.extend(DefaultProfile.prototype, {
 		this.initDirectLinkURL = function(callback) {
 			var _this = this;
 			this.serverFacade.getDirectLinkURL(function(error, result) {
-				if(!error && (result.data.cifs || result.data.sftp)) {
-					_this.cifsFileServer = result.data.cifs;
+				if(!error && result.data.sftp) {
 					_this.sftpFileServer = result.data.sftp;
 				}
 				callback();

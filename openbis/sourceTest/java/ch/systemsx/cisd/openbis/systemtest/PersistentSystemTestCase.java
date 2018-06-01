@@ -16,11 +16,8 @@
 
 package ch.systemsx.cisd.openbis.systemtest;
 
-import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +28,6 @@ import org.testng.annotations.BeforeSuite;
 import ch.systemsx.cisd.common.servlet.SpringRequestContextProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.SessionContext;
-import ch.systemsx.cisd.openbis.generic.client.web.server.UploadedFilesBean;
 import ch.systemsx.cisd.openbis.generic.server.ICommonServerForInternalUse;
 import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.IServiceForDataStoreServer;
@@ -199,15 +195,6 @@ public abstract class PersistentSystemTestCase extends AbstractTestNGSpringConte
     protected String authenticateAs(String user)
     {
         return commonServer.tryAuthenticate(user, "password").getSessionToken();
-    }
-
-    protected void uploadFile(String fileName, String fileContent)
-    {
-        UploadedFilesBean bean = new UploadedFilesBean();
-        bean.addMultipartFile(new MockMultipartFile(fileName, fileName, null, fileContent
-                .getBytes()));
-        HttpSession session = request.getSession();
-        session.setAttribute(SESSION_KEY, bean);
     }
 
 }

@@ -25,6 +25,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.dataset.search.FileFormatTypeSearchCriteria")
+@Deprecated
 public class FileFormatTypeSearchCriteria extends AbstractCompositeSearchCriteria
 {
 

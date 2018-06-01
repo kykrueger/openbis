@@ -45,6 +45,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.Create
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
+import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
@@ -66,7 +68,7 @@ public class CreatePropertyTypeExecutor
 
     @Autowired
     private ISetPropertyTypeMaterialTypeExecutor setPropertyTypeMaterialTypeExecutor;
-    
+
     @Autowired
     private IPropertyTypeAuthorizationExecutor authorizationExecutor;
 
@@ -89,6 +91,16 @@ public class CreatePropertyTypeExecutor
         {
             throw new UserFailureException("Code cannot be empty.");
         }
+        if (creation.isInternalNameSpace() && false == CodeConverter.isInternalNamespace(creation.getCode()))
+        {
+            throw new UserFailureException(
+                    "Code of an internal namespace property type has to start with '" + BasicConstant.INTERNAL_NAMESPACE_PREFIX + "' prefix.");
+        }
+        if (false == creation.isInternalNameSpace() && CodeConverter.isInternalNamespace(creation.getCode()))
+        {
+            throw new UserFailureException(
+                    "'" + BasicConstant.INTERNAL_NAMESPACE_PREFIX + "' code prefix can be only used for the internal namespace property types.");
+        }
         if (StringUtils.isEmpty(creation.getLabel()))
         {
             throw new UserFailureException("Label cannot be empty.");
@@ -104,7 +116,7 @@ public class CreatePropertyTypeExecutor
         }
         if (dataType == DataType.CONTROLLEDVOCABULARY && creation.getVocabularyId() == null)
         {
-            throw new UserFailureException("Data type has been specified as " 
+            throw new UserFailureException("Data type has been specified as "
                     + DataType.CONTROLLEDVOCABULARY + " but vocabulary id is missing.");
         }
         if (creation.getVocabularyId() != null && dataType != DataType.CONTROLLEDVOCABULARY)
@@ -123,7 +135,7 @@ public class CreatePropertyTypeExecutor
                 EntityTypePermId permId = (EntityTypePermId) materialTypeId;
                 if (permId.getEntityKind() != EntityKind.MATERIAL)
                 {
-                    throw new UserFailureException("Specified entity type id (" + materialTypeId + ") is not a " 
+                    throw new UserFailureException("Specified entity type id (" + materialTypeId + ") is not a "
                             + EntityKind.MATERIAL + " type.");
                 }
             }
@@ -204,7 +216,7 @@ public class CreatePropertyTypeExecutor
     protected void updateAll(IOperationContext context, MapBatch<PropertyTypeCreation, PropertyTypePE> batch)
     {
     }
-    
+
     @Override
     protected void handleException(DataAccessException e)
     {
@@ -234,5 +246,5 @@ public class CreatePropertyTypeExecutor
             XmlUtils.validateXML(transformation, "XSLT", XmlUtils.XSLT_XSD_FILE_RESOURCE);
         }
     }
-    
+
 }

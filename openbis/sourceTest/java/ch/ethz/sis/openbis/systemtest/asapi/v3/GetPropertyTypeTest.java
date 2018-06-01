@@ -72,7 +72,7 @@ public class GetPropertyTypeTest extends AbstractTest
         PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(permId), fetchOptions).get(permId);
         
         // Then
-        assertEquals(propertyType.getCode(), "PLATE_GEOMETRY");
+        assertEquals(propertyType.getCode(), "$PLATE_GEOMETRY");
         assertEquals(propertyType.getPermId(), permId);
         assertEquals(propertyType.getDescription(), "Plate Geometry");
         assertEquals(propertyType.getDataType().toString(), DataType.CONTROLLEDVOCABULARY.toString());

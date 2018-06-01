@@ -65,6 +65,7 @@ import ch.systemsx.cisd.openbis.generic.server.plugin.SampleServerPluginRegistry
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.IRemoteHostValidator;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.IAuthorizationConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.EntityVisitComparatorByTimeStamp;
@@ -171,6 +172,9 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
     @Autowired
     private IAuthorizationConfig authorizationConfig;
 
+    @Autowired
+    private ISessionWorkspaceProvider sessionWorkspaceProvider;
+
     private IApplicationServerApi v3Api;
 
     protected String CISDHelpdeskEmail;
@@ -205,6 +209,12 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
     public void setDisplaySettingsProvider(DisplaySettingsProvider displaySettingsProvider)
     {
         this.displaySettingsProvider = displaySettingsProvider;
+    }
+
+    // For unit tests - in production Spring will inject this object.
+    public void setSessionWorkspaceProvider(ISessionWorkspaceProvider sessionWorkspaceProvider)
+    {
+        this.sessionWorkspaceProvider = sessionWorkspaceProvider;
     }
 
     // For unit tests - in production Spring will inject this object.
@@ -407,6 +417,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         try
         {
             sessionManager.closeSession(sessionToken);
+            sessionWorkspaceProvider.deleteSessionWorkspace(sessionToken);
             SessionFactory.cleanUpSessionOnDataStoreServers(sessionToken,
                     daoFactory.getDataStoreDAO(), dssFactory);
         } catch (InvalidSessionException e)
@@ -422,6 +433,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         try
         {
             sessionManager.expireSession(sessionToken);
+            sessionWorkspaceProvider.deleteSessionWorkspace(sessionToken);
             SessionFactory.cleanUpSessionOnDataStoreServers(sessionToken,
                     daoFactory.getDataStoreDAO(), dssFactory);
         } catch (InvalidSessionException e)
@@ -929,8 +941,9 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         if (person != null)
         {
             SpacePE homeGroup =
-                    groupIdOrNull == null ? null : getDAOFactory().getSpaceDAO().getByTechId(
-                            groupIdOrNull);
+                    groupIdOrNull == null ? null
+                            : getDAOFactory().getSpaceDAO().getByTechId(
+                                    groupIdOrNull);
             person.setHomeSpace(homeGroup);
             getDAOFactory().getPersonDAO().updatePerson(person);
         }

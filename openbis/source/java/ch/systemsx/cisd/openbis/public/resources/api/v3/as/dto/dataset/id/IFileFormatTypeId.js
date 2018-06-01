@@ -3,6 +3,9 @@
  * 
  * @author pkupczyk
  */
+/*
+ * @Deprecated
+ */
 define([ "stjs", "as/dto/common/id/IObjectId" ], function(stjs, IObjectId) {
 	var IFileFormatTypeId = function() {
 	};

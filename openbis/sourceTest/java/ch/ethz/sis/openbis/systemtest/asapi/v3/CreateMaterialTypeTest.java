@@ -21,12 +21,12 @@ import java.util.List;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.create.MaterialTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 
 /**
  * @author pkupczyk

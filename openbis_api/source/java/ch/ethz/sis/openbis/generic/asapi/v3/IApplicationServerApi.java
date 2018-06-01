@@ -55,6 +55,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -362,11 +363,23 @@ public interface IApplicationServerApi extends IRpcService
     public Map<IExperimentId, Experiment> getExperiments(String sessionToken, List<? extends IExperimentId> experimentIds,
             ExperimentFetchOptions fetchOptions);
 
+    public Map<IEntityTypeId, ExperimentType> getExperimentTypes(String sessionToken, List<? extends IEntityTypeId> experimentTypeIds,
+            ExperimentTypeFetchOptions fetchOptions);
+
     public Map<ISampleId, Sample> getSamples(String sessionToken, List<? extends ISampleId> sampleIds, SampleFetchOptions fetchOptions);
+
+    public Map<IEntityTypeId, SampleType> getSampleTypes(String sessionToken, List<? extends IEntityTypeId> sampleTypeIds,
+            SampleTypeFetchOptions fetchOptions);
 
     public Map<IDataSetId, DataSet> getDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetFetchOptions fetchOptions);
 
+    public Map<IEntityTypeId, DataSetType> getDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds,
+            DataSetTypeFetchOptions fetchOptions);
+
     public Map<IMaterialId, Material> getMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions);
+
+    public Map<IEntityTypeId, MaterialType> getMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds,
+            MaterialTypeFetchOptions fetchOptions);
 
     public Map<IPropertyTypeId, PropertyType> getPropertyTypes(String sessionToken, List<? extends IPropertyTypeId> typeIds,
             PropertyTypeFetchOptions fetchOptions);
@@ -568,5 +581,8 @@ public interface IApplicationServerApi extends IRpcService
     public Map<String, String> getServerInformation(String sessionToken);
 
     @TechPreview
-    public List<String> createPermIdStrings(String sessionToken, int amount);
+    public List<String> createPermIdStrings(String sessionToken, int count);
+
+    public List<String> createCodes(String sessionToken, String prefix, EntityKind entityKind, int count);
+
 }

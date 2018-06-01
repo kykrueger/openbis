@@ -24,6 +24,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.dataset.fetchoptions.FileFormatTypeSortOptions")
+@Deprecated
 public class FileFormatTypeSortOptions extends SortOptions<FileFormatType>
 {
 

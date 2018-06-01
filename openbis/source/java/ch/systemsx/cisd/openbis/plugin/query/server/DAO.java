@@ -149,8 +149,7 @@ public class DAO extends JdbcDaoSupport implements IDAO
         afterPropertiesSet();
     }
 
-    @Override
-    public TableModel query(String sqlQuery, QueryParameterBindings bindingsOrNull)
+    public static void checkQuery(String sqlQuery)
     {
         if (sqlQuery.toLowerCase().trim().startsWith("select") == false)
         {
@@ -162,6 +161,12 @@ public class DAO extends JdbcDaoSupport implements IDAO
             throw new UserFailureException("Sorry, only one query statement is allowed: "
                     + "A ';' somewhere in the middle has been found.");
         }
+    }
+
+    @Override
+    public TableModel query(String sqlQuery, QueryParameterBindings bindingsOrNull)
+    {
+        checkQuery(sqlQuery);
 
         PreparedStatementCallback callback = new PreparedStatementCallback()
             {

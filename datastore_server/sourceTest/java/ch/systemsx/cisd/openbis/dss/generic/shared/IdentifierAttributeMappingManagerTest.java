@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
@@ -179,6 +181,21 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
                 + "/S2\t4\t" + as3 + "\n"
                 + "/S1/P1\t2\t" + as1 + "," + as2 + ", " + as3);
         new IdentifierAttributeMappingManager(mappingFile.getPath(), true, null);
+    }
+
+    @Test
+    public void testCreateWithInvalidIdentifierRegex()
+    {
+        File mappingFile = new File(workingDirectory, "mapping.txt");
+        FileUtilities.writeToFile(mappingFile, "Identifier\tShare ID\tArchive Folder\n"
+                + "/s1/p[\t2\t" + as1 + "," + as2);
+        try
+        {
+            new IdentifierAttributeMappingManager(mappingFile.getPath(), true, null);
+        } catch (PatternSyntaxException ex)
+        {
+            AssertionUtil.assertStarts("Unclosed character class", ex.getMessage());
+        }
     }
 
     @Test
@@ -335,6 +352,23 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
     }
 
     @Test
+    public void testGetShareIdsOnExperimentLevelWithRegex()
+    {
+        File mappingFile = new File(workingDirectory, "mapping.txt");
+        FileUtilities.writeToFile(mappingFile, "Identifier\tShare ID\tArchive Folder\n"
+                + "/S1/P1/E.*\t2, 1,3\t\n"
+                + "/S1/P1\t1,3\t\n"
+                + "/S1\t2,3\t\n"
+                + "/S2\t4,5\t");
+        IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+
+        List<String> shareIds = mappingManager.getShareIds(ds);
+
+        assertEquals("[2, 1, 3]", shareIds.toString());
+    }
+
+    @Test
     public void testGetShareIdsOnProjectLevel()
     {
         File mappingFile = new File(workingDirectory, "mapping.txt");
@@ -352,14 +386,47 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
     }
 
     @Test
+    public void testGetShareIdsOnProjectLevelWithRegex()
+    {
+        File mappingFile = new File(workingDirectory, "mapping.txt");
+        FileUtilities.writeToFile(mappingFile, "Identifier\tShare ID\tArchive Folder\n"
+                + "/S1/P1/E2\t2, 1,3\t\n"
+                + "/S1/P.*\t1,3\t\n"
+                + "/S1\t2,3\t\n"
+                + "/S2\t4,5\t");
+        IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+
+        List<String> shareIds = mappingManager.getShareIds(ds);
+
+        assertEquals("[1, 3]", shareIds.toString());
+    }
+
+    @Test
     public void testGetShareIdsOnSpaceLevel()
     {
         File mappingFile = new File(workingDirectory, "mapping.txt");
         FileUtilities.writeToFile(mappingFile, "Identifier\tShare ID\tArchive Folder\n"
                 + "/S1/P1/E2\t2, 1,3\t\n"
                 + "/S1/P2\t1,3\t\n"
-                + "/S1\t\t\n"
                 + "/S1\t2,3\t\n"
+                + "/S2\t4,5\t");
+        IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+
+        List<String> shareIds = mappingManager.getShareIds(ds);
+
+        assertEquals("[2, 3]", shareIds.toString());
+    }
+
+    @Test
+    public void testGetShareIdsOnSpaceLevelWithRegex()
+    {
+        File mappingFile = new File(workingDirectory, "mapping.txt");
+        FileUtilities.writeToFile(mappingFile, "Identifier\tShare ID\tArchive Folder\n"
+                + "/S1/P1/E2\t2, 1,3\t\n"
+                + "/S1/P2\t1,3\t\n"
+                + "/S.*\t2,3\t\n"
                 + "/S2\t4,5\t");
         IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
         SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);

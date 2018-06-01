@@ -30,6 +30,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryTechId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
+import ch.systemsx.cisd.openbis.plugin.query.shared.DatabaseDefinition;
+import ch.systemsx.cisd.openbis.plugin.query.shared.IQueryDatabaseDefinitionProvider;
 
 /**
  * @author pkupczyk
@@ -46,6 +48,9 @@ public class QueryTranslator extends AbstractCachingTranslator<Long, Query, Quer
 
     @Autowired
     private IQueryBaseTranslator baseTranslator;
+
+    @Autowired
+    private IQueryDatabaseDefinitionProvider databaseProvider;
 
     @Override
     protected Set<Long> shouldTranslate(TranslationContext context, Collection<Long> queryIds, QueryFetchOptions fetchOptions)
@@ -86,6 +91,13 @@ public class QueryTranslator extends AbstractCachingTranslator<Long, Query, Quer
         result.setName(baseRecord.name);
         result.setDescription(baseRecord.description);
         result.setDatabaseId(new QueryDatabaseName(baseRecord.database));
+
+        DatabaseDefinition database = databaseProvider.getDefinition(baseRecord.database);
+        if (database != null)
+        {
+            result.setDatabaseLabel(database.getLabel());
+        }
+
         result.setQueryType(QueryType.valueOf(baseRecord.queryType));
         result.setEntityTypeCodePattern(baseRecord.entityTypeCodePattern);
         result.setSql(baseRecord.sql);

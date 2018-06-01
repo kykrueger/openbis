@@ -2,6 +2,9 @@
  * Class automatically generated with
  * {@link ch.ethz.sis.openbis.generic.shared.api.v3.dto.generators.DtoGenerator}
  */
+/*
+ * @Deprecated
+ */
 define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 	var FileFormatType = function() {
 	};

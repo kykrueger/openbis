@@ -55,9 +55,9 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
     protected abstract UPDATE newTypeUpdate();
 
     protected abstract EntityTypePermId getTypeId();
-    
+
     protected abstract void createEntity(String sessionToken, IEntityTypeId entityType, String propertyType, String propertyValue);
-    
+
     protected abstract void updateTypes(String sessionToken, List<UPDATE> updates);
 
     protected abstract TYPE getType(String sessionToken, EntityTypePermId typeId);
@@ -69,9 +69,9 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
     protected abstract String getValidationPluginOrNull(String sessionToken, EntityTypePermId typeId);
 
     protected abstract AbstractEntitySearchCriteria<?> createSearchCriteria(EntityTypePermId typeId);
-    
+
     protected abstract List<? extends IPropertiesHolder> searchEntities(String sessionToken, AbstractEntitySearchCriteria<?> searchCriteria);
-    
+
     @Test
     public void testUpdateWithUnspecifiedId()
     {
@@ -97,7 +97,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         UPDATE update = newTypeUpdate();
-        
+
         update.setTypeId(new EntityTypePermId("UNDEFINED", getTypeId().getEntityKind()));
 
         assertUserFailureException(new IDelegatedAction()
@@ -110,7 +110,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
             },
                 "Object with EntityTypePermId = [" + update.getTypeId() + "] has not been found.");
     }
-    
+
     @Test
     public void testUpdateWithIdWrongEntityKind()
     {
@@ -143,16 +143,16 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         update.setTypeId(typeId);
         update.setDescription("new description " + System.currentTimeMillis());
         updateTypeSpecificFields(update, 0);
-        
+
         // When
         updateTypes(sessionToken, Arrays.asList(update));
-        
+
         // Then
         TYPE type = getType(sessionToken, typeId);
         assertEquals(type.getDescription(), update.getDescription().getValue());
         assertTypeSpecificFields(type, update, 0);
     }
-    
+
     @Test
     public void testUpdateDescriptionUsingEntityTypePermIdWithoutEntityKind()
     {
@@ -163,16 +163,16 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         update.setTypeId(typeId);
         update.setDescription("new description " + System.currentTimeMillis());
         updateTypeSpecificFields(update, 0);
-        
+
         // When
         updateTypes(sessionToken, Arrays.asList(update));
-        
+
         // Then
         TYPE type = getType(sessionToken, typeId);
         assertEquals(type.getDescription(), update.getDescription().getValue());
         assertTypeSpecificFields(type, update, 0);
     }
-    
+
     @Test
     public void testUpdateWithValidationPlugin()
     {
@@ -183,16 +183,16 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         update.setTypeId(typeId);
         update.setValidationPluginId(new PluginPermId("validateOK"));
         updateTypeSpecificFields(update, 1);
-        
+
         // When
         updateTypes(sessionToken, Arrays.asList(update));
-        
+
         // Then
         assertEquals(getValidationPluginOrNull(sessionToken, typeId), "validateOK");
         TYPE type = getType(sessionToken, typeId);
         assertTypeSpecificFields(type, update, 1);
     }
-    
+
     @Test
     public void testUpdateRemovingValidationPlugin()
     {
@@ -205,20 +205,20 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         updateTypeSpecificFields(update, 1);
         updateTypes(sessionToken, Arrays.asList(update));
         assertEquals(getValidationPluginOrNull(sessionToken, typeId), "validateOK");
-        
+
         update = newTypeUpdate();
         update.setTypeId(typeId);
         update.getValidationPluginId().setValue(null);
-        
+
         // When
         updateTypes(sessionToken, Arrays.asList(update));
-        
+
         // Then
         assertEquals(getValidationPluginOrNull(sessionToken, typeId), null);
         TYPE type = getType(sessionToken, typeId);
         assertTypeSpecificFields(type, update, 1);
     }
-    
+
     @Test
     public void testUpdateWithValidationPluginOfIncorrectType()
     {
@@ -267,7 +267,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
                 "Entity type validation plugin has entity kind set to '" + incorrectEntityKind.name()
                         + "'. Expected a plugin where entity kind is either '" + getEntityKind().name() + "' or null");
     }
-    
+
     @Test
     public void testUpdateWithValidationPluginOfCorrectEntityType()
     {
@@ -283,7 +283,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
             pluginPermId = "test" + correctEntityKind;
             update.setValidationPluginId(new PluginPermId(pluginPermId));
         }
-        
+
         // When
         updateTypes(sessionToken, Arrays.asList(update));
 
@@ -292,7 +292,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         TYPE type = getType(sessionToken, typeId);
         assertTypeSpecificFields(type, update, 1);
     }
-    
+
     @Test
     public void testAddAndRemovePropertyTypeAssignment()
     {
@@ -313,7 +313,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         update.getPropertyAssignments().remove(new PropertyAssignmentPermId(typeId, new PropertyTypePermId("description")));
         Map<String, String> renderedAssignments = getCurrentRenderedPropertyAssignmentsByPropertyTypeCode(sessionToken);
         renderedAssignments.remove("DESCRIPTION");
-        renderedAssignments.put("SIZE", "PropertyAssignment entity type: " + typeId.getPermId() 
+        renderedAssignments.put("SIZE", "PropertyAssignment entity type: " + typeId.getPermId()
                 + ", property type: SIZE, mandatory: false, showInEditView: false, showRawValueInForms: false");
 
         // When
@@ -324,8 +324,9 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         List<String> actual = getSortedRenderedAssignments(sessionToken);
         assertEquals(actual.toString(), expected.toString());
     }
-    
-    @Test public void testRemovePropertyTypeAssignmentFailsBecauseOfEntitiesWithSuchProperty()
+
+    @Test
+    public void testRemovePropertyTypeAssignmentFailsBecauseOfEntitiesWithSuchProperty()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -357,8 +358,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         UPDATE update = newTypeUpdate();
         EntityTypePermId typeId = getTypeId();
         PropertyType propertyType = getType(sessionToken, typeId).getPropertyAssignments().get(0).getPropertyType();
-        String prefix = propertyType.isInternalNameSpace() ? "$" : "";
-        String propertyTypePermId = prefix + propertyType.getCode();
+        String propertyTypePermId = propertyType.getCode();
         update.setTypeId(typeId);
         PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
         assignmentCreation.setPropertyTypeId(new PropertyTypePermId(propertyTypePermId));
@@ -373,7 +373,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
                     updateTypes(sessionToken, Arrays.asList(update));
                 }
             },
-                "Property type '" + propertyTypePermId + "' is already assigned to " 
+                "Property type '" + propertyTypePermId + "' is already assigned to "
                         + getEntityKind().getLabel() + " type '" + typeId.getPermId() + "'.");
     }
 
@@ -407,14 +407,14 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         renderedAssignments.remove("COMMENT");
         renderedAssignments.remove("COMPOUND_HCS");
         renderedAssignments.remove("GENE_SYMBOL");
-        renderedAssignments.put("SIZE", "PropertyAssignment entity type: " + typeId.getPermId() 
+        renderedAssignments.put("SIZE", "PropertyAssignment entity type: " + typeId.getPermId()
                 + ", property type: SIZE, mandatory: true, showInEditView: false, showRawValueInForms: true");
-        renderedAssignments.put("PLATE_GEOMETRY", "PropertyAssignment entity type: " + typeId.getPermId() 
-                + ", property type: PLATE_GEOMETRY, mandatory: false, showInEditView: true, showRawValueInForms: false");
-        
+        renderedAssignments.put("$PLATE_GEOMETRY", "PropertyAssignment entity type: " + typeId.getPermId()
+                + ", property type: $PLATE_GEOMETRY, mandatory: false, showInEditView: true, showRawValueInForms: false");
+
         // When
         updateTypes(sessionToken, Arrays.asList(update));
-        
+
         // Then
         List<String> expected = getSortedRenderedAssignments(renderedAssignments);
         List<String> actual = getSortedRenderedAssignments(sessionToken);
@@ -488,7 +488,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
                     UPDATE update = newTypeUpdate();
                     update.setTypeId(typeId);
                     update.setDescription("new description " + System.currentTimeMillis());
-                    
+
                     // When
                     updateTypes(sessionToken, Arrays.asList(update));
                 }
@@ -506,7 +506,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
     {
         return fieldUpdateValue != null && fieldUpdateValue.isModified() ? fieldUpdateValue.getValue() : currentValue;
     }
-    
+
     private EntityKind getIncorrectEntityKind()
     {
         if (EntityKind.EXPERIMENT.equals(getEntityKind()))
@@ -517,7 +517,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
             return EntityKind.EXPERIMENT;
         }
     }
-    
+
     private EntityKind getCorrectEntityKind()
     {
         if (EntityKind.EXPERIMENT.equals(getEntityKind()))
@@ -531,7 +531,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
             return null;
         }
     }
-    
+
     private List<String> getSortedRenderedAssignments(String sessionToken)
     {
         return getSortedRenderedAssignments(getCurrentRenderedPropertyAssignmentsByPropertyTypeCode(sessionToken));
@@ -543,7 +543,7 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         Collections.sort(renderedAssignments);
         return renderedAssignments;
     }
-    
+
     private Map<String, String> getCurrentRenderedPropertyAssignmentsByPropertyTypeCode(String sessionToken)
     {
         Map<String, String> result = new HashMap<String, String>();
@@ -560,12 +560,12 @@ public abstract class UpdateEntityTypeTest<UPDATE extends IEntityTypeUpdate, TYP
         }
         return result;
     }
-    
+
     private ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind nextEntityKind(
             ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind entityKind)
     {
-        ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind[] values 
-                = ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.values();
+        ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind[] values =
+                ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.values();
         return values[(entityKind.ordinal() + 1) % values.length];
     }
 

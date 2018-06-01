@@ -43,6 +43,13 @@ public class SampleTypeAuthorizationExecutor implements ISampleTypeAuthorization
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @Capability("GET_SAMPLE_TYPE")
+    public void canGet(IOperationContext context)
+    {
+    }
+
+    @Override
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     @Capability("SEARCH_SAMPLE_TYPE")
     public void canSearch(IOperationContext context)
     {
@@ -63,5 +70,5 @@ public class SampleTypeAuthorizationExecutor implements ISampleTypeAuthorization
     public void canDelete(IOperationContext context)
     {
     }
-    
+
 }

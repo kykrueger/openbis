@@ -13,6 +13,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.name = null;
 		prototype.description = null;
 		prototype.databaseId = null;
+		prototype.databaseLabel = null;
 		prototype.queryType = null;
 		prototype.entityTypeCodePattern = null;
 		prototype.sql = null;
@@ -50,6 +51,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setDatabaseId = function(databaseId) {
 			this.databaseId = databaseId;
+		};
+		prototype.getDatabaseLabel = function() {
+			return this.databaseLabel;
+		};
+		prototype.setDatabaseLabel = function(databaseLabel) {
+			this.databaseLabel = databaseLabel;
 		};
 		prototype.getQueryType = function() {
 			return this.queryType;

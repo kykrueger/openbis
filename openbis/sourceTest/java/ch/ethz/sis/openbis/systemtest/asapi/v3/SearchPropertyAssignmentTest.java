@@ -112,6 +112,14 @@ public class SearchPropertyAssignmentTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithPropertyTypeWithInternalNamespace()
+    {
+        PropertyAssignmentSearchCriteria criteria = new PropertyAssignmentSearchCriteria();
+        criteria.withPropertyType().withId().thatEquals(new PropertyTypePermId("$PLATE_GEOMETRY"));
+        testSearch(TEST_USER, criteria, "MASTER_PLATE.$PLATE_GEOMETRY", "CONTROL_LAYOUT.$PLATE_GEOMETRY");
+    }
+
+    @Test
     public void testSearchWithSemanticAnnotations()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -141,7 +149,8 @@ public class SearchPropertyAssignmentTest extends AbstractTest
             }
         }
 
-        assertPropertyAssignments(withOwnSemanticAnnotations, "MASTER_PLATE.PLATE_GEOMETRY", "CONTROL_LAYOUT.PLATE_GEOMETRY", "CELL_PLATE.ORGANISM");
+        assertPropertyAssignments(withOwnSemanticAnnotations, "MASTER_PLATE.$PLATE_GEOMETRY", "CONTROL_LAYOUT.$PLATE_GEOMETRY",
+                "CELL_PLATE.ORGANISM");
         assertPropertyAssignments(withInheritedSemanticAnnotations, "MASTER_PLATE.DESCRIPTION", "CONTROL_LAYOUT.DESCRIPTION", "NORMAL.ORGANISM",
                 "DELETION_TEST.ORGANISM", "DELETION_TEST.DESCRIPTION");
 

@@ -127,11 +127,9 @@ public interface DataSetQuery extends ObjectQuery
             + "dsch.git_repository_id as gitRepositoryId, dsch.edms_id as externalDmsId, dsch.edms_code as externalDmsCode, dsch.edms_label as externalDmsLabel, "
             + "dsch.edms_address as externalDmsAddress, dsch.pers_id_author as authorId, dsch.valid_from_timestamp as validFrom, dsch.valid_until_timestamp as validTo "
             + "from data_set_copies_history dsch "
-            + "where dsch.valid_until_timestamp is not null and dsch.data_id = any(?{1})", 
-            parameterBindings = {
+            + "where dsch.valid_until_timestamp is not null and dsch.data_id = any(?{1})", parameterBindings = {
                     LongSetMapper.class
-                },
-            fetchSize = FETCH_SIZE)
+            }, fetchSize = FETCH_SIZE)
     public List<HistoryContentCopyRecord> getContentCopyHistory(LongSet dataSetIds);
 
     @Select(sql = "select ds_id from post_registration_dataset_queue where ds_id = any(?{1})", parameterBindings = {
@@ -190,7 +188,7 @@ public interface DataSetQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getPropertyAssignmentIds(LongSet dataSetTypeIds);
 
-    @Select(sql = "select pt.code as prty_code, 'DATA_SET' as kind_code, dt.id as type_id, dt.code as type_code, dtpt.* from data_set_type_property_types dtpt, property_types pt, data_set_types dt where dtpt.id = any(?{1}) and dtpt.prty_id = pt.id and dtpt.dsty_id = dt.id", parameterBindings = {
+    @Select(sql = "select pt.code as prty_code, pt.is_internal_namespace as prty_is_internal_namespace, 'DATA_SET' as kind_code, dt.id as type_id, dt.code as type_code, dtpt.* from data_set_type_property_types dtpt, property_types pt, data_set_types dt where dtpt.id = any(?{1}) and dtpt.prty_id = pt.id and dtpt.dsty_id = dt.id", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PropertyAssignmentRecord> getPropertyAssignments(LongSet dataSetTypePropertyTypeIds);
 
@@ -202,7 +200,8 @@ public interface DataSetQuery extends ObjectQuery
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ContentCopyRecord> getContentCopies(LongOpenHashSet longOpenHashSet);
 
-    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from data_set_types t where t.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select t.id as objectId, t.validation_script_id as relatedId from data_set_types t where t.id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getValidationPluginIds(LongSet dataSetTypeIds);
 
 }

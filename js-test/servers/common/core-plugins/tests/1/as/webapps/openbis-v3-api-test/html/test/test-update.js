@@ -1117,7 +1117,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			update.setDatabaseId(new c.QueryDatabaseName("openbisDB2"));
 			update.setQueryType(c.QueryType.SAMPLE);
 			update.setEntityTypeCodePattern("sample type pattern");
-			update.setSql("updated sql");
+			update.setSql("select * from samples where perm_id = ${key};");
 			update.setPublic(true);
 
 			var fCreate = function(facade) {

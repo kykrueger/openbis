@@ -46,7 +46,7 @@ public class Constants
 
     public static String OVERVIEW_PLUGINS_SERVICES_LIST_KEY = "overview-plugins";
 
-    /** Plugins for file system views (ftp / cifs) */
+    /** Plugins for file system views (ftp etc.) */
     public static final String DSS_FS_PLUGIN_NAMES = "file-system-plugins";
 
 }

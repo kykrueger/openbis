@@ -10,6 +10,9 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/d
 		prototype['@type'] = 'as.dto.dataset.fetchoptions.PhysicalDataFetchOptions';
 		constructor.serialVersionUID = 1;
 		prototype.storageFormat = null;
+		/*
+		 * @Deprecated
+		 */
 		prototype.fileFormatType = null;
 		prototype.locatorType = null;
 		prototype.sort = null;
@@ -26,6 +29,9 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/d
 		prototype.hasStorageFormat = function() {
 			return this.storageFormat != null;
 		};
+		/*
+		 * @Deprecated
+		 */
 		prototype.withFileFormatType = function() {
 			if (this.fileFormatType == null) {
 				var FileFormatTypeFetchOptions = require("as/dto/dataset/fetchoptions/FileFormatTypeFetchOptions");
@@ -33,9 +39,15 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/d
 			}
 			return this.fileFormatType;
 		};
+		/*
+		 * @Deprecated
+		 */
 		prototype.withFileFormatTypeUsing = function(fetchOptions) {
 			return this.fileFormatType = fetchOptions;
 		};
+		/*
+		 * @Deprecated
+		 */
 		prototype.hasFileFormatType = function() {
 			return this.fileFormatType != null;
 		};

@@ -27,6 +27,8 @@ public interface IMaterialTypeAuthorizationExecutor extends IObjectAuthorization
 
     void canCreate(IOperationContext context);
 
+    void canGet(IOperationContext context);
+
     void canSearch(IOperationContext context);
 
     void canUpdate(IOperationContext context);

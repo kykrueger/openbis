@@ -25,6 +25,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.dataset.id.IFileFormatTypeId")
+@Deprecated
 public interface IFileFormatTypeId extends IObjectId
 {
 

@@ -196,8 +196,8 @@ public class ImageChannelsUtils
         ImageTransformationParams transformationInfo = new ImageTransformationParams(true, mergeAllChannels,
                 transformationCode, transformationsPerChannel);
         List<AbsoluteImageReference> imageContents =
-                imageLoadingHelper.fetchImageContents(imageChannels, mergeAllChannels, false, transformationInfo);
-        return calculateBufferedImage(imageContents, transformationInfo);
+                imageLoadingHelper.fetchImageContents(imageChannels, mergeAllChannels, true, transformationInfo);
+        return imageContents.isEmpty() ? null : calculateBufferedImage(imageContents, transformationInfo);
     }
 
     private static BufferedImage drawOverlays(BufferedImage imageOrNull, ImageGenerationDescription params,

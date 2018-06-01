@@ -21,12 +21,16 @@ import java.util.List;
 public class UserGroup
 {
     private String name;
-    
+
     private String key;
+    
+    private boolean enabled = true;
 
     private List<String> ldapGroupKeys;
 
     private List<String> admins;
+
+    private List<String> shareIds;
 
     public String getName()
     {
@@ -43,6 +47,16 @@ public class UserGroup
         this.key = key;
     }
 
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
     public List<String> getAdmins()
     {
         return admins;
@@ -52,9 +66,20 @@ public class UserGroup
     {
         this.admins = admins;
     }
-    
+
     public List<String> getLdapGroupKeys()
     {
         return ldapGroupKeys;
     }
+
+    public List<String> getShareIds()
+    {
+        return shareIds;
+    }
+
+    public void setShareIds(List<String> shareIds)
+    {
+        this.shareIds = shareIds;
+    }
+
 }

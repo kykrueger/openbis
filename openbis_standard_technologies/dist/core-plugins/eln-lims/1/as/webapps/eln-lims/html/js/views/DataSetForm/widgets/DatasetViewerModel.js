@@ -83,9 +83,10 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
     }
 
 	this._isIconableImage = function(pathInDataSet) {
-        return this._hasExtension(pathInDataSet, ["jpg", "jpeg", "png", "gif"]);
+        var filename = pathInDataSet.split('/').slice(-1)[0];
+        return !filename.startsWith('.') && this._hasExtension(pathInDataSet, ["jpg", "jpeg", "png", "gif"]);
     }
-	
+
 	this._isJupyterNotebook = function(pathInDataSet) {
         return this._hasExtension(pathInDataSet, ["ipynb"]);
     }
@@ -138,15 +139,15 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
 		var isLinked = false;
 		
 		if(this.isLinkDataset(datasetCode)) {
-			directLinkComponent = "<span class='glyphicon glyphicon-link'></span>";
+			directLinkComponent = "<span onclick=\"mainController.changeView('showDatasetHierarchyTablePage', '" + datasetCode + "')\" class='glyphicon glyphicon-link'></span>";
 			isLinked = true;
 		}
 		
 		if(this.isHistoryDataset(datasetCode)) {
-			directLinkComponent = "<span class='glyphicon glyphicon-time'></span>";
+			directLinkComponent = "<span onclick=\"mainController.changeView('showDatasetHierarchyTablePage', '" + datasetCode + "')\" class='glyphicon glyphicon-time'></span>";
 		}
 		
-		if(!isLinked && profile.directLinkEnabled && (profile.cifsFileServer || profile.sftpFileServer)) {
+		if(!isLinked && profile.directLinkEnabled && profile.sftpFileServer) {
 			var path = null;
 			
 			if(this.isExperiment()) {

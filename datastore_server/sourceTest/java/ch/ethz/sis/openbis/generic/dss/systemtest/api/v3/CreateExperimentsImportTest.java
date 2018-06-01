@@ -46,6 +46,7 @@ public class CreateExperimentsImportTest extends ObjectsImportTest
             ImportFile file = new ImportFile("identifier", "DESCRIPTION");
             file.addLine(experimentIdentifier.getIdentifier(), "imported description");
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+            assertUploadedFiles(sessionToken, file.toString());
 
             Experiment experiment = getObject(sessionToken, experimentIdentifier);
             assertNull(experiment);
@@ -75,6 +76,9 @@ public class CreateExperimentsImportTest extends ObjectsImportTest
                 assertEquals("1 experiment(s) found and registered.", message);
                 assertNoEmails(timestamp);
             }
+
+            assertUploadedFiles(sessionToken);
+
         } finally
         {
             ExperimentDeletionOptions options = new ExperimentDeletionOptions();

@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -27,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import ch.systemsx.cisd.authentication.IAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
@@ -35,6 +37,7 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
+import ch.systemsx.cisd.common.string.StringUtilities;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
@@ -51,6 +54,8 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
     static final String DEFAULT_AUDIT_LOG_FILE_PATH = "logs/user-management-audit_log.txt";
 
+    static final String SHARES_MAPPING_FILE_PATH_PROPERTY = "shares-mapping-file-path";
+
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             UserManagementMaintenanceTask.class);
 
@@ -62,6 +67,8 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
     private File auditLogFile;
 
     private LDAPAuthenticationService ldapService;
+
+    private File shareIdsMappingFile;
 
     @Override
     public void setUp(String pluginName, Properties properties)
@@ -85,20 +92,30 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
                     + "At least 'ldap.server.url', 'ldap.security.principal.distinguished.name', "
                     + "'ldap.security.principal.password' have to be specified in 'service.properties'.");
         }
+        String shareIdsMappingFilePath = properties.getProperty(SHARES_MAPPING_FILE_PATH_PROPERTY);
+        if (shareIdsMappingFilePath != null)
+        {
+            shareIdsMappingFile = new File(shareIdsMappingFilePath);
+            if (shareIdsMappingFile.isDirectory())
+            {
+                throw new ConfigurationFailureException("Share ids mapping file '" + shareIdsMappingFile.getAbsolutePath() + "' is a directory.");
+            }
+        }
         operationLog.info("Plugin '" + pluginName + "' initialized. Configuration file: " + configurationFile.getAbsolutePath());
     }
 
     @Override
     public void execute()
     {
-        UserManagerConfig config = readGroupDefinitions();
+        UserManagerReport report = createUserManagerReport();
+        UserManagerConfig config = readGroupDefinitions(report);
         if (config == null || config.getGroups() == null)
         {
             return;
         }
         operationLog.info("manage " + config.getGroups().size() + " groups");
         Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
-        UserManager userManager = createUserManager(config, logger);
+        UserManager userManager = createUserManager(config, logger, report);
         for (UserGroup group : config.getGroups())
         {
             if (addGroup(userManager, group) == false)
@@ -106,12 +123,12 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
                 return;
             }
         }
-        UserManagerReport userManagerReport = userManager.manage();
-        handleReport(userManagerReport);
+        userManager.manage();
+        handleReport(report);
         operationLog.info("finished");
     }
 
-    private UserManagerConfig readGroupDefinitions()
+    private UserManagerConfig readGroupDefinitions(UserManagerReport report)
     {
         if (configurationFile.isFile() == false)
         {
@@ -122,17 +139,45 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         try
         {
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(serializedConfig, UserManagerConfig.class);
+            UserManagerConfig config = mapper.readValue(serializedConfig, UserManagerConfig.class);
+            boolean hasChanged = hasChanged(serializedConfig);
+            if (hasChanged)
+            {
+                report.addChangedConfig(serializedConfig, new Date(configurationFile.lastModified()));
+            }
+            return config;
         } catch (Exception e)
         {
             operationLog.error("Invalid content of configuration file '" + configurationFile.getAbsolutePath() + "': " + e, e);
             return null;
         }
     }
-    
+
+    private boolean hasChanged(String serializedConfig)
+    {
+        String hash = StringUtilities.computeMD5Hash(configurationFile.lastModified() + serializedConfig);
+        File hashFile = new File(configurationFile.getParentFile(), configurationFile.getName() + ".hash");
+        String previousHash = null;
+        if (hashFile.isFile())
+        {
+            previousHash = FileUtilities.loadExactToString(hashFile);
+        }
+        FileUtilities.writeToFile(hashFile, hash);
+        return hash.equals(previousHash) == false;
+    }
+
     private boolean addGroup(UserManager userManager, UserGroup group)
     {
         String key = group.getKey();
+        if (shareIdsMappingFile != null)
+        {
+            List<String> shareIds = group.getShareIds();
+            if (shareIds == null || shareIds.isEmpty())
+            {
+                operationLog.error("No shareIds specified for group '" + key + "'. Task aborted.");
+                return false;
+            }
+        }
         List<String> ldapGroupKeys = group.getLdapGroupKeys();
         if (ldapGroupKeys == null || ldapGroupKeys.isEmpty())
         {
@@ -149,7 +194,7 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
             }
             List<Principal> principals = getUsersOfGroup(ldapGroupKey);
-            if (principals.isEmpty())
+            if (group.isEnabled() && principals.isEmpty())
             {
                 operationLog.error("No users found for ldapGroupKey '" + ldapGroupKey + "' for group '" + key + "'. Task aborted.");
                 return false;
@@ -184,16 +229,32 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
 
     protected LDAPAuthenticationService getLdapAuthenticationService()
     {
-        return (LDAPAuthenticationService) CommonServiceProvider.getApplicationContext().getBean("ldap-authentication-service");
+        return (LDAPAuthenticationService) CommonServiceProvider.tryToGetBean("ldap-authentication-service");
     }
 
-    protected UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger)
+    protected UserManagerReport createUserManagerReport()
     {
-        UserManager userManager = new UserManager(ldapService, CommonServiceProvider.getApplicationServerApi(),
-                logger, SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+        return new UserManagerReport(SystemTimeProvider.SYSTEM_TIME_PROVIDER);
+    }
+
+    private UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger, UserManagerReport report)
+    {
+        UserManager userManager = createUserManager(logger, report);
         userManager.setGlobalSpaces(config.getGlobalSpaces());
-        userManager.setCommonSpacesByRole(config.getCommonSpaces());
-        userManager.setSamplesByType(config.getCommonSamples());
+        try
+        {
+            userManager.setCommon(config.getCommonSpaces(), config.getCommonSamples(), config.getCommonExperiments());
+        } catch (ConfigurationFailureException e)
+        {
+            notificationLog.error(e.getMessage());
+        }
         return userManager;
+    }
+
+    protected UserManager createUserManager(Log4jSimpleLogger logger, UserManagerReport report)
+    {
+        IAuthenticationService authenticationService = (IAuthenticationService) CommonServiceProvider.tryToGetBean("authentication-service");
+        return new UserManager(authenticationService, CommonServiceProvider.getApplicationServerApi(), shareIdsMappingFile,
+                logger, report);
     }
 }

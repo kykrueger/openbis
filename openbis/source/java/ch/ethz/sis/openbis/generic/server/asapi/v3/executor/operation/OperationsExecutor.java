@@ -37,6 +37,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ICreateDataS
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ICreateDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDeleteDataSetTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDeleteDataSetsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IGetDataSetTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IGetDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ILockDataSetsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.ISearchDataSetTypesOperationExecutor;
@@ -50,10 +51,12 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.datastore.ISearchDat
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IConfirmDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.IRevertDeletionsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion.ISearchDeletionsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.ICreateCodesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ICreateExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IDeleteExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IDeleteExperimentsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IGetExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.IGetExperimentsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ISearchExperimentTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment.ISearchExperimentsOperationExecutor;
@@ -70,6 +73,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ICreateMate
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ICreateMaterialsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IDeleteMaterialTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IDeleteMaterialsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IGetMaterialTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.IGetMaterialsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ISearchMaterialTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.material.ISearchMaterialsOperationExecutor;
@@ -117,6 +121,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ICreateSample
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ICreateSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IDeleteSampleTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IDeleteSamplesOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IGetSampleTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.IGetSamplesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISearchSampleTypesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISearchSamplesOperationExecutor;
@@ -298,6 +303,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private ICreateQueriesOperationExecutor createQueriesExecutor;
 
     @Autowired
+    private ICreateCodesOperationExecutor createCodesExecutor;
+
+    @Autowired
     private IUpdateSpacesOperationExecutor updateSpacesExecutor;
 
     @Autowired
@@ -385,13 +393,25 @@ public class OperationsExecutor implements IOperationsExecutor
     private IGetExperimentsOperationExecutor getExperimentsExecutor;
 
     @Autowired
+    private IGetExperimentTypesOperationExecutor getExperimentTypesExecutor;
+
+    @Autowired
     private IGetSamplesOperationExecutor getSamplesExecutor;
+
+    @Autowired
+    private IGetSampleTypesOperationExecutor getSampleTypesExecutor;
 
     @Autowired
     private IGetDataSetsOperationExecutor getDataSetsExecutor;
 
     @Autowired
+    private IGetDataSetTypesOperationExecutor getDataSetTypesExecutor;
+
+    @Autowired
     private IGetMaterialsOperationExecutor getMaterialsExecutor;
+
+    @Autowired
+    private IGetMaterialTypesOperationExecutor getMaterialTypesExecutor;
 
     @Autowired
     private IGetTagsOperationExecutor getTagsExecutor;
@@ -666,9 +686,13 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(getSpacesExecutor.execute(context, operations));
         resultMap.putAll(getProjectsExecutor.execute(context, operations));
         resultMap.putAll(getExperimentsExecutor.execute(context, operations));
+        resultMap.putAll(getExperimentTypesExecutor.execute(context, operations));
         resultMap.putAll(getSamplesExecutor.execute(context, operations));
+        resultMap.putAll(getSampleTypesExecutor.execute(context, operations));
         resultMap.putAll(getDataSetsExecutor.execute(context, operations));
+        resultMap.putAll(getDataSetTypesExecutor.execute(context, operations));
         resultMap.putAll(getMaterialsExecutor.execute(context, operations));
+        resultMap.putAll(getMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(getTagsExecutor.execute(context, operations));
         resultMap.putAll(getAuthorizationGroupsExecutor.execute(context, operations));
         resultMap.putAll(getRoleAssignmentsExecutor.execute(context, operations));
@@ -742,6 +766,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(createAuthorizationGroupsExecutor.execute(context, operations));
         resultMap.putAll(createRoleAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(createQueriesExecutor.execute(context, operations));
+        resultMap.putAll(createCodesExecutor.execute(context, operations));
     }
 
     private void executeDeletions(List<? extends IOperation> operations,

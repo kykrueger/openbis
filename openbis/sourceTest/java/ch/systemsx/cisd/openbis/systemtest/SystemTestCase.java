@@ -38,6 +38,7 @@ import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.DataProvider;
 
 import ch.systemsx.cisd.common.servlet.SpringRequestContextProvider;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
@@ -50,6 +51,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.IServiceForDataStoreServer;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.GridRowModel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentifierHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
@@ -99,7 +101,7 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     protected static final String TEST_POWER_USER_CISD = "test_role";
 
     protected static final String TEST_INSTANCE_ETLSERVER = "etlserver";
-    
+
     protected static final String TEST_GROUP_OBSERVER = "observer";
 
     protected static final String TEST_INSTANCE_OBSERVER = "instance_observer";
@@ -116,6 +118,10 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
 
     protected static final String SESSION_KEY = "session-key";
 
+    protected static final String PROVIDER_BOOLEAN = "provider-boolean";
+
+    protected static final String PROVIDER_BOOLEAN_BOOLEAN = "provider-boolean-boolean";
+
     protected IDAOFactory daoFactory;
 
     protected ICommonServerForInternalUse commonServer;
@@ -131,6 +137,9 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     protected MockHttpServletRequest request;
 
     protected String systemSessionToken;
+
+    @Autowired
+    protected ISessionWorkspaceProvider sessionWorkspaceProvider;
 
     @BeforeSuite
     public void beforeSuite()
@@ -368,11 +377,11 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         return new NewSampleBuilder(identifier);
     }
 
-    protected void uploadFile(String fileName, String fileContent)
+    protected void uploadFile(String sessionToken, String fileName, String fileContent)
     {
         UploadedFilesBean bean = new UploadedFilesBean();
-        bean.addMultipartFile(new MockMultipartFile(fileName, fileName, null, fileContent
-                .getBytes()));
+        bean.addMultipartFile(sessionToken, new MockMultipartFile(fileName, fileName, null, fileContent
+                .getBytes()), sessionWorkspaceProvider);
         HttpSession session = request.getSession();
         session.setAttribute(SESSION_KEY, bean);
     }
@@ -564,6 +573,18 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         }
         throw new IllegalArgumentException("No assignment for " + entityTypeCode + " with "
                 + propertyTypeCode + ".");
+    }
+
+    @DataProvider(name = PROVIDER_BOOLEAN)
+    protected Object[][] provideBoolean()
+    {
+        return new Object[][] { { true }, { false } };
+    }
+
+    @DataProvider(name = PROVIDER_BOOLEAN_BOOLEAN)
+    protected Object[][] provideBooleanBoolean()
+    {
+        return new Object[][] { { true, true }, { true, false }, { false, true }, { false, false } };
     }
 
 }

@@ -27,6 +27,8 @@ public interface IDataSetTypeAuthorizationExecutor extends IObjectAuthorizationE
 
     void canCreate(IOperationContext context);
 
+    void canGet(IOperationContext context);
+
     void canSearch(IOperationContext context);
 
     void canUpdate(IOperationContext context);

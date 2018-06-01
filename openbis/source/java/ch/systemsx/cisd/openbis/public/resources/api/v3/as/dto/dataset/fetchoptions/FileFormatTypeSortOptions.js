@@ -1,3 +1,6 @@
+/*
+ * @Deprecated
+ */
 define([ "require", "stjs", "as/dto/common/fetchoptions/SortOptions" ], function(require, stjs, SortOptions) {
 	var FileFormatTypeSortOptions = function() {
 		SortOptions.call(this);

@@ -154,7 +154,7 @@ public class CodeGenerationTest extends SystemTestCase
         setSampleCodeSequence(10);
 
         String sessionID = logIntoCommonClientService().getSessionID();
-        uploadFile("testAutomaticCreationOfSampleCodesInBatchSampleRegistration.txt",
+        uploadFile(sessionID, "testAutomaticCreationOfSampleCodesInBatchSampleRegistration.txt",
                 "experiment\tCOMMENT\n" + "/CISD/NEMO/EXP1\tA\n" + "/CISD/NEMO/EXP1\tB\n");
         SampleType sampleType = new SampleType();
         sampleType.setGeneratedCodePrefix("A");

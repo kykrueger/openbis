@@ -24,13 +24,12 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.service.execute.AbstractExecutionOptionsWithParameters")
 public abstract class AbstractExecutionOptionsWithParameters<EO extends AbstractExecutionOptionsWithParameters<EO, V>, V> implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    
+
     private final Map<String, V> parameters = new HashMap<String, V>();
 
     @SuppressWarnings("unchecked")
@@ -48,7 +47,7 @@ public abstract class AbstractExecutionOptionsWithParameters<EO extends Abstract
     @Override
     public String toString()
     {
-        return getClass().getSimpleName() + ": parameters=" + parameters;
+        return getClass().getSimpleName() + ": parameterKeys=" + (parameters != null ? parameters.keySet() : "[]");
     }
 
 }

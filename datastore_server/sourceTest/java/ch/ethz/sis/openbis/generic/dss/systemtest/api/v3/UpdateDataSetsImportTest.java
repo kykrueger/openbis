@@ -78,6 +78,7 @@ public class UpdateDataSetsImportTest extends ObjectsImportTest
             ImportFile file = new ImportFile("code", "COMMENT");
             file.addLine(dataSetPermId.getPermId(), "imported comment");
             uploadFiles(sessionToken, TEST_UPLOAD_KEY, file.toString());
+            assertUploadedFiles(sessionToken, file.toString());
 
             Map<String, Object> parameters = new HashMap<String, Object>();
             parameters.put(PARAM_UPLOAD_KEY, TEST_UPLOAD_KEY);
@@ -104,6 +105,9 @@ public class UpdateDataSetsImportTest extends ObjectsImportTest
                 assertEquals("1 data set(s) found and registered.", message);
                 assertNoEmails(timestamp);
             }
+
+            assertUploadedFiles(sessionToken);
+
         } finally
         {
             DataSetDeletionOptions options = new DataSetDeletionOptions();

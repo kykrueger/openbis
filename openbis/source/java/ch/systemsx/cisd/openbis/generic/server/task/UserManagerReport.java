@@ -17,12 +17,16 @@
 package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
@@ -32,6 +36,8 @@ import ch.systemsx.cisd.common.utilities.ITimeProvider;
  */
 public class UserManagerReport
 {
+    static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     private StringBuilder errorReport = new StringBuilder();
 
     private StringBuilder auditLog = new StringBuilder();
@@ -41,7 +47,6 @@ public class UserManagerReport
     public UserManagerReport(ITimeProvider timeProvider)
     {
         this.timeProvider = timeProvider;
-
     }
 
     public String getErrorReport()
@@ -74,29 +79,44 @@ public class UserManagerReport
         log("ADD-USER", userId);
     }
 
-    public void reuseUser(String userId)
+    void reuseUser(String userId)
     {
         log("REUSE-USER", userId);
     }
-    
+
     void addSpace(ISpaceId spaceId)
     {
         log("ADD-SPACE", spaceId);
     }
-    
+
     void addSpaces(List<SpaceCreation> spaceCreations)
     {
         log("ADD-SPACES", spaceCreations.stream().map(SpaceCreation::getCode).collect(Collectors.toList()).toString());
+    }
+
+    void addSample(ISampleId sampleId)
+    {
+        log("ADD-SAMPLE", sampleId);
+    }
+
+    void addProject(ProjectIdentifier identifier)
+    {
+        log("ADD-PROJECT", identifier);
+    }
+
+    void addExperiment(ExperimentIdentifier identifier)
+    {
+        log("ADD-EXPERIMENT", identifier);
     }
 
     void assignRoleTo(AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)
     {
         log("ASSIGN-ROLE-TO-AUTHORIZATION-GROUP", "group: " + groupId + ", role: SPACE_" + role + " for " + spaceId);
     }
-    
-    public void unassignRoleFrom(AuthorizationGroupPermId groupId, Role role, ISpaceId spaceId)
+
+    void unassignRoleFrom(String userId, Role role, ISpaceId spaceId)
     {
-        log("UNASSIGN-ROLE-FORM-AUTHORIZATION-GROUP", "group: " + groupId + ", role: SPACE_" + role + " for " + spaceId);
+        log("UNASSIGN-ROLE-FORM-USER", "user: " + userId + ", role: SPACE_" + role + " for " + spaceId);
     }
 
     void addUserToGroup(String groupCode, String userId)
@@ -109,10 +129,28 @@ public class UserManagerReport
         log("REMOVE-USER-FROM-AUTHORIZATION-GROUP", "group: " + groupCode + ", user: " + userId);
     }
 
+    void assignHomeSpace(String userId, ISpaceId spaceIdOrNull)
+    {
+        if (spaceIdOrNull == null)
+        {
+            log("REMOVE-HOME-SPACE-FROM-USER", userId);
+        } else
+        {
+            log("ASSIGN-HOME-SPACE-FOR-USER", "user: " + userId + ", home space: " + spaceIdOrNull);
+        }
+    }
+
+    public void addChangedConfig(String serializedConfig, Date date)
+    {
+        log("CONFIG-UPDATE-START", "Last modified: " + new SimpleDateFormat(DATE_FORMAT).format(date));
+        auditLog.append(serializedConfig);
+        log("CONFIG-UPDATE-END", "");
+    }
+
     private void log(String action, Object details)
     {
         Date timeStamp = new Date(timeProvider.getTimeInMilliseconds());
-        MessageFormat messageFormat = new MessageFormat("{0,date,yyyy-MM-dd HH:mm:ss} [{1}] {2}\n");
+        MessageFormat messageFormat = new MessageFormat("{0,date," + DATE_FORMAT + "} [{1}] {2}\n");
         auditLog.append(messageFormat.format(new Object[] { timeStamp, action, details }));
     }
 

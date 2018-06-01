@@ -427,29 +427,28 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			{ label : "Settings for" },
 			{ label : "Section name" },
 			{ label : "Disable section" },
-			{ label : "Disable addition of any object type" }
+			{ label : "Disable addition of any " + ELNDictionary.sample + " type" }
 		];
-		tableModel.rowBuilders = {
-			"Settings for" : function(rowData) {
+		tableModel.rowBuilders = {}
+		tableModel.rowBuilders["Settings for"] = function(rowData) {
 				return $("<span>").text(rowData.parentsOrChildren);
-			},
-			"Section name" : function(rowData) {
-				return $("<input>", { type : "text", class : "form-control" }).val(rowData.title);
-			},
-			"Disable section" : function(rowData) {
-				var $checkbox = $("<input>", { type : "checkbox" });
-				if (rowData.disabled) {
-					$checkbox.attr("checked", true);
-				}
-				return $checkbox;
-			},
-			"Disable addition of any object type" : function(rowData) {
-				var $checkbox = $("<input>", { type : "checkbox" });
-				if (rowData.anyTypeDisabled) {
-					$checkbox.attr("checked", true);
-				}
-				return $checkbox;
-			},
+		};
+		tableModel.rowBuilders["Section name"] = function(rowData) {
+			return $("<input>", { type : "text", class : "form-control" }).val(rowData.title);
+		};
+		tableModel.rowBuilders["Disable section"] = function(rowData) {
+			var $checkbox = $("<input>", { type : "checkbox" });
+			if (rowData.disabled) {
+				$checkbox.attr("checked", true);
+			}
+			return $checkbox;
+		};
+		tableModel.rowBuilders["Disable addition of any " + ELNDictionary.sample + " type"] = function(rowData) {
+			var $checkbox = $("<input>", { type : "checkbox" });
+			if (rowData.anyTypeDisabled) {
+				$checkbox.attr("checked", true);
+			}
+			return $checkbox;
 		};
 		// add data
 		if (sampleTypeSettings) { // values from profile
@@ -490,7 +489,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					if (rowValues["Disable section"]) {
 						settings["SAMPLE_PARENTS_DISABLED"] = true;
 					}
-					if (rowValues["Disable addition of any object type"]) {
+					if (rowValues["Disable addition of any " + ELNDictionary.sample + " type"]) {
 						settings["SAMPLE_PARENTS_ANY_TYPE_DISABLED"] = true;
 					}
 				} else if (rowValues["Settings for"] === "Children") {
@@ -500,7 +499,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					if (rowValues["Disable section"]) {
 						settings["SAMPLE_CHILDREN_DISABLED"] = true;
 					}
-					if (rowValues["Disable addition of any object type"]) {
+					if (rowValues["Disable addition of any " + ELNDictionary.sample + " type"]) {
 						settings["SAMPLE_CHILDREN_ANY_TYPE_DISABLED"] = true;
 					}
 				}
@@ -646,7 +645,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		tableModel.rowBuilders[params.columnName] = function(rowData) {
 			return FormUtil.getDropdown(params.options.map(function(option) {
 				return {
-					label : option,
+					label : Util.getDisplayNameFromCode(option),
 					value : option,
 					selected : option === rowData,
 				};
