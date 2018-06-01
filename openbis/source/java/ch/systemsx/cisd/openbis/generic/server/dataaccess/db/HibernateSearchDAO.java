@@ -24,7 +24,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -119,6 +121,8 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
     private Map<String, DocValuesType> fieldTypesCache;
 
     private final XMLInputFactory xif = XMLInputFactory.newFactory();
+
+    private Properties serviceProperties;
 
     HibernateSearchDAO(final SessionFactory sessionFactory,
             HibernateSearchContext hibernateSearchContext)
@@ -367,6 +371,8 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
         hibernateQuery.setReadOnly(true);
         hibernateQuery.setFirstResult(0);
         hibernateQuery.setMaxResults(maxResults);
+
+        setTimeout(hibernateQuery);
 
         hibernateQuery.setResultTransformer(new ResultTransformer()
             {
@@ -700,6 +706,21 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
 
     }
 
+    private void setTimeout(FullTextQuery hibernateQuery)
+    {
+        int timeout = -1;
+        try
+        {
+            timeout = Integer.parseInt(serviceProperties.get("fulltext-timeout").toString());
+        } catch (Exception e)
+        {
+        }
+        if (timeout > 0)
+        {
+            hibernateQuery.setTimeout(timeout, TimeUnit.SECONDS);
+        }
+    }
+
     // detailed search
 
     @Override
@@ -747,6 +768,8 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
         hibernateQuery.setProjection(ProjectionConstants.ID);
         hibernateQuery.setReadOnly(true);
         hibernateQuery.setResultTransformer(new PassThroughOneObjectTupleResultTransformer());
+
+        setTimeout(hibernateQuery);
 
         List<Long> entityIds = AbstractDAO.cast(hibernateQuery.list());
         entityIds = filterNulls(entityIds);
@@ -849,5 +872,11 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
         {
             readerProvider.closeIndexReader(indexReader);
         }
+    }
+
+    @Override
+    public void setProperties(Properties serviceProperties)
+    {
+        this.serviceProperties = serviceProperties;
     }
 }
