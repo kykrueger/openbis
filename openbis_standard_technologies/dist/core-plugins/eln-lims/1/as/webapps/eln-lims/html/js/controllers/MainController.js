@@ -942,16 +942,16 @@ function MainController(profile) {
 		//Show View
 		var localInstance = this;
 		
-		var dsCriteria = { 	
+		var sCriteria = { 	
 			entityKind : "SAMPLE", 
 			logicalOperator : "AND", 
 			rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : permId } }
 		};
 					
-		this.serverFacade.searchForSamplesAdvanced(dsCriteria, null, function(results) {
-			var dataset = results.objects[0];
+		this.serverFacade.searchForSamplesAdvanced(sCriteria, null, function(results) {
+			var sample = results.objects[0];
 			var views = localInstance._getNewViewModel(true, true, false);
-			var hierarchyTableController = new HierarchyTableController(this, dataset);
+			var hierarchyTableController = new HierarchyTableController(this, sample);
 			hierarchyTableController.init(views);
 			localInstance.currentView = hierarchyTableController;
 		});
