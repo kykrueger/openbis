@@ -145,7 +145,7 @@ class RepositoryEnv(ConfigEnv):
     def initialize_params(self):
         self.add_param(ConfigParam(name='id', private=True))
         self.add_param(ConfigParam(name='external_dms_id', private=True))
-        self.add_param(ConfigParam(name='data_set_id', private=False))
+        self.add_param(ConfigParam(name='data_set_id', private=True))
 
     def is_usersetting(self):
         return False
