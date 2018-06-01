@@ -2064,7 +2064,11 @@ function ServerFacade(openbisServer) {
             mainController.openbisV3.updateSamples([ sampleUpdate ]).done(function() {
                 callbackFunction(true);
             }).fail(function(result) {
-				Util.showError("Call failed to server: " + JSON.stringify(result));
+            		var msg = null;
+            		if(result.message && result.message.length > 500) {
+            			msg = result.message.substring(0,499) + "... and another " + (result.message.length - 500) + " characters.";
+            		};
+				Util.showError("Call failed to server: " + msg);
 				callbackFunction(false);
 			});
         });
