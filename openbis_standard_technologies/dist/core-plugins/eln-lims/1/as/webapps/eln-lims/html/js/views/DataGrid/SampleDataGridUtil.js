@@ -169,34 +169,12 @@ var SampleDataGridUtil = new function() {
 					var isFirst = true;
 					for (var cIdx = 0; cIdx < data['$object'].children.length; cIdx++) {
 						if(data['$object'].children[cIdx].sampleTypeCode == "STORAGE_POSITION") {
-							storageData = data['$object'].children[cIdx].properties;
-							var storagePropertyGroup = profile.getStoragePropertyGroup();
-							
-							var codeProperty = storageData[storagePropertyGroup.nameProperty];
-							if(!codeProperty) {
-								codeProperty = "NoCode";
-							}
-							var rowProperty = storageData[storagePropertyGroup.rowProperty];
-							if(!rowProperty) {
-								rowProperty = "NoRow";
-							}
-							var colProperty = storageData[storagePropertyGroup.columnProperty];
-							if(!colProperty) {
-								colProperty = "NoCol";
-							}
-							var boxProperty = storageData[storagePropertyGroup.boxProperty];
-							if(!boxProperty) {
-								boxProperty = "NoBox";
-							}
-							var positionProperty = storageData[storagePropertyGroup.positionProperty];
-							if(!positionProperty) {
-								positionProperty = "NoPos";
-							}
-							var displayName = codeProperty + " [ " + rowProperty + " , " + colProperty + " ] " + boxProperty + " - " + positionProperty;
+							var sample = data['$object'].children[cIdx];
+							var displayName = Util.getStoragePositionDisplayName(sample);
 							if(!isFirst) {
 								storage.append(",<br>");
 							}
-							storage.append(FormUtil.getFormLink(displayName, "Sample", data['$object'].children[cIdx].permId));
+							storage.append(FormUtil.getFormLink(displayName, "Sample", sample.permId));
 							isFirst = false;
 						}
 					}
