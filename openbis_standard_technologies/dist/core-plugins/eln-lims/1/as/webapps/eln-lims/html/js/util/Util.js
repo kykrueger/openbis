@@ -167,10 +167,9 @@ var Util = new function() {
 	}
 	
 	this.showError = function(withHTML, andCallback, noBlock) {
+		var withHTMLToShow = "<b>Error Report:</b><br><textarea rows=\"8\" cols=\"170\">" + withHTML + "</textarea>";
+          	withHTMLToShow += "<br>" + "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error&body=" + withHTML +"'>Send error report</a>";
 		var isiPad = navigator.userAgent.match(/iPad/i) != null;
-		if(!isiPad) {
-			withHTML = withHTML + "<br>" + "<a class='btn btn-default'>OK</a>";
-		}
 		
 		if(!noBlock) {
 			this.blockUINoMessage();
@@ -178,7 +177,7 @@ var Util = new function() {
 		
 		var localReference = this;
 		jError(
-				withHTML,
+				withHTMLToShow,
 				{
 				  autoHide : isiPad,
 				  clickOverlay : false,
