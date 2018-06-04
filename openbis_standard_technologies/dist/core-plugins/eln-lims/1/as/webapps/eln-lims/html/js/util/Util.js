@@ -584,6 +584,33 @@ var Util = new function() {
 		return displayName;
 	}
 	
+	this.getStoragePositionDisplayName = function(sample) {
+		var storageData = sample.properties;
+		var storagePropertyGroup = profile.getStoragePropertyGroup();
+							
+		var codeProperty = storageData[storagePropertyGroup.nameProperty];
+		if(!codeProperty) {
+			codeProperty = "NoCode";
+		}
+		var rowProperty = storageData[storagePropertyGroup.rowProperty];
+		if(!rowProperty) {
+			rowProperty = "NoRow";
+		}
+		var colProperty = storageData[storagePropertyGroup.columnProperty];
+		if(!colProperty) {
+			colProperty = "NoCol";
+		}
+		var boxProperty = storageData[storagePropertyGroup.boxProperty];
+		if(!boxProperty) {
+			boxProperty = "NoBox";
+		}
+		var positionProperty = storageData[storagePropertyGroup.positionProperty];
+		if(!positionProperty) {
+			positionProperty = "NoPos";
+		}
+		var displayName = codeProperty + " [ " + rowProperty + " , " + colProperty + " ] " + boxProperty + " - " + positionProperty;
+		return displayName;
+	}
 	//
 	// Grid related function
 	//

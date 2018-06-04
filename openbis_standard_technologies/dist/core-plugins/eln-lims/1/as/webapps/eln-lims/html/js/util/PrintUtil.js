@@ -48,7 +48,14 @@ var PrintUtil = new function() {
 			var samples = allSamplesByType[sampleTypeCode];
 			for(var i = 0; i < samples.length; i++) {
 				var sample = samples[i];
-				samplesListOfCodes += sample.code + " ";
+				if(i !== 0) {
+					samplesListOfCodes += ", ";
+				}
+				if(sampleTypeCode === "STORAGE_POSITION") {
+					samplesListOfCodes += Util.getStoragePositionDisplayName(sample);
+				} else {
+					samplesListOfCodes += sample.code;
+				}
 			}
 			samplesListOfCodes += "</br>";
 		}
