@@ -167,8 +167,18 @@ var Util = new function() {
 	}
 	
 	this.showError = function(withHTML, andCallback, noBlock) {
-		var withHTMLToShow = "<b>Error Report:</b><br><textarea rows=\"8\" cols=\"170\">" + withHTML + "</textarea>";
-          	withHTMLToShow += "<br>" + "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error&body=" + withHTML +"'>Send error report</a>";
+		var warning = "<b>Please send this error report if you wish SIS to review it:</b>" +  "<br>" +
+			          "This report contains the user session token, user browser and the action it was performing when it happened, including it's data!: <br>" +
+				      "Pressing the 'Send error report' button will open your default mail application and gives you the oportunity to delete any sensible information before sending.";
+					 
+		var report = "agent: " + navigator.userAgent + "\n" +
+					 "domain: " + location.hostname + "\n" +
+					 "session: " + mainController.serverFacade.openbisServer.getSession() + "\n" +
+					 "timestamp: " + new Date() + "\n" +
+					 "error: \n" +
+					 withHTML;
+		var withHTMLToShow = warning + "<br><br><textarea rows=\"8\" cols=\"170\">" + report + "</textarea>";
+          	withHTMLToShow += "<br>" + "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
 		var isiPad = navigator.userAgent.match(/iPad/i) != null;
 		
 		if(!noBlock) {
@@ -599,17 +609,7 @@ var Util = new function() {
 	}
 	
 	this.manageError = function(err) {
-		Util.showError(	"Please take a screenshot of the browser with the error report, add a description of the steps that lead to it and send it to your admin. <br/><br/>" +
-						"<div style='color:black; background-color:lightgrey; padding:10px;'>" + 
-						"User Agent: " + navigator.userAgent + "<br/>" +
-						"URL: " + window.location.href + "<br/>" +
-						"Session: " + mainController.serverFacade.openbisServer.getSession() + "<br/>" +
-						"Time: " + new Date() + "<br/>" +
-						"---------------------------------------------------------------------- <br/>" +
-						"Error Name: " + err.name + "<br/>" +
-						"Error Message: " + err.message + "<br/>" +
-						"Error Stack: " + err.stack.replace(new RegExp('\n', 'g'), '<br/>') +
-						"</div>");
+		Util.showError(JSON.stringify(err, null, 2));
 	}
 	
 	//
