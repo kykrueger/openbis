@@ -167,18 +167,26 @@ var Util = new function() {
 	}
 	
 	this.showError = function(withHTML, andCallback, noBlock) {
-		var warning = "<b>Please send this error report if you wish SIS to review it:</b>" +  "<br>" +
+		var withHTMLToShow = null;
+		
+		if(withHTML.length > 200 && !withHTML.startsWith("Authorization failure")) { // Typical big errors come from the server side and should not happen
+			var warning = "<b>Please send this error report if you wish SIS to review it:</b>" +  "<br>" +
 			          "This report contains the user session token, user browser and the action it was performing when it happened, including it's data!: <br>" +
 				      "Pressing the 'Send error report' button will open your default mail application and gives you the oportunity to delete any sensible information before sending.";
 					 
-		var report = "agent: " + navigator.userAgent + "\n" +
+			var report = "agent: " + navigator.userAgent + "\n" +
 					 "domain: " + location.hostname + "\n" +
 					 "session: " + mainController.serverFacade.openbisServer.getSession() + "\n" +
 					 "timestamp: " + new Date() + "\n" +
 					 "error: \n" +
 					 withHTML;
-		var withHTMLToShow = warning + "<br><br><textarea rows=\"8\" cols=\"170\">" + report + "</textarea>";
-          	withHTMLToShow += "<br>" + "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
+			var withHTMLToShow = warning + "<br><br><textarea rows=\"8\" cols=\"170\">" + report + "</textarea>";
+          		withHTMLToShow += "<br>" + "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
+		} else {
+			withHTMLToShow = withHTML + "<br>" + "<a class='btn btn-default'>Dismiss</a>";
+		}
+		
+		
 		var isiPad = navigator.userAgent.match(/iPad/i) != null;
 		
 		if(!noBlock) {
