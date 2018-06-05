@@ -115,7 +115,8 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.isAdmin = false;
-
+		this.devEmail = "sis.eln.servicedesk@id.ethz.ch";
+		
 //		BigDataLink EDMs config
 		this.EDMSs = {
 //				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"

@@ -44,7 +44,9 @@ public class Main
         }
 
         BenchmarkConfig[] benchmarkConfigs = JacksonObjectMapper.getInstance().readValue(new FileInputStream(configFile), BenchmarkConfig[].class);
-        for(BenchmarkConfig benchmarkConfig:benchmarkConfigs) {
+        for(BenchmarkConfig benchmarkConfig:benchmarkConfigs) { // For each benchmark
+        		logger.traceAccess(null, benchmarkConfig);
+        		long start = System.currentTimeMillis();
         		List<BenchmarkThread> threadsToJoin = new ArrayList<>();
         		for(int t = 0; t < benchmarkConfig.getThreads(); t++) {
         			BenchmarkThread thread = new BenchmarkThread(benchmarkConfig) {
@@ -66,6 +68,9 @@ public class Main
         		for(BenchmarkThread thread:threadsToJoin) {
         			thread.join();
         		}
+        		long end = System.currentTimeMillis();
+        		logger.traceExit(benchmarkConfig);
+        		logger.info("Benchmark took: " + (end-start) + " millis");
         }
     }
     

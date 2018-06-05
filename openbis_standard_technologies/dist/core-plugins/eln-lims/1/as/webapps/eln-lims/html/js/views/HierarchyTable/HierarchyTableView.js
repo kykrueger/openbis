@@ -72,6 +72,26 @@ function HierarchyTableView(controller, model) {
 				property : 'repositoryId',
 				sortable : true
 			});
+			columns.push({
+				label : ELNDictionary.Sample + " Code",
+				property : 'sampleCode',
+				sortable : true,
+				render : function(data) {
+					if(data.entity.sample && data.entity.sample.permId) {
+						return FormUtil.getFormLink(data.entity.sample.code, "Sample", data.entity.sample.permId.permId, null);
+					}
+				}
+			});
+			columns.push({
+				label : ELNDictionary.getExperimentDualName() + " Code",
+				property : 'experimentCode',
+				sortable : true,
+				render : function(data) {
+					if(data.entity.experiment && data.entity.experiment.identifier) {
+						return FormUtil.getFormLink(data.entity.experiment.code, "Experiment", data.entity.experiment.identifier.identifier, null);
+					}
+				}
+			});
 		}
 		columns.push({
 			label : "Type",
@@ -82,14 +102,20 @@ function HierarchyTableView(controller, model) {
 			columns.push({
 				label : 'Identifier',
 				property : 'identifier',
-				sortable : true
+				sortable : true,
+				render : function(data) {
+					return FormUtil.getFormLink(data.identifier, "Sample", data.permId, null);
+				}
 			});
 		}
 		if(this._model.entity["@type"] === "as.dto.dataset.DataSet") {
 			columns.push({
 				label : 'Code',
 				property : 'code',
-				sortable : true
+				sortable : true,
+				render : function(data) {
+					return FormUtil.getFormLink(data.permId, "DataSet", data.permId, null);
+				}
 			});
 		}
 		columns.push({
@@ -136,18 +162,7 @@ function HierarchyTableView(controller, model) {
 			callback(filteredData);
 		}
 		
-		var rowClick = function(e) {
-			switch(e.data.entity["@type"]) {
-				case "as.dto.dataset.DataSet":
-					mainController.changeView('showViewDataSetPageFromPermId', e.data.permId);
-					break;
-				case "as.dto.sample.Sample":
-					mainController.changeView('showViewSamplePageFromPermId', e.data.permId);
-					break;
-			}
-		}
-		
-		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, rowClick, false, this._model.entity["@type"] + "_HIERARCHY_TABLE");
+		this._dataGrid = new DataGridController(null, columns, [], null, getDataList, null, false, this._model.entity["@type"] + "_HIERARCHY_TABLE");
 		this._dataGrid.init(this._container);
 		this._container.prepend($("<legend>").append(" " + ELNDictionary.Sample + " Hierarchy"));
 	}

@@ -85,6 +85,8 @@ function HierarchyTableModel(entity) {
 			permId : entity.permId.permId,
 			path: path,
 			name : entity.properties["NAME"],
+			sampleCode : (entity.sample)?entity.sample.code:null,
+			experimentCode : (entity.experiment)?entity.experiment.code:null,
 			parentAnnotations : this._createAnnotations(annotations, relationShips.parents),
 			childrenAnnotations : this._createAnnotations(annotations, relationShips.children),
 			entity : entity
