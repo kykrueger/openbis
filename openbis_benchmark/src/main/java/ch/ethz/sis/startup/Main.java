@@ -64,7 +64,7 @@ public class Main
         		long end = System.currentTimeMillis();
         		logger.traceExit(benchmarkConfig);
         		logger.info("Benchmark took: " + (end-start) + " millis");
-        		logJointStats(threadsToJoin);
+        		logJointStats(start, end, threadsToJoin);
         }
     }
     
@@ -86,7 +86,7 @@ public class Main
     		}
     }
     
-    private static void logJointStats(List<BenchmarkThread> benchmarkThreads) {
+    private static void logJointStats(long start, long end, List<BenchmarkThread> benchmarkThreads) {
     		long maxOpTime = Long.MIN_VALUE;
         long minOpTime = Long.MAX_VALUE;
         long numOps = 0;
@@ -103,6 +103,6 @@ public class Main
         		}
     		}
     		
-    		logger.info("totalOpTime: " + totalOpTime + " numOps: " + numOps + " avgOpTime: " + (totalOpTime/numOps) + " maxOpTime: " + maxOpTime + " minOpTime: " + minOpTime);
+    		logger.info(" aggOpTime: " + (end-start) + " aggAVGOpTime: " + ((end-start)/numOps) + " totalOpTime: " + totalOpTime + " numOps: " + numOps + " avgOpTime: " + (totalOpTime/numOps) + " maxOpTime: " + maxOpTime + " minOpTime: " + minOpTime);
     }
 }
