@@ -719,7 +719,7 @@ def download(ctx, content_copy_index, file, data_set_id, skip_integrity_check):
 
 ## clone
 
-_clone_params = [
+_clone_move_params = [
     click.option('-u', '--ssh_user', default=None, help='User to connect to remote systems via ssh'),
     click.option('-c', '--content_copy_index', type=int, default=None, help='Index of the content copy to clone from in case there are multiple copies'),
     click.option('-s', '--skip_integrity_check', default=False, is_flag=True, help='Skip file integrity check with checksums.'),
@@ -728,7 +728,7 @@ _clone_params = [
 
 @data_set.command("clone")
 @click.pass_context
-@add_params(_clone_params)
+@add_params(_clone_move_params)
 def data_set_clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
     """Clone the repository found in the given data set id.
     """
@@ -737,11 +737,31 @@ def data_set_clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrit
 
 @cli.command()
 @click.pass_context
-@add_params(_clone_params)
+@add_params(_clone_move_params)
 def clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
     """Clone the repository found in the given data set id.
     """
     ctx.invoke(data_set_clone, ssh_user=ssh_user, content_copy_index=content_copy_index, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
+
+
+## move
+
+@data_set.command("move")
+@click.pass_context
+@add_params(_clone_move_params)
+def data_set_move(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
+    """Move the repository found in the given data set id.
+    """
+    data_mgmt = shared_data_mgmt(ctx.obj)
+    return check_result("move", run(ctx, lambda: data_mgmt.move(data_set_id, ssh_user, content_copy_index, skip_integrity_check)))
+
+@cli.command()
+@click.pass_context
+@add_params(_clone_move_params)
+def move(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
+    """Move the repository found in the given data set id.
+    """
+    ctx.invoke(data_set_move, ssh_user=ssh_user, content_copy_index=content_copy_index, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 
 def main():

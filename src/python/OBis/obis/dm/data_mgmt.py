@@ -21,6 +21,7 @@ from . import config as dm_config
 from .commands.addref import Addref
 from .commands.removeref import Removeref
 from .commands.clone import Clone
+from .commands.move import Move
 from .commands.openbis_sync import OpenbisSync
 from .commands.download import Download
 from .command_result import CommandResult
@@ -123,7 +124,18 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     def clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
         """Clone / copy a repository related to the given data set id.
         :param data_set_id: 
-        :param ssh_user: ssh user for remote clone (optional)
+        :param ssh_user: ssh user for remote system (optional)
+        :param content_copy_index: index of content copy in case there are multiple copies (optional)
+        :param skip_integrity_check: if true, the file checksums will not be checked
+        :return: A CommandResult.
+        """
+        return
+
+    @abc.abstractmethod
+    def move(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
+        """Move a repository related to the given data set id.
+        :param data_set_id: 
+        :param ssh_user: ssh user for remote system (optional)
         :param content_copy_index: index of content copy in case there are multiple copies (optional)
         :param skip_integrity_check: if true, the file checksums will not be checked
         :return: A CommandResult.
@@ -175,6 +187,9 @@ class NoGitDataMgmt(AbstractDataMgmt):
 
     def clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
         self.error_raise("clone", "No git command found.")
+
+    def move(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
+        self.error_raise("move", "No git command found.")
 
     def addref(self):
         self.error_raise("addref", "No git command found.")
@@ -253,7 +268,7 @@ class GitDataMgmt(AbstractDataMgmt):
             self.settings_resolver.set_resolver_location_roots('data_set', '.')
             self.settings_resolver.copy_global_to_local()
             self.commit_metadata_updates('local with global')
-        return result
+        return CommandResult(returncode=0, output="")
 
 
     def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
@@ -360,6 +375,10 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
         cmd = Clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check)
+        return cmd.run()
+
+    def move(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
+        cmd = Move(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check)
         return cmd.run()
 
     def addref(self):

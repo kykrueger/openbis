@@ -1,4 +1,3 @@
-import socket
 import os
 import pybis
 from .openbis_command import OpenbisCommand, ContentCopySelector
@@ -7,6 +6,7 @@ from ..command_result import CommandResult, CommandException
 from ..utils import cd
 from ..utils import run_shell
 from ..utils import complete_openbis_config
+from ..repository_utils import copy_repository
 from ... import dm
 
 
@@ -51,7 +51,7 @@ class Clone(OpenbisCommand):
         path = content_copy['path']
         repository_folder = path.split('/')[-1]
 
-        result = self.copy_repository(self.ssh_user, host, path)
+        result = copy_repository(self.ssh_user, host, path)
         if result.failure():
             return result
         result = self.checkout_commit(content_copy, path)
@@ -61,23 +61,8 @@ class Clone(OpenbisCommand):
         if self.skip_integrity_check != True:
             invalid_files = validate_checksum(self.openbis, data_set.file_list, data_set.permId, repository_folder)
             if len(invalid_files) > 0:
-                raise CommandException(CommandResult(returncode=-1, output="Invalid checksum wrong for files {}.".format(str(invalid_files))))
+                raise CommandException(CommandResult(returncode=-1, output="Invalid checksum for files {}.".format(str(invalid_files))))
         return self.add_content_copy_to_openbis(repository_folder)
-
-
-    def copy_repository(self, ssh_user, host, path):
-        # abort if local folder already exists
-        repository_folder = path.split('/')[-1]
-        if os.path.exists(repository_folder):
-            return CommandResult(returncode=-1, output="Folder for repository to clone already exists: " + repository_folder)
-        # check if local or remote
-        if host == socket.gethostname():
-            location = path
-        else:
-            location = ssh_user + "@" if ssh_user is not None else ""
-            location += host + ":" + path
-        # copy repository
-        return run_shell(["rsync", "--progress", "-av", location, "."])
 
 
     def checkout_commit(self, content_copy, path):
