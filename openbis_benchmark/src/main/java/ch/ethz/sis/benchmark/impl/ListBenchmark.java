@@ -27,7 +27,7 @@ public class ListBenchmark extends Benchmark {
         long start = System.currentTimeMillis();
         List<Space> spaces = v3.searchSpaces(sessionToken, new SpaceSearchCriteria(), new SpaceFetchOptions()).getObjects();
         long end = System.currentTimeMillis();
-        logger.info("Found " + spaces.size() + " spaces in " + (end-start) + " millis.");
+        //logger.info("Found " + spaces.size() + " spaces in " + (end-start) + " millis.");
         final RandomValueGenerator<Space> random = new RandomValueGenerator<>();
         random.addAll(spaces);
         logout();
@@ -48,7 +48,7 @@ public class ListBenchmark extends Benchmark {
 			}
 			long lapEnd1 = System.currentTimeMillis();
 			Experiment experiment = experiments.get(0);
-			logger.info("Found experiment '" + experiment.getPermId().getPermId()+ "' from space " + space.getCode() + " in " + (lapEnd1-lapStart1) + " millis.");
+			//logger.info("Found experiment '" + experiment.getPermId().getPermId()+ "' from space " + space.getCode() + " in " + (lapEnd1-lapStart1) + " millis.");
 			
         		SampleSearchCriteria criteria = new SampleSearchCriteria();
         		criteria.withExperiment().withPermId().thatEquals(experiment.getPermId().getPermId());
@@ -67,12 +67,13 @@ public class ListBenchmark extends Benchmark {
             long lapStart2 = System.currentTimeMillis();
             SearchResult<Sample> samples = v3.searchSamples(sessionToken, criteria, options);
             long lapEnd2 = System.currentTimeMillis();
+            addOperation(lapStart2, lapEnd2);
             long lap = lapEnd2 - lapStart2;
             laps += lap;
-            logger.info("Found " + samples.getTotalCount() + " objects in experiment '" + experiment.getPermId().getPermId()+ "' from space " + space.getCode() + " in " + lap + " millis.");
+            //logger.info("Found " + samples.getTotalCount() + " objects in experiment '" + experiment.getPermId().getPermId()+ "' from space " + space.getCode() + " in " + lap + " millis.");
             logout();
         }
-        logger.info("Done " + (iterations) + " experiment object lists in " + laps + " millis, " + ((laps)/(iterations)) + " millis/search avg");
+        //logger.info("Done " + (iterations) + " experiment object lists in " + laps + " millis, " + ((laps)/(iterations)) + " millis/search avg");
 	}
 
 }

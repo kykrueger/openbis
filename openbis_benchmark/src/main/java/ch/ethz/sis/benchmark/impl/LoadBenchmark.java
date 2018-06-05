@@ -121,7 +121,7 @@ public class LoadBenchmark extends Benchmark {
         long start1 = System.currentTimeMillis();
         v3.createSpaces(sessionToken, spaceCreations);
         long end1 = System.currentTimeMillis();
-        logger.info("Create " + spacesToCreate + " Spaces took: " + (end1-start1) + " millis - " + ((end1-start1)/spacesToCreate) + " millis/space");
+        //logger.info("Create " + spacesToCreate + " Spaces took: " + (end1-start1) + " millis - " + ((end1-start1)/spacesToCreate) + " millis/space");
         
         //
         // Part 2 - Creating Projects
@@ -136,7 +136,7 @@ public class LoadBenchmark extends Benchmark {
         long start2 = System.currentTimeMillis();
         v3.createProjects(sessionToken, projectCreations);
         long end2 = System.currentTimeMillis();
-        logger.info("Create " + spacesToCreate + " Projects took: " + (end2-start2) + " millis - " + ((end2-start2)/spacesToCreate) + " millis/project");
+        //logger.info("Create " + spacesToCreate + " Projects took: " + (end2-start2) + " millis - " + ((end2-start2)/spacesToCreate) + " millis/project");
         
         //
         // Part 3 - Creating Experiments
@@ -152,7 +152,7 @@ public class LoadBenchmark extends Benchmark {
         long start3 = System.currentTimeMillis();
         v3.createExperiments(sessionToken, experimentCreations);
         long end3 = System.currentTimeMillis();
-        logger.info("Create " + spacesToCreate + " Collections took: " + (end3-start3) + " millis - " + ((end3-start3)/spacesToCreate) + " millis/collection");
+        //logger.info("Create " + spacesToCreate + " Collections took: " + (end3-start3) + " millis - " + ((end3-start3)/spacesToCreate) + " millis/collection");
         
         logout();
         //
@@ -184,13 +184,14 @@ public class LoadBenchmark extends Benchmark {
         			long lapStart4 = System.currentTimeMillis();
         			v3.createSamples(sessionToken, sampleCreations);
         			long lapEnd4 = System.currentTimeMillis();
+        			addOperation(lapStart4, lapEnd4);
         			logout();
-        			logger.info("Create " + sampleCreations.size() + " Samples took: " + (lapEnd4 - lapStart4) + " millis - " + ((lapEnd4-lapStart4)/sampleCreations.size()) + " millis/sample");
+        			//logger.info("Create " + sampleCreations.size() + " Samples took: " + (lapEnd4 - lapStart4) + " millis - " + ((lapEnd4-lapStart4)/sampleCreations.size()) + " millis/sample");
         			sampleCreations.clear();
         		}
         }
         long end4 = System.currentTimeMillis();
-        logger.info("Create " + samplesToCreate + " Samples took: " + (end4-start4) + " millis - " + ((end4-start4)/samplesToCreate) + " millis/sample");
+        //logger.info("Create " + samplesToCreate + " Samples took: " + (end4-start4) + " millis - " + ((end4-start4)/samplesToCreate) + " millis/sample");
 	}
 
 }

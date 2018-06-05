@@ -2,9 +2,9 @@
 ---- http://pgconfig.org
 
 -- Memory Configuration
-ALTER SYSTEM SET shared_buffers TO '2GB';
-ALTER SYSTEM SET effective_cache_size TO '8GB';
-ALTER SYSTEM SET maintenance_work_mem TO '640MB';
+ALTER SYSTEM SET shared_buffers TO '4GB';
+ALTER SYSTEM SET effective_cache_size TO '12GB';
+ALTER SYSTEM SET maintenance_work_mem TO '1GB';
 
 -- Checkpoint Related Configuration
 ALTER SYSTEM SET min_wal_size TO '512MB';

@@ -51,13 +51,6 @@ public class Main
         		for(int t = 0; t < benchmarkConfig.getThreads(); t++) {
         			BenchmarkThread thread = new BenchmarkThread(benchmarkConfig) {
         				public void run() {
-        					Benchmark benchmark = null;
-        					try {
-        						benchmark = (Benchmark) Class.forName(benchmarkConfig.getClassName()).newInstance();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-        					benchmark.setConfiguration(benchmarkConfig);
         	        			benchmark.start();
         				}
         			};
@@ -71,15 +64,45 @@ public class Main
         		long end = System.currentTimeMillis();
         		logger.traceExit(benchmarkConfig);
         		logger.info("Benchmark took: " + (end-start) + " millis");
+        		logJointStats(threadsToJoin);
         }
     }
     
-    static private abstract class BenchmarkThread extends Thread {
-    		private final BenchmarkConfig benchmarkConfig;
+    private static abstract class BenchmarkThread extends Thread {
+    		protected Benchmark benchmark;
     		
     		public BenchmarkThread(BenchmarkConfig benchmarkConfig) {
     			super();
-    			this.benchmarkConfig = benchmarkConfig;
+			try {
+					benchmark = (Benchmark) Class.forName(benchmarkConfig.getClassName()).newInstance();
+					benchmark.setConfiguration(benchmarkConfig);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
     		}
+    		
+    		public Benchmark getBenchmark() {
+    			return benchmark;
+    		}
+    }
+    
+    private static void logJointStats(List<BenchmarkThread> benchmarkThreads) {
+    		long maxOpTime = Long.MIN_VALUE;
+        long minOpTime = Long.MAX_VALUE;
+        long numOps = 0;
+        long totalOpTime = 0;
+        
+    		for(BenchmarkThread benchmarkThread:benchmarkThreads) {
+        		totalOpTime += benchmarkThread.getBenchmark().getTotalOpTime();
+        		numOps += benchmarkThread.getBenchmark().getNumOps();
+        		if(benchmarkThread.getBenchmark().getMinOpTime() < minOpTime) {
+        			minOpTime = benchmarkThread.getBenchmark().getMinOpTime();
+        		}
+        		if(benchmarkThread.getBenchmark().getMaxOpTime() > maxOpTime) {
+        			maxOpTime = benchmarkThread.getBenchmark().getMaxOpTime();
+        		}
+    		}
+    		
+    		logger.info("totalOpTime: " + totalOpTime + " numOps: " + numOps + " avgOpTime: " + (totalOpTime/numOps) + " maxOpTime: " + maxOpTime + " minOpTime: " + minOpTime);
     }
 }
