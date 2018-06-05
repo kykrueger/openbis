@@ -173,7 +173,7 @@ class DataSet(OpenBisObject):
             file_size = file_info[0]['fileSize']
             download_url = base_url + filename + '?sessionID=' + self.openbis.token
             filename_dest = os.path.join(destination, self.permId, filename)
-            queue.put([download_url, filename_dest, file_size, self.openbis.verify_certificates, 'wb'])
+            queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, 'wb'])
 
         # wait until all files have downloaded
         if wait_until_finished:
@@ -188,7 +188,7 @@ class DataSet(OpenBisObject):
         Requires the microservice server to be running at the given linked_dataset_fileservice_url.
         """
 
-        queue = DataSetDownloadQueue(workers=workers)
+        queue = DataSetDownloadQueue(workers=workers, collect_files_with_wrong_length=True)
 
         if content_copy_index >= len(self.data["linkedData"]["contentCopies"]):
             raise ValueError("Content Copy index out of range.")
@@ -217,13 +217,13 @@ class DataSet(OpenBisObject):
                     write_mode = 'ab'
                     download_url += "&offset=" + str(actual_size)
 
-            queue.put([download_url, filename_dest, file_size, self.openbis.verify_certificates, write_mode])
+            queue.put([download_url, filename, filename_dest, file_size, self.openbis.verify_certificates, write_mode])
 
         if wait_until_finished:
             queue.join()
 
         if VERBOSE: print("Files downloaded to: %s" % os.path.join(destination, self.permId))
-        return destination
+        return destination, queue.files_with_wrong_length
 
 
     @property
@@ -483,9 +483,11 @@ class DataSetUploadQueue():
 
 
 class DataSetDownloadQueue():
-    def __init__(self, workers=20):
+    def __init__(self, workers=20, collect_files_with_wrong_length=False):
+        self.collect_files_with_wrong_length = collect_files_with_wrong_length
         # maximum files to be downloaded at once
         self.download_queue = Queue()
+        self.files_with_wrong_length = []
 
         # define number of threads
         for t in range(workers):
@@ -505,19 +507,23 @@ class DataSetDownloadQueue():
 
     def download_file(self):
         while True:
-            url, filename, file_size, verify_certificates, write_mode = self.download_queue.get()
+            url, filename, filename_dest, file_size, verify_certificates, write_mode = self.download_queue.get()
             # create the necessary directory structure if they don't exist yet
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            os.makedirs(os.path.dirname(filename_dest), exist_ok=True)
 
             # request the file in streaming mode
             r = requests.get(url, stream=True, verify=verify_certificates)
             if r.ok == False:
                 raise ValueError("Could not download from {}: HTTP {}. Reason: {}".format(url, r.status_code, r.reason))
 
-            with open(filename, write_mode) as f:
+            with open(filename_dest, write_mode) as f:
                 for chunk in r.iter_content(chunk_size=1024):
                     if chunk:  # filter out keep-alive new chunks
                         f.write(chunk)
 
+            if os.path.getsize(filename_dest) != int(file_size):
+                if self.collect_files_with_wrong_length:
+                    self.files_with_wrong_length.append(filename)
+                else:
+                    raise ValueError("File has the wrong length: {}".format(filename_dest))
             self.download_queue.task_done()
-            assert os.path.getsize(filename) == int(file_size)

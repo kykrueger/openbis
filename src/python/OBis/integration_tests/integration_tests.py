@@ -55,7 +55,6 @@ def test_obis(tmpdir):
         with cd('data1'):
             cmd('touch file')
             result = cmd('obis status')
-            assert '?? .obis/config.json' in result
             assert '?? file' in result
             cmd('obis object set id=/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
@@ -271,14 +270,14 @@ def test_obis(tmpdir):
         output_buffer = '=================== 18. Use git-annex hashes as checksums ===================\n'
         cmd('obis init data10')
         with cd('data10'):
-            cmd('touch file')
+            cmd('dd if=/dev/zero of=big_file bs=1000000 count=1')
             cmd('obis object set id=/DEFAULT/DEFAULT')
             # use SHA256 form git annex by default
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             search_result = o.search_files(settings['repository']['data_set_id'])
             files = list(filter(lambda file: file['fileLength'] > 0, search_result['objects']))
-            assert len(files) == 5
+            assert_file_paths(files, ['big_file'])
             for file in files:
                 assert file['checksumType'] == "SHA256"
                 assert len(file['checksum']) == 64
@@ -288,7 +287,7 @@ def test_obis(tmpdir):
             settings = get_settings()
             search_result = o.search_files(settings['repository']['data_set_id'])
             files = list(filter(lambda file: file['fileLength'] > 0, search_result['objects']))
-            assert len(files) == 5
+            assert_file_paths(files, ['big_file'])
             for file in files:
                 assert file['checksumType'] is None
                 assert file['checksum'] is None
@@ -322,6 +321,12 @@ def test_obis(tmpdir):
             except SubprocessError:
                 timeout = True
             assert timeout == True
+
+
+def assert_file_paths(files, expected_paths):
+    paths = list(map(lambda file: file['path'], files))
+    for expected_path in expected_paths:
+        assert expected_path in paths
 
 
 def get_settings():

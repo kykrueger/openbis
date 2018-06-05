@@ -3,7 +3,7 @@ import os
 import pybis
 from .openbis_command import OpenbisCommand, ContentCopySelector
 from ..checksum import validate_checksum
-from ..command_result import CommandResult
+from ..command_result import CommandResult, CommandException
 from ..utils import cd
 from ..utils import run_shell
 from ..utils import complete_openbis_config
@@ -46,6 +46,7 @@ class Clone(OpenbisCommand):
         data_set = self.openbis.get_dataset(self.data_set_id)
 
         content_copy = ContentCopySelector(data_set, self.content_copy_index).select()
+        self.content_copy = content_copy
         host = content_copy['externalDms']['address'].split(':')[0]
         path = content_copy['path']
         repository_folder = path.split('/')[-1]
@@ -58,7 +59,9 @@ class Clone(OpenbisCommand):
             return result
         data_set = self.openbis.get_dataset(self.data_set_id)
         if self.skip_integrity_check != True:
-            validate_checksum(self.openbis, data_set.file_list, data_set.permId, repository_folder)
+            invalid_files = validate_checksum(self.openbis, data_set.file_list, data_set.permId, repository_folder)
+            if len(invalid_files) > 0:
+                raise CommandException(CommandResult(returncode=-1, output="Invalid checksum wrong for files {}.".format(str(invalid_files))))
         return self.add_content_copy_to_openbis(repository_folder)
 
 

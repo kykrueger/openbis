@@ -20,6 +20,7 @@ def get_checksum_generator(checksum_type, default=None):
 
 
 def validate_checksum(openbis, files, data_set_id, folder):
+    invalid_files = []
     dataset_files = openbis.search_files(data_set_id)['objects']
     dataset_files_by_path = {}
     for dataset_file in dataset_files:
@@ -37,7 +38,8 @@ def validate_checksum(openbis, files, data_set_id, folder):
         if checksum_generator is not None:
             checksum = checksum_generator.get_checksum(filename_dest)['checksum']
             if checksum != expected_checksum:
-                raise CommandException(CommandResult(returncode=-1, output="Checksum wrong for file {}. Expected {} but was {}.".format(filename_dest, expected_checksum, checksum)))
+                invalid_files.append(filename)
+    return invalid_files
 
 
 class ChecksumGeneratorCrc32(object):
@@ -123,6 +125,8 @@ class ChecksumGeneratorGitAnnex(object):
         if 'Not a valid object name' in annex_result.output:
             return self.checksum_generator_supplement.get_checksum(file)
         annex_info = json.loads(annex_result.output)
+        print(annex_info)
+        # TODO annex_info will not have 'present' if there is a git repository within the obis repository
         if annex_info['present'] != True:
             return self.checksum_generator_supplement.get_checksum(file)
         return {
