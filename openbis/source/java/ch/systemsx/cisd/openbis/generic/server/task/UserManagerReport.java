@@ -34,7 +34,7 @@ import ch.systemsx.cisd.common.utilities.ITimeProvider;
 /**
  * @author Franz-Josef Elmer
  */
-public class UserManagerReport
+public class UserManagerReport implements IChangedHandler
 {
     static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
@@ -140,10 +140,11 @@ public class UserManagerReport
         }
     }
 
-    public void addChangedConfig(String serializedConfig, Date date)
+    @Override
+    public void changed(String str, Date date)
     {
         log("CONFIG-UPDATE-START", "Last modified: " + new SimpleDateFormat(DATE_FORMAT).format(date));
-        auditLog.append(serializedConfig);
+        auditLog.append(str);
         log("CONFIG-UPDATE-END", "");
     }
 
