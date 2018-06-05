@@ -22,9 +22,9 @@ import java.util.GregorianCalendar;
 import org.apache.commons.lang.time.DateUtils;
 
 /**
- * Defines a period type 
+ * Defines a period type.
+ * 
  * @author Franz-Josef Elmer
- *
  */
 enum PeriodType
 {

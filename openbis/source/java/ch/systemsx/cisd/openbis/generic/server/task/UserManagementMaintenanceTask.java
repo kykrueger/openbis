@@ -50,6 +50,11 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
 
     private File shareIdsMappingFile;
     
+    public UserManagementMaintenanceTask()
+    {
+        super(true);
+    }
+    
     @Override
     protected void setUpSpecific(Properties properties)
     {

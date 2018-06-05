@@ -33,7 +33,6 @@ import ch.systemsx.cisd.common.string.StringUtilities;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 abstract class AbstractMaintenanceTask implements IMaintenanceTask
 {
@@ -41,14 +40,17 @@ abstract class AbstractMaintenanceTask implements IMaintenanceTask
 
     static final String DEFAULT_CONFIGURATION_FILE_PATH = "etc/user-management-maintenance-config.json";
 
+    private final boolean configMandatory;
+
     protected final Logger operationLog;
 
     protected final Logger notificationLog;
 
     protected File configurationFile;
-    
-    AbstractMaintenanceTask()
+
+    AbstractMaintenanceTask(boolean configMandatory)
     {
+        this.configMandatory = configMandatory;
         operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
         notificationLog = LogFactory.getLogger(LogCategory.NOTIFY, getClass());
     }
@@ -58,13 +60,14 @@ abstract class AbstractMaintenanceTask implements IMaintenanceTask
     {
         operationLog.info("Setup plugin " + pluginName);
         configurationFile = new File(properties.getProperty(CONFIGURATION_FILE_PATH_PROPERTY, DEFAULT_CONFIGURATION_FILE_PATH));
-        if (configurationFile.isFile() == false)
+        if (configMandatory && configurationFile.isFile() == false)
         {
             throw new ConfigurationFailureException("Configuration file '" + configurationFile.getAbsolutePath()
                     + "' doesn't exist or is a directory.");
         }
         setUpSpecific(properties);
-        operationLog.info("Plugin '" + pluginName + "' initialized. Configuration file: " + configurationFile.getAbsolutePath());
+        operationLog.info("Plugin '" + pluginName + "' initialized."
+                + (configurationFile.isFile() ? " Configuration file: " + configurationFile.getAbsolutePath() : ""));
     }
 
     protected abstract void setUpSpecific(Properties properties);
@@ -73,7 +76,10 @@ abstract class AbstractMaintenanceTask implements IMaintenanceTask
     {
         if (configurationFile.isFile() == false)
         {
-            operationLog.error("Configuration file '" + configurationFile.getAbsolutePath() + "' doesn't exist or is a directory.");
+            if (configMandatory)
+            {
+                operationLog.error("Configuration file '" + configurationFile.getAbsolutePath() + "' doesn't exist or is a directory.");
+            }
             return null;
         }
         String serializedConfig = FileUtilities.loadToString(configurationFile);

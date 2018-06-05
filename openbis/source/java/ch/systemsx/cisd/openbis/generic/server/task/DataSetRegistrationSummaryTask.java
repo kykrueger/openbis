@@ -44,6 +44,7 @@ import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.ICommonServerForInternalUse;
+import ch.systemsx.cisd.openbis.generic.server.util.PluginUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetAttributeSearchFieldKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
@@ -80,8 +81,6 @@ public class DataSetRegistrationSummaryTask implements IMaintenanceTask
     public static final String CONFIGURED_CONTENT = "configured-content";
 
     public static final String SHOWN_DATA_SET_PROPERTIES_KEY = "shown-data-set-properties";
-
-    public static final String EMAIL_ADDRESSES_KEY = "email-addresses";
 
     private static final String SEPARATOR = ",";
 
@@ -150,23 +149,10 @@ public class DataSetRegistrationSummaryTask implements IMaintenanceTask
         daysOfWeek = extractDays(properties, DAYS_OF_WEEK_KEY, "");
         daysOfMonth = extractDays(properties, DAYS_OF_MONTH_KEY, "1");
         shownProperties = getAsList(properties, SHOWN_DATA_SET_PROPERTIES_KEY);
-        emailAddresses = getEMailAddresses(properties);
+        emailAddresses = PluginUtils.getEMailAddresses(properties, SEPARATOR);
         dataSetTypeCodes = extractDataSetTypeCodes(properties, DATA_SET_TYPES);
         configuredContent = PropertyUtils.getProperty(properties, CONFIGURED_CONTENT, "The data sets are grouped by type.");
         operationLog.info("Task " + pluginName + " initialized.");
-    }
-
-    private List<EMailAddress> getEMailAddresses(Properties properties)
-    {
-        String[] tokens =
-                PropertyUtils.getMandatoryProperty(properties, EMAIL_ADDRESSES_KEY)
-                        .split(SEPARATOR);
-        List<EMailAddress> addresses = new ArrayList<EMailAddress>();
-        for (String token : tokens)
-        {
-            addresses.add(new EMailAddress(token.trim()));
-        }
-        return addresses;
     }
 
     private Set<String> extractDataSetTypeCodes(Properties properties, String key)

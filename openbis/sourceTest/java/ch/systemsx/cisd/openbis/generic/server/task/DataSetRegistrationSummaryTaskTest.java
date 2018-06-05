@@ -18,7 +18,6 @@ package ch.systemsx.cisd.openbis.generic.server.task;
 
 import static ch.systemsx.cisd.openbis.generic.server.task.DataSetRegistrationSummaryTask.DAYS_OF_MONTH_KEY;
 import static ch.systemsx.cisd.openbis.generic.server.task.DataSetRegistrationSummaryTask.DAYS_OF_WEEK_KEY;
-import static ch.systemsx.cisd.openbis.generic.server.task.DataSetRegistrationSummaryTask.EMAIL_ADDRESSES_KEY;
 import static ch.systemsx.cisd.openbis.generic.server.task.DataSetRegistrationSummaryTask.SHOWN_DATA_SET_PROPERTIES_KEY;
 
 import java.util.ArrayList;
@@ -43,6 +42,7 @@ import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.ICommonServerForInternalUse;
+import ch.systemsx.cisd.openbis.generic.server.util.PluginUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
@@ -155,7 +155,7 @@ public class DataSetRegistrationSummaryTaskTest extends AssertJUnit
     public void testIsNoTheDayForReporting()
     {
         Properties properties = new Properties();
-        properties.setProperty(EMAIL_ADDRESSES_KEY, "a@bc.de");
+        properties.setProperty(PluginUtils.EMAIL_ADDRESSES_KEY, "a@bc.de");
 
         createTask(properties).execute();
 
@@ -167,7 +167,7 @@ public class DataSetRegistrationSummaryTaskTest extends AssertJUnit
     public void testNoDataSetTypes()
     {
         Properties properties = new Properties();
-        properties.setProperty(EMAIL_ADDRESSES_KEY, "a@bc.de, x@y.z");
+        properties.setProperty(PluginUtils.EMAIL_ADDRESSES_KEY, "a@bc.de, x@y.z");
         properties.setProperty(DAYS_OF_WEEK_KEY, "2, 4");
         properties.setProperty(SHOWN_DATA_SET_PROPERTIES_KEY, "alpha, beta");
         prepareForTryToAthenticateAsSystem();
@@ -192,7 +192,7 @@ public class DataSetRegistrationSummaryTaskTest extends AssertJUnit
     public void testReportWithNoProperties()
     {
         Properties properties = new Properties();
-        properties.setProperty(EMAIL_ADDRESSES_KEY, "a@bc.de");
+        properties.setProperty(PluginUtils.EMAIL_ADDRESSES_KEY, "a@bc.de");
         properties.setProperty(DAYS_OF_WEEK_KEY, "4");
         prepareForTryToAthenticateAsSystem();
         prepareForListDataSetTypes("MY-TYPE", "YOUR-TYPE");
@@ -264,7 +264,7 @@ public class DataSetRegistrationSummaryTaskTest extends AssertJUnit
     public void testReportWithProperties()
     {
         Properties properties = new Properties();
-        properties.setProperty(EMAIL_ADDRESSES_KEY, "a@bc.de");
+        properties.setProperty(PluginUtils.EMAIL_ADDRESSES_KEY, "a@bc.de");
         properties.setProperty(DAYS_OF_MONTH_KEY, "4");
         properties.setProperty(SHOWN_DATA_SET_PROPERTIES_KEY, "alpha, beta");
         prepareForTryToAthenticateAsSystem();
