@@ -61,7 +61,7 @@ class GitWrapper(object):
         return result
 
     def git_add(self, path):
-        return run_shell([self.git_path, "add", path])
+        return run_shell([self.git_path, "annex", "add", path])
 
     def git_commit(self, msg):
         return run_shell([self.git_path, "commit", '-m', msg])
