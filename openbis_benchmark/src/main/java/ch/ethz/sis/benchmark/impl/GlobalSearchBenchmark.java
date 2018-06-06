@@ -51,13 +51,13 @@ public class GlobalSearchBenchmark extends Benchmark {
 	        long start = System.currentTimeMillis();
 	        SearchResult<GlobalSearchObject> objects = v3.searchGlobally(sessionToken, criteria, options);
 	        long end = System.currentTimeMillis();
+	        addOperation(start, end);
 	        long lap = end - start;
 	        laps += lap;
 	        logout();
-	        logger.info("Found " + objects.getTotalCount() + " objects containting '" + word+ "' in " + lap + " millis.");
+	        //logger.info("Found " + objects.getTotalCount() + " objects containting '" + word+ "' in " + lap + " millis.");
         }
-        
-        logger.info("Done " + iterations + " global searches in " + laps + " millis, " + (laps/iterations) + " millis/search avg");
+        //logger.info("Done " + iterations + " global searches in " + laps + " millis, " + (laps/iterations) + " millis/search avg");
 	}
 
 }
