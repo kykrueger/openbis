@@ -17,7 +17,6 @@
 package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +49,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi
  */
 public class UsageGatherer
 {
-    static final String UNNAMED_GROUP = "$all$";
+    static final String UNNAMED_GROUP = "";
 
     private IApplicationServerInternalApi service;
 
@@ -59,58 +58,54 @@ public class UsageGatherer
         this.service = service;
     }
 
-    public Map<String, Map<String, UsageInfo>> gatherUsage(Period period, List<String> groupsOrNull)
+    public UsageAndGroupsInfo gatherUsageAndGroups(Period period, List<String> groupsOrNull)
     {
         String sessionToken = service.loginAsSystem();
         try
         {
-            Map<String, Map<String, UsageInfo>> usageByUsersAndGroups = createUsageByUsersAndGroupsMap(sessionToken, groupsOrNull);
-            gatherNewExperimentUsage(sessionToken, usageByUsersAndGroups, period);
-            gatherNewSampleUsage(sessionToken, usageByUsersAndGroups, period);
-            gatherNewDataSetUsage(sessionToken, usageByUsersAndGroups, period);
-            return usageByUsersAndGroups;
+            Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces = gatherUsageByUsersAndSpaces(sessionToken, period);
+            Map<String, Set<String>> usersByGroup = gatherUsersByGroups(sessionToken, groupsOrNull);
+            return new UsageAndGroupsInfo(usageByUsersAndSpaces, usersByGroup);
         } finally
         {
             service.logout(sessionToken);
         }
     }
 
-    private Map<String, Map<String, UsageInfo>> createUsageByUsersAndGroupsMap(String sessionToken, List<String> groupsOrNull)
+    private Map<String, Map<String, UsageInfo>> gatherUsageByUsersAndSpaces(String sessionToken, Period period)
     {
-        Map<String, Map<String, UsageInfo>> result = new TreeMap<>();
-        for (String user : getAllUsers(sessionToken))
-        {
-            Map<String, UsageInfo> usageByGroups = new TreeMap<>();
-            usageByGroups.put(groupsOrNull == null ? UNNAMED_GROUP : user, new UsageInfo());
-            result.put(user, usageByGroups);
-        }
-        if (groupsOrNull != null)
-        {
-            AuthorizationGroupFetchOptions groupFetchOptions = new AuthorizationGroupFetchOptions();
-            groupFetchOptions.withUsers();
-            List<AuthorizationGroupPermId> groupIds = groupsOrNull.stream().map(AuthorizationGroupPermId::new).collect(Collectors.toList());
-            Collection<AuthorizationGroup> groups = service.getAuthorizationGroups(sessionToken, groupIds, groupFetchOptions).values();
-            for (AuthorizationGroup group : groups)
-            {
-                List<Person> users = group.getUsers();
-                for (Person user : users)
-                {
-                    result.get(user.getUserId()).put(group.getCode(), new UsageInfo());
-                }
-            }
-        }
-        return result;
-    }
-
-    private Set<String> getAllUsers(String sessionToken)
-    {
+        Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces = new TreeMap<>();
         PersonSearchCriteria searchCriteria = new PersonSearchCriteria();
         PersonFetchOptions fetchOptions = new PersonFetchOptions();
-        List<Person> users = service.searchPersons(sessionToken, searchCriteria, fetchOptions).getObjects();
-        return users.stream().map(Person::getUserId).collect(Collectors.toSet());
+        for (Person user : service.searchPersons(sessionToken, searchCriteria, fetchOptions).getObjects())
+        {
+            Map<String, UsageInfo> usageBySpaces = new TreeMap<>();
+            usageByUsersAndSpaces.put(user.getUserId(), usageBySpaces);
+        }
+        gatherNewExperimentUsage(sessionToken, usageByUsersAndSpaces, period);
+        gatherNewSampleUsage(sessionToken, usageByUsersAndSpaces, period);
+        gatherNewDataSetUsage(sessionToken, usageByUsersAndSpaces, period);
+        return usageByUsersAndSpaces;
     }
 
-    private void gatherNewExperimentUsage(String sessionToken, Map<String, Map<String, UsageInfo>> usageByUsersAndGroups, Period period)
+    private Map<String, Set<String>> gatherUsersByGroups(String sessionToken, List<String> groupsOrNull)
+    {
+        Map<String, Set<String>> usersByGroup = new TreeMap<>();
+        if (groupsOrNull != null)
+        {
+            List<AuthorizationGroupPermId> groupIds = groupsOrNull.stream().map(AuthorizationGroupPermId::new).collect(Collectors.toList());
+            AuthorizationGroupFetchOptions groupFetchOptions = new AuthorizationGroupFetchOptions();
+            groupFetchOptions.withUsers();
+            for (AuthorizationGroup group : service.getAuthorizationGroups(sessionToken, groupIds, groupFetchOptions).values())
+            {
+                List<Person> users = group.getUsers();
+                usersByGroup.put(group.getCode(), users.stream().map(Person::getUserId).collect(Collectors.toSet()));
+            }
+        }
+        return usersByGroup;
+    }
+
+    private void gatherNewExperimentUsage(String sessionToken, Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces, Period period)
     {
         ExperimentSearchCriteria searchCriteria = new ExperimentSearchCriteria();
         setPeriod(searchCriteria, period);
@@ -119,10 +114,10 @@ public class UsageGatherer
         fetchOptions.withRegistrator();
         List<Experiment> experiments = service.searchExperiments(sessionToken, searchCriteria, fetchOptions).getObjects();
         Function<Experiment, String> spaceExtractor = exp -> exp.getProject().getSpace().getCode();
-        gatherUsage(usageByUsersAndGroups, experiments, spaceExtractor, UsageInfo::addNewExperiment);
+        gatherUsage(usageByUsersAndSpaces, experiments, spaceExtractor, UsageInfo::addNewExperiment);
     }
 
-    private void gatherNewSampleUsage(String sessionToken, Map<String, Map<String, UsageInfo>> usageByUsersAndGroups, Period period)
+    private void gatherNewSampleUsage(String sessionToken, Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces, Period period)
     {
         SampleSearchCriteria searchCriteria = new SampleSearchCriteria();
         setPeriod(searchCriteria, period);
@@ -131,10 +126,10 @@ public class UsageGatherer
         fetchOptions.withRegistrator();
         List<Sample> samples = service.searchSamples(sessionToken, searchCriteria, fetchOptions).getObjects();
         Function<Sample, String> spaceExtractor = sample -> sample.getSpace().getCode();
-        gatherUsage(usageByUsersAndGroups, samples, spaceExtractor, UsageInfo::addNewSample);
+        gatherUsage(usageByUsersAndSpaces, samples, spaceExtractor, UsageInfo::addNewSample);
     }
 
-    private void gatherNewDataSetUsage(String sessionToken, Map<String, Map<String, UsageInfo>> usageByUsersAndGroups, Period period)
+    private void gatherNewDataSetUsage(String sessionToken, Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces, Period period)
     {
         DataSetSearchCriteria searchCriteria = new DataSetSearchCriteria();
         setPeriod(searchCriteria, period);
@@ -162,38 +157,28 @@ public class UsageGatherer
         }
         Function<IRegistratorHolder, String> spaceExtractor = e -> e instanceof Sample ? ((Sample) e).getSpace().getCode()
                 : ((Experiment) e).getProject().getSpace().getCode();
-        gatherUsage(usageByUsersAndGroups, entities, spaceExtractor, UsageInfo::addNewDataSet);
+        gatherUsage(usageByUsersAndSpaces, entities, spaceExtractor, UsageInfo::addNewDataSet);
     }
 
-    private <T extends IRegistratorHolder> void gatherUsage(Map<String, Map<String, UsageInfo>> usageByUsersAndGroups, List<T> entities,
+    private <T extends IRegistratorHolder> void gatherUsage(Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces, List<T> entities,
             Function<T, String> spaceExtractor, Consumer<UsageInfo> consumer)
     {
         for (T entity : entities)
         {
             String userId = entity.getRegistrator().getUserId();
-            Map<String, UsageInfo> usageByGroups = usageByUsersAndGroups.get(userId);
-            if (usageByGroups != null)
+            Map<String, UsageInfo> usageBySpaces = usageByUsersAndSpaces.get(userId);
+            if (usageBySpaces != null)
             {
                 String space = spaceExtractor.apply(entity);
-                UsageInfo usageInfo = getUsageInfo(usageByGroups, space, userId);
+                UsageInfo usageInfo = usageBySpaces.get(space);
+                if (usageInfo == null)
+                {
+                    usageInfo = new UsageInfo();
+                    usageBySpaces.put(space, usageInfo);
+                }
                 consumer.accept(usageInfo);
             }
         }
-    }
-
-    private UsageInfo getUsageInfo(Map<String, UsageInfo> usageByGroups, String space, String userId)
-    {
-        String[] parts = space.split("_");
-        UsageInfo usageInfo = parts.length > 1 ? usageByGroups.get(parts[0]) : null;
-        if (usageInfo == null)
-        {
-            usageInfo = usageByGroups.get(UNNAMED_GROUP);
-        }
-        if (usageInfo == null)
-        {
-            usageInfo = usageByGroups.get(userId);
-        }
-        return usageInfo;
     }
 
     private void setPeriod(AbstractEntitySearchCriteria<?> searchCriteria, Period period)
