@@ -32,18 +32,18 @@ public abstract class Benchmark
     
     public void start() {
     		logger = LogManager.getLogger(this.getClass());
-    		logger.traceAccess(null, configuration);
+//    		logger.traceAccess(null, configuration);
     		try {
     			startInternal();
     		} catch(Throwable throwable) {
     			logger.catching(throwable);
     		}
-    		logger.traceExit(configuration);
-    		if(numOps > 0) {
-    			logger.info("totalOpTime: " + totalOpTime + " numOps: " + numOps + " avgOpTime: " + (totalOpTime/numOps) + " maxOpTime: " + maxOpTime + " minOpTime: " + minOpTime);
-    		} else {
-    			logger.info("no operations where done");
-    		}
+//    		logger.traceExit(configuration);
+//    		if(numOps > 0) {
+//    			logger.info("totalOpTime: " + totalOpTime + " numOps: " + numOps + " avgOpTime: " + (totalOpTime/numOps) + " maxOpTime: " + maxOpTime + " minOpTime: " + minOpTime);
+//    		} else {
+//    			logger.info("no operations where done");
+//    		}
     		
     }
     
