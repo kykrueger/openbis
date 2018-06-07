@@ -118,7 +118,7 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         task.group("B", "u2", "u3");
         FileUtilities.writeToFile(configFile, "");
         properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "30 d");
-        properties.setProperty(UsageReportingTask.USER_REPORTING_KEY, UsageReportingTask.UserReportingType.NON.name());
+        properties.setProperty(UsageReportingTask.USER_REPORTING_KEY, UsageReportingTask.UserReportingType.NONE.name());
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"groups\": [{\"key\":\"B\"}, {\"key\":\"A\"}]}");
 

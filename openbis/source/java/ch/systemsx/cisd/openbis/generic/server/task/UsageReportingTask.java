@@ -53,7 +53,7 @@ public class UsageReportingTask extends AbstractMaintenanceTask
 {
     enum UserReportingType
     {
-        NON(), OUTSIDE_GROUP_ONLY()
+        NONE(), OUTSIDE_GROUP_ONLY()
         {
             @Override
             void handleUsageInfo(GroupInfo groupInfo, String user, UsageInfo usageInfo, boolean groupAction)
