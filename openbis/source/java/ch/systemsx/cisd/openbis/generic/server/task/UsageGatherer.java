@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -98,8 +99,12 @@ public class UsageGatherer
             groupFetchOptions.withUsers();
             for (AuthorizationGroup group : service.getAuthorizationGroups(sessionToken, groupIds, groupFetchOptions).values())
             {
-                List<Person> users = group.getUsers();
-                usersByGroup.put(group.getCode(), users.stream().map(Person::getUserId).collect(Collectors.toSet()));
+                TreeSet<String> userIds = new TreeSet<String>();
+                for (Person user : group.getUsers())
+                {
+                    userIds.add(user.getUserId());
+                }
+                usersByGroup.put(group.getCode(), userIds);
             }
         }
         return usersByGroup;

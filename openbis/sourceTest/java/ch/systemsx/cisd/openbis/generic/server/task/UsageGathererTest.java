@@ -143,7 +143,7 @@ public class UsageGathererTest
                 + "user_in_a is active in space B, 1 new samples\n"
                 + "user_in_a_and_b is active in space B_METHODS, 1 new samples\n"
                 + "user_inactive is active in space DEFAULT, 1 new data sets\n");
-        assertEquals(info.getUsersByGroups().toString(), "{A=[user_in_a, user_in_a_and_b], B=[user_in_b, user_in_a_and_b]}");
+        assertEquals(info.getUsersByGroups().toString(), "{A=[user_in_a, user_in_a_and_b], B=[user_in_a_and_b, user_in_b]}");
         context.assertIsSatisfied();
     }
 
