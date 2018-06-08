@@ -18,7 +18,7 @@ public abstract class Benchmark
     protected long numOps = 0;
     protected long totalOpTime = 0;
     
-    protected void addOperation(long start, long end) {
+    protected void addOperation(long start, long end, int size) {
     		long total = end - start;
     		totalOpTime += total;
     		numOps++;
@@ -28,22 +28,25 @@ public abstract class Benchmark
     		if(total > maxOpTime) {
     			maxOpTime = total;
     		}
+    		logger.info("REPORT SINGLE\t" +  size + "\t" + total);
     }
     
     public void start() {
     		logger = LogManager.getLogger(this.getClass());
-//    		logger.traceAccess(null, configuration);
+    		logger.traceAccess(null, configuration);
+    		logger.info("REPORT THREAD\ttotalOpTime\tnumOps\tavgOpTime\tmaxOpTime\tminOpTime");
+    		logger.info("REPORT SINGLE\topSize\topTime");
     		try {
     			startInternal();
     		} catch(Throwable throwable) {
     			logger.catching(throwable);
     		}
-//    		logger.traceExit(configuration);
-//    		if(numOps > 0) {
-//    			logger.info("totalOpTime: " + totalOpTime + " numOps: " + numOps + " avgOpTime: " + (totalOpTime/numOps) + " maxOpTime: " + maxOpTime + " minOpTime: " + minOpTime);
-//    		} else {
-//    			logger.info("no operations where done");
-//    		}
+    		logger.traceExit(configuration);
+    		if(numOps > 0) {
+    			logger.info("REPORT THREAD\t" + totalOpTime + "\t" + numOps + "\t" + (totalOpTime/numOps) + "\t" + maxOpTime + "\t" + minOpTime);
+    		} else {
+    			logger.info("REPORT THREAD\tNO-OP");
+    		}
     		
     }
     

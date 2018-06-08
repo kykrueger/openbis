@@ -184,7 +184,7 @@ public class LoadBenchmark extends Benchmark {
         			long lapStart4 = System.currentTimeMillis();
         			v3.createSamples(sessionToken, sampleCreations);
         			long lapEnd4 = System.currentTimeMillis();
-        			addOperation(lapStart4, lapEnd4);
+        			addOperation(lapStart4, lapEnd4, sampleCreations.size());
         			logout();
         			//logger.info("Create " + sampleCreations.size() + " Samples took: " + (lapEnd4 - lapStart4) + " millis - " + ((lapEnd4-lapStart4)/sampleCreations.size()) + " millis/sample");
         			sampleCreations.clear();

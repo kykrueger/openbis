@@ -51,7 +51,7 @@ public class GlobalSearchBenchmark extends Benchmark {
 	        long start = System.currentTimeMillis();
 	        SearchResult<GlobalSearchObject> objects = v3.searchGlobally(sessionToken, criteria, options);
 	        long end = System.currentTimeMillis();
-	        addOperation(start, end);
+	        addOperation(start, end, objects.getTotalCount());
 	        long lap = end - start;
 	        laps += lap;
 	        logout();

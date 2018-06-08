@@ -67,7 +67,7 @@ public class ListBenchmark extends Benchmark {
             long lapStart2 = System.currentTimeMillis();
             SearchResult<Sample> samples = v3.searchSamples(sessionToken, criteria, options);
             long lapEnd2 = System.currentTimeMillis();
-            addOperation(lapStart2, lapEnd2);
+            addOperation(lapStart2, lapEnd2, samples.getTotalCount());
             long lap = lapEnd2 - lapStart2;
             laps += lap;
             //logger.info("Found " + samples.getTotalCount() + " objects in experiment '" + experiment.getPermId().getPermId()+ "' from space " + space.getCode() + " in " + lap + " millis.");

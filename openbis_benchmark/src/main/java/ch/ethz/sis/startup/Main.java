@@ -44,7 +44,7 @@ public class Main
         }
 
         BenchmarkConfig[] benchmarkConfigs = JacksonObjectMapper.getInstance().readValue(new FileInputStream(configFile), BenchmarkConfig[].class);
-        logger.info("REPORT\taggAVGOpTime\ttotalOpTime\tnumOps\tavgOpTime\tmaxOpTime\tminOpTime");
+        logger.info("REPORT MAIN\ttotalRealTime\taggAVGOpTime\ttotalOpTime\tnumOps\tavgOpTime\tmaxOpTime\tminOpTime");
         for(BenchmarkConfig benchmarkConfig:benchmarkConfigs) { // For each benchmark
         		logger.traceAccess(null, benchmarkConfig);
         		long start = System.currentTimeMillis();
@@ -105,9 +105,9 @@ public class Main
     		}
     		
     		if(numOps > 0) {
-    			logger.info("REPORT\t" + (end-start) + "\t" + ((end-start)/numOps) + "\t" + totalOpTime + "\t" + numOps + "\t" + (totalOpTime/numOps) + "\t" + maxOpTime + "\t" + minOpTime);
+    			logger.info("REPORT MAIN\t" + (end-start) + "\t" + ((end-start)/numOps) + "\t" + totalOpTime + "\t" + numOps + "\t" + (totalOpTime/numOps) + "\t" + maxOpTime + "\t" + minOpTime);
     		} else {
-    			logger.info("REPORT\tNO-OP");
+    			logger.info("REPORT MAIN\tNO-OP");
     		}
     }
 }
