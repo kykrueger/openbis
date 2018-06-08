@@ -18,6 +18,8 @@ package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -49,13 +51,45 @@ import ch.systemsx.cisd.openbis.generic.server.util.PluginUtils;
  */
 public class UsageReportingTask extends AbstractMaintenanceTask
 {
+    enum UserReportingType
+    {
+        NONE(), OUTSIDE_GROUP_ONLY()
+        {
+            @Override
+            void handleUsageInfo(GroupInfo groupInfo, String user, UsageInfo usageInfo, boolean groupAction)
+            {
+                if (groupAction == false)
+                {
+                    groupInfo.handle(user, usageInfo);
+                }
+            }
+        },
+        ALL()
+        {
+
+            @Override
+            void handleUsageInfo(GroupInfo groupInfo, String user, UsageInfo usageInfo, boolean groupAction)
+            {
+                groupInfo.handle(user, usageInfo);
+            }
+        };
+        void handleUsageInfo(GroupInfo groupInfo, String user, UsageInfo usageInfo, boolean groupAction)
+        {
+        }
+    }
+
+    static final String USER_REPORTING_KEY = "user-reporting-type";
+
     static final String DELIM = "\t";
 
-    static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String DATE_FORMAT = "yyyy-MM-dd";
+    private static final String TIME_STAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private PeriodType periodType;
 
     private List<EMailAddress> eMailAddresses;
+
+    private UserReportingType userReportingType;
 
     public UsageReportingTask()
     {
@@ -68,6 +102,7 @@ public class UsageReportingTask extends AbstractMaintenanceTask
         long interval = DateTimeUtils.getDurationInMillis(properties, MaintenanceTaskParameters.INTERVAL_KEY, DateUtils.MILLIS_PER_DAY);
         periodType = PeriodType.getBestType(interval);
         eMailAddresses = PluginUtils.getEMailAddresses(properties, ",");
+        userReportingType = UserReportingType.valueOf(properties.getProperty(USER_REPORTING_KEY, UserReportingType.ALL.name()));
     }
 
     @Override
@@ -79,8 +114,8 @@ public class UsageReportingTask extends AbstractMaintenanceTask
         String fromDateString = dateFormat.format(period.getFrom());
         String untilDateString = dateFormat.format(period.getUntil());
         operationLog.info("Gather usage information for the period from " + fromDateString + " until " + untilDateString);
-        Map<String, Map<String, UsageInfo>> usageByUsersAndGroups = gatherUsage(groups, period);
-        String report = createReport(usageByUsersAndGroups, period, groups);
+        UsageAndGroupsInfo usageAndGroupsInfo = gatherUsageAndGroups(groups, period);
+        String report = createReport(usageAndGroupsInfo, period, groups);
         sendReport(fromDateString, untilDateString, report);
         operationLog.info("Usage report created and sent.");
     }
@@ -90,9 +125,9 @@ public class UsageReportingTask extends AbstractMaintenanceTask
         return new Date();
     }
 
-    protected Map<String, Map<String, UsageInfo>> gatherUsage(List<String> groups, Period period)
+    protected UsageAndGroupsInfo gatherUsageAndGroups(List<String> groups, Period period)
     {
-        return new UsageGatherer(CommonServiceProvider.getApplicationServerApi()).gatherUsage(period, groups);
+        return new UsageGatherer(CommonServiceProvider.getApplicationServerApi()).gatherUsageAndGroups(period, groups);
     }
 
     protected IMailClient getMailClient()
@@ -114,7 +149,7 @@ public class UsageReportingTask extends AbstractMaintenanceTask
     {
         IMailClient mailClient = getMailClient();
         String subject = "Usage report for the period from " + fromDateString + " until " + untilDateString;
-        String fileName = "usage_report_" + fromDateString.split(" ")[0] + "_" + untilDateString.split(" ")[0] + ".tsv";
+        String fileName = "usage_report_" + fromDateString + "_" + untilDateString + ".tsv";
         try
         {
             for (EMailAddress eMailAddress : eMailAddresses)
@@ -128,57 +163,82 @@ public class UsageReportingTask extends AbstractMaintenanceTask
         }
     }
 
-    private String createReport(Map<String, Map<String, UsageInfo>> usageByUsersAndGroups, Period period, List<String> groups)
+    private String createReport(UsageAndGroupsInfo usageAndGroupsInfo, Period period, List<String> groups)
     {
         StringBuilder builder = new StringBuilder();
-        Set<String> groupSet = groups == null ? new HashSet<>() : new HashSet<>(groups);
-        Map<String, GroupInfo> groupInfos = new TreeMap<>();
-        Map<String, GroupInfo> otherGroupInfos = new TreeMap<>();
-        for (Entry<String, Map<String, UsageInfo>> entry : usageByUsersAndGroups.entrySet())
+        builder.append("period start" + DELIM + "period end" + DELIM + "group name" + DELIM + "number of users" + DELIM
+                + "idle users" + DELIM + "number of new experiments" + DELIM + "number of new samples" + DELIM
+                + "number of new data sets\n");
+        Map<String, GroupInfo> groupInfos = initializeGroupInfos(usageAndGroupsInfo);
+        Map<String, GroupInfo> individualInfos = new TreeMap<>();
+        for (String user : usageAndGroupsInfo.getUsageByUsersAndSpaces().keySet())
+        {
+            individualInfos.put(user, new GroupInfo(Arrays.asList(user)));
+        }
+
+        Map<String, Set<String>> usersByGroups = usageAndGroupsInfo.getUsersByGroups();
+        for (Entry<String, Map<String, UsageInfo>> entry : usageAndGroupsInfo.getUsageByUsersAndSpaces().entrySet())
         {
             String user = entry.getKey();
             for (Entry<String, UsageInfo> entry2 : entry.getValue().entrySet())
             {
-                String group = entry2.getKey();
-                GroupInfo groupInfo = getGroupInfo(groupSet.contains(group) ? groupInfos : otherGroupInfos, group);
-                UsageInfo info = entry2.getValue();
-                groupInfo.handle(user, info);
+                String space = entry2.getKey();
+                UsageInfo usageInfo = entry2.getValue();
+                groupInfos.get("").handle(user, usageInfo);
+                String[] spaceParts = space.split("_");
+                boolean groupAction = false;
+                if (spaceParts.length > 1)
+                {
+                    String group = spaceParts[0];
+                    GroupInfo groupInfo = groupInfos.get(group);
+                    Set<String> groupUsers = usersByGroups.get(group);
+                    if (groupInfo != null && groupUsers != null && groupUsers.contains(user))
+                    {
+                        groupInfo.handle(user, usageInfo);
+                        groupAction = true;
+                    }
+                }
+                userReportingType.handleUsageInfo(individualInfos.get(user), user, usageInfo, groupAction);
             }
         }
-        builder.append("period start" + DELIM + "period end" + DELIM + "group name" + DELIM + "number of users" + DELIM
-                + "idle users" + DELIM + "number of new experiments" + DELIM + "number of new samples" + DELIM
-                + "number of new data sets\n");
-        addInfos(builder, period, groupInfos);
-        addInfos(builder, period, otherGroupInfos);
+
+        addInfos(builder, period, groupInfos, true);
+
+        addInfos(builder, period, individualInfos, false);
         return builder.toString();
     }
 
-    private GroupInfo getGroupInfo(Map<String, GroupInfo> infos, String group)
+    private Map<String, GroupInfo> initializeGroupInfos(UsageAndGroupsInfo usageAndGroupsInfo)
     {
-        GroupInfo groupInfo = infos.get(group);
-        if (groupInfo == null)
+        Map<String, GroupInfo> groupInfos = new TreeMap<>();
+        for (Entry<String, Set<String>> entry : usageAndGroupsInfo.getUsersByGroups().entrySet())
         {
-            groupInfo = new GroupInfo();
-            infos.put(group, groupInfo);
+            groupInfos.put(entry.getKey(), new GroupInfo(entry.getValue()));
         }
-        return groupInfo;
+        groupInfos.put("", new GroupInfo(usageAndGroupsInfo.getUsageByUsersAndSpaces().keySet()));
+        return groupInfos;
     }
 
-    private void addInfos(StringBuilder builder, Period period, Map<String, GroupInfo> infos)
+    private void addInfos(StringBuilder builder, Period period, Map<String, GroupInfo> infos, boolean showIdle)
     {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+        SimpleDateFormat dateFormat = new SimpleDateFormat(TIME_STAMP_FORMAT);
         String fromDate = dateFormat.format(period.getFrom());
         String untilDate = dateFormat.format(period.getUntil());
         Set<Entry<String, GroupInfo>> entrySet = infos.entrySet();
         for (Entry<String, GroupInfo> entry : entrySet)
         {
-            builder.append(fromDate).append(DELIM).append(untilDate).append(DELIM).append(entry.getKey()).append(DELIM);
             GroupInfo info = entry.getValue();
-            builder.append(info.getNumberOfUsers()).append(DELIM);
-            builder.append(StringUtils.join(info.getIdleUsers(), ' ')).append(DELIM);
-            builder.append(info.getNumberOfNewExperiments()).append(DELIM);
-            builder.append(info.getNumberOfNewSamples()).append(DELIM);
-            builder.append(info.getNumberOfNewDataSets()).append("\n");
+            Set<String> idleUsers = info.getIdleUsers();
+            int numberOfUsers = info.getNumberOfUsers();
+            if (showIdle || idleUsers.size() < numberOfUsers)
+            {
+                builder.append(fromDate).append(DELIM).append(untilDate).append(DELIM).append(entry.getKey()).append(DELIM);
+                builder.append(numberOfUsers).append(DELIM);
+                builder.append(StringUtils.join(idleUsers, ' ')).append(DELIM);
+                builder.append(info.getNumberOfNewExperiments()).append(DELIM);
+                builder.append(info.getNumberOfNewSamples()).append(DELIM);
+                builder.append(info.getNumberOfNewDataSets()).append("\n");
+            }
         }
     }
 
@@ -194,9 +254,13 @@ public class UsageReportingTask extends AbstractMaintenanceTask
 
         private int numberOfNewDataSets;
 
+        public GroupInfo(Collection<String> users)
+        {
+            allUsers.addAll(users);
+        }
+
         void handle(String user, UsageInfo usageInfo)
         {
-            allUsers.add(user);
             if (usageInfo.isIdle() == false)
             {
                 activeUsers.add(user);

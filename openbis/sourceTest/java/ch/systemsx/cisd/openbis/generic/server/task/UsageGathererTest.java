@@ -126,25 +126,24 @@ public class UsageGathererTest
     public void testWithGroups()
     {
         // Given
-        prepareSearchExperiments(experiment(USER_IN_A, space("A_STORAGE")), experiment(USER1, space("DEFAULT")));
+        prepareSearchExperiments(experiment(USER_IN_A, space("A_STORAGE")), experiment(USER1, space("DEFAULT")),
+                experiment(USER1, space("DEFAULT")));
         prepareSearchSamples(sample(USER_IN_A_AND_B, space("B_METHODS")), sample(USER_IN_A, space("B")), sample(USER2, space("A")));
         prepareSearchDataSets(dataSet(sample(USER1, space("BETA"))), dataSet(experiment(INACTIVE_USER, space("DEFAULT"))));
 
         // When
-        Map<String, Map<String, UsageInfo>> map = usageGatherer.gatherUsage(PERIOD, Arrays.asList("A", "B"));
+        UsageAndGroupsInfo info = usageGatherer.gatherUsageAndGroups(PERIOD, Arrays.asList("A", "B"));
 
         // Then
-        String renderedMap = render(map);
-        assertEquals(renderedMap, "user1 is active in group user1, 1 new experiments, 1 new data sets\n"
-                + "user2 is active in group user2, 1 new samples\n"
-                + "user_in_a is active in group A, 1 new experiments\n"
-                + "user_in_a is active in group user_in_a, 1 new samples\n"
-                + "user_in_a_and_b is idle in group A\n"
-                + "user_in_a_and_b is active in group B, 1 new samples\n"
-                + "user_in_a_and_b is idle in group user_in_a_and_b\n"
-                + "user_in_b is idle in group B\n"
-                + "user_in_b is idle in group user_in_b\n"
-                + "user_inactive is active in group user_inactive, 1 new data sets\n");
+        String renderedMap = renderUsageInfo(info.getUsageByUsersAndSpaces());
+        assertEquals(renderedMap, "user1 is active in space BETA, 1 new data sets\n"
+                + "user1 is active in space DEFAULT, 2 new experiments\n"
+                + "user2 is active in space A, 1 new samples\n"
+                + "user_in_a is active in space A_STORAGE, 1 new experiments\n"
+                + "user_in_a is active in space B, 1 new samples\n"
+                + "user_in_a_and_b is active in space B_METHODS, 1 new samples\n"
+                + "user_inactive is active in space DEFAULT, 1 new data sets\n");
+        assertEquals(info.getUsersByGroups().toString(), "{A=[user_in_a, user_in_a_and_b], B=[user_in_a_and_b, user_in_b]}");
         context.assertIsSatisfied();
     }
 
@@ -157,23 +156,25 @@ public class UsageGathererTest
         prepareSearchDataSets(dataSet(sample(USER1, space("BETA"))), dataSet(experiment(INACTIVE_USER, space("DEFAULT"))));
 
         // When
-        Map<String, Map<String, UsageInfo>> map = usageGatherer.gatherUsage(PERIOD, null);
+        UsageAndGroupsInfo info = usageGatherer.gatherUsageAndGroups(PERIOD, null);
 
         // Then
-        String renderedMap = render(map);
-        assertEquals(renderedMap, "user1 is active in group " + UsageGatherer.UNNAMED_GROUP + ", 1 new experiments, 1 new data sets\n"
-                + "user2 is active in group " + UsageGatherer.UNNAMED_GROUP + ", 1 new samples\n"
-                + "user_in_a is active in group " + UsageGatherer.UNNAMED_GROUP + ", 1 new experiments, 1 new samples\n"
-                + "user_in_a_and_b is active in group " + UsageGatherer.UNNAMED_GROUP + ", 1 new samples\n"
-                + "user_in_b is idle in group " + UsageGatherer.UNNAMED_GROUP + "\n"
-                + "user_inactive is active in group " + UsageGatherer.UNNAMED_GROUP + ", 1 new data sets\n");
+        String renderedMap = renderUsageInfo(info.getUsageByUsersAndSpaces());
+        assertEquals(renderedMap, "user1 is active in space BETA, 1 new data sets\n"
+                + "user1 is active in space DEFAULT, 1 new experiments\n"
+                + "user2 is active in space A, 1 new samples\n"
+                + "user_in_a is active in space A_STORAGE, 1 new experiments\n"
+                + "user_in_a is active in space B, 1 new samples\n"
+                + "user_in_a_and_b is active in space B_METHODS, 1 new samples\n"
+                + "user_inactive is active in space DEFAULT, 1 new data sets\n");
+        assertEquals(info.getUsersByGroups().toString(), "{}");
         context.assertIsSatisfied();
     }
 
-    private String render(Map<String, Map<String, UsageInfo>> map)
+    private String renderUsageInfo(Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces)
     {
         StringBuilder builder = new StringBuilder();
-        for (Entry<String, Map<String, UsageInfo>> entry : map.entrySet())
+        for (Entry<String, Map<String, UsageInfo>> entry : usageByUsersAndSpaces.entrySet())
         {
             String user = entry.getKey();
             for (Entry<String, UsageInfo> entry2 : entry.getValue().entrySet())
@@ -181,7 +182,7 @@ public class UsageGathererTest
                 String group = entry2.getKey();
                 UsageInfo info = entry2.getValue();
                 builder.append(user).append(" is ").append(info.isIdle() ? "idle" : "active");
-                builder.append(" in group ").append(group);
+                builder.append(" in space ").append(group);
                 addNumberOfType(builder, info.getNumberOfNewExperiments(), "new experiments");
                 addNumberOfType(builder, info.getNumberOfNewSamples(), "new samples");
                 addNumberOfType(builder, info.getNumberOfNewDataSets(), "new data sets");

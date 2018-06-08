@@ -20,10 +20,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.activation.DataHandler;
@@ -99,19 +102,23 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
     }
 
     @Test
-    public void testWeeklyReportForGroups() throws IOException
+    public void testMonthlyGroupsOnlyReport() throws IOException
     {
         // Given
         UsageReportingTaskWithMocks task = new UsageReportingTaskWithMocks(mailClient).time(new Date(12345));
-        task.user("u1").group("A").newExperiments(2).newDataSets(1);
-        task.user("u1").group("C").newSamples(1);
-        task.user("u2").group("A");
-        task.user("u2").group("B").newExperiments(2);
-        task.user("u2").group("A1").newSamples(2).newDataSets(5);
-        task.user("u3").group("A");
-        task.user("u3").group("B").newExperiments(3);
+        task.user("u1").space("A_X").newExperiments(2).newDataSets(1);
+        task.user("u1").space("C").newSamples(1);
+        task.user("u2").space("A_Y").newSamples(7);
+        task.user("u2").space("B_X").newExperiments(2);
+        task.user("u2").space("A1").newSamples(2).newDataSets(5);
+        task.user("u3").space("B_Y").newExperiments(3);
+        task.user("u4");
+        task.user("u5");
+        task.group("A", "u1", "u4");
+        task.group("B", "u2", "u3");
         FileUtilities.writeToFile(configFile, "");
-        properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "7 d");
+        properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "30 d");
+        properties.setProperty(UsageReportingTask.USER_REPORTING_KEY, UsageReportingTask.UserReportingType.NONE.name());
         task.setUp("", properties);
         FileUtilities.writeToFile(configFile, "{\"groups\": [{\"key\":\"B\"}, {\"key\":\"A\"}]}");
 
@@ -122,54 +129,11 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         assertEquals("INFO  OPERATION.UsageReportingTaskWithMocks - Setup plugin \n"
                 + "INFO  OPERATION.UsageReportingTaskWithMocks - Plugin '' initialized. Configuration file: " + configFile.getAbsolutePath() + "\n"
                 + "INFO  OPERATION.UsageReportingTaskWithMocks - Gather usage information for the period from "
-                + "1969-12-21 00:00:00 until 1969-12-28 00:00:00\n"
-                + "INFO  OPERATION.UsageReportingTaskWithMocks - Usage report created and sent.", logRecorder.getLogContent());
-        assertPeriod("1969-12-21 00:00:00", "1969-12-28 00:00:00", task.period);
-        assertEquals("[B, A]", task.groups.toString());
-        assertRecorders(subjectRecorder, "Usage report for the period from 1969-12-21 00:00:00 until 1969-12-28 00:00:00", 2);
-        assertRecorders(contentRecorder, "The usage report can be found in the attached TSV file.", 2);
-        assertRecorders(fileNameRecorder, "usage_report_1969-12-21_1969-12-28.tsv", 2);
-        assertEquals("EmailAddress{email=a1@bc.de}", recipientRecorder.getRecordedObjects().get(0)[0].toString());
-        assertEquals("EmailAddress{email=a2@bc.de}", recipientRecorder.getRecordedObjects().get(1)[0].toString());
-        assertEquals(2, recipientRecorder.getRecordedObjects().size());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        attachmentRecorder.getRecordedObjects().get(0).writeTo(baos);
-        assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
-                + "number of new experiments" + D + "number of new samples" + D + "number of new data sets\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "A" + D + "3" + D + "u2 u3" + D + "2" + D + "0" + D + "1\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "B" + D + "2" + D + D + "5" + D + "0" + D + "0\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "A1" + D + "1" + D + D + "0" + D + "2" + D + "5\n"
-                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "C" + D + "1" + D + D + "0" + D + "1" + D + "0\n", baos.toString());
-        assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
-        assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
-        assertEquals(2, attachmentRecorder.getRecordedObjects().size());
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testMonthlyReportForGroups() throws IOException
-    {
-        // Given
-        UsageReportingTaskWithMocks task = new UsageReportingTaskWithMocks(mailClient).time(new Date(12345));
-        task.user("u1").group("A").newExperiments(2).newDataSets(1);
-        task.user("u2").group("B").newExperiments(3);
-        FileUtilities.writeToFile(configFile, "");
-        properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "30 d");
-        task.setUp("", properties);
-        FileUtilities.writeToFile(configFile, "{\"groups\": [{\"key\":\"B\"}]}");
-        
-        // When
-        task.execute();
-        
-        // Then
-        assertEquals("INFO  OPERATION.UsageReportingTaskWithMocks - Setup plugin \n"
-                + "INFO  OPERATION.UsageReportingTaskWithMocks - Plugin '' initialized. Configuration file: " + configFile.getAbsolutePath() + "\n"
-                + "INFO  OPERATION.UsageReportingTaskWithMocks - Gather usage information for the period from "
-                + "1969-12-01 00:00:00 until 1970-01-01 00:00:00\n"
+                + "1969-12-01 until 1970-01-01\n"
                 + "INFO  OPERATION.UsageReportingTaskWithMocks - Usage report created and sent.", logRecorder.getLogContent());
         assertPeriod("1969-12-01 00:00:00", "1970-01-01 00:00:00", task.period);
-        assertEquals("[B]", task.groups.toString());
-        assertRecorders(subjectRecorder, "Usage report for the period from 1969-12-01 00:00:00 until 1970-01-01 00:00:00", 2);
+        assertEquals("[B, A]", task.groups.toString());
+        assertRecorders(subjectRecorder, "Usage report for the period from 1969-12-01 until 1970-01-01", 2);
         assertRecorders(contentRecorder, "The usage report can be found in the attached TSV file.", 2);
         assertRecorders(fileNameRecorder, "usage_report_1969-12-01_1970-01-01.tsv", 2);
         assertEquals("EmailAddress{email=a1@bc.de}", recipientRecorder.getRecordedObjects().get(0)[0].toString());
@@ -179,27 +143,135 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         attachmentRecorder.getRecordedObjects().get(0).writeTo(baos);
         assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
                 + "number of new experiments" + D + "number of new samples" + D + "number of new data sets\n"
-                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "B" + D + "1" + D + D + "3" + D + "0" + D + "0\n"
-                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "A" + D + "1" + D + D + "2" + D + "0" + D + "1\n", baos.toString());
+                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "7" + D + "10" + D + "6\n"
+                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1\n"
+                + "1969-12-01 00:00:00" + D + "1970-01-01 00:00:00" + D + "B" + D + "2" + D + D + "5" + D + "0" + D + "0\n", baos.toString());
+        assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
+        assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
+        assertEquals(2, attachmentRecorder.getRecordedObjects().size());
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testWeeklyGroupsAndAllUsersReport() throws IOException
+    {
+        // Given
+        UsageReportingTaskWithMocks task = new UsageReportingTaskWithMocks(mailClient).time(new Date(12345));
+        task.user("u1").space("A_X").newExperiments(2).newDataSets(1);
+        task.user("u1").space("C").newSamples(1);
+        task.user("u2").space("A_Y").newSamples(4);
+        task.user("u2").space("A_Z").newSamples(3);
+        task.user("u2").space("B_X").newSamples(2);
+        task.user("u2").space("A1").newSamples(2).newDataSets(5);
+        task.user("u3").space("B_Y").newSamples(3);
+        task.user("u4");
+        task.user("u5");
+        task.group("A", "u1", "u4");
+        task.group("B", "u2", "u3");
+        FileUtilities.writeToFile(configFile, "");
+        properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "7 d");
+        properties.setProperty(UsageReportingTask.USER_REPORTING_KEY, UsageReportingTask.UserReportingType.ALL.name());
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"groups\": [{\"key\":\"B\"}, {\"key\":\"A\"}]}");
+        
+        // When
+        task.execute();
+        
+        // Then
+        assertEquals("INFO  OPERATION.UsageReportingTaskWithMocks - Setup plugin \n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Plugin '' initialized. Configuration file: " + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Gather usage information for the period from "
+                + "1969-12-21 until 1969-12-28\n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Usage report created and sent.", logRecorder.getLogContent());
+        assertPeriod("1969-12-21 00:00:00", "1969-12-28 00:00:00", task.period);
+        assertEquals("[B, A]", task.groups.toString());
+        assertRecorders(subjectRecorder, "Usage report for the period from 1969-12-21 until 1969-12-28", 2);
+        assertRecorders(contentRecorder, "The usage report can be found in the attached TSV file.", 2);
+        assertRecorders(fileNameRecorder, "usage_report_1969-12-21_1969-12-28.tsv", 2);
+        assertEquals("EmailAddress{email=a1@bc.de}", recipientRecorder.getRecordedObjects().get(0)[0].toString());
+        assertEquals("EmailAddress{email=a2@bc.de}", recipientRecorder.getRecordedObjects().get(1)[0].toString());
+        assertEquals(2, recipientRecorder.getRecordedObjects().size());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        attachmentRecorder.getRecordedObjects().get(0).writeTo(baos);
+        assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
+                + "number of new experiments" + D + "number of new samples" + D + "number of new data sets\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "2" + D + "15" + D + "6\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "B" + D + "2" + D + D + "0" + D + "5" + D + "0\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u2" + D + "1" + D + D + "0" + D + "11" + D + "5\n"
+                + "1969-12-21 00:00:00" + D + "1969-12-28 00:00:00" + D + "u3" + D + "1" + D + D + "0" + D + "3" + D + "0\n", baos.toString());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
         assertEquals(2, attachmentRecorder.getRecordedObjects().size());
         context.assertIsSatisfied();
     }
     
+    @Test
+    public void testDailyGroupsAndOutsideUsersReport() throws IOException
+    {
+        // Given
+        UsageReportingTaskWithMocks task = new UsageReportingTaskWithMocks(mailClient).time(new Date(12345));
+        task.user("u1").space("A_X").newExperiments(2).newDataSets(1);
+        task.user("u1").space("C").newSamples(1);
+        task.user("u2").space("A_Y").newSamples(4);
+        task.user("u2").space("A_Z").newSamples(3);
+        task.user("u2").space("B_X").newDataSets(2);
+        task.user("u2").space("A1").newSamples(2).newDataSets(5);
+        task.user("u3").space("B_Y").newDataSets(3);
+        task.user("u4");
+        task.user("u5");
+        task.group("A", "u1", "u4");
+        task.group("B", "u2", "u3");
+        FileUtilities.writeToFile(configFile, "");
+        properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "1 d");
+        properties.setProperty(UsageReportingTask.USER_REPORTING_KEY, UsageReportingTask.UserReportingType.OUTSIDE_GROUP_ONLY.name());
+        task.setUp("", properties);
+        FileUtilities.writeToFile(configFile, "{\"groups\": [{\"key\":\"B\"}, {\"key\":\"A\"}]}");
+        
+        // When
+        task.execute();
+        
+        // Then
+        assertEquals("INFO  OPERATION.UsageReportingTaskWithMocks - Setup plugin \n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Plugin '' initialized. Configuration file: " + configFile.getAbsolutePath() + "\n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Gather usage information for the period from "
+                + "1969-12-31 until 1970-01-01\n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Usage report created and sent.", logRecorder.getLogContent());
+        assertPeriod("1969-12-31 00:00:00", "1970-01-01 00:00:00", task.period);
+        assertEquals("[B, A]", task.groups.toString());
+        assertRecorders(subjectRecorder, "Usage report for the period from 1969-12-31 until 1970-01-01", 2);
+        assertRecorders(contentRecorder, "The usage report can be found in the attached TSV file.", 2);
+        assertRecorders(fileNameRecorder, "usage_report_1969-12-31_1970-01-01.tsv", 2);
+        assertEquals("EmailAddress{email=a1@bc.de}", recipientRecorder.getRecordedObjects().get(0)[0].toString());
+        assertEquals("EmailAddress{email=a2@bc.de}", recipientRecorder.getRecordedObjects().get(1)[0].toString());
+        assertEquals(2, recipientRecorder.getRecordedObjects().size());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        attachmentRecorder.getRecordedObjects().get(0).writeTo(baos);
+        assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
+                + "number of new experiments" + D + "number of new samples" + D + "number of new data sets\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "5" + D + "u4 u5" + D + "2" + D + "10" + D + "11\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "A" + D + "2" + D + "u4" + D + "2" + D + "0" + D + "1\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "B" + D + "2" + D + D + "0" + D + "0" + D + "5\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "0" + D + "1" + D + "0\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "0" + D + "9" + D + "5\n", baos.toString());
+        assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
+        assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
+        assertEquals(2, attachmentRecorder.getRecordedObjects().size());
+        context.assertIsSatisfied();
+    }
     
     @Test
     public void testDailyReportWithoutGroups() throws IOException
     {
         // Given
         UsageReportingTaskWithMocks task = new UsageReportingTaskWithMocks(mailClient).time(new Date(12345));
-        task.user("u1").group("A").newExperiments(2).newDataSets(1);
-        task.user("u1").group("C").newSamples(1);
-        task.user("u2").group("A");
-        task.user("u2").group("B").newExperiments(2);
-        task.user("u2").group("A1").newSamples(2).newDataSets(5);
-        task.user("u3").group("A");
-        task.user("u3").group("B").newExperiments(3);
+        task.user("u1").space("A").newExperiments(2).newDataSets(1);
+        task.user("u1").space("C").newSamples(1);
+        task.user("u2").space("B").newExperiments(2);
+        task.user("u2").space("A1").newSamples(2).newDataSets(5);
+        task.user("u3").space("B").newExperiments(3);
+        task.user("u4");
         properties.remove(UsageReportingTask.CONFIGURATION_FILE_PATH_PROPERTY);
         properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "1 d");
         task.setUp("", properties);
@@ -211,11 +283,11 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         assertEquals("INFO  OPERATION.UsageReportingTaskWithMocks - Setup plugin \n"
                 + "INFO  OPERATION.UsageReportingTaskWithMocks - Plugin '' initialized.\n"
                 + "INFO  OPERATION.UsageReportingTaskWithMocks - Gather usage information for the period from "
-                + "1969-12-31 00:00:00 until 1970-01-01 00:00:00\n"
+                + "1969-12-31 until 1970-01-01\n"
                 + "INFO  OPERATION.UsageReportingTaskWithMocks - Usage report created and sent.", logRecorder.getLogContent());
         assertPeriod("1969-12-31 00:00:00", "1970-01-01 00:00:00", task.period);
         assertEquals(null, task.groups);
-        assertRecorders(subjectRecorder, "Usage report for the period from 1969-12-31 00:00:00 until 1970-01-01 00:00:00", 2);
+        assertRecorders(subjectRecorder, "Usage report for the period from 1969-12-31 until 1970-01-01", 2);
         assertRecorders(contentRecorder, "The usage report can be found in the attached TSV file.", 2);
         assertRecorders(fileNameRecorder, "usage_report_1969-12-31_1970-01-01.tsv", 2);
         assertEquals("EmailAddress{email=a1@bc.de}", recipientRecorder.getRecordedObjects().get(0)[0].toString());
@@ -225,10 +297,57 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         attachmentRecorder.getRecordedObjects().get(1).writeTo(baos);
         assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
                 + "number of new experiments" + D + "number of new samples" + D + "number of new data sets\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "A" + D + "3" + D + "u2 u3" + D + "2" + D + "0" + D + "1\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "A1" + D + "1" + D + D + "0" + D + "2" + D + "5\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "B" + D + "2" + D + D + "5" + D + "0" + D + "0\n"
-                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "C" + D + "1" + D + D + "0" + D + "1" + D + "0\n", baos.toString());
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "4" + D + "u4" + D + "7" + D + "3" + D + "6\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "2" + D + "2" + D + "5\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u3" + D + "1" + D + D + "3" + D + "0" + D + "0\n", baos.toString());
+        assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
+        assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
+        assertEquals(2, attachmentRecorder.getRecordedObjects().size());
+        context.assertIsSatisfied();
+    }
+    
+    @Test
+    public void testDailyReportWithoutGroupsAndOutsideUsers() throws IOException
+    {
+        // Given
+        UsageReportingTaskWithMocks task = new UsageReportingTaskWithMocks(mailClient).time(new Date(12345));
+        task.user("u1").space("A").newExperiments(2).newDataSets(1);
+        task.user("u1").space("C").newSamples(1);
+        task.user("u2").space("B").newExperiments(2);
+        task.user("u2").space("A1").newSamples(2).newDataSets(5);
+        task.user("u3").space("B").newExperiments(3);
+        task.user("u4");
+        properties.remove(UsageReportingTask.CONFIGURATION_FILE_PATH_PROPERTY);
+        properties.setProperty(MaintenanceTaskParameters.INTERVAL_KEY, "1 d");
+        properties.setProperty(UsageReportingTask.USER_REPORTING_KEY, UsageReportingTask.UserReportingType.OUTSIDE_GROUP_ONLY.name());
+        task.setUp("", properties);
+        
+        // When
+        task.execute();
+        
+        // Then
+        assertEquals("INFO  OPERATION.UsageReportingTaskWithMocks - Setup plugin \n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Plugin '' initialized.\n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Gather usage information for the period from "
+                + "1969-12-31 until 1970-01-01\n"
+                + "INFO  OPERATION.UsageReportingTaskWithMocks - Usage report created and sent.", logRecorder.getLogContent());
+        assertPeriod("1969-12-31 00:00:00", "1970-01-01 00:00:00", task.period);
+        assertEquals(null, task.groups);
+        assertRecorders(subjectRecorder, "Usage report for the period from 1969-12-31 until 1970-01-01", 2);
+        assertRecorders(contentRecorder, "The usage report can be found in the attached TSV file.", 2);
+        assertRecorders(fileNameRecorder, "usage_report_1969-12-31_1970-01-01.tsv", 2);
+        assertEquals("EmailAddress{email=a1@bc.de}", recipientRecorder.getRecordedObjects().get(0)[0].toString());
+        assertEquals("EmailAddress{email=a2@bc.de}", recipientRecorder.getRecordedObjects().get(1)[0].toString());
+        assertEquals(2, recipientRecorder.getRecordedObjects().size());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        attachmentRecorder.getRecordedObjects().get(1).writeTo(baos);
+        assertEquals("period start" + D + "period end" + D + "group name" + D + "number of users" + D + "idle users" + D
+                + "number of new experiments" + D + "number of new samples" + D + "number of new data sets\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "" + D + "4" + D + "u4" + D + "7" + D + "3" + D + "6\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u1" + D + "1" + D + D + "2" + D + "1" + D + "1\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u2" + D + "1" + D + D + "2" + D + "2" + D + "5\n"
+                + "1969-12-31 00:00:00" + D + "1970-01-01 00:00:00" + D + "u3" + D + "1" + D + D + "3" + D + "0" + D + "0\n", baos.toString());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(0).getContentType());
         assertEquals("text/plain", attachmentRecorder.getRecordedObjects().get(1).getContentType());
         assertEquals(2, attachmentRecorder.getRecordedObjects().size());
@@ -246,7 +365,7 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
 
     private void assertPeriod(String expectedFrom, String expectedUntil, Period period)
     {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(UsageReportingTask.DATE_FORMAT);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         assertEquals(expectedFrom, dateFormat.format(period.getFrom()));
         assertEquals(expectedUntil, dateFormat.format(period.getUntil()));
     }
@@ -257,7 +376,9 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
 
         private Date actualTimeStamp;
 
-        private Map<String, Map<String, UsageInfo>> usageByUsersAndGroups = new TreeMap<>();
+        private Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces = new TreeMap<>();
+        
+        private Map<String, Set<String>> usersByGroups = new TreeMap<>();
 
         private List<String> groups;
 
@@ -275,15 +396,21 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
             return this;
         }
 
-        UsageByGroupsBuilder user(String user)
+        UsageBySpacesBuilder user(String user)
         {
-            Map<String, UsageInfo> usageByGroups = usageByUsersAndGroups.get(user);
-            if (usageByGroups == null)
+            Map<String, UsageInfo> usageBySpaces = usageByUsersAndSpaces.get(user);
+            if (usageBySpaces == null)
             {
-                usageByGroups = new TreeMap<>();
-                usageByUsersAndGroups.put(user, usageByGroups);
+                usageBySpaces = new TreeMap<>();
+                usageByUsersAndSpaces.put(user, usageBySpaces);
             }
-            return new UsageByGroupsBuilder(usageByGroups);
+            return new UsageBySpacesBuilder(usageBySpaces);
+        }
+        
+        UsageReportingTaskWithMocks group(String group, String...users)
+        {
+            usersByGroups.put(group, new HashSet<>(Arrays.asList(users)));
+            return this;
         }
 
         @Override
@@ -293,11 +420,11 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         }
 
         @Override
-        protected Map<String, Map<String, UsageInfo>> gatherUsage(List<String> groups, Period period)
+        protected UsageAndGroupsInfo gatherUsageAndGroups(List<String> groups, Period period)
         {
             this.groups = groups;
             this.period = period;
-            return usageByUsersAndGroups;
+            return new UsageAndGroupsInfo(usageByUsersAndSpaces, usersByGroups);
         }
 
         @Override
@@ -307,19 +434,19 @@ public class UsageReportingTaskTest extends AbstractFileSystemTestCase
         }
     }
 
-    private static final class UsageByGroupsBuilder
+    private static final class UsageBySpacesBuilder
     {
-        private Map<String, UsageInfo> usageByGroups;
+        private Map<String, UsageInfo> usageBySpaces;
 
-        UsageByGroupsBuilder(Map<String, UsageInfo> usageByGroups)
+        UsageBySpacesBuilder(Map<String, UsageInfo> usageBySpaces)
         {
-            this.usageByGroups = usageByGroups;
+            this.usageBySpaces = usageBySpaces;
         }
 
-        UsageInfoBuilder group(String group)
+        UsageInfoBuilder space(String group)
         {
             UsageInfo usageInfo = new UsageInfo();
-            usageByGroups.put(group, usageInfo);
+            usageBySpaces.put(group, usageInfo);
             return new UsageInfoBuilder(usageInfo);
         }
     }
