@@ -125,7 +125,6 @@ class ChecksumGeneratorGitAnnex(object):
         if 'Not a valid object name' in annex_result.output:
             return self.checksum_generator_supplement.get_checksum(file)
         annex_info = json.loads(annex_result.output)
-        print(annex_info)
         # TODO annex_info will not have 'present' if there is a git repository within the obis repository
         if annex_info['present'] != True:
             return self.checksum_generator_supplement.get_checksum(file)

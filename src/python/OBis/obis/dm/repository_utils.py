@@ -17,6 +17,9 @@ def copy_repository(ssh_user, host, path):
 
 def delete_repository(ssh_user, host, path):
     if is_local(host):
+        result = run_shell(["chmod", "-R",  "u+w", path])
+        if result.failure():
+            return result
         return run_shell(["rm", "-rf", path])
     else:
         location = ssh_user + "@" if ssh_user is not None else ""
