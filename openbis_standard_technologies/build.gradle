@@ -13,6 +13,7 @@ apply plugin: org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 
 dependencyCheck {
   failBuildOnCVSS = 7 // 0 - 4 = low, 4 - 7 = medium, 7 - 9 = high, 9-10 = critical
+  suppressionFile = "owasp_suppressing_false_positives.xml"
   analyzers{
     assemblyEnabled = false
   }

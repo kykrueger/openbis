@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+   <suppress>
+      <notes><![CDATA[
+      file name: gwt-dev-2.4.jar/META-INF/maven/org.mortbay.jetty/jetty-util/pom.xml
+      ]]></notes>
+      <gav regex="true">^org\.mortbay\.jetty:jetty-util:.*$</gav>
+      <cpe>cpe:/a:mortbay:jetty</cpe>
+   </suppress>
+   <suppress>
+	   <notes><![CDATA[
+	   file name: gwt-dev-2.4.jar/META-INF/maven/org.mortbay.jetty/jetty/pom.xml
+	   ]]></notes>
+	   <gav regex="true">^org\.mortbay\.jetty:jetty:.*$</gav>
+	   <cpe>cpe:/a:mortbay:jetty</cpe>
+	</suppress>
+	<suppress>
+	   <notes><![CDATA[
+	   file name: gwt-dev-2.4.jar/META-INF/maven/org.mortbay.jetty/servlet-api-2.5/pom.xml
+	   ]]></notes>
+	   <gav regex="true">^org\.mortbay\.jetty:servlet-api-2\.5:.*$</gav>
+	   <cpe>cpe:/a:mortbay:jetty</cpe>
+	</suppress>
+</suppressions>
