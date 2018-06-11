@@ -1,0 +1,112 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure(2) do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://atlas.hashicorp.com/search.
+  #config.vm.box = "centos7-vbox"
+  config.vm.box = "centos/7"
+
+  # Share an additional folder to the guest VM. The first argument is
+  # the path on the host to the actual folder. The second argument is
+  # the path on the guest to mount the folder. And the optional third
+  # argument is a set of non-required options.
+  # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.synced_folder "../../python", "/vagrant_python", type: "virtualbox"
+  config.vm.synced_folder "../../../", "/vagrant_repo", type: "virtualbox"
+  config.vm.synced_folder "initialize", "/vagrant_initialize", type: "virtualbox"
+  config.vm.synced_folder "./", "/vagrant", type: "virtualbox"
+  #config.vm.synced_folder "../../core-plugins", "/vagrant_core-plugins", type: "virtualbox"
+
+  config.vm.define "obisserver" do |obisserver|
+
+    # Create a forwarded port mapping which allows access to a specific port
+    # within the machine from a port on the host machine. In the example below,
+    # accessing "localhost:8080" will access port 80 on the guest machine.
+    obisserver.vm.network "forwarded_port", guest: 8443, host: 8443
+    obisserver.vm.network "forwarded_port", guest: 8444, host: 8444
+
+    # Provider-specific configuration so you can fine-tune various
+    # backing providers for Vagrant. These expose provider-specific options.
+    # Example for VirtualBox:
+    #
+    obisserver.vm.provider "virtualbox" do |vb|
+      # Customize the amount of memory on the VM:
+      vb.memory = "2048"
+    end
+
+    # Install necessary packages and tools (yum commands + install conda)
+    obisserver.vm.provision :shell, inline: "/vagrant/initialize/setup_general.sh || true"
+
+    # Install and start openBIS
+    obisserver.vm.provision :shell, inline: "/vagrant/initialize/setup_openbis.sh || true"
+    obisserver.vm.provision :shell, inline: "/vagrant/initialize/install_openbis.sh || true"
+    obisserver.vm.provision :shell, inline: "/vagrant/initialize/start_services.sh || true"
+
+    # Install obis (including prereqs: python3, git, git-annex)
+    obisserver.vm.provision :shell, inline: "/vagrant/initialize/setup_obis.sh || true"
+    obisserver.vm.provision :shell, inline: "/vagrant/initialize/install_obis.sh || true"
+
+    # update /etc/hostname
+    obisserver.vm.network "private_network", ip: "172.28.128.3"
+
+    obisserver.vm.provision :shell do |sh|
+      # set password for obis user to 'obis' for ssh and enable password authentication
+      # set hostnames
+      sh.inline = "usermod --password $(echo obis | openssl passwd -1 -stdin) obis
+      sed -e \"s/PasswordAuthentication no/PasswordAuthentication yes/\" /etc/ssh/sshd_config > /etc/ssh/sshd_config_tmp
+      mv /etc/ssh/sshd_config_tmp /etc/ssh/sshd_config
+      systemctl restart sshd.service
+      echo '127.0.0.1 obisserver' >> /etc/hosts
+      echo '172.28.128.4 obisclient' >> /etc/hosts
+      echo 'obisserver' > /etc/hostname
+      hostname `cat /etc/hostname`"
+    end
+
+  end
+
+
+  config.vm.define "obisclient" do |obisclient|
+
+    # Provider-specific configuration so you can fine-tune various
+    # backing providers for Vagrant. These expose provider-specific options.
+    # Example for VirtualBox:
+    #
+    obisclient.vm.provider "virtualbox" do |vb|
+      # Customize the amount of memory on the VM:
+      vb.memory = "1024"
+    end
+
+    # Install necessary packages and tools (yum commands + install conda)
+    obisclient.vm.provision :shell, inline: "/vagrant/initialize/setup_general.sh || true"
+
+    # Install obis (including prereqs: python3, git, git-annex)
+    obisclient.vm.provision :shell, inline: "/vagrant/initialize/setup_obis.sh || true"
+    obisclient.vm.provision :shell, inline: "/vagrant/initialize/install_obis.sh || true"
+
+    obisclient.vm.network "private_network", ip: "172.28.128.4"
+
+    obisclient.vm.provision :shell do |sh|
+      # set password for obis user to 'obis' for ssh and enable password authentication
+      # set hostnames
+      sh.inline = "sudo usermod --password $(echo obis | openssl passwd -1 -stdin) obis
+      sed -e \"s/PasswordAuthentication no/PasswordAuthentication yes/\" /etc/ssh/sshd_config > /etc/ssh/sshd_config_tmp
+      mv /etc/ssh/sshd_config_tmp /etc/ssh/sshd_config
+      systemctl restart sshd.service
+      echo '127.0.0.1 obisclient' >> /etc/hosts
+      echo '172.28.128.3 obisserver' >> /etc/hosts
+      echo 'obisclient' > /etc/hostname
+      hostname `cat /etc/hostname`"
+    end
+
+  end
+
+end
