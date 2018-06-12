@@ -150,7 +150,7 @@ def calculateBuildInfo() {
     } else if (isGitProject()) {
         def gitlogoutput = execute_working_dir('git', ['log', '-1', '--format=%at'], '../' + project.name)
         project.ext.revisionNumber = Integer.parseInt(gitlogoutput[0])
-        def tag = 'git describe --tags'.execute().text.trim()
+        def tag = 'git describe --tags --exclude "pybis*"'.execute().text.trim()
         if (tag == null || tag.isEmpty()) {
             project.ext.versionNumber = 'SNAPSHOT'
         } else {
