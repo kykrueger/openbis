@@ -51,7 +51,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.IdentifierHelper;
-
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -327,7 +326,6 @@ final class SampleListingWorker extends AbstractLister
         }
     }
 
-    @SuppressWarnings("null")
     private void loadSampleTypes()
     {
         final SampleType sampleTypeOrNull = tryGetSingleModeSampleType();
@@ -665,8 +663,12 @@ final class SampleListingWorker extends AbstractLister
         sample.setSubCode(IdentifierHelper.convertSubCode(row.code));
         sample.setSampleType(sampleTypes.get(row.saty_id));
 
-        // set group or instance
-        if (row.space_id == null)
+        // set project, space or instance
+        if (row.proj_id != null)
+        {
+            Project project = getOrCreateProject(row);
+            setProject(sample, project);
+        } else if (row.space_id == null)
         {
             setDatabaseInstance(sample);
         } else
@@ -697,11 +699,6 @@ final class SampleListingWorker extends AbstractLister
             if (row.expe_id != null)
             {
                 sample.setExperiment(experimentsById.get(row.expe_id));
-            }
-            if (row.proj_id != null)
-            {
-                Project project = getOrCreateProject(row);
-                setProject(sample, project);
             }
         }
         // prepare loading related samples
