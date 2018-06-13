@@ -312,6 +312,7 @@ public class DefaultDataSetInfoExtractor extends AbstractDataSetInfoExtractor
         dataSetInformation.setDataSetProperties(extractDataSetProperties(incomingDataSetPath,
                 dataSetPropertiesFileNameOrNull));
         dataSetInformation.setSpaceCode(groupCode);
+        dataSetInformation.setProjectCode(getProjectCode());
         return dataSetInformation;
     }
 
