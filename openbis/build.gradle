@@ -27,7 +27,7 @@ dependencies {
 			'reveregroup:gwt-image-loader:+',
 			'springframework:spring-orm:+',
 			'cisd:cisd-hotdeploy:13.01.0',
-			'apache:poi-ooxml:3.8-20120326',
+			'apache:poi-ooxml:3.17',
 			'hibernate:hibernate-validator:4.2.0.Final',
 			'unimi:fastutil:5.1.5',
 			'apache:commons-collections4:+',

@@ -100,7 +100,7 @@ task createDssClientJar(type: Jar) {
                      'stream-supporting-httpinvoker.jar', 'poi.jar', 'poi-ooxml.jar', 'poi-ooxml-schemas.jar', 
                      'commons-codec.jar', 'httpclient.jar', 'httpcore.jar', 'commons-io.jar', 'commons-lang.jar',
                      'commons-logging.jar', 'jython.jar', 'log4j.jar', 'dom4j-1.6.1.jar',
-                     'geronimo-stax-api_1.0_spec-1.0.jar', 'xmlbeans-2.3.0.jar']
+                     'geronimo-stax-api_1.0_spec-1.0.jar', 'xmlbeans-2.6.0.jar']
     manifest {
         def manifestClasspath = dssClientJars.collect { it }.join(' ')
         attributes("Main-Class": "ch.systemsx.cisd.openbis.dss.client.api.gui.DataSetUploadClient",
@@ -124,7 +124,7 @@ task copyJarsForWebStart(type: Copy, dependsOn: [createOpenbisJar, createDssClie
     rename '(.+)-[0-9[r]]+.*\\.jar', '$1.jar'
     rename 'dom4j.jar', 'dom4j-1.6.1.jar'
     rename 'geronimo-stax.jar', 'geronimo-stax-api_1.0_spec-1.0.jar'
-    rename 'xmlbeans.jar', 'xmlbeans-2.3.0.jar'
+    rename 'xmlbeans.jar', 'xmlbeans-2.6.0.jar'
     rename 'marathon-spring-util.*jar', 'stream-supporting-httpinvoker.jar'
 }
 
