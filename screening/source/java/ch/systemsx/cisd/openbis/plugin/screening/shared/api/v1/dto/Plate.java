@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 
 /**
  * Unique identifier for a plate which is assigned to an experiment. This class really should be called <code>ExperimentPlateIdentifier</code>.
@@ -31,7 +32,7 @@ public class Plate extends PlateIdentifier
     public Plate(String plateCode, String spaceCode, String permId,
             ExperimentIdentifier experimentIdentifier)
     {
-        super(plateCode, spaceCode, experimentIdentifier.getProjectCode(), permId);
+        super(plateCode, spaceCode, SamplePE.projectSamplesEnabled ? experimentIdentifier.getProjectCode() : null, permId);
         this.experimentCode = experimentIdentifier.getExperimentCode();
         this.projectCode = experimentIdentifier.getProjectCode();
         this.experimentIdentifier = experimentIdentifier;
