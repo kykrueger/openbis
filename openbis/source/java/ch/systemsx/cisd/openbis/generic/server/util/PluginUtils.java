@@ -16,6 +16,12 @@
 
 package ch.systemsx.cisd.openbis.generic.server.util;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import ch.systemsx.cisd.common.mail.EMailAddress;
+import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.JythonDynamicPropertyCalculator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.calculator.JythonEntityValidationCalculator;
 import ch.systemsx.cisd.openbis.generic.shared.IJythonEvaluatorPool;
@@ -29,6 +35,8 @@ import ch.systemsx.cisd.openbis.generic.shared.managed_property.JythonManagedPro
  */
 public class PluginUtils
 {
+    public static final String EMAIL_ADDRESSES_KEY = "email-addresses";
+
     public static void checkScriptCompilation(ScriptPE script, IJythonEvaluatorPool evaluatorPool)
     {
         PluginType pluginType = script.getPluginType();
@@ -56,6 +64,17 @@ public class PluginUtils
                 calculator.checkScriptCompilation();
             }
         }
+    }
+
+    public static List<EMailAddress> getEMailAddresses(Properties properties, String delim)
+    {
+        String[] tokens = PropertyUtils.getMandatoryProperty(properties, EMAIL_ADDRESSES_KEY).split(delim);
+        List<EMailAddress> addresses = new ArrayList<EMailAddress>();
+        for (String token : tokens)
+        {
+            addresses.add(new EMailAddress(token.trim()));
+        }
+        return addresses;
     }
 
 }

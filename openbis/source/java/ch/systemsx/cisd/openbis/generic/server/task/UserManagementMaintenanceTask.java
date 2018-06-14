@@ -17,16 +17,12 @@
 package ch.systemsx.cisd.openbis.generic.server.task;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.systemsx.cisd.authentication.IAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
@@ -34,52 +30,34 @@ import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
-import ch.systemsx.cisd.common.string.StringUtilities;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
 /**
  * @author Franz-Josef Elmer
  */
-public class UserManagementMaintenanceTask implements IMaintenanceTask
+public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
 {
-    static final String CONFIGURATION_FILE_PATH_PROPERTY = "configuration-file-path";
-
-    static final String DEFAULT_CONFIGURATION_FILE_PATH = "etc/user-management-maintenance-config.json";
-
     static final String AUDIT_LOG_FILE_PATH_PROPERTY = "audit-log-file-path";
 
     static final String DEFAULT_AUDIT_LOG_FILE_PATH = "logs/user-management-audit_log.txt";
 
     static final String SHARES_MAPPING_FILE_PATH_PROPERTY = "shares-mapping-file-path";
 
-    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
-            UserManagementMaintenanceTask.class);
-
-    private static final Logger notificationLog = LogFactory.getLogger(LogCategory.NOTIFY,
-            UserManagementMaintenanceTask.class);
-
-    private File configurationFile;
-
     private File auditLogFile;
 
     private LDAPAuthenticationService ldapService;
 
     private File shareIdsMappingFile;
-
-    @Override
-    public void setUp(String pluginName, Properties properties)
+    
+    public UserManagementMaintenanceTask()
     {
-        operationLog.info("Setup plugin " + pluginName);
-        configurationFile = new File(properties.getProperty(CONFIGURATION_FILE_PATH_PROPERTY, DEFAULT_CONFIGURATION_FILE_PATH));
-        if (configurationFile.isFile() == false)
-        {
-            throw new ConfigurationFailureException("Configuration file '" + configurationFile.getAbsolutePath()
-                    + "' doesn't exist or is a directory.");
-        }
+        super(true);
+    }
+    
+    @Override
+    protected void setUpSpecific(Properties properties)
+    {
         auditLogFile = new File(properties.getProperty(AUDIT_LOG_FILE_PATH_PROPERTY, DEFAULT_AUDIT_LOG_FILE_PATH));
         if (auditLogFile.isDirectory())
         {
@@ -101,7 +79,6 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
                 throw new ConfigurationFailureException("Share ids mapping file '" + shareIdsMappingFile.getAbsolutePath() + "' is a directory.");
             }
         }
-        operationLog.info("Plugin '" + pluginName + "' initialized. Configuration file: " + configurationFile.getAbsolutePath());
     }
 
     @Override
@@ -126,44 +103,6 @@ public class UserManagementMaintenanceTask implements IMaintenanceTask
         userManager.manage();
         handleReport(report);
         operationLog.info("finished");
-    }
-
-    private UserManagerConfig readGroupDefinitions(UserManagerReport report)
-    {
-        if (configurationFile.isFile() == false)
-        {
-            operationLog.error("Configuration file '" + configurationFile.getAbsolutePath() + "' doesn't exist or is a directory.");
-            return null;
-        }
-        String serializedConfig = FileUtilities.loadToString(configurationFile);
-        try
-        {
-            ObjectMapper mapper = new ObjectMapper();
-            UserManagerConfig config = mapper.readValue(serializedConfig, UserManagerConfig.class);
-            boolean hasChanged = hasChanged(serializedConfig);
-            if (hasChanged)
-            {
-                report.addChangedConfig(serializedConfig, new Date(configurationFile.lastModified()));
-            }
-            return config;
-        } catch (Exception e)
-        {
-            operationLog.error("Invalid content of configuration file '" + configurationFile.getAbsolutePath() + "': " + e, e);
-            return null;
-        }
-    }
-
-    private boolean hasChanged(String serializedConfig)
-    {
-        String hash = StringUtilities.computeMD5Hash(configurationFile.lastModified() + serializedConfig);
-        File hashFile = new File(configurationFile.getParentFile(), configurationFile.getName() + ".hash");
-        String previousHash = null;
-        if (hashFile.isFile())
-        {
-            previousHash = FileUtilities.loadExactToString(hashFile);
-        }
-        FileUtilities.writeToFile(hashFile, hash);
-        return hash.equals(previousHash) == false;
     }
 
     private boolean addGroup(UserManager userManager, UserGroup group)

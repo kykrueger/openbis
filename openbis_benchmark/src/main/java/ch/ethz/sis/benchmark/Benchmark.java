@@ -13,18 +13,41 @@ public abstract class Benchmark
     protected IApplicationServerApi v3;
     protected String sessionToken;
     
+    protected long maxOpTime = Long.MIN_VALUE;
+    protected long minOpTime = Long.MAX_VALUE;
+    protected long numOps = 0;
+    protected long totalOpTime = 0;
+    
+    protected void addOperation(long start, long end, int size) {
+    		long total = end - start;
+    		totalOpTime += total;
+    		numOps++;
+    		if(total < minOpTime) {
+    			minOpTime = total;
+    		}
+    		if(total > maxOpTime) {
+    			maxOpTime = total;
+    		}
+    		logger.info("REPORT SINGLE\t" +  size + "\t" + total);
+    }
+    
     public void start() {
     		logger = LogManager.getLogger(this.getClass());
-    		long start = System.currentTimeMillis();
     		logger.traceAccess(null, configuration);
+    		logger.info("REPORT THREAD\ttotalOpTime\tnumOps\tavgOpTime\tmaxOpTime\tminOpTime");
+    		logger.info("REPORT SINGLE\topSize\topTime");
     		try {
     			startInternal();
     		} catch(Throwable throwable) {
     			logger.catching(throwable);
     		}
     		logger.traceExit(configuration);
-    		long end = System.currentTimeMillis();
-    		logger.info("Benchmark took: " + (end-start) + " millis");
+    		if(numOps > 0) {
+    			logger.info("REPORT THREAD\t" + totalOpTime + "\t" + numOps + "\t" + (totalOpTime/numOps) + "\t" + maxOpTime + "\t" + minOpTime);
+    		} else {
+    			logger.info("REPORT THREAD\tNO-OP");
+    		}
+    		
     }
     
     public abstract void startInternal() throws Exception;
@@ -55,4 +78,23 @@ public abstract class Benchmark
         SslCertificateHelper.trustAnyCertificate(getConfiguration().getDatastoreURL());
     }
 
+	public long getMaxOpTime() {
+		return maxOpTime;
+	}
+
+	public long getMinOpTime() {
+		return minOpTime;
+	}
+
+	public long getNumOps() {
+		return numOps;
+	}
+
+	public long getTotalOpTime() {
+		return totalOpTime;
+	}
+
+	public long getAVGOpTime() {
+		return totalOpTime/numOps;
+	}
 }

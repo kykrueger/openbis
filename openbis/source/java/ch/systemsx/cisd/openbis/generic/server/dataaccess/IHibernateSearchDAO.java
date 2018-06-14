@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.springframework.dao.DataAccessException;
 
@@ -54,4 +55,6 @@ public interface IHibernateSearchDAO
      * <code>service.properties</code>.
      */
     public int getResultSetSizeLimit();
+
+    public void setProperties(Properties serviceProperties);
 }

@@ -15,6 +15,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbisController.createFolder('data/dropbox-eicml')
         openbisController.createFolder('data/dropbox-fiaml')
         openbisController.dropDatabase("metabol")
+        openbisController.asProperties['project-samples-enabled'] = 'false'
         openbisController.dssProperties['gain-write-access-script'] \
             = "../../../../../../%s/takeCifsOwnershipRecursive.sh" % openbisController.templatesFolder
         openbisController.dssProperties['experiment-name-property-code'] = 'name'

@@ -13,6 +13,7 @@ apply plugin: org.owasp.dependencycheck.gradle.DependencyCheckPlugin
 
 dependencyCheck {
   failBuildOnCVSS = 7 // 0 - 4 = low, 4 - 7 = medium, 7 - 9 = high, 9-10 = critical
+  suppressionFile = "owasp_suppressing_false_positives.xml"
   analyzers{
     assemblyEnabled = false
   }
@@ -409,19 +410,35 @@ task zipDss(type: Zip, dependsOn: signWebStartJars) {
 	}
 }
 
-task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, proteomicsApiZip, screeningApiZip]) {
+task pybisZip(type: Zip) {
+  baseName 'pybis'
+  from '../pybis/'
+}
+
+task obisZip(type: Zip) {
+  baseName 'obis'
+  from '../obis/'
+}
+
+task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, proteomicsApiZip, screeningApiZip, pybisZip, obisZip]) {
   baseName 'openBIS-clients-and-APIs'
-  downloadFile("https://sissource.ethz.ch/sispub/pybis/repository/master/archive.zip", "pybis.zip")
-  from "targets/downloads/pybis.zip"
   from dssClientZip.archivePath
   from queryApiZip.archivePath
   from apiV3Zip.archivePath
   from proteomicsApiZip.archivePath
   from screeningApiZip.archivePath
+  from pybisZip.archivePath
+  from obisZip.archivePath
   from ('../openbis_all/dist/readme.txt')
-  def contentOfSetUpFile = zipTree('targets/downloads/pybis.zip').getFiles().findAll {it.path.endsWith('PyBis/setup.py') }.iterator().next().text
-  def pybisVersion = ( contentOfSetUpFile =~ /version.*=.*'(.*)'/)[0][1]
-  rename 'pybis.zip', "pybis-${pybisVersion}.zip"
+  rename { filename -> 
+    if (filename.startsWith('pybis-')) {
+      def contentOfSetUpFile = zipTree(pybisZip.archivePath).getFiles().findAll {it.path.endsWith('src/python/setup.py') }.iterator().next().text
+      def pybisVersion = ( contentOfSetUpFile =~ /version.*=.*'(.*)'/)[0][1]
+      'pybis-' + pybisVersion + '.zip'
+    } else {
+      filename
+    }
+  }
 }
 
 task generateJavadoc(type: Javadoc) {

@@ -383,6 +383,7 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
     public void afterPropertiesSet() throws Exception
     {
         Properties serviceProperties = configurer.getResolvedProps();
+        hibernateSearchDAO.setProperties(serviceProperties);
         SamplePE.projectSamplesEnabled = PropertyUtils.getBoolean(serviceProperties, Constants.PROJECT_SAMPLES_ENABLED_KEY, false);
         Connection connection = null;
         try

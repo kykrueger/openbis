@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.systemtest;
 
+import static ch.systemsx.cisd.common.test.AssertionUtil.assertContains;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
@@ -29,6 +30,7 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.server.WhiteListBasedRemoteHostValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
@@ -118,22 +120,13 @@ public class SetSessionUserTest extends SystemTestCase
         commonServer.setSessionUser(sessionToken, "observer");
 
         String logContentRaw = logRecorder.getLogContent();
-        String[] logContent = logContentRaw.split("\n");
-        assertEquals(logContentRaw, 4, logContent.length);
-        String logLine = logContent[3];
-        assertTrue("Following log line does start as expected: " + logLine,
-                logLine.startsWith("[USER:'test' SPACE:'CISD' HOST:'localhost'"));
-        assertTrue("Following log line does end as expected: " + logLine,
-                logLine.endsWith("set_session_user  USER('observer')"));
+        assertContains("[USER:'test' SPACE:'CISD' HOST:'localhost'", logContentRaw);
+        assertContains("set_session_user  USER('observer')", logContentRaw);
 
         commonServer.logout(sessionToken);
-
+        
         String logContentRaw2 = logRecorder.getLogContent();
-        logContent = logContentRaw2.split("\n");
-        assertEquals("Log content: " + logContentRaw2, 8, logContent.length);
-        logLine = logContent[6];
-        assertEquals("Log content: " + logContentRaw2, "LOGOUT: Session '" + sessionToken
-                + "' of user 'observer' has been closed.", logLine);
+        assertContains("LOGOUT: Session '" + sessionToken + "' of user 'observer' has been closed.", logContentRaw2);
     }
 
     @Test
