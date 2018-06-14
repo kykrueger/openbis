@@ -42,10 +42,14 @@ public class PlateIdentifier extends PermanentIdentifier
         {
             return new PlateIdentifier(splitted[1], "");
         }
+        if (splitted.length == 4)
+        {
+            return new PlateIdentifier(splitted[3], splitted[1], splitted[2], null);
+        }
         if (splitted.length != 3 || splitted[0].length() != 0)
         {
             throw new IllegalArgumentException("Augmented code '" + augmentedCode
-                    + "' needs to be of the form '/SPACE/PLATE', '/PLATE' or 'PLATE'.");
+                    + "' needs to be of the form '/SPACE/PROJECT/PLATE', '/SPACE/PLATE', '/PLATE' or 'PLATE'.");
         }
         return new PlateIdentifier(splitted[2], splitted[1]);
     }

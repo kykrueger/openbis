@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +83,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
     private static String DATASETS_FOLDER = "DataSets";
 
     private static final PlateIdentifier PLATE_1 = PlateIdentifier
-            .createFromAugmentedCode("/S/PLATE-1");
+            .createFromAugmentedCode("/S/P/PLATE-1");
 
     private static final FilenameFilter FILTER_TEMP_DIR = new FilenameFilter()
         {
@@ -296,7 +295,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
         Object[][] plates = OpenBISScreeningML.listPlates();
 
         sort(plates);
-        assertEquals("/S/PLATE-1", plates[0][0]);
+        assertEquals("/S/P/PLATE-1", plates[0][0]);
         assertEquals("s-1", plates[0][1]);
         assertEquals("S", plates[0][2]);
         assertEquals("PLATE-1", plates[0][3]);
@@ -305,7 +304,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
         assertEquals("S", plates[0][6]);
         assertEquals("P", plates[0][7]);
         assertEquals("E1", plates[0][8]);
-        assertEquals("/S/PLATE-2", plates[1][0]);
+        assertEquals("/S/P/PLATE-2", plates[1][0]);
         assertEquals("s-2", plates[1][1]);
         assertEquals("S", plates[1][2]);
         assertEquals("PLATE-2", plates[1][3]);
@@ -332,7 +331,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
 
         Object[][] plates = OpenBISScreeningML.listPlates("/S/P/E1");
 
-        assertEquals("/S/PLATE-1", plates[0][0]);
+        assertEquals("/S/P/PLATE-1", plates[0][0]);
         assertEquals("s-1", plates[0][1]);
         assertEquals("S", plates[0][2]);
         assertEquals("PLATE-1", plates[0][3]);
@@ -361,7 +360,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
 
         Object[][] plates = OpenBISScreeningML.listPlates("/S/P/E1", analysisProcedure);
 
-        assertEquals("/S/PLATE-1", plates[0][0]);
+        assertEquals("/S/P/PLATE-1", plates[0][0]);
         assertEquals("s-1", plates[0][1]);
         assertEquals("S", plates[0][2]);
         assertEquals("PLATE-1", plates[0][3]);
@@ -448,10 +447,10 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
         assertEquals(Double.NaN, matrix[0][2][1][1]);
         assertEquals(3, matrix[0].length);
         assertEquals(
-                "[PLATE-2:B7, /S/PLATE-2, s-2, S, PLATE-2, 2, 7, /S/P/E, null, S, P, E, ds2, MY-TYPE]",
+                "[PLATE-2:B7, /S/P/PLATE-2, s-2, S, PLATE-2, 2, 7, /S/P/E, null, S, P, E, ds2, MY-TYPE]",
                 Arrays.asList(matrix[1][0][1]).toString());
         assertEquals(
-                "[PLATE-1:C4, /S/PLATE-1, s-1, S, PLATE-1, 3, 4, /S/P/E, null, S, P, E, ds1, MY-TYPE]",
+                "[PLATE-1:C4, /S/P/PLATE-1, s-1, S, PLATE-1, 3, 4, /S/P/E, null, S, P, E, ds1, MY-TYPE]",
                 Arrays.asList(matrix[1][1][0]).toString());
         assertEquals(2, matrix[1].length);
         assertEquals("F1", matrix[2][0][0][0]);
@@ -510,17 +509,17 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
             });
 
         Object[][][][] matrix =
-                OpenBISScreeningML.getFeatureMatrixForPlate("/S/PLATE-1", null, new String[]
+                OpenBISScreeningML.getFeatureMatrixForPlate("/S/P/PLATE-1", null, new String[]
                 { "F1", "F2", "F3" });
 
         assertPlateFeatures("[a, 1.5]", matrix[0][0]);
         assertPlateFeatures("[42.5, 42.0]", matrix[0][1]);
         assertEquals(2, matrix[0].length);
         assertEquals(
-                "[PLATE-1:A3, /S/PLATE-1, null, S, PLATE-1, 1, 3, /S/P/E, null, S, P, E, ds1, MY-TYPE]",
+                "[PLATE-1:A3, /S/P/PLATE-1, null, S, PLATE-1, 1, 3, /S/P/E, null, S, P, E, ds1, MY-TYPE]",
                 Arrays.asList(matrix[1][0][0]).toString());
         assertEquals(
-                "[PLATE-1:B1, /S/PLATE-1, null, S, PLATE-1, 2, 1, /S/P/E, null, S, P, E, ds1, MY-TYPE]",
+                "[PLATE-1:B1, /S/P/PLATE-1, null, S, PLATE-1, 2, 1, /S/P/E, null, S, P, E, ds1, MY-TYPE]",
                 Arrays.asList(matrix[1][1][0]).toString());
         assertEquals(2, matrix[1].length);
         assertEquals("F1", matrix[2][0][0][0]);
@@ -561,7 +560,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
                 }
             });
 
-        Object[][] wellProperties = OpenBISScreeningML.getWellProperties("/S/PLATE-1", 1, 2);
+        Object[][] wellProperties = OpenBISScreeningML.getWellProperties("/S/P/PLATE-1", 1, 2);
 
         assertEquals("answer", wellProperties[0][0]);
         assertEquals("42", wellProperties[0][1]);
@@ -591,7 +590,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
                 }
             });
 
-        OpenBISScreeningML.updateWellProperties("/S/PLATE-1", 1, 2, new Object[][]
+        OpenBISScreeningML.updateWellProperties("/S/P/PLATE-1", 1, 2, new Object[][]
         {
                 { "A", "42" },
                 { "B", "43" } });
@@ -690,7 +689,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
             });
 
         Object[][] result =
-                OpenBISScreeningML.loadDataSets("/S/PLATE-1", datasetTypePattern, mountPoint);
+                OpenBISScreeningML.loadDataSets("/S/P/PLATE-1", datasetTypePattern, mountPoint);
 
         assertEquals("Type:blablaCode AND Properties:[]", filterMatcher.recordedObject().toString());
         assertEquals("ds-1", result[0][0]);
@@ -740,7 +739,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
                 { "a", "alpha" }, new Object[]
                 { "b", "beta" } };
         Object[][] result =
-                OpenBISScreeningML.loadDataSets("/S/PLATE-1", datasetTypePattern, properties,
+                OpenBISScreeningML.loadDataSets("/S/P/PLATE-1", datasetTypePattern, properties,
                         mountPoint);
 
         assertEquals("Type:blablaCode AND Properties:[a=alpha, b=beta]", filterMatcher
@@ -833,7 +832,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
             });
 
         Object code =
-                OpenBISScreeningML.uploadDataSet("/S/PLATE-1", ds1Folder.getPath(), "my-type",
+                OpenBISScreeningML.uploadDataSet("/S/P/PLATE-1", ds1Folder.getPath(), "my-type",
                         new Object[][]
                         {
                                 { "A", "42" },
@@ -875,7 +874,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
                 }
             });
 
-        Object code = OpenBISScreeningML.uploadDataSetForPlateAndParents("/S/PLATE-1", new Object[]
+        Object code = OpenBISScreeningML.uploadDataSetForPlateAndParents("/S/P/PLATE-1", new Object[]
         { "DATA-SET-CODE1", "DATA-SET-CODE2" }, ds1Folder.getPath(), "my-type", new Object[][]
         {
                 { "A", "42" },
@@ -1046,7 +1045,7 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
                 }
             });
 
-        Object[][][] result1 = OpenBISScreeningML.loadImages("/S/PLATE-1", 1, 2, 1, new String[]
+        Object[][][] result1 = OpenBISScreeningML.loadImages("/S/P/PLATE-1", 1, 2, 1, new String[]
         { "G" });
         List<PlateImageReference> imgRefs1 = imgRefsMatcher1.recordedObject();
         for (PlateImageReference plateImageReference : imgRefs1)
@@ -1064,11 +1063,11 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
                 .loadToString(new File(result1[0][0][0].toString())).trim());
         assertEquals(1, result1[0].length);
         assertEquals(
-                "[G, 1, PLATE-1:A2, /S/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
+                "[G, 1, PLATE-1:A2, /S/P/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
                 Arrays.asList(result1[1][0]).toString());
         assertEquals(1, result1[1].length);
 
-        Object[][][] result2 = OpenBISScreeningML.loadImages("/S/PLATE-1", 1, 2);
+        Object[][][] result2 = OpenBISScreeningML.loadImages("/S/P/PLATE-1", 1, 2);
         List<PlateImageReference> imgRefs2 = imgRefsMatcher2.recordedObject();
         for (PlateImageReference plateImageReference : imgRefs2)
         {
@@ -1101,16 +1100,16 @@ public class OpenBISScreeningMLTest extends AbstractFileSystemTestCase
 
         assertEquals(4, result2[0].length);
         assertEquals(
-                "[G, 0, PLATE-1:A2, /S/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
+                "[G, 0, PLATE-1:A2, /S/P/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
                 Arrays.asList(result2[1][0]).toString());
         assertEquals(
-                "[G, 1, PLATE-1:A2, /S/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
+                "[G, 1, PLATE-1:A2, /S/P/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
                 Arrays.asList(result2[1][1]).toString());
         assertEquals(
-                "[R, 0, PLATE-1:A2, /S/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
+                "[R, 0, PLATE-1:A2, /S/P/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
                 Arrays.asList(result2[1][2]).toString());
         assertEquals(
-                "[R, 1, PLATE-1:A2, /S/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
+                "[R, 1, PLATE-1:A2, /S/P/PLATE-1, s-1, S, PLATE-1, 1, 2, /S/P/E1, e-1, S, P, E1, ds1]",
                 Arrays.asList(result2[1][3]).toString());
         assertEquals(4, result2[1].length);
         context.assertIsSatisfied();
