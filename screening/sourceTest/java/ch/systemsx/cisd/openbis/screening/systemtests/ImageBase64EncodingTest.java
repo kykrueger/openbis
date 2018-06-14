@@ -26,8 +26,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.testng.annotations.AfterMethod;
@@ -89,6 +92,8 @@ public class ImageBase64EncodingTest extends AbstractScreeningSystemTestCase
             FileUtilities.deleteRecursively(file);
         }
     }
+    
+    private static final Set<String> PLATE_IDS = new HashSet<>(Arrays.asList("/TEST/BASE64PLATE", "/TEST/TEST-PROJECT/BASE64PLATE"));
 
     @Test
     public void base64EncodedImagesContainTheOriginalData() throws Exception
@@ -100,7 +105,7 @@ public class ImageBase64EncodingTest extends AbstractScreeningSystemTestCase
         List<Plate> plates = new ArrayList<Plate>();
         for (Plate plate : p)
         {
-            if (plate.getAugmentedCode().equals("/TEST/BASE64PLATE"))
+            if (PLATE_IDS.contains(plate.getAugmentedCode()))
             {
                 plates.add(plate);
                 break;
