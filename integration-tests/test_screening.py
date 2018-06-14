@@ -23,9 +23,9 @@ class TestCase(systemtest.testcase.TestCase):
         client = self.installScreeningTestClient()
         log = '\n'.join(client.run())
         self.assertPatternInLog(log, "Experiments: \[/DEMO/DEMO_PROJECT/DEMO_EXPERIMENT \[20100623121102843-1\]\]")
-        self.assertPatternInLog(log, "Plates: \[/DEMO/PLATE1 \[20100624113752213-5\]")
-        self.assertPatternInLog(log, "Image datasets: \[[0-9]*-[0-9]* \(plate: /DEMO/PLATE3")
-        self.assertPatternInLog(log, "Feature vector datasets: \[[0-9]*-[0-9]* \(plate: /DEMO/PLATE2 \[20100624113756254-6\]")
+        self.assertPatternInLog(log, "Plates: \[/DEMO/DEMO_PROJECT/PLATE1 \[20100624113752213-5\]")
+        self.assertPatternInLog(log, "Image datasets: \[[0-9]*-[0-9]* \(plate: /DEMO/DEMO_PROJECT/PLATE3")
+        self.assertPatternInLog(log, "Feature vector datasets: \[[0-9]*-[0-9]* \(plate: /DEMO/DEMO_PROJECT/PLATE2 \[20100624113756254-6\]")
         self.assertPatternInLog(log, "Feature codes: \[CELLNUMBER, FEATRUE1, FEATRUE10, FEATRUE11, FEATRUE12, FEATRUE13, "
                                      + "FEATRUE14, FEATRUE15, FEATRUE16, FEATRUE2, FEATRUE3, FEATRUE4, FEATRUE5, FEATRUE6, "
                                      + "FEATRUE7, FEATRUE8, FEATRUE9, HITRATE, STD1, STD10, STD11, STD12, STD13, "
@@ -38,7 +38,7 @@ class TestCase(systemtest.testcase.TestCase):
                                      + "std7, std8, std9\]")
         self.assertPatternInLog(log, "Features of the first dataset: datasetCode: [0-9]*-[0-9]*")
         self.assertPatternInLog(log, "wellPosition: \[1, 2\], values: \[48.0, 0.0051865")
-        self.assertPatternInLog(log, "Image metadata: \[Dataset [0-9]*-[0-9]* \(plate: /DEMO/PLATE3 "
+        self.assertPatternInLog(log, "Image metadata: \[Dataset [0-9]*-[0-9]* \(plate: /DEMO/DEMO_PROJECT/PLATE3 "
                                      + "\[20100624113759640-7\]\) has \[\[DAPI, GFP\]\] channels, 9 tiles\. "
                                      + "Image resolution: 720x468")
         openbisController.dropAndWait('PLATE1', 'incoming-hcs', numberOfDataSets = 3)

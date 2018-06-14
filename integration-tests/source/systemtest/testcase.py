@@ -384,7 +384,7 @@ class ScreeningTestClient(object):
         
     def run(self):
         """ Runs the test client and returns the console output as a list of strings. """
-        output = util.executeCommand(['java', '-Djavax.net.ssl.trustStore=openBIS.keystore',
+        output = util.executeCommand(['java', '-Djavax.net.ssl.trustStore=../openbis/servers/openBIS-server/jetty/etc/openBIS.keystore',
                                       '-jar', 'openbis_screening_api.jar', 'admin', 'admin', 
                                       'https://localhost:8443'], suppressStdOut = True,
                                       workingDir=self.installPath)

@@ -21,6 +21,8 @@ public class PlateIdentifier extends PermanentIdentifier
     @JsonProperty
     private String spaceCodeOrNull;
 
+    private String projectCodeOrNull;
+
     /**
      * Creates a {@link PlateIdentifier} from the given <var>augmentedCode</code>.
      * 
@@ -71,9 +73,15 @@ public class PlateIdentifier extends PermanentIdentifier
 
     public PlateIdentifier(String plateCode, String spaceCodeOrNull, String permId)
     {
+        this(plateCode, spaceCodeOrNull, null, permId);
+    }
+    
+    public PlateIdentifier(String plateCode, String spaceCodeOrNull, String projectCodeOrNull, String permId)
+    {
         super(permId);
         this.plateCode = plateCode;
         this.spaceCodeOrNull = spaceCodeOrNull;
+        this.projectCodeOrNull = projectCodeOrNull;
     }
 
     /**
@@ -98,6 +106,10 @@ public class PlateIdentifier extends PermanentIdentifier
     @JsonIgnore
     public String getAugmentedCode()
     {
+        if (projectCodeOrNull != null)
+        {
+            return "/" + spaceCodeOrNull + "/" + projectCodeOrNull + "/" + plateCode;
+        }
         if (spaceCodeOrNull != null)
         {
             if (isSharedPlate())

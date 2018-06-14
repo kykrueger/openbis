@@ -31,6 +31,9 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ContainerDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataStore;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DataStoreTranslator;
@@ -38,6 +41,7 @@ import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.util.EntityHelper;
 import ch.systemsx.cisd.openbis.plugin.screening.server.IScreeningBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.plugin.screening.server.dataaccess.AnalysisProcedureResult;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.AnalysisProcedures;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.DatasetReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ImageDatasetParameters;
@@ -411,5 +415,24 @@ public class ScreeningUtils
         String dataSetAnalysisProcedure =
                 EntityHelper.tryFindPropertyValue(dataset, ScreeningConstants.ANALYSIS_PROCEDURE);
         return analysisProcedureCriteria.matches(dataSetAnalysisProcedure);
+    }
+
+    public static PlateIdentifier createPlateIdentifier(final Sample sample)
+    {
+        final String plateCode = sample.getCode();
+        Space space = sample.getSpace();
+        Project project = sample.getProject();
+        String spaceCodeOrNull = null;
+        String projectCodeOrNull = null;
+        if (project != null)
+        {
+            projectCodeOrNull = project.getCode();
+            space = project.getSpace();
+        }
+        if (space != null)
+        {
+            spaceCodeOrNull = space.getCode();
+        }
+        return new PlateIdentifier(plateCode, spaceCodeOrNull, projectCodeOrNull, sample.getPermId());
     }
 }

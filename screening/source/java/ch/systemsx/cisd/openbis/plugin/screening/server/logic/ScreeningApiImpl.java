@@ -202,11 +202,11 @@ public class ScreeningApiImpl
         final Experiment experiment = sample.getExperiment();
         final Project project = experiment.getProject();
         final Space sampleSpace = sample.getSpace();
-        final String sampleSpaceCode = (sampleSpace != null) ? sampleSpace.getCode() : null;
-        final Space experimentSpace = project.getSpace();
+        String experimentSpaceCode = project.getSpace().getCode();
+        final String sampleSpaceCode = (sampleSpace != null) ? sampleSpace.getCode() : experimentSpaceCode;
         final ExperimentIdentifier experimentId =
                 new ExperimentIdentifier(experiment.getCode(), project.getCode(),
-                        experimentSpace.getCode(), experiment.getPermId());
+                        experimentSpaceCode, experiment.getPermId());
         return new Plate(sample.getCode(), sampleSpaceCode, sample.getPermId(), experimentId);
     }
 
@@ -908,9 +908,7 @@ public class ScreeningApiImpl
             Map<Long, Material> materialsCache)
     {
         Sample plate = plateMetadata.getPlate();
-        String spaceCodeOrNull = plate.getSpace() == null ? null : plate.getSpace().getCode();
-        PlateIdentifier plateIdentifier =
-                new PlateIdentifier(plate.getCode(), spaceCodeOrNull, plate.getPermId());
+        PlateIdentifier plateIdentifier = ScreeningUtils.createPlateIdentifier(plate);
         List<WellMetadata> wells = new ArrayList<WellMetadata>();
         if (plateMetadata.getWells() != null)
         {
