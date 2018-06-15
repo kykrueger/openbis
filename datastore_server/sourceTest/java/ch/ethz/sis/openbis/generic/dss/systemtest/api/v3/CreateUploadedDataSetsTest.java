@@ -281,7 +281,7 @@ public class CreateUploadedDataSetsTest extends AbstractFileTest
             fail();
         } catch (UserFailureException e)
         {
-            assertTrue(e.getMessage(), e.getMessage().contains("Object with EntityTypePermId = [IDONTEXIST, null] has not been found"));
+            assertTrue(e.getMessage(), e.getMessage().contains("Object with EntityTypePermId = [IDONTEXIST] has not been found"));
         }
     }
 

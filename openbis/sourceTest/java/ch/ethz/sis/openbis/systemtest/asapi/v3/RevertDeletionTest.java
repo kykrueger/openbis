@@ -200,9 +200,16 @@ public class RevertDeletionTest extends AbstractDeletionTest
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-        v3api.revertDeletions(sessionToken, Arrays.asList(new DeletionTechId(1L), new DeletionTechId(2L)));
+        ExperimentPermId experimentId = createCisdExperiment();
 
-        assertAccessLog("revert-deletions  DELETION_IDS('[1, 2]')");
+        ExperimentDeletionOptions deletionOptions = new ExperimentDeletionOptions();
+        deletionOptions.setReason("It is just a test");
+
+        IDeletionId deletionId = v3api.deleteExperiments(sessionToken, Collections.singletonList(experimentId), deletionOptions);
+
+        v3api.revertDeletions(sessionToken, Arrays.asList(deletionId));
+
+        assertAccessLog("revert-deletions  DELETION_IDS('[" + deletionId + "]')");
     }
 
 }
