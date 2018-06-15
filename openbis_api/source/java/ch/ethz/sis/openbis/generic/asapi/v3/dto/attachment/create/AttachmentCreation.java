@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -73,6 +74,12 @@ public class AttachmentCreation implements ICreation
     public void setContent(byte[] content)
     {
         this.content = content;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("fileName", fileName).toString();
     }
 
 }

@@ -216,15 +216,33 @@ public class SearchDataSetTypeTest extends AbstractTest
         searchCriteria.withCode().thatEquals("VALIDATED_NORMAL_TYPE");
         DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
         fetchOptions.withValidationPlugin();
-        
+
         // When
         DataSetType type = v3api.searchDataSetTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
-        
+
         // Then
         assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
         assertEquals(type.getValidationPlugin().getFetchOptions().hasScript(), false);
         assertEquals(type.getValidationPlugin().getName(), "test");
-        
+
         v3api.logout(sessionToken);
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetTypeSearchCriteria c = new DataSetTypeSearchCriteria();
+        c.withCode().thatEquals("HCS_IMAGE");
+
+        DataSetTypeFetchOptions fo = new DataSetTypeFetchOptions();
+        fo.withPropertyAssignments();
+
+        v3api.searchDataSetTypes(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-data-set-types  SEARCH_CRITERIA:\n'DATA_SET_TYPE\n    with attribute 'code' equal to 'HCS_IMAGE'\n'\nFETCH_OPTIONS:\n'DataSetType\n    with PropertyAssignments\n'");
+    }
+
 }

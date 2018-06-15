@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.create;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -60,6 +61,12 @@ public class WebAppSettingCreation implements ICreation, IObjectCreation
     public void setValue(String value)
     {
         this.value = value;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("name", name).toString();
     }
 
 }

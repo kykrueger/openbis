@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -84,6 +85,23 @@ public class CreateMaterialTypeTest extends CreateEntityTypeTest<MaterialTypeCre
     protected void assertTypeSpecificFields(MaterialTypeCreation creation, MaterialType type)
     {
         // nothing to do
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        MaterialTypeCreation creation = new MaterialTypeCreation();
+        creation.setCode("LOG_TEST_1");
+
+        MaterialTypeCreation creation2 = new MaterialTypeCreation();
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createMaterialTypes(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-material-types  NEW_MATERIAL_TYPES('[MaterialTypeCreation[code=LOG_TEST_1], MaterialTypeCreation[code=LOG_TEST_2]]')");
     }
 
 }

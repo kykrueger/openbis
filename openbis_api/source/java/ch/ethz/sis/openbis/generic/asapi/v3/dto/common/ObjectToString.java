@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 ETH Zuerich, CISD
+ * Copyright 2018 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,38 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unarchive;
+package ch.ethz.sis.openbis.generic.asapi.v3.dto.common;
 
 import java.io.Serializable;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
-import ch.systemsx.cisd.base.annotation.JsonObject;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * @author pkupczyk
  */
-@JsonObject("as.dto.dataset.unarchive.DataSetUnarchiveOptions")
-public class DataSetUnarchiveOptions implements Serializable
+public class ObjectToString implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
 
+    private ToStringBuilder builder;
+
+    public ObjectToString(Object object)
+    {
+        builder = new ToStringBuilder(object, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    public ObjectToString append(String field, Object value)
+    {
+        builder.append(field, value);
+        return this;
+    }
+
     @Override
     public String toString()
     {
-        return new ObjectToString(this).toString();
+        return builder.toString();
     }
 
 }

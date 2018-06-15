@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.IAuthorizationGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -31,8 +32,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.authorizationgroup.update.AuthorizationGroupUpdate")
@@ -79,7 +78,7 @@ public class AuthorizationGroupUpdate implements IUpdate, IObjectUpdate<IAuthori
     {
         this.description.setValue(description);
     }
-    
+
     @JsonIgnore
     public IdListUpdateValue<IPersonId> getUserIds()
     {
@@ -90,6 +89,12 @@ public class AuthorizationGroupUpdate implements IUpdate, IObjectUpdate<IAuthori
     public void setUserIdActions(List<ListUpdateAction<IPersonId>> actions)
     {
         userIds.setActions(actions);
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("groupId", groupId).toString();
     }
 
 }

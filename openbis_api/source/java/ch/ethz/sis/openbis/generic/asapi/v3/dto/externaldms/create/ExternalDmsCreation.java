@@ -16,13 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.create;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICreationIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import ch.systemsx.cisd.common.annotation.TechPreview;
 
 /**
  * @author anttil
@@ -91,6 +91,12 @@ public class ExternalDmsCreation implements ICreation, IObjectCreation, ICreatio
     public void setCreationId(CreationId creationId)
     {
         this.creationId = creationId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("code", code).toString();
     }
 
 }

@@ -347,6 +347,22 @@ public class CreateTagTest extends AbstractTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        TagCreation creation = new TagCreation();
+        creation.setCode("LOG_TEST_1");
+
+        TagCreation creation2 = new TagCreation();
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createTags(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog("create-tags  NEW_TAGS('[TagCreation[code=LOG_TEST_1], TagCreation[code=LOG_TEST_2]]')");
+    }
+
     private Tag createTag(String user, String password, TagCreation creation)
     {
         String sessionToken = v3api.login(user, password);

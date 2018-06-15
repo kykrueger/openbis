@@ -21,6 +21,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
@@ -30,8 +31,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.material.update.MaterialTypeUpdate")
@@ -41,13 +40,13 @@ public class MaterialTypeUpdate implements IEntityTypeUpdate
 
     @JsonProperty
     private IEntityTypeId typeId;
-    
+
     @JsonProperty
     private FieldUpdateValue<String> description = new FieldUpdateValue<String>();
 
     @JsonProperty
     private FieldUpdateValue<IPluginId> validationPluginId = new FieldUpdateValue<IPluginId>();
-    
+
     @JsonProperty
     private PropertyAssignmentListUpdateValue propertyAssignments = new PropertyAssignmentListUpdateValue();
 
@@ -113,4 +112,11 @@ public class MaterialTypeUpdate implements IEntityTypeUpdate
     {
         propertyAssignments.setActions(actions);
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("typeId", typeId).toString();
+    }
+
 }

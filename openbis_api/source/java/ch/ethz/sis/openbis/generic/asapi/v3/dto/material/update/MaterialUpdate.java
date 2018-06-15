@@ -23,6 +23,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -107,4 +108,11 @@ public class MaterialUpdate implements IUpdate, IObjectUpdate<IMaterialId>, IPro
     {
         tagIds.setActions(actions);
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("materialId", materialId).toString();
+    }
+
 }

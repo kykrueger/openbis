@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download;
 import java.io.InputStream;
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 
 /**
@@ -47,6 +48,12 @@ public class DataSetFileDownload implements Serializable
     public InputStream getInputStream()
     {
         return inputStream;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("dataSetFile", dataSetFile).toString();
     }
 
 }

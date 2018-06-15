@@ -18,13 +18,13 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create;
 
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.vocabulary.create.VocabularyCreation")
 public class VocabularyCreation implements ICreation, IObjectCreation
@@ -32,17 +32,17 @@ public class VocabularyCreation implements ICreation, IObjectCreation
     private static final long serialVersionUID = 1L;
 
     private String code;
-    
+
     private String description;
-    
+
     private boolean managedInternally;
-    
+
     private boolean internalNameSpace;
-    
+
     private boolean chosenFromList;
-    
+
     private String urlTemplate;
-    
+
     private List<VocabularyTermCreation> terms;
 
     public String getCode()
@@ -113,6 +113,12 @@ public class VocabularyCreation implements ICreation, IObjectCreation
     public void setTerms(List<VocabularyTermCreation> terms)
     {
         this.terms = terms;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("code", code).toString();
     }
 
 }

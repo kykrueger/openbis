@@ -1864,6 +1864,35 @@ public class CreateDataSetTest extends AbstractDataSetTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setCode("LOG_TEST_1");
+        creation.setTypeId(new EntityTypePermId("UNKNOWN"));
+        creation.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP-TEST-1"));
+        creation.setSampleId(new SampleIdentifier("/CISD/CP-TEST-1"));
+
+        DataSetCreation creation2 = physicalDataSetCreation();
+        creation2.setCode("LOG_TEST_2");
+        creation2.setTypeId(new EntityTypePermId("UNKNOWN"));
+        creation2.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP-TEST-1"));
+        creation2.setSampleId(null);
+
+        DataSetCreation creation3 = physicalDataSetCreation();
+        creation3.setCode("LOG_TEST_3");
+        creation3.setTypeId(new EntityTypePermId("UNKNOWN"));
+        creation3.setExperimentId(null);
+        creation3.setSampleId(new SampleIdentifier("/CISD/CP-TEST-1"));
+
+        v3api.createDataSets(sessionToken, Arrays.asList(creation, creation2, creation3));
+
+        assertAccessLog(
+                "create-data-sets  NEW_DATA_SETS('[DataSetCreation[experimentId=/CISD/NEMO/EXP-TEST-1,sampleId=/CISD/CP-TEST-1,code=LOG_TEST_1], DataSetCreation[experimentId=/CISD/NEMO/EXP-TEST-1,sampleId=<null>,code=LOG_TEST_2], DataSetCreation[experimentId=<null>,sampleId=/CISD/CP-TEST-1,code=LOG_TEST_3]]')");
+    }
+
     private DataSetCreation physicalDataSetCreation()
     {
         String code = UUID.randomUUID().toString();

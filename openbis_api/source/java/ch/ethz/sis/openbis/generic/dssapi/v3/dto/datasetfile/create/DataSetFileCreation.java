@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.create;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import ch.systemsx.cisd.common.annotation.TechPreview;
@@ -18,9 +19,9 @@ public class DataSetFileCreation implements ICreation
     private Long fileLength;
 
     private Integer checksumCRC32;
-    
+
     private String checksum;
-    
+
     private String checksumType;
 
     public String getPath()
@@ -62,7 +63,7 @@ public class DataSetFileCreation implements ICreation
     {
         this.checksumCRC32 = checksumCRC32;
     }
-    
+
     public String getChecksum()
     {
         return checksum;
@@ -81,6 +82,12 @@ public class DataSetFileCreation implements ICreation
     public void setChecksumType(String checksumType)
     {
         this.checksumType = checksumType;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("path", path).toString();
     }
 
 }

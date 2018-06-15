@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
@@ -97,6 +98,12 @@ public class UploadedDataSetCreation implements ICreation
     public void setUploadId(String uploadId)
     {
         this.uploadId = uploadId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("uploadId", uploadId).append("experimentId", experimentId).append("sampleId", sampleId).toString();
     }
 
 }

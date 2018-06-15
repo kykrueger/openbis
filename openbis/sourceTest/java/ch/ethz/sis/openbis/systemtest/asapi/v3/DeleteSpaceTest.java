@@ -136,4 +136,17 @@ public class DeleteSpaceTest extends AbstractDeletionTest
             }, permIds.get(0));
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SpaceDeletionOptions o = new SpaceDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteSpaces(sessionToken, Arrays.asList(new SpacePermId("TEST-LOGGING-1"), new SpacePermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog("delete-spaces  SPACE_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('SpaceDeletionOptions[reason=test-reason]')");
+    }
+
 }

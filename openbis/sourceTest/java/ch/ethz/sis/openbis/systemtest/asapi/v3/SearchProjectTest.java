@@ -251,6 +251,24 @@ public class SearchProjectTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ProjectSearchCriteria c = new ProjectSearchCriteria();
+        c.withCode().thatEquals("test-PROJECT");
+
+        ProjectFetchOptions fo = new ProjectFetchOptions();
+        fo.withSpace();
+        fo.withExperiments();
+
+        v3api.searchProjects(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-projects  SEARCH_CRITERIA:\n'PROJECT\n    with attribute 'code' equal to 'test-PROJECT'\n'\nFETCH_OPTIONS:\n'Project\n    with Experiments\n    with Space\n'");
+    }
+
     private void testSearch(String user, ProjectSearchCriteria criteria, String... expectedIdentifiers)
     {
         String sessionToken = v3api.login(user, PASSWORD);

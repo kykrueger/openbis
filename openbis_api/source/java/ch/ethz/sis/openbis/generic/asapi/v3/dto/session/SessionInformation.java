@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -62,6 +63,12 @@ public class SessionInformation implements Serializable
     public void setCreatorPerson(Person creatorPerson)
     {
         this.creatorPerson = creatorPerson;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("userName", userName).toString();
     }
 
 }

@@ -226,6 +226,25 @@ public class CreateVocabularyTermTest extends AbstractVocabularyTermTest
         assertTerms(termsAfter, "RAT", "DOG", "HUMAN", "NEW1", "GORILLA", "NEW2", "NEW3", "FLY", "NEW4");
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyTermCreation creation = new VocabularyTermCreation();
+        creation.setVocabularyId(new VocabularyPermId("ORGANISM"));
+        creation.setCode("LOG_TEST_1");
+
+        VocabularyTermCreation creation2 = new VocabularyTermCreation();
+        creation2.setVocabularyId(new VocabularyPermId("$PLATE_GEOMETRY"));
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createVocabularyTerms(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-vocabulary-terms  NEW_VOCABULARY_TERMS('[VocabularyTermCreation[vocabularyId=ORGANISM,code=LOG_TEST_1], VocabularyTermCreation[vocabularyId=$PLATE_GEOMETRY,code=LOG_TEST_2]]')");
+    }
+
     private VocabularyTermCreation termCreation()
     {
         VocabularyTermCreation creation = new VocabularyTermCreation();

@@ -1648,4 +1648,19 @@ public class GetSampleTest extends AbstractSampleTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withSpace();
+        fo.withProject();
+
+        v3api.getSamples(sessionToken, Arrays.asList(new SamplePermId("200902091219327-1025"), new SampleIdentifier("/TEST-SPACE/CP-TEST-4")), fo);
+
+        assertAccessLog(
+                "get-samples  SAMPLE_IDS('[200902091219327-1025, /TEST-SPACE/CP-TEST-4]') FETCH_OPTIONS('Sample\n    with Project\n    with Space\n')");
+    }
+
 }

@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.testng.annotations.Test;
@@ -193,4 +194,15 @@ public class RevertDeletionTest extends AbstractDeletionTest
                 }
             }, deletionId);
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        v3api.revertDeletions(sessionToken, Arrays.asList(new DeletionTechId(1L), new DeletionTechId(2L)));
+
+        assertAccessLog("revert-deletions  DELETION_IDS('[1, 2]')");
+    }
+
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
@@ -30,8 +31,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.dataset.update.DataSetTypeUpdate")
@@ -41,7 +40,7 @@ public class DataSetTypeUpdate implements IEntityTypeUpdate
 
     @JsonProperty
     private IEntityTypeId typeId;
-    
+
     @JsonProperty
     private FieldUpdateValue<String> mainDataSetPattern = new FieldUpdateValue<String>();
 
@@ -49,14 +48,14 @@ public class DataSetTypeUpdate implements IEntityTypeUpdate
     private FieldUpdateValue<String> mainDataSetPath = new FieldUpdateValue<String>();
 
     @JsonProperty
-    private FieldUpdateValue<Boolean>  disallowDeletion = new FieldUpdateValue<Boolean>();
+    private FieldUpdateValue<Boolean> disallowDeletion = new FieldUpdateValue<Boolean>();
 
     @JsonProperty
     private FieldUpdateValue<String> description = new FieldUpdateValue<String>();
 
     @JsonProperty
     private FieldUpdateValue<IPluginId> validationPluginId = new FieldUpdateValue<IPluginId>();
-    
+
     @JsonProperty
     private PropertyAssignmentListUpdateValue propertyAssignments = new PropertyAssignmentListUpdateValue();
 
@@ -100,25 +99,25 @@ public class DataSetTypeUpdate implements IEntityTypeUpdate
     {
         return mainDataSetPattern;
     }
-    
+
     @JsonIgnore
     public void setMainDataSetPattern(String mainDataSetPattern)
     {
         this.mainDataSetPattern.setValue(mainDataSetPattern);
     }
-    
+
     @JsonIgnore
     public FieldUpdateValue<String> getMainDataSetPath()
     {
         return mainDataSetPath;
     }
-    
+
     @JsonIgnore
     public void setMainDataSetPath(String mainDataSetPath)
     {
         this.mainDataSetPath.setValue(mainDataSetPath);
     }
-    
+
     @JsonIgnore
     public FieldUpdateValue<Boolean> isDisallowDeletion()
     {
@@ -158,4 +157,11 @@ public class DataSetTypeUpdate implements IEntityTypeUpdate
     {
         propertyAssignments.setActions(actions);
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("typeId", typeId).toString();
+    }
+
 }

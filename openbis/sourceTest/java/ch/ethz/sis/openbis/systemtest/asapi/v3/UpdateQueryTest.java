@@ -18,6 +18,8 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
+
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
@@ -494,6 +496,27 @@ public class UpdateQueryTest extends AbstractQueryTest
         Query updatedQuery = updateQuery(TEST_USER, PASSWORD, update);
 
         assertEquals(updatedQuery.getDescription(), update.getDescription().getValue());
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        QueryCreation creation = new QueryCreation();
+        creation.setName("test name");
+        creation.setDatabaseId(DB_OPENBIS_METADATA_ID);
+        creation.setQueryType(QueryType.GENERIC);
+        creation.setSql("select * from experiments where perm_id = ${key}");
+
+        v3api.createQueries(sessionToken, Arrays.asList(creation));
+
+        QueryUpdate update = new QueryUpdate();
+        update.setQueryId(new QueryName("test name"));
+
+        v3api.updateQueries(sessionToken, Arrays.asList(update));
+
+        assertAccessLog("update-queries  QUERY_UPDATES('[QueryUpdate[queryId=test name]]')");
     }
 
 }

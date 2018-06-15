@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyId;
@@ -100,6 +101,12 @@ public class VocabularyTermCreation implements ICreation, IObjectCreation
     public void setPreviousTermId(IVocabularyTermId previousTermId)
     {
         this.previousTermId = previousTermId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("vocabularyId", vocabularyId).append("code", code).toString();
     }
 
 }

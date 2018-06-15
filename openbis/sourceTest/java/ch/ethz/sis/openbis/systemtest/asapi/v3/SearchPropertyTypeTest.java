@@ -120,6 +120,24 @@ public class SearchPropertyTypeTest extends AbstractTest
         testSearch(TEST_USER, criteria, "DESCRIPTION", "DYNAMIC_DESCRIPTION");
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PropertyTypeSearchCriteria c = new PropertyTypeSearchCriteria();
+        c.withCode().thatEquals("OFFSET");
+
+        PropertyTypeFetchOptions fo = new PropertyTypeFetchOptions();
+        fo.withSemanticAnnotations();
+        fo.withVocabulary();
+
+        v3api.searchPropertyTypes(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-property-types  SEARCH_CRITERIA:\n'PROPERTY_TYPE\n    with attribute 'code' equal to 'OFFSET'\n'\nFETCH_OPTIONS:\n'PropertyType\n    with Vocabulary\n    with SemanticAnnotations\n'");
+    }
+
     private void testSearch(String user, PropertyTypeSearchCriteria criteria, String... expectedCodes)
     {
         String sessionToken = v3api.login(user, PASSWORD);

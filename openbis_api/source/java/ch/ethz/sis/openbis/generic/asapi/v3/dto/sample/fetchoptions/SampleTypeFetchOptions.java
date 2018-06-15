@@ -97,12 +97,12 @@ public class SampleTypeFetchOptions extends FetchOptions<SampleType> implements 
         }
         return validationPlugin;
     }
-    
+
     public PluginFetchOptions withValidationPluginUsing(PluginFetchOptions fetchOptions)
     {
         return validationPlugin = fetchOptions;
     }
-    
+
     public boolean hasValidationPlugin()
     {
         return validationPlugin != null;
@@ -125,12 +125,14 @@ public class SampleTypeFetchOptions extends FetchOptions<SampleType> implements 
     {
         return sort;
     }
+
     @Override
     protected FetchOptionsToStringBuilder getFetchOptionsStringBuilder()
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("SampleType", this);
         f.addFetchOption("PropertyAssignments", propertyAssignments);
         f.addFetchOption("SemanticAnnotations", semanticAnnotations);
+        f.addFetchOption("ValidationPlugin", validationPlugin);
         return f;
     }
 

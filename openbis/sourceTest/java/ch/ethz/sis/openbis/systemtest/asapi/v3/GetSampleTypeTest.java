@@ -139,4 +139,18 @@ public class GetSampleTypeTest extends AbstractGetEntityTypeTest
         assertValidationPluginNotFetched(type);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeFetchOptions fo = new SampleTypeFetchOptions();
+        fo.withPropertyAssignments();
+
+        v3api.getSampleTypes(sessionToken, Arrays.asList(new EntityTypePermId("MASTER_PLATE"), new EntityTypePermId("WELL")), fo);
+
+        assertAccessLog(
+                "get-sample-types  SAMPLE_TYPE_IDS('[MASTER_PLATE, WELL]') FETCH_OPTIONS('SampleType\n    with PropertyAssignments\n')");
+    }
+
 }

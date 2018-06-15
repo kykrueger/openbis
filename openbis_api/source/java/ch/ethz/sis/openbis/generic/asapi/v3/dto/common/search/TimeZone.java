@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -43,6 +44,12 @@ public class TimeZone implements ITimeZone
     public int getHourOffset()
     {
         return hourOffset;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("hourOffset", hourOffset).toString();
     }
 
 }

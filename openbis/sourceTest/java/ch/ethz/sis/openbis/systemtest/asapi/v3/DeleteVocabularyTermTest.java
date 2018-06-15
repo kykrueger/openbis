@@ -454,7 +454,7 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
 
         assertMaterialsReindexed(state, new MaterialPermId(materialCode, materialTypeCode));
     }
-    
+
     @Test
     public void testReplaceTermWhichAlsoAccursInAnotherVocabulary()
     {
@@ -463,19 +463,19 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
         assertSampleProperty(sessionToken, "200902091250077-1026", "ORGANISM", "GORILLA");
         assertTerms(sessionToken, "[VocabularyTerm DOG, "
                 + "VocabularyTerm FLY, VocabularyTerm GORILLA, VocabularyTerm HUMAN, VocabularyTerm RAT]");
-        
+
         // Create new vocabulary term 384_WELLS_16X24 in ORGANISM which also appears in $PLATE_GEOMETRY
         createTerm(sessionToken, "384_WELLS_16X24");
         assertTerms(sessionToken, "[VocabularyTerm 384_WELLS_16X24, VocabularyTerm DOG, "
                 + "VocabularyTerm FLY, VocabularyTerm GORILLA, VocabularyTerm HUMAN, VocabularyTerm RAT]");
-        
+
         // Delete term GORILLA and replace it by the new term 384_WELLS_16X24
         deleteAndReplaceTerm(sessionToken, "GORILLA", "384_WELLS_16X24");
         assertSampleProperty(sessionToken, "200811050919915-8", "$PLATE_GEOMETRY", "384_WELLS_16X24");
         assertSampleProperty(sessionToken, "200902091250077-1026", "ORGANISM", "384_WELLS_16X24");
         assertTerms(sessionToken, "[VocabularyTerm 384_WELLS_16X24, VocabularyTerm DOG, "
                 + "VocabularyTerm FLY, VocabularyTerm HUMAN, VocabularyTerm RAT]");
-        
+
         // Create again term GORILLA.
         createTerm(sessionToken, "GORILLA");
         assertTerms(sessionToken, "[VocabularyTerm 384_WELLS_16X24, VocabularyTerm DOG, "
@@ -485,6 +485,21 @@ public class DeleteVocabularyTermTest extends AbstractVocabularyTermTest
         deleteAndReplaceTerm(sessionToken, "384_WELLS_16X24", "GORILLA");
         assertSampleProperty(sessionToken, "200811050919915-8", "$PLATE_GEOMETRY", "384_WELLS_16X24");
         assertSampleProperty(sessionToken, "200902091250077-1026", "ORGANISM", "GORILLA");
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyTermDeletionOptions o = new VocabularyTermDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteVocabularyTerms(sessionToken,
+                Arrays.asList(new VocabularyTermPermId("TEST-LOGGING-1", "TEST"), new VocabularyTermPermId("TEST-LOGGING-2", "TEST")), o);
+
+        assertAccessLog(
+                "delete-vocabulary-terms  VOCABULARY_TERM_IDS('[TEST-LOGGING-1 (TEST), TEST-LOGGING-2 (TEST)]') DELETION_OPTIONS('VocabularyTermDeletionOptions[reason=test-reason]')");
     }
 
     private void deleteAndReplaceTerm(String sessionToken, String toBeDeleted, String replacement)

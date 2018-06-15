@@ -1497,4 +1497,21 @@ public class UpdateSampleTest extends AbstractSampleTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(new SampleIdentifier("/CISD/CP-TEST-1"));
+
+        SampleUpdate update2 = new SampleUpdate();
+        update2.setSampleId(new SamplePermId("201206191219327-1055"));
+
+        v3api.updateSamples(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-samples  SAMPLE_UPDATES('[SampleUpdate[sampleId=/CISD/CP-TEST-1], SampleUpdate[sampleId=201206191219327-1055]]')");
+    }
+
 }

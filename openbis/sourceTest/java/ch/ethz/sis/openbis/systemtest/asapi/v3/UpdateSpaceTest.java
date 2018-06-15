@@ -133,4 +133,21 @@ public class UpdateSpaceTest extends AbstractTest
         assertEquals(space2.getCode(), spaceCode2);
         assertEquals(space2.getDescription(), update2.getDescription().getValue());
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SpaceUpdate update = new SpaceUpdate();
+        update.setSpaceId(new SpacePermId("CISD"));
+
+        SpaceUpdate update2 = new SpaceUpdate();
+        update2.setSpaceId(new SpacePermId("TEST-SPACE"));
+
+        v3api.updateSpaces(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog("update-spaces  SPACE_UPDATES('[SpaceUpdate[spaceId=CISD], SpaceUpdate[spaceId=TEST-SPACE]]')");
+    }
+
 }

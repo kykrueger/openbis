@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -171,6 +172,20 @@ public class DeleteProjectTest extends AbstractDeletionTest
                     }
                 }, permIds.get(0));
         }
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ProjectDeletionOptions o = new ProjectDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteProjects(sessionToken, Arrays.asList(new ProjectPermId("TEST-LOGGING-1"), new ProjectPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-projects  PROJECT_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('ProjectDeletionOptions[reason=test-reason]')");
     }
 
 }

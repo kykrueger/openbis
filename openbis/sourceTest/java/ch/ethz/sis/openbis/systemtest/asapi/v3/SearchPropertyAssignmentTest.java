@@ -209,6 +209,24 @@ public class SearchPropertyAssignmentTest extends AbstractTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PropertyAssignmentSearchCriteria c = new PropertyAssignmentSearchCriteria();
+        c.withId().thatEquals(new PropertyAssignmentPermId(new EntityTypePermId("CELL_PLATE", EntityKind.SAMPLE), new PropertyTypePermId("SIZE")));
+
+        PropertyAssignmentFetchOptions fo = new PropertyAssignmentFetchOptions();
+        fo.withEntityType();
+        fo.withPropertyType();
+
+        v3api.searchPropertyAssignments(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-property-assignments  SEARCH_CRITERIA:\n'PROPERTY_ASSIGNMENT\n    with id 'CELL_PLATE (SAMPLE), SIZE'\n'\nFETCH_OPTIONS:\n'PropertyAssignment\n    with EntityType\n    with PropertyType\n'");
+    }
+
     private void testSearch(String user, PropertyAssignmentSearchCriteria criteria, String... expectedEntityTypeAndPropertyTypeCodes)
     {
         String sessionToken = v3api.login(user, PASSWORD);

@@ -18,14 +18,13 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.person.create.PersonCreation")
@@ -35,7 +34,7 @@ public class PersonCreation implements ICreation, IObjectCreation
 
     @JsonProperty
     private String userId;
-    
+
     @JsonProperty
     private ISpaceId spaceId;
 
@@ -58,5 +57,11 @@ public class PersonCreation implements ICreation, IObjectCreation
     {
         this.spaceId = spaceId;
     }
-    
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("userId", userId).toString();
+    }
+
 }

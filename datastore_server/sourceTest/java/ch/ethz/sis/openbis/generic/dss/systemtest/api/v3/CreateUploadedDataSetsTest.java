@@ -919,6 +919,25 @@ public class CreateUploadedDataSetsTest extends AbstractFileTest
         }
     }
 
+    @Test
+    public void testLogging() throws Exception
+    {
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+
+        UploadedDataSetCreation creation = new UploadedDataSetCreation();
+        creation.setTypeId(new EntityTypePermId("UNKNOWN"));
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        creation.setUploadId(UUID.randomUUID().toString());
+
+        FileToUpload file = new FileToUpload("file", "test.txt", "test content");
+        uploadFiles(sessionToken, creation.getUploadId(), creation.getTypeId().toString(), true, null, file);
+
+        dss.createUploadedDataSet(sessionToken, creation);
+
+        assertAccessLog("create-uploaded-data-sets  DATA_SETS('UploadedDataSetCreation[uploadId=" + creation.getUploadId()
+                + ",experimentId=/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST,sampleId=<null>]')");
+    }
+
     private ContentResponse uploadFiles(String sessionToken, String uploadId, String dataSetType, Boolean ignoreFilePath, String folderPath,
             FileToUpload... filesToUpload)
             throws InterruptedException, TimeoutException, ExecutionException

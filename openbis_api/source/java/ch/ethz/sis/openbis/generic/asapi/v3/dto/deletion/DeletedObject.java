@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -40,6 +41,12 @@ public class DeletedObject implements Serializable
     public void setId(IObjectId id)
     {
         this.id = id;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("id", id).toString();
     }
 
 }

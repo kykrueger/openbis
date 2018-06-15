@@ -1178,4 +1178,20 @@ public class GetExperimentTest extends AbstractExperimentTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentFetchOptions fo = new ExperimentFetchOptions();
+        fo.withProject();
+        fo.withProperties();
+
+        v3api.getExperiments(sessionToken,
+                Arrays.asList(new ExperimentPermId("200811050951882-1028"), new ExperimentIdentifier("/CISD/NOE/EXP-TEST-2")), fo);
+
+        assertAccessLog(
+                "get-experiments  EXPERIMENT_IDS('[200811050951882-1028, /CISD/NOE/EXP-TEST-2]') FETCH_OPTIONS('Experiment\n    with Project\n    with Properties\n')");
+    }
+
 }

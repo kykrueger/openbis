@@ -34,8 +34,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.RoleAssignment
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.search.RoleAssignmentSearchCriteria;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class SearchRoleAssignmentsTest extends AbstractTest
@@ -51,10 +49,10 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertMinimumNumbersOfRoleAssignments(assignments, 29);
     }
@@ -71,14 +69,14 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertMinimumNumbersOfRoleAssignments(assignments, 5);
     }
-    
+
     @Test
     public void testSearchForAllSpace()
     {
@@ -91,14 +89,14 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertMinimumNumbersOfRoleAssignments(assignments, 19);
     }
-    
+
     @Test
     public void testSearchForAllAuthorizationGroups()
     {
@@ -111,14 +109,14 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertMinimumNumbersOfRoleAssignments(assignments, 2);
     }
-    
+
     @Test
     public void testSearchForAllUsers()
     {
@@ -131,14 +129,14 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertMinimumNumbersOfRoleAssignments(assignments, 27);
     }
-    
+
     @Test
     public void testSearchForAUser()
     {
@@ -151,10 +149,10 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertRoleAssignments(assignments, "ADMIN INSTANCE for user test\n"
                 + "ADMIN SPACE[CISD] for user test\n"
@@ -162,7 +160,7 @@ public class SearchRoleAssignmentsTest extends AbstractTest
                 + "ETL_SERVER INSTANCE for user test\n"
                 + "ETL_SERVER SPACE[CISD] for user test\n");
     }
-    
+
     @Test
     public void testSearchForSomeUsers()
     {
@@ -175,10 +173,10 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertRoleAssignments(assignments, "ADMIN INSTANCE for user test\n"
                 + "ADMIN SPACE[CISD] for user test\n"
@@ -188,7 +186,7 @@ public class SearchRoleAssignmentsTest extends AbstractTest
                 + "ETL_SERVER SPACE[CISD] for user test\n"
                 + "POWER_USER SPACE[CISD] for user homeless\n");
     }
-    
+
     @Test
     public void testSearchForAUserAndASpace()
     {
@@ -203,15 +201,15 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertRoleAssignments(assignments, "ADMIN SPACE[CISD] for user test\n"
                 + "ETL_SERVER SPACE[CISD] for user test\n");
     }
-    
+
     @Test
     public void testSearchForARoleAssignmentId()
     {
@@ -224,20 +222,38 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         fetchOptions.withAuthorizationGroup();
         fetchOptions.withSpace();
         fetchOptions.withProject();
-        
+
         // When
         List<RoleAssignment> assignments = v3api.searchRoleAssignments(sessionToken, searchCriteria, fetchOptions).getObjects();
-        
+
         // Then
         assertRoleAssignments(assignments, "ADMIN SPACE[CISD] for user test\n");
     }
-    
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        RoleAssignmentSearchCriteria c = new RoleAssignmentSearchCriteria();
+        c.withUser().withUserId().thatEquals("test");
+
+        RoleAssignmentFetchOptions fo = new RoleAssignmentFetchOptions();
+        fo.withUser();
+        fo.withAuthorizationGroup();
+
+        v3api.searchRoleAssignments(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-role-assignments  SEARCH_CRITERIA:\n'ROLE_ASSIGNMENT\n    with person:\n        with attribute 'userId' equal to 'test'\n'\nFETCH_OPTIONS:\n'RoleAssignment\n    with User\n    with AuthorizationGroup\n'");
+    }
+
     private void assertMinimumNumbersOfRoleAssignments(List<RoleAssignment> assignments, int minSize)
     {
-        assertTrue(assignments.size() >= minSize, "Expecting at least " + minSize 
+        assertTrue(assignments.size() >= minSize, "Expecting at least " + minSize
                 + " but got only the following " + assignments.size() + ": " + render(assignments));
     }
-    
+
     private void assertRoleAssignments(List<RoleAssignment> assignments, String expectedAssignmentsAsString)
     {
         List<String> assignmentsAsStrings = render(assignments);
@@ -260,7 +276,7 @@ public class SearchRoleAssignmentsTest extends AbstractTest
         Collections.sort(assignmentsAsStrings);
         return assignmentsAsStrings;
     }
-    
+
     private String asString(RoleAssignment assignment)
     {
         StringBuilder builder = new StringBuilder();

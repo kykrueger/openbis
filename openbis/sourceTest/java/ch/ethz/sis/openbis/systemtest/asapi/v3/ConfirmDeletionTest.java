@@ -328,6 +328,16 @@ public class ConfirmDeletionTest extends AbstractDeletionTest
             }, deletionId);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        v3api.confirmDeletions(sessionToken, Arrays.asList(new DeletionTechId(1L), new DeletionTechId(2L)));
+
+        assertAccessLog("confirm-deletions  DELETION_IDS('[1, 2]')");
+    }
+
     private DataSetCreation dataSetCreation(String typeCode, String dataSetCode)
     {
         PhysicalDataCreation physicalCreation = new PhysicalDataCreation();

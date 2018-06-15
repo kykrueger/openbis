@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.operation;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationExecutionProgress;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -62,6 +63,13 @@ public class OperationExecutionProgress implements IOperationExecutionProgress
     public Integer getTotalItemsToProcess()
     {
         return totalItemsToProcess;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("message", message).append("numItemsProcessed", numItemsProcessed)
+                .append("totalItemsToProcess", totalItemsToProcess).toString();
     }
 
 }

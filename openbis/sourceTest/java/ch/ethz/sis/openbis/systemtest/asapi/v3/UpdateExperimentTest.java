@@ -755,6 +755,23 @@ public class UpdateExperimentTest extends AbstractExperimentTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+
+        ExperimentUpdate update2 = new ExperimentUpdate();
+        update2.setExperimentId(new ExperimentPermId("200811050940555-1032"));
+
+        v3api.updateExperiments(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-experiments  EXPERIMENT_UPDATES('[ExperimentUpdate[experimentId=/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST], ExperimentUpdate[experimentId=200811050940555-1032]]')");
+    }
+
     private ExperimentPermId createExperimentWithoutAttachments()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -98,6 +99,23 @@ public class CreateSampleTypeTest extends CreateEntityTypeTest<SampleTypeCreatio
         assertEquals(type.isShowContainer(), (Boolean) creation.isShowContainer());
         assertEquals(type.isShowParents(), (Boolean) creation.isShowParents());
         assertEquals(type.isShowParentMetadata(), (Boolean) creation.isShowParentMetadata());
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeCreation creation = new SampleTypeCreation();
+        creation.setCode("LOG_TEST_1");
+
+        SampleTypeCreation creation2 = new SampleTypeCreation();
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createSampleTypes(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-sample-types  NEW_SAMPLE_TYPES('[SampleTypeCreation[code=LOG_TEST_1], SampleTypeCreation[code=LOG_TEST_2]]')");
     }
 
 }

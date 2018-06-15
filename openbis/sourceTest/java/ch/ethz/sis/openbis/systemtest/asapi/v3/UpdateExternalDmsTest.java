@@ -20,11 +20,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.Arrays;
+
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 public class UpdateExternalDmsTest extends AbstractExternalDmsTest
@@ -88,4 +91,22 @@ public class UpdateExternalDmsTest extends AbstractExternalDmsTest
 
         assertThat(updated.getLabel(), is(""));
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExternalDmsUpdate update = new ExternalDmsUpdate();
+        update.setExternalDmsId(new ExternalDmsPermId("DMS_1"));
+
+        ExternalDmsUpdate update2 = new ExternalDmsUpdate();
+        update2.setExternalDmsId(new ExternalDmsPermId("DMS_2"));
+
+        v3api.updateExternalDataManagementSystems(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-external-dms  EXTERNAL_DMS_UPDATES('[ExternalDmsUpdate[externalDmsId=DMS_1], ExternalDmsUpdate[externalDmsId=DMS_2]]')");
+    }
+
 }

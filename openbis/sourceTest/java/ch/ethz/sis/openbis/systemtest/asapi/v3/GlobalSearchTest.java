@@ -713,6 +713,24 @@ public class GlobalSearchTest extends AbstractTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        GlobalSearchCriteria c = new GlobalSearchCriteria();
+        c.withText().thatContainsExactly("200902091219327-1025");
+
+        GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withDataSet();
+        fo.withSample();
+
+        v3api.searchGlobally(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-globally  SEARCH_CRITERIA:\n'GLOBAL_SEARCH\n    any field contains exactly '200902091219327-1025'\n'\nFETCH_OPTIONS:\n'GlobalSearchObject\n    with Sample\n    with DataSet\n'");
+    }
+
     private SearchResult<GlobalSearchObject> search(String user, GlobalSearchCriteria criteria, GlobalSearchObjectFetchOptions fetchOptions)
     {
         String sessionToken = v3api.login(user, PASSWORD);

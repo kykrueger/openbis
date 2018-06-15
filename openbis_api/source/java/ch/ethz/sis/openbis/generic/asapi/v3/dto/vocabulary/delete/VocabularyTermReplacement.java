@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyTermId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -73,6 +74,12 @@ public class VocabularyTermReplacement implements Serializable
     private void setReplacementId(IVocabularyTermId replacementId)
     {
         this.replacementId = replacementId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("replacedId", replacedId).append("replacementId", replacementId).toString();
     }
 
 }

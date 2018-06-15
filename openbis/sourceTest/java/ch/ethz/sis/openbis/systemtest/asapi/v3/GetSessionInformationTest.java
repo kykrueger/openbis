@@ -47,4 +47,14 @@ public class GetSessionInformationTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        v3api.getSessionInformation(sessionToken);
+
+        assertAccessLog("get-session-information");
+    }
+
 }

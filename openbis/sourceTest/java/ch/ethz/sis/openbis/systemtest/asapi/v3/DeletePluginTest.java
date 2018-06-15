@@ -33,7 +33,6 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 public class DeletePluginTest extends AbstractTest
 {
@@ -47,17 +46,17 @@ public class DeletePluginTest extends AbstractTest
         assertEquals(v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).size(), 1);
         PluginDeletionOptions deletionOptions = new PluginDeletionOptions();
         deletionOptions.setReason("test");
-        
+
         // When
         v3api.deletePlugins(sessionToken, Arrays.asList(id), deletionOptions);
-        
+
         // Then
         Map<IPluginId, Plugin> plugins = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions);
         assertEquals(plugins.size(), 0);
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToDeletePlugins")
     public void testCreateWithUserCausingAuthorizationFailure(final String user)
     {
@@ -73,6 +72,20 @@ public class DeletePluginTest extends AbstractTest
                     v3api.deletePlugins(sessionToken, Arrays.asList(id), deletionOptions);
                 }
             }, id);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PluginDeletionOptions o = new PluginDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deletePlugins(sessionToken, Arrays.asList(new PluginPermId("TEST-LOGGING-1"), new PluginPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-plugins  PLUGIN_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('PluginDeletionOptions[reason=test-reason]')");
     }
 
     @DataProvider

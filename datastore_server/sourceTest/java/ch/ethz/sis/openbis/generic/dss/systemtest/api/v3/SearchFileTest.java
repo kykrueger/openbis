@@ -45,8 +45,25 @@ public class SearchFileTest extends AbstractFileTest
                 assertEquals(
                         dataSetFile.getPath().length() - 1 - dataSetFile.getPath().indexOf('/', "original/.".length()) + "file content of ".length(),
                         dataSetFile.getFileLength());
-                System.out.println(dataSetFile+":"+dataSetFile.getChecksumCRC32());
+                System.out.println(dataSetFile + ":" + dataSetFile.getChecksumCRC32());
             }
         }
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = gis.tryToAuthenticateForAllServices(TEST_USER, PASSWORD);
+
+        DataSetFileSearchCriteria c = new DataSetFileSearchCriteria();
+        c.withDataSet().withPermId().thatEquals(dataSetCode);
+
+        DataSetFileFetchOptions fo = new DataSetFileFetchOptions();
+
+        dss.searchFiles(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-files  SEARCH_CRITERIA:\n'FILE\n    with dataset:\n        with attribute 'perm id' equal to '" + dataSetCode + "'\n'\nFETCH_OPTIONS:\n'DataSetFile\n'");
+    }
+
 }

@@ -40,8 +40,6 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class DeleteRoleAssignmentTest extends AbstractTest
@@ -68,13 +66,13 @@ public class DeleteRoleAssignmentTest extends AbstractTest
 
         // When
         v3api.deleteRoleAssignments(sessionToken, assignments, deletionOptions);
-        
+
         // Then
         Map<IRoleAssignmentId, RoleAssignment> map = v3api.getRoleAssignments(sessionToken, assignments, fetchOptions);
         assertEquals(map.toString(), "{}");
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testDeleteSpaceAdminRoleAssignmentBySameUser()
     {
@@ -82,7 +80,7 @@ public class DeleteRoleAssignmentTest extends AbstractTest
         String sessionToken = v3api.login(TEST_ROLE_V3, PASSWORD);
         RoleAssignmentDeletionOptions deletionOptions = new RoleAssignmentDeletionOptions();
         deletionOptions.setReason("testing");
-        
+
         try
         {
             // Then
@@ -96,7 +94,7 @@ public class DeleteRoleAssignmentTest extends AbstractTest
                     + "Ask instance admin to do that for you. (Context: [])");
         }
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToDeleteInstanceRoleAssignment")
     public void testDeleteInstanceRoleAssignmentWithUserCausingAuthorizationFailure(final String user)
     {
@@ -121,24 +119,24 @@ public class DeleteRoleAssignmentTest extends AbstractTest
                 TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD,
                 TEST_SPACE_USER);
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToDeleteRoleAssignmentForSpaceCISD")
     public void testDeleteSpaceRoleAssignmentWithUserCausingAuthorizationFailure(final String user)
     {
         assertAnyAuthorizationException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
             {
-                String sessionToken = v3api.login(user, PASSWORD);
-                RoleAssignmentDeletionOptions deletionOptions = new RoleAssignmentDeletionOptions();
-                deletionOptions.setReason("testing");
-                // delete role assignment: user: test_role, space: CISD, role: POWER_USER
-                v3api.deleteRoleAssignments(sessionToken, Arrays.asList(new RoleAssignmentTechId(8L)), deletionOptions);
-            }
-        });
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    RoleAssignmentDeletionOptions deletionOptions = new RoleAssignmentDeletionOptions();
+                    deletionOptions.setReason("testing");
+                    // delete role assignment: user: test_role, space: CISD, role: POWER_USER
+                    v3api.deleteRoleAssignments(sessionToken, Arrays.asList(new RoleAssignmentTechId(8L)), deletionOptions);
+                }
+            });
     }
-    
+
     @DataProvider
     Object[][] usersNotAllowedToDeleteRoleAssignmentForSpaceCISD()
     {
@@ -146,7 +144,7 @@ public class DeleteRoleAssignmentTest extends AbstractTest
                 TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD,
                 TEST_SPACE_USER);
     }
-    
+
     @Test(dataProvider = "usersAllowedToDeleteRoleAssignmentForSpaceCISD")
     public void testDeleteSpaceRoleAssignmentWithUser(final String user)
     {
@@ -156,7 +154,7 @@ public class DeleteRoleAssignmentTest extends AbstractTest
         // delete role assignment: user: test_role, space: CISD, role: POWER_USER
         v3api.deleteRoleAssignments(sessionToken, Arrays.asList(new RoleAssignmentTechId(8L)), deletionOptions);
     }
-    
+
     @DataProvider
     Object[][] usersAllowedToDeleteRoleAssignmentForSpaceCISD()
     {
@@ -167,26 +165,40 @@ public class DeleteRoleAssignmentTest extends AbstractTest
     public void testDeleteProjectRoleAssignmentWithUserCausingAuthorizationFailure(final String user)
     {
         assertAnyAuthorizationException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
             {
-                String sessionToken = v3api.login(user, PASSWORD);
-                RoleAssignmentDeletionOptions deletionOptions = new RoleAssignmentDeletionOptions();
-                deletionOptions.setReason("testing");
-                // delete role assignment: user: test_project_pa_on, project: /TEST-SPACE/TEST-PROJECT, role: ADMIN
-                v3api.deleteRoleAssignments(sessionToken, Arrays.asList(new RoleAssignmentTechId(20L)), deletionOptions);
-            }
-        });
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    RoleAssignmentDeletionOptions deletionOptions = new RoleAssignmentDeletionOptions();
+                    deletionOptions.setReason("testing");
+                    // delete role assignment: user: test_project_pa_on, project: /TEST-SPACE/TEST-PROJECT, role: ADMIN
+                    v3api.deleteRoleAssignments(sessionToken, Arrays.asList(new RoleAssignmentTechId(20L)), deletionOptions);
+                }
+            });
     }
-    
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        RoleAssignmentDeletionOptions o = new RoleAssignmentDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteRoleAssignments(sessionToken, Arrays.asList(new RoleAssignmentTechId(10L), new RoleAssignmentTechId(20L)), o);
+
+        assertAccessLog(
+                "delete-role-assignments  ROLE_ASSIGNMENT_IDS('[10, 20]') DELETION_OPTIONS('RoleAssignmentDeletionOptions[reason=test-reason]')");
+    }
+
     @DataProvider
     Object[][] usersNotAllowedToDeleteRoleAssignmentForProjectTEST_PROJECT()
     {
         return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_INSTANCE_ETLSERVER, TEST_GROUP_OBSERVER,
                 TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD);
     }
-    
+
     @Test(dataProvider = "usersAllowedToDeleteRoleAssignmentForProjectTEST_PROJECT")
     public void testDeleteProjectRoleAssignmentWithUser(final String user)
     {
@@ -196,11 +208,11 @@ public class DeleteRoleAssignmentTest extends AbstractTest
         // delete role assignment: user: test_project_pa_on, project: /TEST-SPACE/TEST-PROJECT, role: ADMIN
         v3api.deleteRoleAssignments(sessionToken, Arrays.asList(new RoleAssignmentTechId(20L)), deletionOptions);
     }
-    
+
     @DataProvider
     Object[][] usersAllowedToDeleteRoleAssignmentForProjectTEST_PROJECT()
     {
         return createTestUsersProvider(TEST_USER, TEST_SPACE_USER);
     }
-    
+
 }

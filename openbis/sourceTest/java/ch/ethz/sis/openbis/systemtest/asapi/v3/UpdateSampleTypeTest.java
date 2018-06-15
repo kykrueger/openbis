@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -144,6 +145,23 @@ public class UpdateSampleTypeTest extends UpdateEntityTypeTest<SampleTypeUpdate,
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProperties();
         return v3api.searchSamples(sessionToken, (SampleSearchCriteria) searchCriteria, fetchOptions).getObjects();
+    }
+    
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeUpdate update = new SampleTypeUpdate();
+        update.setTypeId(new EntityTypePermId("MASTER_PLATE"));
+
+        SampleTypeUpdate update2 = new SampleTypeUpdate();
+        update2.setTypeId(new EntityTypePermId("WELL"));
+
+        v3api.updateSampleTypes(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-sample-types  SAMPLE_TYPE_UPDATES('[SampleTypeUpdate[typeId=MASTER_PLATE (SAMPLE)], SampleTypeUpdate[typeId=WELL (SAMPLE)]]')");
     }
 
 }

@@ -236,4 +236,18 @@ public class DeleteExperimentTest extends AbstractDeletionTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentDeletionOptions o = new ExperimentDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteExperiments(sessionToken, Arrays.asList(new ExperimentPermId("TEST-LOGGING-1"), new ExperimentPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-experiments  EXPERIMENT_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('ExperimentDeletionOptions[reason=test-reason]')");
+    }
+
 }

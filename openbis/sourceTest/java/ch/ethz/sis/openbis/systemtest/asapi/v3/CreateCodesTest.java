@@ -147,6 +147,16 @@ public class CreateCodesTest extends AbstractTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        v3api.createCodes(sessionToken, "ABC-", EntityKind.SAMPLE, 3);
+
+        assertAccessLog("create-codes  PREFIX('ABC-') ENTITY_KIND('SAMPLE') COUNT('3')");
+    }
+
     private int getCurrentSequenceValue(EntityKind entityKind)
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
