@@ -987,6 +987,10 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
             final List<NewSamplesWithTypes> newSamplesWithType,
             List<NewMaterialsWithTypes> newMaterialsWithType) throws UserFailureException
     {
+        if (isProjectSamplesEnabled(sessionToken))
+        {
+            injectProjectIdentifiers(newSamplesWithType);
+        }
         EntityExistenceChecker entityExistenceChecker = new EntityExistenceChecker(getDAOFactory());
         entityExistenceChecker.checkNewMaterials(newMaterialsWithType);
         entityExistenceChecker.checkNewSamples(newSamplesWithType);
@@ -1005,6 +1009,24 @@ public final class GenericServer extends AbstractServer<IGenericServerInternal> 
 
         registerOrUpdateMaterials(sessionToken, newMaterialsWithType);
         privateRegisterOrUpdateSamples(sessionToken, newSamplesWithType);
+    }
+
+    private void injectProjectIdentifiers(final List<NewSamplesWithTypes> newSamplesWithType)
+    {
+        for (NewSamplesWithTypes newSamples : newSamplesWithType)
+        {
+            for (NewSample newSample : newSamples.getNewEntities())
+            {
+                String experimentIdentifier = newSample.getExperimentIdentifier();
+                if (experimentIdentifier != null)
+                {
+                    ExperimentIdentifier identifier = ExperimentIdentifierFactory.parse(experimentIdentifier);
+                    String projectCode = identifier.getProjectCode();
+                    String spaceCode = identifier.getSpaceCode();
+                    newSample.setProjectIdentifier(new ProjectIdentifier(spaceCode, projectCode).asProjectIdentifierString());
+                }
+            }
+        }
     }
 
     @Override
