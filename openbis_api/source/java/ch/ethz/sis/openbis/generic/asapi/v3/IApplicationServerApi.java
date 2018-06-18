@@ -382,7 +382,7 @@ public interface IApplicationServerApi extends IRpcService
      * Creates data sets basing on the provided {@code DataSetCreation} objects. Returns ids of the newly created data sets where nth id corresponds
      * to nth creation object.
      * <p>
-     * Required access rights: {@code PROJECT_USER} or stronger
+     * Required access rights: {@code SPACE_ETL_SERVER} or stronger
      * </p>
      * 
      * @throws UserFailureException in case of any problems, e.g. incorrect {@code DataSetCreation} objects, insufficient access rights etc.
