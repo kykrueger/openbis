@@ -237,7 +237,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
-import ch.systemsx.cisd.common.annotation.TechPreview;
 import ch.systemsx.cisd.common.api.IRpcService;
 
 /**
@@ -580,7 +579,6 @@ public interface IApplicationServerApi extends IRpcService
 
     public Map<String, String> getServerInformation(String sessionToken);
 
-    @TechPreview
     public List<String> createPermIdStrings(String sessionToken, int count);
 
     public List<String> createCodes(String sessionToken, String prefix, EntityKind entityKind, int count);

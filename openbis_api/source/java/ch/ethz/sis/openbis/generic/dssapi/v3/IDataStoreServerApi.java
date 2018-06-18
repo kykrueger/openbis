@@ -28,7 +28,6 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFil
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
-import ch.systemsx.cisd.common.annotation.TechPreview;
 import ch.systemsx.cisd.common.api.IRpcService;
 
 /**
@@ -55,7 +54,6 @@ public interface IDataStoreServerApi extends IRpcService
 
     public DataSetPermId createUploadedDataSet(String sessionToken, UploadedDataSetCreation newDataSet);
 
-    @TechPreview
     public List<DataSetPermId> createDataSets(String sessionToken, List<FullDataSetCreation> newDataSets);
 
 }
