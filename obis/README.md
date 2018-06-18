@@ -15,8 +15,7 @@ Since `obis` is based on `pybis`, it requires python 3.6 and the corresponding `
 First, install `pybis` if it is not already installed. Then install `obis` (paths relative to repository root):
 
 ```
-pip3 install src/python/PyBis
-pip3 install src/python/Obis
+pip3 install src/python
 ```
 
 # See also
