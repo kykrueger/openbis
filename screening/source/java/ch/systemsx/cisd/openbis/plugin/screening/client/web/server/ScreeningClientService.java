@@ -50,6 +50,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleParentWithDerived;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRowWithObject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
+import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
 import ch.systemsx.cisd.openbis.plugin.screening.BuildAndEnvironmentInfo;
 import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.IScreeningClientService;
@@ -254,10 +255,13 @@ public final class ScreeningClientService extends AbstractClientService implemen
         HttpSession session = getHttpSession();
         UploadedFilesBean uploadedFiles = null;
         String experiment = details.getExperiment();
+        
         try
         {
-            String space =
-                    new ExperimentIdentifierFactory(experiment).createIdentifier().getSpaceCode();
+            ExperimentIdentifier experimentIdentifier = new ExperimentIdentifierFactory(experiment).createIdentifier();
+            String space = experimentIdentifier.getSpaceCode();
+            boolean projectSamplesEnabled = server.isProjectSamplesEnabled(sessionToken);
+            String sampleProject = projectSamplesEnabled ? experimentIdentifier.getProjectCode() : null;
             uploadedFiles = getUploadedFiles(sessionKey, session);
 
             List<NewLibrary> newLibraries = new LinkedList<NewLibrary>();
@@ -267,7 +271,7 @@ public final class ScreeningClientService extends AbstractClientService implemen
             {
                 LibraryExtractor extractor =
                         new LibraryExtractor(file.getInputStream(), details.getSeparator(),
-                                experiment, space, details.getPlateGeometry(), details.getScope());
+                                experiment, space, sampleProject, details.getPlateGeometry(), details.getScope());
                 extractor.extract();
 
                 NewLibrary newLibrary = new NewLibrary();

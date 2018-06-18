@@ -54,7 +54,7 @@ public class ScreeningLibraryTransformer
         }
         String experimentIdentifier = args[1];
         String plateGeometry = args[2];
-        String groupCode = args[3];
+        String spaceCode = args[3];
         String fileName = args[0];
         System.out.println("Processing...");
         File input = new File(fileName);
@@ -65,7 +65,7 @@ public class ScreeningLibraryTransformer
         }
         Status status =
                 readLibrary(new FileInputStream(input), DEFAULT_SEPARATOR, experimentIdentifier,
-                        plateGeometry, groupCode, GENES_FILE_NAME, SIRNAS_FILE_NAME,
+                        plateGeometry, spaceCode, null, GENES_FILE_NAME, SIRNAS_FILE_NAME,
                         PLATES_FILE_NAME);
         if (status.isError())
         {
@@ -77,8 +77,8 @@ public class ScreeningLibraryTransformer
     }
 
     public static Status readLibrary(InputStream input, char separator,
-            String experimentIdentifier, String plateGeometry, String groupCode, String genesFile,
-            String oligosFile, String platesFile)
+            String experimentIdentifier, String plateGeometry, String spaceCode, String sampleProjectOrNull, 
+            String genesFile, String oligosFile, String platesFile)
     {
         CsvReader csvReader = null;
         try
@@ -95,7 +95,7 @@ public class ScreeningLibraryTransformer
                             MaterialConfigurationProvider.getInstance());
             LibraryEntityRegistrator registrator =
                     new LibraryEntityRegistrator(extractor, experimentIdentifier, plateGeometry,
-                            groupCode, genesFile, oligosFile, platesFile);
+                            spaceCode, sampleProjectOrNull, genesFile, oligosFile, platesFile);
             while (csvReader.readRecord())
             {
                 String[] row = csvReader.getValues();
