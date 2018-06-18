@@ -176,6 +176,24 @@ public class SearchTagTest extends AbstractTest
             testSearch(user.getUserId(), criteria, permId.getPermId());
         }
     }
+    
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        TagSearchCriteria c = new TagSearchCriteria();
+        c.withCode().thatEquals("TEST_METAPROJECTS");
+
+        TagFetchOptions fo = new TagFetchOptions();
+        fo.withDataSets();
+        fo.withExperiments();
+
+        v3api.searchTags(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-tags  SEARCH_CRITERIA:\n'TAG\n    with attribute 'code' equal to 'TEST_METAPROJECTS'\n'\nFETCH_OPTIONS:\n'Tag\n    with Experiments\n    with DataSets\n'");
+    }
 
     private void testSearch(String user, TagSearchCriteria criteria, String... expectedPermIds)
     {

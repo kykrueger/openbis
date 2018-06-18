@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IFileFormatTypeId;
@@ -48,6 +49,12 @@ public class PhysicalDataUpdate implements IUpdate
     public void setFileFormatTypeId(IFileFormatTypeId fileFormatTypeId)
     {
         this.fileFormatTypeId.setValue(fileFormatTypeId);
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).toString();
     }
 
 }

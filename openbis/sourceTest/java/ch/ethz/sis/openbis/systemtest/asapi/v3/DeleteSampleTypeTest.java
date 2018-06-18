@@ -19,6 +19,8 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import java.util.Arrays;
 import java.util.List;
 
+import org.testng.annotations.Test;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -84,6 +86,21 @@ public class DeleteSampleTypeTest extends AbstractDeleteEntityTypeTest
     protected void deleteEntityType(String sessionToken, List<IEntityTypeId> entityTypeIds, AbstractObjectDeletionOptions<?> options)
     {
         v3api.deleteSampleTypes(sessionToken, entityTypeIds, (SampleTypeDeletionOptions) options);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeDeletionOptions o = new SampleTypeDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteSampleTypes(sessionToken,
+                Arrays.asList(new EntityTypePermId("TEST-LOGGING-1"), new EntityTypePermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-sample-types  SAMPLE_TYPE_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('SampleTypeDeletionOptions[reason=test-reason]')");
     }
 
 }

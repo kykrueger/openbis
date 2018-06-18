@@ -29,7 +29,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 public class GetPropertyTypeTest extends AbstractTest
 {
@@ -40,10 +39,10 @@ public class GetPropertyTypeTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PropertyTypePermId permId = new PropertyTypePermId("Description");
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-        
+
         // When
         PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(permId), fetchOptions).get(permId);
-        
+
         // Then
         assertEquals(propertyType.getCode(), "DESCRIPTION");
         assertEquals(propertyType.getPermId(), permId);
@@ -54,10 +53,10 @@ public class GetPropertyTypeTest extends AbstractTest
         assertEquals(propertyType.isManagedInternally().booleanValue(), false);
         assertEquals(propertyType.getSchema(), null);
         assertEquals(propertyType.getTransformation(), null);
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testGetInternalNameSpacePropertyTypeWithAll()
     {
@@ -66,11 +65,12 @@ public class GetPropertyTypeTest extends AbstractTest
         PropertyTypePermId permId = new PropertyTypePermId("$PLATE_GEOMETRY");
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
         fetchOptions.withMaterialType();
-        fetchOptions.withVocabulary().withTerms().sortBy().code().desc();;
-        
+        fetchOptions.withVocabulary().withTerms().sortBy().code().desc();
+        ;
+
         // When
         PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(permId), fetchOptions).get(permId);
-        
+
         // Then
         assertEquals(propertyType.getCode(), "$PLATE_GEOMETRY");
         assertEquals(propertyType.getPermId(), permId);
@@ -87,7 +87,7 @@ public class GetPropertyTypeTest extends AbstractTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testGetPropertyTypeWithMaterialType()
     {
@@ -96,11 +96,12 @@ public class GetPropertyTypeTest extends AbstractTest
         PropertyTypePermId permId = new PropertyTypePermId("BACTERIUM");
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
         fetchOptions.withMaterialType();
-        fetchOptions.withVocabulary().withTerms().sortBy().code().desc();;
-        
+        fetchOptions.withVocabulary().withTerms().sortBy().code().desc();
+        ;
+
         // When
         PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(permId), fetchOptions).get(permId);
-        
+
         // Then
         assertEquals(propertyType.getCode(), "BACTERIUM");
         assertEquals(propertyType.getPermId(), permId);
@@ -108,9 +109,24 @@ public class GetPropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getVocabulary(), null);
         assertEquals(propertyType.getMaterialType().getCode(), "BACTERIUM");
         assertEquals(propertyType.getMaterialType().getDescription(), "Bacterium");
-        assertEquals(propertyType.getMaterialType().getPermId().toString(), "BACTERIUM, MATERIAL");
+        assertEquals(propertyType.getMaterialType().getPermId().toString(), "BACTERIUM (MATERIAL)");
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PropertyTypeFetchOptions fo = new PropertyTypeFetchOptions();
+        fo.withMaterialType();
+        fo.withVocabulary();
+
+        v3api.getPropertyTypes(sessionToken, Arrays.asList(new PropertyTypePermId("DESCRIPTION"), new PropertyTypePermId("$PLATE_GEOMETRY")), fo);
+
+        assertAccessLog(
+                "get-property-types  PROPERTY_TYPE_IDS('[DESCRIPTION, $PLATE_GEOMETRY]') FETCH_OPTIONS('PropertyType\n    with Vocabulary\n    with MaterialType\n')");
     }
 
 }

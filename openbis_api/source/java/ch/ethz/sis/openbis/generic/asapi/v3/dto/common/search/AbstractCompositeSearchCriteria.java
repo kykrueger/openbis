@@ -83,6 +83,7 @@ public abstract class AbstractCompositeSearchCriteria extends AbstractSearchCrit
     {
         SearchCriteriaToStringBuilder builder = new SearchCriteriaToStringBuilder();
         builder.setCriteria(criteria);
+        builder.setOperator(operator);
         return builder;
     }
 

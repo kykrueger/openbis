@@ -237,6 +237,23 @@ public class UpdateSemanticAnnotationTest extends AbstractTest
         assertEquals(after2.getDescriptorAccessionId(), before2.getDescriptorAccessionId());
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SemanticAnnotationUpdate update = new SemanticAnnotationUpdate();
+        update.setSemanticAnnotationId(new SemanticAnnotationPermId("ST_MASTER_PLATE"));
+
+        SemanticAnnotationUpdate update2 = new SemanticAnnotationUpdate();
+        update2.setSemanticAnnotationId(new SemanticAnnotationPermId("ST_CONTROL_LAYOUT_PT_PLATE_GEOMETRY"));
+
+        v3api.updateSemanticAnnotations(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-semantic-annotations  SEMANTIC_ANNOTATION_UPDATES('[SemanticAnnotationUpdate[annotationId=ST_MASTER_PLATE], SemanticAnnotationUpdate[annotationId=ST_CONTROL_LAYOUT_PT_PLATE_GEOMETRY]]')");
+    }
+
     private void testUpdateWithUser(String userId)
     {
         String sessionToken = v3api.login(userId, PASSWORD);

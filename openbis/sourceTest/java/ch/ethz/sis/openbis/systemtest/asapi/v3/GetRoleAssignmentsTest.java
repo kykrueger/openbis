@@ -32,8 +32,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.IRoleAssignmen
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.id.RoleAssignmentTechId;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class GetRoleAssignmentsTest extends AbstractTest
@@ -50,16 +48,16 @@ public class GetRoleAssignmentsTest extends AbstractTest
 
         // When
         Map<IRoleAssignmentId, RoleAssignment> map = v3api.getRoleAssignments(sessionToken, Arrays.asList(id1, id2), fetchOptions);
-        
+
         // Then
         assertEquals(map.get(id1).getRole(), Role.ADMIN);
         assertEquals(map.get(id1).getRoleLevel(), RoleLevel.INSTANCE);
         assertEquals(map.get(id2).getRole(), Role.ADMIN);
         assertEquals(map.get(id2).getRoleLevel(), RoleLevel.SPACE);
-        assertEquals(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(map.get(id2).getRegistrationDate()), 
+        assertEquals(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(map.get(id2).getRegistrationDate()),
                 "2008-11-05 09:18:11");
     }
-    
+
     @Test
     public void testWithRegistratorAndUserAndGroup()
     {
@@ -71,10 +69,10 @@ public class GetRoleAssignmentsTest extends AbstractTest
         fetchOptions.withRegistrator();
         fetchOptions.withUser();
         fetchOptions.withAuthorizationGroup().withUsers();
-        
+
         // When
         Map<IRoleAssignmentId, RoleAssignment> map = v3api.getRoleAssignments(sessionToken, Arrays.asList(id1, id2), fetchOptions);
-        
+
         // Then
         assertEquals(map.get(id1).getRole(), Role.USER);
         assertEquals(map.get(id1).getRoleLevel(), RoleLevel.PROJECT);
@@ -97,7 +95,7 @@ public class GetRoleAssignmentsTest extends AbstractTest
         assertEquals(map.get(id2).getFetchOptions().hasProject(), false);
         assertEquals(map.get(id2).getFetchOptions().hasSpace(), false);
     }
-    
+
     @Test
     public void testWithSpaceAndProject()
     {
@@ -111,7 +109,7 @@ public class GetRoleAssignmentsTest extends AbstractTest
 
         // When
         Map<IRoleAssignmentId, RoleAssignment> map = v3api.getRoleAssignments(sessionToken, Arrays.asList(id1, id2), fetchOptions);
-        
+
         // Then
         assertEquals(map.get(id1).getRole(), Role.ADMIN);
         assertEquals(map.get(id1).getRoleLevel(), RoleLevel.PROJECT);
@@ -132,4 +130,20 @@ public class GetRoleAssignmentsTest extends AbstractTest
         assertEquals(map.get(id2).getFetchOptions().hasProject(), true);
         assertEquals(map.get(id2).getFetchOptions().hasSpace(), true);
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        RoleAssignmentFetchOptions fo = new RoleAssignmentFetchOptions();
+        fo.withRegistrator();
+        fo.withUser();
+
+        v3api.getRoleAssignments(sessionToken, Arrays.asList(new RoleAssignmentTechId(1L), new RoleAssignmentTechId(2L)), fo);
+
+        assertAccessLog(
+                "get-role-assignments  IDS('[1, 2]') FETCH_OPTIONS('RoleAssignment\n    with User\n    with Registrator\n')");
+    }
+
 }

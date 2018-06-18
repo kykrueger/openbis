@@ -21,6 +21,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -66,4 +67,17 @@ public class FieldUpdateValue<T> implements Serializable
     {
         return value;
     }
+
+    @Override
+    public String toString()
+    {
+        if (isModified())
+        {
+            return new ObjectToString(this).append("value", value).toString();
+        } else
+        {
+            return new ObjectToString(this).toString();
+        }
+    }
+
 }

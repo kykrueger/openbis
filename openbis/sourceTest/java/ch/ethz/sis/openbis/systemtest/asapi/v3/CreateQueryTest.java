@@ -19,6 +19,8 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.junit.Assert.assertNotNull;
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
+
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
@@ -242,6 +244,25 @@ public class CreateQueryTest extends AbstractQueryTest
                     createQuery(TEST_USER, PASSWORD, creation);
                 }
             }, "Sorry, only one query statement is allowed: A ';' somewhere in the middle has been found.");
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        QueryCreation creation = testCreation();
+        creation.setDatabaseId(DB_OPENBIS_METADATA_ID);
+        creation.setName("LOG_TEST_1");
+
+        QueryCreation creation2 = testCreation();
+        creation2.setDatabaseId(DB_TEST_CISD_ID);
+        creation2.setName("LOG_TEST_2");
+
+        v3api.createQueries(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-queries  NEW_QUERIES('[QueryCreation[databaseId=1,name=LOG_TEST_1], QueryCreation[databaseId=test-database,name=LOG_TEST_2]]')");
     }
 
 }

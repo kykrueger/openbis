@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 @JsonObject("as.dto.common.update.ListUpdateValue")
@@ -144,6 +145,12 @@ public class ListUpdateValue<ADD, REMOVE, SET, ACTION> implements Serializable
             }
         }
         return (Collection<SET>) items;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("added", getAdded()).append("removed", getRemoved()).append("set", getSet()).toString();
     }
 
 }

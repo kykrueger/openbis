@@ -36,8 +36,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class UpdateAuthorizationGroupTest extends AbstractTest
@@ -51,23 +49,23 @@ public class UpdateAuthorizationGroupTest extends AbstractTest
         AuthorizationGroupPermId id = new AuthorizationGroupPermId("AGROUP");
         update.setAuthorizationGroupId(id);
         update.setDescription("a new description");
-        
+
         // When
         v3api.updateAuthorizationGroups(sessionToken, Arrays.asList(update));
-        
+
         // Then
         AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
         fetchOptions.withRegistrator();
         AuthorizationGroup group = v3api.getAuthorizationGroups(sessionToken, Arrays.asList(id), fetchOptions).get(id);
         assertEquals(group.getDescription(), update.getDescription().getValue());
         long diff = group.getModificationDate().getTime() - group.getRegistrationDate().getTime();
-        assertTrue(diff > 10000, "modification date (" + group.getModificationDate() 
+        assertTrue(diff > 10000, "modification date (" + group.getModificationDate()
                 + ") is larger than registration date (" + group.getRegistrationDate() + ").");
         assertEquals(group.getRegistrator().getUserId(), "test");
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testAddUsers()
     {
@@ -79,10 +77,10 @@ public class UpdateAuthorizationGroupTest extends AbstractTest
         update.getUserIds().add(new PersonPermId(TEST_GROUP_ADMIN));
         update.getUserIds().add(new PersonPermId(TEST_GROUP_POWERUSER));
         update.getUserIds().add(new Me());
-        
+
         // When
         v3api.updateAuthorizationGroups(sessionToken, Arrays.asList(update));
-        
+
         // Then
         AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
         fetchOptions.withUsers();
@@ -90,10 +88,10 @@ public class UpdateAuthorizationGroupTest extends AbstractTest
         List<Person> users = group.getUsers();
         Collections.sort(users, CreateAuthorizationGroupTest.PERSON_COMPARATOR);
         assertEquals(users.toString(), "[Person admin, Person agroup_member, Person poweruser, Person test]");
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testRemoveUser()
     {
@@ -104,10 +102,10 @@ public class UpdateAuthorizationGroupTest extends AbstractTest
         update.setAuthorizationGroupId(id);
         update.getUserIds().remove(new PersonPermId("agroup_member"));
         update.getUserIds().remove(new PersonPermId(TEST_NO_HOME_SPACE));
-        
+
         // When
         v3api.updateAuthorizationGroups(sessionToken, Arrays.asList(update));
-        
+
         // Then
         AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
         fetchOptions.withUsers();
@@ -115,10 +113,10 @@ public class UpdateAuthorizationGroupTest extends AbstractTest
         List<Person> users = group.getUsers();
         Collections.sort(users, CreateAuthorizationGroupTest.PERSON_COMPARATOR);
         assertEquals(users.toString(), "[]");
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToUpdateAuthorizationGroups")
     public void testUpdateWithUserCausingAuthorizationFailure(final String user)
     {
@@ -133,24 +131,38 @@ public class UpdateAuthorizationGroupTest extends AbstractTest
                     AuthorizationGroupPermId id = new AuthorizationGroupPermId("AGROUP");
                     update.setAuthorizationGroupId(id);
                     update.setDescription("a new description");
-                    
+
                     // When
                     v3api.updateAuthorizationGroups(sessionToken, Arrays.asList(update));
                 }
             });
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        AuthorizationGroupUpdate update = new AuthorizationGroupUpdate();
+        update.setAuthorizationGroupId(new AuthorizationGroupPermId("AGROUP"));
+
+        v3api.updateAuthorizationGroups(sessionToken, Arrays.asList(update));
+
+        assertAccessLog(
+                "update-authorization-groups  AUTHORIZATION_GROUP_UPDATES('[AuthorizationGroupUpdate[groupId=AGROUP]]')");
+    }
+
     @DataProvider
     Object[][] usersNotAllowedToUpdateAuthorizationGroups()
     {
-        String[] users = {TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, 
-                TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER};
+        String[] users = { TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER,
+                TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER };
         Object[][] objects = new Object[users.length][];
         for (int i = 0; i < users.length; i++)
         {
-            objects[i] = new Object[] {users[i]};
+            objects[i] = new Object[] { users[i] };
         }
         return objects;
     }
-    
+
 }

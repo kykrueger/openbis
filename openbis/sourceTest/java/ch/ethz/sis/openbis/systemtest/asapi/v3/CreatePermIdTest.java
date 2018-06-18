@@ -43,4 +43,15 @@ public class CreatePermIdTest extends AbstractTest
         String session = v3api.login(TEST_USER, PASSWORD);
         v3api.createPermIdStrings(session, amount);
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        v3api.createPermIdStrings(sessionToken, 3);
+
+        assertAccessLog("create-perm-id-strings  COUNT('3')");
+    }
+
 }

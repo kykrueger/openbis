@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create;
 
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.create.IEntityTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
@@ -122,6 +123,12 @@ public class DataSetTypeCreation implements IEntityTypeCreation
     public void setPropertyAssignments(List<PropertyAssignmentCreation> propertyAssignments)
     {
         this.propertyAssignments = propertyAssignments;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("code", code).toString();
     }
 
 }

@@ -64,11 +64,26 @@ public class SearchServiceTest extends AbstractTest
         CustomASServiceSearchCriteria searchCriteria = new CustomASServiceSearchCriteria();
         searchCriteria.withCode().thatStartsWith("simple");
 
-        SearchResult<CustomASService> result = v3api.searchCustomASServices(sessionToken, searchCriteria, new
-                CustomASServiceFetchOptions());
+        SearchResult<CustomASService> result = v3api.searchCustomASServices(sessionToken, searchCriteria, new CustomASServiceFetchOptions());
 
         assertEquals(result.getObjects().toString(), "[CustomASService: simple-service]");
         assertEquals(result.getTotalCount(), 1);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        CustomASServiceSearchCriteria c = new CustomASServiceSearchCriteria();
+        c.withCode().thatEquals("simple-service");
+
+        CustomASServiceFetchOptions fo = new CustomASServiceFetchOptions();
+
+        v3api.searchCustomASServices(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-custom-as-services  SEARCH_CRITERIA:\n'CUSTOM_AS_SERVICE\n    with attribute 'code' equal to 'simple-service'\n'\nFETCH_OPTIONS:\n'CustomASService\n'");
     }
 
 }

@@ -67,7 +67,13 @@ public class EntityTypePermId extends ObjectPermId implements IEntityTypeId
     @Override
     public String toString()
     {
-        return super.toString() + ", " + getEntityKind();
+        if (getEntityKind() != null)
+        {
+            return super.toString() + " (" + getEntityKind() + ")";
+        } else
+        {
+            return super.toString();
+        }
     }
 
     //

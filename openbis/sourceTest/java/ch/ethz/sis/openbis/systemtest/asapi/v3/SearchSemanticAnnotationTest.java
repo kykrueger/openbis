@@ -250,6 +250,24 @@ public class SearchSemanticAnnotationTest extends AbstractTest
                 "ST_CONTROL_LAYOUT_PT_PLATE_GEOMETRY", "ST_CELL_PLATE_PT_ORGANISM");
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SemanticAnnotationSearchCriteria c = new SemanticAnnotationSearchCriteria();
+        c.withPermId().thatEquals("ST_MASTER_PLATE");
+
+        SemanticAnnotationFetchOptions fo = new SemanticAnnotationFetchOptions();
+        fo.withEntityType();
+        fo.withPropertyType();
+
+        v3api.searchSemanticAnnotations(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-semantic-annotations  SEARCH_CRITERIA:\n'SEMANTIC_ANNOTATION\n    with attribute 'perm id' equal to 'ST_MASTER_PLATE'\n'\nFETCH_OPTIONS:\n'SemanticAnnotation\n    with EntityType\n    with PropertyType\n'");
+    }
+
     private void testSearch(String user, SemanticAnnotationSearchCriteria criteria, String... expectedPermIds)
     {
         String sessionToken = v3api.login(user, PASSWORD);

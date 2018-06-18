@@ -121,7 +121,7 @@ public class SearchExperimentTypeTest extends AbstractTest
         assertOrder(propertyAssignments, "ORGANISM", "DESCRIPTION", "BACTERIUM");
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testSearchWithValidationPlugin()
     {
@@ -135,17 +135,34 @@ public class SearchExperimentTypeTest extends AbstractTest
         searchCriteria.withId().thatEquals(typePermId);
         ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
         fetchOptions.withValidationPlugin().withScript();
-        
+
         // When
         ExperimentType type = v3api.searchExperimentTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
-        
+
         // Then
         assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
         assertEquals(type.getValidationPlugin().getFetchOptions().hasScript(), true);
         assertEquals(type.getValidationPlugin().getName(), "testEXPERIMENT");
         assertEquals(type.getValidationPlugin().getScript(), "import time;\ndef validate(entity, isNew):\n  pass\n ");
-        
+
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentTypeSearchCriteria c = new ExperimentTypeSearchCriteria();
+        c.withCode().thatEquals("SIRNA_HCS");
+
+        ExperimentTypeFetchOptions fo = new ExperimentTypeFetchOptions();
+        fo.withPropertyAssignments();
+
+        v3api.searchExperimentTypes(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-experiment-types  SEARCH_CRITERIA:\n'EXPERIMENT_TYPE\n    with attribute 'code' equal to 'SIRNA_HCS'\n'\nFETCH_OPTIONS:\n'ExperimentType\n    with PropertyAssignments\n'");
     }
 
 }

@@ -39,7 +39,7 @@ public class DataStoreServerApiLogger extends AbstractServerLogger implements
     @Override
     public SearchResult<DataSetFile> searchFiles(String sessionToken, DataSetFileSearchCriteria searchCriteria, DataSetFileFetchOptions fetchOptions)
     {
-        logAccess(sessionToken, "search-files", "SEARCH_CRITERION:\n%s\n", searchCriteria);
+        logAccess(sessionToken, "search-files", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
 
@@ -47,21 +47,21 @@ public class DataStoreServerApiLogger extends AbstractServerLogger implements
     public InputStream downloadFiles(String sessionToken, List<? extends IDataSetFileId> fileIds,
             DataSetFileDownloadOptions downloadOptions)
     {
-        logAccess(sessionToken, "download-files", "FILE_IDS:\n%s\n%s", fileIds, downloadOptions);
+        logAccess(sessionToken, "download-files", "FILE_IDS(%s) DOWNLOAD_OPTIONS(%s)", fileIds, downloadOptions);
         return null;
     }
 
     @Override
     public DataSetPermId createUploadedDataSet(String sessionToken, UploadedDataSetCreation newDataSet)
     {
-        logAccess(sessionToken, "create-uploaded-data-sets", "DATA_SETS:\n%s", newDataSet);
+        logAccess(sessionToken, "create-uploaded-data-sets", "DATA_SETS(%s)", newDataSet);
         return null;
     }
 
     @Override
     public List<DataSetPermId> createDataSets(String sessionToken, List<FullDataSetCreation> newDataSets)
     {
-        logAccess(sessionToken, "create-data-sets", "DATA_SETS:\n%s", newDataSets);
+        logAccess(sessionToken, "create-data-sets", "DATA_SETS(%s)", newDataSets);
         return null;
     }
 }

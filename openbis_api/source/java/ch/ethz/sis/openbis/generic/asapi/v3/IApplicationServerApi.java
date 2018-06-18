@@ -238,8 +238,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTerm
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
 import ch.systemsx.cisd.common.api.IRpcService;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 /**
+ * V3 application server API. Detailed documentation on how to use the API together code examples in both Java and Javascript can be found at "openBIS
+ * V3 API" openBIS WIKI page.
+ * 
  * @author pkupczyk
  */
 public interface IApplicationServerApi extends IRpcService
@@ -256,331 +260,1819 @@ public interface IApplicationServerApi extends IRpcService
 
     public static final String JSON_SERVICE_URL = SERVICE_URL + ".json";
 
+    /**
+     * Authenticates a user basing on the provided user id and password. If the authentication is successful, then returns a session token. Otherwise
+     * returns null.
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public String login(String userId, String password);
 
+    /**
+     * Authenticates a user basing on the provided user id and password and makes the session look like as if it was a different user. If the
+     * authentication is successful, then returns a session token. Otherwise returns null. The provided user id and password must represent an
+     * {@code INSTANCE_ADMIN} account.
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public String loginAs(String userId, String password, String asUserId);
 
+    /**
+     * Authenticates as an anonymous user who does not require a password.
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public String loginAsAnonymousUser();
 
+    /**
+     * Terminates a user's session.
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void logout(String sessionToken);
 
+    /**
+     * Returns detailed information about a user's session.
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SessionInformation getSessionInformation(String sessionToken);
 
+    /**
+     * Returns true if a user's session is active. Otherwise returns false.
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public boolean isSessionActive(String sessionToken);
 
+    /**
+     * Creates spaces basing on the provided {@code SpaceCreation} objects. Returns ids of the newly created spaces where nth id corresponds to nth
+     * creation object.
+     * <p>
+     * Required access rights: {@code SPACE_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code SpaceCreation} objects, insufficient access rights etc.
+     */
     public List<SpacePermId> createSpaces(String sessionToken, List<SpaceCreation> newSpaces);
 
+    /**
+     * Creates projects basing on the provided {@code ProjectCreation} objects. Returns ids of the newly created projects where nth id corresponds to
+     * nth creation object.
+     * <p>
+     * Required access rights: {@code SPACE_POWER_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ProjectCreation} objects, insufficient access rights etc.
+     */
     public List<ProjectPermId> createProjects(String sessionToken, List<ProjectCreation> newProjects);
 
+    /**
+     * Creates experiments basing on the provided {@code ExperimentCreation} objects. Returns ids of the newly created experiments where nth id
+     * corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ExperimentCreation} objects, insufficient access rights etc.
+     */
     public List<ExperimentPermId> createExperiments(String sessionToken, List<ExperimentCreation> newExperiments);
 
+    /**
+     * Creates experiment types basing on the provided {@code ExperimentTypeCreation} objects. Returns ids of the newly created experiment types where
+     * nth id corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ExperimentTypeCreation} objects, insufficient access rights etc.
+     */
     public List<EntityTypePermId> createExperimentTypes(String sessionToken, List<ExperimentTypeCreation> newExperimentTypes);
 
+    /**
+     * Creates samples basing on the provided {@code SampleCreation} objects. Returns ids of the newly created samples where nth id corresponds to nth
+     * creation object.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code SampleCreation} objects, insufficient access rights etc.
+     */
     public List<SamplePermId> createSamples(String sessionToken, List<SampleCreation> newSamples);
 
+    /**
+     * Creates sample types basing on the provided {@code SampleTypeCreation} objects. Returns ids of the newly created sample types where nth id
+     * corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code SampleTypeCreation} objects, insufficient access rights etc.
+     */
     public List<EntityTypePermId> createSampleTypes(String sessionToken, List<SampleTypeCreation> newSampleTypes);
 
+    /**
+     * Creates data sets basing on the provided {@code DataSetCreation} objects. Returns ids of the newly created data sets where nth id corresponds
+     * to nth creation object.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code DataSetCreation} objects, insufficient access rights etc.
+     */
     public List<DataSetPermId> createDataSets(String sessionToken, List<DataSetCreation> newDataSets);
 
+    /**
+     * Creates data set types basing on the provided {@code DataSetTypeCreation} objects. Returns ids of the newly created data set types where nth id
+     * corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code DataSetTypeCreation} objects, insufficient access rights etc.
+     */
     public List<EntityTypePermId> createDataSetTypes(String sessionToken, List<DataSetTypeCreation> newDataSetTypes);
 
+    /**
+     * Creates materials basing on the provided {@code MaterialCreation} objects. Returns ids of the newly created materials where nth id corresponds
+     * to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code MaterialCreation} objects, insufficient access rights etc.
+     */
     public List<MaterialPermId> createMaterials(String sessionToken, List<MaterialCreation> newMaterials);
 
+    /**
+     * Creates material types basing on the provided {@code MaterialTypeCreation} objects. Returns ids of the newly created material types where nth
+     * id corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code MaterialTypeCreation} objects, insufficient access rights etc.
+     */
     public List<EntityTypePermId> createMaterialTypes(String sessionToken, List<MaterialTypeCreation> newMaterialTypes);
 
+    /**
+     * Creates property types basing on the provided {@code PropertyTypeCreation} objects. Returns ids of the newly created property types where nth
+     * id corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code PropertyTypeCreation} objects, insufficient access rights etc.
+     */
     public List<PropertyTypePermId> createPropertyTypes(String sessionToken, List<PropertyTypeCreation> newPropertyTypes);
 
+    /**
+     * Creates plugins (i.e. dynamic property evaluators, managed property handlers, entity validators) basing on the provided {@code PluginCreation}
+     * objects. Returns ids of the newly created plugins where nth id corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code PluginCreation} objects, insufficient access rights etc.
+     */
     public List<PluginPermId> createPlugins(String sessionToken, List<PluginCreation> newPlugins);
 
+    /**
+     * Creates vocabularies and vocabulary terms (optionally) basing on the provided {@code VocabularyCreation} objects. Returns ids of the newly
+     * created vocabularies where nth id corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code VocabularyCreation} objects, insufficient access rights etc.
+     */
     public List<VocabularyPermId> createVocabularies(String sessionToken, List<VocabularyCreation> newVocabularies);
 
+    /**
+     * Creates vocabulary terms basing on the provided {@code VocabularyTermCreation} objects. Returns ids of the newly created vocabulary terms where
+     * nth id corresponds to nth creation object.
+     * <ul>
+     * Required access rights:
+     * <li>unofficial terms - {@code PROJECT_USER} or stronger</li>
+     * <li>official terms - {@code PROJECT_POWER_USER} or stronger</li>
+     * <li>internally managed - {@code INSTANCE_ADMIN}</li>
+     * </ul>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code VocabularyTermCreation} objects, insufficient access rights etc.
+     */
     public List<VocabularyTermPermId> createVocabularyTerms(String sessionToken, List<VocabularyTermCreation> newVocabularyTerms);
 
+    /**
+     * Creates tags basing on the provided {@code TagCreation} objects. Returns ids of the newly created tags where nth id corresponds to nth creation
+     * object. Tags are only visible to a user who created them.
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code TagCreation} objects, insufficient access rights etc.
+     */
     public List<TagPermId> createTags(String sessionToken, List<TagCreation> newTags);
 
+    /**
+     * Creates authorization groups basing on the provided {@code AuthorizationGroupCreation} objects. Returns ids of the newly created authorization
+     * groups where nth id corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code AuthorizationGroupCreation} objects, insufficient access rights
+     *             etc.
+     */
     public List<AuthorizationGroupPermId> createAuthorizationGroups(String sessionToken, List<AuthorizationGroupCreation> newAuthorizationGroups);
 
+    /**
+     * Creates role assignments basing on the provided {@code RoleAssignmentCreation} objects. Returns ids of the newly created role assignments where
+     * nth id corresponds to nth creation object.
+     * <ul>
+     * Required access rights:
+     * <li>instance roles - {@code INSTANCE_ADMIN}</li>
+     * <li>space roles - {@code SPACE_ADMIN} or stronger</li>
+     * <li>project roles - {@code PROJECT_ADMIN} or stronger</li>
+     * </ul>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code RoleAssignmentCreation} objects, insufficient access rights etc.
+     */
     public List<RoleAssignmentTechId> createRoleAssignments(String sessionToken, List<RoleAssignmentCreation> newRoleAssignments);
 
+    /**
+     * Creates persons basing on the provided {@code PersonCreation} objects. Returns ids of the newly created persons where nth id corresponds to nth
+     * creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code PersonCreation} objects, insufficient access rights etc.
+     */
     public List<PersonPermId> createPersons(String sessionToken, List<PersonCreation> newPersons);
 
+    /**
+     * Creates external data management systems basing on the provided {@code ExternalDmsCreation} objects. Returns ids of the newly created external
+     * data management systems where nth id corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ExternalDmsCreation} objects, insufficient access rights etc.
+     */
     public List<ExternalDmsPermId> createExternalDataManagementSystems(String sessionToken,
             List<ExternalDmsCreation> newExternalDataManagementSystems);
 
+    /**
+     * Creates queries basing on the provided {@code QueryCreation} objects. Returns ids of the newly created queries where nth id corresponds to nth
+     * creation object.
+     * <p>
+     * Required access rights: depends on a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ExternalDmsCreation} objects, insufficient access rights etc.
+     */
     public List<QueryTechId> createQueries(String sessionToken, List<QueryCreation> newQueries);
 
+    /**
+     * Creates semantic annotations basing on the provided {@code SemanticAnnotationCreation} objects. Returns ids of the newly created semantic
+     * annotations where nth id corresponds to nth creation object.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code SemanticAnnotationCreation} objects, insufficient access rights
+     *             etc.
+     */
     public List<SemanticAnnotationPermId> createSemanticAnnotations(String sessionToken, List<SemanticAnnotationCreation> newAnnotations);
 
+    /**
+     * Updates spaces basing on the provided {@code SpaceUpdate} objects.
+     * <p>
+     * Required access rights: {@code SPACE_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code SpaceUpdate} objects, insufficient access rights etc.
+     */
     public void updateSpaces(String sessionToken, List<SpaceUpdate> spaceUpdates);
 
+    /**
+     * Updates projects basing on the provided {@code ProjectUpdate} objects.
+     * <p>
+     * Required access rights: {@code SPACE_POWER_USER} / {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ProjectUpdate} objects, insufficient access rights etc.
+     */
     public void updateProjects(String sessionToken, List<ProjectUpdate> projectUpdates);
 
+    /**
+     * Updates experiments basing on the provided {@code ExperimentUpdate} objects.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ExperimentUpdate} objects, insufficient access rights etc.
+     */
     public void updateExperiments(String sessionToken, List<ExperimentUpdate> experimentUpdates);
 
+    /**
+     * Updates experiment types basing on the provided {@code ExperimentTypeUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ExperimentTypeUpdate} objects, insufficient access rights etc.
+     */
     public void updateExperimentTypes(String sessionToken, List<ExperimentTypeUpdate> experimentTypeUpdates);
 
+    /**
+     * Updates samples basing on the provided {@code SampleUpdate} objects.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code SampleUpdate} objects, insufficient access rights etc.
+     */
     public void updateSamples(String sessionToken, List<SampleUpdate> sampleUpdates);
 
+    /**
+     * Updates sample types basing on the provided {@code SampleTypeUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code SampleTypeUpdate} objects, insufficient access rights etc.
+     */
     public void updateSampleTypes(String sessionToken, List<SampleTypeUpdate> sampleTypeUpdates);
 
+    /**
+     * Updates data sets basing on the provided {@code DataSetUpdate} objects.
+     * <p>
+     * Required access rights: {@code PROJECT_POWER_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code DataSetUpdate} objects, insufficient access rights etc.
+     */
     public void updateDataSets(String sessionToken, List<DataSetUpdate> dataSetUpdates);
 
+    /**
+     * Updates data set types basing on the provided {@code DataSetTypeUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code DataSetTypeUpdate} objects, insufficient access rights etc.
+     */
     public void updateDataSetTypes(String sessionToken, List<DataSetTypeUpdate> dataSetTypeUpdates);
 
+    /**
+     * Updates materials basing on the provided {@code MaterialUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code MaterialUpdate} objects, insufficient access rights etc.
+     */
     public void updateMaterials(String sessionToken, List<MaterialUpdate> materialUpdates);
 
+    /**
+     * Updates material types basing on the provided {@code MaterialTypeUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code MaterialTypeUpdate} objects, insufficient access rights etc.
+     */
     public void updateMaterialTypes(String sessionToken, List<MaterialTypeUpdate> materialTypeUpdates);
 
+    /**
+     * Updates external data management systems basing on the provided {@code ExternalDmsUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code ExternalDmsUpdate} objects, insufficient access rights etc.
+     */
     public void updateExternalDataManagementSystems(String sessionToken, List<ExternalDmsUpdate> externalDmsUpdates);
 
+    /**
+     * Updates property types basing on the provided {@code PropertyTypeUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code PropertyTypeUpdate} objects, insufficient access rights etc.
+     */
     public void updatePropertyTypes(String sessionToken, List<PropertyTypeUpdate> propertyTypeUpdates);
 
+    /**
+     * Updates plugins (i.e. dynamic property evaluators, managed property handlers, entity validators) basing on the provided {@code PluginUpdate}
+     * objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code PluginUpdate} objects, insufficient access rights etc.
+     */
     public void updatePlugins(String sessionToken, List<PluginUpdate> pluginUpdates);
 
+    /**
+     * Updates vocabularies basing on the provided {@code VocabularyUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code VocabularyUpdate} objects, insufficient access rights etc.
+     */
     public void updateVocabularies(String sessionToken, List<VocabularyUpdate> vocabularyUpdates);
 
+    /**
+     * Updates vocabulary terms basing on the provided {@code VocabularyTermUpdate} objects.
+     * <ul>
+     * Required access rights:
+     * <li>unofficial terms - {@code PROJECT_USER} or stronger</li>
+     * <li>official terms - {@code PROJECT_POWER_USER} or stronger</li>
+     * <li>internally managed - {@code INSTANCE_ADMIN}</li>
+     * </ul>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code VocabularyTermUpdate} objects, insufficient access rights etc.
+     */
     public void updateVocabularyTerms(String sessionToken, List<VocabularyTermUpdate> vocabularyTermUpdates);
 
+    /**
+     * Updates tags basing on the provided {@code TagUpdate} objects. A user can only update own tags (i.e. tags a user has created).
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code TagUpdate} objects, insufficient access rights etc.
+     */
     public void updateTags(String sessionToken, List<TagUpdate> tagUpdates);
 
+    /**
+     * Updates authorization groups basing on the provided {@code AuthorizationGroupUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code AuthorizationGroupUpdate} objects, insufficient access rights etc.
+     */
     public void updateAuthorizationGroups(String sessionToken, List<AuthorizationGroupUpdate> authorizationGroupUpdates);
 
+    /**
+     * Updates persons basing on the provided {@code PersonUpdate} objects.
+     * <ul>
+     * Required access rights:
+     * <li>activate/deactivate - {@code INSTANCE_ADMIN}</li>
+     * <li>home space - user himself/herself / {@code SPACE_ADMIN} or stronger</li>
+     * <li>webapp settings - user himself/herself / {@code INSTANCE_ADMIN}</li>
+     * </ul>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code PersonUpdate} objects, insufficient access rights etc.
+     */
     public void updatePersons(String sessionToken, List<PersonUpdate> personUpdates);
 
+    /**
+     * Updates operation executions basing on the provided {@code OperationExecutionUpdate} objects.
+     * <p>
+     * Required access rights: user who created the operation execution / {@code INSTANCE_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code OperationExecutionUpdate} objects, insufficient access rights etc.
+     */
     public void updateOperationExecutions(String sessionToken, List<OperationExecutionUpdate> executionUpdates);
 
+    /**
+     * Updates semantic annotations basing on the provided {@code SemanticAnnotationUpdate} objects.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code SemanticAnnotationUpdate} objects, insufficient access rights etc.
+     */
     public void updateSemanticAnnotations(String sessionToken, List<SemanticAnnotationUpdate> annotationUpdates);
 
+    /**
+     * Updates queries basing on the provided {@code QueryUpdate} objects.
+     * <p>
+     * Required access rights: depends on a query and a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems, e.g. incorrect {@code QueryUpdate} objects, insufficient access rights etc.
+     */
     public void updateQueries(String sessionToken, List<QueryUpdate> queryUpdates);
 
+    /**
+     * Gets spaces for the provided {@code ISpaceId} ids. A result map contains an entry for a given id only if a space for that id has been found and
+     * that space can be accessed by the user.
+     * <p>
+     * By default the returned spaces contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code SpaceFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger (a project user can see a space if it has access to any of the projects in that
+     * space)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<ISpaceId, Space> getSpaces(String sessionToken, List<? extends ISpaceId> spaceIds,
             SpaceFetchOptions fetchOptions);
 
+    /**
+     * Gets projects for the provided {@code IProjectId} ids. A result map contains an entry for a given id only if a project for that id has been
+     * found and that project can be accessed by the user.
+     * <p>
+     * By default the returned projects contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code ProjectFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IProjectId, Project> getProjects(String sessionToken, List<? extends IProjectId> projectIds,
             ProjectFetchOptions fetchOptions);
 
+    /**
+     * Gets experiments for the provided {@code IExperimentId} ids. A result map contains an entry for a given id only if an experiment for that id
+     * has been found and that experiment can be accessed by the user.
+     * <p>
+     * By default the returned experiments contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code ExperimentFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IExperimentId, Experiment> getExperiments(String sessionToken, List<? extends IExperimentId> experimentIds,
             ExperimentFetchOptions fetchOptions);
 
+    /**
+     * Gets experiment types for the provided {@code IEntityTypeId} ids. A result map contains an entry for a given id only if an experiment type for
+     * that id has been found and that experiment type can be accessed by the user.
+     * <p>
+     * By default the returned experiment types contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code ExperimentTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IEntityTypeId, ExperimentType> getExperimentTypes(String sessionToken, List<? extends IEntityTypeId> experimentTypeIds,
             ExperimentTypeFetchOptions fetchOptions);
 
+    /**
+     * Gets samples for the provided {@code ISampleId} ids. A result map contains an entry for a given id only if a sample for that id has been found
+     * and that sample can be accessed by the user.
+     * <p>
+     * By default the returned samples contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code SampleFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<ISampleId, Sample> getSamples(String sessionToken, List<? extends ISampleId> sampleIds, SampleFetchOptions fetchOptions);
 
+    /**
+     * Gets sample types for the provided {@code IEntityTypeId} ids. A result map contains an entry for a given id only if an sample type for that id
+     * has been found and that sample type can be accessed by the user.
+     * <p>
+     * By default the returned sample types contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code SampleTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IEntityTypeId, SampleType> getSampleTypes(String sessionToken, List<? extends IEntityTypeId> sampleTypeIds,
             SampleTypeFetchOptions fetchOptions);
 
+    /**
+     * Gets data sets for the provided {@code IDataSetId} ids. A result map contains an entry for a given id only if a data set for that id has been
+     * found and that data set can be accessed by the user.
+     * <p>
+     * By default the returned data sets contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code DataSetFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IDataSetId, DataSet> getDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetFetchOptions fetchOptions);
 
+    /**
+     * Gets data set types for the provided {@code IEntityTypeId} ids. A result map contains an entry for a given id only if a data set type for that
+     * id has been found and that data set type can be accessed by the user.
+     * <p>
+     * By default the returned data set types contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code DataSetTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IEntityTypeId, DataSetType> getDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds,
             DataSetTypeFetchOptions fetchOptions);
 
+    /**
+     * Gets materials for the provided {@code IMaterialId} ids. A result map contains an entry for a given id only if a material for that id has been
+     * found and that material can be accessed by the user.
+     * <p>
+     * By default the returned materials contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code MaterialFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IMaterialId, Material> getMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialFetchOptions fetchOptions);
 
+    /**
+     * Gets material types for the provided {@code IEntityTypeId} ids. A result map contains an entry for a given id only if a material type for that
+     * id has been found and that material type can be accessed by the user.
+     * <p>
+     * By default the returned material types contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code MaterialTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IEntityTypeId, MaterialType> getMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds,
             MaterialTypeFetchOptions fetchOptions);
 
+    /**
+     * Gets property types for the provided {@code IPropertyTypeId} ids. A result map contains an entry for a given id only if a property type for
+     * that id has been found and that property type can be accessed by the user.
+     * <p>
+     * By default the returned property types contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code PropertyTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IPropertyTypeId, PropertyType> getPropertyTypes(String sessionToken, List<? extends IPropertyTypeId> typeIds,
             PropertyTypeFetchOptions fetchOptions);
 
+    /**
+     * Gets plugins (i.e. dynamic property evaluators, managed property handlers, entity validators) for the provided {@code IPluginId} ids. A result
+     * map contains an entry for a given id only if a plugin for that id has been found and that plugin can be accessed by the user.
+     * <p>
+     * By default the returned plugins contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code PluginFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IPluginId, Plugin> getPlugins(String sessionToken, List<? extends IPluginId> pluginIds, PluginFetchOptions fetchOptions);
 
+    /**
+     * Gets vocabularies for the provided {@code IVocabularyId} ids. A result map contains an entry for a given id only if a vocabulary for that id
+     * has been found and that vocabulary can be accessed by the user.
+     * <p>
+     * By default the returned vocabularies contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code VocabularyFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IVocabularyId, Vocabulary> getVocabularies(String sessionToken, List<? extends IVocabularyId> vocabularyIds,
             VocabularyFetchOptions fetchOptions);
 
+    /**
+     * Gets vocabulary terms for the provided {@code IVocabularyTermId} ids. A result map contains an entry for a given id only if a vocabulary term
+     * for that id has been found and that vocabulary term can be accessed by the user.
+     * <p>
+     * By default the returned vocabulary terms contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code VocabularyTermFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IVocabularyTermId, VocabularyTerm> getVocabularyTerms(String sessionToken, List<? extends IVocabularyTermId> vocabularyTermIds,
             VocabularyTermFetchOptions fetchOptions);
 
+    /**
+     * Gets tags for the provided {@code ITagId} ids. A result map contains an entry for a given id only if a tag for that id has been found and that
+     * tag can be accessed by the user. A user can get own tags only (i.e. tags a user has created).
+     * <p>
+     * By default the returned tags contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code TagFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<ITagId, Tag> getTags(String sessionToken, List<? extends ITagId> tagIds, TagFetchOptions fetchOptions);
 
+    /**
+     * Gets authorization groups for the provided {@code IAuthorizationGroupId} ids. A result map contains an entry for a given id only if an
+     * authorization group for that id has been found and that authorization group can be accessed by the user.
+     * <p>
+     * By default the returned authorization groups contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code AuthorizationGroupFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IAuthorizationGroupId, AuthorizationGroup> getAuthorizationGroups(String sessionToken, List<? extends IAuthorizationGroupId> groupIds,
             AuthorizationGroupFetchOptions fetchOptions);
 
+    /**
+     * Gets role assignments for the provided {@code IRoleAssignmentId} ids. A result map contains an entry for a given id only if a role assignment
+     * for that id has been found and that role assignment can be accessed by the user.
+     * <p>
+     * By default the returned role assignments contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code RoleAssignmentFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IRoleAssignmentId, RoleAssignment> getRoleAssignments(String sessionToken, List<? extends IRoleAssignmentId> ids,
             RoleAssignmentFetchOptions fetchOptions);
 
+    /**
+     * Gets persons for the provided {@code IPersonId} ids. A result map contains an entry for a given id only if a person for that id has been found
+     * and that person can be accessed by the user.
+     * <p>
+     * By default the returned persons contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code PersonFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IPersonId, Person> getPersons(String sessionToken, List<? extends IPersonId> ids, PersonFetchOptions fetchOptions);
 
+    /**
+     * Gets external data management systems for the provided {@code IExternalDmsId} ids. A result map contains an entry for a given id only if an
+     * external data management system for that id has been found and that external data management system can be accessed by the user.
+     * <p>
+     * By default the returned external data management systems contain only basic information. Any additional information to be fetched has to be
+     * explicitly requested via {@code ExternalDmsFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IExternalDmsId, ExternalDms> getExternalDataManagementSystems(String sessionToken, List<? extends IExternalDmsId> externalDmsIds,
             ExternalDmsFetchOptions fetchOptions);
 
+    /**
+     * Gets semantic annotations for the provided {@code ISemanticAnnotationId} ids. A result map contains an entry for a given id only if a semantic
+     * annotation for that id has been found and that semantic annotation can be accessed by the user.
+     * <p>
+     * By default the returned semantic annotations contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code SemanticAnnotationFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<ISemanticAnnotationId, SemanticAnnotation> getSemanticAnnotations(String sessionToken,
             List<? extends ISemanticAnnotationId> annotationIds, SemanticAnnotationFetchOptions fetchOptions);
 
+    /**
+     * Gets operation executions for the provided {@code IOperationExecutionId} ids. A result map contains an entry for a given id only if an
+     * operation execution for that id has been found and that operation execution can be accessed by the user.
+     * <p>
+     * By default the returned operation executions contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code OperationExecutionFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: user who created the operation execution / {@code INSTANCE_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IOperationExecutionId, OperationExecution> getOperationExecutions(String sessionToken,
             List<? extends IOperationExecutionId> executionIds, OperationExecutionFetchOptions fetchOptions);
 
+    /**
+     * Gets queries for the provided {@code IQueryId} ids. A result map contains an entry for a given id only if a query for that id has been found
+     * and that query can be accessed by the user.
+     * <p>
+     * By default the returned queries contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code QueryFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: depends on a query and a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<IQueryId, Query> getQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryFetchOptions fetchOptions);
 
+    /**
+     * Searches for spaces basing on the provided {@code SpaceSearchCriteria}.
+     * <p>
+     * By default the returned spaces contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code SpaceFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger (a project user can see a space if it has access to any of the projects in that
+     * space)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Space> searchSpaces(String sessionToken, SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions);
 
+    /**
+     * Searches for projects basing on the provided {@code ProjectSearchCriteria}.
+     * <p>
+     * By default the returned projects contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code ProjectFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Project> searchProjects(String sessionToken, ProjectSearchCriteria searchCriteria, ProjectFetchOptions fetchOptions);
 
+    /**
+     * Searches for experiments basing on the provided {@code ExperimentSearchCriteria}.
+     * <p>
+     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
+     * to the search after some delay. In case such a delay is unacceptable {@code getExperiments} method should be used instead (it does not use the
+     * Lucene index and is guaranteed to see the latest data).
+     * </p>
+     * <p>
+     * By default the returned experiments contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code ExperimentFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Experiment> searchExperiments(String sessionToken, ExperimentSearchCriteria searchCriteria,
             ExperimentFetchOptions fetchOptions);
 
+    /**
+     * Searches for experiment types basing on the provided {@code ExperimentTypeSearchCriteria}.
+     * <p>
+     * By default the returned experiment types contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code ExperimentTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<ExperimentType> searchExperimentTypes(String sessionToken, ExperimentTypeSearchCriteria searchCriteria,
             ExperimentTypeFetchOptions fetchOptions);
 
+    /**
+     * Searches for samples basing on the provided {@code SampleSearchCriteria}.
+     * <p>
+     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
+     * to the search after some delay. In case such a delay is unacceptable {@code getSamples} method should be used instead (it does not use the
+     * Lucene index and is guaranteed to see the latest data).
+     * </p>
+     * <p>
+     * By default the returned samples contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code SampleFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Sample> searchSamples(String sessionToken, SampleSearchCriteria searchCriteria, SampleFetchOptions fetchOptions);
 
+    /**
+     * Searches for sample types basing on the provided {@code SampleTypeSearchCriteria}.
+     * <p>
+     * By default the returned sample types contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code SampleTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<SampleType> searchSampleTypes(String sessionToken, SampleTypeSearchCriteria searchCriteria,
             SampleTypeFetchOptions fetchOptions);
 
+    /**
+     * Searches for data sets basing on the provided {@code DataSetSearchCriteria}.
+     * <p>
+     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
+     * to the search after some delay. In case such a delay is unacceptable {@code getDataSets} method should be used instead (it does not use the
+     * Lucene index and is guaranteed to see the latest data).
+     * </p>
+     * <p>
+     * By default the returned data sets contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code DataSetFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<DataSet> searchDataSets(String sessionToken, DataSetSearchCriteria searchCriteria, DataSetFetchOptions fetchOptions);
 
+    /**
+     * Searches for data set types basing on the provided {@code DataSetTypeSearchCriteria}.
+     * <p>
+     * By default the returned data set types contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code DataSetTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<DataSetType> searchDataSetTypes(String sessionToken, DataSetTypeSearchCriteria searchCriteria,
             DataSetTypeFetchOptions fetchOptions);
 
+    /**
+     * Searches for materials basing on the provided {@code MaterialSearchCriteria}.
+     * <p>
+     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
+     * to the search after some delay. In case such a delay is unacceptable {@code getMaterials} method should be used instead (it does not use the
+     * Lucene index and is guaranteed to see the latest data).
+     * </p>
+     * <p>
+     * By default the returned materials contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code MaterialFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Material> searchMaterials(String sessionToken, MaterialSearchCriteria searchCriteria, MaterialFetchOptions fetchOptions);
 
+    /**
+     * Searches for external data management systems basing on the provided {@code ExternalDmsSearchCriteria}.
+     * <p>
+     * By default the returned external data management systems contain only basic information. Any additional information to be fetched has to be
+     * explicitly requested via {@code ExternalDmsFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<ExternalDms> searchExternalDataManagementSystems(String sessionToken, ExternalDmsSearchCriteria searchCriteria,
             ExternalDmsFetchOptions fetchOptions);
 
+    /**
+     * Searches for material types basing on the provided {@code MaterialTypeSearchCriteria}.
+     * <p>
+     * By default the returned material types contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code MaterialTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<MaterialType> searchMaterialTypes(String sessionToken, MaterialTypeSearchCriteria searchCriteria,
             MaterialTypeFetchOptions fetchOptions);
 
+    /**
+     * Searches for plugins (i.e. dynamic property evaluators, managed property handlers, entity validators) basing on the provided
+     * {@code PluginSearchCriteria}.
+     * <p>
+     * By default the returned plugins contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code PluginFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Plugin> searchPlugins(String sessionToken, PluginSearchCriteria searchCriteria,
             PluginFetchOptions fetchOptions);
 
+    /**
+     * Searches for vocabularies basing on the provided {@code VocabularySearchCriteria}.
+     * <p>
+     * By default the returned vocabularies contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code VocabularyFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Vocabulary> searchVocabularies(String sessionToken, VocabularySearchCriteria searchCriteria,
             VocabularyFetchOptions fetchOptions);
 
+    /**
+     * Searches for vocabulary terms basing on the provided {@code VocabularyTermSearchCriteria}.
+     * <p>
+     * By default the returned vocabulary terms contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code VocabularyTermFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<VocabularyTerm> searchVocabularyTerms(String sessionToken, VocabularyTermSearchCriteria searchCriteria,
             VocabularyTermFetchOptions fetchOptions);
 
+    /**
+     * Searches for tags basing on the provided {@code TagSearchCriteria}. A user can find own tags only (i.e. tags a user has created).
+     * <p>
+     * By default the returned tags contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code TagFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Tag> searchTags(String sessionToken, TagSearchCriteria searchCriteria, TagFetchOptions fetchOptions);
 
+    /**
+     * Searches for authorization groups basing on the provided {@code AuthorizationGroupSearchCriteria}.
+     * <p>
+     * By default the returned authorization groups contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code AuthorizationGroupFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<AuthorizationGroup> searchAuthorizationGroups(String sessionToken, AuthorizationGroupSearchCriteria searchCriteria,
             AuthorizationGroupFetchOptions fetchOptions);
 
+    /**
+     * Searches for role assignments basing on the provided {@code RoleAssignmentSearchCriteria}.
+     * <p>
+     * By default the returned role assignments contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code RoleAssignmentFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<RoleAssignment> searchRoleAssignments(String sessionToken, RoleAssignmentSearchCriteria searchCriteria,
             RoleAssignmentFetchOptions fetchOptions);
 
+    /**
+     * Searches for persons basing on the provided {@code PersonSearchCriteria}.
+     * <p>
+     * By default the returned persons contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code PersonFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Person> searchPersons(String sessionToken, PersonSearchCriteria searchCriteria, PersonFetchOptions fetchOptions);
 
+    /**
+     * Searches for custom application server services basing on the provided {@code CustomASServiceSearchCriteria}. More details on the custom
+     * application server services can be found at "Custom Application Server Services" openBIS WIKI page.
+     * <p>
+     * By default the returned custom application server services contain only basic information. Any additional information to be fetched has to be
+     * explicitly requested via {@code CustomASServiceFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<CustomASService> searchCustomASServices(String sessionToken, CustomASServiceSearchCriteria searchCriteria,
             CustomASServiceFetchOptions fetchOptions);
 
+    /**
+     * Searches for search domain services basing on the provided {@code SearchDomainServiceSearchCriteria}. More details on the search domain
+     * services can be found at "Search Domain Services" openBIS WIKI page.
+     * <p>
+     * By default the returned search domain services contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code SearchDomainServiceFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<SearchDomainService> searchSearchDomainServices(String sessionToken, SearchDomainServiceSearchCriteria searchCriteria,
             SearchDomainServiceFetchOptions fetchOptions);
 
+    /**
+     * Searches for aggregation services basing on the provided {@code AggregationServiceSearchCriteria}. More details on the aggregation services can
+     * be found at "Reporting Plugins" openBIS WIKI page (type: AGGREGATION_TABLE_MODEL).
+     * <p>
+     * By default the returned aggregation services contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code AggregationServiceFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<AggregationService> searchAggregationServices(String sessionToken, AggregationServiceSearchCriteria searchCriteria,
             AggregationServiceFetchOptions fetchOptions);
 
+    /**
+     * Searches for reporting services basing on the provided {@code ReportingServiceSearchCriteria}. More details on the reporting services can be
+     * found at "Reporting Plugins" openBIS WIKI page (type: TABLE_MODEL).
+     * <p>
+     * By default the returned reporting services contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code ReportingServiceFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<ReportingService> searchReportingServices(String sessionToken, ReportingServiceSearchCriteria searchCriteria,
             ReportingServiceFetchOptions fetchOptions);
 
+    /**
+     * Searches for processing services basing on the provided {@code ProcessingServiceSearchCriteria}. More details on the processing services can be
+     * found at "Processing Plugins" openBIS WIKI page.
+     * <p>
+     * By default the returned processing services contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code ProcessingServiceFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<ProcessingService> searchProcessingServices(String sessionToken, ProcessingServiceSearchCriteria searchCriteria,
             ProcessingServiceFetchOptions fetchOptions);
 
+    /**
+     * Searches for object kind modifications basing on the provided {@code ObjectKindModificationSearchCriteria}. An object kind modification
+     * contains information on when a given kind of operation was last performed for a given kind of object, e.g. when was the last sample update or
+     * when was the last property type creation etc.
+     * <p>
+     * By default the returned object kind modifications contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code ObjectKindModificationFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<ObjectKindModification> searchObjectKindModifications(String sessionToken,
             ObjectKindModificationSearchCriteria searchCriteria, ObjectKindModificationFetchOptions fetchOptions);
 
+    /**
+     * Searches for experiments, samples, data sets and materials at once basing on the provided {@code GlobalSearchCriteria}.
+     * <p>
+     * WARNING: The search internally uses a Lucene index which is updated asynchronously. Recent creations/updates/deletions may be therefore visible
+     * to the search after some delay.
+     * </p>
+     * <p>
+     * By default the returned objects contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code GlobalSearchObjectFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<GlobalSearchObject> searchGlobally(String sessionToken, GlobalSearchCriteria searchCriteria,
             GlobalSearchObjectFetchOptions fetchOptions);
 
+    /**
+     * Searches for operation executions basing on the provided {@code OperationExecutionSearchCriteria}.
+     * <p>
+     * By default the returned operation executions contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code OperationExecutionFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: user who created the operation execution / {@code INSTANCE_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<OperationExecution> searchOperationExecutions(String sessionToken, OperationExecutionSearchCriteria searchCriteria,
             OperationExecutionFetchOptions fetchOptions);
 
+    /**
+     * Searches for data stores basing on the provided {@code DataStoreSearchCriteria}.
+     * <p>
+     * By default the returned data stores contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code DataStoreFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<DataStore> searchDataStores(String sessionToken, DataStoreSearchCriteria searchCriteria, DataStoreFetchOptions fetchOptions);
 
+    /**
+     * Searches for semantic annotations basing on the provided {@code SemanticAnnotationSearchCriteria}.
+     * <p>
+     * By default the returned semantic annotations contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code SemanticAnnotationFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<SemanticAnnotation> searchSemanticAnnotations(String sessionToken, SemanticAnnotationSearchCriteria searchCriteria,
             SemanticAnnotationFetchOptions fetchOptions);
 
+    /**
+     * Searches for property types basing on the provided {@code PropertyTypeSearchCriteria}.
+     * <p>
+     * By default the returned property types contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code PropertyTypeFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<PropertyType> searchPropertyTypes(String sessionToken, PropertyTypeSearchCriteria searchCriteria,
             PropertyTypeFetchOptions fetchOptions);
 
+    /**
+     * Searches for property assignments basing on the provided {@code PropertyAssignmentSearchCriteria}.
+     * <p>
+     * By default the returned property assignments contain only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code PropertyAssignmentFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<PropertyAssignment> searchPropertyAssignments(String sessionToken, PropertyAssignmentSearchCriteria searchCriteria,
             PropertyAssignmentFetchOptions fetchOptions);
 
+    /**
+     * Searches for queries basing on the provided {@code QuerySearchCriteria}.
+     * <p>
+     * By default the returned queries contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code QueryFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: depends on a query and a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Query> searchQueries(String sessionToken, QuerySearchCriteria searchCriteria, QueryFetchOptions fetchOptions);
 
+    /**
+     * Permanently deletes spaces with the provided {@code ISpaceId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code SpaceDeletionOptions}.
+     * <p>
+     * Required access rights: {@code SPACE_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteSpaces(String sessionToken, List<? extends ISpaceId> spaceIds, SpaceDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes projects with the provided {@code IProjectId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code ProjectDeletionOptions}.
+     * <p>
+     * Required access rights: {@code SPACE_POWER_USER} / {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteProjects(String sessionToken, List<? extends IProjectId> projectIds, ProjectDeletionOptions deletionOptions);
 
+    /**
+     * Moves experiments with the provided {@code IExperimentId} ids to trash. Returns {@code IDeletionId} object which can be used either in
+     * {@code confirmDeletions} call to delete the experiments permanently or in {@code revertDeletions} call to bring the trashed experiments back to
+     * life. Additional deletion options (e.g. deletion reason) can be set via {@code ExperimentDeletionOptions}.
+     * <p>
+     * Required access rights: {@code PROJECT_POWER_USER} or stronger
+     * </p>
+     * 
+     * @see #confirmDeletions(String, List)
+     * @see #revertDeletions(String, List)
+     * @throws UserFailureException in case of any problems
+     */
     public IDeletionId deleteExperiments(String sessionToken, List<? extends IExperimentId> experimentIds, ExperimentDeletionOptions deletionOptions);
 
+    /**
+     * Moves samples with the provided {@code ISampleId} ids to trash. Returns {@code IDeletionId} object which can be used either in
+     * {@code confirmDeletions} call to delete the samples permanently or in {@code revertDeletions} call to bring the trashed samples back to life.
+     * Additional deletion options (e.g. deletion reason) can be set via {@code SampleDeletionOptions}.
+     * <p>
+     * Required access rights: {@code PROJECT_POWER_USER} or stronger
+     * </p>
+     * 
+     * @see #confirmDeletions(String, List)
+     * @see #revertDeletions(String, List)
+     * @throws UserFailureException in case of any problems
+     */
     public IDeletionId deleteSamples(String sessionToken, List<? extends ISampleId> sampleIds, SampleDeletionOptions deletionOptions);
 
+    /**
+     * Moves data sets with the provided {@code IDataSetId} ids to trash. Returns {@code IDeletionId} object which can be used either in
+     * {@code confirmDeletions} call to delete the data sets permanently or in {@code revertDeletions} call to bring the trashed data sets back to
+     * life. Additional deletion options (e.g. deletion reason) can be set via {@code DataSetDeletionOptions}.
+     * <p>
+     * Required access rights: {@code PROJECT_POWER_USER} or stronger
+     * </p>
+     * 
+     * @see #confirmDeletions(String, List)
+     * @see #revertDeletions(String, List)
+     * @throws UserFailureException in case of any problems
+     */
     public IDeletionId deleteDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes materials with the provided {@code IMaterialId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code MaterialDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteMaterials(String sessionToken, List<? extends IMaterialId> materialIds, MaterialDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes plugins (i.e. dynamic property evaluators, managed property handlers, entity validators) with the provided
+     * {@code IPluginId} ids. Additional deletion options (e.g. deletion reason) can be set via {@code PluginDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deletePlugins(String sessionToken, List<? extends IPluginId> pluginIds, PluginDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes property types with the provided {@code IPropertyTypeId} ids. Additional deletion options (e.g. deletion reason) can be set
+     * via {@code PropertyTypeDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deletePropertyTypes(String sessionToken, List<? extends IPropertyTypeId> propertyTypeIds,
             PropertyTypeDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes vocabularies with the provided {@code IVocabularyId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code VocabularyDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteVocabularies(String sessionToken, List<? extends IVocabularyId> ids, VocabularyDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes vocabulary terms with the provided {@code IVocabularyTermId} ids. Additional deletion options (e.g. deletion reason) can be
+     * set via {@code VocabularyTermDeletionOptions}.
+     * <ul>
+     * Required access rights:
+     * <li>unofficial and official terms - {@code PROJECT_POWER_USER} or stronger</li>
+     * <li>internally managed - {@code INSTANCE_ADMIN}</li>
+     * </ul>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteVocabularyTerms(String sessionToken, List<? extends IVocabularyTermId> termIds, VocabularyTermDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes experiment types with the provided {@code IEntityTypeId} ids. Additional deletion options (e.g. deletion reason) can be set
+     * via {@code ExperimentTypeDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteExperimentTypes(String sessionToken, List<? extends IEntityTypeId> experimentTypeIds,
             ExperimentTypeDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes sample types with the provided {@code IEntityTypeId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code SampleTypeDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteSampleTypes(String sessionToken, List<? extends IEntityTypeId> sampleTypeIds, SampleTypeDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes data set types with the provided {@code IEntityTypeId} ids. Additional deletion options (e.g. deletion reason) can be set
+     * via {@code DataSetTypeDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteDataSetTypes(String sessionToken, List<? extends IEntityTypeId> dataSetTypeIds, DataSetTypeDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes material types with the provided {@code IEntityTypeId} ids. Additional deletion options (e.g. deletion reason) can be set
+     * via {@code MaterialTypeDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteMaterialTypes(String sessionToken, List<? extends IEntityTypeId> materialTypeIds, MaterialTypeDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes external data management systems with the provided {@code IExternalDmsId} ids. Additional deletion options (e.g. deletion
+     * reason) can be set via {@code ExternalDmsDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteExternalDataManagementSystems(String sessionToken, List<? extends IExternalDmsId> externalDmsIds,
             ExternalDmsDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes tags with the provided {@code ITagId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code TagDeletionOptions}. A user can only delete own tags (i.e. tags a user has created).
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteTags(String sessionToken, List<? extends ITagId> tagIds, TagDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes authorization groups with the provided {@code IAuthorizationGroupId} ids. Additional deletion options (e.g. deletion
+     * reason) can be set via {@code AuthorizationGroupDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteAuthorizationGroups(String sessionToken, List<? extends IAuthorizationGroupId> groupIds,
             AuthorizationGroupDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes role assignments with the provided {@code IRoleAssignmentId} ids. Additional deletion options (e.g. deletion reason) can be
+     * set via {@code RoleAssignmentDeletionOptions}.
+     * <ul>
+     * Required access rights:
+     * <li>instance roles - {@code INSTANCE_ADMIN}</li>
+     * <li>space roles - {@code SPACE_ADMIN} or stronger</li>
+     * <li>project roles - {@code PROJECT_ADMIN} or stronger</li>
+     * </ul>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteRoleAssignments(String sessionToken, List<? extends IRoleAssignmentId> assignmentIds,
             RoleAssignmentDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes operation executions with the provided {@code IOperationExecutionId} ids. Additional deletion options (e.g. deletion
+     * reason) can be set via {@code OperationExecutionDeletionOptions}.
+     * <p>
+     * Required access rights: user who created the operation execution / {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteOperationExecutions(String sessionToken, List<? extends IOperationExecutionId> executionIds,
             OperationExecutionDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes semantic annotations with the provided {@code ISemanticAnnotationId} ids. Additional deletion options (e.g. deletion
+     * reason) can be set via {@code SemanticAnnotationDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteSemanticAnnotations(String sessionToken, List<? extends ISemanticAnnotationId> annotationIds,
             SemanticAnnotationDeletionOptions deletionOptions);
 
+    /**
+     * Permanently deletes queries with the provided {@code IQueryId} ids. Additional deletion options (e.g. deletion reason) can be set via
+     * {@code QueryDeletionOptions}.
+     * <p>
+     * Required access rights: depends on a query and a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void deleteQueries(String sessionToken, List<? extends IQueryId> queryIds, QueryDeletionOptions deletionOptions);
 
+    /**
+     * Searches for deletions basing on the provided {@code DeletionSearchCriteria}.
+     * <p>
+     * By default the returned deletions contain only basic information. Any additional information to be fetched has to be explicitly requested via
+     * {@code DeletionFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_USER}
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<Deletion> searchDeletions(String sessionToken, DeletionSearchCriteria searchCriteria, DeletionFetchOptions fetchOptions);
 
+    /**
+     * Reverts deletions with the provided {@code IDeletionId} ids (i.e. takes the entities out of trash and brings them back to life).
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @see #deleteExperiments(String, List, ExperimentDeletionOptions)
+     * @see #deleteSamples(String, List, SampleDeletionOptions)
+     * @see #deleteDataSets(String, List, DataSetDeletionOptions)
+     * @throws UserFailureException in case of any problems
+     */
     public void revertDeletions(String sessionToken, List<? extends IDeletionId> deletionIds);
 
+    /**
+     * Confirms deletions with the provided {@code IDeletionId} ids (i.e. permanently deletes the entities).
+     * <p>
+     * Required access rights: {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @see #deleteExperiments(String, List, ExperimentDeletionOptions)
+     * @see #deleteSamples(String, List, SampleDeletionOptions)
+     * @see #deleteDataSets(String, List, DataSetDeletionOptions)
+     * @throws UserFailureException in case of any problems
+     */
     public void confirmDeletions(String sessionToken, List<? extends IDeletionId> deletionIds);
 
+    /**
+     * Executes a custom application server service with the provided {@code ICustomASServiceId} id. Additional execution options (e.g. parameters)
+     * can be set via {@code CustomASServiceExecutionOptions}. More details on the custom application server services can be found at "Custom
+     * Application Server Services" openBIS WIKI page.
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Object executeCustomASService(String sessionToken, ICustomASServiceId serviceId, CustomASServiceExecutionOptions options);
 
+    /**
+     * Executes a search domain service. Execution options (e.g. preferred search domain, search string, parameters) can be set via
+     * {@code SearchDomainServiceExecutionOptions}. More details on the search domain services can be found at "Search Domain Services" openBIS WIKI
+     * page.
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<SearchDomainServiceExecutionResult> executeSearchDomainService(String sessionToken,
             SearchDomainServiceExecutionOptions options);
 
+    /**
+     * Executes an aggregation service with the provided {@code IDssServiceId} id. Additional execution options (e.g. parameters) can be set via
+     * {@code AggregationServiceExecutionOptions}. More details on the aggregation services can be found at "Reporting Plugins" openBIS WIKI page
+     * (type: AGGREGATION_TABLE_MODEL).
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public TableModel executeAggregationService(String sessionToken, IDssServiceId serviceId, AggregationServiceExecutionOptions options);
 
+    /**
+     * Executes a reporting service with the provided {@code IDssServiceId} id. Additional execution options (e.g. data set codes) can be set via
+     * {@code ReportingServiceExecutionOptions}. More details on the reporting services can be found at "Reporting Plugins" openBIS WIKI page (type:
+     * TABLE_MODEL).
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public TableModel executeReportingService(String sessionToken, IDssServiceId serviceId, ReportingServiceExecutionOptions options);
 
+    /**
+     * Executes a processing service with the provided {@code IDssServiceId} id. Additional execution options (e.g. data set codes, parameters) can be
+     * set via {@code ProcessingServiceExecutionOptions}. More details on the processing services can be found at "Processing Plugins" openBIS WIKI
+     * page.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void executeProcessingService(String sessionToken, IDssServiceId serviceId, ProcessingServiceExecutionOptions options);
 
+    /**
+     * Executes a query with the provided {@code IQueryId} id. Additional execution options (e.g. parameters) can be set via
+     * {@code QueryExecutionOptions}.
+     * <p>
+     * Required access rights: depends on a query and a query database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public TableModel executeQuery(String sessionToken, IQueryId queryId, QueryExecutionOptions options);
 
+    /**
+     * Executes the provided SQL. Only SELECT statements are allowed. Additional execution options (e.g. databaseId, parameters) can be set via
+     * {@code SqlExecutionOptions}.
+     * <p>
+     * Required access rights: depends on a database (more details at "Custom Database Queries" openBIS WIKI page)
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public TableModel executeSql(String sessionToken, String sql, SqlExecutionOptions options);
 
+    /**
+     * Archives data sets with the provided {@code IDataSetId} ids. Additional archiving options can be set via {@code DataSetArchiveOptions}.
+     * <p>
+     * Required access rights: {@code PROJECT_POWER_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void archiveDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetArchiveOptions options);
 
+    /**
+     * Unarchives data sets with the provided {@code IDataSetId} ids. Additional unarchiving options can be set via {@code DataSetUnarchiveOptions}.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void unarchiveDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetUnarchiveOptions options);
 
+    /**
+     * Locks data sets with the provided {@code IDataSetId} ids. Additional locking options can be set via {@code DataSetLockOptions}.
+     * <p>
+     * Required access rights: {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void lockDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetLockOptions options);
 
+    /**
+     * Unlocks data sets with the provided {@code IDataSetId} ids. Additional unlocking options can be set via {@code DataSetUnlockOptions}.
+     * <p>
+     * Required access rights: {@code PROJECT_ADMIN} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public void unlockDataSets(String sessionToken, List<? extends IDataSetId> dataSetIds, DataSetUnlockOptions options);
 
+    /**
+     * Executes all provided operations in one transaction. Depending on the chosen execution options ({@code SynchronousOperationExecutionOptions} or
+     * {@code AsynchronousOperationExecutionOptions}) the operations are executed synchronously (i.e. in the same thread) or asynchronously (i.e. are
+     * scheduled for later execution in a separate thread). Synchronous execution returns {@code SynchronousOperationExecutionResults} object.
+     * Asynchronous execution returns {@code AsynchronousOperationExecutionResults}.
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @see #getOperationExecutions(String, List, OperationExecutionFetchOptions)
+     * @see #searchOperationExecutions(String, OperationExecutionSearchCriteria, OperationExecutionFetchOptions)
+     * @see #updateOperationExecutions(String, List)
+     * @see #deleteOperationExecutions(String, List, OperationExecutionDeletionOptions)
+     * @throws UserFailureException in case of any problems
+     */
     public IOperationExecutionResults executeOperations(String sessionToken, List<? extends IOperation> operations,
             IOperationExecutionOptions options);
 
+    /**
+     * Returns a map with additional server information:
+     * <ul>
+     * <li>api-version : major and minor version of the API (e.g. "3.4")</li>
+     * <li>project-samples-enabled : true/false</li>
+     * <li>archiving-configured : true/false</li>
+     * <li>enabled-technologies : comma-separated list of enabled technologies (core-plugins modules)</li>
+     * <li>authentication-service : currently used authenticated service (e.g. "ldap-authentication-service")</li>
+     * </ul>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public Map<String, String> getServerInformation(String sessionToken);
 
+    /**
+     * Generates globally unique identifiers that consist of a timestamp and a sequence generated number (e.g. "20180531170854641-944"). This method
+     * uses one global sequence.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public List<String> createPermIdStrings(String sessionToken, int count);
 
+    /**
+     * Generates identifiers that are unique for a given entity kind and consist of a prefix and a sequence generated number (e.g. "MY-PREFIX-147");
+     * this method uses a dedicated sequence for each entity kind.
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public List<String> createCodes(String sessionToken, String prefix, EntityKind entityKind, int count);
 
 }

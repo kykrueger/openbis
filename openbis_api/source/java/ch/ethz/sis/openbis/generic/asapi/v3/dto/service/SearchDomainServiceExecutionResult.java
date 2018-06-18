@@ -22,6 +22,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.DssServicePermId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -33,25 +34,25 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 public class SearchDomainServiceExecutionResult implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    
+
     @JsonProperty
     private DssServicePermId servicePermId;
-    
+
     @JsonProperty
     private String searchDomainName;
-    
+
     @JsonProperty
     private String searchDomainLabel;
-    
+
     @JsonProperty
     private EntityKind entityKind;
-    
+
     @JsonProperty
     private String entityType;
-    
+
     @JsonProperty
     private String entityIdentifier;
-    
+
     @JsonProperty
     private String entityPermId;
 
@@ -145,5 +146,11 @@ public class SearchDomainServiceExecutionResult implements Serializable
     {
         this.resultDetails = resultDetails;
     }
-    
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("entityKind", entityKind).append("entityPermId", entityPermId).toString();
+    }
+
 }

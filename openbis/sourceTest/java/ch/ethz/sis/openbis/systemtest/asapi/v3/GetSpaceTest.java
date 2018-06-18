@@ -294,4 +294,18 @@ public class GetSpaceTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SpaceFetchOptions fo = new SpaceFetchOptions();
+        fo.withProjects();
+        fo.withSamples();
+
+        v3api.getSpaces(sessionToken, Arrays.asList(new SpacePermId("CISD"), new SpacePermId("/TEST-SPACE")), fo);
+
+        assertAccessLog("get-spaces  SPACE_IDS('[CISD, TEST-SPACE]') FETCH_OPTIONS('Space\n    with Samples\n    with Projects\n')");
+    }
+
 }

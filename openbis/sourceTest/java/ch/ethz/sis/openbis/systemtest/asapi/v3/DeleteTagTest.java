@@ -35,6 +35,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.delete.TagDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
@@ -197,6 +198,21 @@ public class DeleteTagTest extends AbstractDeletionTest
         {
             deleteTag(user.getUserId(), PASSWORD, tagId, options);
         }
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        TagDeletionOptions o = new TagDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteTags(sessionToken,
+                Arrays.asList(new TagCode("TEST-LOGGING-1"), new TagPermId("/test/TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-tags  TAG_IDS('[TEST-LOGGING-1, /test/TEST-LOGGING-2]') DELETION_OPTIONS('TagDeletionOptions[reason=test-reason]')");
     }
 
     private Tag createTag(String user, String password, TagCreation creation)

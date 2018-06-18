@@ -311,4 +311,26 @@ public class UpdateOperationExecutionTest extends AbstractOperationExecutionTest
             }, options.getExecutionId());
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SynchronousOperationExecutionOptions options = new SynchronousOperationExecutionOptions();
+        options.setExecutionId(new OperationExecutionPermId("test-logging-execution"));
+
+        List<? extends IOperation> operations =
+                Arrays.asList(new GetSpacesOperation(Arrays.asList(new SpacePermId("CISD")), new SpaceFetchOptions()));
+
+        v3api.executeOperations(sessionToken, operations, options);
+
+        OperationExecutionUpdate update = new OperationExecutionUpdate();
+        update.setExecutionId(options.getExecutionId());
+
+        v3api.updateOperationExecutions(sessionToken, Arrays.asList(update));
+
+        assertAccessLog(
+                "update-operation-executions  OPERATION_EXECUTION_UPDATES('[OperationExecutionUpdate[executionId=test-logging-execution]]')");
+    }
+
 }

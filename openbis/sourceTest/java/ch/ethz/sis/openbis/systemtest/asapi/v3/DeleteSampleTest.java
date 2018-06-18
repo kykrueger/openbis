@@ -258,4 +258,18 @@ public class DeleteSampleTest extends AbstractDeletionTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleDeletionOptions o = new SampleDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteSamples(sessionToken, Arrays.asList(new SamplePermId("TEST-LOGGING-1"), new SamplePermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-samples  SAMPLE_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('SampleDeletionOptions[reason=test-reason]')");
+    }
+
 }

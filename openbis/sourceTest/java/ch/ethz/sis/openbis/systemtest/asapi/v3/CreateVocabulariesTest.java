@@ -36,7 +36,6 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 public class CreateVocabulariesTest extends AbstractTest
 {
@@ -59,11 +58,11 @@ public class CreateVocabulariesTest extends AbstractTest
         vocabularyCreation.setTerms(Arrays.asList(term1, term2));
         VocabularyCreation vocabularyCreation2 = new VocabularyCreation();
         vocabularyCreation2.setCode(vocabularyCreation.getCode());
-        
+
         // When
-        List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken, 
+        List<VocabularyPermId> vocabularies = v3api.createVocabularies(sessionToken,
                 Arrays.asList(vocabularyCreation, vocabularyCreation2));
-        
+
         // Then
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
         fetchOptions.withTerms();
@@ -82,17 +81,17 @@ public class CreateVocabulariesTest extends AbstractTest
         assertEquals(map.get(vocabularies.get(1)).isInternalNameSpace(), false);
         assertEquals(map.get(vocabularies.get(1)).isManagedInternally(), false);
         assertEquals(vocabularies.size(), 2);
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testCreateVocabularyWithMissingCode()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         VocabularyCreation vocabularyCreation = new VocabularyCreation();
-        
+
         assertUserFailureException(new IDelegatedAction()
             {
                 @Override
@@ -104,10 +103,10 @@ public class CreateVocabulariesTest extends AbstractTest
             },
                 // Then
                 "Code cannot be empty.");
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testCreateVocabularyWithInvalidCode()
     {
@@ -115,22 +114,22 @@ public class CreateVocabulariesTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         VocabularyCreation vocabularyCreation = new VocabularyCreation();
         vocabularyCreation.setCode("invalid code");
-        
+
         assertUserFailureException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
             {
-                // When
-                v3api.createVocabularies(sessionToken, Arrays.asList(vocabularyCreation));
-            }
-        },
-        // Then
+                @Override
+                public void execute()
+                {
+                    // When
+                    v3api.createVocabularies(sessionToken, Arrays.asList(vocabularyCreation));
+                }
+            },
+                // Then
                 "Given code 'INVALID CODE' contains illegal characters (allowed: A-Z, a-z, 0-9 and _, -, .");
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToCreateVocabularies")
     public void testCreateWithUserCausingAuthorizationFailure(final String user)
     {
@@ -145,6 +144,23 @@ public class CreateVocabulariesTest extends AbstractTest
                     v3api.createVocabularies(sessionToken, Arrays.asList(vocabularyCreation));
                 }
             });
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyCreation creation = new VocabularyCreation();
+        creation.setCode("LOG_TEST_1");
+
+        VocabularyCreation creation2 = new VocabularyCreation();
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createVocabularies(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-vocabularies  NEW_VOCABULARIES('[VocabularyCreation[code=LOG_TEST_1], VocabularyCreation[code=LOG_TEST_2]]')");
     }
 
     @DataProvider

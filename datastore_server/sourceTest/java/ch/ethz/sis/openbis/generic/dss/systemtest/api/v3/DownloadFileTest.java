@@ -153,6 +153,21 @@ public class DownloadFileTest extends AbstractFileTest
         assertEquals(getContent(download2.getDataSetFile().getPath()).length(), download2.getDataSetFile().getFileLength());
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = gis.tryToAuthenticateForAllServices(TEST_USER, PASSWORD);
+
+        DataSetFileDownloadOptions options = new DataSetFileDownloadOptions();
+        options.setRecursive(true);
+
+        dss.downloadFiles(sessionToken, Arrays.asList(new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("file1.txt"))), options);
+
+        assertAccessLog(
+                "download-files  FILE_IDS('[DataSetFilePermId[dataSetId=" + dataSetCode + ",filePath=" + getPath("file1.txt")
+                        + "]]') DOWNLOAD_OPTIONS('DataSetFileDownloadOptions[recursive=true]')");
+    }
+
     private Map<String, String> download(@SuppressWarnings("hiding") List<IDataSetFileId> files, DataSetFileDownloadOptions options)
     {
         try

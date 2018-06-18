@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.IAuthorizationGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
@@ -28,8 +29,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.roleassignment.create.RoleAssignmentCreation")
@@ -39,19 +38,19 @@ public class RoleAssignmentCreation implements ICreation, IObjectCreation
 
     @JsonProperty
     private IPersonId userId;
-    
+
     @JsonProperty
     private IAuthorizationGroupId authorizationGroupId;
-    
+
     @JsonProperty
     private Role role;
-    
+
     @JsonProperty
     private ISpaceId spaceId;
-    
+
     @JsonProperty
     private IProjectId projectId;
-    
+
     public IPersonId getUserId()
     {
         return userId;
@@ -101,5 +100,12 @@ public class RoleAssignmentCreation implements ICreation, IObjectCreation
     {
         this.projectId = projectId;
     }
-    
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("groupId", authorizationGroupId).append("userId", userId).append("spaceId", spaceId)
+                .append("projectId", projectId).append("role", role).toString();
+    }
+
 }

@@ -334,4 +334,23 @@ public class CreateProjectTest extends AbstractTest
         assertEquals(project2.getRegistrator().getUserId(), TEST_USER);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ProjectCreation creation = new ProjectCreation();
+        creation.setCode("LOG_TEST_1");
+        creation.setSpaceId(new SpacePermId("CISD"));
+
+        ProjectCreation creation2 = new ProjectCreation();
+        creation2.setCode("LOG_TEST_2");
+        creation2.setSpaceId(new SpacePermId("/TEST-SPACE"));
+
+        v3api.createProjects(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-projects  NEW_PROJECTS('[ProjectCreation[spaceId=CISD,code=LOG_TEST_1], ProjectCreation[spaceId=TEST-SPACE,code=LOG_TEST_2]]')");
+    }
+
 }

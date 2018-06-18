@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.QueryType;
@@ -136,6 +137,12 @@ public class QueryCreation implements ICreation, IObjectCreation
     public void setPublic(boolean publicFlag)
     {
         this.publicFlag = publicFlag;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("databaseId", databaseId).append("name", name).toString();
     }
 
 }

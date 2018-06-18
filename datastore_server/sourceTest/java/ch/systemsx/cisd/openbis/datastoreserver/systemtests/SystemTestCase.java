@@ -57,6 +57,7 @@ import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.etlserver.ETLDaemon;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.DataSetRegistrationTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
@@ -204,7 +205,8 @@ public abstract class SystemTestCase extends AssertJUnit
         System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + ROOT_DIR_KEY,
                 rootDir.getAbsolutePath());
         System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX
-                + DssPropertyParametersUtil.DSS_REGISTRATION_LOG_DIR_PATH, getRegistrationLogDir()
+                + DssPropertyParametersUtil.DSS_REGISTRATION_LOG_DIR_PATH,
+                getRegistrationLogDir()
                         .getAbsolutePath());
         System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + "dss-rpc.put-default", "test");
         System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + SERVER_URL_KEY,
@@ -403,6 +405,11 @@ public abstract class SystemTestCase extends AssertJUnit
     public static <T> T getBean(Class<T> clazz)
     {
         return (T) applicationContext.getBean(clazz);
+    }
+
+    protected void assertAccessLog(String expectedLog)
+    {
+        AssertionUtil.assertContains(expectedLog, logAppender.getLogContent());
     }
 
 }

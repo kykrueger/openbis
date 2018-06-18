@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -113,6 +114,12 @@ public class VocabularyTermUpdate implements IUpdate, IObjectUpdate<IVocabularyT
     public FieldUpdateValue<Boolean> isOfficial()
     {
         return official;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("vocabularyTermId", vocabularyTermId).toString();
     }
 
 }

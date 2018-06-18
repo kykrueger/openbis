@@ -160,4 +160,22 @@ public class UpdateMaterialTest extends AbstractSampleTest
         }
         AssertionUtil.assertCollectionContainsOnly(tagCodes, "TEST_123", "TEST_METAPROJECTS");
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        MaterialUpdate update = new MaterialUpdate();
+        update.setMaterialId(new MaterialPermId("VIRUS2", "VIRUS"));
+
+        MaterialUpdate update2 = new MaterialUpdate();
+        update2.setMaterialId(new MaterialPermId("BACTERIUM1", "BACTERIUM"));
+
+        v3api.updateMaterials(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-materials  MATERIAL_UPDATES('[MaterialUpdate[materialId=VIRUS2 (VIRUS)], MaterialUpdate[materialId=BACTERIUM1 (BACTERIUM)]]')");
+    }
+
 }

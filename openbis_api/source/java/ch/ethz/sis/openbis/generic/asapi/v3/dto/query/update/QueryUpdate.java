@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.query.update;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -161,6 +162,12 @@ public class QueryUpdate implements IUpdate, IObjectUpdate<IQueryId>
     public FieldUpdateValue<Boolean> isPublic()
     {
         return publicFlag;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("queryId", queryId).toString();
     }
 
 }

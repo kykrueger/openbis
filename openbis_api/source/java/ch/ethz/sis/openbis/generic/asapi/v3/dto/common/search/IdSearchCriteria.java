@@ -66,4 +66,10 @@ public class IdSearchCriteria<T extends IObjectId> extends AbstractSearchCriteri
         return id == null ? id == other.id : id.equals(other.id);
     }
 
+    @Override
+    public String toString()
+    {
+        return "with id '" + id + "'";
+    }
+
 }

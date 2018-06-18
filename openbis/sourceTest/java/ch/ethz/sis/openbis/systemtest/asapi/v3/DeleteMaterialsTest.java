@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.testng.annotations.Test;
@@ -76,4 +77,20 @@ public class DeleteMaterialsTest extends AbstractDeletionTest
             }, "'BACTERIUM-X (BACTERIUM)' is being used. Delete all connected data  first.");
 
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        MaterialDeletionOptions o = new MaterialDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteMaterials(sessionToken,
+                Arrays.asList(new MaterialPermId("TEST-LOGGING-1", "TEST-TYPE"), new MaterialPermId("TEST-LOGGING-2", "TEST-TYPE")), o);
+
+        assertAccessLog(
+                "delete-materials  MATERIAL_IDS('[TEST-LOGGING-1 (TEST-TYPE), TEST-LOGGING-2 (TEST-TYPE)]') DELETION_OPTIONS('MaterialDeletionOptions[reason=test-reason]')");
+    }
+
 }

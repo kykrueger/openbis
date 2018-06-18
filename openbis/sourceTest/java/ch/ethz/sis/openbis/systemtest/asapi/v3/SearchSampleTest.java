@@ -888,7 +888,7 @@ public class SearchSampleTest extends AbstractSampleTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testSearchWithSortingByCodeScore()
     {
@@ -900,7 +900,7 @@ public class SearchSampleTest extends AbstractSampleTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         SampleFetchOptions fo = new SampleFetchOptions();
-        
+
         fo.sortBy().fetchedFieldsScore().asc();
         List<Sample> samples1 = search(sessionToken, criteria, fo);
         assertTrue(samples1.get(0).getCode().equals("CP-TEST-1"));
@@ -1367,6 +1367,24 @@ public class SearchSampleTest extends AbstractSampleTest
         {
             testSearch(user.getUserId(), criteria);
         }
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleSearchCriteria c = new SampleSearchCriteria();
+        c.withCode().thatEquals("RP1-A2X");
+
+        SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withSpace();
+        fo.withProject();
+
+        v3api.searchSamples(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-samples  SEARCH_CRITERIA:\n'SAMPLE\n    with attribute 'code' equal to 'RP1-A2X'\n'\nFETCH_OPTIONS:\n'Sample\n    with Project\n    with Space\n'");
     }
 
     private void testSearch(String user, SampleSearchCriteria criteria, String... expectedIdentifiers)

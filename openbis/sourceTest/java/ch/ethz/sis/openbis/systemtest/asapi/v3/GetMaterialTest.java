@@ -311,4 +311,20 @@ public class GetMaterialTest extends AbstractDataSetTest
             assertEquals(tag.getCode(), "TEST_METAPROJECTS");
         }
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        MaterialFetchOptions fo = new MaterialFetchOptions();
+        fo.withProperties();
+        fo.withRegistrator();
+
+        v3api.getMaterials(sessionToken, Arrays.asList(new MaterialPermId("VIRUS2", "VIRUS"), new MaterialPermId("BACTERIUM1", "BACTERIUM")), fo);
+
+        assertAccessLog(
+                "get-materials  MATERIAL_IDS('[VIRUS2 (VIRUS), BACTERIUM1 (BACTERIUM)]') FETCH_OPTIONS('Material\n    with Registrator\n    with Properties\n')");
+    }
+
 }

@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -120,6 +121,6 @@ public class DataSetFilePermId implements IDataSetFileId
     @Override
     public String toString()
     {
-        return getDataSetId() + "#" + getFilePath();
+        return new ObjectToString(this).append("dataSetId", dataSetId).append("filePath", filePath).toString();
     }
 }

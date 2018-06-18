@@ -751,6 +751,23 @@ public class UpdateDataSetTest extends AbstractSampleTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(new DataSetPermId("20081105092159111-1"));
+
+        DataSetUpdate update2 = new DataSetUpdate();
+        update2.setDataSetId(new DataSetPermId("20110509092359990-10"));
+
+        v3api.updateDataSets(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-data-sets  DATA_SET_UPDATES('[DataSetUpdate[dataSetId=20081105092159111-1], DataSetUpdate[dataSetId=20110509092359990-10]]')");
+    }
+
     private Collection<String> dataSetCodes(Collection<? extends DataSet> list)
     {
         LinkedList<String> result = new LinkedList<String>();
