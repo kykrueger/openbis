@@ -32,7 +32,13 @@ public class Plate extends PlateIdentifier
     public Plate(String plateCode, String spaceCode, String permId,
             ExperimentIdentifier experimentIdentifier)
     {
-        super(plateCode, spaceCode, SamplePE.projectSamplesEnabled ? experimentIdentifier.getProjectCode() : null, permId);
+        this(plateCode, spaceCode, null, permId, experimentIdentifier);
+    }
+    
+    public Plate(String plateCode, String spaceCode, String sampleProjectCode, String permId,
+            ExperimentIdentifier experimentIdentifier)
+    {
+        super(plateCode, spaceCode, sampleProjectCode, permId);
         this.experimentCode = experimentIdentifier.getExperimentCode();
         this.projectCode = experimentIdentifier.getProjectCode();
         this.experimentIdentifier = experimentIdentifier;

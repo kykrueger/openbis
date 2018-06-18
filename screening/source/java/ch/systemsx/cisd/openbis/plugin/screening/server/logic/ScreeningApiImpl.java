@@ -202,12 +202,14 @@ public class ScreeningApiImpl
         final Experiment experiment = sample.getExperiment();
         final Project project = experiment.getProject();
         final Space sampleSpace = sample.getSpace();
+        Project sampleProject = sample.getProject();
+        String sampleProjectCode = sampleProject == null ? null : sampleProject.getCode();
         String experimentSpaceCode = project.getSpace().getCode();
         final String sampleSpaceCode = (sampleSpace != null) ? sampleSpace.getCode() : experimentSpaceCode;
         final ExperimentIdentifier experimentId =
                 new ExperimentIdentifier(experiment.getCode(), project.getCode(),
                         experimentSpaceCode, experiment.getPermId());
-        return new Plate(sample.getCode(), sampleSpaceCode, sample.getPermId(), experimentId);
+        return new Plate(sample.getCode(), sampleSpaceCode, sampleProjectCode, sample.getPermId(), experimentId);
     }
 
     private SampleType loadPlateType()

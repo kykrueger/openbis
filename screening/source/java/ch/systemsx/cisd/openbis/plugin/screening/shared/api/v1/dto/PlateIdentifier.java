@@ -103,6 +103,11 @@ public class PlateIdentifier extends PermanentIdentifier
     {
         return spaceCodeOrNull;
     }
+    
+    public String tryGetProjectCode()
+    {
+        return projectCodeOrNull;
+    }
 
     /**
      * Returns the augmented (full) code of this plate.

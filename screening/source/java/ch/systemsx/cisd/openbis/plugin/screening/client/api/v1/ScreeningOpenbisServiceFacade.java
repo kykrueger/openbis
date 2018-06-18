@@ -439,8 +439,9 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
             String sampleIdentifier = sample.getIdentifier();
             if (sampleIdentifiers.contains(sampleIdentifier))
             {
-                String spaceCode =
-                        PlateIdentifier.createFromAugmentedCode(sampleIdentifier).tryGetSpaceCode();
+                PlateIdentifier augmentedCode = PlateIdentifier.createFromAugmentedCode(sampleIdentifier);
+                String spaceCode = augmentedCode.tryGetSpaceCode();
+                String projectCode = augmentedCode.tryGetProjectCode();
                 String permID = sample.getPermId();
                 String experimentIdentifierOrNull = sample.getExperimentIdentifierOrNull();
                 ExperimentIdentifier expermientIdentifier =
@@ -1602,7 +1603,7 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
             String error =
                     String.format("No thumbnail images for data set '%s' have been "
                             + "found on the server", imageMetadata.getImageDataset()
-                            .getDatasetCode());
+                                    .getDatasetCode());
             throw new RuntimeException(error);
         }
 
@@ -1610,7 +1611,8 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
                 imageCache.getWellImages(
                         imageReference,
                         new ImageSize(imageMetadata.getThumbnailWidth(), imageMetadata
-                                .getThumbnailHeight()), imageMetadata);
+                                .getThumbnailHeight()),
+                        imageMetadata);
         if (images.isLoaderCall())
         {
             try
@@ -1952,7 +1954,8 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
             final String paramString = Arrays.asList(parameterTypes).toString();
             throw new UnsupportedOperationException(String.format(
                     "Method '%s(%s)' requires minor version %d, "
-                            + "but server '%s' has only minor version %d.", methodName,
+                            + "but server '%s' has only minor version %d.",
+                    methodName,
                     paramString.substring(1, paramString.length() - 1), minimalMinorVersion,
                     serviceHolder.getServerUrl(), serviceHolder.getMinorVersion()));
         }
@@ -1968,7 +1971,8 @@ public class ScreeningOpenbisServiceFacade implements IScreeningOpenbisServiceFa
             final String paramString = Arrays.asList(parameterTypes).toString();
             throw new UnsupportedOperationException(String.format(
                     "Method '%s(%s)' requires minor version %d, "
-                            + "but server has only minor version %d.", methodName,
+                            + "but server has only minor version %d.",
+                    methodName,
                     paramString.substring(1, paramString.length() - 1), minimalMinorVersion,
                     minorVersionApplicationServer));
         }
