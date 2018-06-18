@@ -178,7 +178,7 @@ define(
 					var fCheck = function(type) {
 						c.assertEqual(type.getCode(), code, "Type code");
 						c.assertEqual(type.getPermId().getPermId(), code, "Type perm id");
-						c.assertEqual(type.getPermId().toString(), code + ", EXPERIMENT", "Full type perm id");
+						c.assertEqual(type.getPermId().toString(), code + " (EXPERIMENT)", "Full type perm id");
 						c.assertEqual(type.getDescription(), "a new description", "Description");
 
 						c.assertEqual(type.getPropertyAssignments().length, 1, "Assignments count");

@@ -21,9 +21,12 @@ import java.io.Serializable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+
 /**
  * @author pkupczyk
  */
+@JsonIgnoreType
 public class ObjectToString implements Serializable
 {
 
