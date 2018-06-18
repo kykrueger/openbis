@@ -237,7 +237,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
-import ch.systemsx.cisd.common.annotation.TechPreview;
 import ch.systemsx.cisd.common.api.IRpcService;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -2063,7 +2062,6 @@ public interface IApplicationServerApi extends IRpcService
      * 
      * @throws UserFailureException in case of any problems
      */
-    @TechPreview
     public List<String> createPermIdStrings(String sessionToken, int count);
 
     /**

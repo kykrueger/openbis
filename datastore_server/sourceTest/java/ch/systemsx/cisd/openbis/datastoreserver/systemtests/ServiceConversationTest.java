@@ -87,7 +87,7 @@ public class ServiceConversationTest
 
     private static final String SESSION_TOKEN_2 = "test-session-token-2";
 
-    private static final int TIMEOUT = 100;
+    private static final int TIMEOUT = 300;
 
     private static final Integer CLIENT_ID_1 = Integer.valueOf(1);
 
@@ -535,7 +535,7 @@ public class ServiceConversationTest
             final TestService serviceB)
     {
         final int NUMBER_OF_CALLS = 10;
-        final MessageChannel channel = new MessageChannel(2000);
+        final MessageChannel channel = new MessageChannel(NUMBER_OF_CALLS * 2 * TIMEOUT);
 
         context.checking(new Expectations()
             {

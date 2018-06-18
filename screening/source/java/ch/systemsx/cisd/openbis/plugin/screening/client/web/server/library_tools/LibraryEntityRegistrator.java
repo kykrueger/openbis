@@ -52,7 +52,7 @@ public class LibraryEntityRegistrator
     private final PlateRegistrator plateRegistrator;
 
     public LibraryEntityRegistrator(QiagenScreeningLibraryColumnExtractor extractor,
-            String experimentIdentifier, String plateGeometry, String groupCode, String genesFile,
+            String experimentIdentifier, String plateGeometry, String spaceCode, String sampleProjectOrNull, String genesFile,
             String oligosFile, String platesFile) throws IOException
     {
         this.geneRegistrator = new GeneRegistrator(new File(genesFile));
@@ -61,7 +61,7 @@ public class LibraryEntityRegistrator
                         extractor.getAdditionalOligoPropertyNames());
         this.plateRegistrator =
                 new PlateRegistrator(new File(platesFile), experimentIdentifier, plateGeometry,
-                        groupCode);
+                        spaceCode, sampleProjectOrNull);
     }
 
     public void register(QiagenScreeningLibraryColumnExtractor extractor, String[] row)
@@ -138,17 +138,20 @@ public class LibraryEntityRegistrator
 
         private final String plateGeometry;
 
-        private final String groupCode;
+        private final String spaceCode;
 
+        private final String sampleProjectOrNull;
+        
         private final List<String[]> wellRegistrationBuffer;
 
         public PlateRegistrator(File outputPlateFile, String experimentIdentifier,
-                String plateGeometry, String groupCode) throws IOException
+                String plateGeometry, String spaceCode, String sampleProjectOrNull) throws IOException
         {
             super(outputPlateFile);
             this.experimentIdentifier = experimentIdentifier;
             this.plateGeometry = plateGeometry;
-            this.groupCode = groupCode;
+            this.spaceCode = spaceCode;
+            this.sampleProjectOrNull = sampleProjectOrNull;
             this.registeredPlates = new HashSet<String>();
             this.wellRegistrationBuffer = new ArrayList<String[]>();
             writeLine(HEADER_PLATES);
@@ -170,7 +173,7 @@ public class LibraryEntityRegistrator
 
         private String getSampleIdentifier(String plateCode)
         {
-            return "/" + groupCode + "/" + plateCode;
+            return "/" + spaceCode + "/" + (sampleProjectOrNull == null ? "" : sampleProjectOrNull + "/") + plateCode;
         }
 
         public void registerWell(QiagenScreeningLibraryColumnExtractor extractor, String[] row,
