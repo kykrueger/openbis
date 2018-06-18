@@ -57,6 +57,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
+import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleOwnerIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
@@ -493,10 +494,14 @@ public class ScreeningApiImpl
 
         SampleOwnerIdentifier owner;
         String spaceCodeOrNull = plate.tryGetSpaceCode();
-        if (spaceCodeOrNull != null)
+        String projectCodeOrNull = plate.tryGetProjectCode();
+        if (projectCodeOrNull != null)
         {
-            SpaceIdentifier space =
-                    new SpaceIdentifier(spaceCodeOrNull);
+            ProjectIdentifier projectIdentifier = new ProjectIdentifier(spaceCodeOrNull, projectCodeOrNull);
+            owner = new SampleOwnerIdentifier(projectIdentifier);
+        } else if (spaceCodeOrNull != null)
+        {
+            SpaceIdentifier space = new SpaceIdentifier(spaceCodeOrNull);
             owner = new SampleOwnerIdentifier(space);
         } else
         {
@@ -796,14 +801,16 @@ public class ScreeningApiImpl
 
     private static Plate asPlate(ExperimentIdentifier experimentIdentifier, WellContent wellContent)
     {
-        return new Plate(wellContent.getPlate().getCode(), experimentIdentifier.getSpaceCode(),
+        String projectCode = SamplePE.projectSamplesEnabled ? experimentIdentifier.getProjectCode() : null;
+        return new Plate(wellContent.getPlate().getCode(), experimentIdentifier.getSpaceCode(), projectCode, 
                 wellContent.getPlate().getPermId(), experimentIdentifier);
     }
 
     private static Plate asPlate(WellContent wellContent)
     {
+        String projectCode = SamplePE.projectSamplesEnabled ? wellContent.getExperiment().getProjectCode() : null;
         return new Plate(wellContent.getPlate().getCode(), wellContent.getExperiment()
-                .getSpaceCode(), wellContent.getPlate().getPermId(), asExperiment(wellContent));
+                .getSpaceCode(), projectCode, wellContent.getPlate().getPermId(), asExperiment(wellContent));
     }
 
     private static ExperimentIdentifier asExperiment(WellContent wellContent)

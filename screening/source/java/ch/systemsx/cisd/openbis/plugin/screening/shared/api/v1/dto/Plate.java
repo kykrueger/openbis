@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 
 /**
  * Unique identifier for a plate which is assigned to an experiment. This class really should be called <code>ExperimentPlateIdentifier</code>.

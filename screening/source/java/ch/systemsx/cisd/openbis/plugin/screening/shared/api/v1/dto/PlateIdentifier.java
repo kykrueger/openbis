@@ -79,7 +79,7 @@ public class PlateIdentifier extends PermanentIdentifier
     {
         this(plateCode, spaceCodeOrNull, null, permId);
     }
-    
+
     public PlateIdentifier(String plateCode, String spaceCodeOrNull, String projectCodeOrNull, String permId)
     {
         super(permId);
@@ -103,7 +103,7 @@ public class PlateIdentifier extends PermanentIdentifier
     {
         return spaceCodeOrNull;
     }
-    
+
     public String tryGetProjectCode()
     {
         return projectCodeOrNull;
@@ -151,6 +151,7 @@ public class PlateIdentifier extends PermanentIdentifier
         int result = super.hashCode();
         result = prime * result + ((plateCode == null) ? 0 : plateCode.hashCode());
         result = prime * result + ((spaceCodeOrNull == null) ? 0 : spaceCodeOrNull.hashCode());
+        result = prime * result + ((projectCodeOrNull == null) ? 0 : projectCodeOrNull.hashCode());
         return result;
     }
 
@@ -174,27 +175,13 @@ public class PlateIdentifier extends PermanentIdentifier
             return false;
         }
         PlateIdentifier other = (PlateIdentifier) obj;
-        if (plateCode == null)
-        {
-            if (other.plateCode != null)
-            {
-                return false;
-            }
-        } else if (!plateCode.equals(other.plateCode))
-        {
-            return false;
-        }
-        if (spaceCodeOrNull == null)
-        {
-            if (other.spaceCodeOrNull != null)
-            {
-                return false;
-            }
-        } else if (!spaceCodeOrNull.equals(other.spaceCodeOrNull))
-        {
-            return false;
-        }
-        return true;
+        return equals(plateCode, other.plateCode) && equals(spaceCodeOrNull, other.spaceCodeOrNull)
+                && equals(projectCodeOrNull, other.projectCodeOrNull);
+    }
+
+    private boolean equals(Object obj1, Object obj2)
+    {
+        return obj1 == null ? obj1 == obj2 : obj1.equals(obj2);
     }
 
     @Override
@@ -231,6 +218,16 @@ public class PlateIdentifier extends PermanentIdentifier
     private void setSpaceCodeOrNull(String spaceCodeOrNull)
     {
         this.spaceCodeOrNull = spaceCodeOrNull;
+    }
+
+    private String getProjectCodeOrNull()
+    {
+        return projectCodeOrNull;
+    }
+
+    private void setProjectCodeOrNull(String projectCodeOrNull)
+    {
+        this.projectCodeOrNull = projectCodeOrNull;
     }
 
 }
