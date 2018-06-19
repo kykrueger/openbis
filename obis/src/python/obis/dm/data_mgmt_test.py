@@ -107,9 +107,8 @@ def test_data_use_case(tmpdir):
         present_p = result.output.split('\n')[-1]
         assert present_p == 'present: true'
 
-        # This file should be in the annex and a hardlink
-        stat = os.stat("snb-data.zip")
-        assert stat.st_nlink == 2
+        # This file should be in the annex and a softlink
+        assert os.path.islink("snb-data.zip") == True
 
         # The txt files should be in git normally
         result = utils.run_shell(['git', 'annex', 'info', 'text-data.txt'])
@@ -118,9 +117,8 @@ def test_data_use_case(tmpdir):
         present_p = " ".join(result.output.split(' ')[1:])
         assert present_p == 'Added data.'
 
-        # This file is not in the annex and should not be a hardlink
-        stat = os.stat("text-data.txt")
-        assert stat.st_nlink == 1
+        # This file is not in the annex and should not be a softlink
+        assert os.path.islink("text-data.txt") == False
 
         status = dm.status()
         assert status.output == 'There are git commits which have not been synchronized.'
