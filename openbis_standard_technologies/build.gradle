@@ -429,7 +429,7 @@ task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, 
   from screeningApiZip.archivePath
   from pybisZip.archivePath
   from obisZip.archivePath
-  from ('../openbis_all/dist/readme.txt')
+  from ('dist/readme.txt')
   rename { filename -> 
     if (filename.startsWith('pybis-')) {
       def contentOfSetUpFile = zipTree(pybisZip.archivePath).getFiles().findAll {it.path.endsWith('src/python/setup.py') }.iterator().next().text
