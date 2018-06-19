@@ -1,7 +1,7 @@
 #!/bin/env bash
 
-sudo pip3 install -e /vagrant_python/PyBis/
-sudo pip3 install -e /vagrant_python/OBis/
+sudo pip3 install -e /vagrant_repo/pybis/src/python/
+sudo pip3 install -e /vagrant_repo/obis/src/python/
 
 sudo pip3 install pyOpenSSL
 

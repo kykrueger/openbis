@@ -5,8 +5,8 @@
 To help users interested in trying out _obis_, we provide a vagrant setup that can be used to quickly create a test environment. The environment automates most of the installation process, but there are a few steps that must be done manually.
 
 0. Download openbis from the https://wiki-bsse.ethz.ch/display/bis/Production+Releases
-1. Put the extract the openbis installer to the src/vagrant/initialize folder
-2. cd to `src/vagrant/obis`
+1. Put the extract the openbis installer to the obis/src/vagrant/initialize folder
+2. cd to `obis/src/vagrant`
 3. `vagrant plugin install vagrant-vbguest` -- install the vagrant-vbguest plugin
 3. `vagrant up --provision --provider virtualbox` -- initialize the virtual machine
 
