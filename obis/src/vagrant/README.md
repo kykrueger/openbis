@@ -29,7 +29,7 @@ obis can be used on both vagrant machines.
 1. `vagrant ssh obisserver` (or `obisclient`)
 2. `sudo su obis`
 3. `cd ~obis`
-4. Configure the openbis_url: `obis config -g openbis_url https://obisserver:8443`
+4. Configure the openbis_url: `obis config -g set openbis_url=https://obisserver:8443`
 5. Use obis.
 6. `exit` -- log off the virtual machine
 
@@ -51,7 +51,7 @@ Also make sure that there is a sample with the identifier /DEMO/BIGDATA. The typ
 
 Check the obis configuration.
 
-    obis config -g
+    obis config -g get
 
 The following should be configured:
 
@@ -62,10 +62,10 @@ The following should be configured:
 
 This is probably the case, but if it is not, you need to execute the following commands. We will set this environment globally, so it is not necessary for every single data set.
 
-    obis config -g openbis_url https://sprint-openbis.ethz.ch:8446
-    obis config -g user adamsr
-    obis config -g data_set_type GIT_REPO
-    obis config -g verify_certificates false
+    obis config -g set openbis_url=https://sprint-openbis.ethz.ch:8446
+    obis config -g set user=adamsr
+    obis config -g set data_set_type=GIT_REPO
+    obis config -g set verify_certificates=false
 
 ### Demo
 
@@ -81,7 +81,7 @@ Now create a file and put some content into it. E.g.,
 
 When finished, we need to set the sample_id or experiment_id this data set should be associated with. Then we can commit it.
 
-    obis config sample_id /DEMO/BIGDATA
+    obis object set id=/DEMO/BIGDATA
     obis commit -m"Initial data commit."
 
 Log into the sprint server https://sprint-openbis.ethz.ch:8446 and go to the sample /DEMO/BIGDATA. You should see the newly registered data set there. You can take a look at it and see file metadata for its contents.
@@ -96,7 +96,7 @@ If you run
 
 You should see that the file is dirty. Now, before we commit, we will set some data set metadata.
 
-    obis config data_set_properties '{"DESCRIPTION": "Version 1"}'
+    obis data_set set properties='{"DESCRIPTION": "Version 1"}'
 
 And now we commit:
 
