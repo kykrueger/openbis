@@ -103,9 +103,10 @@ public final class IdentifierHelper
             final DeletedSamplePE deletedSamplePE)
     {
         assert deletedSamplePE != null : "Unspecified sample";
+        ProjectPE project = deletedSamplePE.getProject();
         final SpacePE space = deletedSamplePE.getSpace();
         final String sampleCode = deletedSamplePE.getCode();
-        return createSampleIdentifier(null, space, sampleCode);
+        return createSampleIdentifier(project, space, sampleCode);
     }
 
     public final static SampleIdentifier createSampleIdentifier(SpaceIdentifier spaceIdentifier, String sampleCode, String sampleContainerCode)
