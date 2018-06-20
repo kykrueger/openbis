@@ -223,7 +223,7 @@ def process(tr, parameters, tableBuilder):
 	if method == "insertProject":
 		isOk = insertUpdateProject(tr, parameters, tableBuilder);
 	if method == "updateProject":
-		isOk = insertUpdateProject(tr, projectSamplesEnabled, parameters, tableBuilder);
+		isOk = insertUpdateProject(tr, parameters, tableBuilder);
 	
 	if method == "insertExperiment":
 		updatePropertiesToIgnore(tr);
