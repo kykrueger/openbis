@@ -17,7 +17,6 @@ class TestCase(systemtest.testcase.TestCase):
         openbis1.setDataStoreServerUsername('etlserver1')
         openbis1.createTestDatabase('openbis')
         openbis2 = self.createOpenbisController('openbis2')
-        openbis2.asProperties['project-samples-enabled'] = 'true'
         openbis2.setDataStoreServerCode('DSS2')
         openbis2.setDataStoreServerPort('8445')
         openbis2.setDataStoreServerUsername('etlserver2')
