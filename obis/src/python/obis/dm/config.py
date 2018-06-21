@@ -241,7 +241,7 @@ class ConfigResolver(object):
             os.makedirs(location_dir_path)
         config_path = os.path.join(location_dir_path, self.categoty + '.json')
         with open(config_path, "w") as f:
-            json.dump(location_config_dict, f, sort_keys=True)
+            json.dump(location_config_dict, f, sort_keys=True, indent=4)
 
     def set_value_for_json_parameter(self, json_param_name, name, value, loc):
         """Set one field for the json parameter
