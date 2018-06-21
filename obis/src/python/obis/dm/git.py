@@ -43,7 +43,20 @@ class GitWrapper(object):
         if result.failure():
             return result
 
+        # annex.thin to avoid copying big files
         cmd = [self.git_path, "-C", path, "config", "annex.thin", "true"]
+        result = run_shell(cmd)
+        if result.failure():
+            return result
+
+        # annex.addunlocked to create hardlinks instead of softlinks
+        cmd = [self.git_path, "-C", path, "config", "annex.addunlocked", "true"]
+        result = run_shell(cmd)
+        if result.failure():
+            return result
+
+        # core.filemode false to ignore permission changes by git annex
+        cmd = [self.git_path, "-C", path, "config", "core.filemode", "false"]
         result = run_shell(cmd)
         if result.failure():
             return result
@@ -61,6 +74,7 @@ class GitWrapper(object):
         return result
 
     def git_add(self, path):
+        # git annex add to avoid out of memory error when adding files bigger than RAM
         return run_shell([self.git_path, "annex", "add", path, "--include-dotfiles"])
 
     def git_commit(self, msg):
