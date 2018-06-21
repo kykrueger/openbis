@@ -28,7 +28,7 @@ dependencies {
 			'springframework:spring-orm:+',
 			'cisd:cisd-hotdeploy:13.01.0',
 			'apache:poi-ooxml:3.17',
-			'hibernate:hibernate-validator:4.2.0.Final',
+			'hibernate:hibernate-validator:4.3.2.Final',
 			'unimi:fastutil:5.1.5',
 			'apache:commons-collections4:+',
 			'springframework:spring-context-support:+',
