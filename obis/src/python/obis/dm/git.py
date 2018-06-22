@@ -1,7 +1,7 @@
 import shutil
 import os
 from .utils import run_shell
-from .command_result import CommandException
+from .command_result import CommandResult, CommandException
 from .checksum import ChecksumGeneratorCrc32, ChecksumGeneratorGitAnnex
 
 
@@ -31,12 +31,12 @@ class GitWrapper(object):
 
     def git_status(self, path=None):
         if path is None:
-            return run_shell([self.git_path, "status", "--porcelain"], strip_leading_whitespace=False)
+            return run_shell([self.git_path, "annex", "status"], strip_leading_whitespace=False)
         else:
-            return run_shell([self.git_path, "status", "--porcelain", path], strip_leading_whitespace=False)
+            return run_shell([self.git_path, "annex", "status", path], strip_leading_whitespace=False)
 
     def git_annex_init(self, path, desc):
-        cmd = [self.git_path, "-C", path, "annex", "init", "--version=6"]
+        cmd = [self.git_path, "-C", path, "annex", "init", "--version=5"]
         if desc is not None:
             cmd.append(desc)
         result = run_shell(cmd)
@@ -49,14 +49,15 @@ class GitWrapper(object):
         if result.failure():
             return result
 
-        # annex.addunlocked to create hardlinks instead of softlinks
-        cmd = [self.git_path, "-C", path, "config", "annex.addunlocked", "true"]
+        # direct mode so annex uses hard links instead of soft links
+        cmd = [self.git_path, "-C", path, "annex", "direct"]
         result = run_shell(cmd)
         if result.failure():
             return result
 
-        # core.filemode false to ignore permission changes by git annex
-        cmd = [self.git_path, "-C", path, "config", "core.filemode", "false"]
+        # re-enable the repository to be used with git directly
+        # though we need to know what we do since annex can lead to unexpected behaviour
+        cmd = [self.git_path, "-C", path, "config", "--unset", "core.bare"]
         result = run_shell(cmd)
         if result.failure():
             return result
