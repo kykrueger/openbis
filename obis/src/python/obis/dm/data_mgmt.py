@@ -260,7 +260,8 @@ class GitDataMgmt(AbstractDataMgmt):
         result = self.git_wrapper.git_init(path)
         if result.failure():
             return result
-        result = self.git_wrapper.git_annex_init(path, desc)
+        git_annex_backend = self.settings_resolver.config.config_dict().get('git_annex_backend')
+        result = self.git_wrapper.git_annex_init(path, desc, git_annex_backend)
         if result.failure():
             return result
         with cd(path):

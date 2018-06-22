@@ -35,7 +35,7 @@ class GitWrapper(object):
         else:
             return run_shell([self.git_path, "annex", "status", path], strip_leading_whitespace=False)
 
-    def git_annex_init(self, path, desc):
+    def git_annex_init(self, path, desc, git_annex_backend=None):
         cmd = [self.git_path, "-C", path, "annex", "init", "--version=5"]
         if desc is not None:
             cmd.append(desc)
@@ -65,6 +65,7 @@ class GitWrapper(object):
         attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
         attributes_dst = os.path.join(path, ".gitattributes")
         shutil.copyfile(attributes_src, attributes_dst)
+        self._apply_git_annex_backend(attributes_dst, git_annex_backend)
         cmd = [self.git_path, "-C", path, "add", ".gitattributes"]
         result = run_shell(cmd)
         if result.failure():
@@ -73,6 +74,20 @@ class GitWrapper(object):
         cmd = [self.git_path, "-C", path, "commit", "-m", "Initial commit."]
         result = run_shell(cmd)
         return result
+
+    def _apply_git_annex_backend(self, filename, git_annex_backend):
+        if git_annex_backend is not None:
+            lines = []
+            file = open(filename, "r")
+            for line in file:
+                if "annex.backend" in line:
+                    lines.append("* annex.backend=" + git_annex_backend + "\n")
+                else:
+                    lines.append(line)
+            file.close()
+            file = open(filename, "w")
+            file.writelines(lines)
+            file.close()
 
     def git_add(self, path):
         # git annex add to avoid out of memory error when adding files bigger than RAM
