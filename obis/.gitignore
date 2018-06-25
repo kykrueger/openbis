@@ -1,4 +1,5 @@
 **.vagrant
 **.egg-info
 **__pycache__
+**.cache
 src/vagrant/initialize/openBIS-installation-standard-technologies-*
