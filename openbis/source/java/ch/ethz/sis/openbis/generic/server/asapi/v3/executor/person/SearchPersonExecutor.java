@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.person;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
@@ -45,6 +46,15 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 public class SearchPersonExecutor extends AbstractSearchObjectManuallyExecutor<PersonSearchCriteria, PersonPE>
         implements ISearchPersonExecutor
 {
+    @Autowired
+    private IPersonAuthorizationExecutor authorizationExecutor;
+
+    @Override
+    public List<PersonPE> search(IOperationContext context, PersonSearchCriteria criteria)
+    {
+        authorizationExecutor.canGet(context);
+        return super.search(context, criteria);
+    }
 
     @Override
     protected List<PersonPE> listAll()

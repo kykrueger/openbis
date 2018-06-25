@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
@@ -40,6 +41,15 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
 public class SearchVocabularyExecutor extends AbstractSearchObjectManuallyExecutor<VocabularySearchCriteria, VocabularyPE> implements
         ISearchVocabularyExecutor
 {
+    @Autowired
+    private IVocabularyAuthorizationExecutor authorizationExecutor;
+
+    @Override
+    public List<VocabularyPE> search(IOperationContext context, VocabularySearchCriteria criteria)
+    {
+        authorizationExecutor.canSearch(context);
+        return super.search(context, criteria);
+    }
 
     @Override
     protected List<VocabularyPE> listAll()
