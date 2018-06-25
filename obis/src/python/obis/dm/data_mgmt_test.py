@@ -93,7 +93,7 @@ def test_data_use_case(tmpdir):
         prepare_registration_expectations(dm)
         set_registration_configuration(dm)
 
-        raw_status = git_status()
+        raw_status = git_status(annex=True)
         status = dm.status()
         assert raw_status.returncode == status.returncode
         assert raw_status.output + '\nNot yet synchronized with openBIS.' == status.output
@@ -107,9 +107,6 @@ def test_data_use_case(tmpdir):
         present_p = result.output.split('\n')[-1]
         assert present_p == 'present: true'
 
-        # This file should be in the annex and a softlink
-        assert os.path.islink("snb-data.zip") == True
-
         # The txt files should be in git normally
         result = utils.run_shell(['git', 'annex', 'info', 'text-data.txt'])
         assert 'Not a valid object name' in result.output
@@ -117,8 +114,9 @@ def test_data_use_case(tmpdir):
         present_p = " ".join(result.output.split(' ')[1:])
         assert present_p == 'Added data.'
 
-        # This file is not in the annex and should not be a softlink
-        assert os.path.islink("text-data.txt") == False
+        # This file is not in the annex
+        result = utils.run_shell(['git', 'annex', 'info', 'text-data.txt'])
+        assert "Not a valid object name" in result.output
 
         status = dm.status()
         assert status.output == 'There are git commits which have not been synchronized.'
