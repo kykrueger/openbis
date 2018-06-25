@@ -36,6 +36,7 @@ evaluationDependsOn(':screening')
 evaluationDependsOn(':rtd_yeastx')
 evaluationDependsOn(':deep_sequencing_unit')
 evaluationDependsOn(':plasmid')
+evaluationDependsOn(':microservice-server')
 
 
 apply from: '../gradle/javaproject.gradle'
@@ -410,6 +411,11 @@ task zipDss(type: Zip, dependsOn: signWebStartJars) {
 	}
 }
 
+task zipMicroserviceServer(type: Zip, dependsOn: project(':microservice-server').tasks.distZip) {
+	baseName 'microservice-server'
+	from zipTree('../microservice-server/build/distributions/microservice-server.zip')
+}
+
 task pybisZip(type: Zip) {
   baseName 'pybis'
   from '../pybis/'
@@ -460,6 +466,7 @@ task generateJavadoc(type: Javadoc) {
 
 build.dependsOn zip
 build.dependsOn zipDss
+build.dependsOn zipMicroserviceServer
 build.dependsOn clientsAndApis
 build.dependsOn dssUploadGuiStandaloneZip
 build.dependsOn dssUploadGuiStandaloneJar
