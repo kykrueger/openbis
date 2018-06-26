@@ -100,7 +100,7 @@
 	   <cve>CVE-2018-1270</cve> <!-- We don't use web sockets endpoints -->
 	   <cve>CVE-2018-1271</cve> <!-- We don't deploy on Windows -->
 	   <cve>CVE-2018-1272</cve> <!-- We don't forward user input blindly to create packages from our web client -->
-	   <cve>CVE-2018-1258</cve> <!-- We don't use such jar -->
+	   <cve>CVE-2018-1258</cve> <!-- We don't use the web-security jar -->
 	</suppress>
 	<suppress>
 	   <gav regex="true">^springframework:spring-beans:.*$</gav>
