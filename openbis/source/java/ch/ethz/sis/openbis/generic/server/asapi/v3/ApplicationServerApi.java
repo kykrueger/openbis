@@ -17,7 +17,6 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +42,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.search.Search
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.AuthorizationGroupUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update.UpdateAuthorizationGroupsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableModel;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.get.GetServerInformationOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.get.GetServerInformationOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -100,6 +101,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.SearchDeletionsO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.SearchDeletionsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entity.create.CreateCodesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entity.create.CreateCodesOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entity.create.CreatePermIdsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entity.create.CreatePermIdsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
@@ -467,15 +470,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTerm
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.OperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.IExecuteOperationExecutor;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.common.spring.IInvocationLoggerContext;
 import ch.systemsx.cisd.openbis.generic.server.AbstractServer;
-import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.IPropertiesBatchManager;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.plugin.IDataSetTypeSlaveServerPlugin;
 import ch.systemsx.cisd.openbis.generic.server.plugin.ISampleTypeSlaveServerPlugin;
-import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
@@ -1620,37 +1620,16 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     @Override
     public Map<String, String> getServerInformation(String sessionToken)
     {
-        checkSession(sessionToken);
-        Map<String, String> info = new HashMap<String, String>();
-        info.put("api-version", getMajorVersion() + "." + getMinorVersion());
-        info.put("project-samples-enabled", Boolean.toString(isProjectSamplesEnabled(null)));
-        info.put("archiving-configured", Boolean.toString(isArchivingConfigured(null)));
-        info.put("enabled-technologies", configurer.getResolvedProps().getProperty(Constants.ENABLED_MODULES_KEY));
-        info.put("authentication-service", configurer.getResolvedProps().getProperty(ComponentNames.AUTHENTICATION_SERVICE));
-        // String disabledText = tryGetDisabledText();
-        // if (disabledText != null)
-        // {
-        // info.put("server-disabled-info", disabledText);
-        // }
-        return info;
+        GetServerInformationOperationResult result = executeOperation(sessionToken, new GetServerInformationOperation());
+        return result.getServerInformation();
     }
 
     @Override
     @Transactional
     public List<String> createPermIdStrings(String sessionToken, int count)
     {
-        checkSession(sessionToken);
-        if (count > 100)
-        {
-            throw new UserFailureException("Cannot create more than 100 ids in one call (" + count + " requested)");
-        }
-
-        if (count <= 0)
-        {
-            throw new UserFailureException("Invalid count: " + count);
-        }
-
-        return getDAOFactory().getPermIdDAO().createPermIds(count);
+        CreatePermIdsOperationResult result = executeOperation(sessionToken, new CreatePermIdsOperation(count));
+        return result.getPermIds();
     }
 
     @Override

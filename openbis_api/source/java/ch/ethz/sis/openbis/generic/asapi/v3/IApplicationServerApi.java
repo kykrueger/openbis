@@ -243,6 +243,9 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 /**
  * V3 application server API. Detailed documentation on how to use the API together code examples in both Java and Javascript can be found at "openBIS
  * V3 API" openBIS WIKI page.
+ * <p>
+ * The required access rights of the methods are the default ones. They can be configured with a capability-role map.
+ * For more details see "Installation and Administrator Guide of the openBIS Server" openBIS WIKI page.
  * 
  * @author pkupczyk
  */

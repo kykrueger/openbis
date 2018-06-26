@@ -37,4 +37,11 @@ public class EntityAuthorizationExecutor implements IEntityAuthorizationExecutor
     {
     }
 
+    @Override
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @Capability("CREATE_PERM_IDS")
+    public void canCreatePermIds(IOperationContext context)
+    {
+    }
+
 }
