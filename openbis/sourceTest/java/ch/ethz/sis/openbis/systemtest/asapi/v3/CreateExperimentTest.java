@@ -618,4 +618,27 @@ public class CreateExperimentTest extends AbstractExperimentTest
 
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("LOG_TEST_1");
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setTypeId(new EntityTypePermId("SIRNA_HCS"));
+        creation.setProperty("DESCRIPTION", "a description");
+
+        ExperimentCreation creation2 = new ExperimentCreation();
+        creation2.setCode("LOG_TEST_2");
+        creation2.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation2.setTypeId(new EntityTypePermId("SIRNA_HCS"));
+        creation2.setProperty("DESCRIPTION", "a description 2");
+
+        v3api.createExperiments(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-experiments  NEW_EXPERIMENTS('[ExperimentCreation[projectId=/CISD/NEMO,code=LOG_TEST_1], ExperimentCreation[projectId=/TEST-SPACE/TEST-PROJECT,code=LOG_TEST_2]]')");
+    }
+
 }

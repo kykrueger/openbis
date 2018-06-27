@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create;
 
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
@@ -104,6 +105,12 @@ public class TagCreation implements ICreation, IObjectCreation
     public void setMaterialIds(List<? extends IMaterialId> materialIds)
     {
         this.materialIds = materialIds;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("code", code).toString();
     }
 
 }

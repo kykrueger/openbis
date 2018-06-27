@@ -27,8 +27,8 @@ expected incoming Name for HiSeq runs: 110715_SN792_0054_BC035RACXX
 
 structure:
 110715_SN792_0054_BC035RACXX/
-	runParameters.xml
-	RunInfo.xml
+    runParameters.xml
+    RunInfo.xml
 
 The run folder created by the HiSeq sequencer is used to create a new 
 ILLUMINA_FLOW_CELL in openBIS. The properties are then set by parsing the
@@ -101,15 +101,24 @@ def create_openbis_timestamp ():
 
 # -----------------------------------------------------------------------------
 
-def registerFlowLane(transaction, a_lane, flowCellName, newFlowCell, exp):
+def registerFlowLane(transaction, a_lane, flowCellName, newFlowCell, exp, projectSamplesEnabled):
   '''
   Registers a new Flow lane 
   '''
-  newFlowLane = transaction.createNewSample('/' + FLOWCELL_SPACE + '/' + flowCellName +
-                                            ':' + str(a_lane), FLOW_LANE)
+  newFlowLane = createNewSample(transaction, flowCellName + ':' + str(a_lane), FLOW_LANE, projectSamplesEnabled)
   newFlowLane.setContainer(newFlowCell)
   newFlowLane.setExperiment(exp)
 
+# -----------------------------------------------------------------------------
+
+def createNewSample(transaction, sampleCode, sampleType, projectSamplesEnabled):
+  '''
+  Create a sample with specified code and type. Depending on the flag projectSamplesEnabled
+  the identifier is constructed differently.
+  '''
+  identifierPrefix = FLOWCELL_PROJECT_ID if projectSamplesEnabled else ('/' + FLOWCELL_SPACE)
+  return transaction.createNewSample(identifierPrefix + '/' + sampleCode, sampleType)
+  
 # -----------------------------------------------------------------------------
 
 def extractFlowCellName (runFolderName):
@@ -133,7 +142,8 @@ def searchFlowCell (transaction, flowCellName):
 # -----------------------------------------------------------------------------
 
 def process(transaction):
-
+  projectSamplesEnabled = (transaction.serverInformation.get('project-samples-enabled') == 'true')
+  
   incoming = transaction.getIncoming()
   incomingPath = incoming.getAbsolutePath()
 
@@ -157,7 +167,7 @@ def process(transaction):
   exp = transaction.getExperiment(expID)
   if exp == None:
     exp = transaction.createNewExperiment(expID, EXPERIMENT_TYPE_CODE)
-  newFlowCell = transaction.createNewSample('/' + FLOWCELL_SPACE + '/' + flowCellName, FLOW_CELL)
+  newFlowCell = createNewSample(transaction, flowCellName, FLOW_CELL, projectSamplesEnabled)
   newFlowCell.setExperiment(exp)
  
   run = runInfo.getAllchildren('Run')[0].attrib
@@ -208,4 +218,4 @@ def process(transaction):
   except:
     maxLanes = len(runInfo.getAllchildren('Tiles')[0])
 
-  [registerFlowLane(transaction, lane, flowCellName, newFlowCell, exp) for lane in range(1,int(maxLanes)+1)]
+  [registerFlowLane(transaction, lane, flowCellName, newFlowCell, exp, projectSamplesEnabled) for lane in range(1,int(maxLanes)+1)]

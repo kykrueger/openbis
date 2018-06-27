@@ -42,7 +42,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
@@ -78,6 +77,8 @@ public class DeletedSamplePE extends AbstractDeletedEntityPE
 
     private SpacePE space;
 
+    private ProjectPE project;
+    
     private Set<DeletedSampleRelationshipPE> parentRelationships;
 
     @Override
@@ -163,6 +164,18 @@ public class DeletedSamplePE extends AbstractDeletedEntityPE
         this.space = space;
     }
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = ColumnNames.PROJECT_COLUMN, updatable = false)
+    public ProjectPE getProject()
+    {
+        return project;
+    }
+    
+    public void setProject(final ProjectPE project)
+    {
+        this.project = project;
+    }
+    
     @Override
     @Transient
     public EntityTypePE getEntityType()

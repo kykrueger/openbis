@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationDateHolder;
@@ -37,12 +38,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.authorizationgroup.AuthorizationGroup")
-public class AuthorizationGroup implements Serializable, IPermIdHolder, ICodeHolder, IDescriptionHolder, 
+public class AuthorizationGroup implements Serializable, IPermIdHolder, ICodeHolder, IDescriptionHolder,
         IRegistrationDateHolder, IRegistratorHolder, IModificationDateHolder
 {
     private static final long serialVersionUID = 1L;
@@ -58,7 +57,7 @@ public class AuthorizationGroup implements Serializable, IPermIdHolder, ICodeHol
 
     @JsonProperty
     private String description;
-    
+
     @JsonProperty
     private Date registrationDate;
 
@@ -140,8 +139,7 @@ public class AuthorizationGroup implements Serializable, IPermIdHolder, ICodeHol
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }
@@ -170,8 +168,7 @@ public class AuthorizationGroup implements Serializable, IPermIdHolder, ICodeHol
         if (getFetchOptions() != null && getFetchOptions().hasUsers())
         {
             return users;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Users have not been fetched.");
         }
@@ -181,22 +178,28 @@ public class AuthorizationGroup implements Serializable, IPermIdHolder, ICodeHol
     {
         this.users = users;
     }
-    
+
     @JsonIgnore
     public List<RoleAssignment> getRoleAssignments()
     {
         if (getFetchOptions() != null && getFetchOptions().hasRoleAssignments())
         {
             return roleAssignments;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Role assignments have not been fetched.");
         }
     }
-    
+
     public void setRoleAssignments(List<RoleAssignment> roleAssignments)
     {
         this.roleAssignments = roleAssignments;
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("permId", permId).toString();
+    }
+
 }

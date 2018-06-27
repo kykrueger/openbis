@@ -33,8 +33,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class SearchAuthorizationGroupTest extends AbstractTest
@@ -52,9 +50,9 @@ public class SearchAuthorizationGroupTest extends AbstractTest
 
         // When
         SearchResult<AuthorizationGroup> result = v3api.searchAuthorizationGroups(sessionToken, searchCriteria, fetchOptions);
-        
+
         // Then
-        
+
         AuthorizationGroup authorizationGroup = result.getObjects().get(0);
         assertEquals(authorizationGroup.getCode(), "AGROUP");
         assertEquals(authorizationGroup.getDescription(), "myDescription");
@@ -67,10 +65,10 @@ public class SearchAuthorizationGroupTest extends AbstractTest
         assertEquals(users.get(0).getSpace().getCode(), "TESTGROUP");
         assertEquals(users.size(), 1);
         assertEquals(result.getTotalCount(), 1);
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testSearchWithPermIdFetchingRegistrator()
     {
@@ -80,12 +78,12 @@ public class SearchAuthorizationGroupTest extends AbstractTest
         searchCriteria.withPermId().thatContains("G");
         AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
         fetchOptions.withRegistrator();
-        
+
         // When
         SearchResult<AuthorizationGroup> result = v3api.searchAuthorizationGroups(sessionToken, searchCriteria, fetchOptions);
-        
+
         // Then
-        
+
         AuthorizationGroup authorizationGroup = result.getObjects().get(0);
         assertEquals(authorizationGroup.getPermId().getPermId(), "AGROUP");
         assertEquals(authorizationGroup.getCode(), "AGROUP");
@@ -95,10 +93,10 @@ public class SearchAuthorizationGroupTest extends AbstractTest
         assertEquals(authorizationGroup.getFetchOptions().hasUsers(), false);
         assertEquals(result.getTotalCount(), 1);
         assertEquals(result.getObjects().size(), 1);
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testSearchWithNonExistingCode()
     {
@@ -110,12 +108,12 @@ public class SearchAuthorizationGroupTest extends AbstractTest
 
         // When
         SearchResult<AuthorizationGroup> result = v3api.searchAuthorizationGroups(sessionToken, searchCriteria, fetchOptions);
-        
+
         // Then
-        
+
         assertEquals(result.getTotalCount(), 0);
         assertEquals(result.getObjects().size(), 0);
-        
+
         v3api.logout(sessionToken);
     }
 
@@ -126,12 +124,12 @@ public class SearchAuthorizationGroupTest extends AbstractTest
         String sessionToken = v3api.login(user, PASSWORD);
         AuthorizationGroupSearchCriteria searchCriteria = new AuthorizationGroupSearchCriteria();
         AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
-        
+
         // When
         SearchResult<AuthorizationGroup> result = v3api.searchAuthorizationGroups(sessionToken, searchCriteria, fetchOptions);
-        
+
         // Then
-        
+
         AuthorizationGroup authorizationGroup = result.getObjects().get(0);
         assertEquals(authorizationGroup.getCode(), "AGROUP");
         assertEquals(authorizationGroup.getDescription(), "myDescription");
@@ -145,40 +143,57 @@ public class SearchAuthorizationGroupTest extends AbstractTest
     @DataProvider
     Object[][] usersAllowedToSearchAuthorizationGroups()
     {
-        String[] users = {TEST_GROUP_ADMIN, TEST_OBSERVER_CISD, TEST_SPACE_USER, TEST_USER};
+        String[] users = { TEST_GROUP_ADMIN, TEST_OBSERVER_CISD, TEST_SPACE_USER, TEST_USER };
         Object[][] objects = new Object[users.length][];
         for (int i = 0; i < users.length; i++)
         {
-            objects[i] = new Object[] {users[i]};
+            objects[i] = new Object[] { users[i] };
         }
         return objects;
     }
-    
 
     @Test(dataProvider = "usersNotAllowedToSearchAuthorizationGroups")
     public void testSearchWithUserCausingAuthorizationFailure(final String user)
     {
         assertAuthorizationFailureException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
             {
-                String sessionToken = v3api.login(user, PASSWORD);
-                AuthorizationGroupPermId permId1 = new AuthorizationGroupPermId("AGROUP");
-                AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
-                v3api.getAuthorizationGroups(sessionToken, Arrays.asList(permId1), fetchOptions);
-            }
-        });
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    AuthorizationGroupPermId permId1 = new AuthorizationGroupPermId("AGROUP");
+                    AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
+                    v3api.getAuthorizationGroups(sessionToken, Arrays.asList(permId1), fetchOptions);
+                }
+            });
     }
-    
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        AuthorizationGroupSearchCriteria c = new AuthorizationGroupSearchCriteria();
+        c.withCode().thatEquals("AGROUP");
+
+        AuthorizationGroupFetchOptions fo = new AuthorizationGroupFetchOptions();
+        fo.withRoleAssignments();
+        fo.withUsers();
+
+        v3api.searchAuthorizationGroups(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-authorization-groups  SEARCH_CRITERIA:\n'AUTHORIZATION_GROUP\n    with attribute 'code' equal to 'AGROUP'\n'\nFETCH_OPTIONS:\n'AuthorizationGroup\n    with Users\n    with RoleAssignments\n'");
+    }
+
     @DataProvider
     Object[][] usersNotAllowedToSearchAuthorizationGroups()
     {
-        String[] users = {TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, TEST_POWER_USER_CISD};
+        String[] users = { TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, TEST_POWER_USER_CISD };
         Object[][] objects = new Object[users.length][];
         for (int i = 0; i < users.length; i++)
         {
-            objects[i] = new Object[] {users[i]};
+            objects[i] = new Object[] { users[i] };
         }
         return objects;
     }

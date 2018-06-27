@@ -283,6 +283,23 @@ public class UpdateVocabularyTermTest extends AbstractVocabularyTermTest
         // TODO
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyTermUpdate update = new VocabularyTermUpdate();
+        update.setVocabularyTermId(new VocabularyTermPermId("DOG", "ORGANISM"));
+
+        VocabularyTermUpdate update2 = new VocabularyTermUpdate();
+        update2.setVocabularyTermId(new VocabularyTermPermId("PROPRIETARY", "$STORAGE_FORMAT"));
+
+        v3api.updateVocabularyTerms(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-vocabulary-terms  VOCABULARY_TERM_UPDATES('[VocabularyTermUpdate[vocabularyTermId=DOG (ORGANISM)], VocabularyTermUpdate[vocabularyTermId=PROPRIETARY ($STORAGE_FORMAT)]]')");
+    }
+
     private List<VocabularyTerm> updateTerms(String user, String password, VocabularyTermUpdate... updates)
     {
         String sessionToken = v3api.login(user, password);

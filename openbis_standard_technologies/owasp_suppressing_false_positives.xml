@@ -146,5 +146,6 @@
 	<suppress>
    		<gav regex="true">^org\.postgresql:postgresql:.*$</gav>
    		<cve>CVE-2017-14798</cve> <!-- Clients can't use JDBC directly and execute their own SQL -->
+   		<cve>CVE-2018-1115</cve> <!-- We don't use any admin pack -->
 	</suppress>
 </suppressions>

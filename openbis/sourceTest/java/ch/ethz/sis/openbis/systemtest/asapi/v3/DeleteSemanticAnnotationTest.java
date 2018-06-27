@@ -140,6 +140,21 @@ public class DeleteSemanticAnnotationTest extends AbstractDeletionTest
         assertEquals(afterMap.size(), 0);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SemanticAnnotationDeletionOptions o = new SemanticAnnotationDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteSemanticAnnotations(sessionToken,
+                Arrays.asList(new SemanticAnnotationPermId("TEST-LOGGING-1"), new SemanticAnnotationPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-semantic-annotations  SEMANTIC_ANNOTATION_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('SemanticAnnotationDeletionOptions[reason=test-reason]')");
+    }
+
     private void testDeleteWithUser(String user)
     {
         String sessionToken = v3api.login(user, PASSWORD);

@@ -121,6 +121,8 @@ var sources = [
 	'as/dto/common/fetchoptions/EntityWithPropertiesSortOptions',
 	'as/dto/common/fetchoptions/Sorting',
 	'as/dto/common/fetchoptions/SortOrder',
+	'as/dto/common/get/GetServerInformationOperation',
+	'as/dto/common/get/GetServerInformationOperationResult',
 	'as/dto/common/id/CreationId',
 	'as/dto/common/search/AnyFieldSearchCriteria',
 	'as/dto/common/search/AnyPropertySearchCriteria',
@@ -281,6 +283,8 @@ var sources = [
 	
 	'as/dto/entity/create/CreateCodesOperation',
 	'as/dto/entity/create/CreateCodesOperationResult',
+	'as/dto/entity/create/CreatePermIdsOperation',
+	'as/dto/entity/create/CreatePermIdsOperationResult',
 	
 	'as/dto/entitytype/id/EntityTypePermId',
 	'as/dto/entitytype/fetchoptions/EntityTypeFetchOptions',

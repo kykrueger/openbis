@@ -19,10 +19,13 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.Arrays;
+
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 
 public class GetExternalDmsTest extends AbstractExternalDmsTest
@@ -63,4 +66,18 @@ public class GetExternalDmsTest extends AbstractExternalDmsTest
         assertThat(externalDms.isOpenbis(), is(false));
         assertThat(externalDms.getUrlTemplate(), is(address));
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExternalDmsFetchOptions fo = new ExternalDmsFetchOptions();
+
+        v3api.getExternalDataManagementSystems(sessionToken, Arrays.asList(new ExternalDmsPermId("DMS_1"), new ExternalDmsPermId("DMS_3")), fo);
+
+        assertAccessLog(
+                "get-external-data-management-systems  EXTERNAL_DMS_IDS('[DMS_1, DMS_3]') FETCH_OPTIONS('ExternalDms\n')");
+    }
+
 }

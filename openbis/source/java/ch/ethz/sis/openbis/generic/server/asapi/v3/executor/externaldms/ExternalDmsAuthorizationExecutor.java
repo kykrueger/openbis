@@ -39,24 +39,28 @@ public class ExternalDmsAuthorizationExecutor implements IExternalDmsAuthorizati
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
+    @Capability("CREATE_EXTERNAL_DMS")
     public void canCreate(IOperationContext context)
     {
     }
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
+    @Capability("DELETE_EXTERNAL_DMS")
     public void canDelete(IOperationContext context)
     {
     }
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @Capability("SEARCH_EXTERNAL_DMS")
     public void canSearch(IOperationContext context)
     {
     }
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.INSTANCE_ADMIN })
+    @Capability("UPDATE_EXTERNAL_DMS")
     public void canUpdate(IOperationContext contex)
     {
     }

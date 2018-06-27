@@ -104,4 +104,18 @@ public class GetExperimentTypeTest extends AbstractGetEntityTypeTest
         assertValidationPluginNotFetched(type);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentTypeFetchOptions fo = new ExperimentTypeFetchOptions();
+        fo.withPropertyAssignments();
+
+        v3api.getExperimentTypes(sessionToken, Arrays.asList(new EntityTypePermId("SIRNA_HCS"), new EntityTypePermId("COMPOUND_HCS")), fo);
+
+        assertAccessLog(
+                "get-experiment-types  EXPERIMENT_TYPE_IDS('[SIRNA_HCS, COMPOUND_HCS]') FETCH_OPTIONS('ExperimentType\n    with PropertyAssignments\n')");
+    }
+
 }

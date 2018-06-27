@@ -811,6 +811,23 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testGet(c, fCreate, fGet, fGetEmptyFetchOptions, fechOptionsTestConfig);
 		});
 
+		QUnit.test("getServerInformation()", function(assert) {
+			var c = new common(assert);
+			c.start();
+
+			c.createFacadeAndLogin().then(function(facade) {
+				return facade.getServerInformation().then(function(serverInformation) {
+					c.assertTrue(serverInformation != null);
+					c.assertEqual(serverInformation["api-version"], "3.5", "api-version");
+					c.assertEqual(serverInformation["project-samples-enabled"], "false", "project-samples-enabled");
+					c.finish();
+				});
+			}).fail(function(error) {
+				c.fail(error.message);
+				c.finish();
+			});
+		});
+
 	}
 
 	return function() {

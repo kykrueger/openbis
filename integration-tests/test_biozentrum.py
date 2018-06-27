@@ -14,6 +14,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbisController = self.createOpenbisController()
         openbisController.dssProperties['scripts-dir'] = "../../../../../../%s/scripts" % openbisController.templatesFolder
         post_registration_tasks = openbisController.dssProperties['post-registration.post-registration-tasks'] 
+        openbisController.asProperties['project-samples-enabled'] = 'false'
         openbisController.dssProperties['post-registration.post-registration-tasks'] = "%s, eager-shuffling, notifying" % post_registration_tasks
         openbisController.dssProperties['post-registration.eager-shuffling.class'] = "ch.systemsx.cisd.etlserver.postregistration.EagerShufflingTask"
         openbisController.dssProperties['post-registration.eager-shuffling.data-store-server-code'] = "${data-store-server-code}"

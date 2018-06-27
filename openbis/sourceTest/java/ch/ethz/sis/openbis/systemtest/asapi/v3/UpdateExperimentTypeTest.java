@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -34,8 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @Test
@@ -123,4 +122,22 @@ public class UpdateExperimentTypeTest extends UpdateEntityTypeTest<ExperimentTyp
         fetchOptions.withProperties();
         return v3api.searchExperiments(sessionToken, (ExperimentSearchCriteria) searchCriteria, fetchOptions).getObjects();
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentTypeUpdate update = new ExperimentTypeUpdate();
+        update.setTypeId(new EntityTypePermId("SIRNA_HCS"));
+
+        ExperimentTypeUpdate update2 = new ExperimentTypeUpdate();
+        update2.setTypeId(new EntityTypePermId("COMPOUND_HCS"));
+
+        v3api.updateExperimentTypes(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-experiment-types  EXPERIMENT_TYPE_UPDATES('[ExperimentTypeUpdate[typeId=SIRNA_HCS (EXPERIMENT)], ExperimentTypeUpdate[typeId=COMPOUND_HCS (EXPERIMENT)]]')");
+    }
+
 }

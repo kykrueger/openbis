@@ -23,7 +23,7 @@ define([ "stjs", "as/dto/common/id/ObjectPermId", "as/dto/entitytype/id/IEntityT
 			this.entityKind = entityKind;
 		};
 		prototype.toString = function() {
-			return this.getPermId() + ", " + this.getEntityKind();
+			return this.getPermId() + " (" + this.getEntityKind() + ")";
 		};
 		prototype.equals = function(obj) {
 			if (ObjectPermId.equals.call(this, obj)) {

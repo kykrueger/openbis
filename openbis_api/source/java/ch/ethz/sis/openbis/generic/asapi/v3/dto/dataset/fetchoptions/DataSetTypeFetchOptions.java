@@ -71,12 +71,12 @@ public class DataSetTypeFetchOptions extends FetchOptions<DataSetType> implement
         }
         return validationPlugin;
     }
-    
+
     public PluginFetchOptions withValidationPluginUsing(PluginFetchOptions fetchOptions)
     {
         return validationPlugin = fetchOptions;
     }
-    
+
     public boolean hasValidationPlugin()
     {
         return validationPlugin != null;
@@ -99,11 +99,13 @@ public class DataSetTypeFetchOptions extends FetchOptions<DataSetType> implement
     {
         return sort;
     }
+
     @Override
     protected FetchOptionsToStringBuilder getFetchOptionsStringBuilder()
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("DataSetType", this);
         f.addFetchOption("PropertyAssignments", propertyAssignments);
+        f.addFetchOption("ValidationPlugin", validationPlugin);
         return f;
     }
 

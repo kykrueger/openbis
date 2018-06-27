@@ -18,16 +18,22 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unlock;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.dataset.unlock.DataSetUnlockOptions")
 public class DataSetUnlockOptions implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).toString();
+    }
 
 }

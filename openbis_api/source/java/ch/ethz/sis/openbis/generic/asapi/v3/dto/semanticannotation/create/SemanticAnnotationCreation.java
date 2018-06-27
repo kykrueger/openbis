@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.create;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
@@ -137,6 +138,16 @@ public class SemanticAnnotationCreation implements ICreation, IObjectCreation
     public void setDescriptorAccessionId(String descriptorAccessionId)
     {
         this.descriptorAccessionId = descriptorAccessionId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("entityTypeId", entityTypeId).append("propertyTypeId", propertyTypeId)
+                .append("propertyAssignmentId", propertyAssignmentId).append("predicateOntologyId", predicateOntologyId)
+                .append("predicateOntologyVersion", predicateOntologyVersion).append("predicateAccessionId", predicateAccessionId)
+                .append("descriptorOntologyId", descriptorOntologyId).append("descriptorOntologyVersion", descriptorOntologyVersion)
+                .append("descriptorAccessionId", descriptorAccessionId).toString();
     }
 
 }

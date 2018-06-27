@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.create;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -27,7 +28,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.plugin.create.PluginCreation")
 public class PluginCreation implements ICreation, IObjectCreation
@@ -36,19 +36,19 @@ public class PluginCreation implements ICreation, IObjectCreation
 
     @JsonProperty
     private String name;
-    
+
     @JsonProperty
     private String description;
-    
+
     @JsonProperty
     private EntityKind entityKind;
-    
+
     @JsonProperty
     private PluginType pluginType;
-    
+
     @JsonProperty
     private String script;
-    
+
     @JsonProperty
     private boolean available = true;
 
@@ -117,4 +117,11 @@ public class PluginCreation implements ICreation, IObjectCreation
     {
         this.available = available;
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("pluginType", pluginType).append("name", name).toString();
+    }
+
 }

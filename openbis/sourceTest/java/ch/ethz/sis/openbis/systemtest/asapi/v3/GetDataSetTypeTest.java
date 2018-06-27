@@ -110,4 +110,18 @@ public class GetDataSetTypeTest extends AbstractGetEntityTypeTest
         assertValidationPluginNotFetched(type);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetTypeFetchOptions fo = new DataSetTypeFetchOptions();
+        fo.withPropertyAssignments();
+
+        v3api.getDataSetTypes(sessionToken, Arrays.asList(new EntityTypePermId("HCS_IMAGE"), new EntityTypePermId("CONTAINER_TYPE")), fo);
+
+        assertAccessLog(
+                "get-data-set-types  DATA_SET_TYPE_IDS('[HCS_IMAGE, CONTAINER_TYPE]') FETCH_OPTIONS('DataSetType\n    with PropertyAssignments\n')");
+    }
+
 }

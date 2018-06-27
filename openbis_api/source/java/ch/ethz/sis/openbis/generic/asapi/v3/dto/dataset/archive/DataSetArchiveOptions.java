@@ -21,6 +21,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -45,6 +46,12 @@ public class DataSetArchiveOptions implements Serializable
     public boolean isRemoveFromDataStore()
     {
         return removeFromDataStore;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("removeFromDataStore", removeFromDataStore).toString();
     }
 
 }

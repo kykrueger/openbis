@@ -32,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.update.TagUpdate;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
@@ -519,6 +520,23 @@ public class UpdateTagTest extends AbstractTest
             Tag after = updateTag(user.getUserId(), PASSWORD, update);
             assertEquals(after.getDescription(), update.getDescription().getValue());
         }
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        TagUpdate update = new TagUpdate();
+        update.setTagId(new TagPermId(TEST_USER, "TEST_METAPROJECTS"));
+
+        TagUpdate update2 = new TagUpdate();
+        update2.setTagId(new TagCode("ANOTHER_TEST_METAPROJECTS"));
+
+        v3api.updateTags(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-tags  TAG_UPDATES('[TagUpdate[tagId=/test/TEST_METAPROJECTS], TagUpdate[tagId=ANOTHER_TEST_METAPROJECTS]]')");
     }
 
     private Tag getTag(String user, String password, ITagId tagId)

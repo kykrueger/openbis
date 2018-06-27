@@ -78,10 +78,15 @@ define([ 'jquery', 'openbis', 'test/common' ], function($, openbis, common) {
 			});
 		}
 
+		this.getServerInformation = function() {
+			return this._executeOperation(new c.GetServerInformationOperation()).then(function() {
+				return results.getResults()[0].getServerInformation();
+			});
+		}
+		
 		this.createPermIdStrings = function(count) {
-			var thisFacade = this;
-			return this._openbis.createPermIdStrings(count).done(function(permIds) {
-				return permIds;
+			return this._executeOperation(new c.CreatePermIdsOperation(count)).then(function(results) {
+				return results.getResults()[0].getPermIds();
 			});
 		}
 

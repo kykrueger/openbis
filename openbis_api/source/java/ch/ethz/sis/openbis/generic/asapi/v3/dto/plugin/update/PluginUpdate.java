@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.update;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -27,7 +28,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.plugin.update.PluginUpdate")
 public class PluginUpdate implements IUpdate, IObjectUpdate<IPluginId>
@@ -39,10 +39,10 @@ public class PluginUpdate implements IUpdate, IObjectUpdate<IPluginId>
 
     @JsonProperty
     private FieldUpdateValue<String> description = new FieldUpdateValue<String>();
-    
+
     @JsonProperty
     private FieldUpdateValue<String> script = new FieldUpdateValue<String>();
-    
+
     @JsonProperty
     private FieldUpdateValue<Boolean> available = new FieldUpdateValue<Boolean>();
 
@@ -75,13 +75,13 @@ public class PluginUpdate implements IUpdate, IObjectUpdate<IPluginId>
     {
         this.description.setValue(description);
     }
-    
+
     @JsonIgnore
     public FieldUpdateValue<String> getScript()
     {
         return script;
     }
-    
+
     @JsonIgnore
     public void setScript(String script)
     {
@@ -99,4 +99,11 @@ public class PluginUpdate implements IUpdate, IObjectUpdate<IPluginId>
     {
         this.available.setValue(available);
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("pluginId", pluginId).toString();
+    }
+
 }

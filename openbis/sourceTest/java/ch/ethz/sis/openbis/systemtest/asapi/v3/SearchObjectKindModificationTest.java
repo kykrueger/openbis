@@ -88,4 +88,21 @@ public class SearchObjectKindModificationTest extends AbstractTest
             assertEquals(modification.getOperationKind(), OperationKind.UPDATE);
         }
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ObjectKindModificationSearchCriteria c = new ObjectKindModificationSearchCriteria();
+        c.withObjectKind().thatIn(ObjectKind.SAMPLE, ObjectKind.SAMPLE_TYPE);
+
+        ObjectKindModificationFetchOptions fo = new ObjectKindModificationFetchOptions();
+
+        v3api.searchObjectKindModifications(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-object-kind-modifications  SEARCH_CRITERIA:\n'OBJECT_KIND_MODIFICATION_SEARCH\n    with object kinds [SAMPLE, SAMPLE_TYPE]\n'\nFETCH_OPTIONS:\n'ObjectKindModification\n'");
+    }
+
 }

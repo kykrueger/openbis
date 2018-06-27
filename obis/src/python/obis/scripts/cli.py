@@ -72,6 +72,7 @@ def run(ctx, function):
 
 
 @click.group()
+@click.version_option(version=None)
 @click.option('-q', '--quiet', default=False, is_flag=True, help='Suppress status reporting.')
 @click.option('-s', '--skip_verification', default=False, is_flag=True, help='Do not verify cerficiates')
 @click.option('-d', '--debug', default=False, is_flag=True, help="Show stack trace on error.")
@@ -507,23 +508,19 @@ def _repository_commit(ctx, msg, auto_add, ignore_missing_parent):
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("commit", run(ctx, lambda: data_mgmt.commit(msg, auto_add, ignore_missing_parent)))
 
-@repository.command("commit")
+@repository.command("commit", short_help="Commit the repository to git and inform openBIS.")
 @click.pass_context
 @add_params(_commit_params)
 def repository_commit(ctx, msg, auto_add, ignore_missing_parent, repository):
-    """Commit the repository to git and inform openBIS.
-    """
     if repository is None:
         return _repository_commit(ctx, msg, auto_add, ignore_missing_parent)
     with cd(repository):
         return _repository_commit(ctx, msg, auto_add, ignore_missing_parent)
 
-@cli.command()
+@cli.command(short_help="Commit the repository to git and inform openBIS.")
 @click.pass_context
 @add_params(_commit_params)
 def commit(ctx, msg, auto_add, ignore_missing_parent, repository):
-    """Commit the repository to git and inform openBIS.
-    """
     ctx.invoke(repository_commit, msg=msg, auto_add=auto_add, ignore_missing_parent=ignore_missing_parent, repository=repository)
 
 ## init
@@ -535,18 +532,16 @@ _init_params = [
     click.argument('description', default=""),
 ]
 
-@repository.command("init")
+@repository.command("init", short_help="Initialize the folder as a data repository.")
 @click.pass_context
 @add_params(_init_params)
 def repository_init(ctx, object_id, collection_id, repository, description):
-    """Initialize the folder as a data repository."""
     return init_data_impl(ctx, object_id, collection_id, repository, description)
 
-@cli.command()
+@cli.command(short_help="Initialize the folder as a data repository.")
 @click.pass_context
 @add_params(_init_params)
 def init(ctx, object_id, collection_id, repository, description):
-    """Initialize the folder as a data repository."""
     ctx.invoke(repository_init, object_id=object_id, collection_id=collection_id, repository=repository, description=description)
 
 ## init analysis
@@ -556,18 +551,16 @@ _init_analysis_params = [
 ]
 _init_analysis_params += _init_params
 
-@repository.command("init_analysis")
+@repository.command("init_analysis", short_help="Initialize the folder as an analysis folder.")
 @click.pass_context
 @add_params(_init_analysis_params)
 def repository_init_analysis(ctx, parent, object_id, collection_id, repository, description):
-    """Initialize the folder as an analysis folder."""
     return init_analysis_impl(ctx, parent, object_id, collection_id, repository, description)
 
-@cli.command()
+@cli.command(short_help="Initialize the folder as an analysis folder.")
 @click.pass_context
 @add_params(_init_analysis_params)
 def init_analysis(ctx, parent, object_id, collection_id, repository, description):
-    """Initialize the folder as an analysis folder."""
     ctx.invoke(repository_init_analysis, parent=parent, object_id=object_id, collection_id=collection_id, repository=repository, description=description)
 
 ## status
@@ -581,23 +574,19 @@ def _repository_status(ctx):
     result = run(ctx, data_mgmt.status)
     click.echo(result.output)    
 
-@repository.command("status")
+@repository.command("status", short_help="Show the state of the obis repository.")
 @click.pass_context
 @add_params(_status_params)
 def repository_status(ctx, repository):
-    """Show the state of the obis repository.
-    """
     if repository is None:
         return _repository_status(ctx)
     with cd(repository):
         return _repository_status(ctx)        
 
-@cli.command()
+@cli.command(short_help="Show the state of the obis repository.")
 @click.pass_context
 @add_params(_status_params)
 def status(ctx, repository):
-    """Show the state of the obis repository.
-    """
     ctx.invoke(repository_status, repository=repository)
 
 ## sync
@@ -611,23 +600,19 @@ def _repository_sync(ctx, ignore_missing_parent):
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("sync", run(ctx, lambda: data_mgmt.sync(ignore_missing_parent)))
 
-@repository.command("sync")
+@repository.command("sync", short_help="Sync the repository with openBIS.")
 @click.pass_context
 @add_params(_sync_params)
 def repository_sync(ctx, ignore_missing_parent, repository):
-    """Sync the repository with openBIS.
-    """
     if repository is None:
         return _repository_sync(ctx, ignore_missing_parent)
     with cd(repository):
         return _repository_sync(ctx, ignore_missing_parent)
 
-@cli.command()
+@cli.command(short_help="Sync the repository with openBIS.")
 @click.pass_context
 @add_params(_sync_params)
 def sync(ctx, ignore_missing_parent, repository):
-    """Sync the repository with openBIS.
-    """
     ctx.invoke(repository_sync, ignore_missing_parent=ignore_missing_parent, repository=repository)
 
 ## addref
@@ -640,23 +625,19 @@ def _repository_addref(ctx):
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("addref", run(ctx, data_mgmt.addref))
 
-@repository.command("addref")
+@repository.command("addref", short_help="Add the given repository as a reference to openBIS.")
 @click.pass_context
 @add_params(_addref_params)
 def repository_addref(ctx, repository):
-    """Add the given repository as a reference to openBIS.
-    """
     if repository is None:
         return _repository_addref(ctx)
     with cd(repository):
         return _repository_addref(ctx)
 
-@cli.command()
+@cli.command(short_help="Add the given repository as a reference to openBIS.")
 @click.pass_context
 @add_params(_addref_params)
 def addref(ctx, repository):
-    """Add the given repository as a reference to openBIS.
-    """
     ctx.invoke(repository_addref, repository=repository)
 
 # removeref
@@ -669,23 +650,19 @@ def _repository_removeref(ctx):
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("addref", run(ctx, data_mgmt.removeref))
 
-@repository.command("removeref")
+@repository.command("removeref", short_help="Remove the reference to the given repository from openBIS.")
 @click.pass_context
 @add_params(_removeref_params)
 def repository_removeref(ctx, repository):
-    """Remove the reference to the given repository from openBIS.
-    """
     if repository is None:
         return _repository_removeref(ctx)
     with cd(repository):
         return _repository_removeref(ctx)
 
-@cli.command()
+@cli.command(short_help="Remove the reference to the given repository from openBIS.")
 @click.pass_context
 @add_params(_removeref_params)
 def removeref(ctx, repository):
-    """Remove the reference to the given repository from openBIS.
-    """
     ctx.invoke(repository_removeref, repository=repository)
 
 
@@ -700,21 +677,17 @@ _download_params = [
     click.argument('data_set_id'),
 ]
 
-@data_set.command("download")
+@data_set.command("download", short_help="Download files of a linked data set.")
 @add_params(_download_params)
 @click.pass_context 
 def data_set_download(ctx, content_copy_index, file, data_set_id, skip_integrity_check):
-    """ Download files of a linked data set.
-    """
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("download", run(ctx, lambda: data_mgmt.download(data_set_id, content_copy_index, file, skip_integrity_check)))
 
-@cli.command()
+@cli.command(short_help="Download files of a linked data set.")
 @add_params(_download_params)
 @click.pass_context
 def download(ctx, content_copy_index, file, data_set_id, skip_integrity_check):
-    """ Download files of a linked data set.
-    """
     ctx.invoke(data_set_download, content_copy_index=content_copy_index, file=file, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 ## clone
@@ -726,41 +699,33 @@ _clone_move_params = [
     click.argument('data_set_id'),
 ]
 
-@data_set.command("clone")
+@data_set.command("clone", short_help="Clone the repository found in the given data set id.")
 @click.pass_context
 @add_params(_clone_move_params)
 def data_set_clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
-    """Clone the repository found in the given data set id.
-    """
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("clone", run(ctx, lambda: data_mgmt.clone(data_set_id, ssh_user, content_copy_index, skip_integrity_check)))
 
-@cli.command()
+@cli.command(short_help="Clone the repository found in the given data set id.")
 @click.pass_context
 @add_params(_clone_move_params)
 def clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
-    """Clone the repository found in the given data set id.
-    """
     ctx.invoke(data_set_clone, ssh_user=ssh_user, content_copy_index=content_copy_index, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 
 ## move
 
-@data_set.command("move")
+@data_set.command("move", short_help="Move the repository found in the given data set id.")
 @click.pass_context
 @add_params(_clone_move_params)
 def data_set_move(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
-    """Move the repository found in the given data set id.
-    """
     data_mgmt = shared_data_mgmt(ctx.obj)
     return check_result("move", run(ctx, lambda: data_mgmt.move(data_set_id, ssh_user, content_copy_index, skip_integrity_check)))
 
-@cli.command()
+@cli.command(short_help="Move the repository found in the given data set id.")
 @click.pass_context
 @add_params(_clone_move_params)
 def move(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
-    """Move the repository found in the given data set id.
-    """
     ctx.invoke(data_set_move, ssh_user=ssh_user, content_copy_index=content_copy_index, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 

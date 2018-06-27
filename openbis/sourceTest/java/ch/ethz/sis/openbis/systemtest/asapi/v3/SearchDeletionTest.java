@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
@@ -204,6 +205,23 @@ public class SearchDeletionTest extends AbstractDeletionTest
 
         List<Deletion> afterDeletions = v3api.searchDeletions(spaceSessionToken, new DeletionSearchCriteria(), fetchOptions).getObjects();
         Assert.assertEquals(beforeDeletions.size(), afterDeletions.size());
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DeletionSearchCriteria c = new DeletionSearchCriteria();
+        c.withId().thatEquals(new DeletionTechId(1L));
+
+        DeletionFetchOptions fo = new DeletionFetchOptions();
+        fo.withDeletedObjects();
+
+        v3api.searchDeletions(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-deletions  SEARCH_CRITERIA:\n'DELETION\n    with id '1'\n'\nFETCH_OPTIONS:\n'Deletion\n    with DeletedObjects\n'");
     }
 
     private void assertDeletionDate(Deletion deletion)

@@ -11,3 +11,6 @@ fi
 
 # set all scripts executable
 find $BASE/.. -type f -name "*.sh" -exec chmod 744 {} \;
+
+# scripts which don't end in .sh
+find $BASE/.. -type f -name "big_data_link_server" -exec chmod 744 {} \;

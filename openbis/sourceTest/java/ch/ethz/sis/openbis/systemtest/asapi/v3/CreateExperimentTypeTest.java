@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -84,6 +85,23 @@ public class CreateExperimentTypeTest extends CreateEntityTypeTest<ExperimentTyp
     protected void assertTypeSpecificFields(ExperimentTypeCreation creation, ExperimentType type)
     {
         // nothing to do
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentTypeCreation creation = new ExperimentTypeCreation();
+        creation.setCode("LOG_TEST_1");
+
+        ExperimentTypeCreation creation2 = new ExperimentTypeCreation();
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createExperimentTypes(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-experiment-types  NEW_EXPERIMENT_TYPES('[ExperimentTypeCreation[code=LOG_TEST_1], ExperimentTypeCreation[code=LOG_TEST_2]]')");
     }
 
 }

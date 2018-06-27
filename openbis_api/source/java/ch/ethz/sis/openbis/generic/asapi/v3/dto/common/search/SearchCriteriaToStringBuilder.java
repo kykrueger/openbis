@@ -69,7 +69,7 @@ public class SearchCriteriaToStringBuilder implements Serializable
 
         indentation += "    ";
 
-        if (operator != null)
+        if (operator != null && criteria.size() > 1)
         {
             sb.append(indentation + "with operator '" + operator + "'\n");
         }
@@ -86,6 +86,12 @@ public class SearchCriteriaToStringBuilder implements Serializable
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public String toString()
+    {
+        return toString("");
     }
 
 }

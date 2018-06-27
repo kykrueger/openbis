@@ -205,6 +205,14 @@ public class NormalizedSampleIdentifier
     }
     
     @Override
+    public String toString()
+    {
+        String sampleIdentifier = getSampleIdentifier();
+        String containerIdentifier = getContainerIdentifier();
+        return containerIdentifier == null ? sampleIdentifier : sampleIdentifier + " (Container: " + containerIdentifier + ")";
+    }
+
+    @Override
     public int hashCode()
     {
         HashCodeBuilder builder = new HashCodeBuilder();

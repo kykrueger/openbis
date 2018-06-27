@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.update.AttachmentListUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -104,6 +105,12 @@ public class ProjectUpdate implements IUpdate, IObjectUpdate<IProjectId>
     public void setAttachmentsActions(List<ListUpdateAction<Object>> actions)
     {
         attachments.setActions(actions);
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("projectId", projectId).toString();
     }
 
 }

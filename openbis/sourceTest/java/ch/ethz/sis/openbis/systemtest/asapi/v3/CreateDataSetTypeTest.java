@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -90,6 +91,23 @@ public class CreateDataSetTypeTest extends CreateEntityTypeTest<DataSetTypeCreat
         assertEquals(type.getMainDataSetPattern(), creation.getMainDataSetPattern());
         assertEquals(type.getMainDataSetPath(), creation.getMainDataSetPath());
         assertEquals(type.isDisallowDeletion(), (Boolean) creation.isDisallowDeletion());
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetTypeCreation creation = new DataSetTypeCreation();
+        creation.setCode("LOG_TEST_1");
+
+        DataSetTypeCreation creation2 = new DataSetTypeCreation();
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createDataSetTypes(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-data-set-types  NEW_DATA_SET_TYPES('[DataSetTypeCreation[code=LOG_TEST_1], DataSetTypeCreation[code=LOG_TEST_2]]')");
     }
 
 }

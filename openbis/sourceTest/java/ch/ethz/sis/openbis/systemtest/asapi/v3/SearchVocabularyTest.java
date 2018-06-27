@@ -71,4 +71,23 @@ public class SearchVocabularyTest extends AbstractTest
                 "[VocabularyTerm DOG, VocabularyTerm FLY, VocabularyTerm GORILLA, VocabularyTerm HUMAN, VocabularyTerm RAT]");
         assertEquals(vocabularies.size(), 1);
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularySearchCriteria c = new VocabularySearchCriteria();
+        c.withCode().thatEquals("ORGANISM");
+
+        VocabularyFetchOptions fo = new VocabularyFetchOptions();
+        fo.withRegistrator();
+        fo.withTerms();
+
+        v3api.searchVocabularies(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-vocabularies  SEARCH_CRITERIA:\n'VOCABULARY\n    with attribute 'code' equal to 'ORGANISM'\n'\nFETCH_OPTIONS:\n'Vocabulary\n    with Registrator\n    with Terms\n'");
+    }
+
 }

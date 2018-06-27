@@ -314,4 +314,18 @@ public class GetQueryTest extends AbstractQueryTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        QueryFetchOptions fo = new QueryFetchOptions();
+        fo.withRegistrator();
+
+        v3api.getQueries(sessionToken, Arrays.asList(new QueryName(query1.getName()), new QueryName(query2.getName())), fo);
+
+        assertAccessLog("get-queries  QUERY_IDS('[" + query1.getName() + ", " + query2.getName()
+                + "]') FETCH_OPTIONS('Query\n    with Registrator\n')");
+    }
+
 }

@@ -167,7 +167,7 @@ def getPropertyValue(propertiesInfo, metadata, key):
 
 def getSampleByIdentifierForUpdate(tr, identifier):
 	space = identifier.split("/")[1];
-	code = identifier.split("/")[2];
+	code = identifier.split("/")[-1];
 	
 	criteria = SearchCriteria();
 	criteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.SPACE, space));
@@ -195,6 +195,8 @@ def process(tr, parameters, tableBuilder):
 	sessionToken = parameters.get("sessionToken"); #String
 	sessionId = username(sessionToken); #String
 	tr.setUserId(userId);
+	v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi, OPENBISURL + IApplicationServerApi.SERVICE_URL, 30 * 1000);
+	projectSamplesEnabled = v3.getServerInformation(sessionToken)['project-samples-enabled'] == 'true'
 	
 	if method == "init":
 		isOk = init(tr, parameters, tableBuilder);
@@ -202,7 +204,7 @@ def process(tr, parameters, tableBuilder):
 		result = isFileAuthUser(tr, parameters, tableBuilder);
 		isOk = True;
 	if method == "searchSamples":
-		result = searchSamples(tr, parameters, tableBuilder, sessionId);
+		result = searchSamples(tr, v3, parameters, tableBuilder, sessionId);
 		isOk = True;
 	if method == "registerUserPassword":
 		isOk = registerUserPassword(tr, parameters, tableBuilder);
@@ -216,7 +218,7 @@ def process(tr, parameters, tableBuilder):
 		isOk = copyAndLinkAsParent(tr, parameters, tableBuilder);
 	
 	if method == "batchOperation":
-		isOk = batchOperation(tr, parameters, tableBuilder);
+		isOk = batchOperation(tr, projectSamplesEnabled, parameters, tableBuilder);
 		
 	if method == "insertProject":
 		isOk = insertUpdateProject(tr, parameters, tableBuilder);
@@ -231,13 +233,13 @@ def process(tr, parameters, tableBuilder):
 		isOk = insertUpdateExperiment(tr, parameters, tableBuilder);
 	
 	if method == "copySample":
-		isOk = copySample(tr, parameters, tableBuilder);
+		isOk = copySample(tr, projectSamplesEnabled, parameters, tableBuilder);
 	if method == "insertSample":
 		updatePropertiesToIgnore(tr);
-		isOk = insertUpdateSample(tr, parameters, tableBuilder);
+		isOk = insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
 	if method == "updateSample":
 		updatePropertiesToIgnore(tr);
-		isOk = insertUpdateSample(tr, parameters, tableBuilder);
+		isOk = insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
 	if method == "moveSample":
 		isOk = moveSample(tr, parameters, tableBuilder);
 	if method == "insertDataSet":
@@ -742,7 +744,7 @@ def copyAndLinkAsParent(tr, parameters, tableBuilder):
 	
 	return True;
 	
-def copySample(tr, parameters, tableBuilder):
+def copySample(tr, projectSamplesEnabled, parameters, tableBuilder):
 	#Store Children to copy later
 	sampleSpace = parameters.get("sampleSpace"); #String
 	sampleCode = parameters.get("sampleCode"); #String
@@ -753,7 +755,7 @@ def copySample(tr, parameters, tableBuilder):
 	
 	#Create new Sample
 	parameters.put("method", "insertSample"); #List<String> Identifiers are in SPACE/CODE format
-	insertUpdateSample(tr, parameters, tableBuilder);
+	insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
 	
 	#Copy children and attach to Sample
 	if sampleChildren != None:
@@ -803,14 +805,14 @@ def getCopySampleChildrenPropertyValue(propCode, propValue, notCopyProperties, d
 	else:
 		return propValue;
 
-def batchOperation(tr, parameters, tableBuilder):
+def batchOperation(tr, projectSamplesEnabled, parameters, tableBuilder):
 	for operationParameters in parameters.get("operations"):
 		if operationParameters.get("method") == "updateSample":
 			operationParameters["sessionToken"] = parameters.get("sessionToken");
-			insertUpdateSample(tr, operationParameters, tableBuilder);
+			insertUpdateSample(tr, projectSamplesEnabled, operationParameters, tableBuilder);
 	return True;
 	
-def insertUpdateSample(tr, parameters, tableBuilder):
+def insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder):
 	properties = getProperties(tr, parameters);
 	
 	#Mandatory parameters
@@ -830,7 +832,7 @@ def insertUpdateSample(tr, parameters, tableBuilder):
 	sampleParentsNew = parameters.get("sampleParentsNew");
 	
 	#Create/Get for update sample	
-	sampleIdentifier = '/' + sampleSpace + '/' + sampleCode;
+	sampleIdentifier = ('/%(sampleSpace)s/%(sampleProject)s/%(sampleCode)s' if projectSamplesEnabled else '/%(sampleSpace)s/%(sampleCode)s') % vars()
 	
 	method = parameters.get("method");
 	if method == "insertSample":
@@ -988,9 +990,7 @@ def insertUpdateExperiment(tr, parameters, tableBuilder):
 	
 	return True;
 
-def searchSamples(tr, parameters, tableBuilder, sessionId):
-	v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi, OPENBISURL + IApplicationServerApi.SERVICE_URL, 30 * 1000);
-	
+def searchSamples(tr, v3, parameters, tableBuilder, sessionId):
 	###############
 	############### V3 Search
 	###############

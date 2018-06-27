@@ -152,4 +152,19 @@ public class DeleteQueryTest extends AbstractQueryTest
         assertNull(afterQuery);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        QueryDeletionOptions o = new QueryDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteQueries(sessionToken,
+                Arrays.asList(new QueryName("TEST-LOGGING-1"), new QueryName("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-queries  QUERY_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('QueryDeletionOptions[reason=test-reason]')");
+    }
+
 }

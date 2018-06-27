@@ -60,7 +60,7 @@ public class UpdatePluginTest extends AbstractTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testUpdateAndCheckReindexing()
     {
@@ -74,10 +74,9 @@ public class UpdatePluginTest extends AbstractTest
         update.setScript("42");
         ReindexingState state = new ReindexingState();
 
-        
         // When
         v3api.updatePlugins(sessionToken, Arrays.asList(update));
-        
+
         // Then
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         fetchOptions.withScript();
@@ -86,7 +85,7 @@ public class UpdatePluginTest extends AbstractTest
         assertEquals(plugin.getScript(), update.getScript().getValue());
         assertEquals(plugin.isAvailable(), true);
         assertSamplesReindexed(state, "200902091219327-1053");
-        
+
         v3api.logout(sessionToken);
     }
 
@@ -105,7 +104,7 @@ public class UpdatePluginTest extends AbstractTest
         update.setScript("d:");
         assertUserFailureException(update, "SyntaxError");
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToUpdatePlugins")
     public void testCreateWithUserCausingAuthorizationFailure(final String user)
     {
@@ -121,6 +120,23 @@ public class UpdatePluginTest extends AbstractTest
                     v3api.updatePlugins(sessionToken, Arrays.asList(update));
                 }
             }, pluginId);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PluginUpdate update = new PluginUpdate();
+        update.setPluginId(new PluginPermId("properties"));
+
+        PluginUpdate update2 = new PluginUpdate();
+        update2.setPluginId(new PluginPermId("code"));
+
+        v3api.updatePlugins(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-plugins  PLUGIN_UPDATES('[PluginUpdate[pluginId=properties], PluginUpdate[pluginId=code]]')");
     }
 
     @DataProvider

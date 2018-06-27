@@ -1157,4 +1157,19 @@ public class GetDataSetTest extends AbstractDataSetTest
         return dataSet.getHistory();
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetFetchOptions fo = new DataSetFetchOptions();
+        fo.withSample();
+        fo.withExperiment();
+
+        v3api.getDataSets(sessionToken, Arrays.asList(new DataSetPermId("20081105092159111-1"), new DataSetPermId("20110509092359990-10")), fo);
+
+        assertAccessLog(
+                "get-data-sets  DATA_SET_IDS('[20081105092159111-1, 20110509092359990-10]') FETCH_OPTIONS('DataSet\n    with Experiment\n    with Sample\n')");
+    }
+
 }

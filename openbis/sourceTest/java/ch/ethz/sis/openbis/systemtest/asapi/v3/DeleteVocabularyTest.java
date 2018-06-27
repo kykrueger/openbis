@@ -90,7 +90,7 @@ public class DeleteVocabularyTest extends AbstractTest
 
         // Then, see method annotation
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToDeleteVocabularies")
     public void testDeleteWithUserCausingAuthorizationFailure(final String user)
     {
@@ -106,6 +106,20 @@ public class DeleteVocabularyTest extends AbstractTest
                     v3api.deleteVocabularies(sessionToken, Arrays.asList(vocabularyPermId), deletionOptions);
                 }
             }, vocabularyPermId);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyDeletionOptions o = new VocabularyDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteVocabularies(sessionToken, Arrays.asList(new VocabularyPermId("TEST-LOGGING-1"), new VocabularyPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-vocabularies  VOCABULARY_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('VocabularyDeletionOptions[reason=test-reason]')");
     }
 
     @DataProvider

@@ -23,6 +23,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
@@ -59,19 +60,19 @@ public class Plugin implements Serializable, IDescriptionHolder, IPermIdHolder, 
 
     @JsonProperty
     private Date registrationDate;
-    
+
     @JsonProperty
     private PluginKind pluginKind;
-    
+
     @JsonProperty
     private Set<EntityKind> entityKinds;
-    
+
     @JsonProperty
     private PluginType pluginType;
-    
+
     @JsonProperty
     private String script;
-    
+
     @JsonProperty
     private boolean available;
 
@@ -210,6 +211,12 @@ public class Plugin implements Serializable, IDescriptionHolder, IPermIdHolder, 
     public void setAvailable(boolean available)
     {
         this.available = available;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("permId", permId).toString();
     }
 
 }

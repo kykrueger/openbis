@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -34,8 +35,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @Test
@@ -124,5 +123,21 @@ public class UpdateMaterialTypeTest extends UpdateEntityTypeTest<MaterialTypeUpd
         return v3api.searchMaterials(sessionToken, (MaterialSearchCriteria) searchCriteria, fetchOptions).getObjects();
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        MaterialTypeUpdate update = new MaterialTypeUpdate();
+        update.setTypeId(new EntityTypePermId("VIRUS"));
+
+        MaterialTypeUpdate update2 = new MaterialTypeUpdate();
+        update2.setTypeId(new EntityTypePermId("BACTERIUM"));
+
+        v3api.updateMaterialTypes(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-material-types  MATERIAL_TYPE_UPDATES('[MaterialTypeUpdate[typeId=VIRUS (MATERIAL)], MaterialTypeUpdate[typeId=BACTERIUM (MATERIAL)]]')");
+    }
 
 }

@@ -80,7 +80,7 @@ public class DeletePropertyTypesTest extends AbstractTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test(expectedExceptions = RuntimeException.class, expectedExceptionsMessageRegExp = ".*Deletion reason cannot be null.*")
     public void testDeleteWithoutReason()
     {
@@ -94,7 +94,7 @@ public class DeletePropertyTypesTest extends AbstractTest
 
         // Then, see method annotation
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToDeletePropertyTypes")
     public void testDeleteWithUserCausingAuthorizationFailure(final String user)
     {
@@ -112,6 +112,20 @@ public class DeletePropertyTypesTest extends AbstractTest
                     v3api.deletePropertyTypes(sessionToken, Arrays.asList(id), deletionOptions);
                 }
             }, id);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PropertyTypeDeletionOptions o = new PropertyTypeDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deletePropertyTypes(sessionToken, Arrays.asList(new PropertyTypePermId("TEST-LOGGING-1"), new PropertyTypePermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-property-types  PROPERTY_TYPES_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('PropertyTypeDeletionOptions[reason=test-reason]')");
     }
 
     @DataProvider

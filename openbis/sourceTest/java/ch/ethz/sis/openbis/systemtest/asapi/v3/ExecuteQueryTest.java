@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.Query;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.create.QueryCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.execute.QueryExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.IQueryDatabaseId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryDatabaseName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.id.QueryName;
@@ -247,6 +248,22 @@ public class ExecuteQueryTest extends AbstractQueryTest
                     executeQuery(user.getUserId(), PASSWORD, query.getPermId(), null);
                 }
             }, databaseId);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        Query query = createQuery(TEST_USER, PASSWORD, selectPropertyTypeCodeAndDescriptionQueryCreation(DB_OPENBIS_METADATA_ID));
+
+        QueryExecutionOptions o = new QueryExecutionOptions();
+        o.withParameter("code", "abc");
+
+        v3api.executeQuery(sessionToken, new QueryName(query.getName()), o);
+
+        assertAccessLog(
+                "execute-query  QUERY_ID('" + query.getName() + "') EXECUTION_OPTIONS('QueryExecutionOptions: parameterKeys=[code]')");
     }
 
 }

@@ -251,6 +251,29 @@ public class CreateMaterialTest extends AbstractSampleTest
             }, "Property type with code 'CODE_THAT_DOESNT_EXIST' does not exist");
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        MaterialCreation creation = new MaterialCreation();
+        creation.setCode("LOG_TEST_1");
+        creation.setTypeId(new EntityTypePermId("GENE"));
+        creation.setDescription("test description 1");
+        creation.setProperty("GENE_SYMBOL", "s1");
+
+        MaterialCreation creation2 = new MaterialCreation();
+        creation2.setCode("LOG_TEST_2");
+        creation2.setTypeId(new EntityTypePermId("GENE"));
+        creation2.setDescription("test description 2");
+        creation2.setProperty("GENE_SYMBOL", "s2");
+
+        v3api.createMaterials(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-materials  NEW_MATERIALS('[MaterialCreation[code=LOG_TEST_1], MaterialCreation[code=LOG_TEST_2]]')");
+    }
+
     private MaterialCreation materialCreation(MaterialPermId permId)
     {
         String code = permId.getCode();

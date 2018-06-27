@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.operation;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -90,6 +91,12 @@ public class AbstractOperationExecutionOptions implements IOperationExecutionOpt
     public void setDetailsAvailabilityTime(Integer detailsAvailabilityTime)
     {
         this.detailsAvailabilityTime = detailsAvailabilityTime;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("description", description).append("notification", notification).toString();
     }
 
 }

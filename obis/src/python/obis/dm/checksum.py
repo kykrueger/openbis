@@ -104,7 +104,7 @@ class ChecksumGeneratorWORM(object):
     def worm(self, file):
         modification_time = int(os.path.getmtime(file))
         size = os.path.getsize(file)
-        return "WORM-s{}-m{}--{}".format(size, modification_time, file)
+        return "s{}-m{}--{}".format(size, modification_time, file)
 
 
 class ChecksumGeneratorGitAnnex(object):

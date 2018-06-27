@@ -49,6 +49,8 @@ public abstract class AbstractDataSetInfoExtractor implements IDataSetInfoExtrac
 
     @Private
     static final String GROUP_CODE = "space-code";
+    
+    private final String PROJECT_CODE = "project-code";
 
     protected final Properties properties;
 
@@ -74,6 +76,11 @@ public abstract class AbstractDataSetInfoExtractor implements IDataSetInfoExtrac
     protected String getGroupCode()
     {
         return properties.getProperty(GROUP_CODE);
+    }
+    
+    protected String getProjectCode()
+    {
+        return properties.getProperty(PROJECT_CODE);
     }
 
     /**

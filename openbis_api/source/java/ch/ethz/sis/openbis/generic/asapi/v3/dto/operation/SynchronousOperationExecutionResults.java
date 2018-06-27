@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.operation;
 
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -45,6 +46,12 @@ public class SynchronousOperationExecutionResults implements IOperationExecution
     public List<? extends IOperationResult> getResults()
     {
         return results;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("results", results).toString();
     }
 
 }

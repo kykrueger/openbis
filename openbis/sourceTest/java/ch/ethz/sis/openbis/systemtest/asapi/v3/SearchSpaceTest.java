@@ -218,6 +218,24 @@ public class SearchSpaceTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SpaceSearchCriteria c = new SpaceSearchCriteria();
+        c.withCode().thatEquals("CISD");
+
+        SpaceFetchOptions fo = new SpaceFetchOptions();
+        fo.withProjects();
+        fo.withSamples();
+
+        v3api.searchSpaces(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-spaces  SEARCH_CRITERIA:\n'SPACE\n    with attribute 'code' equal to 'CISD'\n'\nFETCH_OPTIONS:\n'Space\n    with Samples\n    with Projects\n'");
+    }
+
     private void testSearch(String user, SpaceSearchCriteria criteria, String... expectedCodes)
     {
         String sessionToken = v3api.login(user, PASSWORD);

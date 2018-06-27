@@ -27,4 +27,6 @@ public interface IEntityAuthorizationExecutor extends IObjectAuthorizationExecut
 
     void canCreateCodes(IOperationContext context);
 
+    void canCreatePermIds(IOperationContext context);
+
 }

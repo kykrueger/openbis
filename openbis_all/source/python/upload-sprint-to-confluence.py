@@ -68,7 +68,7 @@ def fetchBinaries(version):
   os.system("mkdir -p " + DOWNLOAD_FOLDER)
   os.system("rm {0}/*.zip".format(DOWNLOAD_FOLDER))
 
-  file_patterns = ['openBIS-installation-standard-technologies', 'openBIS-clients-and-APIs']
+  file_patterns = ['openBIS-installation-standard-technologies', 'openBIS-clients-and-APIs', 'microservice-server']
   for file_pattern in file_patterns:
     print "Trying to download %s from sprint" % file_pattern
     os.system("scp sprint:/links/groups/cisd/sprint_builds/openBIS/*-{0}*/{1}-{0}*.* {2}".format(version, file_pattern, DOWNLOAD_FOLDER))

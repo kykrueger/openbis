@@ -57,6 +57,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
+import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleOwnerIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
@@ -202,12 +203,14 @@ public class ScreeningApiImpl
         final Experiment experiment = sample.getExperiment();
         final Project project = experiment.getProject();
         final Space sampleSpace = sample.getSpace();
-        final String sampleSpaceCode = (sampleSpace != null) ? sampleSpace.getCode() : null;
-        final Space experimentSpace = project.getSpace();
+        Project sampleProject = sample.getProject();
+        String sampleProjectCode = sampleProject == null ? null : sampleProject.getCode();
+        String experimentSpaceCode = project.getSpace().getCode();
+        final String sampleSpaceCode = (sampleSpace != null) ? sampleSpace.getCode() : experimentSpaceCode;
         final ExperimentIdentifier experimentId =
                 new ExperimentIdentifier(experiment.getCode(), project.getCode(),
-                        experimentSpace.getCode(), experiment.getPermId());
-        return new Plate(sample.getCode(), sampleSpaceCode, sample.getPermId(), experimentId);
+                        experimentSpaceCode, experiment.getPermId());
+        return new Plate(sample.getCode(), sampleSpaceCode, sampleProjectCode, sample.getPermId(), experimentId);
     }
 
     private SampleType loadPlateType()
@@ -491,10 +494,14 @@ public class ScreeningApiImpl
 
         SampleOwnerIdentifier owner;
         String spaceCodeOrNull = plate.tryGetSpaceCode();
-        if (spaceCodeOrNull != null)
+        String projectCodeOrNull = plate.tryGetProjectCode();
+        if (projectCodeOrNull != null)
         {
-            SpaceIdentifier space =
-                    new SpaceIdentifier(spaceCodeOrNull);
+            ProjectIdentifier projectIdentifier = new ProjectIdentifier(spaceCodeOrNull, projectCodeOrNull);
+            owner = new SampleOwnerIdentifier(projectIdentifier);
+        } else if (spaceCodeOrNull != null)
+        {
+            SpaceIdentifier space = new SpaceIdentifier(spaceCodeOrNull);
             owner = new SampleOwnerIdentifier(space);
         } else
         {
@@ -794,14 +801,16 @@ public class ScreeningApiImpl
 
     private static Plate asPlate(ExperimentIdentifier experimentIdentifier, WellContent wellContent)
     {
-        return new Plate(wellContent.getPlate().getCode(), experimentIdentifier.getSpaceCode(),
+        String projectCode = SamplePE.projectSamplesEnabled ? experimentIdentifier.getProjectCode() : null;
+        return new Plate(wellContent.getPlate().getCode(), experimentIdentifier.getSpaceCode(), projectCode, 
                 wellContent.getPlate().getPermId(), experimentIdentifier);
     }
 
     private static Plate asPlate(WellContent wellContent)
     {
+        String projectCode = SamplePE.projectSamplesEnabled ? wellContent.getExperiment().getProjectCode() : null;
         return new Plate(wellContent.getPlate().getCode(), wellContent.getExperiment()
-                .getSpaceCode(), wellContent.getPlate().getPermId(), asExperiment(wellContent));
+                .getSpaceCode(), projectCode, wellContent.getPlate().getPermId(), asExperiment(wellContent));
     }
 
     private static ExperimentIdentifier asExperiment(WellContent wellContent)
@@ -908,9 +917,7 @@ public class ScreeningApiImpl
             Map<Long, Material> materialsCache)
     {
         Sample plate = plateMetadata.getPlate();
-        String spaceCodeOrNull = plate.getSpace() == null ? null : plate.getSpace().getCode();
-        PlateIdentifier plateIdentifier =
-                new PlateIdentifier(plate.getCode(), spaceCodeOrNull, plate.getPermId());
+        PlateIdentifier plateIdentifier = ScreeningUtils.createPlateIdentifier(plate);
         List<WellMetadata> wells = new ArrayList<WellMetadata>();
         if (plateMetadata.getWells() != null)
         {

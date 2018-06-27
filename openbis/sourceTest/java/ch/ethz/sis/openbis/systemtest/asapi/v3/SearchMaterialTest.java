@@ -391,7 +391,7 @@ public class SearchMaterialTest extends AbstractTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testSearchWithSortingByCodeScore()
     {
@@ -442,6 +442,24 @@ public class SearchMaterialTest extends AbstractTest
                 new MaterialPermId("MYGENE1", "GENE"));
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        MaterialSearchCriteria c = new MaterialSearchCriteria();
+        c.withCode().thatEquals("VIRUS");
+
+        MaterialFetchOptions fo = new MaterialFetchOptions();
+        fo.withRegistrator();
+        fo.withProperties();
+
+        v3api.searchMaterials(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-materials  SEARCH_CRITERIA:\n'MATERIAL\n    with attribute 'code' equal to 'VIRUS'\n'\nFETCH_OPTIONS:\n'Material\n    with Registrator\n    with Properties\n'");
     }
 
     private void testSearch(String user, MaterialSearchCriteria criteria, MaterialPermId... expectedPermIds)

@@ -20,10 +20,10 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ContentCopyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import ch.systemsx.cisd.common.annotation.TechPreview;
 
 @JsonObject("as.dto.dataset.ContentCopy")
 public class ContentCopy implements Serializable
@@ -104,12 +104,20 @@ public class ContentCopy implements Serializable
     }
 
     @JsonIgnore
-	public String getGitRepositoryId() {
-		return gitRepositoryId;
-	}
+    public String getGitRepositoryId()
+    {
+        return gitRepositoryId;
+    }
 
-	public void setGitRepositoryId(String gitRepositoryId) {
-		this.gitRepositoryId = gitRepositoryId;
-	}
+    public void setGitRepositoryId(String gitRepositoryId)
+    {
+        this.gitRepositoryId = gitRepositoryId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("id", id).toString();
+    }
 
 }

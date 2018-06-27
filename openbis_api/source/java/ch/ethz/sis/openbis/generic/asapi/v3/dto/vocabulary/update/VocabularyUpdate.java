@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -27,7 +28,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.vocabulary.update.VocabularyUpdate")
 public class VocabularyUpdate implements IUpdate, IObjectUpdate<IVocabularyId>
@@ -45,7 +45,7 @@ public class VocabularyUpdate implements IUpdate, IObjectUpdate<IVocabularyId>
 
     @JsonProperty
     private FieldUpdateValue<String> urlTemplate = new FieldUpdateValue<String>();
-    
+
     @Override
     @JsonIgnore
     public IVocabularyId getObjectId()
@@ -100,4 +100,11 @@ public class VocabularyUpdate implements IUpdate, IObjectUpdate<IVocabularyId>
     {
         this.urlTemplate.setValue(urlTemplate);
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("vocabularyId", vocabularyId).toString();
+    }
+
 }

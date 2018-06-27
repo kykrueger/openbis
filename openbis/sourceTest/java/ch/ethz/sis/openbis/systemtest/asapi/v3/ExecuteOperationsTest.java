@@ -873,6 +873,22 @@ public class ExecuteOperationsTest extends AbstractOperationExecutionTest
                 options.getExecutionId()), email.content);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SynchronousOperationExecutionOptions o = new SynchronousOperationExecutionOptions();
+        o.setExecutionId(new OperationExecutionPermId());
+        o.setDescription("test-description");
+        o.setNotification(new OperationExecutionEmailNotification("test@email.com"));
+
+        v3api.executeOperations(sessionToken, Arrays.asList(new CreateSpacesOperation(spaceCreation())), o);
+
+        assertAccessLog(
+                "execute-operations  OPERATIONS('[CreateSpacesOperation 1 creation(s)]') EXECUTION_OPTIONS('SynchronousOperationExecutionOptions[description=test-description,notification=OperationExecutionEmailNotification[emails=[test@email.com]]]')");
+    }
+
     private OperationExecution executeWithAvailabilities(String sessionToken, Integer availability, Integer summaryAvailability,
             Integer detailsAvailability)
     {

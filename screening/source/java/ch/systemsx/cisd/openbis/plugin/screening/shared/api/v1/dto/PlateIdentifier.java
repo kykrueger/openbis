@@ -21,6 +21,8 @@ public class PlateIdentifier extends PermanentIdentifier
     @JsonProperty
     private String spaceCodeOrNull;
 
+    private String projectCodeOrNull;
+
     /**
      * Creates a {@link PlateIdentifier} from the given <var>augmentedCode</code>.
      * 
@@ -40,10 +42,14 @@ public class PlateIdentifier extends PermanentIdentifier
         {
             return new PlateIdentifier(splitted[1], "");
         }
+        if (splitted.length == 4)
+        {
+            return new PlateIdentifier(splitted[3], splitted[1], splitted[2], null);
+        }
         if (splitted.length != 3 || splitted[0].length() != 0)
         {
             throw new IllegalArgumentException("Augmented code '" + augmentedCode
-                    + "' needs to be of the form '/SPACE/PLATE', '/PLATE' or 'PLATE'.");
+                    + "' needs to be of the form '/SPACE/PROJECT/PLATE', '/SPACE/PLATE', '/PLATE' or 'PLATE'.");
         }
         return new PlateIdentifier(splitted[2], splitted[1]);
     }
@@ -71,9 +77,15 @@ public class PlateIdentifier extends PermanentIdentifier
 
     public PlateIdentifier(String plateCode, String spaceCodeOrNull, String permId)
     {
+        this(plateCode, spaceCodeOrNull, null, permId);
+    }
+
+    public PlateIdentifier(String plateCode, String spaceCodeOrNull, String projectCodeOrNull, String permId)
+    {
         super(permId);
         this.plateCode = plateCode;
         this.spaceCodeOrNull = spaceCodeOrNull;
+        this.projectCodeOrNull = projectCodeOrNull;
     }
 
     /**
@@ -92,12 +104,21 @@ public class PlateIdentifier extends PermanentIdentifier
         return spaceCodeOrNull;
     }
 
+    public String tryGetProjectCode()
+    {
+        return projectCodeOrNull;
+    }
+
     /**
      * Returns the augmented (full) code of this plate.
      */
     @JsonIgnore
     public String getAugmentedCode()
     {
+        if (projectCodeOrNull != null)
+        {
+            return "/" + spaceCodeOrNull + "/" + projectCodeOrNull + "/" + plateCode;
+        }
         if (spaceCodeOrNull != null)
         {
             if (isSharedPlate())
@@ -130,6 +151,7 @@ public class PlateIdentifier extends PermanentIdentifier
         int result = super.hashCode();
         result = prime * result + ((plateCode == null) ? 0 : plateCode.hashCode());
         result = prime * result + ((spaceCodeOrNull == null) ? 0 : spaceCodeOrNull.hashCode());
+        result = prime * result + ((projectCodeOrNull == null) ? 0 : projectCodeOrNull.hashCode());
         return result;
     }
 
@@ -153,27 +175,13 @@ public class PlateIdentifier extends PermanentIdentifier
             return false;
         }
         PlateIdentifier other = (PlateIdentifier) obj;
-        if (plateCode == null)
-        {
-            if (other.plateCode != null)
-            {
-                return false;
-            }
-        } else if (!plateCode.equals(other.plateCode))
-        {
-            return false;
-        }
-        if (spaceCodeOrNull == null)
-        {
-            if (other.spaceCodeOrNull != null)
-            {
-                return false;
-            }
-        } else if (!spaceCodeOrNull.equals(other.spaceCodeOrNull))
-        {
-            return false;
-        }
-        return true;
+        return equals(plateCode, other.plateCode) && equals(spaceCodeOrNull, other.spaceCodeOrNull)
+                && equals(projectCodeOrNull, other.projectCodeOrNull);
+    }
+
+    private boolean equals(Object obj1, Object obj2)
+    {
+        return obj1 == null ? obj1 == obj2 : obj1.equals(obj2);
     }
 
     @Override
@@ -210,6 +218,16 @@ public class PlateIdentifier extends PermanentIdentifier
     private void setSpaceCodeOrNull(String spaceCodeOrNull)
     {
         this.spaceCodeOrNull = spaceCodeOrNull;
+    }
+
+    private String getProjectCodeOrNull()
+    {
+        return projectCodeOrNull;
+    }
+
+    private void setProjectCodeOrNull(String projectCodeOrNull)
+    {
+        this.projectCodeOrNull = projectCodeOrNull;
     }
 
 }

@@ -459,7 +459,7 @@ public class SearchSampleTypeTest extends AbstractTest
         assertEquals(type.getPropertyAssignments().size(), 2);
         assertEquals(type.getPropertyAssignments().get(0).getPropertyType().getCode(), "$PLATE_GEOMETRY");
         assertEquals(type.getPropertyAssignments().get(1).getPropertyType().getCode(), "DESCRIPTION");
-        
+
     }
 
     @Test
@@ -471,17 +471,17 @@ public class SearchSampleTypeTest extends AbstractTest
         searchCriteria.withCode().thatEquals("IMPOSSIBLE_TO_UPDATE");
         SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
         fetchOptions.withValidationPlugin().withScript();
-        
+
         // When
         SampleType type = v3api.searchSampleTypes(sessionToken, searchCriteria, fetchOptions).getObjects().get(0);
-        
+
         // Then
         assertEquals(type.getFetchOptions().hasValidationPlugin(), true);
         assertEquals(type.getValidationPlugin().getFetchOptions().hasScript(), true);
         assertEquals(type.getValidationPlugin().getName(), "validateUpdateFAIL");
         assertEquals(type.getValidationPlugin().getScript(), "def validate(entity, isNew):\n  if (not isNew):\n"
                 + "    return \"Cannot update this entity\"\n ");
-        
+
         v3api.logout(sessionToken);
     }
 
@@ -640,6 +640,23 @@ public class SearchSampleTypeTest extends AbstractTest
     public void testSearchWithSemanticAnnotationsFetchedForSamplePropertyAssignmentsAndSemanticAnnotationsDefinedAtBothSamplePropertyAssignmentAndPropertyTypeLevels()
     {
         testSearchWithSemanticAnnotationsFetchedForSamplePropertyAssignments("MASTER_PLATE", "$PLATE_GEOMETRY", 3);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeSearchCriteria c = new SampleTypeSearchCriteria();
+        c.withCode().thatEquals("MASTER_PLATE");
+
+        SampleTypeFetchOptions fo = new SampleTypeFetchOptions();
+        fo.withPropertyAssignments();
+
+        v3api.searchSampleTypes(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-sample-types  SEARCH_CRITERIA:\n'SAMPLE_TYPE\n    with attribute 'code' equal to 'MASTER_PLATE'\n'\nFETCH_OPTIONS:\n'SampleType\n    with PropertyAssignments\n'");
     }
 
     @SuppressWarnings("null")

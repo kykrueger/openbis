@@ -42,8 +42,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @Test
@@ -119,8 +117,6 @@ public class UpdateDataSetTypeTest extends UpdateEntityTypeTest<DataSetTypeUpdat
         assertEquals(type.getMainDataSetPath(), getNewValue(update.getMainDataSetPath(), type.getMainDataSetPath()));
         assertEquals(type.isDisallowDeletion(), getNewValue(update.isDisallowDeletion(), type.isDisallowDeletion()));
     }
-    
-    
 
     @Override
     protected String getValidationPluginOrNull(String sessionToken, EntityTypePermId typeId)
@@ -151,4 +147,22 @@ public class UpdateDataSetTypeTest extends UpdateEntityTypeTest<DataSetTypeUpdat
         fetchOptions.withProperties();
         return v3api.searchDataSets(sessionToken, (DataSetSearchCriteria) searchCriteria, fetchOptions).getObjects();
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetTypeUpdate update = new DataSetTypeUpdate();
+        update.setTypeId(new EntityTypePermId("UNKNOWN"));
+
+        DataSetTypeUpdate update2 = new DataSetTypeUpdate();
+        update2.setTypeId(new EntityTypePermId("HCS_IMAGE"));
+
+        v3api.updateDataSetTypes(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-data-set-types  DATA_SET_TYPE_UPDATES('[DataSetTypeUpdate[typeId=UNKNOWN (DATA_SET)], DataSetTypeUpdate[typeId=HCS_IMAGE (DATA_SET)]]')");
+    }
+
 }

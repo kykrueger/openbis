@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
@@ -122,6 +123,12 @@ public class MaterialCreation implements ICreation, IObjectCreation, ICreationId
     public void setCreationId(CreationId creationId)
     {
         this.creationId = creationId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("code", code).toString();
     }
 
 }

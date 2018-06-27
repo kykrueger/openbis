@@ -215,4 +215,20 @@ public class GetVocabularyTermTest extends AbstractVocabularyTermTest
         assertVocabularyNotFetched(term);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyTermFetchOptions fo = new VocabularyTermFetchOptions();
+        fo.withRegistrator();
+        fo.withVocabulary();
+
+        v3api.getVocabularyTerms(sessionToken,
+                Arrays.asList(new VocabularyTermPermId("DOG", "ORGANISM"), new VocabularyTermPermId("PROPRIETARY", "$STORAGE_FORMAT")), fo);
+
+        assertAccessLog(
+                "get-vocabulary-terms  VOCABULARY_TERM_IDS('[DOG (ORGANISM), PROPRIETARY ($STORAGE_FORMAT)]') FETCH_OPTIONS('VocabularyTerm\n    with Vocabulary\n    with Registrator\n')");
+    }
+
 }

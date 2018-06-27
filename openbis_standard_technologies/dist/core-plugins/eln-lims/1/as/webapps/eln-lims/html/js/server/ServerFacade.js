@@ -1457,18 +1457,19 @@ function ServerFacade(openbisServer) {
 		}
 		
 		if(sampleIdentifier) {
+			var splittedIdentifier = sampleIdentifier.split("/");
 			matchClauses.push({
 				"@type":"AttributeMatchClause",
 				fieldType : "ATTRIBUTE",			
 				attribute : "SPACE",
-				desiredValue : sampleIdentifier.split("/")[1] 
+				desiredValue : splittedIdentifier[1] 
 			});
 			
 			matchClauses.push({
 				"@type":"AttributeMatchClause",
 				fieldType : "ATTRIBUTE",			
 				attribute : "CODE",
-				desiredValue : sampleIdentifier.split("/")[2] 
+				desiredValue : splittedIdentifier[splittedIdentifier.length - 1] 
 			});
 		}
 		

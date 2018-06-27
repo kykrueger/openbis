@@ -4,10 +4,6 @@
 sudo rm /etc/localtime
 sudo ln -s /usr/share/zoneinfo/Europe/Zurich /etc/localtime
 
-# set locale
-sudo echo "export LC_ALL=en_US.utf8" >> /etc/environment
-sudo echo "export LANG=en_US.utf8" >> /etc/environment
-
 # install some often used packages
 sudo yum -y install wget
 sudo yum -y install epel-release

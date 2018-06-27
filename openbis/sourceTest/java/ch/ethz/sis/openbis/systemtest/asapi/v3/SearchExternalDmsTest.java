@@ -110,4 +110,21 @@ public class SearchExternalDmsTest extends AbstractExternalDmsTest
 
         assertThat(result.getObjects(), hasItem(isSimilarTo(edms)));
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExternalDmsSearchCriteria c = new ExternalDmsSearchCriteria();
+        c.withCode().thatEquals("DMS_1");
+
+        ExternalDmsFetchOptions fo = new ExternalDmsFetchOptions();
+
+        v3api.searchExternalDataManagementSystems(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-external-dms  SEARCH_CRITERIA:\n'EXTERNAL_DMS\n    with attribute 'code' equal to 'DMS_1'\n'\nFETCH_OPTIONS:\n'ExternalDms\n'");
+    }
+
 }

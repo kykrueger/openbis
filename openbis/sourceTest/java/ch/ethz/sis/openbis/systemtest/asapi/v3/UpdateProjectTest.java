@@ -351,4 +351,21 @@ public class UpdateProjectTest extends AbstractTest
         Assert.assertEquals(project2.getDescription(), update2.getDescription().getValue());
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ProjectUpdate update = new ProjectUpdate();
+        update.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+
+        ProjectUpdate update2 = new ProjectUpdate();
+        update2.setProjectId(new ProjectPermId("20120814110011738-101"));
+
+        v3api.updateProjects(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-projects  PROJECT_UPDATES('[ProjectUpdate[projectId=/TEST-SPACE/TEST-PROJECT], ProjectUpdate[projectId=20120814110011738-101]]')");
+    }
+
 }

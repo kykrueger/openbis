@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.AuthorizationGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISpaceHolder;
@@ -35,8 +36,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.roleassignment.RoleAssignment")
@@ -49,25 +48,25 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
 
     @JsonProperty
     private IRoleAssignmentId id;
-    
+
     @JsonProperty
     private Person user;
-    
+
     @JsonProperty
     private AuthorizationGroup authorizationGroup;
 
     @JsonProperty
     private Role role;
-    
+
     @JsonProperty
     private RoleLevel roleLevel;
-    
+
     @JsonProperty
     private Space space;
-    
+
     @JsonProperty
     private Project project;
-    
+
     @JsonProperty
     private Date registrationDate;
 
@@ -147,7 +146,7 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
     {
         this.roleLevel = roleLevel;
     }
-    
+
     @JsonIgnore
     @Override
     public Space getSpace()
@@ -155,8 +154,7 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
         if (getFetchOptions() != null && getFetchOptions().hasSpace())
         {
             return space;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Space has not been fetched.");
         }
@@ -173,8 +171,7 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
         if (getFetchOptions() != null && getFetchOptions().hasProject())
         {
             return project;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Project has not been fetched.");
         }
@@ -184,6 +181,7 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
     {
         this.project = project;
     }
+
     @JsonIgnore
     @Override
     public Date getRegistrationDate()
@@ -203,8 +201,7 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }
@@ -213,6 +210,12 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
     public void setRegistrator(Person registrator)
     {
         this.registrator = registrator;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("id", id).toString();
     }
 
 }

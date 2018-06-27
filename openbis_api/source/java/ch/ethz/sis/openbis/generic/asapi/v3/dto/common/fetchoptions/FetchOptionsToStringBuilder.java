@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -98,6 +99,12 @@ public class FetchOptionsToStringBuilder implements Serializable
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public String toString()
+    {
+        return toString("", new HashSet<FetchOptions<?>>());
     }
 
 }

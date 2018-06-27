@@ -36,6 +36,7 @@ evaluationDependsOn(':screening')
 evaluationDependsOn(':rtd_yeastx')
 evaluationDependsOn(':deep_sequencing_unit')
 evaluationDependsOn(':plasmid')
+evaluationDependsOn(':big_data_link_server')
 
 
 apply from: '../gradle/javaproject.gradle'
@@ -410,19 +411,40 @@ task zipDss(type: Zip, dependsOn: signWebStartJars) {
 	}
 }
 
-task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, proteomicsApiZip, screeningApiZip]) {
+task zipBdlServer(type: Zip, dependsOn: project(':big_data_link_server').tasks.distZip) {
+	baseName 'big_data_link_server'
+	from zipTree('../big_data_link_server/build/distributions/big_data_link_server.zip')
+}
+
+task pybisZip(type: Zip) {
+  baseName 'pybis'
+  from '../pybis/'
+}
+
+task obisZip(type: Zip) {
+  baseName 'obis'
+  from '../obis/'
+}
+
+task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, proteomicsApiZip, screeningApiZip, pybisZip, obisZip]) {
   baseName 'openBIS-clients-and-APIs'
-  downloadFile("https://sissource.ethz.ch/sispub/pybis/repository/master/archive.zip", "pybis.zip")
-  from "targets/downloads/pybis.zip"
   from dssClientZip.archivePath
   from queryApiZip.archivePath
   from apiV3Zip.archivePath
   from proteomicsApiZip.archivePath
   from screeningApiZip.archivePath
-  from ('../openbis_all/dist/readme.txt')
-  def contentOfSetUpFile = zipTree('targets/downloads/pybis.zip').getFiles().findAll {it.path.endsWith('PyBis/setup.py') }.iterator().next().text
-  def pybisVersion = ( contentOfSetUpFile =~ /version.*=.*'(.*)'/)[0][1]
-  rename 'pybis.zip', "pybis-${pybisVersion}.zip"
+  from pybisZip.archivePath
+  from obisZip.archivePath
+  from ('dist/client/readme.txt')
+  rename { filename -> 
+    if (filename.startsWith('pybis-')) {
+      def contentOfSetUpFile = zipTree(pybisZip.archivePath).getFiles().findAll {it.path.endsWith('src/python/setup.py') }.iterator().next().text
+      def pybisVersion = ( contentOfSetUpFile =~ /version.*=.*'(.*)'/)[0][1]
+      'pybis-' + pybisVersion + '.zip'
+    } else {
+      filename
+    }
+  }
 }
 
 task generateJavadoc(type: Javadoc) {
@@ -444,6 +466,7 @@ task generateJavadoc(type: Javadoc) {
 
 build.dependsOn zip
 build.dependsOn zipDss
+build.dependsOn zipBdlServer
 build.dependsOn clientsAndApis
 build.dependsOn dssUploadGuiStandaloneZip
 build.dependsOn dssUploadGuiStandaloneJar

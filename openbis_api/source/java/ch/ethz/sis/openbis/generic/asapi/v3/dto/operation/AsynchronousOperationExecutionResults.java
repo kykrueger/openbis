@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.operation;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.OperationExecutionPermId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -43,6 +44,12 @@ public class AsynchronousOperationExecutionResults implements IOperationExecutio
     public OperationExecutionPermId getExecutionId()
     {
         return executionId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("executionId", executionId).toString();
     }
 
 }

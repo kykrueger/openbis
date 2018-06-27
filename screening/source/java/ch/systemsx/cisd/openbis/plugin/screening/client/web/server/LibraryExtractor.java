@@ -41,6 +41,8 @@ class LibraryExtractor
 
     private final String space;
 
+    private final String sampleProjectOrNull;
+    
     private final String plateGeometry;
 
     private final RegistrationScope registrationScope;
@@ -48,11 +50,12 @@ class LibraryExtractor
     private final char separator;
 
     public LibraryExtractor(InputStream inputStream, char separator, String experiment,
-            String space, String plateGeometry, RegistrationScope registrationScope)
+            String space, String sampleProjectOrNull, String plateGeometry, RegistrationScope registrationScope)
     {
         this.inputStream = inputStream;
         this.experiment = experiment;
         this.space = space;
+        this.sampleProjectOrNull = sampleProjectOrNull;
         this.plateGeometry = plateGeometry;
         this.registrationScope = registrationScope;
         this.separator = separator;
@@ -82,7 +85,7 @@ class LibraryExtractor
         {
             Status status =
                     ScreeningLibraryTransformer.readLibrary(inputStream, separator, experiment,
-                            plateGeometry, space, genesFile.getAbsolutePath(),
+                            plateGeometry, space, sampleProjectOrNull, genesFile.getAbsolutePath(),
                             oligosFile.getAbsolutePath(), platesFile.getAbsolutePath());
             if (status.isError())
             {

@@ -21,6 +21,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.testng.annotations.Test;
 
@@ -28,6 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.ContentCopyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.delete.ExternalDmsDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 
@@ -92,6 +94,21 @@ public class DeleteExternalDmsTest extends AbstractLinkDataSetTest
         DataSet dataSet = get(id);
         assertThat(dataSet.getLinkedData().getContentCopies().size(), is(1));
         assertThat(dataSet.getLinkedData().getContentCopies().get(0).getExternalCode(), is("CODE2"));
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExternalDmsDeletionOptions o = new ExternalDmsDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteExternalDataManagementSystems(sessionToken,
+                Arrays.asList(new ExternalDmsPermId("TEST-LOGGING-1"), new ExternalDmsPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-external-dms  EXTERNAL_DMS_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('ExternalDmsDeletionOptions[reason=test-reason]')");
     }
 
 }
