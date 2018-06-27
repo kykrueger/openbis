@@ -51,6 +51,11 @@ fi
 echo "mv $ROOT_DIR/datastore_server $BACKUP_DIR/datastore_server"
 mv $ROOT_DIR/datastore_server $BACKUP_DIR/datastore_server
 
+if [ -d $ROOT_DIR/big_data_link_server ]; then
+  echo "mv $ROOT_DIR/big_data_link_server $BACKUP_DIR/big_data_link_server"
+  mv $ROOT_DIR/big_data_link_server $BACKUP_DIR/big_data_link_server
+fi
+
 echo "cp -R $ROOT_DIR/core-plugins $BACKUP_DIR/core-plugins"
 cp -R $ROOT_DIR/core-plugins $BACKUP_DIR/core-plugins
 rm -rf $BACKUP_DIR/core-plugins/eln-lims/bin

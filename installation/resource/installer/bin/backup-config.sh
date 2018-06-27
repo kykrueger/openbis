@@ -37,6 +37,7 @@ if [ -d $ROOT/openBIS-server ]; then
     copyFileIfExists $ROOT/openBIS-server/jetty/etc/openbis.conf $CONF/
     copyFileIfExists $ROOT/openBIS-server/jetty/bin/jetty.properties $CONF/
     copyFileIfExists $ROOT/openBIS-server/jetty/etc/jetty.properties $CONF/
+    copyFileIfExists $ROOT/big_data_link_server/config.json $CONF/
     cp $ROOT/openBIS-server/jetty/webapps/openbis/custom/welcomePageSimpleGeneric.html $CONF/
     # not always present
     copyIfExists $ROOT/openBIS-server/jetty/etc/openBIS.keystore $CONF/.keystore 
