@@ -2161,7 +2161,7 @@ class Openbis:
                 else:
                     return Plugin(self, data=resp[permId])
 
-    def new_plugin(self, name, pluginType= "MANAGED_PROPERTY", pluginKind = "JYTHON", **kwargs):
+    def new_plugin(self, pluginType= "MANAGED_PROPERTY", pluginKind = "JYTHON", **kwargs):
         """ Creates a new Plugin in openBIS. The attribute pluginKind must be one of
         the following:
         DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION;
