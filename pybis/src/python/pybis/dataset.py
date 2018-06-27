@@ -507,25 +507,25 @@ class DataSetDownloadQueue():
 
     def download_file(self):
         while True:
-            url, filename, filename_dest, file_size, verify_certificates, write_mode = self.download_queue.get()
-            # create the necessary directory structure if they don't exist yet
-            os.makedirs(os.path.dirname(filename_dest), exist_ok=True)
+            try:
+                url, filename, filename_dest, file_size, verify_certificates, write_mode = self.download_queue.get()
+                # create the necessary directory structure if they don't exist yet
+                os.makedirs(os.path.dirname(filename_dest), exist_ok=True)
 
-            # request the file in streaming mode
-            r = requests.get(url, stream=True, verify=verify_certificates)
-            if r.ok == False:
+                # request the file in streaming mode
+                r = requests.get(url, stream=True, verify=verify_certificates)
+                if r.ok == False:
+                    raise ValueError("Could not download from {}: HTTP {}. Reason: {}".format(url, r.status_code, r.reason))
+
+                with open(filename_dest, write_mode) as f:
+                    for chunk in r.iter_content(chunk_size=1024):
+                        if chunk:  # filter out keep-alive new chunks
+                            f.write(chunk)
+
+                if os.path.getsize(filename_dest) != int(file_size):
+                    if self.collect_files_with_wrong_length:
+                        self.files_with_wrong_length.append(filename)
+                    else:
+                        raise ValueError("File has the wrong length: {}".format(filename_dest))
+            finally:
                 self.download_queue.task_done()
-                raise ValueError("Could not download from {}: HTTP {}. Reason: {}".format(url, r.status_code, r.reason))
-
-            with open(filename_dest, write_mode) as f:
-                for chunk in r.iter_content(chunk_size=1024):
-                    if chunk:  # filter out keep-alive new chunks
-                        f.write(chunk)
-
-            if os.path.getsize(filename_dest) != int(file_size):
-                if self.collect_files_with_wrong_length:
-                    self.files_with_wrong_length.append(filename)
-                else:
-                    self.download_queue.task_done()
-                    raise ValueError("File has the wrong length: {}".format(filename_dest))
-            self.download_queue.task_done()
