@@ -514,6 +514,7 @@ class DataSetDownloadQueue():
             # request the file in streaming mode
             r = requests.get(url, stream=True, verify=verify_certificates)
             if r.ok == False:
+                self.download_queue.task_done()
                 raise ValueError("Could not download from {}: HTTP {}. Reason: {}".format(url, r.status_code, r.reason))
 
             with open(filename_dest, write_mode) as f:
@@ -525,5 +526,6 @@ class DataSetDownloadQueue():
                 if self.collect_files_with_wrong_length:
                     self.files_with_wrong_length.append(filename)
                 else:
+                    self.download_queue.task_done()
                     raise ValueError("File has the wrong length: {}".format(filename_dest))
             self.download_queue.task_done()
