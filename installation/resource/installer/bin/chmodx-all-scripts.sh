@@ -13,4 +13,4 @@ fi
 find $BASE/.. -type f -name "*.sh" -exec chmod 744 {} \;
 
 # scripts which don't end in .sh
-find . -type f -name "big_data_link_server" -exec chmod 744 {} \;
+find $BASE/.. -type f -name "big_data_link_server" -exec chmod 744 {} \;
