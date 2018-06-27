@@ -214,7 +214,7 @@
       <parsable targetfile="$DATA_TMPEXTRACT/data/doc/getting-started-with-openBIS.html" condition="isFirstTimeInstallation"/>
     </pack>
     
-    <pack name="Big Data Link Server" required="yes" loose="yes">
+    <pack name="Big Data Link Server" required="no" loose="yes">
       <description>The distributed data store server managing raw data</description>
       <file src="@{installer.dist.dir}/big_data_link_server" targetdir="$INSTALL_PATH/servers"/>
     </pack>
