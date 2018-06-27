@@ -766,7 +766,6 @@ class Openbis:
         entity = entity.upper()
         entity2enum = {
             "DATASET" : "DATA_SET",
-            "DATASET" : "DATASET",
             "OBJECT"  : "SAMPLE",
             "SAMPLE"  : "SAMPLE",
             "EXPERIMENT" : "EXPERIMENT",
