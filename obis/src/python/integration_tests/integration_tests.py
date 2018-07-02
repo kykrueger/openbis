@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # can be run on vagrant like this:
-# vagrant ssh obisserver -c 'cd /vagrant_python/OBis/integration_tests && pytest ./integration_tests.py'
+# vagrant ssh obisserver -c 'cd /vagrant_python/integration_tests && pytest ./integration_tests.py'
 
 import json
 import os
@@ -55,7 +55,7 @@ def test_obis(tmpdir):
         with cd('data1'):
             cmd('touch file')
             result = cmd('obis status')
-            assert '?? file' in result
+            assert '? file' in result
             cmd('obis object set id=/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
@@ -126,7 +126,7 @@ def test_obis(tmpdir):
             result = cmd('obis commit -m \'commit-message\'')
             assert 'Missing configuration settings for [\'object id or collection id\'].' in result
             result = cmd('obis status')
-            assert '?? file' in result
+            assert '? file' in result
             cmd('obis object set id=/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
