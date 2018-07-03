@@ -60,11 +60,17 @@ class OpenbisCommand(object):
     def object_id(self):
         return self.config_dict['object']['id']
 
+    def object_permId(self):
+        return self.config_dict['object']['permId']
+
     def set_object_id(self, value):
         self.config_dict['object']['id'] = value
 
     def collection_id(self):
         return self.config_dict['collection']['id']
+
+    def collection_permId(self):
+        return self.config_dict['collection']['permId']
 
     def set_collection_id(self, value):
         self.config_dict['collection']['id'] = value

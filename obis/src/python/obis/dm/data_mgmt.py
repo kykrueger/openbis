@@ -365,8 +365,8 @@ class GitDataMgmt(AbstractDataMgmt):
             output += sync_status.output
         return CommandResult(returncode=0, output=output)
 
-    def commit_metadata_updates(self, msg_fragment=None):
-        properties_paths = self.settings_resolver.local_public_properties_paths()
+    def commit_metadata_updates(self, msg_fragment=None, omit_usersettings=True):
+        properties_paths = self.settings_resolver.local_public_properties_paths(omit_usersettings=omit_usersettings)
         total_status = ''
         for properties_path in properties_paths:
             status = self.git_wrapper.git_status(properties_path).output.strip()
