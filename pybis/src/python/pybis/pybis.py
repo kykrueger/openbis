@@ -2162,7 +2162,7 @@ class Openbis:
                     return Plugin(self, data=resp[permId])
 
     def new_plugin(self, pluginType= "MANAGED_PROPERTY", pluginKind = "JYTHON", **kwargs):
-        """ Creates a new Plugin in openBIS. The attribute pluginKind must be one of
+        """ Note: not functional yet. Creates a new Plugin in openBIS. The attribute pluginKind must be one of
         the following:
         DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION;
 
@@ -2584,6 +2584,7 @@ class Openbis:
         return DataSet(self, type=type_obj, files=files, folder=folder, props=props, **kwargs)
     
     def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):
+        """ Note: not functional yet. """
         return SemanticAnnotation(
             openbis_obj=self, isNew=True, 
             entityType=entityType, propertyType=propertyType, **kwargs

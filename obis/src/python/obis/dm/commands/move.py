@@ -26,11 +26,13 @@ class Move(OpenbisCommand):
         super(Move, self).__init__(dm)
 
     def run(self):
+        self.log("cloning repository...")
         clone = Clone(self.data_mgmt, self.data_set_id, self.ssh_user, self.content_copy_index, self.skip_integrity_check)
         result = clone.run()
         if result.failure():
             return result
 
+        self.log("removing old content copy from openBIS...")
         self.openbis.delete_content_copy(self.data_set_id, clone.content_copy)
 
         host = clone.content_copy['externalDms']['address'].split(':')[0]
@@ -42,6 +44,7 @@ class Move(OpenbisCommand):
             return CommandResult(returncode=0, output="Since the integrit check was skipped, please make sure the data was " +
                                                         "copied correctly and delete the old copy manually {}.".format(old_repository_location))
 
+        self.log("deleting old repository at {}:{}...".format(host, path))
         delete_repository(self.ssh_user, host, path)
 
         return CommandResult(returncode=0, output="")
