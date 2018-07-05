@@ -36,6 +36,7 @@ def shared_dm():
         'allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks': True
     }
     dm = data_mgmt.DataMgmt(openbis_config=openbis_config)
+    dm.debug = True
     return dm
 
 
@@ -268,6 +269,10 @@ def prepare_new_data_set_expectations(dm, properties={}):
                         'physicalData': None, 'linkedData': { 'contentCopies': []}})
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
     dm.openbis.get_dataset = MagicMock(return_value=data_set)
+
+    sample = MagicMock()
+    sample.permId = "123-1"
+    dm.openbis.get_sample = MagicMock(return_value=sample)
 
 
 
