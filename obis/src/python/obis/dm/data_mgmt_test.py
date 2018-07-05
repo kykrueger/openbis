@@ -190,7 +190,7 @@ def test_undo_commit_when_sync_fails(tmpdir):
     dm.git_wrapper.git_top_level_path = MagicMock(return_value = CommandResult(returncode=0, output=None))
     dm.git_wrapper.git_add = MagicMock(return_value = CommandResult(returncode=0, output=None))
     dm.git_wrapper.git_commit = MagicMock(return_value = CommandResult(returncode=0, output=None))
-    dm._sync = lambda: CommandResult(returncode=-1, output="dummy error")
+    dm._sync = lambda *args: CommandResult(returncode=-1, output="dummy error")
     # when
     result = dm.commit("Added data.")
     # then
