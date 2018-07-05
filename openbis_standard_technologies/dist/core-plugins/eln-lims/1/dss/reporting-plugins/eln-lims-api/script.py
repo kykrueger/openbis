@@ -103,7 +103,10 @@ def getDirectLinkURL():
 							"sftp" : sftpConfig
 						});
 	
-
+def createSampleIdentifier(sampleSpace, sampleProject, sampleCode, projectSamplesEnabled):
+	template = '/%(sampleSpace)s/%(sampleProject)s/%(sampleCode)s' if projectSamplesEnabled else '/%(sampleSpace)s/%(sampleCode)s'
+	return template % vars()
+	
 def isSampleTypeAvailable(sampleTypes, sampleTypeCode):
 	for sampleType in sampleTypes:
 		if sampleType.getCode() == sampleTypeCode:
@@ -199,7 +202,7 @@ def process(tr, parameters, tableBuilder):
 	projectSamplesEnabled = v3.getServerInformation(sessionToken)['project-samples-enabled'] == 'true'
 	
 	if method == "init":
-		isOk = init(tr, parameters, tableBuilder);
+		isOk = init(tr, projectSamplesEnabled, parameters, tableBuilder);
 	if method == "isFileAuthUser":
 		result = isFileAuthUser(tr, parameters, tableBuilder);
 		isOk = True;
@@ -431,7 +434,7 @@ def insertSampleIfMissing(tr, sampleIdentifier, experiment, sampleType, properti
 				sample.setPropertyValue(key, properties[key]);
 	return sample;
 	
-def init(tr, parameters, tableBuilder):
+def init(tr, projectSamplesEnabled, parameters, tableBuilder):
 	projectsCache = {};
 	installedTypes = getSampleTypes(tr, parameters);
 	inventorySpace = tr.getSpace("DEFAULT_LAB_NOTEBOOK");
@@ -470,7 +473,8 @@ def init(tr, parameters, tableBuilder):
 			if isFirstTimeInstallingStorage:
 				insertProjectIfMissing(tr, "/ELN_SETTINGS/STORAGES", projectsCache);
 				storageCollection = insertExperimentIfMissing(tr, "/ELN_SETTINGS/STORAGES/STORAGES_COLLECTION", "COLLECTION", "Storages Collection");
-				bench = insertSampleIfMissing(tr, "/ELN_SETTINGS/BENCH", storageCollection, "STORAGE", None);
+				benchIdentifier = createSampleIdentifier("ELN_SETTINGS", "STORAGES", "BENCH", projectSamplesEnabled)
+				bench = insertSampleIfMissing(tr, benchIdentifier, storageCollection, "STORAGE", None);
 				bench.setPropertyValue("NAME", "Bench");
 				bench.setPropertyValue("ROW_NUM", "1");
 				bench.setPropertyValue("COLUMN_NUM", "1");
@@ -479,7 +483,8 @@ def init(tr, parameters, tableBuilder):
 				bench.setPropertyValue("BOX_SPACE_WARNING", "80");
 				bench.setPropertyValue("STORAGE_VALIDATION_LEVEL", "BOX_POSITION");
 					
-				defaultStorage = insertSampleIfMissing(tr, "/ELN_SETTINGS/DEFAULT_STORAGE", storageCollection, "STORAGE", None);
+				defaultStorageIdentifier = createSampleIdentifier("ELN_SETTINGS", "STORAGES", "DEFAULT_STORAGE", projectSamplesEnabled)
+				defaultStorage = insertSampleIfMissing(tr, defaultStorageIdentifier, storageCollection, "STORAGE", None);
 				defaultStorage.setPropertyValue("NAME", "Default Storage");
 				defaultStorage.setPropertyValue("ROW_NUM", "4");
 				defaultStorage.setPropertyValue("COLUMN_NUM", "4");
@@ -747,8 +752,9 @@ def copyAndLinkAsParent(tr, parameters, tableBuilder):
 def copySample(tr, projectSamplesEnabled, parameters, tableBuilder):
 	#Store Children to copy later
 	sampleSpace = parameters.get("sampleSpace"); #String
+	sampleProject = parameters.get("sampleProject"); #String
 	sampleCode = parameters.get("sampleCode"); #String
-	sampleIdentifier = '/' + sampleSpace + '/' + sampleCode;
+	sampleIdentifier = createSampleIdentifier(sampleSpace, sampleProject, sampleCode, projectSamplesEnabled)
 	
 	sampleChildren = parameters.get("sampleChildren"); #List<String> Identifiers are in SPACE/CODE format
 	parameters.put("sampleChildren", []); #List<String> Identifiers are in SPACE/CODE format
@@ -769,7 +775,7 @@ def copySample(tr, projectSamplesEnabled, parameters, tableBuilder):
 			except: #For all other children
 				copyChildCode = parameters.get("sampleCode") + "_" + child.getCode();
 
-			copyChildIdentifier = "/" + parameters.get("sampleSpace") + "/" + copyChildCode;
+			copyChildIdentifier = createSampleIdentifier(sampleSpace, sampleProject, copyChildCode, projectSamplesEnabled)
 			
 			# Create new sample children
 			childCopy = tr.createNewSample(copyChildIdentifier, child.getSampleType()); #Create Sample given his id
@@ -832,7 +838,7 @@ def insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder):
 	sampleParentsNew = parameters.get("sampleParentsNew");
 	
 	#Create/Get for update sample	
-	sampleIdentifier = ('/%(sampleSpace)s/%(sampleProject)s/%(sampleCode)s' if projectSamplesEnabled else '/%(sampleSpace)s/%(sampleCode)s') % vars()
+	sampleIdentifier = createSampleIdentifier(sampleSpace, sampleProject, sampleCode, projectSamplesEnabled)
 	
 	method = parameters.get("method");
 	if method == "insertSample":
