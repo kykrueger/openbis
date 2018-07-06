@@ -523,6 +523,7 @@ class Openbis:
         return [
             'url', 'port', 'hostname',
             'login()', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
+            "get_server_information()",
             "get_dataset('permId')",
             "get_datasets()",
             "get_dataset_type('raw_data')",
@@ -724,6 +725,31 @@ class Openbis:
             if os.environ.get('OPENBIS_URL') == self.url:
                 os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
+
+
+    def get_server_information(self):
+        """ Returns a dict containing the following server information:
+            api-version, archiving-configured, authentication-service, enabled-technologies, project-samples-enabled
+         """
+        request = {
+            "method": "getServerInformation",
+            "params": [self.token],
+        }
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            # result is a dict of strings - use more useful types
+            keys_boolean = ['archiving-configured', 'project-samples-enabled']
+            keys_csv = ['enabled-technologies']
+            for key in keys_boolean:
+                if key in resp:
+                    resp[key] = resp[key] == 'true'
+            for key in keys_csv:
+                if key in resp:
+                    resp[key] = list(map(lambda item: item.strip(), resp[key].split(',')))
+            return resp
+        else:
+            raise ValueError("Could not get the server information")
+
 
     def create_permId(self):
         """Have the server generate a new permId"""
