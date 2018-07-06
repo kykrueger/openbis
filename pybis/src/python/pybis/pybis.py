@@ -746,7 +746,7 @@ class Openbis:
             for key in keys_csv:
                 if key in resp:
                     resp[key] = list(map(lambda item: item.strip(), resp[key].split(',')))
-            return resp
+            return ServerInformation(resp)
         else:
             raise ValueError("Could not get the server information")
 
@@ -2746,3 +2746,16 @@ class ExternalDMS():
         return self.data.get('code', None)
 
 
+class ServerInformation():
+
+    def __init__(self, info):
+        self._info = info
+
+    def __dir__(self):
+        return [
+            'api_version', 'archiving_configured', 'authentication_service', 
+            'enabled_technologies', 'project_samples_enabled'
+        ]
+
+    def __getattr__(self, name):
+        return self._info[name.replace('_', '-')]
