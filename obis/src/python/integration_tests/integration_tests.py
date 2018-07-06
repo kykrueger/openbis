@@ -306,6 +306,18 @@ def test_obis(tmpdir):
             cmd('obis repository clear')
             assert get_settings()['repository'] == {'id': None, 'external_dms_id': None, 'data_set_id': None}
 
+        output_buffer = '=================== 22. changing identifier ===================\n'
+        settings = create_repository_and_commit(tmpdir, o, 'data14', '/DEFAULT/BIGDATA2')
+        move_sample(o, settings['object']['permId'], 'BIGDATA')
+        try:
+            settings = commit_new_change(tmpdir, o, 'data14')
+            assert settings['object']['id'] == '/BIGDATA/BIGDATA2'
+        finally:
+            move_sample(o, settings['object']['permId'], 'DEFAULT')
+        with cd('data14'): assert get_settings()['object']['permId'] is not None
+        cmd('obis object set id=/DEFAULT/DEFAULT')
+        with cd('data14'): assert get_settings()['object']['permId'] is not None
+
         output_buffer = '=================== 16. User switch ===================\n'
         cmd('obis init data9')
         with cd('data9'):
@@ -323,18 +335,6 @@ def test_obis(tmpdir):
             except SubprocessError:
                 timeout = True
             assert timeout == True
-
-        output_buffer = '=================== 22. changing identifier ===================\n'
-        settings = create_repository_and_commit(tmpdir, o, 'data14', '/DEFAULT/BIGDATA2')
-        move_sample(o, settings['object']['permId'], 'BIGDATA')
-        try:
-            settings = commit_new_change(tmpdir, o, 'data14')
-            assert settings['object']['id'] == '/BIGDATA/BIGDATA2'
-        finally:
-            move_sample(o, settings['object']['permId'], 'DEFAULT')
-        with cd('data14'): assert get_settings()['object']['permId'] is not None
-        cmd('obis object set id=/DEFAULT/DEFAULT')
-        with cd('data14'): assert get_settings()['object']['permId'] is not None
 
 
 def assert_file_paths(files, expected_paths):
