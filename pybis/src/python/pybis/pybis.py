@@ -1247,11 +1247,8 @@ class Openbis:
             })
             )
         if project:
-            exp_crit = _subcriteria_for_code(experiment, 'experiment')
             proj_crit = _subcriteria_for_code(project, 'project')
-            exp_crit['criteria'] = []
-            exp_crit['criteria'].append(proj_crit)
-            sub_criteria.append(exp_crit)
+            sub_criteria.append(proj_crit)
         if experiment:
             sub_criteria.append(_subcriteria_for_code(experiment, 'experiment'))
         if properties is not None:
@@ -2423,7 +2420,7 @@ class Openbis:
         search_request = search_request_for_identifier(sample_ident, 'sample')
 
         fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
-        for option in ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets']:
+        for option in ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets', 'project']:
             fetchopts[option] = fetch_option[option]
 
         if withAttachments:
@@ -2451,7 +2448,11 @@ class Openbis:
                 if only_data:
                     return resp[sample_ident]
                 else:
-                    return Sample(self, self.get_sample_type(resp[sample_ident]["type"]["code"]), resp[sample_ident])
+                    return Sample(
+                        openbis_obj = self,
+                        type = self.get_sample_type(resp[sample_ident]["type"]["code"]),
+                        data = resp[sample_ident]
+                    )
 
     get_object = get_sample # Alias
 
@@ -2592,10 +2593,10 @@ class Openbis:
             }
         return dms_id
 
-    def new_sample(self, type, props=None, **kwargs):
+    def new_sample(self, type, project=None, props=None, **kwargs):
         """ Creates a new sample of a given sample type.
         """
-        return Sample(self, self.get_sample_type(type), None, props, **kwargs)
+        return Sample(self, self.get_sample_type(type), project, None, props, **kwargs)
 
     new_object = new_sample # Alias
 
