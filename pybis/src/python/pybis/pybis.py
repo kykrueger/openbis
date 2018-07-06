@@ -1335,7 +1335,7 @@ class Openbis:
     get_objects = get_samples # Alias
 
 
-    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
+    def get_experiments(self, code=None, permId=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
         """ Searches for all experiment which match the search criteria. Returns a
         «Things» object which can be used in many different situations.
 
@@ -1357,6 +1357,8 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_code(project, 'project'))
         if code:
             sub_criteria.append(_criteria_for_code(code))
+        if permId:
+            sub_criteria.append(_common_search("as.dto.common.search.PermIdSearchCriteria", permId))
         if type:
             sub_criteria.append(_subcriteria_for_type(type, 'Experiment'))
         if tags:
