@@ -21,7 +21,9 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
@@ -46,7 +48,13 @@ public class UpdateDataSetPhysicalDataExecutor implements IUpdateDataSetPhysical
             DataPE dataPE = entry.getValue();
             if (dataPE instanceof ExternalDataPE) {
                 ExternalDataPE externalDataPE = (ExternalDataPE) dataPE;
-                externalDataPE.setArchivingRequested(dataSetUpdate.getPhysicalData().getValue().getArchivingRequested().getValue());
+                FieldUpdateValue<PhysicalDataUpdate> physicalData = dataSetUpdate.getPhysicalData();
+                if (physicalData != null && physicalData.getValue() != null) {
+                    FieldUpdateValue<Boolean> archivingRequested = physicalData.getValue().getArchivingRequested();
+                    if (archivingRequested != null && archivingRequested.getValue() != null) {
+                        externalDataPE.setArchivingRequested(dataSetUpdate.getPhysicalData().getValue().getArchivingRequested().getValue());
+                    }
+                }
             }
         }
     }
