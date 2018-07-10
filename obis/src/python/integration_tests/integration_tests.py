@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # can be run on vagrant like this:
-# vagrant ssh obisserver -c 'cd /vagrant_python/OBis/integration_tests && pytest ./integration_tests.py'
+# vagrant ssh obisserver -c 'cd /vagrant_python/integration_tests && pytest ./integration_tests.py'
 
 import json
 import os
@@ -11,6 +11,7 @@ import subprocess
 from subprocess import PIPE
 from subprocess import SubprocessError
 from contextlib import contextmanager
+from random import randrange
 from pybis import Openbis
 
 
@@ -31,6 +32,7 @@ def test_obis(tmpdir):
 
     o = Openbis('https://obisserver:8443', verify_certificates=False)
     o.login('admin', 'admin', save_token=True)
+    setup_masterdata(o)
 
     output_buffer = '=================== 1. Global settings ===================\n'
     if os.path.exists('~/.obis'):
@@ -55,7 +57,7 @@ def test_obis(tmpdir):
         with cd('data1'):
             cmd('touch file')
             result = cmd('obis status')
-            assert '?? file' in result
+            assert '? file' in result
             cmd('obis object set id=/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
@@ -126,7 +128,7 @@ def test_obis(tmpdir):
             result = cmd('obis commit -m \'commit-message\'')
             assert 'Missing configuration settings for [\'object id or collection id\'].' in result
             result = cmd('obis status')
-            assert '?? file' in result
+            assert '? file' in result
             cmd('obis object set id=/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
@@ -304,6 +306,18 @@ def test_obis(tmpdir):
             cmd('obis repository clear')
             assert get_settings()['repository'] == {'id': None, 'external_dms_id': None, 'data_set_id': None}
 
+        output_buffer = '=================== 22. changing identifier ===================\n'
+        settings = create_repository_and_commit(tmpdir, o, 'data14', '/DEFAULT/BIGDATA2')
+        move_sample(o, settings['object']['permId'], 'BIGDATA')
+        try:
+            settings = commit_new_change(tmpdir, o, 'data14')
+            assert settings['object']['id'] == '/BIGDATA/BIGDATA2'
+        finally:
+            move_sample(o, settings['object']['permId'], 'DEFAULT')
+        with cd('data14'): assert get_settings()['object']['permId'] is not None
+        cmd('obis object set id=/DEFAULT/DEFAULT')
+        with cd('data14'): assert get_settings()['object']['permId'] is not None
+
         output_buffer = '=================== 16. User switch ===================\n'
         cmd('obis init data9')
         with cd('data9'):
@@ -373,5 +387,57 @@ def assert_matching(settings, data_set, tmpdir, path):
     assert content_copy['gitRepositoryId'] == settings['repository']['id']
     if settings['object']['id'] is not None:
         assert data_set['sample']['identifier']['identifier'] == settings['object']['id']
+        assert data_set['sample']['permId']['permId'] == settings['object']['permId']
     if settings['collection']['id'] is not None:
         assert data_set['experiment']['identifier']['identifier'] == settings['collection']['id']
+        assert data_set['experiment']['permId']['permId'] == settings['collection']['permId']
+
+def move_sample(o, sample_permId, space):
+    field_update_value = {
+        "@type": "as.dto.common.update.FieldUpdateValue",
+        "value": {
+            "@type": "as.dto.space.id.SpacePermId",
+            "permId": space,
+        },
+        "isModified": True,
+    }
+    o.update_sample(sample_permId, space=field_update_value)
+
+def create_repository_and_commit(tmpdir, o, repo_name, object_id):
+    cmd('obis init ' + repo_name)
+    with cd(repo_name):
+        cmd('touch file')
+        result = cmd('obis status')
+        assert '? file' in result
+        cmd('obis object set id=' + object_id)
+        result = cmd('obis commit -m \'commit-message\'')
+        settings = get_settings()
+        assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
+        assert len(settings['repository']['id']) == 36
+        assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
+        data_set = o.get_dataset(settings['repository']['data_set_id']).data
+        assert_matching(settings, data_set, tmpdir, 'obis_data/' + repo_name)
+        return settings
+
+def commit_new_change(tmpdir, o, repo_name):
+    with cd(repo_name):
+        filename = 'file' + str(randrange(100000))
+        cmd('touch ' + filename)
+        result = cmd('obis status')
+        assert '? ' + filename in result
+        result = cmd('obis commit -m \'commit-message\'')
+        settings = get_settings()
+        assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
+        assert len(settings['repository']['id']) == 36
+        assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
+        data_set = o.get_dataset(settings['repository']['data_set_id']).data
+        assert_matching(settings, data_set, tmpdir, 'obis_data/' + repo_name)
+        return settings
+
+
+def setup_masterdata(o):
+    spaces = o.get_spaces()
+    if 'BIGDATA' not in o.get_spaces().df.code.values:
+        o.new_space(code='BIGDATA').save()
+    if '/DEFAULT/BIGDATA2' not in o.get_samples().df.identifier.values:
+        o.new_sample(type="UNKNOWN", code='BIGDATA2', space='DEFAULT').save()

@@ -11,6 +11,7 @@ Created by Chandrasekhar Ramakrishnan on 2017-01-27.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
 import json
+import sys
 from datetime import datetime
 
 import click
@@ -19,6 +20,7 @@ from .. import dm
 from ..dm.command_result import CommandResult
 from ..dm.command_result import CommandException
 from ..dm.utils import cd
+from ..dm.command_log import CommandLog
 
 
 def click_echo(message):
@@ -44,12 +46,16 @@ def add_params(params):
     return _add_params
 
 
-def shared_data_mgmt(context={}):
+def shared_data_mgmt(context={}, halt_on_error_log=True):
     git_config = {'find_git': True}
     openbis_config = {}
     if context.get('verify_certificates') is not None:
         openbis_config['verify_certificates'] = context['verify_certificates']
-    return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config, debug=context['debug'])
+    log = CommandLog()
+    if halt_on_error_log and log.any_log_exists():
+        click_echo("Error: A previous command did not finish. Please check the log ({}) and remove it when you want to continue using obis".format(log.folder_path))
+        sys.exit(-1)
+    return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config, log=log, debug=context['debug'])
 
 
 def check_result(command, result):
@@ -311,7 +317,7 @@ def settings(ctx, is_global):
 @settings.command('get')
 @click.pass_context
 def settings_get(ctx):
-    data_mgmt = shared_data_mgmt(ctx.obj)
+    data_mgmt = shared_data_mgmt(ctx.obj, halt_on_error_log=False)
     settings = data_mgmt.settings_resolver.config_dict()
     settings_str = json.dumps(settings, indent=4, sort_keys=True)
     click.echo("{}".format(settings_str))
@@ -326,7 +332,7 @@ def repository(ctx, is_global):
     """ Get/set settings related to the repository.
     """
     ctx.obj['is_global'] = is_global
-    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj, halt_on_error_log=False)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.repository
 
 
@@ -363,7 +369,7 @@ def data_set(ctx, is_global, is_data_set_property):
     """
     ctx.obj['is_global'] = is_global
     ctx.obj['is_data_set_property'] = is_data_set_property
-    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj, halt_on_error_log=False)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.data_set
 
 
@@ -398,7 +404,7 @@ def object(ctx, is_global):
     """ Get/set settings related to the object.
     """
     ctx.obj['is_global'] = is_global
-    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj, halt_on_error_log=False)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.object
 
 
@@ -433,7 +439,7 @@ def collection(ctx, is_global):
     """ Get/set settings related to the collection.
     """
     ctx.obj['is_global'] = is_global
-    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj, halt_on_error_log=False)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.collection
 
 
@@ -468,7 +474,7 @@ def config(ctx, is_global):
     """ Get/set configurations.
     """
     ctx.obj['is_global'] = is_global
-    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj)
+    ctx.obj['data_mgmt'] = shared_data_mgmt(ctx.obj, halt_on_error_log=False)
     ctx.obj['resolver'] = ctx.obj['data_mgmt'].settings_resolver.config
 
 
@@ -643,27 +649,36 @@ def addref(ctx, repository):
 # removeref
 
 _removeref_params = [
+    click.option('-d', '--data_set_id', help='Remove ref by data set id, in case the repository is not available anymore.'),
     click.argument('repository', type=click.Path(exists=True, file_okay=False), required=False),
 ]
 
-def _repository_removeref(ctx):
+def _repository_removeref(ctx, data_set_id=None):
     data_mgmt = shared_data_mgmt(ctx.obj)
-    return check_result("addref", run(ctx, data_mgmt.removeref))
+    return check_result("removeref", run(ctx, lambda: data_mgmt.removeref(data_set_id=data_set_id)))
 
 @repository.command("removeref", short_help="Remove the reference to the given repository from openBIS.")
 @click.pass_context
 @add_params(_removeref_params)
-def repository_removeref(ctx, repository):
-    if repository is None:
-        return _repository_removeref(ctx)
-    with cd(repository):
-        return _repository_removeref(ctx)
+def repository_removeref(ctx, data_set_id, repository):
+    if data_set_id is None:
+        if repository is None:
+            return _repository_removeref(ctx)
+        with cd(repository):
+            return _repository_removeref(ctx)
+    else:
+        if repository is not None:
+            print(repository)
+            click_echo("Only provide the data_set id OR the repository.")
+            return -1
+        return _repository_removeref(ctx, data_set_id=data_set_id)
+
 
 @cli.command(short_help="Remove the reference to the given repository from openBIS.")
 @click.pass_context
 @add_params(_removeref_params)
-def removeref(ctx, repository):
-    ctx.invoke(repository_removeref, repository=repository)
+def removeref(ctx, data_set_id, repository):
+    ctx.invoke(repository_removeref, data_set_id=data_set_id, repository=repository)
 
 
 # data set commands: download / clone

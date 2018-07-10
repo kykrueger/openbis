@@ -523,6 +523,7 @@ class Openbis:
         return [
             'url', 'port', 'hostname',
             'login()', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
+            "get_server_information()",
             "get_dataset('permId')",
             "get_datasets()",
             "get_dataset_type('raw_data')",
@@ -724,6 +725,31 @@ class Openbis:
             if os.environ.get('OPENBIS_URL') == self.url:
                 os.environ['OPENBIS_TOKEN'] = self.token
             return self.token
+
+
+    def get_server_information(self):
+        """ Returns a dict containing the following server information:
+            api-version, archiving-configured, authentication-service, enabled-technologies, project-samples-enabled
+         """
+        request = {
+            "method": "getServerInformation",
+            "params": [self.token],
+        }
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            # result is a dict of strings - use more useful types
+            keys_boolean = ['archiving-configured', 'project-samples-enabled']
+            keys_csv = ['enabled-technologies']
+            for key in keys_boolean:
+                if key in resp:
+                    resp[key] = resp[key] == 'true'
+            for key in keys_csv:
+                if key in resp:
+                    resp[key] = list(map(lambda item: item.strip(), resp[key].split(',')))
+            return ServerInformation(resp)
+        else:
+            raise ValueError("Could not get the server information")
+
 
     def create_permId(self):
         """Have the server generate a new permId"""
@@ -1221,11 +1247,8 @@ class Openbis:
             })
             )
         if project:
-            exp_crit = _subcriteria_for_code(experiment, 'experiment')
             proj_crit = _subcriteria_for_code(project, 'project')
-            exp_crit['criteria'] = []
-            exp_crit['criteria'].append(proj_crit)
-            sub_criteria.append(exp_crit)
+            sub_criteria.append(proj_crit)
         if experiment:
             sub_criteria.append(_subcriteria_for_code(experiment, 'experiment'))
         if properties is not None:
@@ -1309,7 +1332,7 @@ class Openbis:
     get_objects = get_samples # Alias
 
 
-    def get_experiments(self, code=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
+    def get_experiments(self, code=None, permId=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
         """ Searches for all experiment which match the search criteria. Returns a
         «Things» object which can be used in many different situations.
 
@@ -1331,6 +1354,8 @@ class Openbis:
             sub_criteria.append(_subcriteria_for_code(project, 'project'))
         if code:
             sub_criteria.append(_criteria_for_code(code))
+        if permId:
+            sub_criteria.append(_common_search("as.dto.common.search.PermIdSearchCriteria", permId))
         if type:
             sub_criteria.append(_subcriteria_for_type(type, 'Experiment'))
         if tags:
@@ -2161,8 +2186,8 @@ class Openbis:
                 else:
                     return Plugin(self, data=resp[permId])
 
-    def new_plugin(self, name, pluginType= "MANAGED_PROPERTY", pluginKind = "JYTHON", **kwargs):
-        """ Creates a new Plugin in openBIS. The attribute pluginKind must be one of
+    def new_plugin(self, pluginType= "MANAGED_PROPERTY", pluginKind = "JYTHON", **kwargs):
+        """ Note: not functional yet. Creates a new Plugin in openBIS. The attribute pluginKind must be one of
         the following:
         DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION;
 
@@ -2395,7 +2420,7 @@ class Openbis:
         search_request = search_request_for_identifier(sample_ident, 'sample')
 
         fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
-        for option in ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets']:
+        for option in ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets', 'project']:
             fetchopts[option] = fetch_option[option]
 
         if withAttachments:
@@ -2423,7 +2448,11 @@ class Openbis:
                 if only_data:
                     return resp[sample_ident]
                 else:
-                    return Sample(self, self.get_sample_type(resp[sample_ident]["type"]["code"]), resp[sample_ident])
+                    return Sample(
+                        openbis_obj = self,
+                        type = self.get_sample_type(resp[sample_ident]["type"]["code"]),
+                        data = resp[sample_ident]
+                    )
 
     get_object = get_sample # Alias
 
@@ -2564,10 +2593,10 @@ class Openbis:
             }
         return dms_id
 
-    def new_sample(self, type, props=None, **kwargs):
+    def new_sample(self, type, project=None, props=None, **kwargs):
         """ Creates a new sample of a given sample type.
         """
-        return Sample(self, self.get_sample_type(type), None, props, **kwargs)
+        return Sample(self, self.get_sample_type(type), project, None, props, **kwargs)
 
     new_object = new_sample # Alias
 
@@ -2584,6 +2613,7 @@ class Openbis:
         return DataSet(self, type=type_obj, files=files, folder=folder, props=props, **kwargs)
     
     def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):
+        """ Note: not functional yet. """
         return SemanticAnnotation(
             openbis_obj=self, isNew=True, 
             entityType=entityType, propertyType=propertyType, **kwargs
@@ -2716,3 +2746,16 @@ class ExternalDMS():
         return self.data.get('code', None)
 
 
+class ServerInformation():
+
+    def __init__(self, info):
+        self._info = info
+
+    def __dir__(self):
+        return [
+            'api_version', 'archiving_configured', 'authentication_service', 
+            'enabled_technologies', 'project_samples_enabled'
+        ]
+
+    def __getattr__(self, name):
+        return self._info[name.replace('_', '-')]

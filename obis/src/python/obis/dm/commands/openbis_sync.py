@@ -50,8 +50,7 @@ class OpenbisSync(OpenbisCommand):
         if result.failure():
             return result
         commit_id = result.output
-        sample_id = self.object_id()
-        experiment_id = self.collection_id()
+        sample_id, experiment_id = self._update_and_get_object_or_collection_id()
         contents = GitRepoFileInfo(self.git_wrapper).contents(git_annex_hash_as_checksum=self.git_annex_hash_as_checksum())
         try:
             data_set = self.openbis.new_git_data_set(data_set_type, top_level_path, commit_id, repository_id, external_dms.code,
@@ -62,8 +61,40 @@ class OpenbisSync(OpenbisCommand):
             return CommandResult(returncode=-1, output=str(e)), None
 
 
-    def commit_metadata_updates(self, msg_fragment=None):
-        return self.data_mgmt.commit_metadata_updates(msg_fragment)
+    def _update_and_get_object_or_collection_id(self):
+        """ Updates identifier of object / collection in case it has changed in openBIS 
+        if the permId is available. Returns sample / experiment identifier."""
+        sample_id = self.object_id()
+        experiment_id = self.collection_id()
+        if self.object_permId() is not None:
+            sample_id = self.openbis.get_sample(self.object_permId()).identifier
+            if sample_id != self.object_id():
+                self.settings_resolver.object.set_value_for_parameter('id', sample_id, 'local')
+                # permId is cleared when the id is set - set it again
+                self.settings_resolver.object.set_value_for_parameter('permId', self.object_permId(), 'local')
+                self.commit_metadata_updates("object identifier changed in openBIS")
+        if self.collection_permId() is not None:
+            experiment_id = self.openbis.get_experiment(self.collection_permId()).identifier
+            if experiment_id != self.collection_id():
+                self.settings_resolver.collection.set_value_for_parameter('id', experiment_id, 'local')
+                # permId is cleared when the id is set - set it again
+                self.settings_resolver.collection.set_value_for_parameter('permId', self.collection_permId(), 'local')
+                self.commit_metadata_updates("collection identifier changed in openBIS")
+        return sample_id, experiment_id
+
+    def _storePermId(self):
+        if self.object_permId() is None and self.object_id() is not None:
+            sample = self.openbis.get_sample(self.object_id())
+            self.settings_resolver.object.set_value_for_parameter('permId', sample.permId, 'local')
+            self.commit_metadata_updates("object permId", omit_usersettings=False)
+        if self.collection_permId() is None and self.collection_id() is not None:
+            experiment = self.openbis.get_experiment(self.collection_id())
+            self.settings_resolver.collection.set_value_for_parameter('permId', experiment.permId, 'local')
+            self.commit_metadata_updates("collection permId", omit_usersettings=False)
+
+
+    def commit_metadata_updates(self, msg_fragment=None, omit_usersettings=True):
+        return self.data_mgmt.commit_metadata_updates(msg_fragment, omit_usersettings=omit_usersettings)
 
 
     def prepare_repository_id(self):
@@ -157,10 +188,14 @@ class OpenbisSync(OpenbisCommand):
 
         self.commit_metadata_updates()
 
+        # store permId of object / collection so we can use those as a reference in the future
+        self._storePermId()
+
         # Update data set id as last commit so we can easily revert it on failure
         self.settings_resolver.repository.set_value_for_parameter('data_set_id', data_set_code, 'local')
         self.commit_metadata_updates("data set id")
 
         # create a data set, using the existing data set as a parent, if there is one
         result, data_set = self.create_data_set(data_set_code, external_dms, repository_id, ignore_parent)
+
         return result

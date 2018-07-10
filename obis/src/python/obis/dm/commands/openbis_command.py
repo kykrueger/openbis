@@ -60,11 +60,17 @@ class OpenbisCommand(object):
     def object_id(self):
         return self.config_dict['object']['id']
 
+    def object_permId(self):
+        return self.config_dict['object']['permId']
+
     def set_object_id(self, value):
         self.config_dict['object']['id'] = value
 
     def collection_id(self):
         return self.config_dict['collection']['id']
+
+    def collection_permId(self):
+        return self.config_dict['collection']['permId']
 
     def set_collection_id(self, value):
         self.config_dict['collection']['id'] = value
@@ -98,6 +104,12 @@ class OpenbisCommand(object):
 
     def set_openbis_url(self, value):
         self.config_dict['config']['openbis_url'] = value
+
+
+    def log(self, message):
+        command = type(self).__name__
+        self.data_mgmt.log.log(command, message)
+
 
     def prepare_run(self):
         result = self.check_configuration()
@@ -206,7 +218,7 @@ class OpenbisCommand(object):
 class ContentCopySelector(object):
 
 
-    def __init__(self, data_set, content_copy_index, get_index=False):
+    def __init__(self, data_set, content_copy_index=None, get_index=False):
         self.data_set = data_set
         self.content_copy_index = content_copy_index
         self.get_index = get_index
