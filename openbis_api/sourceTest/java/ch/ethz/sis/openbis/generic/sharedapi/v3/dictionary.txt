@@ -2226,3 +2226,6 @@ Create PermIds Operation
 Create PermIds Operation Result
 Get Server Information Operation
 Get Server Information Operation Result
+
+Archiving Requested Search Criteria
+with Archiving Requested
