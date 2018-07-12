@@ -45,7 +45,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			experimentIdentifier = this._dataSetFormModel.entity.experimentIdentifierOrNull;
 		}
 		if(experimentIdentifier) {
-			spaceCode = experimentIdentifier.split("/")[1];
+			spaceCode = Util.getSpaceCodeFromIdentifier(experimentIdentifier);
 			projectCode = experimentIdentifier.split("/")[2];
 			experimentCode = experimentIdentifier.split("/")[3];
 		}
@@ -53,7 +53,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		var sampleIdentifier;
 		if(!this._dataSetFormModel.isExperiment()) {
 			sampleCode = this._dataSetFormModel.entity.code;
-			spaceCode = this._dataSetFormModel.entity.identifier.split("/")[1];
+			spaceCode = Util.getSpaceCodeFromIdentifier(this._dataSetFormModel.entity.identifier);
 			sampleIdentifier = this._dataSetFormModel.entity.identifier;
 		}
 		var datasetCodeAndPermId = this._dataSetFormModel.dataSet.code;

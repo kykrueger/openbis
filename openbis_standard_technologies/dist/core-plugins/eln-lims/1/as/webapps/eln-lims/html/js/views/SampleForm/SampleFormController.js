@@ -231,7 +231,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			
 			var experimentIdentifier = sample.experimentIdentifierOrNull;
 			if(experimentIdentifier) { //If there is a experiment detected, the sample should be attached to the experiment completely.
-				sampleSpace = experimentIdentifier.split("/")[1];
+				sampleSpace = Util.getSpaceCodeFromIdentifier(experimentIdentifier);
 				sampleProject = experimentIdentifier.split("/")[2];
 				sampleExperiment = experimentIdentifier.split("/")[3];
 			}

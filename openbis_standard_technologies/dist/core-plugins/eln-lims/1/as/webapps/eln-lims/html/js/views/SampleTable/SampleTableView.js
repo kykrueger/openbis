@@ -31,7 +31,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 				title = "" + ELNDictionary.getExperimentKindName(this._sampleTableModel.experimentIdentifier) + ": " + this._sampleTableModel.experiment.properties[profile.propertyReplacingCode];
 			}
 			
-			var spaceCode = this._sampleTableModel.experimentIdentifier.split("/")[1];
+			var spaceCode = Util.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			var projectCode = this._sampleTableModel.experimentIdentifier.split("/")[2];
 			var experimentCode = this._sampleTableModel.experimentIdentifier.split("/")[3];
 			var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
@@ -48,7 +48,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		//
 		var toolbarModel = [];
 		if(this._sampleTableModel.experimentIdentifier) {
-			var experimentSpace = this._sampleTableModel.experimentIdentifier.split("/")[1];
+			var experimentSpace = Util.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			var experimentCode = this._sampleTableModel.experimentIdentifier.split("/")[3];
 			var allSampleTypes = profile.getAllSampleTypes();
 			var sampleTypeCodesFound = [];
@@ -219,7 +219,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			allowedSampleTypes = [this._sampleTableModel.sampleTypeCodeToUse, "STORAGE_POSITION"];
 		}
 		if(experimentIdentifier) {
-			forcedSpace = "/" + experimentIdentifier.split("/")[1];
+			forcedSpace = "/" + Util.getSpaceCodeFromIdentifier(experimentIdentifier);
 		}
 		
 		var typeAndFileController = new TypeAndFileController('Register ' + ELNDictionary.Samples + '', "REGISTRATION", function(type, file) {
@@ -266,7 +266,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			allowedSampleTypes = [this._sampleTableModel.sampleTypeCodeToUse, "STORAGE_POSITION"];
 		}
 		if(experimentIdentifier) {
-			forcedSpace = "/" + experimentIdentifier.split("/")[1];
+			forcedSpace = "/" + Util.getSpaceCodeFromIdentifier(experimentIdentifier);
 		}
 		var typeAndFileController = new TypeAndFileController('Update ' + ELNDictionary.Samples + '', "UPDATE", function(type, file) {
 			Util.blockUI();

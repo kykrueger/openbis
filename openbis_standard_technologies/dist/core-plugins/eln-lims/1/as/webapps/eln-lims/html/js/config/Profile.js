@@ -244,7 +244,7 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.isELNIdentifier = function(identifier) {
-			var space = identifier.split("/")[1];
+			var space = Util.getSpaceCodeFromIdentifier(identifier);
 			return !this.isInventorySpace(space);
 		}
 		
