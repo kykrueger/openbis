@@ -263,6 +263,7 @@ $.extend(DefaultProfile.prototype, {
 			return false;
 		}
 		
+		this.isProjectSamplesEnabled = false;
 		this.isFileAuthenticationService = false;
 		this.isFileAuthenticationUser = false;
 		this.directLinkEnabled = true;
@@ -898,14 +899,15 @@ $.extend(DefaultProfile.prototype, {
 			}));
 		}
 		
-		this.initAuth = function(callback) {
+		this.initServerInfo = function(callback) {
 			var _this = this;
 			this.serverFacade.getOpenbisV3(function(openbisV3) {
 				openbisV3._private.sessionToken = mainController.serverFacade.getSession();
 				openbisV3.getServerInformation().done(function(serverInformation) {
 	                var authSystem = serverInformation["authentication-service"];
+	                _this.isProjectSamplesEnabled = serverInformation["project-samples-enabled"];
 	                if (authSystem && authSystem.indexOf("file") !== -1) {
-	                	_this.isFileAuthenticationService = true;
+	                		_this.isFileAuthenticationService = true;
 	                }
 	                callback();
 	            });
@@ -931,7 +933,7 @@ $.extend(DefaultProfile.prototype, {
 						_this.initDirectLinkURL(function() {
 							_this.initIsAdmin(function() {
 								_this.initDatasetTypeCodes(function() {
-									_this.initAuth(function() {
+									_this.initServerInfo(function() {
 										_this.isFileAuthUser(function() {
 											_this.initSpaces(function() {
 												_this.initSettings(function() {

@@ -507,7 +507,7 @@ function ServerFacade(openbisServer) {
 		if(sampleToSend.id !== -1) { //Is V1 Sample
 			listDataSetsForV1Sample(sampleToSend);
 		} else { //Ask for a V1 Sample
-			this.searchWithUniqueIdV1(sampleToSend.permId, function(sampleList) {
+			this.searchWithUniqueId(sampleToSend.permId, function(sampleList) {
 				listDataSetsForV1Sample(sampleList[0]);
 			});
 		}
@@ -1457,20 +1457,7 @@ function ServerFacade(openbisServer) {
 		}
 		
 		if(sampleIdentifier) {
-			var splittedIdentifier = sampleIdentifier.split("/");
-			matchClauses.push({
-				"@type":"AttributeMatchClause",
-				fieldType : "ATTRIBUTE",			
-				attribute : "SPACE",
-				desiredValue : splittedIdentifier[1] 
-			});
-			
-			matchClauses.push({
-				"@type":"AttributeMatchClause",
-				fieldType : "ATTRIBUTE",			
-				attribute : "CODE",
-				desiredValue : splittedIdentifier[splittedIdentifier.length - 1] 
-			});
+			throw "Unexpected operation exception : v1 search by sampleIdentifier removed";
 		}
 		
 		if(sampleCode) {
@@ -1680,24 +1667,42 @@ function ServerFacade(openbisServer) {
 	{
 		if(profile.searchSamplesUsingV3OnDropbox) {
 			this.searchSamplesV3DSS(fechOptions, callbackFunction);
+		} else if(fechOptions["sampleIdentifier"]) {
+			this.searchSamplesV1replacement(fechOptions, callbackFunction);
 		} else {
 			this.searchSamplesV1(fechOptions, callbackFunction);
 		}
 	}
 	
+	this.searchSamplesV1replacement = function(fechOptions, callbackFunction)
+	{
+		var _this = this;
+		require([ "as/dto/sample/id/SampleIdentifier", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
+        function(SampleIdentifier, SampleFetchOptions) {
+            var fetchOptions = new SampleFetchOptions();
+            fetchOptions.withSpace();
+            fetchOptions.withType();
+            
+            if(fechOptions["withProperties"]) {
+            		fetchOptions.withProperties();
+            }
+            if(fechOptions["withAncestors"]) {
+            		fetchOptions.withParentsUsing(fetchOptions);
+            }
+            if(fechOptions["withDescendants"]) {
+            		fetchOptions.withChildrenUsing(fetchOptions);
+            }
+            
+            mainController.openbisV3.getSamples([new SampleIdentifier(fechOptions["sampleIdentifier"])], fetchOptions).done(function(map) {
+                var samples = Util.mapValuesToList(map);
+                callbackFunction(_this.getV3SamplesAsV1(samples));
+            });
+        });
+	}
+	
 	this.searchWithUniqueId = function(samplePermId, callbackFunction)
 	{	
 		this.searchSamples({
-			"samplePermId" : samplePermId,
-			"withProperties" : true,
-			"withAncestors" : true,
-			"withDescendants" : true
-		}, callbackFunction);
-	}
-	
-	this.searchWithUniqueIdV1 = function(samplePermId, callbackFunction)
-	{	
-		this.searchSamplesV1({
 			"samplePermId" : samplePermId,
 			"withProperties" : true,
 			"withAncestors" : true,

@@ -398,9 +398,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				
 				var sampleIdentifierToOpen = null;
 				if(isCopyWithNewCode) {
-					sampleIdentifierToOpen = "/" + _this._sampleFormModel.sample.spaceCode + "/" + isCopyWithNewCode;
+					sampleIdentifierToOpen = Util.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode, isCopyWithNewCode);
 				} else {
-					sampleIdentifierToOpen = "/" + _this._sampleFormModel.sample.spaceCode + "/" + _this._sampleFormModel.sample.code;
+					sampleIdentifierToOpen = Util.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode, _this._sampleFormModel.sample.code);
 				}
 				
 				var searchUntilFound = null;
