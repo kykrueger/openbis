@@ -1680,6 +1680,9 @@ function ServerFacade(openbisServer) {
 		require([ "as/dto/sample/id/SampleIdentifier", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
         function(SampleIdentifier, SampleFetchOptions) {
             var fetchOptions = new SampleFetchOptions();
+            fetchOptions.withSpace();
+            fetchOptions.withType();
+            
             if(fechOptions["withProperties"]) {
             		fetchOptions.withProperties();
             }
