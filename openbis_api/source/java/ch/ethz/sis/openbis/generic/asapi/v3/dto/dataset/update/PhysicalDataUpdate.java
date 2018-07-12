@@ -55,15 +55,15 @@ public class PhysicalDataUpdate implements IUpdate
     }
 
     @JsonIgnore
-    public FieldUpdateValue<Boolean> getArchivingRequested()
+    public FieldUpdateValue<Boolean> isArchivingRequested()
     {
         return archivingRequested;
     }
 
     @JsonIgnore
-    public void setArchivingRequested(FieldUpdateValue<Boolean> archivingRequested)
+    public void setArchivingRequested(boolean archivingRequested)
     {
-        this.archivingRequested = archivingRequested;
+        this.archivingRequested.setValue(archivingRequested);
     }
 
     @Override

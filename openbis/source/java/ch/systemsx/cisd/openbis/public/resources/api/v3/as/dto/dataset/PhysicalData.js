@@ -115,7 +115,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setSpeedHint = function(speedHint) {
 			this.speedHint = speedHint;
 		};
-		prototype.getArchivingRequested = function() {
+		prototype.isArchivingRequested = function() {
 			return this.archivingRequested;
 		};
 		prototype.setArchivingRequested = function(archivingRequested) {

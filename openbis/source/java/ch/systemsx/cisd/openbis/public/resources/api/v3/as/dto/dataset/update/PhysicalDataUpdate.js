@@ -28,7 +28,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		prototype.setFileFormatTypeId = function(fileFormatTypeId) {
 			this.fileFormatTypeId.setValue(fileFormatTypeId);
 		};
-		prototype.getArchivingRequested = function() {
+		prototype.isArchivingRequested = function() {
 			return this.archivingRequested;
 		};
 		prototype.setArchivingRequested = function(archivingRequested) {
