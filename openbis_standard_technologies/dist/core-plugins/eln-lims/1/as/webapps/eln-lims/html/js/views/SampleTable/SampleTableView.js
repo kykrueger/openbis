@@ -32,7 +32,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			}
 			
 			var spaceCode = Util.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
-			var projectCode = this._sampleTableModel.experimentIdentifier.split("/")[2];
+			var projectCode = Util.getProjectCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
 			var experimentCode = this._sampleTableModel.experimentIdentifier.split("/")[3];
 			var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
 			

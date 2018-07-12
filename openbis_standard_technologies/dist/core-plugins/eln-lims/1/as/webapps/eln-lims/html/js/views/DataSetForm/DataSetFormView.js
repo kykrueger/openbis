@@ -46,7 +46,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		if(experimentIdentifier) {
 			spaceCode = Util.getSpaceCodeFromIdentifier(experimentIdentifier);
-			projectCode = experimentIdentifier.split("/")[2];
+			projectCode = Util.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
 			experimentCode = experimentIdentifier.split("/")[3];
 		}
 		var sampleCode;

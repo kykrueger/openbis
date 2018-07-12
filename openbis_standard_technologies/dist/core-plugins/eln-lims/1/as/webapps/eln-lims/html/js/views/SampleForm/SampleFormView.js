@@ -54,7 +54,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var experimentCode;
 		if(this._sampleFormModel.sample.experimentIdentifierOrNull) {	
 			var experimentIdentifier = this._sampleFormModel.sample.experimentIdentifierOrNull;
-			projectCode = experimentIdentifier.split("/")[2];
+			projectCode = Util.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
 			experimentCode = experimentIdentifier.split("/")[3];
 		}
 		var containerSampleCode;

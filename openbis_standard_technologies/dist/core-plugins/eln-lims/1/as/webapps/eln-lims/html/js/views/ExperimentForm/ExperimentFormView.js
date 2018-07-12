@@ -48,7 +48,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		}
 		
 		var spaceCode = Util.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
-		var projectCode = this._experimentFormModel.experiment.identifier.split("/")[2];
+		var projectCode = Util.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
 		var experimentCode = (this._experimentFormModel.mode !== FormMode.CREATE)?this._experimentFormModel.experiment.identifier.split("/")[3]:null;
 		var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
 		

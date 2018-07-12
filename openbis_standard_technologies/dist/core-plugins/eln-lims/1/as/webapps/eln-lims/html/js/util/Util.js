@@ -571,6 +571,10 @@ var Util = new function() {
 		return identifier.split("/")[1];
 	};
 	
+	this.getProjectCodeFromExperimentIdentifier = function(experimentIdentifier) {
+		return experimentIdentifier.split("/")[2];
+	};
+	
 	this.guid = function() {
 		  var s4 = function() {
 		    return Math.floor((1 + Math.random()) * 0x10000)
