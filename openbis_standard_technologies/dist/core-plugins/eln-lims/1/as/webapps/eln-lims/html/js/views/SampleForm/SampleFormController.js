@@ -233,7 +233,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			if(experimentIdentifier) { //If there is a experiment detected, the sample should be attached to the experiment completely.
 				sampleSpace = Util.getSpaceCodeFromIdentifier(experimentIdentifier);
 				sampleProject = Util.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
-				sampleExperiment = experimentIdentifier.split("/")[3];
+				sampleExperiment = Util.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
 			}
 			
 			//Children to create

@@ -33,7 +33,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			
 			var spaceCode = Util.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			var projectCode = Util.getProjectCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
-			var experimentCode = this._sampleTableModel.experimentIdentifier.split("/")[3];
+			var experimentCode = Util.getExperimentCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
 			var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
 			
 			$title
@@ -49,7 +49,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		var toolbarModel = [];
 		if(this._sampleTableModel.experimentIdentifier) {
 			var experimentSpace = Util.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
-			var experimentCode = this._sampleTableModel.experimentIdentifier.split("/")[3];
+			var experimentCode = Util.getExperimentCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
 			var allSampleTypes = profile.getAllSampleTypes();
 			var sampleTypeCodesFound = [];
 			for(var aIdx = 0; aIdx < allSampleTypes.length; aIdx++) {

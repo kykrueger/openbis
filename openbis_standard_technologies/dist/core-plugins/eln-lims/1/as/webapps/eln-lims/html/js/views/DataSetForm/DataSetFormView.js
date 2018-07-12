@@ -47,7 +47,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		if(experimentIdentifier) {
 			spaceCode = Util.getSpaceCodeFromIdentifier(experimentIdentifier);
 			projectCode = Util.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
-			experimentCode = experimentIdentifier.split("/")[3];
+			experimentCode = Util.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
 		}
 		var sampleCode;
 		var sampleIdentifier;
@@ -500,7 +500,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							identifier = this._dataSetFormModel.entity.identifier;
 						}
 						
-						if(!(profile.inventorySpaces.length > 0 && $.inArray(identifier.split("/")[1], profile.inventorySpaces) === -1)) {
+						if(!(profile.inventorySpaces.length > 0 && $.inArray(Util.getSpaceCodeFromIdentifier(identifier), profile.inventorySpaces) === -1)) {
 							continue;
 						}
 					}
