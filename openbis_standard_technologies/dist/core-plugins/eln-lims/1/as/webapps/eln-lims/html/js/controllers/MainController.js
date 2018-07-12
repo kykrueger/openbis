@@ -986,8 +986,8 @@ function MainController(profile) {
 		//Show Form
 		var sample = {
 				sampleTypeCode : sampleTypeCode,
-				spaceCode : experimentIdentifier.substring(1, experimentIdentifier.indexOf('/', 1)),
-				projectCode : experimentIdentifier.split('/')[2],
+				spaceCode : Util.getSpaceCodeFromIdentifier(experimentIdentifier),
+				projectCode : Util.getProjectCodeFromExperimentIdentifier(experimentIdentifier),
 				experimentIdentifierOrNull : experimentIdentifier,
 				properties : {}
 		}
