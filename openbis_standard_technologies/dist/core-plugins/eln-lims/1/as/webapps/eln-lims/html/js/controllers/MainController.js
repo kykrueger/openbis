@@ -986,8 +986,9 @@ function MainController(profile) {
 		//Show Form
 		var sample = {
 				sampleTypeCode : sampleTypeCode,
-				experimentIdentifierOrNull : experimentIdentifier,
 				spaceCode : experimentIdentifier.substring(1, experimentIdentifier.indexOf('/', 1)),
+				projectCode : experimentIdentifier.split('/')[2],
+				experimentIdentifierOrNull : experimentIdentifier,
 				properties : {}
 		}
 		var sampleFormController = new SampleFormController(this, FormMode.CREATE, sample);

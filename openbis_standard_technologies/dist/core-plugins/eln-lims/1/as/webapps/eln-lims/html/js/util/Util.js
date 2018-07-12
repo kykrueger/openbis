@@ -267,6 +267,14 @@ var Util = new function() {
 		});
 	}
 
+	this.mapValuesToList = function(map) {
+		var list = [];
+		for(e in map) {
+			list.push(map[e]);
+		}
+		return list;
+	}
+	
 	this.getDirectLinkWindows = function(protocol, config, path) {
 		var hostName = window.location.hostname;
 		var suffix = config.UNCsuffix;
@@ -553,6 +561,10 @@ var Util = new function() {
 			  } 
 			    return query_string;
 		} ();
+	}
+	
+	this.getSampleIdentifier = function(spaceCode, projectCode, sampleCode) {
+		return ('/' + spaceCode + '/' + ((profile.isProjectSamplesEnabled)?projectCode + '/':'') + sampleCode);
 	}
 	
 	this.guid = function() {
