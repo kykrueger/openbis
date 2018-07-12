@@ -293,6 +293,7 @@ public final class ExternalDataPE extends DataPE
     }
 
     @Column(name = ColumnNames.ARCHIVING_REQUESTED)
+    @Field(name = SearchFieldConstants.ARCHIVING_REQUESTED, index = Index.YES, store = Store.YES)
     public boolean isArchivingRequested()
     {
         return archivingRequested;
