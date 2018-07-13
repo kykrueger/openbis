@@ -70,7 +70,9 @@ var IdentifierUtil = new function() {
 	//
 	
 	this.getProjectIdentifierFromExperimentIdentifier = function(experimentIdentifier) {
-		return ('/' + this.getSpaceCodeFromIdentifier(experimentIdentifier) + '/' + this.getProjectCodeFromExperimentIdentifier(experimentIdentifier));
+		var spaceCode = this.getSpaceCodeFromIdentifier(experimentIdentifier);
+		var projectCode = this.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
+		return this.getProjectIdentifier(spaceCode, projectCode);
 	}
 	
 	this.getProjectCodeFromExperimentIdentifier = function(experimentIdentifier) {
