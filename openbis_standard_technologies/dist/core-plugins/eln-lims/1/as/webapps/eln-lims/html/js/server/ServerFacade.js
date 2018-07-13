@@ -1559,7 +1559,7 @@ function ServerFacade(openbisServer) {
 								"@type":"AttributeMatchClause",
 								fieldType : "ATTRIBUTE",			
 								attribute : "CODE",
-								desiredValue : IdentifierUtil.getExperimentCodeFromExperimentIdentifier(sampleExperimentIdentifier)
+								desiredValue : IdentifierUtil.getCodeFromIdentifier(sampleExperimentIdentifier)
 							}],
 						operator : "MATCH_ALL_CLAUSES"
 				}

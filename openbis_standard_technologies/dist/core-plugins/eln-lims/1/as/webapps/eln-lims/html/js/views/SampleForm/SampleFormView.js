@@ -55,14 +55,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		if(this._sampleFormModel.sample.experimentIdentifierOrNull) {	
 			var experimentIdentifier = this._sampleFormModel.sample.experimentIdentifierOrNull;
 			projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
-			experimentCode = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
+			experimentCode = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
 		}
 		var containerSampleIdentifier;
 		var containerSampleCode;
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
 			containerSampleIdentifier = IdentifierUtil.getContainerSampleIdentifierFromContainedSampleIdentifier(this._sampleFormModel.sample.identifier);
 			if(containerSampleIdentifier) {
-				containerSampleCode = IdentifierUtil.getSampleCodeFromSampleIdentifier(containerSampleIdentifier);
+				containerSampleCode = IdentifierUtil.getCodeFromIdentifier(containerSampleIdentifier);
 			}
 		}
 		var sampleCode = this._sampleFormModel.sample.code;

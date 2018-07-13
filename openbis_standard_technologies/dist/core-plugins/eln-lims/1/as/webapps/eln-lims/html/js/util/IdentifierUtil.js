@@ -38,6 +38,11 @@ var IdentifierUtil = new function() {
 		return spaceCode;
 	};
 	
+	this.getCodeFromIdentifier = function(identifier) {
+		var identifierParts = identifier.split('/');
+		return identifierParts[identifierParts.length - 1];
+	}
+	
 	//
 	// Sample Identifier Parsing
 	//
@@ -49,11 +54,6 @@ var IdentifierUtil = new function() {
 			projectCode = sampleIdentifierParts[2];
 		}
 		return projectCode;
-	}
-	
-	this.getSampleCodeFromSampleIdentifier = function(sampleIdentifier) {
-		var sampleIdentifierParts = sampleIdentifier.split('/');
-		return sampleIdentifierParts[sampleIdentifierParts.length - 1];
 	}
 	
 	this.getContainerSampleIdentifierFromContainedSampleIdentifier = function(sampleIdentifier) {
@@ -77,7 +77,4 @@ var IdentifierUtil = new function() {
 		return experimentIdentifier.split('/')[2];
 	};
 	
-	this.getExperimentCodeFromExperimentIdentifier = function(experimentIdentifier) {
-		return experimentIdentifier.split('/')[3];
-	};
 }

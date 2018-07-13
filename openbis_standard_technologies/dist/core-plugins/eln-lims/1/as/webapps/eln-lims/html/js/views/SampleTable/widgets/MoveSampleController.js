@@ -60,7 +60,7 @@ function MoveSampleController(samplePermId, successAction) {
 									var isInventory = profile.isInventorySpace(IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier));
 									mainController.sideMenu.refreshExperiment({ 
 										identifier: _this._moveSampleModel.experimentIdentifier, 
-										code: IdentifierUtil.getExperimentCodeFromExperimentIdentifier(experimentIdentifier), 
+										code: IdentifierUtil.getCodeFromIdentifier(experimentIdentifier), 
 										properties : {}
 									}, isInventory);
 								}

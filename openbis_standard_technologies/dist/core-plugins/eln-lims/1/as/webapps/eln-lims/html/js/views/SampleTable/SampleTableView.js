@@ -26,14 +26,14 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		var $title = $("<div>");
 		if(this._sampleTableModel.title && this._sampleTableModel.experimentIdentifier) {
 			
-			var title = "" + ELNDictionary.getExperimentKindName(this._sampleTableModel.experimentIdentifier) + ": " + this._sampleTableModel.experimentIdentifier.substring(this._sampleTableModel.experimentIdentifier.lastIndexOf("/") + 1);
+			var title = "" + ELNDictionary.getExperimentKindName(this._sampleTableModel.experimentIdentifier) + ": " + ELNDictionary.getCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			if(this._sampleTableModel.experiment && this._sampleTableModel.experiment.properties[profile.propertyReplacingCode]) {
 				title = "" + ELNDictionary.getExperimentKindName(this._sampleTableModel.experimentIdentifier) + ": " + this._sampleTableModel.experiment.properties[profile.propertyReplacingCode];
 			}
 			
 			var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
-			var experimentCode = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
+			var experimentCode = IdentifierUtil.getCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
 			
 			$title
@@ -49,7 +49,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		var toolbarModel = [];
 		if(this._sampleTableModel.experimentIdentifier) {
 			var experimentSpace = IdentifierUtil.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
-			var experimentCode = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
+			var experimentCode = IdentifierUtil.getCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			var allSampleTypes = profile.getAllSampleTypes();
 			var sampleTypeCodesFound = [];
 			for(var aIdx = 0; aIdx < allSampleTypes.length; aIdx++) {

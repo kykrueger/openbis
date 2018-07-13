@@ -47,7 +47,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		if(experimentIdentifier) {
 			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 			projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
-			experimentCode = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
+			experimentCode = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
 		}
 		var sampleCode;
 		var sampleIdentifier;
@@ -198,11 +198,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			owner = this._dataSetFormModel.entity.identifier.identifier;
 		} else {
 			ownerName = ELNDictionary.Sample;
-			if(this._dataSetFormModel.entity.experimentIdentifierOrNull) {
-				owner = this._dataSetFormModel.entity.experimentIdentifierOrNull + "/" + this._dataSetFormModel.entity.code;
-			} else {
-				owner = this._dataSetFormModel.entity.identifier;
-			}
+			owner = this._dataSetFormModel.entity.identifier;
 		}
 		
 		if(!this._dataSetFormModel.isMini) {

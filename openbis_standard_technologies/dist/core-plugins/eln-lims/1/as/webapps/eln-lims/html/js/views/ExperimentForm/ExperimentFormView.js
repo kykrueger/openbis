@@ -49,7 +49,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		
 		var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
 		var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
-		var experimentCode = (this._experimentFormModel.mode !== FormMode.CREATE)?IdentifierUtil.getExperimentCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier):null;
+		var experimentCode = (this._experimentFormModel.mode !== FormMode.CREATE)?IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier):null;
 		var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
 		
 		
@@ -286,7 +286,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			$formColumn.append(FormUtil.getFieldForLabelWithText("Code", this._experimentFormModel.experiment.code));
 			
 			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
-			$codeField.val(IdentifierUtil.getExperimentCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier));
+			$codeField.val(IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier));
 			$codeField.hide();
 			$formColumn.append($codeField);
 		} else if(this._experimentFormModel.mode === FormMode.CREATE) {
