@@ -372,6 +372,11 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			var stacktrace = response.result.rows[0][1].value;
 			Util.showStacktraceAsError(stacktrace);
 		} else if (response.result.columns[0].title === "STATUS" && response.result.rows[0][0].value === "OK") { //Success Case
+			var permId = null;
+			if(response.result.columns[2].title === "RESULT" && response.result.rows[0][2].value) {
+				permId = response.result.rows[0][2].value;
+			}
+			
 			var sampleType = profile.getSampleTypeForSampleTypeCode(_this._sampleFormModel.sample.sampleTypeCode);
 			var sampleTypeDisplayName = sampleType.description;
 			if(!sampleTypeDisplayName) {
@@ -396,21 +401,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 					}
 				}
 				
-				var sampleIdentifierToOpen = null;
-				var projectCode = _this._sampleFormModel.sample.projectCode;
-				if(!projectCode) {
-					projectCode = IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier);
-				}
-					
-				if(isCopyWithNewCode) {
-					sampleIdentifierToOpen = IdentifierUtil.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, projectCode, isCopyWithNewCode);
-				} else {
-					sampleIdentifierToOpen = IdentifierUtil.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, projectCode, _this._sampleFormModel.sample.code);
-				}
-				
 				var searchUntilFound = null;
 				    searchUntilFound = function() {
-					mainController.serverFacade.searchWithIdentifiers([sampleIdentifierToOpen], function(data) {
+					mainController.serverFacade.searchWithUniqueId(permId, function(data) {
 						if(data && data.length > 0) {
 							mainController.changeView('showViewSamplePageFromPermId',data[0].permId);
 							Util.unblockUI();
@@ -419,7 +412,6 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						}
 					});
 				}
-				
 				searchUntilFound(); //First call
 			}
 			

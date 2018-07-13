@@ -246,13 +246,16 @@ def process(tr, parameters, tableBuilder):
 		isOk = insertUpdateExperiment(tr, parameters, tableBuilder);
 	
 	if method == "copySample":
-		isOk = copySample(tr, projectSamplesEnabled, parameters, tableBuilder);
+		result = copySample(tr, projectSamplesEnabled, parameters, tableBuilder);
+		isOk = True;
 	if method == "insertSample":
 		updatePropertiesToIgnore(tr);
-		isOk = insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
+		result = insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
+		isOk = True;
 	if method == "updateSample":
 		updatePropertiesToIgnore(tr);
-		isOk = insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
+		result = insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
+		isOk = True;
 	if method == "moveSample":
 		isOk = moveSample(tr, parameters, tableBuilder);
 	if method == "insertDataSet":
@@ -771,7 +774,7 @@ def copySample(tr, projectSamplesEnabled, parameters, tableBuilder):
 	
 	#Create new Sample
 	parameters.put("method", "insertSample"); #List<String> Identifiers are in SPACE/CODE format
-	insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
+	permId = insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder);
 	
 	#Copy children and attach to Sample
 	if sampleChildren != None:
@@ -808,7 +811,7 @@ def copySample(tr, projectSamplesEnabled, parameters, tableBuilder):
 				if propValue != None:
 					childCopy.setPropertyValue(propCode, propValue);
 			
-	return True;
+	return permId;
 
 #This method is used to return the properties, deleting the storage ones and setting the default storage
 def getCopySampleChildrenPropertyValue(propCode, propValue, notCopyProperties, defaultBenchPropertyList, defaultBenchProperties):
@@ -969,7 +972,7 @@ def insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder):
 					sampleWithChanges.setPropertyValue(key,propertyValue);
 		
 	#Return from the call
-	return True;
+	return sample.getPermId();
 	
 def moveSample(tr, parameters, tableBuilder):
 	sampleIdentifier = parameters.get("sampleIdentifier"); #String
