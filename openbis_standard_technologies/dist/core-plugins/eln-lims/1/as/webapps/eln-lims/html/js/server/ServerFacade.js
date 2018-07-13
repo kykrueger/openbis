@@ -1541,7 +1541,6 @@ function ServerFacade(openbisServer) {
 		}
 		
 		if(sampleExperimentIdentifier) {
-			var sampleExperimentIdentifierParts = sampleExperimentIdentifier.split("/");
 			subCriterias.push({
 					"@type" : "SearchSubCriteria",
 					"targetEntityKind" : "EXPERIMENT",	
@@ -1550,17 +1549,17 @@ function ServerFacade(openbisServer) {
 								"@type":"AttributeMatchClause",
 								fieldType : "ATTRIBUTE",			
 								attribute : "SPACE",
-								desiredValue : sampleExperimentIdentifierParts[1]
+								desiredValue : IdentifierUtil.getSpaceCodeFromIdentifier(sampleExperimentIdentifier)
 							},{
 								"@type":"AttributeMatchClause",
 								fieldType : "ATTRIBUTE",			
 								attribute : "PROJECT",
-								desiredValue : sampleExperimentIdentifierParts[2]
+								desiredValue : IdentifierUtil.getProjectCodeFromExperimentIdentifier(sampleExperimentIdentifier)
 							}, {
 								"@type":"AttributeMatchClause",
 								fieldType : "ATTRIBUTE",			
 								attribute : "CODE",
-								desiredValue : sampleExperimentIdentifierParts[3]
+								desiredValue : IdentifierUtil.getExperimentCodeFromExperimentIdentifier(sampleExperimentIdentifier)
 							}],
 						operator : "MATCH_ALL_CLAUSES"
 				}

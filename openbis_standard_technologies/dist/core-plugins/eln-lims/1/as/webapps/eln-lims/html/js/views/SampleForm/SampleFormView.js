@@ -57,15 +57,12 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
 			experimentCode = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
 		}
-		var containerSampleCode;
 		var containerSampleIdentifier;
+		var containerSampleCode;
 		if(this._sampleFormModel.mode !== FormMode.CREATE) {
-			var containerIdentifierEnd = this._sampleFormModel.sample.identifier.lastIndexOf(":");
-			if(containerIdentifierEnd !== -1) {
-				var containerCodeStart = this._sampleFormModel.sample.identifier.lastIndexOf("/") + 1;
-				var codeWithContainerParts = this._sampleFormModel.sample.identifier.substring(containerCodeStart).split(":");
-				containerSampleCode = codeWithContainerParts[0];
-				containerSampleIdentifier = this._sampleFormModel.sample.identifier.substring(0, containerIdentifierEnd);
+			containerSampleIdentifier = IdentifierUtil.getContainerSampleIdentifierFromContainedSampleIdentifier(this._sampleFormModel.sample.identifier);
+			if(containerSampleIdentifier) {
+				containerSampleCode = IdentifierUtil.getSampleCodeFromSampleIdentifier(containerSampleIdentifier);
 			}
 		}
 		var sampleCode = this._sampleFormModel.sample.code;
@@ -696,7 +693,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		$fieldsetOwner.append($fieldset);
 		
 		$fieldset.append(FormUtil.getFieldForLabelWithText("Type", this._sampleFormModel.sample.sampleTypeCode));
-		$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName("/" + this._sampleFormModel.sample.spaceCode), this._sampleFormModel.sample.experimentIdentifierOrNull));
+		$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName(this._sampleFormModel.sample.experimentIdentifierOrNull), this._sampleFormModel.sample.experimentIdentifierOrNull));
 		
 		//
 		// Identification Info - Code
