@@ -168,8 +168,16 @@ def getPropertyValue(propertiesInfo, metadata, key):
 		propertyValue = updateIfIsPropertyRichText(propertiesInfo, key, propertyValue);
 	return propertyValue;
 
+def getProjectCodeFromSampleIdentifier(sampleIdentifier):
+	projectCode = None;
+	sampleIdentifierParts = sampleIdentifier.split("/");
+	if len(sampleIdentifierParts) == 4:
+		projectCode = sampleIdentifierParts[2];
+	return projectCode;
+
 def getSampleByIdentifierForUpdate(tr, identifier):
 	space = identifier.split("/")[1];
+	projectCode = getProjectCodeFromSampleIdentifier(identifier);
 	code = identifier.split("/")[-1];
 	
 	criteria = SearchCriteria();
@@ -179,10 +187,12 @@ def getSampleByIdentifierForUpdate(tr, identifier):
 	
    	searchService = tr.getSearchService();
    	found = list(searchService.searchForSamples(criteria));
-   	if len(found) == 1:
-   		return tr.makeSampleMutable(found[0]);
-   	else:
-   		return None;
+   	
+   	# The search service can return more than one sample with project samples enabled, projects need to be filtered manually
+   	for sample in found:
+   		foundProjectCode = getProjectCodeFromSampleIdentifier(sample.getSampleIdentifier());
+   		if foundProjectCode == projectCode:
+   			return tr.makeSampleMutable(sample);
    	
 def username(sessiontoken):
     m = re.compile('(.*)-[^-]*').match(sessiontoken)
