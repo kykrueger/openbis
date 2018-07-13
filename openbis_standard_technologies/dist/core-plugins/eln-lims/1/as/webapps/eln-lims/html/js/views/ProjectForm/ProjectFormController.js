@@ -38,7 +38,7 @@ function ProjectFormController(mainController, mode, project) {
 	this.createNewExperiment = function(experimentTypeCode) {
 		var argsMap = {
 				"experimentTypeCode" : experimentTypeCode,
-				"projectIdentifier" : "/" + this._projectFormModel.project.spaceCode + "/" + this._projectFormModel.project.code
+				"projectIdentifier" : IdentifierUtil.getProjectIdentifier(this._projectFormModel.project.spaceCode, this._projectFormModel.project.code)
 		}
 		var argsMapStr = JSON.stringify(argsMap);
 		
@@ -71,7 +71,7 @@ function ProjectFormController(mainController, mode, project) {
 					//API Method
 					"method" : method,
 					//Identification Info
-					"projectIdentifier" : "/" + this._projectFormModel.project.spaceCode + "/" + this._projectFormModel.project.code,
+					"projectIdentifier" : IdentifierUtil.getProjectIdentifier(this._projectFormModel.project.spaceCode, this._projectFormModel.project.code),
 					"projectDescription" : this._projectFormModel.project.description
 			};
 			

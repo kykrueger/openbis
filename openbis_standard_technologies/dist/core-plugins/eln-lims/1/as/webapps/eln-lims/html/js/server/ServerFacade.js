@@ -357,7 +357,7 @@ function ServerFacade(openbisServer) {
 	this.getProjectFromIdentifier = function(identifier, callbackFunction) {
 		this.openbisServer.listProjects(function(data) {
 			data.result.forEach(function(project){
-				var projIden = "/" + project.spaceCode + "/" + project.code;
+				var projIden = IdentifierUtil.getProjectIdentifier(project.spaceCode, project.code);
 				if(projIden === identifier) {
 					callbackFunction(project);
 					return;

@@ -397,10 +397,15 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				}
 				
 				var sampleIdentifierToOpen = null;
+				var projectCode = _this._sampleFormModel.sample.projectCode;
+				if(!projectCode) {
+					projectCode = IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier);
+				}
+					
 				if(isCopyWithNewCode) {
-					sampleIdentifierToOpen = IdentifierUtil.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode, isCopyWithNewCode);
+					sampleIdentifierToOpen = IdentifierUtil.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, projectCode, isCopyWithNewCode);
 				} else {
-					sampleIdentifierToOpen = IdentifierUtil.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode, _this._sampleFormModel.sample.code);
+					sampleIdentifierToOpen = IdentifierUtil.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, projectCode, _this._sampleFormModel.sample.code);
 				}
 				
 				var searchUntilFound = null;

@@ -948,7 +948,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $generateButton = $("<a>", { "class" : "btn btn-default" }).append("Generate!");
 		$generateButton.click(function(event) { 
 			var generatedChildrenSpace = _this._sampleFormModel.sample.spaceCode;
-			
+			var generatedChildrenProject = IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier);
 			var numberOfReplicas = parseInt($("#childrenReplicas").val());
 			if(isNaN(numberOfReplicas) || numberOfReplicas < 0 || numberOfReplicas > 1000) {
 				Util.showError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
@@ -964,7 +964,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					virtualSample.newSample = true;
 					virtualSample.permId = Util.guid();
 					virtualSample.code = generatedChildrenCodes[i];
-					virtualSample.identifier = "/" + generatedChildrenSpace + "/" + virtualSample.code;
+					virtualSample.identifier = IdentifierUtil.getSampleIdentifier(generatedChildrenSpace, generatedChildrenProject, virtualSample.code);
 					virtualSample.sampleTypeCode = generatedChildrenType;
 					_this._sampleFormModel.sampleLinksChildren.addVirtualSample(virtualSample);
 				}

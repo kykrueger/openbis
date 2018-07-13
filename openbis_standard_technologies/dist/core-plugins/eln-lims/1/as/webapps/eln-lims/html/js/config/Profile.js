@@ -212,7 +212,7 @@ $.extend(DefaultProfile.prototype, {
 		
 		this.getStorageConfigCollectionForConfigSample = function(sample) {
 			var prefix = this.getSampleConfigSpacePrefix(sample);
-			return "/" + prefix + "ELN_SETTINGS/" + prefix + "STORAGES/" + prefix + "STORAGES_COLLECTION";
+			return IdentifierUtil.getExperimentIdentifier(prefix + "ELN_SETTINGS", prefix + "STORAGES", prefix + "STORAGES_COLLECTION");
 		}
 		
 		this.getStorageSpaceForSample = function(sample) {
