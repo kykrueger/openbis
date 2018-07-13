@@ -5,6 +5,14 @@ var IdentifierUtil = new function() {
 	// Identifier Building
 	//
 	
+	this.getForcedSpaceIdentifier = function(spaceCode) { // Only used by ELN
+		return ('/' + spaceCode);
+	}
+	
+	this.getMaterialIdentifier = function(materialTypeCode, materialCode) {
+		return ('/' + materialTypeCode + '/' + materialCode);
+	}
+	
 	this.getProjectIdentifier = function(spaceCode, projectCode) {
 		return ('/' + spaceCode + '/' + projectCode);
 	}
