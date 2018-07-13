@@ -26,7 +26,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		var $title = $("<div>");
 		if(this._sampleTableModel.title && this._sampleTableModel.experimentIdentifier) {
 			
-			var title = "" + ELNDictionary.getExperimentKindName(this._sampleTableModel.experimentIdentifier) + ": " + ELNDictionary.getCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
+			var title = "" + ELNDictionary.getExperimentKindName(this._sampleTableModel.experimentIdentifier) + ": " + IdentifierUtil.getCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
 			if(this._sampleTableModel.experiment && this._sampleTableModel.experiment.properties[profile.propertyReplacingCode]) {
 				title = "" + ELNDictionary.getExperimentKindName(this._sampleTableModel.experimentIdentifier) + ": " + this._sampleTableModel.experiment.properties[profile.propertyReplacingCode];
 			}

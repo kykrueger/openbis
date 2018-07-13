@@ -1448,12 +1448,7 @@ function ServerFacade(openbisServer) {
 		
 		// Attributes
 		if(samplePermId) {
-			matchClauses.push({
-				"@type":"AttributeMatchClause",
-				fieldType : "ATTRIBUTE",			
-				attribute : "PERM_ID",
-				desiredValue : samplePermId 
-			});
+			throw "Unexpected operation exception : v1 search by samplePermId removed";
 		}
 		
 		if(sampleIdentifier) {
@@ -1666,7 +1661,7 @@ function ServerFacade(openbisServer) {
 	{
 		if(profile.searchSamplesUsingV3OnDropbox) {
 			this.searchSamplesV3DSS(fechOptions, callbackFunction);
-		} else if(fechOptions["sampleIdentifier"]) {
+		} else if(fechOptions["samplePermId"] || fechOptions["sampleIdentifier"]) {
 			this.searchSamplesV1replacement(fechOptions, callbackFunction);
 		} else {
 			this.searchSamplesV1(fechOptions, callbackFunction);
@@ -1676,11 +1671,14 @@ function ServerFacade(openbisServer) {
 	this.searchSamplesV1replacement = function(fechOptions, callbackFunction)
 	{
 		var _this = this;
-		require([ "as/dto/sample/id/SampleIdentifier", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
-        function(SampleIdentifier, SampleFetchOptions) {
+		require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/id/SampleIdentifier", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
+        function(SamplePermId, SampleIdentifier, SampleFetchOptions) {
             var fetchOptions = new SampleFetchOptions();
             fetchOptions.withSpace();
             fetchOptions.withType();
+            fetchOptions.withRegistrator();
+            fetchOptions.withModifier();
+            fetchOptions.withExperiment();
             
             if(fechOptions["withProperties"]) {
             		fetchOptions.withProperties();
@@ -1692,7 +1690,15 @@ function ServerFacade(openbisServer) {
             		fetchOptions.withChildrenUsing(fetchOptions);
             }
             
-            mainController.openbisV3.getSamples([new SampleIdentifier(fechOptions["sampleIdentifier"])], fetchOptions).done(function(map) {
+            var id = null;
+            if(fechOptions["samplePermId"]) {
+            		id = new SamplePermId(fechOptions["samplePermId"]);
+            }
+            if(fechOptions["sampleIdentifier"]) {
+            		id = new SampleIdentifier(fechOptions["sampleIdentifier"]);
+            }
+            
+            mainController.openbisV3.getSamples([id], fetchOptions).done(function(map) {
                 var samples = Util.mapValuesToList(map);
                 callbackFunction(_this.getV3SamplesAsV1(samples));
             });
