@@ -45,15 +45,15 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			experimentIdentifier = this._dataSetFormModel.entity.experimentIdentifierOrNull;
 		}
 		if(experimentIdentifier) {
-			spaceCode = Util.getSpaceCodeFromIdentifier(experimentIdentifier);
-			projectCode = Util.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
-			experimentCode = Util.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
+			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+			projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
+			experimentCode = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
 		}
 		var sampleCode;
 		var sampleIdentifier;
 		if(!this._dataSetFormModel.isExperiment()) {
 			sampleCode = this._dataSetFormModel.entity.code;
-			spaceCode = Util.getSpaceCodeFromIdentifier(this._dataSetFormModel.entity.identifier);
+			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._dataSetFormModel.entity.identifier);
 			sampleIdentifier = this._dataSetFormModel.entity.identifier;
 		}
 		var datasetCodeAndPermId = this._dataSetFormModel.dataSet.code;
@@ -500,7 +500,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							identifier = this._dataSetFormModel.entity.identifier;
 						}
 						
-						if(!(profile.inventorySpaces.length > 0 && $.inArray(Util.getSpaceCodeFromIdentifier(identifier), profile.inventorySpaces) === -1)) {
+						if(!(profile.inventorySpaces.length > 0 && $.inArray(IdentifierUtil.getSpaceCodeFromIdentifier(identifier), profile.inventorySpaces) === -1)) {
 							continue;
 						}
 					}

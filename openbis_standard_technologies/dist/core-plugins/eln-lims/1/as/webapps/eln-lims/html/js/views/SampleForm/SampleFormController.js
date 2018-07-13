@@ -231,9 +231,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			
 			var experimentIdentifier = sample.experimentIdentifierOrNull;
 			if(experimentIdentifier) { //If there is a experiment detected, the sample should be attached to the experiment completely.
-				sampleSpace = Util.getSpaceCodeFromIdentifier(experimentIdentifier);
-				sampleProject = Util.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
-				sampleExperiment = Util.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
+				sampleSpace = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+				sampleProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
+				sampleExperiment = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(experimentIdentifier);
 			}
 			
 			//Children to create
@@ -398,9 +398,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				
 				var sampleIdentifierToOpen = null;
 				if(isCopyWithNewCode) {
-					sampleIdentifierToOpen = Util.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode, isCopyWithNewCode);
+					sampleIdentifierToOpen = IdentifierUtil.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode, isCopyWithNewCode);
 				} else {
-					sampleIdentifierToOpen = Util.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode, _this._sampleFormModel.sample.code);
+					sampleIdentifierToOpen = IdentifierUtil.getSampleIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode, _this._sampleFormModel.sample.code);
 				}
 				
 				var searchUntilFound = null;

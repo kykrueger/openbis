@@ -14,7 +14,7 @@ ELNDictionary.getExperimentDualName = function() {
 }
 
 ELNDictionary.getExperimentKindName = function(identifier, isPlural) {
-	var space = Util.getSpaceCodeFromIdentifier(identifier);
+	var space = IdentifierUtil.getSpaceCodeFromIdentifier(identifier);
 	if(profile.isInventorySpace(space)) {
 		return (isPlural)?ELNDictionary.ExperimentsInventory:ELNDictionary.ExperimentInventory;
 	} else {

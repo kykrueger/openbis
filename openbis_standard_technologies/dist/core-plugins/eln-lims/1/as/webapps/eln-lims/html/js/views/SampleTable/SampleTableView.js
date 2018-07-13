@@ -31,9 +31,9 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 				title = "" + ELNDictionary.getExperimentKindName(this._sampleTableModel.experimentIdentifier) + ": " + this._sampleTableModel.experiment.properties[profile.propertyReplacingCode];
 			}
 			
-			var spaceCode = Util.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
-			var projectCode = Util.getProjectCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
-			var experimentCode = Util.getExperimentCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
+			var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
+			var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
+			var experimentCode = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
 			var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
 			
 			$title
@@ -48,8 +48,8 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		//
 		var toolbarModel = [];
 		if(this._sampleTableModel.experimentIdentifier) {
-			var experimentSpace = Util.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
-			var experimentCode = Util.getExperimentCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
+			var experimentSpace = IdentifierUtil.getSpaceCodeFromIdentifier(this._sampleTableModel.experimentIdentifier);
+			var experimentCode = IdentifierUtil.getExperimentCodeFromExperimentIdentifier(this._sampleTableModel.experimentIdentifier);
 			var allSampleTypes = profile.getAllSampleTypes();
 			var sampleTypeCodesFound = [];
 			for(var aIdx = 0; aIdx < allSampleTypes.length; aIdx++) {
@@ -219,7 +219,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			allowedSampleTypes = [this._sampleTableModel.sampleTypeCodeToUse, "STORAGE_POSITION"];
 		}
 		if(experimentIdentifier) {
-			forcedSpace = "/" + Util.getSpaceCodeFromIdentifier(experimentIdentifier);
+			forcedSpace = "/" + IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 		}
 		
 		var typeAndFileController = new TypeAndFileController('Register ' + ELNDictionary.Samples + '', "REGISTRATION", function(type, file) {
@@ -266,7 +266,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			allowedSampleTypes = [this._sampleTableModel.sampleTypeCodeToUse, "STORAGE_POSITION"];
 		}
 		if(experimentIdentifier) {
-			forcedSpace = "/" + Util.getSpaceCodeFromIdentifier(experimentIdentifier);
+			forcedSpace = "/" + IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 		}
 		var typeAndFileController = new TypeAndFileController('Update ' + ELNDictionary.Samples + '', "UPDATE", function(type, file) {
 			Util.blockUI();

@@ -244,7 +244,7 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.isELNIdentifier = function(identifier) {
-			var space = Util.getSpaceCodeFromIdentifier(identifier);
+			var space = IdentifierUtil.getSpaceCodeFromIdentifier(identifier);
 			return !this.isInventorySpace(space);
 		}
 		
@@ -263,7 +263,6 @@ $.extend(DefaultProfile.prototype, {
 			return false;
 		}
 		
-		this.isProjectSamplesEnabled = false;
 		this.isFileAuthenticationService = false;
 		this.isFileAuthenticationUser = false;
 		this.directLinkEnabled = true;
@@ -905,7 +904,7 @@ $.extend(DefaultProfile.prototype, {
 				openbisV3._private.sessionToken = mainController.serverFacade.getSession();
 				openbisV3.getServerInformation().done(function(serverInformation) {
 	                var authSystem = serverInformation["authentication-service"];
-	                _this.isProjectSamplesEnabled = serverInformation["project-samples-enabled"];
+	                IdentifierUtil.isProjectSamplesEnabled = serverInformation["project-samples-enabled"];
 	                if (authSystem && authSystem.indexOf("file") !== -1) {
 	                		_this.isFileAuthenticationService = true;
 	                }

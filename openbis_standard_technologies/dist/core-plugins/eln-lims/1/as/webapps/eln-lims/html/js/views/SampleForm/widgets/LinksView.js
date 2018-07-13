@@ -313,7 +313,7 @@ function LinksView(linksController, linksModel) {
 					$copyAndLink.click(function(e) {
 						stopEventsBuble(e);
 						var copyAndLink = function(code) {
-							var newSampleIdentifier = Util.getSampleIdentifier(mainController.currentView._sampleFormModel.sample.spaceCode, 
+							var newSampleIdentifier = IdentifierUtil.getSampleIdentifier(mainController.currentView._sampleFormModel.sample.spaceCode, 
 																			   mainController.currentView._sampleFormModel.sample.projectCode,
 																			   code);
 							Util.blockUI();
