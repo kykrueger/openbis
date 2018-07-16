@@ -95,9 +95,9 @@ def set_property(data_mgmt, resolver, prop, value, is_global, is_data_set_proper
     loc = 'global' if is_global else 'local'
     try:
         if is_data_set_property:
-            resolver.set_value_for_json_parameter('properties', prop, value, loc)
+            resolver.set_value_for_json_parameter('properties', prop, value, loc, apply_rules=True)
         else:
-            resolver.set_value_for_parameter(prop, value, loc)
+            resolver.set_value_for_parameter(prop, value, loc, apply_rules=True)
     except ValueError as e:
         if data_mgmt.debug ==  True:
             raise e

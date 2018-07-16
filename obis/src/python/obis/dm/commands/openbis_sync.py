@@ -23,7 +23,7 @@ class OpenbisSync(OpenbisCommand):
             missing_config_settings.append('user')
         if self.data_set_type() is None:
             missing_config_settings.append('data_set type')
-        if self.object_id() is None and self.collection_id() is None:
+        if self.object_id() is None and self.object_permId() is None and self.collection_id() is None and self.collection_permId() is None:
             missing_config_settings.append('object id or collection id')
         if len(missing_config_settings) > 0:
             return CommandResult(returncode=-1,

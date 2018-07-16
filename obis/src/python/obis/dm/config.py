@@ -138,6 +138,7 @@ class CollectionEnv(ConfigEnv):
 
     def initialize_rules(self):
         self.add_rule(ClearPermIdRule())
+        self.add_rule(ClearIdentifierRule())
 
 
 class ObjectEnv(ConfigEnv):
@@ -148,6 +149,7 @@ class ObjectEnv(ConfigEnv):
 
     def initialize_rules(self):
         self.add_rule(ClearPermIdRule())
+        self.add_rule(ClearIdentifierRule())
 
 
 class DataSetEnv(ConfigEnv):
@@ -237,7 +239,7 @@ class ConfigResolver(object):
                     result[name] = val
         return result
 
-    def set_value_for_parameter(self, name, value, loc):
+    def set_value_for_parameter(self, name, value, loc, apply_rules=False):
         """Set the value for the parameter
         :param name: Name of the parameter
         :param loc: Either 'local' or 'global'
@@ -261,10 +263,11 @@ class ConfigResolver(object):
         with open(config_path, "w") as f:
             json.dump(location_config_dict, f, sort_keys=True, indent=4)
 
-        for rule in self.env.rules:
-            rule.on_set(self, name, value, loc)
+        if apply_rules:
+            for rule in self.env.rules:
+                rule.on_set(self, name, value, loc)
 
-    def set_value_for_json_parameter(self, json_param_name, name, value, loc):
+    def set_value_for_json_parameter(self, json_param_name, name, value, loc, apply_rules=False):
         """Set one field for the json parameter
         :param json_param_name: Name of the json parameter
         :param name: Name of the field
@@ -284,7 +287,7 @@ class ConfigResolver(object):
             json_value = {}
         json_value[name.upper()] = value
 
-        self.set_value_for_parameter(json_param_name, json.dumps(json_value), loc)
+        self.set_value_for_parameter(json_param_name, json.dumps(json_value), loc, apply_rules=apply_rules)
 
 
     def value_for_parameter(self, param, loc):
@@ -373,7 +376,6 @@ class SettingsResolver(object):
 
 class SettingRule(object):
     """ Setting rules can react to setting changes and trigger further actions. """
-
     @abc.abstractmethod
     def on_set(self, setting, value):
         pass
@@ -381,7 +383,13 @@ class SettingRule(object):
 
 class ClearPermIdRule(SettingRule):
     """ When the user sets a new id, the permId might be invalid, so it will be cleared. """
-
     def on_set(self, config_resolver, name, value, loc):
-        if name == "id":
+        if name == "id" and value is not None:
             config_resolver.set_value_for_parameter("permId", None, loc)
+
+
+class ClearIdentifierRule(SettingRule):
+    """ When the user sets a new id, the permId might be invalid, so it will be cleared. """
+    def on_set(self, config_resolver, name, value, loc):
+        if name == "permId" and value is not None:
+            config_resolver.set_value_for_parameter("id", None, loc)
