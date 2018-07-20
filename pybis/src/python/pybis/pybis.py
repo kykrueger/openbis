@@ -2747,7 +2747,7 @@ class ExternalDMS():
 
 
 class ServerInformation():
-
+    
     def __init__(self, info):
         self._info = info
 
@@ -2759,3 +2759,15 @@ class ServerInformation():
 
     def __getattr__(self, name):
         return self._info[name.replace('_', '-')]
+    
+    def get_major_version(self):
+        return int(self._info["api-version"].split(".")[0]);
+    
+    def get_minor_version(self):
+        return int(self._info["api-version"].split(".")[1]);
+    
+    def is_openbis_1605(self):
+        return (self.get_major_version() == 3) and (self.get_minor_version() <= 2);
+    
+    def is_openbis_1806(self):
+        return (self.get_major_version() == 3) and (self.get_minor_version() >= 5);
