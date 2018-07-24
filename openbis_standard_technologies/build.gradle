@@ -5,11 +5,13 @@ buildscript {
     
     dependencies {
         classpath 'apache:commons-codec:+',
-                  'owasp:dependency-check-gradle:+'
+                  'owasp:dependency-check-gradle:+',
+                  'paleozogt:symzip-plugin:+'
     }
 }
 
 apply plugin: org.owasp.dependencycheck.gradle.DependencyCheckPlugin
+apply plugin: "org.paleozogt.symzip"
 
 dependencyCheck {
   failBuildOnCVSS = 7 // 0 - 4 = low, 4 - 7 = medium, 7 - 9 = high, 9-10 = critical
@@ -272,7 +274,9 @@ def downloadFile(url, filename) {
   }
 }
 
-task zipCorePlugins(type: Zip) {
+import org.paleozogt.gradle.zip.SymZip;
+
+task zipCorePlugins(type: SymZip) {
   archiveName 'core-plugins.zip'
   downloadFile('https://github.com/aarpon/obit_flow_core_technology/archive/release/18.x.zip', 'flow.zip')
   downloadFile('https://github.com/aarpon/obit_microscopy_core_technology/archive/release/18.x.zip', 'microscopy.zip')
