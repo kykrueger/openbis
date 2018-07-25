@@ -17,9 +17,12 @@
 package ch.systemsx.cisd.openbis.plugin.query.client.web.server;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 import ch.systemsx.cisd.common.servlet.GWTRPCServiceExporter;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
@@ -36,8 +39,6 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.ResourceNames;
  * @author Christian Ribeaud
  */
 @Controller
-@RequestMapping(
-{ "/query", "/openbis/query" })
 public final class QueryClientServiceServlet extends GWTRPCServiceExporter
 {
     private static final long serialVersionUID = 1L;
@@ -45,9 +46,12 @@ public final class QueryClientServiceServlet extends GWTRPCServiceExporter
     @Resource(name = ResourceNames.QUERY_PLUGIN_SERVICE)
     private IQueryClientService service;
 
-    //
-    // GWTRPCServiceExporter
-    //
+    @RequestMapping({ "/query", "/openbis/query" })
+    public final ModelAndView handleRequestExposed(final HttpServletRequest request,
+            final HttpServletResponse response) throws Exception
+    {
+        return super.handleRequest(request, response);
+    }
 
     @Override
     protected final Object getService()
