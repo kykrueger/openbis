@@ -30,7 +30,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 public class GetVocabulariesTest extends AbstractTest
 {
@@ -43,10 +42,10 @@ public class GetVocabulariesTest extends AbstractTest
         VocabularyPermId id2 = new VocabularyPermId("$STORAGE_FORMAT");
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
         fetchOptions.withTerms();
-        
+
         // When
         Map<IVocabularyId, Vocabulary> result = v3api.getVocabularies(sessionToken, Arrays.asList(id1, id2), fetchOptions);
-        
+
         // Then
         Vocabulary v1 = result.get(id1);
         assertEquals(v1.getCode(), id1.getPermId());
@@ -55,7 +54,7 @@ public class GetVocabulariesTest extends AbstractTest
         assertEquals(v1.isManagedInternally(), false);
         assertEquals(v1.isChosenFromList(), true);
         assertEquals(v1.getUrlTemplate(), null);
-        assertEquals(v1.getTerms().toString(), 
+        assertEquals(v1.getTerms().toString(),
                 "[VocabularyTerm DOG, VocabularyTerm FLY, VocabularyTerm GORILLA, VocabularyTerm HUMAN, VocabularyTerm RAT]");
         Vocabulary v2 = result.get(id2);
         assertEquals(v2.getCode(), id2.getPermId());
@@ -72,4 +71,20 @@ public class GetVocabulariesTest extends AbstractTest
         assertEquals(result.size(), 2);
         v3api.logout(sessionToken);
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyFetchOptions fo = new VocabularyFetchOptions();
+        fo.withRegistrator();
+        fo.withTerms();
+
+        v3api.getVocabularies(sessionToken, Arrays.asList(new VocabularyPermId("ORGANISM"), new VocabularyPermId("$STORAGE_FORMAT")), fo);
+
+        assertAccessLog(
+                "get-vocabularies  VOCABULARY_IDS('[ORGANISM, $STORAGE_FORMAT]') FETCH_OPTIONS('Vocabulary\n    with Registrator\n    with Terms\n')");
+    }
+
 }

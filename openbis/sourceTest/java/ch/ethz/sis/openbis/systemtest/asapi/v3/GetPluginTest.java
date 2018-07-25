@@ -32,7 +32,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 public class GetPluginTest extends AbstractTest
 {
@@ -45,10 +44,10 @@ public class GetPluginTest extends AbstractTest
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         fetchOptions.withScript();
         fetchOptions.withRegistrator();
-        
+
         // When
         Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);
-        
+
         // Then
         assertEquals(plugin.getName(), id.getPermId());
         assertEquals(plugin.getPermId(), id);
@@ -60,10 +59,10 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.getScript(), "str(entity.properties().size()) + ' properties'");
         assertEqualsDate(plugin.getRegistrationDate(), "2010-10-27 15:16:48");
         assertEquals(plugin.getRegistrator().getPermId().getPermId(), "test");
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testGetPluginForASpecificEntityKind()
     {
@@ -73,10 +72,10 @@ public class GetPluginTest extends AbstractTest
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         fetchOptions.withScript();
         fetchOptions.withRegistrator();
-        
+
         // When
         Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);
-        
+
         // Then
         assertEquals(plugin.getName(), id.getPermId());
         assertEquals(plugin.getPermId(), id);
@@ -88,10 +87,10 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.getScript(), "import time;\ndef validate(entity, isNew):\n  pass\n ");
         assertEqualsDate(plugin.getRegistrationDate(), "2010-10-27 15:16:48");
         assertEquals(plugin.getRegistrator().getPermId().getPermId(), "test");
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testGetPluginWithEmptyFetchOptions()
     {
@@ -99,10 +98,10 @@ public class GetPluginTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         PluginPermId id = new PluginPermId("managed list");
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
-        
+
         // When
         Plugin plugin = v3api.getPlugins(sessionToken, Arrays.asList(id), fetchOptions).get(id);
-        
+
         // Then
         assertEquals(plugin.getName(), id.getPermId());
         assertEquals(plugin.getPermId(), id);
@@ -113,7 +112,23 @@ public class GetPluginTest extends AbstractTest
         assertEquals(plugin.isAvailable(), true);
         assertEqualsDate(plugin.getRegistrationDate(), "2010-10-27 15:16:48");
         assertEquals(plugin.getFetchOptions().hasRegistrator(), false);
-        
+
         v3api.logout(sessionToken);
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PluginFetchOptions fo = new PluginFetchOptions();
+        fo.withRegistrator();
+        fo.withScript();
+
+        v3api.getPlugins(sessionToken, Arrays.asList(new PluginPermId("properties"), new PluginPermId("validateOK")), fo);
+
+        assertAccessLog(
+                "get-plugins  PLUGIN_IDS('[properties, validateOK]') FETCH_OPTIONS('Plugin\n    with Registrator\n    with Script\n')");
+    }
+
 }

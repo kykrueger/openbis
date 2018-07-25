@@ -20,10 +20,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.Arrays;
+
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.create.ExternalDmsCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -126,4 +129,26 @@ public class CreateExternalDmsTest extends AbstractExternalDmsTest
         create(externalDms().withCode(code));
         create(externalDms().withCode(code));
     }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExternalDmsCreation creation = new ExternalDmsCreation();
+        creation.setCode("LOG_TEST_1");
+        creation.setAddressType(ExternalDmsAddressType.URL);
+        creation.setAddress("http://some.url1.com");
+
+        ExternalDmsCreation creation2 = new ExternalDmsCreation();
+        creation2.setCode("LOG_TEST_2");
+        creation2.setAddressType(ExternalDmsAddressType.URL);
+        creation2.setAddress("http://some.url2.com");
+
+        v3api.createExternalDataManagementSystems(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-external-data-management-systems  NEW_EXTERNAL_DATA_MANAGEMENT_SYSTEMS('[ExternalDmsCreation[code=LOG_TEST_1], ExternalDmsCreation[code=LOG_TEST_2]]')");
+    }
+
 }

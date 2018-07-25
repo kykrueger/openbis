@@ -224,6 +224,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.GetPersonsOperation = dtos.GetPersonsOperation;
 		this.GetExternalDmsOperation = dtos.GetExternalDmsOperation;
 		this.GetSemanticAnnotationsOperation = dtos.GetSemanticAnnotationsOperation;
+		this.GetServerInformationOperation = dtos.GetServerInformationOperation;
 
 		this.CreateSpacesOperation = dtos.CreateSpacesOperation;
 		this.CreateProjectsOperation = dtos.CreateProjectsOperation;
@@ -247,6 +248,7 @@ define([ 'jquery', 'openbis', 'underscore', 'test/dtos' ], function($, defaultOp
 		this.CreateExternalDmsOperation = dtos.CreateExternalDmsOperation;
 		this.CreateQueriesOperation = dtos.CreateQueriesOperation;
 		this.CreateCodesOperation = dtos.CreateCodesOperation;
+		this.CreatePermIdsOperation = dtos.CreatePermIdsOperation;
 
 		this.UpdateSpacesOperation = dtos.UpdateSpacesOperation;
 		this.UpdateProjectsOperation = dtos.UpdateProjectsOperation;

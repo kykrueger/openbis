@@ -139,7 +139,7 @@ public class AbstractTest extends SystemTestCase
             }
         };
 
-    private BufferedAppender logRecorder;
+    protected BufferedAppender logRecorder;
 
     @Autowired
     protected IApplicationServerInternalApi v3api;
@@ -1242,6 +1242,11 @@ public class AbstractTest extends SystemTestCase
         }
 
         assertCollectionContainsOnly(actualIds, expectedIds.toArray(new Long[] {}));
+    }
+
+    protected void assertAccessLog(String expectedLog)
+    {
+        AssertionUtil.assertContains(expectedLog, logRecorder.getLogContent());
     }
 
     protected Object[][] createTestUsersProvider(String... users)

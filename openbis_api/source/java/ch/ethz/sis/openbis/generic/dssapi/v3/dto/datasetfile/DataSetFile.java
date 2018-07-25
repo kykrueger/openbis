@@ -21,6 +21,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
@@ -57,7 +58,7 @@ public class DataSetFile implements Serializable
 
     @JsonProperty
     private String checksum;
-    
+
     @JsonProperty
     private String checksumType;
 
@@ -130,7 +131,7 @@ public class DataSetFile implements Serializable
     @Override
     public String toString()
     {
-        return "DataSetFile: " + path + ", " + dataSetPermId;
+        return new ObjectToString(this).append("permId", permId).toString();
     }
 
     @JsonIgnore

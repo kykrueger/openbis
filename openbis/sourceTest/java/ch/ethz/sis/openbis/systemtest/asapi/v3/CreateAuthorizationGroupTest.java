@@ -37,8 +37,6 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class CreateAuthorizationGroupTest extends AbstractTest
@@ -61,10 +59,10 @@ public class CreateAuthorizationGroupTest extends AbstractTest
         newGroup.setCode("MY_TEST_GROUP");
         newGroup.setDescription("Testing");
         newGroup.setUserIds(Arrays.asList(new PersonPermId(TEST_OBSERVER_CISD), new Me()));
-        
+
         // When
         List<AuthorizationGroupPermId> groups = v3api.createAuthorizationGroups(sessionToken, Arrays.asList(newGroup));
-        
+
         // Then
         assertEquals(groups.get(0).getPermId(), newGroup.getCode());
         AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
@@ -80,7 +78,7 @@ public class CreateAuthorizationGroupTest extends AbstractTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testCreateAuthorizationGroupWithInvalidCode()
     {
@@ -115,10 +113,10 @@ public class CreateAuthorizationGroupTest extends AbstractTest
         AuthorizationGroupCreation newGroup = new AuthorizationGroupCreation();
         newGroup.setCode("NEW_GROUP");
         newGroup.setDescription("testCreateAuthorizationGroupWithNoUsers");
-        
+
         // When
         List<AuthorizationGroupPermId> groups = v3api.createAuthorizationGroups(sessionToken, Arrays.asList(newGroup));
-        
+
         // Then
         assertEquals(groups.get(0).getPermId(), newGroup.getCode());
         AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
@@ -135,7 +133,7 @@ public class CreateAuthorizationGroupTest extends AbstractTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToCreateAuthorizationGroups")
     public void testCreateWithUserCausingAuthorizationFailure(final String user)
     {
@@ -152,11 +150,28 @@ public class CreateAuthorizationGroupTest extends AbstractTest
             });
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        AuthorizationGroupCreation creation = new AuthorizationGroupCreation();
+        creation.setCode("LOG_TEST_1");
+
+        AuthorizationGroupCreation creation2 = new AuthorizationGroupCreation();
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createAuthorizationGroups(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-authorization-groups  NEW_AUTHORIZATION_GROUPS('[AuthorizationGroupCreation[code=LOG_TEST_1], AuthorizationGroupCreation[code=LOG_TEST_2]]')");
+    }
+
     @DataProvider
     Object[][] usersNotAllowedToCreateAuthorizationGroups()
     {
         return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
                 TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER);
     }
-    
+
 }

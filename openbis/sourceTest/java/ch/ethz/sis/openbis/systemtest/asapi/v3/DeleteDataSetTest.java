@@ -172,6 +172,20 @@ public class DeleteDataSetTest extends AbstractDeletionTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetDeletionOptions o = new DataSetDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteDataSets(sessionToken, Arrays.asList(new DataSetPermId("TEST-LOGGING-1"), new DataSetPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-data-sets  DATA_SET_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('DataSetDeletionOptions[reason=test-reason]')");
+    }
+
     // waiting for better times
     // @Test
     // public void testDeleteContainerInDifferentExperiment()

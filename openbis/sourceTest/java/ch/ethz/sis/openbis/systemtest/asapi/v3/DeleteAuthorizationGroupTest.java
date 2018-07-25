@@ -33,8 +33,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.IAuthoriza
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class DeleteAuthorizationGroupTest extends AbstractTest
@@ -53,15 +51,14 @@ public class DeleteAuthorizationGroupTest extends AbstractTest
         assertEquals(group.getCode(), groupCreation.getCode().toUpperCase());
         AuthorizationGroupDeletionOptions deletionOptions = new AuthorizationGroupDeletionOptions();
         deletionOptions.setReason("testing");
-        
+
         // When
         v3api.deleteAuthorizationGroups(sessionToken, Arrays.asList(permId), deletionOptions);
-        
+
         // Then
-        Map<IAuthorizationGroupId, AuthorizationGroup> map 
-                = v3api.getAuthorizationGroups(sessionToken, Arrays.asList(permId), fetchOptions);
+        Map<IAuthorizationGroupId, AuthorizationGroup> map = v3api.getAuthorizationGroups(sessionToken, Arrays.asList(permId), fetchOptions);
         assertEquals(map.toString(), "{}");
-        
+
         v3api.logout(sessionToken);
     }
 
@@ -81,17 +78,32 @@ public class DeleteAuthorizationGroupTest extends AbstractTest
             });
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        AuthorizationGroupDeletionOptions o = new AuthorizationGroupDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteAuthorizationGroups(sessionToken,
+                Arrays.asList(new AuthorizationGroupPermId("TEST-LOGGING-1"), new AuthorizationGroupPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-authorization-groups  AUTHORIZATION_GROUP_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('AuthorizationGroupDeletionOptions[reason=test-reason]')");
+    }
+
     @DataProvider
     Object[][] usersNotAllowedToDeleteAuthorizationGroups()
     {
-        String[] users = {TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, 
-                TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER};
+        String[] users = { TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER,
+                TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER };
         Object[][] objects = new Object[users.length][];
         for (int i = 0; i < users.length; i++)
         {
-            objects[i] = new Object[] {users[i]};
+            objects[i] = new Object[] { users[i] };
         }
         return objects;
     }
-    
+
 }

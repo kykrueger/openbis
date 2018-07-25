@@ -470,6 +470,23 @@ public class UpdatePersonTest extends AbstractTest
             }, "Web app setting name cannot be null");
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PersonUpdate update = new PersonUpdate();
+        update.setUserId(new PersonPermId("observer"));
+
+        PersonUpdate update2 = new PersonUpdate();
+        update2.setUserId(new PersonPermId("test_role"));
+
+        v3api.updatePersons(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-persons  PERSON_UPDATES('[PersonUpdate[userId=observer], PersonUpdate[userId=test_role]]')");
+    }
+
     private PersonPermId createPersonToUpdate()
     {
         PersonCreation creation = new PersonCreation();

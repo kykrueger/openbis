@@ -18,14 +18,13 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create;
 
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.authorizationgroup.create.AuthorizationGroupCreation")
@@ -67,6 +66,12 @@ public class AuthorizationGroupCreation implements ICreation, IObjectCreation
     public void setUserIds(List<? extends IPersonId> users)
     {
         this.userIds = users;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("code", code).toString();
     }
 
 }

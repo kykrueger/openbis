@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unarchive;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -28,5 +29,11 @@ public class DataSetUnarchiveOptions implements Serializable
 {
 
     private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).toString();
+    }
 
 }

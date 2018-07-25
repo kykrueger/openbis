@@ -16,10 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import ch.systemsx.cisd.common.annotation.TechPreview;
 
 @JsonObject("as.dto.dataset.create.ContentCopyCreation")
 public class ContentCopyCreation implements ICreation
@@ -32,7 +32,7 @@ public class ContentCopyCreation implements ICreation
 
     private String gitCommitHash;
 
-	private String gitRepositoryId;
+    private String gitRepositoryId;
 
     private IExternalDmsId externalDmsId;
 
@@ -71,9 +71,10 @@ public class ContentCopyCreation implements ICreation
         return gitRepositoryId;
     }
 
-	public void setGitRepositoryId(String gitRepositoryId) {
-		this.gitRepositoryId = gitRepositoryId;
-	}
+    public void setGitRepositoryId(String gitRepositoryId)
+    {
+        this.gitRepositoryId = gitRepositoryId;
+    }
 
     public IExternalDmsId getExternalDmsId()
     {
@@ -83,6 +84,12 @@ public class ContentCopyCreation implements ICreation
     public void setExternalDmsId(IExternalDmsId externalDmsId)
     {
         this.externalDmsId = externalDmsId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("externalDmsId", externalDmsId).append("externalId", externalId).toString();
     }
 
 }

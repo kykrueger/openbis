@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 
 /**
@@ -145,4 +146,11 @@ public class DataSetFileDownloadReader implements Serializable
         ObjectInputStream o = new ObjectInputStream(b);
         return o.readObject();
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).toString();
+    }
+
 }

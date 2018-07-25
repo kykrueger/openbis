@@ -229,6 +229,24 @@ public class SearchVocabularyTermTest extends AbstractVocabularyTermTest
                 new VocabularyTermPermId("384_WELLS_16X24", "$PLATE_GEOMETRY"));
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyTermSearchCriteria c = new VocabularyTermSearchCriteria();
+        c.withCode().thatEquals("HUMAN");
+
+        VocabularyTermFetchOptions fo = new VocabularyTermFetchOptions();
+        fo.withVocabulary();
+        fo.withRegistrator();
+
+        v3api.searchVocabularyTerms(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-vocabulary-terms  SEARCH_CRITERIA:\n'VOCABULARY_TERM\n    with attribute 'code' equal to 'HUMAN'\n'\nFETCH_OPTIONS:\n'VocabularyTerm\n    with Vocabulary\n    with Registrator\n'");
+    }
+
     private void testSearch(VocabularyTermSearchCriteria criteria, VocabularyTermPermId... expectedPermIds)
     {
         VocabularyTermFetchOptions fetchOptions = new VocabularyTermFetchOptions();

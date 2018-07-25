@@ -37,6 +37,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.get.GetSpacesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+
 import junit.framework.Assert;
 
 /**
@@ -173,6 +174,21 @@ public class DeleteOperationExecutionTest extends AbstractOperationExecutionTest
 
         execution = getExecution(sessionToken, options.getExecutionId(), new OperationExecutionFetchOptions());
         Assert.assertNull(execution);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        OperationExecutionDeletionOptions o = new OperationExecutionDeletionOptions();
+        o.setReason("test-reason");
+
+        v3api.deleteOperationExecutions(sessionToken,
+                Arrays.asList(new OperationExecutionPermId("TEST-LOGGING-1"), new OperationExecutionPermId("TEST-LOGGING-2")), o);
+
+        assertAccessLog(
+                "delete-operation-executions  EXECUTION_IDS('[TEST-LOGGING-1, TEST-LOGGING-2]') DELETION_OPTIONS('OperationExecutionDeletionOptions[reason=test-reason]')");
     }
 
 }

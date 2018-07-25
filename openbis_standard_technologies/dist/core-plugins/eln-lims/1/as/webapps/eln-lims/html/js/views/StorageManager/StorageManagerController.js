@@ -203,9 +203,9 @@ function StorageManagerController(mainController) {
 				var experimentIdentifier = sample.experimentIdentifierOrNull;
 				
 				if(experimentIdentifier) { //If there is a experiment detected, the sample should be attached to the experiment completely.
-					sampleSpace = experimentIdentifier.split("/")[1];
-					sampleProject = experimentIdentifier.split("/")[2];
-					sampleExperiment = experimentIdentifier.split("/")[3];
+					sampleSpace = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+					sampleProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
+					sampleExperiment = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
 				}
 				
 				var operation = {

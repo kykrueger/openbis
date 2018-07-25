@@ -32,8 +32,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class CreatePersonTest extends AbstractTest
@@ -46,10 +44,10 @@ public class CreatePersonTest extends AbstractTest
         PersonCreation personCreation = new PersonCreation();
         personCreation.setUserId("user-" + System.currentTimeMillis());
         personCreation.setSpaceId(new SpacePermId("CISD"));
-        
+
         // When
         List<PersonPermId> persons = v3api.createPersons(sessionToken, Arrays.asList(personCreation));
-        
+
         // Then
         assertEquals(persons.toString(), "[" + personCreation.getUserId() + "]");
         PersonFetchOptions fetchOptions = new PersonFetchOptions();
@@ -60,7 +58,7 @@ public class CreatePersonTest extends AbstractTest
         assertEquals(person.getRegistrator().getUserId(), TEST_USER);
         assertEquals(person.getSpace().getCode(), "CISD");
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToCreatePersons")
     public void testCreateWithUserCausingAuthorizationFailure(final String user)
     {
@@ -77,11 +75,28 @@ public class CreatePersonTest extends AbstractTest
             });
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PersonCreation creation = new PersonCreation();
+        creation.setUserId("LOG_TEST_1");
+
+        PersonCreation creation2 = new PersonCreation();
+        creation2.setUserId("LOG_TEST_2");
+
+        v3api.createPersons(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-persons  NEW_PERSONS('[PersonCreation[userId=LOG_TEST_1], PersonCreation[userId=LOG_TEST_2]]')");
+    }
+
     @DataProvider
     Object[][] usersNotAllowedToCreatePersons()
     {
         return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
                 TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER);
     }
-    
+
 }

@@ -23,7 +23,6 @@ import java.util.Arrays;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
@@ -32,7 +31,6 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 public class UpdateVocabulariesTest extends AbstractTest
 {
@@ -45,10 +43,10 @@ public class UpdateVocabulariesTest extends AbstractTest
         VocabularyPermId id = new VocabularyPermId("ORGANISM");
         update.setVocabularyId(id);
         update.setDescription("test description");
-        
+
         // When
         v3api.updateVocabularies(sessionToken, Arrays.asList(update));
-        
+
         // Then
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
         Vocabulary vocabulary = v3api.getVocabularies(sessionToken, Arrays.asList(id), fetchOptions).get(id);
@@ -57,10 +55,10 @@ public class UpdateVocabulariesTest extends AbstractTest
         assertEquals(vocabulary.getCode(), id.getPermId());
         assertEquals(vocabulary.isChosenFromList(), true);
         assertEquals(vocabulary.getUrlTemplate(), null);
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testUpdateAll()
     {
@@ -72,10 +70,10 @@ public class UpdateVocabulariesTest extends AbstractTest
         update.setDescription("test description");
         update.setChosenFromList(false);
         update.setUrlTemplate("https://www.ethz.ch");
-        
+
         // When
         v3api.updateVocabularies(sessionToken, Arrays.asList(update));
-        
+
         // Then
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
         Vocabulary vocabulary = v3api.getVocabularies(sessionToken, Arrays.asList(id), fetchOptions).get(id);
@@ -84,17 +82,17 @@ public class UpdateVocabulariesTest extends AbstractTest
         assertEquals(vocabulary.getCode(), id.getPermId());
         assertEquals(vocabulary.isChosenFromList(), false);
         assertEquals(vocabulary.getUrlTemplate(), update.getUrlTemplate().getValue());
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testUpdateVocabularyWithMissingId()
     {
         // Given
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         VocabularyUpdate update = new VocabularyUpdate();
-        
+
         assertUserFailureException(new IDelegatedAction()
             {
                 @Override
@@ -132,7 +130,7 @@ public class UpdateVocabulariesTest extends AbstractTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToUpdateVocabularies")
     public void testUpdateWithUserCausingAuthorizationFailure(final String user)
     {
@@ -148,6 +146,23 @@ public class UpdateVocabulariesTest extends AbstractTest
                     v3api.updateVocabularies(sessionToken, Arrays.asList(update));
                 }
             }, vocabularyId);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        VocabularyUpdate update = new VocabularyUpdate();
+        update.setVocabularyId(new VocabularyPermId("$PLATE_GEOMETRY"));
+
+        VocabularyUpdate update2 = new VocabularyUpdate();
+        update2.setVocabularyId(new VocabularyPermId("ORGANISM"));
+
+        v3api.updateVocabularies(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-vocabularies  VOCABULARY_UPDATES('[VocabularyUpdate[vocabularyId=$PLATE_GEOMETRY], VocabularyUpdate[vocabularyId=ORGANISM]]')");
     }
 
     @DataProvider

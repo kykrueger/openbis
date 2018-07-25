@@ -23,6 +23,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
@@ -227,6 +228,12 @@ public class DataSetUpdate implements IUpdate, IObjectUpdate<IDataSetId>, IPrope
     public void setChildActions(List<ListUpdateAction<IDataSetId>> actions)
     {
         childIds.setActions(actions);
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("dataSetId", dataSetId).toString();
     }
 
 }

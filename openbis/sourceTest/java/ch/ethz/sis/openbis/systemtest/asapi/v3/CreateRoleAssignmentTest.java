@@ -24,6 +24,7 @@ import java.util.List;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.AuthorizationGroupPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.Me;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
@@ -37,8 +38,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 public class CreateRoleAssignmentTest extends AbstractTest
@@ -51,10 +50,10 @@ public class CreateRoleAssignmentTest extends AbstractTest
         RoleAssignmentCreation creation = new RoleAssignmentCreation();
         creation.setRole(Role.ETL_SERVER);
         creation.setUserId(new PersonPermId(TEST_OBSERVER_CISD));
-        
+
         // When
         List<RoleAssignmentTechId> ids = v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
-        
+
         // Then
         assertEquals(ids.size(), 1);
         RoleAssignmentFetchOptions fetchOptions = new RoleAssignmentFetchOptions();
@@ -68,7 +67,7 @@ public class CreateRoleAssignmentTest extends AbstractTest
         assertEquals(roleAssignment.getSpace(), null);
         assertEquals(roleAssignment.getProject(), null);
     }
-    
+
     @Test
     public void testCreateRoleForMe()
     {
@@ -78,10 +77,10 @@ public class CreateRoleAssignmentTest extends AbstractTest
         creation.setRole(Role.POWER_USER);
         creation.setSpaceId(new SpacePermId("TEST-SPACE"));
         creation.setUserId(new Me());
-        
+
         // When
         List<RoleAssignmentTechId> ids = v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
-        
+
         // Then
         assertEquals(ids.size(), 1);
         RoleAssignmentFetchOptions fetchOptions = new RoleAssignmentFetchOptions();
@@ -95,7 +94,7 @@ public class CreateRoleAssignmentTest extends AbstractTest
         assertEquals(roleAssignment.getSpace().getCode(), "TEST-SPACE");
         assertEquals(roleAssignment.getProject(), null);
     }
-    
+
     @Test
     public void testCreateSpaceETLServerUser()
     {
@@ -105,10 +104,10 @@ public class CreateRoleAssignmentTest extends AbstractTest
         creation.setRole(Role.ETL_SERVER);
         creation.setUserId(new PersonPermId(TEST_OBSERVER_CISD));
         creation.setSpaceId(new SpacePermId("CISD"));
-        
+
         // When
         List<RoleAssignmentTechId> ids = v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
-        
+
         // Then
         assertEquals(ids.size(), 1);
         RoleAssignmentFetchOptions fetchOptions = new RoleAssignmentFetchOptions();
@@ -125,19 +124,19 @@ public class CreateRoleAssignmentTest extends AbstractTest
     public void testCreateInstanceRoleAssignmentWithUserCausingAuthorizationFailure(final String user)
     {
         assertAnyAuthorizationException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
             {
-                String sessionToken = v3api.login(user, PASSWORD);
-                RoleAssignmentCreation creation = new RoleAssignmentCreation();
-                creation.setRole(Role.ADMIN);
-                creation.setUserId(new PersonPermId(TEST_OBSERVER_CISD));
-                v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
-            }
-        });
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    RoleAssignmentCreation creation = new RoleAssignmentCreation();
+                    creation.setRole(Role.ADMIN);
+                    creation.setUserId(new PersonPermId(TEST_OBSERVER_CISD));
+                    v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
+                }
+            });
     }
-    
+
     @DataProvider
     Object[][] usersNotAllowedToCreateInstanceRoleAssignment()
     {
@@ -145,25 +144,25 @@ public class CreateRoleAssignmentTest extends AbstractTest
                 TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD,
                 TEST_SPACE_USER);
     }
-    
+
     @Test(dataProvider = "usersNotAllowedToCreateRoleAssignmentForSpaceCISD")
     public void testCreateSpaceRoleAssignmentWithUserCausingAuthorizationFailure(final String user)
     {
         assertAnyAuthorizationException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
             {
-                String sessionToken = v3api.login(user, PASSWORD);
-                RoleAssignmentCreation creation = new RoleAssignmentCreation();
-                creation.setRole(Role.USER);
-                creation.setSpaceId(new SpacePermId("CISD"));
-                creation.setUserId(new PersonPermId(TEST_INSTANCE_ETLSERVER));
-                v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
-            }
-        });
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    RoleAssignmentCreation creation = new RoleAssignmentCreation();
+                    creation.setRole(Role.USER);
+                    creation.setSpaceId(new SpacePermId("CISD"));
+                    creation.setUserId(new PersonPermId(TEST_INSTANCE_ETLSERVER));
+                    v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
+                }
+            });
     }
-    
+
     @DataProvider
     Object[][] usersNotAllowedToCreateRoleAssignmentForSpaceCISD()
     {
@@ -171,7 +170,7 @@ public class CreateRoleAssignmentTest extends AbstractTest
                 TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD,
                 TEST_SPACE_USER);
     }
-    
+
     @Test(dataProvider = "usersAllowedToCreateRoleAssignmentForSpaceCISD")
     public void testCreateSpaceRoleAssignmentWithUser(final String user)
     {
@@ -182,7 +181,7 @@ public class CreateRoleAssignmentTest extends AbstractTest
         creation.setUserId(new PersonPermId(TEST_INSTANCE_ETLSERVER));
         v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
     }
-    
+
     @DataProvider
     Object[][] usersAllowedToCreateRoleAssignmentForSpaceCISD()
     {
@@ -193,27 +192,53 @@ public class CreateRoleAssignmentTest extends AbstractTest
     public void testCreateProjectRoleAssignmentWithUserCausingAuthorizationFailure(final String user)
     {
         assertAnyAuthorizationException(new IDelegatedAction()
-        {
-            @Override
-            public void execute()
             {
-                String sessionToken = v3api.login(user, PASSWORD);
-                RoleAssignmentCreation creation = new RoleAssignmentCreation();
-                creation.setRole(Role.USER);
-                creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
-                creation.setUserId(new PersonPermId(TEST_INSTANCE_ETLSERVER));
-                v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
-            }
-        });
+                @Override
+                public void execute()
+                {
+                    String sessionToken = v3api.login(user, PASSWORD);
+                    RoleAssignmentCreation creation = new RoleAssignmentCreation();
+                    creation.setRole(Role.USER);
+                    creation.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+                    creation.setUserId(new PersonPermId(TEST_INSTANCE_ETLSERVER));
+                    v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
+                }
+            });
     }
-    
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        RoleAssignmentCreation creation = new RoleAssignmentCreation();
+        creation.setRole(Role.POWER_USER);
+        creation.setSpaceId(new SpacePermId("TEST-SPACE"));
+        creation.setUserId(new Me());
+
+        RoleAssignmentCreation creation2 = new RoleAssignmentCreation();
+        creation2.setRole(Role.ADMIN);
+        creation2.setProjectId(new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT"));
+        creation2.setUserId(new PersonPermId("test"));
+
+        RoleAssignmentCreation creation3 = new RoleAssignmentCreation();
+        creation3.setRole(Role.OBSERVER);
+        creation3.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation3.setAuthorizationGroupId(new AuthorizationGroupPermId("AGROUP"));
+
+        v3api.createRoleAssignments(sessionToken, Arrays.asList(creation, creation2, creation3));
+
+        assertAccessLog(
+                "create-role-assignments  NEW_ROLE_ASSIGNMENTS('[RoleAssignmentCreation[groupId=<null>,userId=me,spaceId=TEST-SPACE,projectId=<null>,role=POWER_USER], RoleAssignmentCreation[groupId=<null>,userId=test,spaceId=<null>,projectId=/TEST-SPACE/TEST-PROJECT,role=ADMIN], RoleAssignmentCreation[groupId=AGROUP,userId=<null>,spaceId=<null>,projectId=/CISD/NEMO,role=OBSERVER]]')");
+    }
+
     @DataProvider
     Object[][] usersNotAllowedToCreateRoleAssignmentForProjectTEST_PROJECT()
     {
         return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_INSTANCE_ETLSERVER, TEST_GROUP_OBSERVER,
                 TEST_GROUP_POWERUSER, TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD);
     }
-    
+
     @Test(dataProvider = "usersAllowedToCreateRoleAssignmentForProjectTEST_PROJECT")
     public void testCreateProjectRoleAssignmentWithUser(final String user)
     {
@@ -224,11 +249,11 @@ public class CreateRoleAssignmentTest extends AbstractTest
         creation.setUserId(new PersonPermId(TEST_INSTANCE_ETLSERVER));
         v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
     }
-    
+
     @DataProvider
     Object[][] usersAllowedToCreateRoleAssignmentForProjectTEST_PROJECT()
     {
         return createTestUsersProvider(TEST_USER, TEST_SPACE_USER);
     }
-    
+
 }

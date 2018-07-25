@@ -22,6 +22,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -115,4 +116,11 @@ public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>
     {
         active = false;
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("userId", userId).toString();
+    }
+
 }

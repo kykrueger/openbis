@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IFileFormatTypeId;
@@ -62,6 +63,8 @@ public class PhysicalDataCreation implements ICreation
 
     private boolean h5arFolders = true;
 
+    private boolean archivingRequested = false;
+    
     public String getShareId()
     {
         return shareId;
@@ -163,4 +166,21 @@ public class PhysicalDataCreation implements ICreation
     {
         this.h5arFolders = h5arFolders;
     }
+
+    public boolean isArchivingRequested()
+    {
+        return archivingRequested;
+    }
+
+    public void setArchivingRequested(boolean archivingRequested)
+    {
+        this.archivingRequested = archivingRequested;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("location", location).toString();
+    }
+
 }

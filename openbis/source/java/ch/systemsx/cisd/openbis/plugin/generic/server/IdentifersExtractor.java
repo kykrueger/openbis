@@ -34,17 +34,18 @@ class IdentifersExtractor
 {
     private final SampleIdentifier oldSampleIdentifier;
 
-    private final SampleIdentifier newSampleIdentifier;
+    private SampleIdentifier newSampleIdentifier;
 
-    private final ExperimentIdentifier experimentIdentifierOrNull;
+    private ExperimentIdentifier experimentIdentifierOrNull;
     
-    private final ProjectIdentifier projectIdentifierOrNull;
+    private ProjectIdentifier projectIdentifierOrNull;
 
     private final String containerIdentifierOrNull;
 
     IdentifersExtractor(NewSample updatedSample)
     {
         oldSampleIdentifier = SampleIdentifierFactory.parse(updatedSample);
+        newSampleIdentifier = oldSampleIdentifier;
         String experimentIdentifier = updatedSample.getExperimentIdentifier();
         String projectIdentifier = updatedSample.getProjectIdentifier();
         String defaultSpaceIdentifier = updatedSample.getDefaultSpaceIdentifier();
@@ -60,19 +61,12 @@ class IdentifersExtractor
                     new SampleIdentifier(new SpaceIdentifier(
                             experimentIdentifierOrNull.getSpaceCode()),
                             sampleCode);
-            projectIdentifierOrNull = null;
-        } else if (projectIdentifier != null)
+        }
+        if (projectIdentifier != null)
         {
             projectIdentifierOrNull =
                     new ProjectIdentifierFactory(projectIdentifier).createIdentifier(defaultSpaceIdentifier);
-            experimentIdentifierOrNull = null;
             newSampleIdentifier = new SampleIdentifier(projectIdentifierOrNull, sampleCode);
-        } else
-        {
-            // no experiment - leave sample identifier unchanged
-            experimentIdentifierOrNull = null;
-            projectIdentifierOrNull = null;
-            newSampleIdentifier = oldSampleIdentifier;
         }
         containerIdentifierOrNull = updatedSample.getContainerIdentifier();
     }

@@ -115,6 +115,22 @@ public class CreateSpaceTest extends AbstractTest
             }, new SpacePermId("NEW_SPACE"));
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SpaceCreation creation = new SpaceCreation();
+        creation.setCode("LOG_TEST_1");
+
+        SpaceCreation creation2 = new SpaceCreation();
+        creation2.setCode("LOG_TEST_2");
+
+        v3api.createSpaces(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog("create-spaces  NEW_SPACES('[SpaceCreation[code=LOG_TEST_1], SpaceCreation[code=LOG_TEST_2]]')");
+    }
+
     private void testCreateWithUser(String userId)
     {
         final String sessionToken = v3api.login(userId, PASSWORD);

@@ -1161,7 +1161,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     @Override
     public SessionInformation getSessionInformation(String sessionToken)
     {
-        logAccess(sessionToken, "session-info");
+        logAccess(sessionToken, "get-session-information");
         return null;
     }
 
@@ -1199,7 +1199,7 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public SearchResult<OperationExecution> searchOperationExecutions(String sessionToken, OperationExecutionSearchCriteria searchCriteria,
             OperationExecutionFetchOptions fetchOptions)
     {
-        logAccess(sessionToken, "search-operation-executions", "SEARCH_CRITERIA(%s) FETCH_OPTIONS(%s)", searchCriteria, fetchOptions);
+        logAccess(sessionToken, "search-operation-executions", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
         return null;
     }
 

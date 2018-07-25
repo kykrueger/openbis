@@ -12,6 +12,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.installOpenbis('openbis1')
         self.cloneOpenbisInstance('openbis1', 'openbis2', dataStoreServerOnly=True)
         openbis1 = self.createOpenbisController('openbis1')
+        openbis1.asProperties['project-samples-enabled'] = 'true'
         openbis1.setDummyAuthentication()
         openbis1.setDataStoreServerUsername('etlserver1')
         openbis1.createTestDatabase('openbis')

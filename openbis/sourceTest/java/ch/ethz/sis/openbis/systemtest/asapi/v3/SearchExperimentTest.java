@@ -700,7 +700,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testSearchWithSortingByCodeScore()
     {
@@ -817,6 +817,25 @@ public class SearchExperimentTest extends AbstractExperimentTest
         }
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ExperimentSearchCriteria c = new ExperimentSearchCriteria();
+        c.withCode().thatStartsWith("EXP1");
+        c.withProperty("DESCRIPTION").thatEquals("abc");
+
+        ExperimentFetchOptions fo = new ExperimentFetchOptions();
+        fo.withHistory();
+        fo.withModifier();
+
+        v3api.searchExperiments(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-experiments  SEARCH_CRITERIA:\n'EXPERIMENT\n    with operator 'AND'\n    with attribute 'code' starts with 'EXP1'\n    with property 'DESCRIPTION' equal to 'abc'\n'\nFETCH_OPTIONS:\n'Experiment\n    with History\n    with Modifier\n'");
     }
 
     private void testSearch(String user, ExperimentSearchCriteria criteria, String... expectedIdentifiers)

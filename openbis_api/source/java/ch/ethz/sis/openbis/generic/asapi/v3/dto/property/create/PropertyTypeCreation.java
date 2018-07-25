@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
@@ -28,7 +29,6 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.property.create.PropertyTypeCreation")
 public class PropertyTypeCreation implements ICreation, IObjectCreation
@@ -37,13 +37,13 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
 
     @JsonProperty
     private String code;
-    
+
     @JsonProperty
     private String label;
-    
+
     @JsonProperty
     private String description;
-    
+
     @JsonProperty
     private boolean managedInternally;
 
@@ -52,7 +52,7 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
 
     @JsonProperty
     private DataType dataType;
-    
+
     @JsonProperty
     private IVocabularyId vocabularyId;
 
@@ -173,6 +173,12 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
     public void setTransformation(String transformation)
     {
         this.transformation = transformation;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("code", code).toString();
     }
 
 }

@@ -89,44 +89,44 @@ public class UpdatePropertyTypesTest extends AbstractTest
 
         assertUserFailureException(update, "Property type id cannot be null.");
     }
-    
+
     @Test
     public void testNullDescription()
     {
         PropertyTypeUpdate update = new PropertyTypeUpdate();
         update.setTypeId(new PropertyTypePermId("COMMENT"));
         update.setDescription(null);
-        
+
         assertUserFailureException(update, "Description cannot be empty.");
     }
-    
+
     @Test
     public void testEmptyDescription()
     {
         PropertyTypeUpdate update = new PropertyTypeUpdate();
         update.setTypeId(new PropertyTypePermId("COMMENT"));
         update.setDescription("");
-        
+
         assertUserFailureException(update, "Description cannot be empty.");
     }
-    
+
     @Test
     public void testNullLabel()
     {
         PropertyTypeUpdate update = new PropertyTypeUpdate();
         update.setTypeId(new PropertyTypePermId("COMMENT"));
         update.setLabel(null);
-        
+
         assertUserFailureException(update, "Label cannot be empty.");
     }
-    
+
     @Test
     public void testEmptyLabel()
     {
         PropertyTypeUpdate update = new PropertyTypeUpdate();
         update.setTypeId(new PropertyTypePermId("COMMENT"));
         update.setLabel("");
-        
+
         assertUserFailureException(update, "Label cannot be empty.");
     }
 
@@ -188,13 +188,30 @@ public class UpdatePropertyTypesTest extends AbstractTest
             }, typeId);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(new PropertyTypePermId("BACTERIUM"));
+
+        PropertyTypeUpdate update2 = new PropertyTypeUpdate();
+        update2.setTypeId(new PropertyTypePermId("$PLATE_GEOMETRY"));
+
+        v3api.updatePropertyTypes(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-property-types  PROPERTY_TYPE_UPDATES('[PropertyTypeUpdate[typeId=BACTERIUM], PropertyTypeUpdate[typeId=$PLATE_GEOMETRY]]')");
+    }
+
     @DataProvider
     Object[][] usersNotAllowedToUpdatePropertyTypes()
     {
         return createTestUsersProvider(TEST_GROUP_ADMIN, TEST_GROUP_OBSERVER, TEST_GROUP_POWERUSER,
                 TEST_INSTANCE_OBSERVER, TEST_OBSERVER_CISD, TEST_POWER_USER_CISD, TEST_SPACE_USER);
     }
-    
+
     private PropertyTypePermId createXmlPropertyType()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

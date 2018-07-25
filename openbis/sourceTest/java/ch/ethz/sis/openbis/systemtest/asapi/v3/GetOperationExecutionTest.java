@@ -314,4 +314,22 @@ public class GetOperationExecutionTest extends AbstractOperationExecutionTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        OperationExecutionPermId id1 = new OperationExecutionPermId();
+        OperationExecutionPermId id2 = new OperationExecutionPermId();
+
+        OperationExecutionFetchOptions fo = new OperationExecutionFetchOptions();
+        fo.withDetails();
+        fo.withOwner();
+
+        v3api.getOperationExecutions(sessionToken, Arrays.asList(id1, id2), fo);
+
+        assertAccessLog("get-operation-executions  EXECUTION_IDS('[" + id1.getPermId() + ", " + id2.getPermId()
+                + "]') FETCH_OPTIONS('OperationExecution\n    with Owner\n    with Details\n')");
+    }
+
 }

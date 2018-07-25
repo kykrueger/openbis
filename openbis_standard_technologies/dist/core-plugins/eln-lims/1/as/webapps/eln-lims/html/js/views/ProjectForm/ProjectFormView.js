@@ -21,7 +21,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 	this.repaint = function(views) {
 		var $container = views.content;
 		var _this = this;
-		
+		var projectIdentifier = IdentifierUtil.getProjectIdentifier(_this._projectFormModel.project.spaceCode, _this._projectFormModel.project.code);
 		var $form = $("<div>");
 		
 		var $formColumn = $("<form>", {
@@ -63,7 +63,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		if(this._projectFormModel.mode === FormMode.VIEW) {
 			var showSelectExperimentType = function() {
 				var $dropdown = FormUtil.getExperimentTypeDropdown("experimentTypeDropdown", true);
-				Util.blockUI("Select the type for the " + ELNDictionary.getExperimentKindName("/" + _this._projectFormModel.project.spaceCode) + ": <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='experimentTypeDropdownCancel'>Cancel</a>");
+				Util.blockUI("Select the type for the " + ELNDictionary.getExperimentKindName(projectIdentifier) + ": <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='experimentTypeDropdownCancel'>Cancel</a>");
 				
 				$("#experimentTypeDropdown").on("change", function(event) {
 					var experimentTypeCode = $("#experimentTypeDropdown")[0].value;
@@ -90,8 +90,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 					_this._projectFormController.createNewExperiment("DEFAULT_EXPERIMENT");
 				}
 				});
-				
-				toolbarModel.push({ component : $createExpBtn, tooltip: "Create " + ELNDictionary.getExperimentKindName("/" + _this._projectFormModel.project.spaceCode) });
+				toolbarModel.push({ component : $createExpBtn, tooltip: "Create " + ELNDictionary.getExperimentKindName(projectIdentifier) });
 			}
 			
 			//Edit
@@ -130,7 +129,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			}
 			
 			//Operations
-			var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + ELNDictionary.getExperimentKindName("/" + _this._projectFormModel.project.spaceCode), event: function() {
+			var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + ELNDictionary.getExperimentKindName(projectIdentifier), event: function() {
 				showSelectExperimentType();
 			}}]);
 			toolbarModel.push({ component : $operationsMenu, tooltip: "Extra operations" });
@@ -175,7 +174,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		// Experiment And Samples Table
 		if(this._projectFormModel.mode !== FormMode.CREATE && !isInventoryProject) {
 			var $experimentsContainer = $("<div>");
-			$formColumn.append($("<legend>").append(ELNDictionary.getExperimentKindName("/" + _this._projectFormModel.project.spaceCode, true)))
+			$formColumn.append($("<legend>").append(ELNDictionary.getExperimentKindName(projectIdentifier, true)))
 			$formColumn.append($experimentsContainer);
 			
 			var experimentTableController = new ExperimentTableController(this._projectFormController, null, jQuery.extend(true, {}, this._projectFormModel.project), true);

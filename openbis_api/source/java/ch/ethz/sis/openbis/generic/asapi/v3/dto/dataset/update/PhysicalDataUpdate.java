@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IFileFormatTypeId;
@@ -36,6 +37,9 @@ public class PhysicalDataUpdate implements IUpdate
     @Deprecated
     private FieldUpdateValue<IFileFormatTypeId> fileFormatTypeId = new FieldUpdateValue<IFileFormatTypeId>();
 
+    @JsonProperty
+    private FieldUpdateValue<Boolean> archivingRequested = new FieldUpdateValue<Boolean>();
+
     @JsonIgnore
     @Deprecated
     public FieldUpdateValue<IFileFormatTypeId> getFileFormatTypeId()
@@ -48,6 +52,24 @@ public class PhysicalDataUpdate implements IUpdate
     public void setFileFormatTypeId(IFileFormatTypeId fileFormatTypeId)
     {
         this.fileFormatTypeId.setValue(fileFormatTypeId);
+    }
+
+    @JsonIgnore
+    public FieldUpdateValue<Boolean> isArchivingRequested()
+    {
+        return archivingRequested;
+    }
+
+    @JsonIgnore
+    public void setArchivingRequested(boolean archivingRequested)
+    {
+        this.archivingRequested.setValue(archivingRequested);
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).toString();
     }
 
 }

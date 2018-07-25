@@ -29,6 +29,8 @@ public interface IVocabularyAuthorizationExecutor extends IObjectAuthorizationEx
 
     void canGet(IOperationContext context);
 
+    void canSearch(IOperationContext context);
+    
     void canCreate(IOperationContext context);
 
     void canUpdate(IOperationContext context, IVocabularyId id, VocabularyPE entity);

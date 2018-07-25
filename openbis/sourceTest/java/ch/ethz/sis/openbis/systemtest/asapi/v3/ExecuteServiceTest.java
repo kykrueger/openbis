@@ -41,4 +41,20 @@ public class ExecuteServiceTest extends AbstractTest
         assertEquals(result, "hello 3.14159265359. Spaces: [Space CISD]");
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        CustomASServiceExecutionOptions o = new CustomASServiceExecutionOptions();
+        // values of these parameters must not be logged as they can contain sensitive data
+        o.withParameter("a", "1");
+        o.withParameter("b", "2");
+
+        v3api.executeCustomASService(sessionToken, new CustomASServiceCode("simple-service"), o);
+
+        assertAccessLog(
+                "execute-custom-as-service  SERVICE_ID('simple-service') EXECUTION_OPTIONS('CustomASServiceExecutionOptions: parameterKeys=[a, b]')");
+    }
+
 }

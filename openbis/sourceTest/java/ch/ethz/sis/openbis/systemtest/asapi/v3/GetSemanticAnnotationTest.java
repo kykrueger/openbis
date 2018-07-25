@@ -226,4 +226,21 @@ public class GetSemanticAnnotationTest extends AbstractTest
         assertPropertyTypeNotFetched(annotation);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SemanticAnnotationFetchOptions fo = new SemanticAnnotationFetchOptions();
+        fo.withEntityType();
+        fo.withPropertyAssignment();
+
+        v3api.getSemanticAnnotations(sessionToken,
+                Arrays.asList(new SemanticAnnotationPermId("ST_MASTER_PLATE"), new SemanticAnnotationPermId("ST_CONTROL_LAYOUT_PT_PLATE_GEOMETRY")),
+                fo);
+
+        assertAccessLog(
+                "get-semantic-annotations  SEMANTIC_ANNOTATION_IDS('[ST_MASTER_PLATE, ST_CONTROL_LAYOUT_PT_PLATE_GEOMETRY]') FETCH_OPTIONS('SemanticAnnotation\n    with EntityType\n    with PropertyAssignment\n')");
+    }
+
 }

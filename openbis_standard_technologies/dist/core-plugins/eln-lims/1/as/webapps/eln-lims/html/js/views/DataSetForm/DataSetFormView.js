@@ -45,15 +45,15 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			experimentIdentifier = this._dataSetFormModel.entity.experimentIdentifierOrNull;
 		}
 		if(experimentIdentifier) {
-			spaceCode = experimentIdentifier.split("/")[1];
-			projectCode = experimentIdentifier.split("/")[2];
-			experimentCode = experimentIdentifier.split("/")[3];
+			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+			projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
+			experimentCode = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
 		}
 		var sampleCode;
 		var sampleIdentifier;
 		if(!this._dataSetFormModel.isExperiment()) {
 			sampleCode = this._dataSetFormModel.entity.code;
-			spaceCode = this._dataSetFormModel.entity.identifier.split("/")[1];
+			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._dataSetFormModel.entity.identifier);
 			sampleIdentifier = this._dataSetFormModel.entity.identifier;
 		}
 		var datasetCodeAndPermId = this._dataSetFormModel.dataSet.code;
@@ -198,11 +198,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			owner = this._dataSetFormModel.entity.identifier.identifier;
 		} else {
 			ownerName = ELNDictionary.Sample;
-			if(this._dataSetFormModel.entity.experimentIdentifierOrNull) {
-				owner = this._dataSetFormModel.entity.experimentIdentifierOrNull + "/" + this._dataSetFormModel.entity.code;
-			} else {
-				owner = this._dataSetFormModel.entity.identifier;
-			}
+			owner = this._dataSetFormModel.entity.identifier;
 		}
 		
 		if(!this._dataSetFormModel.isMini) {
@@ -500,7 +496,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							identifier = this._dataSetFormModel.entity.identifier;
 						}
 						
-						if(!(profile.inventorySpaces.length > 0 && $.inArray(identifier.split("/")[1], profile.inventorySpaces) === -1)) {
+						if(!(profile.inventorySpaces.length > 0 && $.inArray(IdentifierUtil.getSpaceCodeFromIdentifier(identifier), profile.inventorySpaces) === -1)) {
 							continue;
 						}
 					}

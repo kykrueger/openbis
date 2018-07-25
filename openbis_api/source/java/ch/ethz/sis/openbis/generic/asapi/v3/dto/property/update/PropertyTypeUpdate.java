@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
@@ -27,25 +28,24 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @JsonObject("as.dto.property.update.PropertyTypeUpdate")
 public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeId>
 {
     private static final long serialVersionUID = 1L;
-    
+
     @JsonProperty
     private IPropertyTypeId typeId;
 
     @JsonProperty
     private FieldUpdateValue<String> label = new FieldUpdateValue<String>();
-    
+
     @JsonProperty
     private FieldUpdateValue<String> description = new FieldUpdateValue<String>();
-    
+
     @JsonProperty
     private FieldUpdateValue<String> schema = new FieldUpdateValue<String>();
-    
+
     @JsonProperty
     private FieldUpdateValue<String> transformation = new FieldUpdateValue<String>();
 
@@ -79,13 +79,13 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
     {
         this.label.setValue(label);
     }
-    
+
     @JsonIgnore
     public FieldUpdateValue<String> getDescription()
     {
         return description;
     }
-    
+
     @JsonIgnore
     public void setDescription(String description)
     {
@@ -103,7 +103,7 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
     {
         this.schema.setValue(schema);
     }
-    
+
     @JsonIgnore
     public FieldUpdateValue<String> getTransformation()
     {
@@ -115,5 +115,11 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
     {
         this.transformation.setValue(transformation);
     }
-    
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("typeId", typeId).toString();
+    }
+
 }

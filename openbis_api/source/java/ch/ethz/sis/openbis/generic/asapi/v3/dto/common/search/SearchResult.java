@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
 import java.io.Serializable;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -54,6 +55,12 @@ public class SearchResult<OBJECT> implements Serializable
     public int getTotalCount()
     {
         return totalCount;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("objectCount", objects != null ? objects.size() : 0).append("totalCount", totalCount).toString();
     }
 
 }

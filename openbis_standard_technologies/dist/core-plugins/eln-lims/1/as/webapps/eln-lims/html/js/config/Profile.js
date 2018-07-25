@@ -212,7 +212,7 @@ $.extend(DefaultProfile.prototype, {
 		
 		this.getStorageConfigCollectionForConfigSample = function(sample) {
 			var prefix = this.getSampleConfigSpacePrefix(sample);
-			return "/" + prefix + "ELN_SETTINGS/" + prefix + "STORAGES/" + prefix + "STORAGES_COLLECTION";
+			return IdentifierUtil.getExperimentIdentifier(prefix + "ELN_SETTINGS", prefix + "STORAGES", prefix + "STORAGES_COLLECTION");
 		}
 		
 		this.getStorageSpaceForSample = function(sample) {
@@ -244,7 +244,7 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.isELNIdentifier = function(identifier) {
-			var space = identifier.split("/")[1];
+			var space = IdentifierUtil.getSpaceCodeFromIdentifier(identifier);
 			return !this.isInventorySpace(space);
 		}
 		
@@ -898,14 +898,15 @@ $.extend(DefaultProfile.prototype, {
 			}));
 		}
 		
-		this.initAuth = function(callback) {
+		this.initServerInfo = function(callback) {
 			var _this = this;
 			this.serverFacade.getOpenbisV3(function(openbisV3) {
 				openbisV3._private.sessionToken = mainController.serverFacade.getSession();
 				openbisV3.getServerInformation().done(function(serverInformation) {
 	                var authSystem = serverInformation["authentication-service"];
+	                IdentifierUtil.isProjectSamplesEnabled = serverInformation["project-samples-enabled"];
 	                if (authSystem && authSystem.indexOf("file") !== -1) {
-	                	_this.isFileAuthenticationService = true;
+	                		_this.isFileAuthenticationService = true;
 	                }
 	                callback();
 	            });
@@ -931,7 +932,7 @@ $.extend(DefaultProfile.prototype, {
 						_this.initDirectLinkURL(function() {
 							_this.initIsAdmin(function() {
 								_this.initDatasetTypeCodes(function() {
-									_this.initAuth(function() {
+									_this.initServerInfo(function() {
 										_this.isFileAuthUser(function() {
 											_this.initSpaces(function() {
 												_this.initSettings(function() {

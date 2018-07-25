@@ -379,7 +379,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                    if(experiment.properties && experiment.properties[profile.propertyReplacingCode]) {
     	                    	experimentDisplayName = experiment.properties[profile.propertyReplacingCode];
     	                    }
-    	                    var isInventorySpace = profile.isInventorySpace(experiment.getIdentifier().getIdentifier().split("/")[1]);
+    	                    var isInventorySpace = profile.isInventorySpace(IdentifierUtil.getSpaceCodeFromIdentifier(experiment.getIdentifier().getIdentifier()));
     	                    var viewToUse = null;
     	                    var loadSamples = null;
     	                    if(isInventorySpace) {

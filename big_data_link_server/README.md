@@ -12,13 +12,13 @@ A json file with the configuration should be given during the startup as an argu
 
 ./gradlew distZip
 
-The build will be found at ./build/distributions/microservice-server.zip
+The build will be found at ./build/distributions/big_data_link_server.zip
 
 ## Startup ##
 
 Unzip the build and execute
 
-./bin/microservice-server
+./bin/big_data_link_server
 
 ## Main packages ##
 

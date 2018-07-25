@@ -1231,6 +1231,32 @@ public class CreateSampleTest extends AbstractSampleTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleCreation creation = new SampleCreation();
+        creation.setCode("LOG_TEST_1");
+        creation.setTypeId(new EntityTypePermId("CELL_PLATE"));
+
+        SampleCreation creation2 = new SampleCreation();
+        creation2.setCode("LOG_TEST_2");
+        creation2.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        creation2.setSpaceId(new SpacePermId("CISD"));
+        
+        SampleCreation creation3 = new SampleCreation();
+        creation3.setCode("LOG_TEST_3");
+        creation3.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        creation3.setSpaceId(new SpacePermId("CISD"));
+        creation3.setExperimentId(new ExperimentIdentifier("/CISD/NEMO/EXP1"));
+
+        v3api.createSamples(sessionToken, Arrays.asList(creation, creation2, creation3));
+
+        assertAccessLog(
+                "create-samples  NEW_SAMPLES('[SampleCreation[spaceId=<null>,projectId=<null>,experimentId=<null>,code=LOG_TEST_1], SampleCreation[spaceId=CISD,projectId=<null>,experimentId=<null>,code=LOG_TEST_2], SampleCreation[spaceId=CISD,projectId=<null>,experimentId=/CISD/NEMO/EXP1,code=LOG_TEST_3]]')");
+    }
+
     private void testWithExceptionContext(int sampleCount, int incorrectSampleIndex)
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);

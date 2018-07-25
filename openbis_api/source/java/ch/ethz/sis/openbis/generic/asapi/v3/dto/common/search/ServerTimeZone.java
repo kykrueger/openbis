@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -27,5 +28,11 @@ public class ServerTimeZone implements ITimeZone
 {
 
     private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).toString();
+    }
 
 }

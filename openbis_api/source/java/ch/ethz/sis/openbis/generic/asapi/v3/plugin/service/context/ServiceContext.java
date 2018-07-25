@@ -18,6 +18,8 @@ package ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.context;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+
 /**
  * @author Franz-Josef Elmer
  */
@@ -35,6 +37,12 @@ public class ServiceContext implements Serializable
     public void setSessionToken(String sessionToken)
     {
         this.sessionToken = sessionToken;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).toString();
     }
 
 }

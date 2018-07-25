@@ -128,6 +128,7 @@ public class AuthorizationGroupFetchOptions extends FetchOptions<AuthorizationGr
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("AuthorizationGroup", this);
         f.addFetchOption("Registrator", registrator);
         f.addFetchOption("Users", users);
+        f.addFetchOption("RoleAssignments", roleAssignments);
         return f;
     }
 

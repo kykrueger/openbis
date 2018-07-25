@@ -524,6 +524,21 @@ public class GetProjectTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        ProjectFetchOptions fo = new ProjectFetchOptions();
+        fo.withSpace();
+        fo.withExperiments();
+
+        v3api.getProjects(sessionToken, Arrays.asList(new ProjectIdentifier("/CISD/NEMO"), new ProjectPermId("20120814110011738-105")), fo);
+
+        assertAccessLog(
+                "get-projects  PROJECT_IDS('[/CISD/NEMO, 20120814110011738-105]') FETCH_OPTIONS('Project\n    with Experiments\n    with Space\n')");
+    }
+
     private List<HistoryEntry> testGetWithHistory(ProjectCreation creation, ProjectUpdate update)
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

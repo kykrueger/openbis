@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -41,6 +42,12 @@ public class AbstractObjectDeletionOptions<T extends AbstractObjectDeletionOptio
     {
         this.reason = reason;
         return (T) this;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("reason", reason).toString();
     }
 
 }

@@ -28,6 +28,7 @@ import java.util.Map;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
@@ -394,6 +395,7 @@ public class UpdateDataSetTest extends AbstractSampleTest
         update.setDataSetId(dataSetId);
         PhysicalDataUpdate pdupt = new PhysicalDataUpdate();
         pdupt.setFileFormatTypeId(new FileFormatTypePermId("PLKPROPRIETARY"));
+        pdupt.setArchivingRequested(true);
         update.setPhysicalData(pdupt);
 
         v3api.updateDataSets(sessionToken, Collections.singletonList(update));
@@ -403,7 +405,9 @@ public class UpdateDataSetTest extends AbstractSampleTest
         fe.withPhysicalData().withFileFormatType();
         DataSet result = v3api.getDataSets(sessionToken, Collections.singletonList(dataSetId), fe).get(dataSetId);
 
-        assertEquals(result.getPhysicalData().getFileFormatType().getCode(), "PLKPROPRIETARY");
+        PhysicalData physicalData = result.getPhysicalData();
+        assertEquals(physicalData.getFileFormatType().getCode(), "PLKPROPRIETARY");
+        assertEquals(physicalData.isArchivingRequested(), Boolean.TRUE);
     }
 
     @Test
@@ -749,6 +753,23 @@ public class UpdateDataSetTest extends AbstractSampleTest
                     }
                 }, update.getDataSetId());
         }
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(new DataSetPermId("20081105092159111-1"));
+
+        DataSetUpdate update2 = new DataSetUpdate();
+        update2.setDataSetId(new DataSetPermId("20110509092359990-10"));
+
+        v3api.updateDataSets(sessionToken, Arrays.asList(update, update2));
+
+        assertAccessLog(
+                "update-data-sets  DATA_SET_UPDATES('[DataSetUpdate[dataSetId=20081105092159111-1], DataSetUpdate[dataSetId=20110509092359990-10]]')");
     }
 
     private Collection<String> dataSetCodes(Collection<? extends DataSet> list)

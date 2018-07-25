@@ -290,6 +290,21 @@ public class GetPersonTest extends AbstractTest
         assertSettingFetched(person2, WEB_APP_3, "n4", "v4");
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PersonFetchOptions fo = new PersonFetchOptions();
+        fo.withSpace();
+        fo.withRoleAssignments();
+
+        v3api.getPersons(sessionToken, Arrays.asList(new PersonPermId("observer"), new PersonPermId("test_role")), fo);
+
+        assertAccessLog(
+                "get-persons  IDS('[observer, test_role]') FETCH_OPTIONS('Person\n    with Space\n    with RoleAssignments\n')");
+    }
+
     private PersonPermId createPersonWithWebAppSettings()
     {
         return createPersonWithWebAppSettings("person_with_web_app_settings", null, true, true, true);

@@ -51,6 +51,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionResults;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.fetchoptions.OperationExecutionFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.search.OperationExecutionSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.CreateSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
@@ -74,16 +76,20 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPermId;
 
 /**
- * System tests for {@link IApplicationServerApi#executeOperations(String, List, ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions)}
- * for various combinations.
+ * System tests for
+ * {@link IApplicationServerApi#executeOperations(String, List, ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions)} for
+ * various combinations.
  *
  * @author Franz-Josef Elmer
  */
 public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
 {
     private static final String PROPERTY_TYPE = "ORGANISM";
+
     private static final String MATERIAL_TYPE = "BACTERIUM";
+
     private static final EntityTypePermId MATERIAL_TYPE_ID = new EntityTypePermId(MATERIAL_TYPE);
+
     private static final VocabularyPermId VOCABULARY_ID = new VocabularyPermId(PROPERTY_TYPE);
 
     @Test
@@ -92,7 +98,7 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         long time = System.currentTimeMillis();
         List<IOperation> operations = new ArrayList<IOperation>();
-        
+
         // create new material and two new vocabulary terms, one is a property value of the created material
         VocabularyTermCreation vt1 = new VocabularyTermCreation();
         vt1.setCode("ORG-" + time);
@@ -112,7 +118,7 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         operations.add(new CreateMaterialsOperation(materialCreation));
         execute(sessionToken, operations);
         assertEquals(getMaterial(sessionToken, materialId).getProperty(PROPERTY_TYPE), vt1.getCode());
-        
+
         // Delete first vocabulary term and replace it by the second one
         operations.clear();
         VocabularyTermDeletionOptions termDeletionOptions = createVocabularyTermDeletionOptions();
@@ -120,7 +126,7 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         operations.add(new DeleteVocabularyTermsOperation(Arrays.asList(id1), termDeletionOptions));
         execute(sessionToken, operations);
         assertEquals(getMaterial(sessionToken, materialId).getProperty(PROPERTY_TYPE), vt2.getCode());
-        
+
         // Delete both vocabulary terms and the material
         operations.clear();
         operations.add(new DeleteVocabularyTermsOperation(Arrays.asList(id1, id2), createVocabularyTermDeletionOptions()));
@@ -130,17 +136,17 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         execute(sessionToken, operations);
         assertEquals(v3api.getVocabularyTerms(sessionToken, Arrays.asList(id1, id2), new VocabularyTermFetchOptions()).size(), 0);
         assertEquals(v3api.getMaterials(sessionToken, Arrays.asList(materialId), new MaterialFetchOptions()).size(), 0);
-        
+
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testDeleteSampleWithDataSet()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         long time = System.currentTimeMillis();
         List<IOperation> operations = new ArrayList<IOperation>();
-        
+
         // Create a sample with a data set
         SampleCreation sampleCreation = createSample("S-" + time);
         ISampleId sampleId = getId(sampleCreation);
@@ -154,7 +160,7 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         DataSetPermId dataSetPermId = new DataSetPermId(dataSetCreation.getCode());
         operations.add(new CreateDataSetsOperation(dataSetCreation));
         execute(sessionToken, operations);
-        
+
         // Delete sample and data set
         operations.clear();
         DataSetDeletionOptions dataSetDeletionOptions = new DataSetDeletionOptions();
@@ -167,7 +173,7 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         IDeletionId delId2 = getDeletionId(executionResults.getResults().get(1));
         assertEquals(v3api.getSamples(sessionToken, Arrays.asList(sampleId), new SampleFetchOptions()).size(), 0);
         assertEquals(v3api.getDataSets(sessionToken, Arrays.asList(dataSetPermId), new DataSetFetchOptions()).size(), 0);
-        
+
         // Clear trash
         assertEquals(delId1, null);
         assertNotNull(delId2);
@@ -175,14 +181,14 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testDeleteAndReplaceParentSample()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
         long time = System.currentTimeMillis();
         List<IOperation> operations = new ArrayList<IOperation>();
-        
+
         // Create parentA and parentB and a child
         SampleCreation pa = createSample("P-" + time + "_A");
         ISampleId paId = getId(pa);
@@ -204,7 +210,7 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         List<String> parentsCode = extractCodes(childSample.getParents());
         Collections.sort(parentsCode);
         assertEquals(parentsCode.toString(), "[" + pa.getCode() + ", " + pb.getCode() + "]");
-        
+
         // Create parentC, delete parentB, and replace parentB by parentC
         operations.clear();
         SampleCreation pc = createSample("P-" + time + "_C");
@@ -225,10 +231,27 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         parentsCode = extractCodes(getSample(sessionToken, childId).getParents());
         Collections.sort(parentsCode);
         assertEquals(parentsCode.toString(), "[" + pa.getCode() + ", " + pc.getCode() + "]");
-        
+
         v3api.logout(sessionToken);
     }
-    
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        OperationExecutionSearchCriteria c = new OperationExecutionSearchCriteria();
+
+        OperationExecutionFetchOptions fo = new OperationExecutionFetchOptions();
+        fo.withDetails();
+        fo.withSummary();
+
+        v3api.searchOperationExecutions(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-operation-executions  SEARCH_CRITERIA:\n'OPERATION_EXECUTION\n'\nFETCH_OPTIONS:\n'OperationExecution\n    with Summary\n    with Details\n'");
+    }
+
     private SampleCreation createSample(String code)
     {
         SampleCreation sampleCreation = new SampleCreation();
@@ -237,25 +260,25 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         sampleCreation.setSpaceId(new SpacePermId("CISD"));
         return sampleCreation;
     }
-    
+
     private ISampleId getId(SampleCreation sampleCreation)
     {
         ISpaceId spaceId = sampleCreation.getSpaceId();
         return new SampleIdentifier("/" + ((SpacePermId) spaceId).getPermId() + "/" + sampleCreation.getCode());
     }
-    
+
     private IMaterialId getId(MaterialCreation materialCreation)
     {
         IEntityTypeId typeId = materialCreation.getTypeId();
         return new MaterialPermId(materialCreation.getCode(), ((EntityTypePermId) typeId).getPermId());
     }
-    
+
     private IVocabularyTermId getId(VocabularyTermCreation vt)
     {
         IVocabularyId vocabularyId = vt.getVocabularyId();
         return new VocabularyTermPermId(vt.getCode(), ((VocabularyPermId) vocabularyId).getPermId());
     }
-    
+
     private IDeletionId getDeletionId(IOperationResult operationResult)
     {
         if (operationResult instanceof DeleteObjectsWithTrashOperationResult)
@@ -271,21 +294,21 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         sampleDeletionOptions.setReason("Test sample deletion");
         return sampleDeletionOptions;
     }
-    
+
     private VocabularyTermDeletionOptions createVocabularyTermDeletionOptions()
     {
         VocabularyTermDeletionOptions termDeletionOptions = new VocabularyTermDeletionOptions();
         termDeletionOptions.setReason("test vocabulary term deletion");
         return termDeletionOptions;
     }
-    
+
     private Material getMaterial(String sessionToken, IMaterialId materialId)
     {
         MaterialFetchOptions materialFetchOptions = new MaterialFetchOptions();
         materialFetchOptions.withProperties();
         return v3api.getMaterials(sessionToken, Arrays.asList(materialId), materialFetchOptions).get(materialId);
     }
-    
+
     private Sample getSample(String sessionToken, ISampleId sampleId)
     {
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
@@ -294,7 +317,7 @@ public class MixedExecuteOperationsTest extends AbstractOperationExecutionTest
         fetchOptions.withParents();
         return v3api.getSamples(sessionToken, Arrays.asList(sampleId), fetchOptions).get(sampleId);
     }
-    
+
     private SynchronousOperationExecutionResults execute(String sessionToken, List<IOperation> operations)
     {
         SynchronousOperationExecutionOptions options = new SynchronousOperationExecutionOptions();

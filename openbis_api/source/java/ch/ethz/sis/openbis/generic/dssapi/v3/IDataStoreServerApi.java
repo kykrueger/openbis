@@ -28,10 +28,13 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFil
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
-import ch.systemsx.cisd.common.annotation.TechPreview;
 import ch.systemsx.cisd.common.api.IRpcService;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 /**
+ * V3 data store server API. Detailed documentation on how to use the API together code examples in both Java and Javascript can be found at "openBIS
+ * V3 API" openBIS WIKI page.
+ * 
  * @author Jakub Straszewski
  */
 public interface IDataStoreServerApi extends IRpcService
@@ -48,14 +51,53 @@ public interface IDataStoreServerApi extends IRpcService
 
     public static final String JSON_SERVICE_URL = SERVICE_URL + ".json";
 
+    /**
+     * Searches for metadata of data set files basing on the provided {@code DataSetFileSearchCriteria}.
+     * <p>
+     * By default the returned data set files metdata contains only basic information. Any additional information to be fetched has to be explicitly
+     * requested via {@code DataSetFileFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public SearchResult<DataSetFile> searchFiles(String sessionToken, DataSetFileSearchCriteria searchCriteria, DataSetFileFetchOptions fetchOptions);
 
+    /**
+     * Downloads files with the provided {@code IDataSetFileId} ids. The requested files are returned as a single {@code InputStream}.
+     * {@code DataSetFileDownloadReader} can be used to easily read individual files from that stream. Additional download options can be set via
+     * {@code DataSetFileDownloadOptions}.
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public InputStream downloadFiles(String sessionToken, List<? extends IDataSetFileId> fileIds,
             DataSetFileDownloadOptions downloadOptions);
 
+    /**
+     * Creates a data set which files have been already uploaded to data store server /store_share_file_upload servlet. Uploaded files and a data set
+     * to be created have to share the same upload id (the id can be set via {@code uploadID} request parameter during the upload and via
+     * {@code UploadedDataSetCreation} during a data set creation).
+     * <p>
+     * Required access rights: {@code PROJECT_USER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public DataSetPermId createUploadedDataSet(String sessionToken, UploadedDataSetCreation newDataSet);
 
-    @TechPreview
+    /**
+     * Creates full data sets (i.e. both data set metadata as well as data set files metadata).
+     * <p>
+     * Required access rights: {@code SPACE_ETL_SERVER} or stronger
+     * </p>
+     * 
+     * @throws UserFailureException in case of any problems
+     */
     public List<DataSetPermId> createDataSets(String sessionToken, List<FullDataSetCreation> newDataSets);
 
 }

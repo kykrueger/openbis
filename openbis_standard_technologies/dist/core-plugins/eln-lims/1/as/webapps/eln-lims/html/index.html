@@ -82,6 +82,7 @@
 	<script type="text/javascript" src="./js/controllers/LayoutManager.js"></script>
 	<script type="text/javascript" src="./js/controllers/MainController.js"></script>
 	
+	<script type="text/javascript" src="./js/util/IdentifierUtil.js"></script>
 	<script type="text/javascript" src="./js/config/ELNDictionary.js"></script>
 	<script type="text/javascript" src="./js/config/Profile.js"></script>
 	<script type="text/javascript" src="./js/config/StandardProfile.js"></script>
@@ -276,7 +277,7 @@
 		
 		$(document).ajaxError(function( event, jqxhr, settings, thrownError ) {
 			try {
-				Util.showError("AJAX Error status: " + jqxhr.status + " - Status text: " + jqxhr.statusText + " - Calling: " + settings.url + " - With Data: " + settings.data);
+				Util.showError("AJAX Error status: " + jqxhr.status + " - Status text: " + jqxhr.statusText + " - Calling: " + settings.url);
 			} catch(err) {
 				Util.showError("Unknown AJAX Error");
 			}

@@ -2,17 +2,16 @@ package ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create;
 
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.create.DataSetFileCreation;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import ch.systemsx.cisd.common.annotation.TechPreview;
 
 /**
  * @author anttil
  */
 @JsonObject("dss.dto.dataset.create.FullDataSetCreation")
-@TechPreview
 public class FullDataSetCreation implements ICreation
 {
     private static final long serialVersionUID = 1L;
@@ -40,4 +39,11 @@ public class FullDataSetCreation implements ICreation
     {
         this.fileMetadata = fileMetadata;
     }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("metadataCreation", metadataCreation).append("fileMetadata", fileMetadata).toString();
+    }
+
 }

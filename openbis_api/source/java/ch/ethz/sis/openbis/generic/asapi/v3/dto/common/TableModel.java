@@ -95,4 +95,10 @@ public class TableModel implements Serializable
         this.rows = rows;
     }
 
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("columns", columns).append("rowCount", rows != null ? rows.size() : 0).toString();
+    }
+
 }

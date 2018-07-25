@@ -392,6 +392,23 @@ public class SearchQueryTest extends AbstractQueryTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        QuerySearchCriteria c = new QuerySearchCriteria();
+        c.withName().thatEquals("query-name");
+
+        QueryFetchOptions fo = new QueryFetchOptions();
+        fo.withRegistrator();
+
+        v3api.searchQueries(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-queries  SEARCH_CRITERIA:\n'QUERY\n    with attribute 'name' equal to 'query-name'\n'\nFETCH_OPTIONS:\n'Query\n    with Registrator\n'");
+    }
+
     private void testSearch(String user, QuerySearchCriteria criteria, String... expectedNames)
     {
         String sessionToken = v3api.login(user, PASSWORD);

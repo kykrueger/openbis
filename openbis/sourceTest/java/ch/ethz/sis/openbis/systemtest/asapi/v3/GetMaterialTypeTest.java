@@ -104,4 +104,18 @@ public class GetMaterialTypeTest extends AbstractGetEntityTypeTest
         assertValidationPluginNotFetched(type);
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        MaterialTypeFetchOptions fo = new MaterialTypeFetchOptions();
+        fo.withPropertyAssignments();
+
+        v3api.getMaterialTypes(sessionToken, Arrays.asList(new EntityTypePermId("VIRUS"), new EntityTypePermId("GENE")), fo);
+
+        assertAccessLog(
+                "get-material-types  MATERIAL_TYPE_IDS('[VIRUS, GENE]') FETCH_OPTIONS('MaterialType\n    with PropertyAssignments\n')");
+    }
+
 }

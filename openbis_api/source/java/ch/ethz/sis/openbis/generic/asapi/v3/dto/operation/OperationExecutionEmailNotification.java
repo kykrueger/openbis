@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.operation;
 import java.util.Arrays;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
@@ -50,6 +51,12 @@ public class OperationExecutionEmailNotification implements IOperationExecutionN
     public List<String> getEmails()
     {
         return emails;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("emails", emails).toString();
     }
 
 }

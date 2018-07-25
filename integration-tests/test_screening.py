@@ -7,6 +7,7 @@ class TestCase(systemtest.testcase.TestCase):
     def execute(self):
         self.installOpenbis(technologies = ['screening'])
         openbisController = self.createOpenbisController()
+        openbisController.asProperties['project-samples-enabled'] = 'true'
         openbisController.createTestDatabase('openbis')
         openbisController.allUp()
         openbisController.dropAndWait('data-incoming-analysis.zip', 'incoming-analysis')

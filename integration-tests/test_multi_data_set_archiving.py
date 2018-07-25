@@ -33,6 +33,7 @@ class TestCase(systemtest.testcase.TestCase):
         util.printWhoAmI()
         self.installOpenbis()
         openbisController = self.createOpenbisController(databasesToDrop=['openbis', 'pathinfo', DATASET_MAPPING_DB])
+        openbisController.asProperties['project-samples-enabled'] = 'true'
         openbisController.dssProperties['data-set-command-queue-mapping'] = \
                 'archiving:Archiving|Copying data sets to archive|Archiving Finalizer, unarchiving:Unarchiving'
         os.makedirs("%s/data/archive/tmp" % openbisController.installPath)

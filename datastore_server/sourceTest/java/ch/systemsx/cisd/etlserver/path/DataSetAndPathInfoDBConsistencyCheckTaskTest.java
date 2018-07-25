@@ -155,6 +155,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
                 + "    with operator 'AND'\n"
                 + "    with attribute 'registration_date' later than or equal to 'Wed Jun 15 23:53:08 CET 1977'\n"
                 + "    with physical_data:\n"
+                + "        with operator 'AND'\n"
                 + "        with attribute 'storageConfirmation' true\n"
                 + "        with attribute 'status' AVAILABLE\n", searchCriteriaRecorder.recordedObject().toString());
         context.assertIsSatisfied();
@@ -190,6 +191,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
                 + "    with operator 'AND'\n"
                 + "    with attribute 'registration_date' later than or equal to 'Wed Jun 15 23:53:08 CET 1977'\n"
                 + "    with physical_data:\n"
+                + "        with operator 'AND'\n"
                 + "        with attribute 'storageConfirmation' true\n"
                 + "        with attribute 'status' AVAILABLE\n", searchCriteriaRecorder.recordedObject().toString());
         context.assertIsSatisfied();
@@ -266,6 +268,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
                 + "    with operator 'AND'\n"
                 + "    with attribute 'registration_date' later than or equal to 'Wed Jun 15 23:53:08 CET 1977'\n"
                 + "    with physical_data:\n"
+                + "        with operator 'AND'\n"
                 + "        with attribute 'storageConfirmation' true\n"
                 + "        with attribute 'status' AVAILABLE\n", searchCriteriaRecorder.recordedObject().toString());
         context.assertIsSatisfied();
@@ -312,6 +315,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
                 + "    with operator 'AND'\n"
                 + "    with attribute 'registration_date' later than or equal to 'Wed Jun 15 23:52:55 CET 1977'\n"
                 + "    with physical_data:\n"
+                + "        with operator 'AND'\n"
                 + "        with attribute 'storageConfirmation' true\n"
                 + "        with attribute 'status' AVAILABLE\n", searchCriteriaRecorder1.recordedObject().toString());
         assertThat(logRecorder.getLogLines(), hasItem("INFO  OPERATION.DataSetAndPathInfoDBConsistencyCheckTask - "
@@ -320,6 +324,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
                 + "    with operator 'AND'\n"
                 + "    with attribute 'registration_date' later than or equal to 'Wed Jun 15 23:53:02 CET 1977'\n"
                 + "    with physical_data:\n"
+                + "        with operator 'AND'\n"
                 + "        with attribute 'storageConfirmation' true\n"
                 + "        with attribute 'status' AVAILABLE\n", searchCriteriaRecorder2.recordedObject().toString());
         assertThat(logRecorder.getLogLines(), hasItem("INFO  OPERATION.DataSetAndPathInfoDBConsistencyCheckTask - "
@@ -328,12 +333,14 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
                 + "    with operator 'AND'\n"
                 + "    with attribute 'registration_date' later than or equal to 'Wed Jun 15 23:53:05 CET 1977'\n"
                 + "    with physical_data:\n"
+                + "        with operator 'AND'\n"
                 + "        with attribute 'storageConfirmation' true\n"
                 + "        with attribute 'status' AVAILABLE\n", searchCriteriaRecorder3.recordedObject().toString());
         assertEquals("DATASET\n"
                 + "    with operator 'AND'\n"
                 + "    with attribute 'registration_date' later than or equal to 'Wed Jun 15 23:52:55 CET 1977'\n"
                 + "    with physical_data:\n"
+                + "        with operator 'AND'\n"
                 + "        with attribute 'storageConfirmation' true\n"
                 + "        with attribute 'status' AVAILABLE\n", searchCriteriaRecorder4.recordedObject().toString());
         assertThat(logRecorder.getLogLines(), hasItem("ERROR NOTIFY.DataSetAndPathInfoDBConsistencyCheckTask - "
@@ -388,6 +395,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
                 + "    with operator 'AND'\n"
                 + "    with attribute 'registration_date' later than or equal to 'Thu Jun 16 00:52:45 CET 1977'\n"
                 + "    with physical_data:\n"
+                + "        with operator 'AND'\n"
                 + "        with attribute 'storageConfirmation' true\n"
                 + "        with attribute 'status' AVAILABLE\n", searchCriteriaRecorder.recordedObject().toString());
         assertEquals(true, fc1.isClosed());

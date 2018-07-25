@@ -217,6 +217,22 @@ public class SearchDataStoreTest extends AbstractTest
         criteriaNonMatching.withPermId().thatEquals("DEF");
         testSearch(TEST_USER, criteriaNonMatching);
     }
+    
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataStoreSearchCriteria c = new DataStoreSearchCriteria();
+        c.withCode().thatEquals("STANDARD");
+        
+        DataStoreFetchOptions fo = new DataStoreFetchOptions();
+
+        v3api.searchDataStores(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-data-stores  SEARCH_CRITERIA:\n'DATA_STORE\n    with attribute 'code' equal to 'STANDARD'\n'\nFETCH_OPTIONS:\n'DataStore\n'");
+    }
 
     private void testSearch(String user, DataStoreSearchCriteria criteria, String... expectedCodes)
     {

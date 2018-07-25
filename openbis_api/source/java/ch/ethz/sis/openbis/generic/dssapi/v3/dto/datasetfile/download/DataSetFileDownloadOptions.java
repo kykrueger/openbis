@@ -18,6 +18,8 @@ package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+
 /**
  * @author pkupczyk
  */
@@ -36,6 +38,12 @@ public class DataSetFileDownloadOptions implements Serializable
     public void setRecursive(boolean recursive)
     {
         this.recursive = recursive;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("recursive", recursive).toString();
     }
 
 }

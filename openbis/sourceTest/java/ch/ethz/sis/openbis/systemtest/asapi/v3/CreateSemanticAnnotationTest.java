@@ -316,6 +316,38 @@ public class CreateSemanticAnnotationTest extends AbstractTest
             }, "Semantic annotations can be defined for sample property assignments only");
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SemanticAnnotationCreation creation = new SemanticAnnotationCreation();
+        creation.setEntityTypeId(new EntityTypePermId("CONTROL_LAYOUT", EntityKind.SAMPLE));
+        creation.setPredicateOntologyId("p_oid_1");
+        creation.setPredicateOntologyVersion("p_ver_1");
+        creation.setPredicateAccessionId("p_aid_1");
+        creation.setDescriptorOntologyId("d_oid_1");
+        creation.setDescriptorOntologyVersion("d_ver_1");
+        creation.setDescriptorAccessionId("d_aid_1");
+
+        SemanticAnnotationCreation creation2 = new SemanticAnnotationCreation();
+        creation2.setPropertyTypeId(new PropertyTypePermId("DESCRIPTION"));
+        creation2.setPredicateOntologyId("p_oid_2");
+        creation2.setPredicateOntologyVersion("p_ver_2");
+        creation2.setPredicateAccessionId("p_aid_2");
+        creation2.setDescriptorOntologyId("d_oid_2");
+        creation2.setDescriptorOntologyVersion("d_ver_2");
+        creation2.setDescriptorAccessionId("d_aid_2");
+
+        v3api.createSemanticAnnotations(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-semantic-annotations  NEW_SEMANTIC_ANNOTATIONS('["
+                        + "SemanticAnnotationCreation[entityTypeId=CONTROL_LAYOUT (SAMPLE),propertyTypeId=<null>,propertyAssignmentId=<null>,predicateOntologyId=p_oid_1,predicateOntologyVersion=p_ver_1,predicateAccessionId=p_aid_1,descriptorOntologyId=d_oid_1,descriptorOntologyVersion=d_ver_1,descriptorAccessionId=d_aid_1], "
+                        + "SemanticAnnotationCreation[entityTypeId=<null>,propertyTypeId=DESCRIPTION,propertyAssignmentId=<null>,predicateOntologyId=p_oid_2,predicateOntologyVersion=p_ver_2,predicateAccessionId=p_aid_2,descriptorOntologyId=d_oid_2,descriptorOntologyVersion=d_ver_2,descriptorAccessionId=d_aid_2]"
+                        + "]')");
+    }
+
     private void testCreateWithUser(String userId)
     {
         SemanticAnnotationCreation creation = creationWithPredicateWithDescriptor();

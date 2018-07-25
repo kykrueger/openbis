@@ -386,4 +386,20 @@ public class GetTagTest extends AbstractTest
         }
     }
 
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        TagFetchOptions fo = new TagFetchOptions();
+        fo.withOwner();
+        fo.withExperiments();
+
+        v3api.getTags(sessionToken,
+                Arrays.asList(new TagCode("TEST_METAPROJECTS"), new TagPermId(TEST_USER, "ANOTHER_TEST_METAPROJECTS")), fo);
+
+        assertAccessLog(
+                "get-tags  TAG_IDS('[TEST_METAPROJECTS, /test/ANOTHER_TEST_METAPROJECTS]') FETCH_OPTIONS('Tag\n    with Experiments\n    with Owner\n')");
+    }
+
 }

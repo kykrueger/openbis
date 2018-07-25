@@ -404,7 +404,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setDataType(DataType.MATERIAL);
         creation.setMaterialTypeId(new EntityTypePermId("UNKNOWN", EntityKind.DATA_SET));
 
-        assertUserFailureException(creation, "Specified entity type id (UNKNOWN, DATA_SET) is not a MATERIAL type.");
+        assertUserFailureException(creation, "Specified entity type id (UNKNOWN (DATA_SET)) is not a MATERIAL type.");
     }
 
     @Test
@@ -414,7 +414,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setDataType(DataType.MATERIAL);
         creation.setMaterialTypeId(new EntityTypePermId("UNKNOWN", EntityKind.MATERIAL));
 
-        assertUserFailureException(creation, "EntityTypePermId = [UNKNOWN, MATERIAL] has not been found.");
+        assertUserFailureException(creation, "EntityTypePermId = [UNKNOWN (MATERIAL)] has not been found.");
     }
 
     @Test
@@ -495,6 +495,29 @@ public class CreatePropertyTypeTest extends AbstractTest
                     v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
                 }
             });
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PropertyTypeCreation creation = new PropertyTypeCreation();
+        creation.setCode("LOG_TEST_1");
+        creation.setLabel("label1");
+        creation.setDescription("description1");
+        creation.setDataType(DataType.BOOLEAN);
+
+        PropertyTypeCreation creation2 = new PropertyTypeCreation();
+        creation2.setCode("LOG_TEST_2");
+        creation2.setLabel("label2");
+        creation2.setDescription("description2");
+        creation2.setDataType(DataType.BOOLEAN);
+
+        v3api.createPropertyTypes(sessionToken, Arrays.asList(creation, creation2));
+
+        assertAccessLog(
+                "create-property-types  NEW_PROPERTY_TYPES('[PropertyTypeCreation[code=LOG_TEST_1], PropertyTypeCreation[code=LOG_TEST_2]]')");
     }
 
     @DataProvider

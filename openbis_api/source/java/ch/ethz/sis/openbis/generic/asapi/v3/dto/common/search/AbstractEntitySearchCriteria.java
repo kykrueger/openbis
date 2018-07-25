@@ -91,12 +91,4 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new AnyFieldSearchCriteria());
     }
 
-    @Override
-    protected SearchCriteriaToStringBuilder createBuilder()
-    {
-        SearchCriteriaToStringBuilder builder = super.createBuilder();
-        builder.setOperator(operator);
-        return builder;
-    }
-
 }

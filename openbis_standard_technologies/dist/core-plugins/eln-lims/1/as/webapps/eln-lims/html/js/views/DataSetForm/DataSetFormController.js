@@ -84,11 +84,11 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini) 
 					if(_this._dataSetFormModel.isExperiment()) {
 						mainController.changeView('showExperimentPageFromIdentifier', _this._dataSetFormModel.entity.identifier.identifier);
 						experimentIdentifier = _this._dataSetFormModel.entity.identifier.identifier;
-						space = experimentIdentifier.split("/")[1];
+						space = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 					} else {
 						mainController.changeView('showViewSamplePageFromPermId', _this._dataSetFormModel.entity.permId);
 						sampleIdentifier = _this._dataSetFormModel.entity.identifier;
-						space = sampleIdentifier.split("/")[1];
+						space = IdentifierUtil.getSpaceCodeFromIdentifier(sampleIdentifier);
 					}
 					
 					var isInventory = profile.isInventorySpace(space);
@@ -146,10 +146,10 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini) 
 		
 		if(this._dataSetFormModel.isExperiment()) {
 			experimentIdentifier = this._dataSetFormModel.entity.identifier.identifier;
-			space = experimentIdentifier.split("/")[1];
+			space = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 		} else {
 			sampleIdentifier = this._dataSetFormModel.entity.identifier;
-			space = sampleIdentifier.split("/")[1];
+			space = IdentifierUtil.getSpaceCodeFromIdentifier(sampleIdentifier);
 		}
 		
 		var isInventory = profile.isInventorySpace(space);

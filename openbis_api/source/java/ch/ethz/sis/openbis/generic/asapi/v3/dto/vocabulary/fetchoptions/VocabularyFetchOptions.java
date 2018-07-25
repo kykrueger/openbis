@@ -103,6 +103,7 @@ public class VocabularyFetchOptions extends FetchOptions<Vocabulary> implements 
     {
         FetchOptionsToStringBuilder f = new FetchOptionsToStringBuilder("Vocabulary", this);
         f.addFetchOption("Registrator", registrator);
+        f.addFetchOption("Terms", terms);
         return f;
     }
 

@@ -501,6 +501,18 @@ public class SearchDataSetTest extends AbstractDataSetTest
     }
 
     @Test
+    public void testSearchWithPhysicalDataWithArchivingRequestedThatEquals()
+    {
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withPhysicalData().withArchivingRequested().thatEquals(true);
+        testSearch(TEST_USER, criteria, "20081105092159188-3");
+
+        criteria = new DataSetSearchCriteria();
+        criteria.withPhysicalData().withArchivingRequested().thatEquals(false);
+        testSearch(TEST_USER, criteria, 24);
+    }
+
+    @Test
     public void testSearchWithPhysicalDataWithStorageConfirmationThatEquals()
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
@@ -759,7 +771,7 @@ public class SearchDataSetTest extends AbstractDataSetTest
 
         v3api.logout(sessionToken);
     }
-    
+
     @Test
     public void testSearchWithSortingByCodeScore()
     {
@@ -874,6 +886,24 @@ public class SearchDataSetTest extends AbstractDataSetTest
         assertEquals(dataSets.get(2).getKind(), DataSetKind.CONTAINER);
 
         v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testLogging()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetSearchCriteria c = new DataSetSearchCriteria();
+        c.withCode().thatEquals("20081105092259000-18");
+
+        DataSetFetchOptions fo = new DataSetFetchOptions();
+        fo.withSample();
+        fo.withExperiment();
+
+        v3api.searchDataSets(sessionToken, c, fo);
+
+        assertAccessLog(
+                "search-data-sets  SEARCH_CRITERIA:\n'DATASET\n    with attribute 'code' equal to '20081105092259000-18'\n'\nFETCH_OPTIONS:\n'DataSet\n    with Experiment\n    with Sample\n'");
     }
 
     private void testSearch(String user, DataSetSearchCriteria criteria, String... expectedIdentifiers)
