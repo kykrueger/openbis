@@ -272,6 +272,7 @@ def prepare_new_data_set_expectations(dm, properties={}):
 
     sample = MagicMock()
     sample.permId = "123-1"
+    sample.identifier = "/SAMPLE/ID"
     dm.openbis.get_sample = MagicMock(return_value=sample)
 
 
