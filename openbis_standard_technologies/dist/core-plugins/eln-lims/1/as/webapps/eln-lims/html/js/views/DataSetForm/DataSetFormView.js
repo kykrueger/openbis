@@ -90,6 +90,29 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
 			});
 			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+
+			//Archiving Requested Button
+			var physicalData = this._dataSetFormModel.dataSetV3.physicalData;
+			if (physicalData) {
+				if (physicalData.presentInArchive) {
+					var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-archived-icon.png");
+					var tooltip = "Archived";
+					$archivingRequestedBtn.attr("disabled", true);
+				} else {
+					if (physicalData.archivingRequested) {
+						var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-requested-icon.png", function () {
+							_this._dataSetFormController.setArchivingRequested(false);
+						});
+						var tooltip = "Revoke archiving request";	
+					} else {
+						var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-not-requested-icon.png", function () {
+							_this.requestArchiving();
+						});
+						var tooltip = "Request archiving";	
+					}
+				}
+				toolbarModel.push({ component : $archivingRequestedBtn, tooltip: tooltip });
+			}
 			
 			//Delete Button
 			var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
@@ -596,4 +619,42 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		
 		$("#metadataContainer").append($wrapper);
 	}
+
+	this.requestArchiving = function() {
+		var _this = this;
+
+		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+		$window.submit(function() {
+		    _this._dataSetFormController.setArchivingRequested(true);
+		    Util.unblockUI();
+		});
+
+		$window.append($('<legend>').append('Request archiving'));
+
+		var threshold = profile.archivingThreshold;
+		var warning = "Remember that your dataset will only be archived when enough data from your group is available to do so (" + threshold + ").";
+		var $warning = $('<p>').text(warning);
+		$window.append($warning);
+
+		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+		$btnCancel.click(function() {
+		    Util.unblockUI();
+		});
+
+		$window.append($btnAccept).append('&nbsp;').append($btnCancel);
+
+		var css = {
+		        'text-align' : 'left',
+		        'top' : '15%',
+		        'width' : '70%',
+		        'left' : '15%',
+		        'right' : '20%',
+		        'overflow' : 'hidden',
+				'background' : '#ffffbf'
+		};
+
+		Util.blockUI($window, css);
+	}
+
 }

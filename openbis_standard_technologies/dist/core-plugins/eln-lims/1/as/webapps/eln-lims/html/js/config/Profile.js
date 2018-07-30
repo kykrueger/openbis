@@ -719,6 +719,8 @@ $.extend(DefaultProfile.prototype, {
 		this.datasetViewerImagePreviewIconSize = 25; // width in px
 		this.datasetViewerMaxFilesizeForImagePreview = 50000000; // filesize in bytes
 
+		this.archivingThreshold = "ask your administrator";
+
 		this.initPropertyTypes = function(callback) {
 			var _this = this; 
 			this.serverFacade.listPropertyTypes(function(data) {

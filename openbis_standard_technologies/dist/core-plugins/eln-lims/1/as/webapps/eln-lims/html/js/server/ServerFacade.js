@@ -945,6 +945,9 @@ function ServerFacade(openbisServer) {
 					if(fetchOptions.withLinkedData) {
 						fetchOptions.withLinkedData();
 					}
+					if(fetchOptions.withPhysicalData) {
+						fetchOptions.withPhysicalData();
+					}
 					if(fetchOptions.withParents) {
 						fetchOptions.withParentsUsing(fetchOptions);
 					}
@@ -2079,6 +2082,36 @@ function ServerFacade(openbisServer) {
 				callbackFunction(false);
 			});
         });
+	}
+
+	this.updateDataSet = function(dataSetPermId, newPhysicalData, callbackFunction) {
+		require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/update/DataSetUpdate", 
+			"as/dto/dataset/update/PhysicalDataUpdate", "as/dto/common/update/FieldUpdateValue"],
+				function(DataSetPermId, DataSetUpdate, PhysicalDataUpdate, FieldUpdateValue) {
+
+			var update = new DataSetUpdate();
+			update.setDataSetId(new DataSetPermId(dataSetPermId));
+
+			if (newPhysicalData) {
+				var physicalDataUpdate = new PhysicalDataUpdate();
+				for (var property in newPhysicalData) {
+					if (newPhysicalData.hasOwnProperty(property)) {
+						var setterName = "set" + property[0].toUpperCase() + property.substr(1);
+						if (typeof physicalDataUpdate[setterName] === 'function') {
+							physicalDataUpdate[setterName](newPhysicalData[property]);
+						}
+					}
+				}
+				update.setPhysicalData(physicalDataUpdate);	
+			}
+
+			mainController.openbisV3.updateDataSets([update]).done(function(result) {
+				callbackFunction(true);
+            }).fail(function(result) {
+				Util.showError("Call failed to server: " + JSON.stringify(result));
+				callbackFunction(false);
+			});
+		});
 	}
 
 	this.getSessionInformation = function(callbackFunction) {
