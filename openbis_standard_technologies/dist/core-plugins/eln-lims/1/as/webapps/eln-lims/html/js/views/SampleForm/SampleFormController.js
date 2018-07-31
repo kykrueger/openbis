@@ -96,18 +96,18 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 	this.deleteSample = function(reason) {
 		var _this = this;
 		
-		var samplesToDelete = [this._sampleFormModel.sample.id];
+		var samplesToDelete = [this._sampleFormModel.sample.permId];
 		
 		for(var idx = 0; idx < this._sampleFormModel.sample.children.length; idx++) {
 			var child = this._sampleFormModel.sample.children[idx];
 			if(child.sampleTypeCode === "STORAGE_POSITION") {
-				samplesToDelete.push(child.id);
+				samplesToDelete.push(child.permId);
 			}
 		}
 		
-		mainController.serverFacade.deleteSamples(samplesToDelete, reason, function(data) {
-			if(data.error) {
-				Util.showError(data.error.message);
+		mainController.serverFacade.deleteSamples(samplesToDelete, reason, function(deletionId) {
+			if(!deletionId) {
+				Util.showError("Deletion Failed");
 			} else {
 				Util.showSuccess("" + ELNDictionary.Sample + " Deleted");
 				if(_this._sampleFormModel.isELNSample) {

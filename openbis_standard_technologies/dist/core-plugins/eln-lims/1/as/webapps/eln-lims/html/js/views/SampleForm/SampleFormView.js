@@ -693,7 +693,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		$fieldsetOwner.append($fieldset);
 		
 		$fieldset.append(FormUtil.getFieldForLabelWithText("Type", this._sampleFormModel.sample.sampleTypeCode));
-		$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName(this._sampleFormModel.sample.experimentIdentifierOrNull), this._sampleFormModel.sample.experimentIdentifierOrNull));
+		if(this._sampleFormModel.sample.experimentIdentifierOrNull) {
+			$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName(this._sampleFormModel.sample.experimentIdentifierOrNull), this._sampleFormModel.sample.experimentIdentifierOrNull));
+		}
 		
 		//
 		// Identification Info - Code
