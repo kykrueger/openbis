@@ -104,7 +104,7 @@ def getDirectLinkURL():
 						});
 	
 def createSampleIdentifier(sampleSpace, sampleProject, sampleCode, projectSamplesEnabled):
-	template = '/%(sampleSpace)s/%(sampleProject)s/%(sampleCode)s' if projectSamplesEnabled else '/%(sampleSpace)s/%(sampleCode)s'
+	template = '/%(sampleSpace)s/%(sampleProject)s/%(sampleCode)s' if projectSamplesEnabled and (sampleProject is not None)  else '/%(sampleSpace)s/%(sampleCode)s'
 	return template % vars()
 	
 def isSampleTypeAvailable(sampleTypes, sampleTypeCode):
@@ -852,7 +852,7 @@ def insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder):
 	
 	#Create/Get for update sample	
 	sampleIdentifier = createSampleIdentifier(sampleSpace, sampleProject, sampleCode, projectSamplesEnabled)
-	
+	print "sampleIdentifier: " + sampleIdentifier
 	method = parameters.get("method");
 	if method == "insertSample":
 		sample = tr.createNewSample(sampleIdentifier, sampleType); #Create Sample given his id
