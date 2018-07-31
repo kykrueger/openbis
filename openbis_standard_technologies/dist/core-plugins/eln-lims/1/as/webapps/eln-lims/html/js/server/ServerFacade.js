@@ -454,7 +454,9 @@ function ServerFacade(openbisServer) {
 			            mainController.openbisV3.deleteSamples(samplePermIdsObj, deletionOptions).done(function(deletionId) {
 				            	if(confirmDeletions) {
 				            		// Confirm deletion of samples
-				            		mainController.openbisV3.confirmDeletions([deletionId]).then(callback);
+				            		mainController.openbisV3.confirmDeletions([deletionId]).then(function() {
+				            			callback({});
+				            		});
 				            	} else {
 				            		callback(deletionId);
 				            	}

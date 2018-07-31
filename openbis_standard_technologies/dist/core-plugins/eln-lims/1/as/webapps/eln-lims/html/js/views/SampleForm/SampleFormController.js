@@ -105,9 +105,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			}
 		}
 		
-		mainController.serverFacade.deleteSamples(samplesToDelete, reason, function(deletionId) {
-			if(!deletionId) {
-				Util.showError("Deletion Failed");
+		mainController.serverFacade.deleteSamples(samplesToDelete, reason, function(response) {
+			if(response.error) {
+				Util.showError(response.error.message);
 			} else {
 				Util.showSuccess("" + ELNDictionary.Sample + " Deleted");
 				if(_this._sampleFormModel.isELNSample) {
@@ -276,7 +276,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						if(!samplesToDelete) {
 							samplesToDelete = [];
 						}
-						samplesToDelete.push(child.id);
+						samplesToDelete.push(child.permId);
 					}
 				});
 			}
