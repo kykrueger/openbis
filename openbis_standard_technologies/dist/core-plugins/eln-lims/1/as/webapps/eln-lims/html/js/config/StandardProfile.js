@@ -414,7 +414,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				var changesToDo = null;
 				if((orderStatus === "ORDERED" || orderStatus === "DELIVERED" || orderStatus === "PAID") && !sample.properties["ORDER_STATE"]) {
 					//Set property
-					sample.properties["ORDER_STATE"] = window.btoa(unescape(encodeURIComponent(JSON.stringify(sample))));
+					sample.properties["ORDER_STATE"] = window.btoa(unescape(encodeURIComponent(JSON.stringify(JSON.decycle(sample)))));
 					//Update order state on the requests
 					changesToDo = [];
 					var requests = sample.parents;
