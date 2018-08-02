@@ -71,7 +71,7 @@ function HierarchyTableModel(entity) {
 		
 		var historyId = null;
 		if(entity.properties && entity.properties["HISTORY_ID"]) {
-			historyId = dataset.properties["HISTORY_ID"];
+			historyId = entity.properties["HISTORY_ID"];
 		}
 		
 		dataList.push({
