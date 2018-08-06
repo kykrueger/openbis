@@ -556,6 +556,19 @@ $.extend(DefaultProfile.prototype, {
 			return this.allPropertyTypes;
 		}
 		
+		this.getPropertyTypeFromSampleType = function(sampleType, propertyTypeCode) {
+			for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
+				var propertyTypeGroup = sampleType.propertyTypeGroups[i];
+				for(var j = 0; j < propertyTypeGroup.propertyTypes.length; j++) {
+					var propertyType = propertyTypeGroup.propertyTypes[j];
+					if(propertyType.code === propertyTypeCode) {
+						return propertyType;
+					}
+				}
+			}
+			return null;
+		}
+		
 		this.getPropertyType = function(propertyTypeCode) {
 			for (var i = 0; i < this.allPropertyTypes.length; i++) {
 				if(this.allPropertyTypes[i].code === propertyTypeCode) {

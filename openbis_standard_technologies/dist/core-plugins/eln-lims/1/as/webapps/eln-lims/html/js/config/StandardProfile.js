@@ -433,7 +433,8 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 		}
 		
 		this.sampleFormContentExtra = function(sampleTypeCode, sample, containerId) {
-			if(sampleTypeCode === "EXPERIMENTAL_STEP") {
+			var sampleType = this.getSampleTypeForSampleTypeCode(sampleTypeCode);
+			if(this.getPropertyTypeFromSampleType(sampleType, "FREEFORM_TABLE_STATE")) {
 				var isEnabled = mainController.currentView._sampleFormModel.mode !== FormMode.VIEW;
 				var freeFormTableController = new FreeFormTableController(sample, isEnabled);
 				freeFormTableController.init($("#" + containerId));
