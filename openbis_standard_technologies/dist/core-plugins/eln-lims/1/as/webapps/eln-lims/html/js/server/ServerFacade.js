@@ -1448,7 +1448,12 @@ function ServerFacade(openbisServer) {
 		
 		// Attributes
 		if(samplePermId) {
-			throw "Unexpected operation exception : v1 search by samplePermId removed";
+			matchClauses.push({
+				"@type":"AttributeMatchClause",
+				fieldType : "ATTRIBUTE",			
+				attribute : "PERM_ID",
+				desiredValue : samplePermId 
+			});
 		}
 		
 		if(sampleIdentifier) {
@@ -1661,7 +1666,7 @@ function ServerFacade(openbisServer) {
 	{
 		if(profile.searchSamplesUsingV3OnDropbox) {
 			this.searchSamplesV3DSS(fechOptions, callbackFunction);
-		} else if(fechOptions["samplePermId"] || fechOptions["sampleIdentifier"]) {
+		} else if(fechOptions["sampleIdentifier"]) {
 			this.searchSamplesV1replacement(fechOptions, callbackFunction);
 		} else {
 			this.searchSamplesV1(fechOptions, callbackFunction);
