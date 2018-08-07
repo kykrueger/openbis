@@ -17,6 +17,7 @@
 function SampleFormView(sampleFormController, sampleFormModel) {
 	this._sampleFormController = sampleFormController;
 	this._sampleFormModel = sampleFormModel;
+	this.enableSelect2 = [];
 	
 	this.repaint = function(views, loadFromTemplate) {
 		var $container = views.content;
@@ -526,6 +527,12 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		$container.append($form);
 		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
+		
 		//
 		// Extra content
 		//
@@ -614,6 +621,11 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					}
 				} else {
 					var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+					
+					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
+							this.enableSelect2.push($component);
+					}
+					
 					//Update values if is into edit mode
 					if(this._sampleFormModel.mode === FormMode.EDIT || loadFromTemplate) {
 						if(propertyType.dataType === "BOOLEAN") {

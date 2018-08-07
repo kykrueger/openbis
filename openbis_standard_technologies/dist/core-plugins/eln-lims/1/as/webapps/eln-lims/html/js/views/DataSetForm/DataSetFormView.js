@@ -17,6 +17,7 @@
 function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	this._dataSetFormController = dataSetFormController;
 	this._dataSetFormModel = dataSetFormModel;
+	this.enableSelect2 = [];
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -181,7 +182,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				}
 				_this.isFormDirty = true;
 			});
-			
+			this.enableSelect2.push($dataSetTypeSelector);
 			var $dataSetTypeDropDown = $('<div>', { class : 'form-group' });
 			if(!this._dataSetFormModel.isMini) {
 				$dataSetTypeDropDown.append($('<label>', {class: "control-label"}).html('Data Set Type&nbsp;(*):'));
@@ -407,6 +408,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var dataSetViewer = new DataSetViewerController("filesViewer", profile, this._dataSetFormModel.entity, mainController.serverFacade, profile.getDefaultDataStoreURL(), [this._dataSetFormModel.dataSet], false, true);
 			dataSetViewer.init();
 		}
+		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
 	}
 	
 	this._updateFileOptions = function() {
@@ -474,6 +481,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	
 	this._repaintMetadata = function(dataSetType) {
 		var _this = this;
+		this.enableSelect2 = [];
 		$("#metadataContainer").empty();
 		var $wrapper = $("<div>");
 		
@@ -577,6 +585,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							}
 						}
 						
+						if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
+								this.enableSelect2.push($component);
+						} 
+						
 						//Update values if is into edit mode
 						if(this._dataSetFormModel.mode === FormMode.EDIT) {
 							if(propertyType.dataType === "BOOLEAN") {
@@ -618,6 +630,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		$("#metadataContainer").append($wrapper);
+		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
 	}
 
 	this.requestArchiving = function() {
