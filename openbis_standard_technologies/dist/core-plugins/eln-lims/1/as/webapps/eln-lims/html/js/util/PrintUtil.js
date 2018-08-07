@@ -54,7 +54,13 @@ var PrintUtil = new function() {
 				if(sampleTypeCode === "STORAGE_POSITION") {
 					samplesListOfCodes += Util.getStoragePositionDisplayName(sample);
 				} else {
-					samplesListOfCodes += sample.code;
+					var name = sample.properties[profile.propertyReplacingCode];
+					if(!name) {
+						samplesListOfCodes += sample.code;
+					} else {
+						samplesListOfCodes += sample.code + "(" + name + ")";
+					}
+					
 				}
 			}
 			samplesListOfCodes += "</br>";
