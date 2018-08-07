@@ -126,6 +126,9 @@ function SettingsManager(serverFacade) {
 			// Add the types to hide == not show
 			if(!settings.sampleTypeDefinitionsExtension[sampleType].SHOW) {
 				targetProfile.hideTypes["sampleTypeCodes"].push(sampleType);
+			} else if($.inArray(sampleType, targetProfile.hideTypes["sampleTypeCodes"]) !== -1) {
+				var indexToRemove = $.inArray(sampleType, targetProfile.hideTypes);
+				targetProfile.hideTypes["sampleTypeCodes"] = targetProfile.hideTypes["sampleTypeCodes"].splice(indexToRemove, 1);
 			}
 		}
 	}

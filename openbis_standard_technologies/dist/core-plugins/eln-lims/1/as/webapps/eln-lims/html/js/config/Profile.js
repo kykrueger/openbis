@@ -907,6 +907,15 @@ $.extend(DefaultProfile.prototype, {
 		}
 
 		this.initSettings = function(callback) {
+			// sampleTypeDefinitionsExtension gets overwritten with settings if found
+			for (var sampleTypeCode of Object.keys(this.sampleTypeDefinitionsExtension)) {
+				var sampleTypDefExt = this.sampleTypeDefinitionsExtension[sampleTypeCode];
+				// Add the types to hide == not show
+				if(!sampleTypDefExt.SHOW) {
+					this.hideTypes["sampleTypeCodes"].push(sampleTypeCode);
+				}
+			}
+		
 			var settingsManager = new SettingsManager(this.serverFacade);
 			settingsManager.loadSettingsAndApplyToProfile((function() {
 				callback();

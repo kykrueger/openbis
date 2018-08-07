@@ -13,27 +13,36 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 	
 		/* New Sample definition tests*/
 		this.sampleTypeDefinitionsExtension = {
+				"UNKNOWN" : {
+					"SHOW" : false,
+				},
 				"ANTIBODY" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 				},
 				
 				"CHEMICAL" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 				},
 				
 				"ENZYME" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 				},
 				
 				"OLIGO" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 				},
 				
 				"RNA" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 				},
 				
 				"MEDIA" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -58,6 +67,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"SOLUTION_BUFFER" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -82,6 +92,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"GENERAL_PROTOCOL" : {
+					"SHOW" : false,
 					"USE_AS_PROTOCOL" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -118,6 +129,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"PCR_PROTOCOL" : {
+					"SHOW" : false,
 					"USE_AS_PROTOCOL" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -142,6 +154,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"WESTERN_BLOTTING_PROTOCOL" : {
+					"SHOW" : false,
 					"USE_AS_PROTOCOL" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -166,6 +179,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"PLASMID" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -178,6 +192,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"BACTERIA" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -196,6 +211,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"YEAST" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -214,6 +230,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"CELL_LINE" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -238,6 +255,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				},
 
 				"FLY" : {
+					"SHOW" : false,
 					"ENABLE_STORAGE" : true,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
@@ -258,15 +276,16 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 					"SHOW" : false
 				},
 				"STORAGE" : {
+					"SHOW" : false,
 					"SAMPLE_CHILDREN_DISABLED" : true,
-					"SAMPLE_PARENTS_DISABLED" : true,
-					"SHOW" : false
+					"SAMPLE_PARENTS_DISABLED" : true
 				},
 				"STORAGE_POSITION" : {
-					"SAMPLE_CHILDREN_DISABLED" : true,
-					"SHOW" : false
+					"SHOW" : false,
+					"SAMPLE_CHILDREN_DISABLED" : true
 				},
 				"REQUEST" : {
+					"SHOW" : false,
 					"SAMPLE_PARENTS_TITLE" : "Products from Catalog",
 					"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
 					"SAMPLE_CHILDREN_DISABLED" : true,
@@ -279,6 +298,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 					}]
 				},
 				"ORDER" : {
+					"SHOW" : false,
 					"SAMPLE_PARENTS_TITLE" : "Requests",
 					"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
 					"SAMPLE_CHILDREN_DISABLED" : true,
@@ -295,10 +315,12 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 					}]
 				},
 				"SUPPLIER" : {
+					"SHOW" : false,
 					"SAMPLE_CHILDREN_DISABLED" : true,
 					"SAMPLE_PARENTS_DISABLED" : true,
 				},
 				"PRODUCT" : {
+					"SHOW" : false,
 					"SAMPLE_CHILDREN_DISABLED" : true,
 					"SAMPLE_PARENTS_TITLE" : "Suppliers",
 					"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
@@ -311,6 +333,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 					}]
 				},
 				"EXPERIMENTAL_STEP" : {
+					"SHOW" : false,
 					"SAMPLE_PARENTS_HINT" : [
 					                             	{
 														"LABEL" : "Antibody",
