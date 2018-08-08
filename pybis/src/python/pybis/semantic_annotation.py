@@ -74,8 +74,9 @@ class SemanticAnnotation():
             ]
         }
         
-        self._openbis._post_request(self._openbis.as_v3, request)
+        response = self._openbis._post_request(self._openbis.as_v3, request)
         self._isNew = False
+        self.permId = response[0]['permId']
         
         if VERBOSE: print("Semantic annotation successfully created.")
     
