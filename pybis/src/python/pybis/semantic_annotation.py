@@ -1,3 +1,4 @@
+from .utils import VERBOSE
 
 class SemanticAnnotation():
     def __init__(self, openbis_obj, isNew=True, **kwargs):
