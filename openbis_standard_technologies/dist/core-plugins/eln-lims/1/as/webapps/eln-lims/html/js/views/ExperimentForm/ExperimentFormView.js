@@ -79,7 +79,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var toolbarModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 			//Create Experiment Step
-			if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP") && !profile.isSampleTypeHidden("EXPERIMENTAL_STEP")) {
+			if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
 				var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 					var argsMap = {
 							"sampleTypeCode" : "EXPERIMENTAL_STEP",
