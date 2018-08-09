@@ -2040,7 +2040,55 @@ class Openbis:
                 else:
                     return Tag(self, data=resp[permId])
 
-    
+
+    def search_semantic_annotations(self, only_data = False, permId=None, entityType=None, propertyType=None):
+
+        criteria = []
+        typeCriteria = []
+
+        if permId is not None:
+            criteria.append({
+                "@type" : "as.dto.common.search.PermIdSearchCriteria",
+                "fieldValue" : {
+                    "@type" : "as.dto.common.search.StringEqualToValue",
+                    "value" : permId
+                }
+            })
+
+        if entityType is not None:
+            typeCriteria.append({
+                "@type" : "as.dto.entitytype.search.EntityTypeSearchCriteria",
+                "criteria" : [_criteria_for_code(entityType)]
+            })
+
+        if propertyType is not None:
+            typeCriteria.append({
+                "@type" : "as.dto.property.search.PropertyTypeSearchCriteria",
+                "criteria" : [_criteria_for_code(propertyType)]
+            })
+
+        if entityType is not None and propertyType is not None:
+            criteria.append({
+                "@type" : "as.dto.property.search.PropertyAssignmentSearchCriteria",
+                "criteria" : typeCriteria
+            })
+        else:
+            criteria += typeCriteria
+
+        saCriteria = {
+            "@type" : "as.dto.semanticannotation.search.SemanticAnnotationSearchCriteria",
+            "criteria" : criteria
+        }
+
+        objects = self._search_semantic_annotations(saCriteria)
+
+        if only_data:
+            return objects
+        else:
+            attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
+            annotations = DataFrame(objects)
+            return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+
     def _search_semantic_annotations(self, criteria):
 
         fetch_options = {
