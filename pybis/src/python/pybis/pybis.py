@@ -2041,7 +2041,15 @@ class Openbis:
                     return Tag(self, data=resp[permId])
 
 
-    def search_semantic_annotations(self, only_data = False, permId=None, entityType=None, propertyType=None):
+    def search_semantic_annotations(self, permId=None, entityType=None, propertyType=None, only_data = False):
+        """ Get a list of semantic annotations for permId, entityType, propertyType or 
+        property type assignment (DataFrame object).
+        :param permId: permId of the semantic annotation.
+        :param entityType: entity (sample) type to search for.
+        :param propertyType: property type to search for
+        :param only_data: return result as plain data object.
+        :return:  Things of DataFrame objects or plain data object
+        """
 
         criteria = []
         typeCriteria = []
@@ -2144,26 +2152,14 @@ class Openbis:
         attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
         annotations = DataFrame(objects)
         return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+
     def get_semantic_annotation(self, permId, only_data = False):
-
-        criteria = {
-            "@type" : "as.dto.semanticannotation.search.SemanticAnnotationSearchCriteria",
-            "criteria" : [{
-                "@type" : "as.dto.common.search.PermIdSearchCriteria",
-                "fieldValue" : {
-                    "@type" : "as.dto.common.search.StringEqualToValue",
-                    "value" : permId
-                }
-            }]
-        }
-
-        objects = self._search_semantic_annotations(criteria)
+        objects = self.search_semantic_annotations(permId=permId, only_data=True)
         object = objects[0]
-
         if only_data:
             return object
         else:
-            return SemanticAnnotation(self, isNew=False, **object)    
+            return SemanticAnnotation(self, isNew=False, **object)
 
     def get_plugins(self):
 
