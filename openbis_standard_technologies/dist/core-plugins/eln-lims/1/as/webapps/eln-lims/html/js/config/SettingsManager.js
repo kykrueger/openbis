@@ -120,15 +120,20 @@ function SettingsManager(serverFacade) {
 			}
 		}
 		
-		// sampleTypeDefinitionsExtension gets overwritten with settings if found
-		for (var sampleType of Object.keys(settings.sampleTypeDefinitionsExtension)) {
-			profile.sampleTypeDefinitionsExtension[sampleType] = settings.sampleTypeDefinitionsExtension[sampleType];
-			// Add the types to hide == not show
-			if(!settings.sampleTypeDefinitionsExtension[sampleType].SHOW) {
-				targetProfile.hideTypes["sampleTypeCodes"].push(sampleType);
-			} else if($.inArray(sampleType, targetProfile.hideTypes["sampleTypeCodes"]) !== -1) {
-				var indexToRemove = $.inArray(sampleType, targetProfile.hideTypes);
+		
+		for (var sampleTypeCode of Object.keys(settings.sampleTypeDefinitionsExtension)) {
+			// sampleTypeDefinitionsExtension gets overwritten with settings if found
+			targetProfile.sampleTypeDefinitionsExtension[sampleTypeCode] = settings.sampleTypeDefinitionsExtension[sampleTypeCode];
+			
+			// Remove current profile show config
+			if($.inArray(sampleTypeCode, targetProfile.hideTypes["sampleTypeCodes"]) !== -1) {
+				var indexToRemove = $.inArray(sampleTypeCode, targetProfile.hideTypes["sampleTypeCodes"]);
 				targetProfile.hideTypes["sampleTypeCodes"] = targetProfile.hideTypes["sampleTypeCodes"].splice(indexToRemove, 1);
+			}
+			
+			// Add current profile show config
+			if(!settings.sampleTypeDefinitionsExtension[sampleTypeCode].SHOW) {
+				targetProfile.hideTypes["sampleTypeCodes"].push(sampleTypeCode);
 			}
 		}
 	}
