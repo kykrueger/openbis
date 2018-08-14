@@ -5,11 +5,13 @@ class SampleType(PropertyAssignments):
     """ Helper class for sample types, adding functionality.
     """
 
-    def new_semantic_annotation(self, **kwargs):
-        return SemanticAnnotation(
+    def add_semantic_annotation(self, **kwargs):
+        semantic_annotation = SemanticAnnotation(
             openbis_obj=self.openbis, isNew=True, 
             entityType=self.code, **kwargs
         )
+        semantic_annotation.save()
+        return semantic_annotation
 
     def get_semantic_annotations(self):
         return self.openbis.search_semantic_annotations(entityType=self.code)
