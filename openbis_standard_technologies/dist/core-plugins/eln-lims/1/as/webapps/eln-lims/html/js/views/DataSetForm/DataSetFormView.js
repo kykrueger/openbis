@@ -94,7 +94,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
 			//Archiving Requested Button
 			var physicalData = this._dataSetFormModel.dataSetV3.physicalData;
-			if (physicalData) {
+			if (profile.showDatasetArchivingButton && physicalData) {
 				if (physicalData.presentInArchive) {
 					var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-archived-icon.png");
 					var tooltip = "Archived";

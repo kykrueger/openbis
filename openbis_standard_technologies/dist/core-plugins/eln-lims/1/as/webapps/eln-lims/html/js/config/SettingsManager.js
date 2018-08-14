@@ -90,10 +90,11 @@ function SettingsManager(serverFacade) {
 		var fieldsToOverride = [
 			"dataSetTypeForFileNameMap",
 			"forcedDisableRTF",
-			"forceMonospaceFont"
+			"forceMonospaceFont",
+			"showDatasetArchivingButton"
 		];
 		for (var field of fieldsToOverride) {
-			if (settings[field]) {
+			if (settings[field] != null) {
 				targetProfile[field] = settings[field];
 			}
 		}

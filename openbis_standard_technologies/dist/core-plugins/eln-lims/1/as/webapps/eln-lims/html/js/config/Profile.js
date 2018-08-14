@@ -945,6 +945,8 @@ $.extend(DefaultProfile.prototype, {
 			});
 		}
 
+		this.showDatasetArchivingButton = false;
+
 		//
 		// Initializes
 		//
