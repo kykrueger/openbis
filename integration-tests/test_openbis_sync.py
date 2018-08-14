@@ -294,7 +294,7 @@ class TestCase(systemtest.testcase.TestCase):
         base64string = base64.encodestring('%s:%s' % (user, password)).replace('\n', '')
         request.add_header("Authorization", "Basic %s" % base64string)
         data = urllib.urlencode({'mode' : 'test'})
-        response = urllib2.urlopen(request, data, context=ssl._create_unverified_context())
+        response = urllib2.urlopen(request, data)
         return response
 
     def installPlugin(self, openbisController, plugin_name):
