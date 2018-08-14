@@ -45,6 +45,7 @@ from .person import Person
 from .group import Group
 from .role_assignment import RoleAssignment
 from .tag import Tag
+from .sample_type import SampleType
 from .semantic_annotation import SemanticAnnotation
 from .plugin import Plugin
 
@@ -2095,7 +2096,8 @@ class Openbis:
         else:
             attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
             annotations = DataFrame(objects)
-            return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+            annotations = annotations if len(objects) == 0 else annotations[attrs]
+            return Things(self, 'semantic_annotation', annotations, 'permId')
 
     def _search_semantic_annotations(self, criteria):
 
@@ -2124,9 +2126,6 @@ class Openbis:
         if resp is not None:
             objects = resp['objects']
             
-            if len(objects) is 0:
-                raise ValueError("No semantic annotations found!")
-            
             parse_jackson(objects)
             
             for object in objects:
@@ -2142,7 +2141,7 @@ class Openbis:
                 
             return objects
         else:
-            raise ValueError("No semantic annotations found!")
+            raise ValueError("Could not fetch semantic annotations!")
 
     def get_semantic_annotations(self):
         """ Get a list of all available semantic annotations (DataFrame object).
@@ -2155,6 +2154,8 @@ class Openbis:
 
     def get_semantic_annotation(self, permId, only_data = False):
         objects = self.search_semantic_annotations(permId=permId, only_data=True)
+        if len(objects) == 0:
+            raise ValueError("Semantic annotation with permId " + permId +  " not found.")
         object = objects[0]
         if only_data:
             return object
@@ -2268,12 +2269,13 @@ class Openbis:
 
     def get_sample_type(self, type):
         try:
-            return self._get_types_of(
+            property_asignments = self._get_types_of(
                 "searchSampleTypes",
                 "Sample",
                 type,
                 ["generatedCodePrefix", "validationPluginId"]
             )
+            return SampleType(self, property_asignments.data)
         except Exception:
             raise ValueError("no such sample type: {}".format(type))
 
