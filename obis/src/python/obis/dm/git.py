@@ -1,5 +1,6 @@
 import shutil
 import os
+from pathlib import Path
 from .utils import run_shell
 from .command_result import CommandResult, CommandException
 from .checksum import ChecksumGeneratorCrc32, ChecksumGeneratorGitAnnex
@@ -63,17 +64,24 @@ class GitWrapper(object):
             return result
 
         attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
-        attributes_dst = os.path.join(path, ".gitattributes")
+        attributes_dst = os.path.join(path, ".git/info/attributes")
         shutil.copyfile(attributes_src, attributes_dst)
         self._apply_git_annex_backend(attributes_dst, git_annex_backend)
-        cmd = [self.git_path, "-C", path, "add", ".gitattributes"]
-        result = run_shell(cmd)
+
+        return result
+
+    def initial_commit(self):
+        # initial commit is needed. we can restore to it when something fails
+        folder = '.obis'
+        file = '.gitignore'
+        path = folder + '/' + file
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        Path(path).touch()
+        result = self.git_add(path)
         if result.failure():
             return result
-
-        cmd = [self.git_path, "-C", path, "commit", "-m", "Initial commit."]
-        result = run_shell(cmd)
-        return result
+        return self.git_commit("Initial commit.")
 
     def _apply_git_annex_backend(self, filename, git_annex_backend):
         if git_annex_backend is not None:

@@ -144,7 +144,7 @@ class ChecksumGeneratorGitAnnex(object):
             raise ValueError("Git annex backend not supported: " + self.backend)
 
     def _get_annex_backend(self):
-        with open('.gitattributes') as gitattributes:
+        with open('.git/info/attributes') as gitattributes:
             for line in gitattributes.readlines():
                 if 'annex.backend' in line:
                     backend = line.split('=')[1].strip()
