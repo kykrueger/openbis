@@ -930,7 +930,7 @@ $.extend(DefaultProfile.prototype, {
 				openbisV3._private.sessionToken = mainController.serverFacade.getSession();
 				openbisV3.getServerInformation().done(function(serverInformation) {
 	                var authSystem = serverInformation["authentication-service"];
-	                IdentifierUtil.isProjectSamplesEnabled = serverInformation["project-samples-enabled"];
+	                IdentifierUtil.isProjectSamplesEnabled = (serverInformation["project-samples-enabled"] === "true");
 	                if (authSystem && authSystem.indexOf("file") !== -1) {
 	                		_this.isFileAuthenticationService = true;
 	                }
