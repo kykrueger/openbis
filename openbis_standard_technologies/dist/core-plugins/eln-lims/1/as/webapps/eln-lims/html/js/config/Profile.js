@@ -36,6 +36,8 @@ $.extend(DefaultProfile.prototype, {
 		//
 		// DEFAULTS, TYPICALLY DON'T TOUCH IF YOU DON'T KNOW WHAT YOU DO
 		//
+		this.showDatasetArchivingButton = false;
+		
 		this.mainMenu = {
 				showLabNotebook : true,
 				showInventory : true,
@@ -126,8 +128,8 @@ $.extend(DefaultProfile.prototype, {
 //		this.jupyterIntegrationServerEndpoint = "https://127.0.0.1:8002";
 //		this.jupyterEndpoint = "https://127.0.0.1:8000/";
 		
-		this.systemProperties = ["ANNOTATIONS_STATE"];
-		this.forcedDisableRTF = ["FREEFORM_TABLE_STATE","NAME", "SEQUENCE"];
+		this.systemProperties = ["ANNOTATIONS_STATE", "FREEFORM_TABLE_STATE"];
+		this.forcedDisableRTF = ["NAME", "SEQUENCE"];
 		this.forceMonospaceFont = ["SEQUENCE"];
 		
 		this.isRTF = function(propertytype) {
@@ -944,8 +946,6 @@ $.extend(DefaultProfile.prototype, {
 				callback();
 			});
 		}
-
-		this.showDatasetArchivingButton = false;
 
 		//
 		// Initializes
