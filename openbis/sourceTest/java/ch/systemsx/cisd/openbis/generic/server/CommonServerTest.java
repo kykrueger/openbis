@@ -168,6 +168,8 @@ public final class CommonServerTest extends AbstractServerTestCase
 
     private ISessionWorkspaceProvider sessionWorkspaceProvider;
 
+    private IConcurrentOperationLimiter operationLimiter;
+
     private final CommonServer createServer()
     {
         CommonServer server =
@@ -187,7 +189,7 @@ public final class CommonServerTest extends AbstractServerTestCase
                         propertiesBatchManager, commonBusinessObjectFactory,
                         dataStoreServiceRegistrator, new LastModificationState(),
                         entityValidatorFactory2, dynamicPropertyCalculatorFactory2,
-                        managedPropertyEvaluatorFactory2);
+                        managedPropertyEvaluatorFactory2, operationLimiter);
         server.setSampleTypeSlaveServerPlugin(sampleTypeSlaveServerPlugin);
         server.setDataSetTypeSlaveServerPlugin(dataSetTypeSlaveServerPlugin);
         server.setBaseIndexURL(SESSION_TOKEN, BASE_INDEX_URL);
@@ -220,6 +222,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         hibernateSessionFactory = context.mock(SessionFactory.class);
         hibernateSession = context.mock(org.hibernate.Session.class);
         sessionWorkspaceProvider = context.mock(ISessionWorkspaceProvider.class);
+        operationLimiter = context.mock(IConcurrentOperationLimiter.class);
     }
 
     @Test

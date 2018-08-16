@@ -187,6 +187,8 @@ public class ETLServiceTest extends AbstractServerTestCase
 
     private IOperationsExecutor operationsExecutor;
 
+    private IConcurrentOperationLimiter operationLimiter;
+
     private PersonPE sessionPerson;
 
     private IDataStoreDataSourceManager dataSourceManager;
@@ -211,6 +213,7 @@ public class ETLServiceTest extends AbstractServerTestCase
         session.setPerson(sessionPerson);
         managedPropertyEvaluatorFactory = new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool());
         operationsExecutor = context.mock(IOperationsExecutor.class);
+        operationLimiter = context.mock(IConcurrentOperationLimiter.class);
 
         prepareDataSetRegistrationCache();
     }
@@ -1540,7 +1543,7 @@ public class ETLServiceTest extends AbstractServerTestCase
                 new ServiceForDataStoreServer(authenticationService, sessionManager, daoFactory,
                         propertiesBatchManager, boFactory, dssfactory, null,
                         entityOperationChecker, dataStoreServiceRegistrator, dataSourceManager,
-                        sessionManagerForEntityOperations, managedPropertyEvaluatorFactory, operationsExecutor);
+                        sessionManagerForEntityOperations, managedPropertyEvaluatorFactory, operationsExecutor, operationLimiter);
         etlService.setConversationClient(conversationClient);
         etlService.setConversationServer(conversationServer);
         etlService.setDisplaySettingsProvider(new DisplaySettingsProvider());

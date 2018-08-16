@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 ETH Zuerich, CISD
+ * Copyright 2018 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation;
-
-import java.util.List;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionResults;
+package ch.systemsx.cisd.openbis.generic.server;
 
 /**
  * @author pkupczyk
  */
-public interface IExecuteOperationExecutor
+public interface IConcurrentOperationLimiter
 {
 
-    public IOperationExecutionResults execute(String sessionToken, List<? extends IOperation> operations, IOperationExecutionOptions options);
+    public <T> T executeLimitedWithTimeout(String operationName, ConcurrentOperation<T> operation);
+
+    public <T> T executeLimitedWithTimeoutAsync(String operationName, ConcurrentOperation<T> operation);
 
 }
