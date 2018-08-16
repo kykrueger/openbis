@@ -121,6 +121,8 @@ var sources = [
 	'as/dto/common/fetchoptions/EntityWithPropertiesSortOptions',
 	'as/dto/common/fetchoptions/Sorting',
 	'as/dto/common/fetchoptions/SortOrder',
+	'as/dto/common/get/GetServerInformationOperation',
+	'as/dto/common/get/GetServerInformationOperationResult',
 	'as/dto/common/id/CreationId',
 	'as/dto/common/search/AnyFieldSearchCriteria',
 	'as/dto/common/search/AnyPropertySearchCriteria',
@@ -236,6 +238,7 @@ var sources = [
 	'as/dto/dataset/search/LocationSearchCriteria',
 	'as/dto/dataset/search/LocatorTypeSearchCriteria',
 	'as/dto/dataset/search/PhysicalDataSearchCriteria',
+	'as/dto/dataset/search/ArchivingRequestedSearchCriteria',
 	'as/dto/dataset/search/PresentInArchiveSearchCriteria',
 	'as/dto/dataset/search/ShareIdSearchCriteria',
 	'as/dto/dataset/search/SizeSearchCriteria',
@@ -281,6 +284,8 @@ var sources = [
 	
 	'as/dto/entity/create/CreateCodesOperation',
 	'as/dto/entity/create/CreateCodesOperationResult',
+	'as/dto/entity/create/CreatePermIdsOperation',
+	'as/dto/entity/create/CreatePermIdsOperationResult',
 	
 	'as/dto/entitytype/id/EntityTypePermId',
 	'as/dto/entitytype/fetchoptions/EntityTypeFetchOptions',

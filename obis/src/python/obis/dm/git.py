@@ -1,7 +1,8 @@
 import shutil
 import os
+from pathlib import Path
 from .utils import run_shell
-from .command_result import CommandException
+from .command_result import CommandResult, CommandException
 from .checksum import ChecksumGeneratorCrc32, ChecksumGeneratorGitAnnex
 
 
@@ -31,36 +32,73 @@ class GitWrapper(object):
 
     def git_status(self, path=None):
         if path is None:
-            return run_shell([self.git_path, "status", "--porcelain"], strip_leading_whitespace=False)
+            return run_shell([self.git_path, "annex", "status"], strip_leading_whitespace=False)
         else:
-            return run_shell([self.git_path, "status", "--porcelain", path], strip_leading_whitespace=False)
+            return run_shell([self.git_path, "annex", "status", path], strip_leading_whitespace=False)
 
-    def git_annex_init(self, path, desc):
-        cmd = [self.git_path, "-C", path, "annex", "init", "--version=6"]
+    def git_annex_init(self, path, desc, git_annex_backend=None):
+        cmd = [self.git_path, "-C", path, "annex", "init", "--version=5"]
         if desc is not None:
             cmd.append(desc)
         result = run_shell(cmd)
         if result.failure():
             return result
 
+        # annex.thin to avoid copying big files
         cmd = [self.git_path, "-C", path, "config", "annex.thin", "true"]
         result = run_shell(cmd)
         if result.failure():
             return result
 
-        attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
-        attributes_dst = os.path.join(path, ".gitattributes")
-        shutil.copyfile(attributes_src, attributes_dst)
-        cmd = [self.git_path, "-C", path, "add", ".gitattributes"]
+        # direct mode so annex uses hard links instead of soft links
+        cmd = [self.git_path, "-C", path, "annex", "direct"]
         result = run_shell(cmd)
         if result.failure():
             return result
 
-        cmd = [self.git_path, "-C", path, "commit", "-m", "Initial commit."]
+        # re-enable the repository to be used with git directly
+        # though we need to know what we do since annex can lead to unexpected behaviour
+        cmd = [self.git_path, "-C", path, "config", "--unset", "core.bare"]
         result = run_shell(cmd)
+        if result.failure():
+            return result
+
+        attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
+        attributes_dst = os.path.join(path, ".git/info/attributes")
+        shutil.copyfile(attributes_src, attributes_dst)
+        self._apply_git_annex_backend(attributes_dst, git_annex_backend)
+
         return result
 
+    def initial_commit(self):
+        # initial commit is needed. we can restore to it when something fails
+        folder = '.obis'
+        file = '.gitignore'
+        path = folder + '/' + file
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        Path(path).touch()
+        result = self.git_add(path)
+        if result.failure():
+            return result
+        return self.git_commit("Initial commit.")
+
+    def _apply_git_annex_backend(self, filename, git_annex_backend):
+        if git_annex_backend is not None:
+            lines = []
+            file = open(filename, "r")
+            for line in file:
+                if "annex.backend" in line:
+                    lines.append("* annex.backend=" + git_annex_backend + "\n")
+                else:
+                    lines.append(line)
+            file.close()
+            file = open(filename, "w")
+            file.writelines(lines)
+            file.close()
+
     def git_add(self, path):
+        # git annex add to avoid out of memory error when adding files bigger than RAM
         return run_shell([self.git_path, "annex", "add", path, "--include-dotfiles"])
 
     def git_commit(self, msg):

@@ -143,7 +143,7 @@ class DataStoreServiceLogger implements IDataStoreService, IInitializable
     {
         log("processDatasets",
                 "USER_SESSION(%s) TASK_ID(%s) NO_OF_DATASETS(%s) PARAMETERS(%s) USER_ID (%s)  USER_EMAIL(%s)",
-                userSessionToken, serviceKey, datasets.size(), parameterBindings, userId,
+                userSessionToken, serviceKey, datasets.size(), parameterBindings.keySet(), userId,
                 userEmailOrNull);
     }
 
@@ -156,8 +156,8 @@ class DataStoreServiceLogger implements IDataStoreService, IInitializable
     }
 
     @Override
-    public void archiveDatasets(String sessionToken, String userSessionToken, List<DatasetDescription> datasets,
-            String userId, String userEmailOrNull, boolean removeFromDataStore)
+    public void archiveDatasets(String sessionToken, String userSessionToken, List<DatasetDescription> datasets, String userId,
+            String userEmailOrNull, boolean removeFromDataStore, Map<String, String> options)
     {
         log("archiveDatasets",
                 "NO_OF_DATASETS(%s) USER_ID (%s) USER_EMAIL(%s) REMOVE_FROM_DATA_STORE(%s)",
@@ -186,7 +186,7 @@ class DataStoreServiceLogger implements IDataStoreService, IInitializable
     {
         log("createReportFromAggregationService",
                 "USER_SESSION(%s) SERVICE(%s) PARAMETERS(%s) USER_ID(%s) EMAIL(%s)",
-                userSessionToken, serviceKey, parameters, userId, userEmailOrNull);
+                userSessionToken, serviceKey, parameters.keySet(), userId, userEmailOrNull);
         return null;
     }
 

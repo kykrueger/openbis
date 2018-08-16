@@ -24,6 +24,7 @@ from .commands.clone import Clone
 from .commands.move import Move
 from .commands.openbis_sync import OpenbisSync
 from .commands.download import Download
+from .command_log import CommandLog
 from .command_result import CommandResult
 from .command_result import CommandException
 from .git import GitWrapper
@@ -35,7 +36,7 @@ from ..scripts import cli
 
 
 # noinspection PyPep8Naming
-def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_config={}, openbis=None, debug=False):
+def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_config={}, openbis=None, log=None, debug=False):
     """Factory method for DataMgmt instances"""
 
     echo_func = echo_func if echo_func is not None else default_echo
@@ -43,7 +44,7 @@ def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_conf
     complete_git_config(git_config)
     git_wrapper = GitWrapper(**git_config)
     if not git_wrapper.can_run():
-        return NoGitDataMgmt(settings_resolver, None, git_wrapper, openbis)
+        return NoGitDataMgmt(settings_resolver, None, git_wrapper, openbis, log)
 
     if settings_resolver is None:
         settings_resolver = dm_config.SettingsResolver()
@@ -52,7 +53,7 @@ def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_conf
             settings_resolver.set_resolver_location_roots('data_set', result.output)
     complete_openbis_config(openbis_config, settings_resolver)
 
-    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis, debug)
+    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis, log, debug)
 
 
 class AbstractDataMgmt(metaclass=abc.ABCMeta):
@@ -61,17 +62,18 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis, debug=False):
+    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis, log, debug=False):
         self.settings_resolver = settings_resolver
         self.openbis_config = openbis_config
         self.git_wrapper = git_wrapper
         self.openbis = openbis
+        self.log = log
         self.debug = debug
 
     def error_raise(self, command, reason):
         """Raise an exception."""
         message = "'{}' failed. {}".format(command, reason)
-        raise ValueError(reason)
+        raise ValueError(message)
 
     @abc.abstractmethod
     def init_data(self, path, desc=None, create=True):
@@ -150,8 +152,9 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def removeref(self):
+    def removeref(self, data_set_id=None):
         """Remove the current folder / repository from openBIS.
+        :param data_set_id: Id of the data from which a reference should be removed.
         :return: A CommandResult.
         """
         return
@@ -194,7 +197,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def addref(self):
         self.error_raise("addref", "No git command found.")
 
-    def removeref(self):
+    def removeref(self, data_set_id=None):
         self.error_raise("removeref", "No git command found.")
 
     def download(self, data_set_id, content_copy_index, file, skip_integrity_check):
@@ -204,6 +207,21 @@ class NoGitDataMgmt(AbstractDataMgmt):
 def restore_signal_handler(data_mgmt):
     data_mgmt.restore()
     sys.exit(0)
+
+
+def with_log(f):
+    def f_with_log(self, *args):
+        try:
+            result = f(self, *args)
+        except Exception as e:
+            self.log.log_error(str(e))
+            raise e
+        if result.failure() ==  False:
+            self.log.success()
+        else:
+            self.log.log_error(result.output)
+        return result
+    return f_with_log
 
 
 def with_restore(f):
@@ -260,10 +278,14 @@ class GitDataMgmt(AbstractDataMgmt):
         result = self.git_wrapper.git_init(path)
         if result.failure():
             return result
-        result = self.git_wrapper.git_annex_init(path, desc)
+        git_annex_backend = self.settings_resolver.config.config_dict().get('git_annex_backend')
+        result = self.git_wrapper.git_annex_init(path, desc, git_annex_backend)
         if result.failure():
             return result
         with cd(path):
+            result = self.git_wrapper.initial_commit()
+            if result.failure():
+                return result
             # Update the resolvers location
             self.settings_resolver.set_resolver_location_roots('data_set', '.')
             self.settings_resolver.copy_global_to_local()
@@ -346,8 +368,8 @@ class GitDataMgmt(AbstractDataMgmt):
             output += sync_status.output
         return CommandResult(returncode=0, output=output)
 
-    def commit_metadata_updates(self, msg_fragment=None):
-        properties_paths = self.settings_resolver.local_public_properties_paths()
+    def commit_metadata_updates(self, msg_fragment=None, omit_usersettings=True):
+        properties_paths = self.settings_resolver.local_public_properties_paths(omit_usersettings=omit_usersettings)
         total_status = ''
         for properties_path in properties_paths:
             status = self.git_wrapper.git_status(properties_path).output.strip()
@@ -377,6 +399,7 @@ class GitDataMgmt(AbstractDataMgmt):
         cmd = Clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check)
         return cmd.run()
 
+    @with_log
     def move(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
         cmd = Move(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check)
         return cmd.run()
@@ -385,8 +408,8 @@ class GitDataMgmt(AbstractDataMgmt):
         cmd = Addref(self)
         return cmd.run()
 
-    def removeref(self):
-        cmd = Removeref(self)
+    def removeref(self, data_set_id=None):
+        cmd = Removeref(self, data_set_id=data_set_id)
         return cmd.run()
 
     def download(self, data_set_id, content_copy_index, file, skip_integrity_check):

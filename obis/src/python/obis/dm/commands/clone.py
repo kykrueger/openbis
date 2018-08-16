@@ -20,8 +20,8 @@ class Clone(OpenbisCommand):
         self.data_set_id = data_set_id
         self.ssh_user = ssh_user
         self.content_copy_index = content_copy_index
-        self.load_global_config(dm)
         self.skip_integrity_check = skip_integrity_check
+        self.load_global_config(dm)
         super(Clone, self).__init__(dm)
 
 

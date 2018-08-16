@@ -36,6 +36,7 @@ def shared_dm():
         'allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks': True
     }
     dm = data_mgmt.DataMgmt(openbis_config=openbis_config)
+    dm.debug = True
     return dm
 
 
@@ -93,7 +94,7 @@ def test_data_use_case(tmpdir):
         prepare_registration_expectations(dm)
         set_registration_configuration(dm)
 
-        raw_status = git_status()
+        raw_status = git_status(annex=True)
         status = dm.status()
         assert raw_status.returncode == status.returncode
         assert raw_status.output + '\nNot yet synchronized with openBIS.' == status.output
@@ -107,10 +108,6 @@ def test_data_use_case(tmpdir):
         present_p = result.output.split('\n')[-1]
         assert present_p == 'present: true'
 
-        # This file should be in the annex and a hardlink
-        stat = os.stat("snb-data.zip")
-        assert stat.st_nlink == 2
-
         # The txt files should be in git normally
         result = utils.run_shell(['git', 'annex', 'info', 'text-data.txt'])
         assert 'Not a valid object name' in result.output
@@ -118,9 +115,9 @@ def test_data_use_case(tmpdir):
         present_p = " ".join(result.output.split(' ')[1:])
         assert present_p == 'Added data.'
 
-        # This file is not in the annex and should not be a hardlink
-        stat = os.stat("text-data.txt")
-        assert stat.st_nlink == 1
+        # This file is not in the annex
+        result = utils.run_shell(['git', 'annex', 'info', 'text-data.txt'])
+        assert "Not a valid object name" in result.output
 
         status = dm.status()
         assert status.output == 'There are git commits which have not been synchronized.'
@@ -193,7 +190,7 @@ def test_undo_commit_when_sync_fails(tmpdir):
     dm.git_wrapper.git_top_level_path = MagicMock(return_value = CommandResult(returncode=0, output=None))
     dm.git_wrapper.git_add = MagicMock(return_value = CommandResult(returncode=0, output=None))
     dm.git_wrapper.git_commit = MagicMock(return_value = CommandResult(returncode=0, output=None))
-    dm._sync = lambda: CommandResult(returncode=-1, output="dummy error")
+    dm._sync = lambda *args: CommandResult(returncode=-1, output="dummy error")
     # when
     result = dm.commit("Added data.")
     # then
@@ -272,6 +269,11 @@ def prepare_new_data_set_expectations(dm, properties={}):
                         'physicalData': None, 'linkedData': { 'contentCopies': []}})
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
     dm.openbis.get_dataset = MagicMock(return_value=data_set)
+
+    sample = MagicMock()
+    sample.permId = "123-1"
+    sample.identifier = "/SAMPLE/ID"
+    dm.openbis.get_sample = MagicMock(return_value=sample)
 
 
 

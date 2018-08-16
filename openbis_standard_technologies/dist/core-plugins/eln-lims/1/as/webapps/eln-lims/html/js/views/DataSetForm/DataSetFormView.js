@@ -17,6 +17,7 @@
 function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	this._dataSetFormController = dataSetFormController;
 	this._dataSetFormModel = dataSetFormModel;
+	this.enableSelect2 = [];
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -45,15 +46,15 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			experimentIdentifier = this._dataSetFormModel.entity.experimentIdentifierOrNull;
 		}
 		if(experimentIdentifier) {
-			spaceCode = experimentIdentifier.split("/")[1];
-			projectCode = experimentIdentifier.split("/")[2];
-			experimentCode = experimentIdentifier.split("/")[3];
+			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+			projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
+			experimentCode = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
 		}
 		var sampleCode;
 		var sampleIdentifier;
 		if(!this._dataSetFormModel.isExperiment()) {
 			sampleCode = this._dataSetFormModel.entity.code;
-			spaceCode = this._dataSetFormModel.entity.identifier.split("/")[1];
+			spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._dataSetFormModel.entity.identifier);
 			sampleIdentifier = this._dataSetFormModel.entity.identifier;
 		}
 		var datasetCodeAndPermId = this._dataSetFormModel.dataSet.code;
@@ -90,6 +91,29 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
 			});
 			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+
+			//Archiving Requested Button
+			var physicalData = this._dataSetFormModel.dataSetV3.physicalData;
+			if (profile.showDatasetArchivingButton && physicalData) {
+				if (physicalData.presentInArchive) {
+					var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-archived-icon.png");
+					var tooltip = "Archived";
+					$archivingRequestedBtn.attr("disabled", true);
+				} else {
+					if (physicalData.archivingRequested) {
+						var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-requested-icon.png", function () {
+							_this._dataSetFormController.setArchivingRequested(false);
+						});
+						var tooltip = "Revoke archiving request";	
+					} else {
+						var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-not-requested-icon.png", function () {
+							_this.requestArchiving();
+						});
+						var tooltip = "Request archiving";	
+					}
+				}
+				toolbarModel.push({ component : $archivingRequestedBtn, tooltip: tooltip });
+			}
 			
 			//Delete Button
 			var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
@@ -158,7 +182,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				}
 				_this.isFormDirty = true;
 			});
-			
+			this.enableSelect2.push($dataSetTypeSelector);
 			var $dataSetTypeDropDown = $('<div>', { class : 'form-group' });
 			if(!this._dataSetFormModel.isMini) {
 				$dataSetTypeDropDown.append($('<label>', {class: "control-label"}).html('Data Set Type&nbsp;(*):'));
@@ -198,11 +222,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			owner = this._dataSetFormModel.entity.identifier.identifier;
 		} else {
 			ownerName = ELNDictionary.Sample;
-			if(this._dataSetFormModel.entity.experimentIdentifierOrNull) {
-				owner = this._dataSetFormModel.entity.experimentIdentifierOrNull + "/" + this._dataSetFormModel.entity.code;
-			} else {
-				owner = this._dataSetFormModel.entity.identifier;
-			}
+			owner = this._dataSetFormModel.entity.identifier;
 		}
 		
 		if(!this._dataSetFormModel.isMini) {
@@ -388,6 +408,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var dataSetViewer = new DataSetViewerController("filesViewer", profile, this._dataSetFormModel.entity, mainController.serverFacade, profile.getDefaultDataStoreURL(), [this._dataSetFormModel.dataSet], false, true);
 			dataSetViewer.init();
 		}
+		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
 	}
 	
 	this._updateFileOptions = function() {
@@ -455,6 +481,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	
 	this._repaintMetadata = function(dataSetType) {
 		var _this = this;
+		this.enableSelect2 = [];
 		$("#metadataContainer").empty();
 		var $wrapper = $("<div>");
 		
@@ -500,7 +527,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							identifier = this._dataSetFormModel.entity.identifier;
 						}
 						
-						if(!(profile.inventorySpaces.length > 0 && $.inArray(identifier.split("/")[1], profile.inventorySpaces) === -1)) {
+						if(!(profile.inventorySpaces.length > 0 && $.inArray(IdentifierUtil.getSpaceCodeFromIdentifier(identifier), profile.inventorySpaces) === -1)) {
 							continue;
 						}
 					}
@@ -558,6 +585,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							}
 						}
 						
+						if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
+								this.enableSelect2.push($component);
+						} 
+						
 						//Update values if is into edit mode
 						if(this._dataSetFormModel.mode === FormMode.EDIT) {
 							if(propertyType.dataType === "BOOLEAN") {
@@ -599,5 +630,49 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		$("#metadataContainer").append($wrapper);
+		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
 	}
+
+	this.requestArchiving = function() {
+		var _this = this;
+
+		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+		$window.submit(function() {
+		    _this._dataSetFormController.setArchivingRequested(true);
+		    Util.unblockUI();
+		});
+
+		$window.append($('<legend>').append('Request archiving'));
+
+		var threshold = profile.archivingThreshold;
+		var warning = "Remember that your dataset will only be archived when enough data from your group is available to do so (" + threshold + ").";
+		var $warning = $('<p>').text(warning);
+		$window.append($warning);
+
+		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+		$btnCancel.click(function() {
+		    Util.unblockUI();
+		});
+
+		$window.append($btnAccept).append('&nbsp;').append($btnCancel);
+
+		var css = {
+		        'text-align' : 'left',
+		        'top' : '15%',
+		        'width' : '70%',
+		        'left' : '15%',
+		        'right' : '20%',
+		        'overflow' : 'hidden',
+				'background' : '#ffffbf'
+		};
+
+		Util.blockUI($window, css);
+	}
+
 }

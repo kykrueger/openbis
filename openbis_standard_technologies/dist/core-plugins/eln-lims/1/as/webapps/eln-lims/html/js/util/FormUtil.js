@@ -398,7 +398,7 @@ var FormUtil = new function() {
                 		
                 		for(var pIdx = 0; pIdx < projectsToUse.length; pIdx++) {
                     		var project = projectsToUse[pIdx];
-                    		var projectIdentifier = "/" + project.spaceCode + "/" + project.code;
+                    		var projectIdentifier = IdentifierUtil.getProjectIdentifier(project.spaceCode, project.code);
                     		if(experiment.identifier.startsWith(projectIdentifier)) {
                     			if(!project.experiments) {
                     				project.experiments = [];
@@ -424,7 +424,7 @@ var FormUtil = new function() {
             		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
             		for(var pIdx = 0; pIdx < projectsToUse.length; pIdx++) {
             			var project = projectsToUse[pIdx];
-            			var projectIdentifier = "/" + project.spaceCode + "/" + project.code;
+            			var projectIdentifier = IdentifierUtil.getProjectIdentifier(project.spaceCode, project.code);
             			if(withProjects) {
             				$component.append($("<option>").attr('value', projectIdentifier).text(projectIdentifier));
             			}
@@ -932,10 +932,10 @@ var FormUtil = new function() {
 			entityPath.append("/").append(this.getFormLink(spaceCode, 'Space', spaceCode));
 		}
 		if(projectCode) {
-			entityPath.append("/").append(this.getFormLink(projectCode, 'Project', "/" + spaceCode + "/" + projectCode));
+			entityPath.append("/").append(this.getFormLink(projectCode, 'Project', IdentifierUtil.getProjectIdentifier(spaceCode, projectCode)));
 		}
 		if(experimentCode) {
-			entityPath.append("/").append(this.getFormLink(experimentCode, 'Experiment', "/" + spaceCode + "/" + projectCode + "/"+ experimentCode));
+			entityPath.append("/").append(this.getFormLink(experimentCode, 'Experiment', IdentifierUtil.getExperimentIdentifier(spaceCode, projectCode, experimentCode)));
 		}
 		if(sampleCode && sampleIdentifierOrPermId) {
 			entityPath.append("/");

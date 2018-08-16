@@ -65,7 +65,7 @@
     <li>Log in to <a href="https://${HOSTNAME}:8443/openbis">openBIS</a> as admin.
     </li>
 
-    <li>Open the Experiment Browser by clicking on the menu item Browse -&gt; Experiments and open the default experiment. </li>
+    <li>Open the Collection Browser by clicking on the menu item Browse -&gt; Collections and open the default collection. </li>
 
     <li>Click on the Data Set Uploader tab and upload one or several files.</li>
 
@@ -97,7 +97,7 @@
   </ol>
 
   <div class="text">
-    It will create an experiment in project /TEST/PROT which shows a list of proteins. We challenge you to go find it
+    It will create an collection in project /TEST/PROT which shows a list of proteins. We challenge you to go find it
     in the running application !
   </div>
 
@@ -109,9 +109,9 @@
     <li>Log in to <a href="https://${HOSTNAME}:8443/openbis">openBIS</a> as admin.
     </li>
 
-    <li>Open experiment type browser by clicking on menu item Admin -&gt; Types -&gt; Experiment Types.</li>
+    <li>Open collection type browser by clicking on menu item Admin -&gt; Types -&gt; Collection Types.</li>
 
-    <li>Create experiment type SIRNA_HCS.</li>
+    <li>Create collection type SIRNA_HCS.</li>
 
     <li>At the console execute the command:
 
@@ -137,7 +137,7 @@
       </div>
     </li>
 
-    <li>A flow cell output from a HiSeq2000 is registered as a data set of the sample 120420_SN792_0109_BC0P8LACXX.<br>
+    <li>A flow cell output from a HiSeq2000 is registered as a data set of the object 120420_SN792_0109_BC0P8LACXX.<br>
 
       Additionally a data set is registered for each flow lane:
 
@@ -159,14 +159,14 @@
       </div>
     </li>
 
-    <li> For creating some samples we use the 'Sample Registration'. This is available under the 'Import' menu: <br>    
-      Import -> Sample Registration -> Choose sample type '(multiple)' and browse to the file:
+    <li> For creating some objects we use the 'Object Registration'. This is available under the 'Import' menu: <br>    
+      Import -> Object Registration -> Choose object type '(multiple)' and browse to the file:
       <div class="sourcecode">  ${DSS_ROOT_DIR}/examples/illumina-ngs/tsv-files/example_samples_with_parents.tsv</div>
       
       Tick 'Update existing'and press the 'Save' button. <br>
-      This created several samples which can be viewed via Browse -> Samples. You might need to select the Sample Type 'all' <br>
+      This created several objects which can be viewed via Browse -> Objects. You might need to select the Object Type 'all' <br>
       and the Space 'all'. <br>
-      Note that the samples are in a parent-/child relationship indicated by the samples shown in the 'Parents' column.
+      Note that the objects are in a parent-/child relationship indicated by the objects shown in the 'Parents' column.
     </li>
     
     <br>
@@ -183,8 +183,8 @@
         touch ${DSS_ROOT_DIR}/register-unaligned/.MARKER_is_finished_120420_SN792_0109_BC0P8LACXX;
       </div>
       <br>
-      The demultiplexed FASTQ files are a data set of the samples BSSE-QGF-LIBRARY-1 and BSSE-QGF-LIBRARY-2. Note that lane 1 and two <br>
-      contained both samples which results in two FASTQ data sets for each sample.
+      The demultiplexed FASTQ files are a data set of the objects BSSE-QGF-LIBRARY-1 and BSSE-QGF-LIBRARY-2. Note that lane 1 and two <br>
+      contained both objects which results in two FASTQ data sets for each object.
       
     </li>
   </ol><br>

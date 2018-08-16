@@ -98,6 +98,7 @@ public class QueryAuthorizationExecutor implements IQueryAuthorizationExecutor
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @Capability("EXECUTE_QUERY")
     public void canExecute(IOperationContext context, String sql, DatabaseDefinition database)
     {
         checkDatabaseExists(database.getKey());

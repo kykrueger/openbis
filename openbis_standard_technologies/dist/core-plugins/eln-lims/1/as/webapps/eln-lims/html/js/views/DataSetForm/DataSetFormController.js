@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-function DataSetFormController(parentController, mode, entity, dataSet, isMini) {
+function DataSetFormController(parentController, mode, entity, dataSet, isMini, dataSetV3) {
 	this._parentController = parentController;
-	this._dataSetFormModel = new DataSetFormModel(mode, entity, dataSet, isMini);
+	this._dataSetFormModel = new DataSetFormModel(mode, entity, dataSet, isMini, dataSetV3);
 	this._dataSetFormView = new DataSetFormView(this, this._dataSetFormModel);
 	
 	this.init = function(views) {
@@ -84,11 +84,11 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini) 
 					if(_this._dataSetFormModel.isExperiment()) {
 						mainController.changeView('showExperimentPageFromIdentifier', _this._dataSetFormModel.entity.identifier.identifier);
 						experimentIdentifier = _this._dataSetFormModel.entity.identifier.identifier;
-						space = experimentIdentifier.split("/")[1];
+						space = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 					} else {
 						mainController.changeView('showViewSamplePageFromPermId', _this._dataSetFormModel.entity.permId);
 						sampleIdentifier = _this._dataSetFormModel.entity.identifier;
-						space = sampleIdentifier.split("/")[1];
+						space = IdentifierUtil.getSpaceCodeFromIdentifier(sampleIdentifier);
 					}
 					
 					var isInventory = profile.isInventorySpace(space);
@@ -146,10 +146,10 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini) 
 		
 		if(this._dataSetFormModel.isExperiment()) {
 			experimentIdentifier = this._dataSetFormModel.entity.identifier.identifier;
-			space = experimentIdentifier.split("/")[1];
+			space = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 		} else {
 			sampleIdentifier = this._dataSetFormModel.entity.identifier;
-			space = sampleIdentifier.split("/")[1];
+			space = IdentifierUtil.getSpaceCodeFromIdentifier(sampleIdentifier);
 		}
 		
 		var isInventory = profile.isInventorySpace(space);
@@ -225,4 +225,20 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini) 
 			Util.showError("No DSS available.", function() {Util.unblockUI();});
 		}
 	}
+
+	this.setArchivingRequested = function(archivingRequested) {
+		var _this = this;
+		var dataSetPermId = this._dataSetFormModel.dataSetV3.permId.permId;
+		var physicalDataUpdate = { archivingRequested : archivingRequested }
+		Util.blockUI();
+		mainController.serverFacade.updateDataSet(dataSetPermId, physicalDataUpdate, function() {
+			if(_this._dataSetFormModel.mode === FormMode.VIEW) {
+				mainController.changeView('showViewDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
+			} else {
+				mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
+			}
+			Util.unblockUI();
+		});
+	}
+
 }

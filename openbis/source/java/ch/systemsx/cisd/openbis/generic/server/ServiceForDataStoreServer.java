@@ -1221,9 +1221,10 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
     @Override
     @RolesAllowed(RoleWithHierarchy.SPACE_ETL_SERVER)
     public int archiveDatasets(String sessionToken,
-            @AuthorizationGuard(guardClass = DataSetCodeCollectionPredicate.class) List<String> datasetCodes, boolean removeFromDataStore)
+            @AuthorizationGuard(guardClass = DataSetCodeCollectionPredicate.class) List<String> datasetCodes,
+            boolean removeFromDataStore, Map<String, String> options)
     {
-        return super.archiveDatasets(sessionToken, datasetCodes, removeFromDataStore);
+        return super.archiveDatasets(sessionToken, datasetCodes, removeFromDataStore, options);
     }
 
     @Override

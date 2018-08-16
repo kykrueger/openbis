@@ -17,6 +17,7 @@
 function ExperimentFormView(experimentFormController, experimentFormModel) {
 	this._experimentFormController = experimentFormController;
 	this._experimentFormModel = experimentFormModel;
+	this.enableSelect2 = [];
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -47,9 +48,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			nameLabel = this._experimentFormModel.experiment.code;
 		}
 		
-		var spaceCode = this._experimentFormModel.experiment.identifier.split("/")[1];
-		var projectCode = this._experimentFormModel.experiment.identifier.split("/")[2];
-		var experimentCode = (this._experimentFormModel.mode !== FormMode.CREATE)?this._experimentFormModel.experiment.identifier.split("/")[3]:null;
+		var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier);
+		var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
+		var experimentCode = (this._experimentFormModel.mode !== FormMode.CREATE)?IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier):null;
 		var entityPath = FormUtil.getFormPath(spaceCode, projectCode, experimentCode);
 		
 		
@@ -78,7 +79,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var toolbarModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 			//Create Experiment Step
-			if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP") && !profile.isSampleTypeHidden("EXPERIMENTAL_STEP")) {
+			if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
 				var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 					var argsMap = {
 							"sampleTypeCode" : "EXPERIMENTAL_STEP",
@@ -111,9 +112,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 			//Get dropbox folder name
 			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-				var splitExperimentIdentifier = _this._experimentFormModel.experiment.identifier.split("/");
-				var space = splitExperimentIdentifier[1];
-				var project = splitExperimentIdentifier[2];
+				var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
+				var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
 				var nameElements = [
 					"E",
 					space,
@@ -243,6 +243,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 		$container.append($form);
 		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
+		
 		Util.unblockUI();
 		
 		if(this._experimentFormModel.mode !== FormMode.CREATE) {
@@ -275,12 +281,11 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var $identificationInfo = $('<div>').append($('<legend>').text("Identification Info"));
 		$formColumn.append($identificationInfo);
 		
-		var identifierParts = this._experimentFormModel.experiment.identifier.split("/");
-		
+		var projectIdentifier = IdentifierUtil.getProjectIdentifierFromExperimentIdentifier(this._experimentFormModel.experiment.identifier);
 		$formColumn.append(FormUtil.getFieldForLabelWithText("Type", this._experimentFormModel.experiment.experimentTypeCode));
-		$formColumn.append(FormUtil.getFieldForLabelWithText("Project", "/" + identifierParts[1] + "/" + identifierParts[2]));
+		$formColumn.append(FormUtil.getFieldForLabelWithText("Project", projectIdentifier));
 		var $projectField = FormUtil._getInputField("text", null, "project", null, true);
-		$projectField.val("/" + identifierParts[1] + "/" + identifierParts[2]);
+		$projectField.val(projectIdentifier);
 		$projectField.hide();
 		$formColumn.append($projectField);
 		
@@ -288,7 +293,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			$formColumn.append(FormUtil.getFieldForLabelWithText("Code", this._experimentFormModel.experiment.code));
 			
 			var $codeField = FormUtil._getInputField("text", null, "code", null, true);
-			$codeField.val(identifierParts[3]);
+			$codeField.val(IdentifierUtil.getCodeFromIdentifier(this._experimentFormModel.experiment.identifier));
 			$codeField.hide();
 			$formColumn.append($codeField);
 		} else if(this._experimentFormModel.mode === FormMode.CREATE) {
@@ -302,8 +307,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				_this._experimentFormModel.experiment.code = $(this).val();
 				
 				//Full Identifier
-				var currentIdentifier = _this._experimentFormModel.experiment.identifier.split("/");
-				var experimentIdentifier = "/" + currentIdentifier[1] + "/" + currentIdentifier[2] + "/" + _this._experimentFormModel.experiment.code;
+				var currentIdentifierSpace = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
+				var currentIdentifierProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
+				var experimentIdentifier = IdentifierUtil.getExperimentIdentifier(currentIdentifierSpace, currentIdentifierProject, _this._experimentFormModel.experiment.code);
 				_this._experimentFormModel.experiment.identifier = experimentIdentifier;
 			})
 			var $codeFieldRow = FormUtil.getFieldForComponentWithLabel($codeField, "Code");
@@ -313,14 +319,16 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				delete project["@id"];
 				delete project["@type"];
 				mainController.serverFacade.listExperiments([project], function(data) {
-					var autoGeneratedCode = identifierParts[2] + "_EXP_" + (data.result.length + 1);
+					var autoGeneratedCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier) + "_EXP_" + (data.result.length + 1);
 					$codeField.val(autoGeneratedCode);
 					_this._experimentFormModel.experiment.code = autoGeneratedCode;
 					
 					//Full Identifier
-					var currentIdentifier = _this._experimentFormModel.experiment.identifier.split("/");
-					var experimentIdentifier = "/" + currentIdentifier[1] + "/" + currentIdentifier[2] + "/" + _this._experimentFormModel.experiment.code;
+					var currentIdentifierSpace = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
+					var currentIdentifierProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
+					var experimentIdentifier = IdentifierUtil.getExperimentIdentifier(currentIdentifierSpace, currentIdentifierProject, _this._experimentFormModel.experiment.code);
 					_this._experimentFormModel.experiment.identifier = experimentIdentifier;
+					
 					_this._experimentFormModel.isFormDirty = true;
 				});
 			});
@@ -382,7 +390,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				}
 			} else {
 				if(propertyType.code === "SHOW_IN_PROJECT_OVERVIEW") {
-					if(!(profile.inventorySpaces.length > 0 && $.inArray(this._experimentFormModel.experiment.identifier.split("/")[1], profile.inventorySpaces) === -1)) {
+					if(!(profile.inventorySpaces.length > 0 && $.inArray(IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier), profile.inventorySpaces) === -1)) {
 						continue;
 					}
 				}
@@ -405,8 +413,19 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 						continue;
 					}
 				} else {
-					var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+					var $component = null;
+					if(propertyType.code === "DEFAULT_OBJECT_TYPE") {
+						$component = FormUtil.getSampleTypeDropdown(propertyType.code, true);
+						this.enableSelect2.push($component);
+					} else {
+						$component = FormUtil.getFieldForPropertyType(propertyType, value);
+					}
+					
 					//Update values if is into edit mode
+					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
+							this.enableSelect2.push($component);
+					}
+						
 					if(this._experimentFormModel.mode === FormMode.EDIT) {
 						if(propertyType.dataType === "BOOLEAN") {
 							$($($component.children()[0]).children()[0]).prop('checked', value === "true");

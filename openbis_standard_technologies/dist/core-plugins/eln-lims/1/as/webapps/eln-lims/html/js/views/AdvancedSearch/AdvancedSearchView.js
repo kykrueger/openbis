@@ -230,7 +230,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			case "SAMPLE":
 				fieldTypeOptions = [{value : "All", label : "All", selected : true }, 
 				                    {value : "Property/Attribute", label : "Property"},
-				                    {value : "Experiment", label : ELNDictionary.ExperimentELN + "/" + ELNDictionary.ExperimentInventory}, 
+				                    {value : "Experiment", label : ELNDictionary.getExperimentDualName() }, 
 				                    {value : "Parent", label : "Parent"}, 
 				                    {value : "Children", label : "Children"}];
 				break;
@@ -242,7 +242,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				fieldTypeOptions = [{value : "All", label : "All", selected : true }, 
 				                    {value : "Property/Attribute", label : "Property"},
 				                    {value : "Sample", label : "" + ELNDictionary.Sample + ""},
-				                    {value : "Experiment", label : ELNDictionary.ExperimentELN + "/" + ELNDictionary.ExperimentInventory},
+				                    {value : "Experiment", label : ELNDictionary.getExperimentDualName() },
 // ELN-UI don't support this yet
 //				                    {value : "Parent", label : "Parent"}, 
 //				                    {value : "Children", label : "Children"}
@@ -446,7 +446,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		switch(entityKind) {
 			case "EXPERIMENT":
 				model = [{ value : "ATTR.CODE", label : "Code" }, 
-				         { value : "ATTR.EXPERIMENT_TYPE", label :  ELNDictionary.ExperimentELN + "/" + ELNDictionary.ExperimentInventory + " Type" }, 
+				         { value : "ATTR.EXPERIMENT_TYPE", label :  ELNDictionary.getExperimentDualName() + " Type" }, 
 				         { value : "ATTR.PERM_ID", label : "Perm Id" }, 
 				         { value : "ATTR.PROJECT", label : "Project" }, 
 				         { value : "ATTR.PROJECT_PERM_ID", label : "Project Perm Id" }, 
@@ -490,7 +490,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		var _this = this;
 		var model = [];
 			model.push({ value : 'ALL', label : "All", selected : true });
-			model.push({ value : 'EXPERIMENT', label : ELNDictionary.ExperimentELN + "/" + ELNDictionary.ExperimentInventory });
+			model.push({ value : 'EXPERIMENT', label : ELNDictionary.getExperimentDualName() });
 			model.push({ value : 'SAMPLE', label : "" + ELNDictionary.Sample + "" });			
 			model.push({ value : 'DATASET', label : "Dataset" });
 			model.push({ value : '', label : "--------------", disabled : true });
@@ -665,7 +665,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					return getLinkOnClick(data.identifier, data, paginationInfo);
 				}
 			}, {
-				label : ELNDictionary.ExperimentELN + '/' + ELNDictionary.ExperimentInventory,
+				label : ELNDictionary.getExperimentDualName(),
 				property : 'experiment',
 				isExportable: false,
 				sortable : false

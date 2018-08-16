@@ -104,7 +104,7 @@ class ChecksumGeneratorWORM(object):
     def worm(self, file):
         modification_time = int(os.path.getmtime(file))
         size = os.path.getsize(file)
-        return "WORM-s{}-m{}--{}".format(size, modification_time, file)
+        return "s{}-m{}--{}".format(size, modification_time, file)
 
 
 class ChecksumGeneratorGitAnnex(object):
@@ -144,7 +144,7 @@ class ChecksumGeneratorGitAnnex(object):
             raise ValueError("Git annex backend not supported: " + self.backend)
 
     def _get_annex_backend(self):
-        with open('.gitattributes') as gitattributes:
+        with open('.git/info/attributes') as gitattributes:
             for line in gitattributes.readlines():
                 if 'annex.backend' in line:
                     backend = line.split('=')[1].strip()

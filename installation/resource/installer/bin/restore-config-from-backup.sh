@@ -41,6 +41,7 @@ if [ -d $ROOT/openBIS-server ]; then
     restore $CONF/dss-datasource-mapping $ROOT/openBIS-server/jetty/etc dss-datasource-mapping
     restore $CONF/capabilities $ROOT/openBIS-server/jetty/etc capabilities
     restore $CONF/../openBIS-server/jetty/webapps/openbis/custom/welcomePageSimpleGeneric.html $ROOT/openBIS-server/jetty/webapps/openbis/custom welcomePageSimpleGeneric.html
+    restore $CONF/config.json $ROOT/big_data_link_server config.json
 
     copyConfig $CONF/core-plugins "html/etc$" $ROOT/core-plugins
     copyFolderIfExists $CONF/start.d $ROOT/openBIS-server/jetty/start.d

@@ -57,11 +57,10 @@ function MoveSampleController(samplePermId, successAction) {
 								//Add Experiment to the menu if new
 								if(_this._moveSampleModel.isNewExperiment) {
 									var experimentIdentifier = _this._moveSampleModel.experimentIdentifier;
-									var experimentIdentifierParts = experimentIdentifier.split("/");
-									var isInventory = profile.isInventorySpace(experimentIdentifierParts[1]);
+									var isInventory = profile.isInventorySpace(IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier));
 									mainController.sideMenu.refreshExperiment({ 
 										identifier: _this._moveSampleModel.experimentIdentifier, 
-										code: experimentIdentifierParts[3], 
+										code: IdentifierUtil.getCodeFromIdentifier(experimentIdentifier), 
 										properties : {}
 									}, isInventory);
 								}

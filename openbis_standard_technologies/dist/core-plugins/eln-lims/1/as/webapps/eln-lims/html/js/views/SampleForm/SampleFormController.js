@@ -96,18 +96,18 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 	this.deleteSample = function(reason) {
 		var _this = this;
 		
-		var samplesToDelete = [this._sampleFormModel.sample.id];
+		var samplesToDelete = [this._sampleFormModel.sample.permId];
 		
 		for(var idx = 0; idx < this._sampleFormModel.sample.children.length; idx++) {
 			var child = this._sampleFormModel.sample.children[idx];
 			if(child.sampleTypeCode === "STORAGE_POSITION") {
-				samplesToDelete.push(child.id);
+				samplesToDelete.push(child.permId);
 			}
 		}
 		
-		mainController.serverFacade.deleteSamples(samplesToDelete, reason, function(data) {
-			if(data.error) {
-				Util.showError(data.error.message);
+		mainController.serverFacade.deleteSamples(samplesToDelete, reason, function(response) {
+			if(response.error) {
+				Util.showError(response.error.message);
 			} else {
 				Util.showSuccess("" + ELNDictionary.Sample + " Deleted");
 				if(_this._sampleFormModel.isELNSample) {
@@ -231,9 +231,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			
 			var experimentIdentifier = sample.experimentIdentifierOrNull;
 			if(experimentIdentifier) { //If there is a experiment detected, the sample should be attached to the experiment completely.
-				sampleSpace = experimentIdentifier.split("/")[1];
-				sampleProject = experimentIdentifier.split("/")[2];
-				sampleExperiment = experimentIdentifier.split("/")[3];
+				sampleSpace = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+				sampleProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
+				sampleExperiment = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
 			}
 			
 			//Children to create
@@ -276,7 +276,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						if(!samplesToDelete) {
 							samplesToDelete = [];
 						}
-						samplesToDelete.push(child.id);
+						samplesToDelete.push(child.permId);
 					}
 				});
 			}
@@ -372,6 +372,11 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			var stacktrace = response.result.rows[0][1].value;
 			Util.showStacktraceAsError(stacktrace);
 		} else if (response.result.columns[0].title === "STATUS" && response.result.rows[0][0].value === "OK") { //Success Case
+			var permId = null;
+			if(response.result.columns[2].title === "RESULT" && response.result.rows[0][2].value) {
+				permId = response.result.rows[0][2].value;
+			}
+			
 			var sampleType = profile.getSampleTypeForSampleTypeCode(_this._sampleFormModel.sample.sampleTypeCode);
 			var sampleTypeDisplayName = sampleType.description;
 			if(!sampleTypeDisplayName) {
@@ -396,16 +401,9 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 					}
 				}
 				
-				var sampleIdentifierToOpen = null;
-				if(isCopyWithNewCode) {
-					sampleIdentifierToOpen = "/" + _this._sampleFormModel.sample.spaceCode + "/" + isCopyWithNewCode;
-				} else {
-					sampleIdentifierToOpen = "/" + _this._sampleFormModel.sample.spaceCode + "/" + _this._sampleFormModel.sample.code;
-				}
-				
 				var searchUntilFound = null;
 				    searchUntilFound = function() {
-					mainController.serverFacade.searchWithIdentifiers([sampleIdentifierToOpen], function(data) {
+					mainController.serverFacade.searchWithUniqueId(permId, function(data) {
 						if(data && data.length > 0) {
 							mainController.changeView('showViewSamplePageFromPermId',data[0].permId);
 							Util.unblockUI();
@@ -414,7 +412,6 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						}
 					});
 				}
-				
 				searchUntilFound(); //First call
 			}
 			

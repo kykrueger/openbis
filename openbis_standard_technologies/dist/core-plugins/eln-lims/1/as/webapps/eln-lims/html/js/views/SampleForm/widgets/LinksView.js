@@ -254,12 +254,15 @@ function LinksView(linksController, linksModel) {
 			property : propertyAnnotationCode,
 			isExportable: true,
 			showByDefault: true,
-			sortable : true,
+			sortable : false,
 			render : function(data) {
 				var sample = data["$object"];
 				var currentValue = linksModel.readState(sample.permId, propertyType.code);
 				
 				if(linksModel.isDisabled) {
+					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
+							currentValue = FormUtil.getVocabularyLabelForTermCode(propertyType, currentValue);
+					}
 					return currentValue;
 				} else {
 					var $field = FormUtil.getFieldForPropertyType(propertyType);
@@ -313,7 +316,9 @@ function LinksView(linksController, linksModel) {
 					$copyAndLink.click(function(e) {
 						stopEventsBuble(e);
 						var copyAndLink = function(code) {
-							var newSampleIdentifier = "/" + mainController.currentView._sampleFormModel.sample.spaceCode + "/" + code;
+							var newSampleIdentifier = IdentifierUtil.getSampleIdentifier(mainController.currentView._sampleFormModel.sample.spaceCode, 
+																			   mainController.currentView._sampleFormModel.sample.projectCode,
+																			   code);
 							Util.blockUI();
 							mainController.serverFacade.customELNApi({
 								"method" : "copyAndLinkAsParent",
