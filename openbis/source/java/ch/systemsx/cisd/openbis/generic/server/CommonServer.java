@@ -2490,7 +2490,8 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
                 getDAOFactory().getMetaprojectDAO().listMetaprojectsForEntity(
                         session.tryGetPerson(), sample);
         return SampleTranslator.translate(getSampleTypeSlaveServerPlugin(sample.getSampleType())
-                .getSampleInfo(session, sample), session.getBaseIndexURL(), MetaprojectTranslator
+                .getSampleInfo(session, sample), session.getBaseIndexURL(),
+                MetaprojectTranslator
                         .translate(metaprojectPEs),
                 managedPropertyEvaluatorFactory);
     }
@@ -3168,9 +3169,10 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     @RolesAllowed(RoleWithHierarchy.PROJECT_POWER_USER)
     @Capability("ARCHIVE_DATASET")
     public int archiveDatasets(String sessionToken,
-            @AuthorizationGuard(guardClass = DataSetCodeCollectionPredicate.class) List<String> datasetCodes, boolean removeFromDataStore)
+            @AuthorizationGuard(guardClass = DataSetCodeCollectionPredicate.class) List<String> datasetCodes,
+            boolean removeFromDataStore, Map<String, String> options)
     {
-        return super.archiveDatasets(sessionToken, datasetCodes, removeFromDataStore);
+        return super.archiveDatasets(sessionToken, datasetCodes, removeFromDataStore, options);
     }
 
     @Override

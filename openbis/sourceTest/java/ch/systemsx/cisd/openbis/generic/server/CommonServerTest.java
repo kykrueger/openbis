@@ -25,6 +25,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -1869,6 +1870,7 @@ public final class CommonServerTest extends AbstractServerTestCase
         prepareGetSession();
         final boolean removeFromDataStore = true;
         final List<String> dataSetCodes = Arrays.asList("a", "b");
+        final Map<String, String> options = new HashMap<>();
         context.checking(new Expectations()
             {
                 {
@@ -1876,11 +1878,11 @@ public final class CommonServerTest extends AbstractServerTestCase
                     will(returnValue(dataSetTable));
 
                     one(dataSetTable).loadByDataSetCodes(dataSetCodes, false, true);
-                    one(dataSetTable).archiveDatasets(removeFromDataStore);
+                    one(dataSetTable).archiveDatasets(removeFromDataStore, options);
                 }
             });
 
-        createServer().archiveDatasets(SESSION_TOKEN, dataSetCodes, removeFromDataStore);
+        createServer().archiveDatasets(SESSION_TOKEN, dataSetCodes, removeFromDataStore, options);
 
         context.assertIsSatisfied();
     }

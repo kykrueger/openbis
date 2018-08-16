@@ -2229,3 +2229,5 @@ Get Server Information Operation Result
 
 Archiving Requested Search Criteria
 with Archiving Requested
+
+with Option
