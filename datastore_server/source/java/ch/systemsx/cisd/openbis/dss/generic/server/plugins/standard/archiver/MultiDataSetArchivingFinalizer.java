@@ -247,7 +247,10 @@ class MultiDataSetArchivingFinalizer implements IProcessingPluginTask
         Map<String, String> parameterBindings = context.getParameterBindings();
         operationLog.info("Parameters: " + parameterBindings);
         Parameters parameters = new Parameters();
-        parameters.setContainerId(getNumber(parameterBindings, CONTAINER_ID_KEY));
+        if (parameterBindings.containsKey(CONTAINER_ID_KEY))
+        {
+            parameters.setContainerId(getNumber(parameterBindings, CONTAINER_ID_KEY));
+        }
         parameters.setOriginalFile(new File(getProperty(parameterBindings, ORIGINAL_FILE_PATH_KEY)));
         parameters.setReplicatedFile(new File(getProperty(parameterBindings, REPLICATED_FILE_PATH_KEY)));
         parameters.setPollingTime(getNumber(parameterBindings, FINALIZER_POLLING_TIME_KEY));

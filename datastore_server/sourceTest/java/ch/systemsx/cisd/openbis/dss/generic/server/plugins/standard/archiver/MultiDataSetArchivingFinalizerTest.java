@@ -186,7 +186,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                 + "Parameters: {original-file-path=" + dataFileInArchive.getPath()
                 + ", replicated-file-path=" + dataFileReplicated.getPath() + ", "
                 + "finalizer-polling-time=20000, start-time=" + START_TIME_AS_STRING + ", "
-                + "finalizer-max-waiting-time=300000, status=ARCHIVED, GROUP_KEY=my-group}\n"
+                + "finalizer-max-waiting-time=300000, status=ARCHIVED, sub-directory=my-group}\n"
                 + "ERROR OPERATION.MultiDataSetArchivingFinalizer - Replication of "
                 + "'" + dataFileInArchive.getPath() + "' failed because the original file does not exist.",
                 logRecorder.getLogContent());
@@ -211,7 +211,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                 + "Parameters: {original-file-path=" + dataFileInArchive.getPath()
                 + ", replicated-file-path=" + dataFileReplicated.getPath() + ", "
                 + "finalizer-polling-time=20000, start-time=" + START_TIME_AS_STRING + ", "
-                + "finalizer-max-waiting-time=300000, status=ARCHIVED, GROUP_KEY=my-group}\n"
+                + "finalizer-max-waiting-time=300000, status=ARCHIVED, sub-directory=my-group}\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Waiting for replication of archive "
                 + "'" + dataFileInArchive.getPath() + "' containing the following data sets: [ds1]\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Condition fulfilled after < 1sec, condition: "
@@ -236,7 +236,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                 + "Parameters: {original-file-path=" + dataFileInArchive.getPath()
                 + ", replicated-file-path=" + dataFileReplicated.getPath() + ", "
                 + "finalizer-polling-time=20000, start-time=" + START_TIME_AS_STRING + ", "
-                + "finalizer-max-waiting-time=300000, status=AVAILABLE, GROUP_KEY=my-group}\n"
+                + "finalizer-max-waiting-time=300000, status=AVAILABLE, sub-directory=my-group}\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Waiting for replication of archive "
                 + "'" + dataFileInArchive.getPath() + "' containing the following data sets: [ds1]\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Condition fulfilled after < 1sec, condition: "
@@ -291,7 +291,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                 + "Parameters: {original-file-path=" + dataFileInArchive.getPath()
                 + ", replicated-file-path=" + dataFilePartiallyReplicated.getPath() + ", "
                 + "finalizer-polling-time=20000, start-time=" + START_TIME_AS_STRING + ", "
-                + "finalizer-max-waiting-time=300000, status=ARCHIVED, GROUP_KEY=my-group}\n"
+                + "finalizer-max-waiting-time=300000, status=ARCHIVED, sub-directory=my-group}\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Waiting for replication of archive "
                 + "'" + dataFileInArchive.getPath() + "' containing the following data sets: [ds1, ds2]\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Condition still not fulfilled after < 1sec, "
@@ -344,7 +344,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                 + "Parameters: {original-file-path=" + dataFileInArchive.getPath()
                 + ", replicated-file-path=" + dataFilePartiallyReplicated.getPath() + ", "
                 + "finalizer-polling-time=20000, start-time=" + START_TIME_AS_STRING + ", "
-                + "finalizer-max-waiting-time=300000, status=AVAILABLE, GROUP_KEY=my-group}\n"
+                + "finalizer-max-waiting-time=300000, status=AVAILABLE, sub-directory=my-group}\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Waiting for replication of archive "
                 + "'" + dataFileInArchive.getPath() + "' containing the following data sets: [ds1, ds2]\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Condition still not fulfilled after < 1sec, "
