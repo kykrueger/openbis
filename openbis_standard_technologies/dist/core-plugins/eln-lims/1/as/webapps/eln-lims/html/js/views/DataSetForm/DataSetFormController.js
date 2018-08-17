@@ -232,13 +232,27 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 		var physicalDataUpdate = { archivingRequested : archivingRequested }
 		Util.blockUI();
 		mainController.serverFacade.updateDataSet(dataSetPermId, physicalDataUpdate, function() {
-			if(_this._dataSetFormModel.mode === FormMode.VIEW) {
-				mainController.changeView('showViewDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
-			} else {
-				mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
-			}
+			_this._reloadView();
 			Util.unblockUI();
 		});
+	}
+
+	this.unarchive = function() {
+		var _this = this;
+		var dataSetPermId = this._dataSetFormModel.dataSetV3.permId.permId;
+		Util.blockUI();
+		mainController.serverFacade.unarchiveDataSet(dataSetPermId, function() {
+			_this._reloadView();
+			Util.unblockUI();
+		});
+	}
+
+	this._reloadView = function() {
+		if(this._dataSetFormModel.mode === FormMode.VIEW) {
+			mainController.changeView('showViewDataSetPageFromPermId', this._dataSetFormModel.dataSet.code);
+		} else {
+			mainController.changeView('showEditDataSetPageFromPermId', this._dataSetFormModel.dataSet.code);
+		}
 	}
 
 }
