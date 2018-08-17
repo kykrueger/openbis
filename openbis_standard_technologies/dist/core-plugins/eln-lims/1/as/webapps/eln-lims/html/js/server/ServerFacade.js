@@ -2116,6 +2116,20 @@ function ServerFacade(openbisServer) {
 		});
 	}
 
+	this.unarchiveDataSet = function(dataSetPermId, callbackFunction) {
+		require(["as/dto/dataset/id/DataSetPermId", "as/dto/dataset/unarchive/DataSetUnarchiveOptions"], 
+			function(DataSetPermId, DataSetUnarchiveOptions) {
+				var ids = [new DataSetPermId(dataSetPermId)];
+				var options = new DataSetUnarchiveOptions();
+				mainController.openbisV3.unarchiveDataSets(ids, options).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			});
+	}
+
 	this.getSessionInformation = function(callbackFunction) {
 		mainController.openbisV3.getSessionInformation().done(function(sessionInfo) {
                 callbackFunction(sessionInfo);

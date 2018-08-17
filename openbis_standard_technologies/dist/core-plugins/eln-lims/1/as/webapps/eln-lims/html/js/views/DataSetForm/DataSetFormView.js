@@ -94,25 +94,55 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
 			//Archiving Requested Button
 			var physicalData = this._dataSetFormModel.dataSetV3.physicalData;
+
 			if (profile.showDatasetArchivingButton && physicalData) {
+
+				var archiveImage = "./img/archive-not-requested-icon.png";
 				if (physicalData.presentInArchive) {
-					var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-archived-icon.png");
-					var tooltip = "Archived";
-					$archivingRequestedBtn.attr("disabled", true);
-				} else {
-					if (physicalData.archivingRequested) {
-						var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-requested-icon.png", function () {
-							_this._dataSetFormController.setArchivingRequested(false);
-						});
-						var tooltip = "Revoke archiving request";	
-					} else {
-						var $archivingRequestedBtn = FormUtil.getButtonWithImage("./img/archive-not-requested-icon.png", function () {
-							_this.requestArchiving();
-						});
-						var tooltip = "Request archiving";	
-					}
+					archiveImage = "./img/archive-archived-icon.png";
+				} else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
+					archiveImage = "./img/archive-requested-icon.png";
 				}
-				toolbarModel.push({ component : $archivingRequestedBtn, tooltip: tooltip });
+
+				var archiveAction = null;
+				var archiveTooltip = null;
+				var $archiveTooltip = null;
+				if (physicalData.status == "AVAILABLE" && !physicalData.presentInArchive) {
+					if (physicalData.archivingRequested) {
+						archiveAction = function() {
+							_this.revokeArchivingRequest();
+						}
+						archiveTooltip = "Revoke archiving request";
+					} else {
+						archiveAction = function() {
+							_this.requestArchiving();
+						}
+						archiveTooltip = "Request archiving";
+					}
+				} else if (physicalData.status == "ARCHIVED") {
+					archiveAction = function() {
+						_this._dataSetFormController.unarchive();
+					}
+					archiveTooltip = "Unarchive";
+				}
+
+				if (archiveTooltip == null) {
+					$archiveTooltip = $("<div>")
+						.append($("<p>").text("Status: " + physicalData.status))
+						.append($("<p>").text("Present in archive: " + physicalData.presentInArchive))
+						.append($("<p>").text("Archiving requested: " + physicalData.archivingRequested));
+				}
+
+				var $archivingRequestedBtn = FormUtil.getButtonWithImage(archiveImage, archiveAction);
+				if (archiveAction == null) {
+					$archivingRequestedBtn.attr("disabled", true);
+				}
+
+				toolbarModel.push({
+					component : $archivingRequestedBtn,
+					tooltip : archiveTooltip,
+					$tooltip : $archiveTooltip
+				});
 			}
 			
 			//Delete Button
@@ -673,6 +703,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		};
 
 		Util.blockUI($window, css);
+	}
+
+	this.revokeArchivingRequest = function() {
+		this._dataSetFormController.setArchivingRequested(false);
 	}
 
 }
