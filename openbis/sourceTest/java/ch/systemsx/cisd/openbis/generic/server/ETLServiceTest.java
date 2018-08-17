@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.hamcrest.BaseMatcher;
@@ -213,7 +214,7 @@ public class ETLServiceTest extends AbstractServerTestCase
         session.setPerson(sessionPerson);
         managedPropertyEvaluatorFactory = new ManagedPropertyEvaluatorFactory(null, new TestJythonEvaluatorPool());
         operationsExecutor = context.mock(IOperationsExecutor.class);
-        operationLimiter = context.mock(IConcurrentOperationLimiter.class);
+        operationLimiter = new ConcurrentOperationLimiter(new ConcurrentOperationLimiterConfig(new Properties()));
 
         prepareDataSetRegistrationCache();
     }
@@ -1411,7 +1412,6 @@ public class ETLServiceTest extends AbstractServerTestCase
                     SampleBuilder sample1 = new SampleBuilder().id(1);
                     SampleBuilder sample2 = new SampleBuilder().id(2);
                     will(returnValue(Arrays.asList(sample1, sample2)));
-
                 }
             });
 
