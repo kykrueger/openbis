@@ -4156,7 +4156,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     {
         final Session session = getSession(sessionToken);
 
-        return operationLimiter.executeLimitedWithTimeout(ConcurrentOperation.SEARCH_DATA_SETS, new ConcurrentOperation<List<Material>>()
+        return operationLimiter.executeLimitedWithTimeout(ConcurrentOperation.SEARCH_MATERIALS, new ConcurrentOperation<List<Material>>()
             {
                 @Override
                 public List<Material> execute()

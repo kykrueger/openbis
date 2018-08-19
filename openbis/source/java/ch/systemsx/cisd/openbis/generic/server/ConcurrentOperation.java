@@ -26,6 +26,8 @@ public interface ConcurrentOperation<T>
     public static final String SEARCH_EXPERIMENTS = "SearchExperimentsOperation";
 
     public static final String SEARCH_DATA_SETS = "SearchDataSetsOperation";
+    
+    public static final String SEARCH_MATERIALS = "SearchMaterialsOperation";
 
     public static final String SEARCH_GLOBALLY = "SearchGloballyOperation";
 
