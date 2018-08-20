@@ -2122,10 +2122,10 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
-        
-        if resp is not None:
+        if len(resp['objects']) == 0:
+            return []
+        else:
             objects = resp['objects']
-            
             parse_jackson(objects)
             
             for object in objects:
@@ -2140,8 +2140,7 @@ class Openbis:
                 object['creationDate'] = format_timestamp(object['creationDate'])
                 
             return objects
-        else:
-            raise ValueError("Could not fetch semantic annotations!")
+
 
     def get_semantic_annotations(self):
         """ Get a list of all available semantic annotations (DataFrame object).
@@ -2149,7 +2148,10 @@ class Openbis:
 
         objects = self._search_semantic_annotations({})
         attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
-        annotations = DataFrame(objects)
+        if len(objects) == 0:
+            annotations = DataFrame(columns=attrs)
+        else:
+            annotations = DataFrame(objects)
         return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
 
     def get_semantic_annotation(self, permId, only_data = False):
@@ -2356,14 +2358,18 @@ class Openbis:
 
         if type_name is not None and len(resp['objects']) == 1:
             return PropertyAssignments(self, resp['objects'][0])
-        if len(resp['objects']) >= 1:
-            types = DataFrame(resp['objects'])
-            types['modificationDate'] = types['modificationDate'].map(format_timestamp)
-            attributes = self._get_attributes(type_name, types, additional_attributes, optional_attributes)
-            return Things(self, entity.lower() + '_type', types[attributes])
 
+        types = []
+        attrs = self._get_attributes(type_name, types, additional_attributes, optional_attributes)
+        if len(resp['objects']) == 0:
+            types = DataFrame(columns=attrs)
         else:
-            raise ValueError("Nothing found!")
+            objects = resp['objects']
+            parse_jackson(objects)
+            types = DataFrame(objects)
+            types['modificationDate'] = types['modificationDate'].map(format_timestamp)
+        return Things(self, entity.lower() + '_type', types[attrs])
+
 
     def _get_attributes(self, type_name, types, additional_attributes, optional_attributes):
         attributes = ['code', 'description'] + additional_attributes
