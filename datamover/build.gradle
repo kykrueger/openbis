@@ -45,7 +45,7 @@ task dist(type: Zip, dependsOn: jar) {
     rename 'sis-base.*', 'sis-base.jar'
     rename 'cisd-args4j.*', 'cisd-args4j.jar'
     rename 'datamover.*jar', 'datamover.jar'
-    rename 'commons-lang.*', 'commons-lang.jar' 
+    rename 'commons-lang-.*', 'commons-lang.jar' 
     rename 'commons-io.*', 'commons-io.jar'
     rename 'activation.*', 'activation.jar'
     rename 'mail.*', 'mail.jar'

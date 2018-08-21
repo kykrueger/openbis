@@ -85,6 +85,7 @@ dependencies {
 	batteries   'sis:sis-base:+',
                 'apache:httpclient:+',
                 'apache:httpcore:+',
+                'apache:commons-lang:+',
                 'apache:log4j:+',
                 'springframework:spring-aop:+',
                 'springframework:spring-beans:+',
