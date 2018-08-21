@@ -2093,11 +2093,14 @@ class Openbis:
 
         if only_data:
             return objects
+
+        attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
+        if len(objects) == 0:
+            annotations = DataFrame(columns=attrs)
         else:
-            attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
             annotations = DataFrame(objects)
-            annotations = annotations if len(objects) == 0 else annotations[attrs]
-            return Things(self, 'semantic_annotation', annotations, 'permId')
+
+        return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
 
     def _search_semantic_annotations(self, criteria):
 
