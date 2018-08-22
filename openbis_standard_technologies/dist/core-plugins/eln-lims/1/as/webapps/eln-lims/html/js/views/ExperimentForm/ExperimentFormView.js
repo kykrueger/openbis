@@ -98,6 +98,13 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			});
 			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
 			
+			//Move
+			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+				var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId, function() {});
+				moveEntityController.init();
+			});
+			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+			
 			//Delete
 			var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
 				_this._experimentFormController.deleteExperiment(reason);

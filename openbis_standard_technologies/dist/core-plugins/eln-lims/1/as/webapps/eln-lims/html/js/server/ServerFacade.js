@@ -921,8 +921,8 @@ function ServerFacade(openbisServer) {
 				
 				//Optional fetchOptions
 				if(!advancedFetchOptions || !advancedFetchOptions.minTableInfo) {
-					if(fetchOptions.withProjects) {
-						fetchOptions.withProjects();
+					if(fetchOptions.withProject) {
+						fetchOptions.withProject();
 					}
 					if(fetchOptions.withSample) {
 						fetchOptions.withSample();

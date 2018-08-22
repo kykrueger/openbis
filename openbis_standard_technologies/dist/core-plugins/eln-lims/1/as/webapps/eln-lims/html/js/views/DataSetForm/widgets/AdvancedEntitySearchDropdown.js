@@ -19,19 +19,39 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 										placeholder,
 										selectsExperiments,
 										selectsSamples,
-										selectsDatasets) {
+										selectsDatasets,
+										selectsProjects) {
 	var isMultiple = isMultiple;
 	var isRequired = isRequired;
 	var placeholder = placeholder;
 	var selectsExperiments = selectsExperiments;
 	var selectsSamples = selectsSamples;
 	var selectsDatasets = selectsDatasets;
+	var selectsProjects = selectsProjects;
 	var $select = FormUtil.getDropdown({}, "");
 	var storedParams = null;
 	
 	//
 	// External API
 	//
+	
+	var onChangeCallback = null;
+	
+	this.onChange = function(onChangeCallbackGiven) {
+		onChangeCallback = onChangeCallbackGiven
+	}
+	
+	this.addSelectedProject = function(projectIdentifier) {
+		var _this = this;
+		require([ 'as/dto/project/id/ProjectIdentifier', "as/dto/project/fetchoptions/ProjectFetchOptions" ],
+				function(ProjectIdentifier, ProjectFetchOptions) {
+		            var id1 = new ProjectIdentifier(projectIdentifier);
+		            var fetchOptions = new ProjectFetchOptions();
+		            mainController.openbisV3.getProjects([ id1 ], fetchOptions).done(function(map) {
+		            	_this.addSelected(map[projectIdentifier]);
+		            });
+		});
+	}
 	
 	this.addSelectedExperiment = function(experimentIdentifier) {
 		var _this = this;
@@ -127,9 +147,9 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 	var getDisplayName = function(entity) {
 		var text = null;
 		if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
-			text = entity.code + " (" + entity.properties[profile.propertyReplacingCode] + ")";
+			text = entity.identifier.identifier + " (" + entity.properties[profile.propertyReplacingCode] + ")";
 		} else {
-			text = entity.code;
+			text = entity.identifier.identifier;
 		}
 		
 		if(entity["@type"] === "as.dto.dataset.DataSet") {
@@ -142,6 +162,17 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 			}
 		}
 		return text;
+	}
+	
+	var searchProject = function(action) {
+		var criteria = { 	
+						entityKind : "PROJECT", 
+						logicalOperator : "OR", 
+						rules : {
+							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", value: storedParams.data.q }
+						}
+					};
+		mainController.serverFacade.searchForProjectsAdvanced(criteria, null, function(results) { results.type = "Projects"; action(results) });
 	}
 	
 	var searchExperiment = function(action) {
@@ -250,6 +281,9 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						// Searches
 						var searches = [];
 						var searchesResults = [];
+						if(selectsProjects) {
+							searches.push(searchProject);
+						}
 						if(selectsExperiments) {
 							searches.push(searchExperiment);
 						}
@@ -280,6 +314,13 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 				    }
 			  }
 		});
+		
+		var _this = this;
+		if(onChangeCallback) {
+			$select.on('select2:select', function (e) {
+    				onChangeCallback(_this.getSelected());
+			});
+		}
 	}
 	
 }
