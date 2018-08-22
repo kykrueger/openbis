@@ -146,13 +146,15 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 	//
 	var getDisplayName = function(entity) {
 		var text = null;
-		if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
-			text = entity.identifier.identifier + " (" + entity.properties[profile.propertyReplacingCode] + ")";
-		} else {
+		if(entity.identifier && entity.identifier.identifier) {
 			text = entity.identifier.identifier;
+		}
+		if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
+			text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
 		}
 		
 		if(entity["@type"] === "as.dto.dataset.DataSet") {
+			text = entity.permId.permId;
 			if(entity.sample) {
 				text += " " + ELNDictionary.Sample + " [" + getDisplayName(entity.sample) + "]";
 			}
@@ -298,10 +300,10 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						action = function(result) {
 							searchesResults.push(result);
 						 	if(searches.length > 0) {
-						    	var search = searches.shift();
-						    	search(action);
+							    	var search = searches.shift();
+							    	search(action);
 						    } else {
-						    	success(searchesResults);
+						    		success(searchesResults);
 						    }
 						};
 						      

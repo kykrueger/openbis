@@ -92,6 +92,13 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			});
 			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
 
+			//Move
+			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+				var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSet.code);
+				moveEntityController.init();
+			});
+			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+			
 			//Archiving Requested Button
 			var physicalData = this._dataSetFormModel.dataSetV3.physicalData;
 

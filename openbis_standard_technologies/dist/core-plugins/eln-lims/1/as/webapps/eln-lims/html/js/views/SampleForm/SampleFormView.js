@@ -157,9 +157,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			
 			//Move
 			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-				var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId, function() {
-					Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
-				});
+				var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
 				moveEntityController.init();
 			});
 			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });

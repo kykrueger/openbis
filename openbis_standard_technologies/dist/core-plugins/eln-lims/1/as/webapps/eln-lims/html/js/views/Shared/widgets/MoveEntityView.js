@@ -5,7 +5,16 @@ function MoveEntityView(moveEntityController, moveEntityModel) {
 			Util.unblockUI();
 			moveEntityController.move();
 		});
-		$window.append($('<legend>').append("Moving " + moveEntityModel.entity.identifier + " To:"));
+		
+		switch(moveEntityModel.entity["@type"]) {
+			case "as.dto.experiment.Experiment":
+			case "as.dto.sample.Sample":
+				$window.append($('<legend>').append("Moving " + moveEntityModel.entity.getIdentifier() + " To:"));
+			break;
+			case "as.dto.dataset.DataSet":
+				$window.append($('<legend>').append("Moving " + moveEntityModel.entity.getPermId() + " To:"));
+			break;
+		}
 		
 		var $searchBox = $('<div>');
 		$window.append($searchBox);
@@ -17,6 +26,9 @@ function MoveEntityView(moveEntityController, moveEntityModel) {
 			break;
 			case "as.dto.sample.Sample":
 				advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(false, true, "search entity to move to", true, false, false, false);
+			break;
+			case "as.dto.dataset.DataSet":
+				advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(false, true, "search entity to move to", true, true, false, false);
 			break;
 		}
 		

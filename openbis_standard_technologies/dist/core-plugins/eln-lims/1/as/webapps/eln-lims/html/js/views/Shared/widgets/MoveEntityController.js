@@ -1,5 +1,5 @@
-function MoveEntityController(entityType, entityPermId, callbackOnSuccess) {
-	var moveEntityModel = new MoveEntityModel(callbackOnSuccess);
+function MoveEntityController(entityType, entityPermId) {
+	var moveEntityModel = new MoveEntityModel();
 	var moveEntityView = new MoveEntityView(this, moveEntityModel);
 	
 	this.init = function() {
@@ -32,7 +32,7 @@ function MoveEntityController(entityType, entityPermId, callbackOnSuccess) {
 			            experimentUpdate.setExperimentId(moveEntityModel.entity.getIdentifier());
 			 			experimentUpdate.setProjectId(moveEntityModel.selected.getIdentifier());
 			            mainController.openbisV3.updateExperiments([ experimentUpdate ]).done(function() {
-			                callbackOnSuccess();
+			                Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
 			            });
         			});
 				break;
@@ -43,12 +43,29 @@ function MoveEntityController(entityType, entityPermId, callbackOnSuccess) {
 			            sampleUpdate.setSampleId(moveEntityModel.entity.getIdentifier());
 			 			sampleUpdate.setExperimentId(moveEntityModel.selected.getIdentifier());
 			            mainController.openbisV3.updateSamples([ sampleUpdate ]).done(function() {
-			                callbackOnSuccess();
+			            		Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
 			            });
         			});
 				break;
 			case "DATASET":
-				
+				require([ "as/dto/dataset/update/DataSetUpdate"], 
+			        function(DataSetUpdate) {
+			            var datasetUpdate = new DataSetUpdate();
+			            datasetUpdate.setDataSetId(moveEntityModel.entity.getPermId());
+			            
+			            switch(moveEntityModel.selected["@type"]) {
+							case "as.dto.experiment.Experiment":
+								datasetUpdate.setExperimentId(moveEntityModel.selected.getIdentifier());
+							break;
+							case "as.dto.sample.Sample":
+								datasetUpdate.setSampleId(moveEntityModel.selected.getIdentifier());
+							break;
+						}
+						
+			            mainController.openbisV3.updateDataSets([ datasetUpdate ]).done(function() {
+			            		Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
+			            });
+        			});
 				break;
 		}
 		
