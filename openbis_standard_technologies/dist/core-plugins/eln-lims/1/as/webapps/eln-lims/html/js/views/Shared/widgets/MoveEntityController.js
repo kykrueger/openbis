@@ -24,6 +24,13 @@ function MoveEntityController(entityType, entityPermId) {
 	}
 	
 	this.move = function() {
+		var done = function() {
+			Util.showSuccess("Move successfull", function() { Util.unblockUI(); });
+		};
+		var fail = function(error) {
+			Util.showError("Move failed: " + JSON.stringify(error));
+		};
+		
 		switch(entityType) {
 			case "EXPERIMENT":
 				require([ "as/dto/experiment/update/ExperimentUpdate"], 
@@ -31,9 +38,7 @@ function MoveEntityController(entityType, entityPermId) {
 			            var experimentUpdate = new ExperimentUpdate();
 			            experimentUpdate.setExperimentId(moveEntityModel.entity.getIdentifier());
 			 			experimentUpdate.setProjectId(moveEntityModel.selected.getIdentifier());
-			            mainController.openbisV3.updateExperiments([ experimentUpdate ]).done(function() {
-			                Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
-			            });
+			            mainController.openbisV3.updateExperiments([ experimentUpdate ]).done(done).fail(fail);
         			});
 				break;
 			case "SAMPLE":
@@ -42,9 +47,7 @@ function MoveEntityController(entityType, entityPermId) {
 			            var sampleUpdate = new SampleUpdate();
 			            sampleUpdate.setSampleId(moveEntityModel.entity.getIdentifier());
 			 			sampleUpdate.setExperimentId(moveEntityModel.selected.getIdentifier());
-			            mainController.openbisV3.updateSamples([ sampleUpdate ]).done(function() {
-			            		Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
-			            });
+			            mainController.openbisV3.updateSamples([ sampleUpdate ]).done(done).fail(fail);
         			});
 				break;
 			case "DATASET":
@@ -62,9 +65,7 @@ function MoveEntityController(entityType, entityPermId) {
 							break;
 						}
 						
-			            mainController.openbisV3.updateDataSets([ datasetUpdate ]).done(function() {
-			            		Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
-			            });
+			            mainController.openbisV3.updateDataSets([ datasetUpdate ]).done(done).fail(fail);
         			});
 				break;
 		}
