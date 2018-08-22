@@ -15,6 +15,9 @@ function MoveEntityView(moveEntityController, moveEntityModel) {
 			case "as.dto.experiment.Experiment":
 				advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(false, true, "search entity to move to", false, false, false, true);
 			break;
+			case "as.dto.sample.Sample":
+				advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(false, true, "search entity to move to", true, false, false, false);
+			break;
 		}
 		
 		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });		

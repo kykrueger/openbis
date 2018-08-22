@@ -26,8 +26,8 @@ function MoveEntityController(entityType, entityPermId, callbackOnSuccess) {
 	this.move = function() {
 		switch(entityType) {
 			case "EXPERIMENT":
-				require([ "as/dto/experiment/update/ExperimentUpdate", "as/dto/experiment/id/ExperimentIdentifier", "as/dto/project/id/ProjectIdentifier" ], 
-			        function(ExperimentUpdate, ExperimentIdentifier, ProjectIdentifier) {
+				require([ "as/dto/experiment/update/ExperimentUpdate"], 
+			        function(ExperimentUpdate) {
 			            var experimentUpdate = new ExperimentUpdate();
 			            experimentUpdate.setExperimentId(moveEntityModel.entity.getIdentifier());
 			 			experimentUpdate.setProjectId(moveEntityModel.selected.getIdentifier());
@@ -35,10 +35,17 @@ function MoveEntityController(entityType, entityPermId, callbackOnSuccess) {
 			                callbackOnSuccess();
 			            });
         			});
-        
 				break;
 			case "SAMPLE":
-				
+				require([ "as/dto/sample/update/SampleUpdate"], 
+			        function(SampleUpdate) {
+			            var sampleUpdate = new SampleUpdate();
+			            sampleUpdate.setSampleId(moveEntityModel.entity.getIdentifier());
+			 			sampleUpdate.setExperimentId(moveEntityModel.selected.getIdentifier());
+			            mainController.openbisV3.updateSamples([ sampleUpdate ]).done(function() {
+			                callbackOnSuccess();
+			            });
+        			});
 				break;
 			case "DATASET":
 				

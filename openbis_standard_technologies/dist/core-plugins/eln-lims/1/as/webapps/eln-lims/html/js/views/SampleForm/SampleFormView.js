@@ -155,6 +155,15 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				toolbarModel.push({ component : $editButton, tooltip: "Edit" });
 			}
 			
+			//Move
+			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+				var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId, function() {
+					Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
+				});
+				moveEntityController.init();
+			});
+			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+			
 			//Copy
 			var $copyButton = $("<a>", { 'class' : 'btn btn-default'} )
 			.append($('<img>', { 'src' : './img/copy-icon.png', 'style' : 'width:16px; height:16px;' }));

@@ -100,7 +100,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			
 			//Move
 			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-				var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId, function() {});
+				var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId, function() {
+					Util.showSuccess("Entity successfully moved.", function() { Util.unblockUI(); });
+				});
 				moveEntityController.init();
 			});
 			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
