@@ -1081,7 +1081,17 @@ function ServerFacade(openbisServer) {
 						switch(attributeName) {
 							//Used by all entities
 							case "CODE":
-								criteria.withCode().thatEquals(attributeValue);
+								if(!comparisonOperator) {
+									comparisonOperator = "thatEquals";
+								}
+								switch(comparisonOperator) {
+									case "thatEquals":
+											criteria.withCode().thatEquals(attributeValue);
+											break;
+									case "thatContains":
+											criteria.withCode().thatContains(attributeValue);
+											break;
+								}
 								break;
 							case "PERM_ID":
 								criteria.withPermId().thatEquals(attributeValue);

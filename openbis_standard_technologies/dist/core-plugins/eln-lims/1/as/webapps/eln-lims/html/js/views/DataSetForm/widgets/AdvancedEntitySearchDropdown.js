@@ -171,7 +171,7 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						entityKind : "PROJECT", 
 						logicalOperator : "OR", 
 						rules : {
-							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", value: storedParams.data.q }
+							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
 		mainController.serverFacade.searchForProjectsAdvanced(criteria, null, function(results) { results.type = "Projects"; action(results) });
@@ -183,7 +183,7 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						logicalOperator : "OR", 
 						rules : {
 							"UUIDv4-1": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", value: storedParams.data.q }
+							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
 		mainController.serverFacade.searchForExperimentsAdvanced(criteria, null, function(results) { results.type = "Experiments"; action(results) });
@@ -195,7 +195,7 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						logicalOperator : "OR", 
 						rules : {
 							"UUIDv4-1": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", value: storedParams.data.q }
+							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
 		mainController.serverFacade.searchForSamplesAdvanced(criteria, null, function(results) { results.type = "Samples"; action(results) });
@@ -207,11 +207,11 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						logicalOperator : "OR", 
 						rules : {
 							"UUIDv4-1": { type: "Sample", 				name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-2": { type: "Sample", 				name: "ATTR.CODE", value: storedParams.data.q },
+							"UUIDv4-2": { type: "Sample", 				name: "ATTR.CODE", operator : "thatContains",		value: storedParams.data.q },
 							"UUIDv4-3": { type: "Experiment", 			name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-4": { type: "Experiment", 			name: "ATTR.CODE", value: storedParams.data.q },
+							"UUIDv4-4": { type: "Experiment", 			name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q },
 							"UUIDv4-5": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-6": { type: "Property/Attribute", 	name: "ATTR.CODE", value: storedParams.data.q }
+							"UUIDv4-6": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
 		
