@@ -843,9 +843,10 @@ function MainController(profile) {
 					settingsForDropdown.push({ label: settingsObjects[sIdx].identifier, value: settingsObjects[sIdx].identifier})
 				}
 				
-				var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Select settigs");
+				var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Select settings");
 				$dropdown.attr("id", "settingsDropdown");
-				Util.blockUI("Select settings: <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='settingsDropdownCancel'>Cancel</a>");
+				Util.blockUI($dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='settingsDropdownCancel'>Cancel</a>");
+				$("#settingsDropdown").select2({ width: '100%', theme: "bootstrap" });
 				
 				$("#settingsDropdown").on("change", function(event) {
 					var sampleIdentifier = $("#settingsDropdown")[0].value;
