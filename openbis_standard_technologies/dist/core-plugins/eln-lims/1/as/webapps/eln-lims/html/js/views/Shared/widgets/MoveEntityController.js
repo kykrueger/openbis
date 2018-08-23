@@ -47,7 +47,11 @@ function MoveEntityController(entityType, entityPermId) {
 				setTimeout(function(){ waitForIndexUpdate(); }, 300);
 			} else {
 				Util.showSuccess("Move successfull", function() { 
-					Util.unblockUI(); 
+					Util.unblockUI();
+					
+					mainController.sideMenu.refreshNodeParent(entity.getPermId().permId); // Refresh old node parent
+					mainController.sideMenu.refreshNode(moveEntityModel.selected.getPermId().permId); // New node parent
+					
 					switch(entityType) {
 						case "EXPERIMENT":
 							mainController.changeView("showExperimentPageFromIdentifier", entity.getIdentifier().identifier);
