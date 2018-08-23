@@ -2,30 +2,73 @@ function MoveEntityController(entityType, entityPermId) {
 	var moveEntityModel = new MoveEntityModel();
 	var moveEntityView = new MoveEntityView(this, moveEntityModel);
 	
-	this.init = function() {
+	var searchAndCallback = function(callback) {
 		var criteria = { entityKind : entityType, logicalOperator : "AND", rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : entityPermId } } };
-		
-		var render = function(result) {
-			moveEntityModel.entity = result.objects[0];
-			moveEntityView.repaint();
-		}
 		
 		switch(entityType) {
 			case "EXPERIMENT":
-				mainController.serverFacade.searchForExperimentsAdvanced(criteria, null, render);
+				mainController.serverFacade.searchForExperimentsAdvanced(criteria, null, callback);
 				break;
 			case "SAMPLE":
-				mainController.serverFacade.searchForSamplesAdvanced(criteria, null, render);
+				mainController.serverFacade.searchForSamplesAdvanced(criteria, null, callback);
 				break;
 			case "DATASET":
-				mainController.serverFacade.searchForDataSetsAdvanced(criteria, null, render);
+				mainController.serverFacade.searchForDataSetsAdvanced(criteria, null, callback);
 				break;
 		}
 	}
 	
+	this.init = function() {
+		searchAndCallback(function(result) {
+			moveEntityModel.entity = result.objects[0];
+			moveEntityView.repaint();
+		});
+	}
+	
+	var waitForIndexUpdate = function() {
+		searchAndCallback(function(result) {
+			var entity = result.objects[0];
+			var found = false;
+			switch(entityType) {
+				case "EXPERIMENT":
+					found = entity.getProject().getIdentifier().identifier === moveEntityModel.selected.getIdentifier().identifier;
+					break;
+				case "SAMPLE":
+					found = entity.getExperiment().getIdentifier().identifier === moveEntityModel.selected.getIdentifier().identifier;
+					break;
+				case "DATASET":
+					found = (entity.getSample() && entity.getSample().getIdentifier().identifier === moveEntityModel.selected.getIdentifier().identifier)
+							||
+							(entity.getExperiment() && entity.getExperiment().getIdentifier().identifier === moveEntityModel.selected.getIdentifier().identifier);
+					break;
+			}
+			
+			if(!found) {
+				setTimeout(function(){ waitForIndexUpdate(); }, 300);
+			} else {
+				Util.showSuccess("Move successfull", function() { 
+					Util.unblockUI(); 
+					switch(entityType) {
+						case "EXPERIMENT":
+							mainController.changeView("showExperimentPageFromIdentifier", entity.getIdentifier().identifier);
+							break;
+						case "SAMPLE":
+							mainController.changeView("showViewSamplePageFromPermId", entity.getPermId().permId);
+							break;
+						case "DATASET":
+							mainController.changeView("showViewDataSetPageFromPermId", entity.getPermId().permId);
+							break;
+					}
+				});
+			}
+		});
+	}
+	
 	this.move = function() {
+		Util.blockUI();
+		
 		var done = function() {
-			Util.showSuccess("Move successfull", function() { Util.unblockUI(); });
+			waitForIndexUpdate();
 		};
 		var fail = function(error) {
 			Util.showError("Move failed: " + JSON.stringify(error));
