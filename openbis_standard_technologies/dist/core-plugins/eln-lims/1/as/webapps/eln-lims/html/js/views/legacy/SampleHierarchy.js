@@ -22,6 +22,11 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 	this.sample = sample;
 	this.hierarchyFilterController = null;
 	
+	//
+	if(this.sample["@type"] === "Sample") { // V1 Sample
+		profile.deleteSampleConnectionsByType(this.sample);
+	}
+	//
 	this.init = function() {
 		this.repaint();
 	}
