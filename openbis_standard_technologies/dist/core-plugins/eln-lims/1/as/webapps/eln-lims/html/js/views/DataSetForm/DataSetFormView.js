@@ -397,7 +397,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					} else {
 						var showSelectDatasetType = function() {
 							var $dropdown = FormUtil.getDataSetsDropDown("datasetTypeForDataset", _this._dataSetFormModel.dataSetTypes);
-							Util.blockUI("Select the type for the Dataset: <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='datasetTypeForDatasetCancel'>Cancel</a>");
+							Util.showDropdownAndBlockUI("datasetTypeForDataset", $dropdown);
 							
 							$("#datasetTypeForDataset").on("change", function(event) {
 								var datasetTypeCode = $("#datasetTypeForDataset")[0].value;

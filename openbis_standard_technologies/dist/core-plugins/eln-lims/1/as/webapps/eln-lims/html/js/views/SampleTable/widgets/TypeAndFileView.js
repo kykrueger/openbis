@@ -37,6 +37,7 @@ function TypeAndFileView(typeAndFileController, typeAndFileModel) {
 		});
 		var $sampleTypeDropDownBoxGroup = FormUtil.getFieldForComponentWithLabel($sampleTypeDropDown, ELNDictionary.Sample + ' Type');
 		$window.append($sampleTypeDropDownBoxGroup);
+		$sampleTypeDropDown.select2({ width: '100%', theme: "bootstrap" });
 		
 		$window.append(this.linkContainer);
 		

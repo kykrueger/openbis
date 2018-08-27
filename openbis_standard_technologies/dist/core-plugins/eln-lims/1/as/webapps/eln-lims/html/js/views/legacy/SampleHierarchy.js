@@ -167,20 +167,9 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 	this._addChildFor = function(permId) {
 		var sampleTypes = this.profile.getAllSampleTypes();
 		
-		var component = "<select id='sampleTypeSelector' class='form-control' required>";
-		component += "<option disabled=\"disabled\" selected></option>";
-		for(var i = 0; i < sampleTypes.length; i++) {
-			var sampleType = sampleTypes[i];
-			var label = Util.getEmptyIfNull(sampleType.description);
-			if(label === "") {
-				label = sampleType.code;
-			}
-			
-			component += "<option value='" + sampleType.code + "'>" + label + "</option>";
-		}
-		component += "</select>";
-		
-		Util.blockUI("Select the type for the Child: <br><br>" + component + "<br> or <a class='btn btn-default' id='sampleTypeSelectorCancel'>Cancel</a>");
+		var $dropdown = FormUtil.getSampleTypeDropdown('sampleTypeSelector', true);
+		Util.blockUI("Select the type for the Child: <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='sampleTypeSelectorCancel'>Cancel</a>");
+		$("#sampleTypeSelector").select2({ width: '100%', theme: "bootstrap" });
 		
 		$("#sampleTypeSelectorCancel").on("click", function(event) { 
 			Util.unblockUI();

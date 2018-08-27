@@ -63,7 +63,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		if(this._projectFormModel.mode === FormMode.VIEW) {
 			var showSelectExperimentType = function() {
 				var $dropdown = FormUtil.getExperimentTypeDropdown("experimentTypeDropdown", true);
-				Util.blockUI("Select the type for the " + ELNDictionary.getExperimentKindName(projectIdentifier) + ": <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='experimentTypeDropdownCancel'>Cancel</a>");
+				Util.showDropdownAndBlockUI("experimentTypeDropdown", $dropdown);
 				
 				$("#experimentTypeDropdown").on("change", function(event) {
 					var experimentTypeCode = $("#experimentTypeDropdown")[0].value;

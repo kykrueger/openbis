@@ -26,7 +26,6 @@ var Util = new function() {
 	//
 	this.blockUINoMessage = function() {
 		this.unblockUI();
-		BlockScrollUtil.disable_scroll();
 		$('#navbar').block({ message: '', css: { width: '0px' } });
 		$.blockUI({ message: '', css: { width: '0px' } });
 	}
@@ -49,9 +48,13 @@ var Util = new function() {
 		});
 	}
 	
+	this.showDropdownAndBlockUI = function(id, $dropdown) {
+		Util.blockUI($dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='" + id + "Cancel'>Cancel</a>");
+		$("#" + id).select2({ width: '100%', theme: "bootstrap" });
+	}
+	
 	this.blockUI = function(message, extraCSS, disabledFadeAnimation) {
 		this.unblockUI();
-		BlockScrollUtil.disable_scroll();
 		
 		var css = { 
 					'border': 'none', 
@@ -72,7 +75,7 @@ var Util = new function() {
 		
 		$('#navbar').block({ message: '', css: { width: '0px' } });
 		var params = { css : css };
-		if(message) {
+		if (message) {
 			params.message = message;
 		} else {
 			params.message = '<h1><img src="./img/busy.gif" /> Just a moment...</h1>';
@@ -82,25 +85,6 @@ var Util = new function() {
 			params.fadeOut = 0;
 		}
 		$.blockUI(params);
-		
-		//Enable/Disable scroll when the mouse goes in/out
-		$('.blockUI.blockMsg.blockPage').hover(function() {
-				if(this.scrollHeight > this.clientHeight) { //Inside, if has scroll, enable when hovering in
-					BlockScrollUtil.enable_scroll();
-				}
-			}, function() {
-				BlockScrollUtil.disable_scroll(); //Always disable when hovering out
-			}
-		);
-		
-		//Enable/Disable scroll when components change
-		$('.blockUI.blockMsg.blockPage').bind("DOMSubtreeModified",function() {
-			if(this.scrollHeight > this.clientHeight) { //Inside, if has scroll, enable
-				BlockScrollUtil.enable_scroll();
-			} else { //If doesn't disable
-				BlockScrollUtil.disable_scroll(); 
-			}
-		});
 	}
 	
 	//
@@ -111,8 +95,7 @@ var Util = new function() {
 		$.unblockUI({ 
 			onUnblock: function() {
 				window.setTimeout(function() { //Enable after all possible enable/disable events happen
-					BlockScrollUtil.enable_scroll();
-					if(callback) {
+					if (callback) {
 						callback();
 					}
 				}, 150);

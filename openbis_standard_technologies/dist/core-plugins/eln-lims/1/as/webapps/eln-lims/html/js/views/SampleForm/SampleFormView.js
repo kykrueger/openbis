@@ -891,6 +891,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			if($childrenStorageDropdown && !$("#childrenStorageSelector").length) {
 				var $childrenStorageDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenStorageDropdown, 'Storage');
 				$("#newChildrenOnBenchDropDown").append($childrenStorageDropdownWithLabel);
+				$childrenStorageDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		});
 	}
@@ -1086,6 +1087,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $childrenTypeDropdown = FormUtil.getSampleTypeDropdown('childrenTypeSelector', true);
 		var $childrenTypeDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenTypeDropdown, 'Type');
 		$childrenComponent.append($childrenTypeDropdownWithLabel);
+		$childrenTypeDropdown.select2({ width: '100%', theme: "bootstrap" });
 		
 		var $childrenReplicas = FormUtil._getInputField('number', 'childrenReplicas', 'Children Replicas', '1', true);
 		$childrenReplicas.val("1");

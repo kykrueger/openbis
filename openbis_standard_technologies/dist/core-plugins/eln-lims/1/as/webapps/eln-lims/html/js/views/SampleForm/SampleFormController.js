@@ -258,7 +258,11 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						storagePosition.properties[storagePropertyGroup.rowProperty] = 1;
 						storagePosition.properties[storagePropertyGroup.columnProperty] = 1;
 						storagePosition.properties[storagePropertyGroup.boxSizeProperty] = "1X1";
-						storagePosition.properties[storagePropertyGroup.boxProperty] = experimentIdentifier.replace(/\//g,'\/') + "_" + sample.code + "_EXP_RESULTS";
+						var boxProperty = sample.code + "_EXP_RESULTS";
+						if (experimentIdentifier) {
+							boxProperty = experimentIdentifier.replace(/\//g,'\/') + "_" + boxProperty;
+						}
+						storagePosition.properties[storagePropertyGroup.boxProperty] = boxProperty;
 						storagePosition.properties[storagePropertyGroup.userProperty] = mainController.serverFacade.openbisServer.getSession().split("-")[0];
 						storagePosition.properties[storagePropertyGroup.positionProperty] = "A1";
 					

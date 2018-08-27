@@ -193,8 +193,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	this.createNewSample = function(experimentIdentifier) {
 		var _this = this;
 		var $dropdown = FormUtil.getSampleTypeDropdown("sampleTypeDropdown", true);
-		Util.blockUI($dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='sampleTypeDropdownCancel'>Cancel</a>");
-		$("#sampleTypeDropdown").select2({ width: '100%', theme: "bootstrap" });
+		Util.showDropdownAndBlockUI("sampleTypeDropdown", $dropdown);
 		
 		$("#sampleTypeDropdown").on("change", function(event) {
 			var sampleTypeCode = $("#sampleTypeDropdown")[0].value;
