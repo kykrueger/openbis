@@ -122,7 +122,7 @@ var Util = new function() {
 			endIndex = stacktrace.length;
 		}
 		var errorMessage = stacktrace.substring(startIndex, endIndex).trim();
-		Util.showError(errorMessage, function() {Util.unblockUI();});
+		Util.showError(errorMessage, function() {Util.unblockUI();}, undefined, isUserFailureException || isAuthorizationException);
 	}
 	
 	this.showWarning = function(text, okCallback) {
@@ -149,26 +149,29 @@ var Util = new function() {
 		});
 	}
 	
-	this.showError = function(withHTML, andCallback, noBlock) {
+	this.showError = function(withHTML, andCallback, noBlock, isUserError, isEnvironmentError) {
 		var withHTMLToShow = null;
 		
-		if(withHTML.length > 200 && !withHTML.startsWith("Authorization failure")) { // Typical big errors come from the server side and should not happen
-			var warning = "<b>Please send this error report if you wish SIS to review it:</b>" +  "<br>" +
-			          "This report contains the user session token, user browser and the action it was performing when it happened, including it's data!: <br>" +
-				      "Pressing the 'Send error report' button will open your default mail application and gives you the oportunity to delete any sensible information before sending.";
-					 
-			var report = "agent: " + navigator.userAgent + "\n" +
-					 "domain: " + location.hostname + "\n" +
-					 "session: " + mainController.serverFacade.openbisServer.getSession() + "\n" +
-					 "timestamp: " + new Date() + "\n" +
-					 "error: \n" +
-					 withHTML;
-			var withHTMLToShow = warning + "<br><br><textarea rows=\"8\" cols=\"170\">" + report + "</textarea>";
-          		withHTMLToShow += "<br>" + "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
-		} else {
-			withHTMLToShow = withHTML + "<br>" + "<a class='btn btn-default'>Dismiss</a>";
+		var userErrorWarning = "";
+		if(isUserError) {
+			userErrorWarning = "<b>This error looks like a user error:</b>" + "<br>";
 		}
 		
+		var warning = "<b>Please send this error report if you wish SIS to review it:</b>" +  "<br>" +
+			          "This report contains information about the user and the action it was performing when it happened, including it's data!: <br>" +
+				      "Pressing the 'Send error report' button will open your default mail application and gives you the opportunity to delete any sensitive information before sending.";
+					 
+		var report = "agent: " + navigator.userAgent + "%0D%0A" +
+					 "domain: " + location.hostname + "%0D%0A" +
+					 "session: " + mainController.serverFacade.openbisServer.getSession() + "%0D%0A" +
+					 "timestamp: " + new Date() + "%0D%0A" +
+					 "isUserError: " + isUserError + "%0D%0A" +
+					 "isEnvironmentError: " + isEnvironmentError + "%0D%0A" +
+					 "href: " + location.href.replace(new RegExp("&", 'g'), " - ") + "%0D%0A" +
+					 "error: " + withHTML;
+		debugger;
+		var withHTMLToShow = userErrorWarning + withHTML + "<br><br>" + warning + "<br><br>";
+          	withHTMLToShow += "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
 		
 		var isiPad = navigator.userAgent.match(/iPad/i) != null;
 		
@@ -189,7 +192,7 @@ var Util = new function() {
 				  LongTrip :20,
 				  HorizontalPosition : 'center',
 				  VerticalPosition : 'top',
-				  ShowOverlay : false,
+				  ShowOverlay : true,
 		   		  ColorOverlay : '#000',
 				  OpacityOverlay : 0.3,
 				  onClosed : function(){ if(andCallback) { andCallback();} else { localReference.unblockUI();}},
