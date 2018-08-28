@@ -180,6 +180,7 @@ task dssUploadGuiStandalone << {
             include(name: "httpcore.jar")
         	include(name: "commons-io.jar")
         	include(name: "commons-lang.jar")
+        	include(name: "commons-lang3.jar")
         	include(name: "commons-logging.jar")
         	include(name: "dom4j-1.6.1.jar")
         	include(name: "dss_upload_gui.jar")
