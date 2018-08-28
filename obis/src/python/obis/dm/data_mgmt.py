@@ -283,6 +283,9 @@ class GitDataMgmt(AbstractDataMgmt):
         if result.failure():
             return result
         with cd(path):
+            result = self.git_wrapper.initial_commit()
+            if result.failure():
+                return result
             # Update the resolvers location
             self.settings_resolver.set_resolver_location_roots('data_set', '.')
             self.settings_resolver.copy_global_to_local()

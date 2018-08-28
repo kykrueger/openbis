@@ -45,6 +45,7 @@ from .person import Person
 from .group import Group
 from .role_assignment import RoleAssignment
 from .tag import Tag
+from .sample_type import SampleType
 from .semantic_annotation import SemanticAnnotation
 from .plugin import Plugin
 
@@ -2040,7 +2041,67 @@ class Openbis:
                 else:
                     return Tag(self, data=resp[permId])
 
-    
+
+    def search_semantic_annotations(self, permId=None, entityType=None, propertyType=None, only_data = False):
+        """ Get a list of semantic annotations for permId, entityType, propertyType or 
+        property type assignment (DataFrame object).
+        :param permId: permId of the semantic annotation.
+        :param entityType: entity (sample) type to search for.
+        :param propertyType: property type to search for
+        :param only_data: return result as plain data object.
+        :return:  Things of DataFrame objects or plain data object
+        """
+
+        criteria = []
+        typeCriteria = []
+
+        if permId is not None:
+            criteria.append({
+                "@type" : "as.dto.common.search.PermIdSearchCriteria",
+                "fieldValue" : {
+                    "@type" : "as.dto.common.search.StringEqualToValue",
+                    "value" : permId
+                }
+            })
+
+        if entityType is not None:
+            typeCriteria.append({
+                "@type" : "as.dto.entitytype.search.EntityTypeSearchCriteria",
+                "criteria" : [_criteria_for_code(entityType)]
+            })
+
+        if propertyType is not None:
+            typeCriteria.append({
+                "@type" : "as.dto.property.search.PropertyTypeSearchCriteria",
+                "criteria" : [_criteria_for_code(propertyType)]
+            })
+
+        if entityType is not None and propertyType is not None:
+            criteria.append({
+                "@type" : "as.dto.property.search.PropertyAssignmentSearchCriteria",
+                "criteria" : typeCriteria
+            })
+        else:
+            criteria += typeCriteria
+
+        saCriteria = {
+            "@type" : "as.dto.semanticannotation.search.SemanticAnnotationSearchCriteria",
+            "criteria" : criteria
+        }
+
+        objects = self._search_semantic_annotations(saCriteria)
+
+        if only_data:
+            return objects
+
+        attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
+        if len(objects) == 0:
+            annotations = DataFrame(columns=attrs)
+        else:
+            annotations = DataFrame(objects)
+
+        return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+
     def _search_semantic_annotations(self, criteria):
 
         fetch_options = {
@@ -2064,13 +2125,10 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
-        
-        if resp is not None:
+        if len(resp['objects']) == 0:
+            return []
+        else:
             objects = resp['objects']
-            
-            if len(objects) is 0:
-                raise ValueError("No semantic annotations found!")
-            
             parse_jackson(objects)
             
             for object in objects:
@@ -2085,8 +2143,7 @@ class Openbis:
                 object['creationDate'] = format_timestamp(object['creationDate'])
                 
             return objects
-        else:
-            raise ValueError("No semantic annotations found!")
+
 
     def get_semantic_annotations(self):
         """ Get a list of all available semantic annotations (DataFrame object).
@@ -2094,28 +2151,21 @@ class Openbis:
 
         objects = self._search_semantic_annotations({})
         attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
-        annotations = DataFrame(objects)
+        if len(objects) == 0:
+            annotations = DataFrame(columns=attrs)
+        else:
+            annotations = DataFrame(objects)
         return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+
     def get_semantic_annotation(self, permId, only_data = False):
-
-        criteria = {
-            "@type" : "as.dto.semanticannotation.search.SemanticAnnotationSearchCriteria",
-            "criteria" : [{
-                "@type" : "as.dto.common.search.PermIdSearchCriteria",
-                "fieldValue" : {
-                    "@type" : "as.dto.common.search.StringEqualToValue",
-                    "value" : permId
-                }
-            }]
-        }
-
-        objects = self._search_semantic_annotations(criteria)
+        objects = self.search_semantic_annotations(permId=permId, only_data=True)
+        if len(objects) == 0:
+            raise ValueError("Semantic annotation with permId " + permId +  " not found.")
         object = objects[0]
-
         if only_data:
             return object
         else:
-            return SemanticAnnotation(self, isNew=False, **object)    
+            return SemanticAnnotation(self, isNew=False, **object)
 
     def get_plugins(self):
 
@@ -2224,12 +2274,13 @@ class Openbis:
 
     def get_sample_type(self, type):
         try:
-            return self._get_types_of(
+            property_asignments = self._get_types_of(
                 "searchSampleTypes",
                 "Sample",
                 type,
                 ["generatedCodePrefix", "validationPluginId"]
             )
+            return SampleType(self, property_asignments.data)
         except Exception:
             raise ValueError("no such sample type: {}".format(type))
 
@@ -2310,14 +2361,18 @@ class Openbis:
 
         if type_name is not None and len(resp['objects']) == 1:
             return PropertyAssignments(self, resp['objects'][0])
-        if len(resp['objects']) >= 1:
-            types = DataFrame(resp['objects'])
-            types['modificationDate'] = types['modificationDate'].map(format_timestamp)
-            attributes = self._get_attributes(type_name, types, additional_attributes, optional_attributes)
-            return Things(self, entity.lower() + '_type', types[attributes])
 
+        types = []
+        attrs = self._get_attributes(type_name, types, additional_attributes, optional_attributes)
+        if len(resp['objects']) == 0:
+            types = DataFrame(columns=attrs)
         else:
-            raise ValueError("Nothing found!")
+            objects = resp['objects']
+            parse_jackson(objects)
+            types = DataFrame(objects)
+            types['modificationDate'] = types['modificationDate'].map(format_timestamp)
+        return Things(self, entity.lower() + '_type', types[attrs])
+
 
     def _get_attributes(self, type_name, types, additional_attributes, optional_attributes):
         attributes = ['code', 'description'] + additional_attributes

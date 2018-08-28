@@ -56,5 +56,9 @@ ELNDictionary.settingsView = {
 			title : ELNDictionary.Sample +" Type definitions Extension",
 			info : "This section is used to extend the common openBIS definitions to: 1. Enable the storage. 2. Specify if the " + ELNDictionary.sample + " type is a protocol. 3. Add intended parent/children hints. 4. Support annotations for these links using properties. 5. Show in dropdowns.",
 		},
+		miscellaneous : {
+			title : "Miscellaneous",
+			info : "Miscellaneous settings."
+		},
 	}
 }

@@ -439,17 +439,12 @@ function ServerFacade(openbisServer) {
 	}
 	
 	
-	this.deleteSamples = function(samplePermIdsOrIds, reason, callback, confirmDeletions) {
-		if(!confirmDeletions) {
-			var sampleIds = samplePermIdsOrIds;
-			this.openbisServer.deleteSamples(sampleIds, reason, "TRASH", callback);
-		} else {
-			var samplePermIds = samplePermIdsOrIds;
-			require(["as/dto/sample/id/SamplePermId", "as/dto/sample/delete/SampleDeletionOptions" ], 
+	this.deleteSamples = function(samplePermIds, reason, callback, confirmDeletions) {
+		require(["as/dto/sample/id/SamplePermId", "as/dto/sample/delete/SampleDeletionOptions" ], 
 			        function(SamplePermId, SampleDeletionOptions) {
 			            var samplePermIdsObj = [];
 			            for(var sPIdx = 0; sPIdx < samplePermIds.length; sPIdx++) {
-			            	samplePermIdsObj.push(new SamplePermId(samplePermIds[sPIdx]));
+			            		samplePermIdsObj.push(new SamplePermId(samplePermIds[sPIdx]));
 			            }
 			 
 			            var deletionOptions = new SampleDeletionOptions();
@@ -457,14 +452,16 @@ function ServerFacade(openbisServer) {
 			 
 			            // logical deletion (move objects to the trash can)
 			            mainController.openbisV3.deleteSamples(samplePermIdsObj, deletionOptions).done(function(deletionId) {
-			            	if(confirmDeletions) {
-			            		mainController.openbisV3.confirmDeletions([deletionId]).then(callback);
-			            	} else {
-			            		callback(deletionId);
-			            	}
+				            	if(confirmDeletions) {
+				            		// Confirm deletion of samples
+				            		mainController.openbisV3.confirmDeletions([deletionId]).then(function() {
+				            			callback({});
+				            		});
+				            	} else {
+				            		callback(deletionId);
+				            	}
 			            });
-			 });
-		}
+		});
 	}
 	
 	this.deleteExperiments = function(experimentIds, reason, callback) {
@@ -924,8 +921,8 @@ function ServerFacade(openbisServer) {
 				
 				//Optional fetchOptions
 				if(!advancedFetchOptions || !advancedFetchOptions.minTableInfo) {
-					if(fetchOptions.withProjects) {
-						fetchOptions.withProjects();
+					if(fetchOptions.withProject) {
+						fetchOptions.withProject();
 					}
 					if(fetchOptions.withSample) {
 						fetchOptions.withSample();
@@ -944,6 +941,9 @@ function ServerFacade(openbisServer) {
 					}
 					if(fetchOptions.withLinkedData) {
 						fetchOptions.withLinkedData();
+					}
+					if(fetchOptions.withPhysicalData) {
+						fetchOptions.withPhysicalData();
 					}
 					if(fetchOptions.withParents) {
 						fetchOptions.withParentsUsing(fetchOptions);
@@ -1081,7 +1081,17 @@ function ServerFacade(openbisServer) {
 						switch(attributeName) {
 							//Used by all entities
 							case "CODE":
-								criteria.withCode().thatEquals(attributeValue);
+								if(!comparisonOperator) {
+									comparisonOperator = "thatEquals";
+								}
+								switch(comparisonOperator) {
+									case "thatEquals":
+											criteria.withCode().thatEquals(attributeValue);
+											break;
+									case "thatContains":
+											criteria.withCode().thatContains(attributeValue);
+											break;
+								}
 								break;
 							case "PERM_ID":
 								criteria.withPermId().thatEquals(attributeValue);
@@ -1448,7 +1458,12 @@ function ServerFacade(openbisServer) {
 		
 		// Attributes
 		if(samplePermId) {
-			throw "Unexpected operation exception : v1 search by samplePermId removed";
+			matchClauses.push({
+				"@type":"AttributeMatchClause",
+				fieldType : "ATTRIBUTE",			
+				attribute : "PERM_ID",
+				desiredValue : samplePermId 
+			});
 		}
 		
 		if(sampleIdentifier) {
@@ -1661,7 +1676,7 @@ function ServerFacade(openbisServer) {
 	{
 		if(profile.searchSamplesUsingV3OnDropbox) {
 			this.searchSamplesV3DSS(fechOptions, callbackFunction);
-		} else if(fechOptions["samplePermId"] || fechOptions["sampleIdentifier"]) {
+		} else if(fechOptions["sampleIdentifier"]) {
 			this.searchSamplesV1replacement(fechOptions, callbackFunction);
 		} else {
 			this.searchSamplesV1(fechOptions, callbackFunction);
@@ -2079,6 +2094,50 @@ function ServerFacade(openbisServer) {
 				callbackFunction(false);
 			});
         });
+	}
+
+	this.updateDataSet = function(dataSetPermId, newPhysicalData, callbackFunction) {
+		require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/update/DataSetUpdate", 
+			"as/dto/dataset/update/PhysicalDataUpdate", "as/dto/common/update/FieldUpdateValue"],
+				function(DataSetPermId, DataSetUpdate, PhysicalDataUpdate, FieldUpdateValue) {
+
+			var update = new DataSetUpdate();
+			update.setDataSetId(new DataSetPermId(dataSetPermId));
+
+			if (newPhysicalData) {
+				var physicalDataUpdate = new PhysicalDataUpdate();
+				for (var property in newPhysicalData) {
+					if (newPhysicalData.hasOwnProperty(property)) {
+						var setterName = "set" + property[0].toUpperCase() + property.substr(1);
+						if (typeof physicalDataUpdate[setterName] === 'function') {
+							physicalDataUpdate[setterName](newPhysicalData[property]);
+						}
+					}
+				}
+				update.setPhysicalData(physicalDataUpdate);	
+			}
+
+			mainController.openbisV3.updateDataSets([update]).done(function(result) {
+				callbackFunction(true);
+            }).fail(function(result) {
+				Util.showError("Call failed to server: " + JSON.stringify(result));
+				callbackFunction(false);
+			});
+		});
+	}
+
+	this.unarchiveDataSet = function(dataSetPermId, callbackFunction) {
+		require(["as/dto/dataset/id/DataSetPermId", "as/dto/dataset/unarchive/DataSetUnarchiveOptions"], 
+			function(DataSetPermId, DataSetUnarchiveOptions) {
+				var ids = [new DataSetPermId(dataSetPermId)];
+				var options = new DataSetUnarchiveOptions();
+				mainController.openbisV3.unarchiveDataSets(ids, options).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			});
 	}
 
 	this.getSessionInformation = function(callbackFunction) {

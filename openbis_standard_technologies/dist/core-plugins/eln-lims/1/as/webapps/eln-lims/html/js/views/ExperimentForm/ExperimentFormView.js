@@ -17,6 +17,7 @@
 function ExperimentFormView(experimentFormController, experimentFormModel) {
 	this._experimentFormController = experimentFormController;
 	this._experimentFormModel = experimentFormModel;
+	this.enableSelect2 = [];
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -78,7 +79,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var toolbarModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 			//Create Experiment Step
-			if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP") && !profile.isSampleTypeHidden("EXPERIMENTAL_STEP")) {
+			if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
 				var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 					var argsMap = {
 							"sampleTypeCode" : "EXPERIMENTAL_STEP",
@@ -96,6 +97,13 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				mainController.changeView("showEditExperimentPageFromIdentifier", _this._experimentFormModel.experiment.identifier);
 			});
 			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+			
+			//Move
+			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+				var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId);
+				moveEntityController.init();
+			});
+			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
 			
 			//Delete
 			var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
@@ -241,6 +249,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// INIT
 		//
 		$container.append($form);
+		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
 		
 		Util.unblockUI();
 		
@@ -406,8 +420,19 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 						continue;
 					}
 				} else {
-					var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+					var $component = null;
+					if(propertyType.code === "DEFAULT_OBJECT_TYPE") {
+						$component = FormUtil.getSampleTypeDropdown(propertyType.code, true);
+						this.enableSelect2.push($component);
+					} else {
+						$component = FormUtil.getFieldForPropertyType(propertyType, value);
+					}
+					
 					//Update values if is into edit mode
+					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
+							this.enableSelect2.push($component);
+					}
+						
 					if(this._experimentFormModel.mode === FormMode.EDIT) {
 						if(propertyType.dataType === "BOOLEAN") {
 							$($($component.children()[0]).children()[0]).prop('checked', value === "true");

@@ -17,6 +17,7 @@
 function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	this._dataSetFormController = dataSetFormController;
 	this._dataSetFormModel = dataSetFormModel;
+	this.enableSelect2 = [];
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -90,6 +91,66 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
 			});
 			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+
+			//Move
+			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+				var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSet.code);
+				moveEntityController.init();
+			});
+			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+			
+			//Archiving Requested Button
+			var physicalData = this._dataSetFormModel.dataSetV3.physicalData;
+
+			if (profile.showDatasetArchivingButton && physicalData) {
+
+				var archiveImage = "./img/archive-not-requested-icon.png";
+				if (physicalData.presentInArchive) {
+					archiveImage = "./img/archive-archived-icon.png";
+				} else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
+					archiveImage = "./img/archive-requested-icon.png";
+				}
+
+				var archiveAction = null;
+				var archiveTooltip = null;
+				var $archiveTooltip = null;
+				if (physicalData.status == "AVAILABLE" && !physicalData.presentInArchive) {
+					if (physicalData.archivingRequested) {
+						archiveAction = function() {
+							_this.revokeArchivingRequest();
+						}
+						archiveTooltip = "Revoke archiving request";
+					} else {
+						archiveAction = function() {
+							_this.requestArchiving();
+						}
+						archiveTooltip = "Request archiving";
+					}
+				} else if (physicalData.status == "ARCHIVED") {
+					archiveAction = function() {
+						_this._dataSetFormController.unarchive();
+					}
+					archiveTooltip = "Unarchive";
+				}
+
+				if (archiveTooltip == null) {
+					$archiveTooltip = $("<div>")
+						.append($("<p>").text("Status: " + physicalData.status))
+						.append($("<p>").text("Present in archive: " + physicalData.presentInArchive))
+						.append($("<p>").text("Archiving requested: " + physicalData.archivingRequested));
+				}
+
+				var $archivingRequestedBtn = FormUtil.getButtonWithImage(archiveImage, archiveAction);
+				if (archiveAction == null) {
+					$archivingRequestedBtn.attr("disabled", true);
+				}
+
+				toolbarModel.push({
+					component : $archivingRequestedBtn,
+					tooltip : archiveTooltip,
+					$tooltip : $archiveTooltip
+				});
+			}
 			
 			//Delete Button
 			var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
@@ -158,7 +219,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				}
 				_this.isFormDirty = true;
 			});
-			
+			this.enableSelect2.push($dataSetTypeSelector);
 			var $dataSetTypeDropDown = $('<div>', { class : 'form-group' });
 			if(!this._dataSetFormModel.isMini) {
 				$dataSetTypeDropDown.append($('<label>', {class: "control-label"}).html('Data Set Type&nbsp;(*):'));
@@ -336,7 +397,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					} else {
 						var showSelectDatasetType = function() {
 							var $dropdown = FormUtil.getDataSetsDropDown("datasetTypeForDataset", _this._dataSetFormModel.dataSetTypes);
-							Util.blockUI("Select the type for the Dataset: <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='datasetTypeForDatasetCancel'>Cancel</a>");
+							Util.showDropdownAndBlockUI("datasetTypeForDataset", $dropdown);
 							
 							$("#datasetTypeForDataset").on("change", function(event) {
 								var datasetTypeCode = $("#datasetTypeForDataset")[0].value;
@@ -384,6 +445,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var dataSetViewer = new DataSetViewerController("filesViewer", profile, this._dataSetFormModel.entity, mainController.serverFacade, profile.getDefaultDataStoreURL(), [this._dataSetFormModel.dataSet], false, true);
 			dataSetViewer.init();
 		}
+		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
 	}
 	
 	this._updateFileOptions = function() {
@@ -451,6 +518,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	
 	this._repaintMetadata = function(dataSetType) {
 		var _this = this;
+		this.enableSelect2 = [];
 		$("#metadataContainer").empty();
 		var $wrapper = $("<div>");
 		
@@ -554,6 +622,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							}
 						}
 						
+						if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
+								this.enableSelect2.push($component);
+						} 
+						
 						//Update values if is into edit mode
 						if(this._dataSetFormModel.mode === FormMode.EDIT) {
 							if(propertyType.dataType === "BOOLEAN") {
@@ -595,5 +667,53 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		$("#metadataContainer").append($wrapper);
+		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
 	}
+
+	this.requestArchiving = function() {
+		var _this = this;
+
+		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+		$window.submit(function() {
+		    _this._dataSetFormController.setArchivingRequested(true);
+		    Util.unblockUI();
+		});
+
+		$window.append($('<legend>').append('Request archiving'));
+
+		var threshold = profile.archivingThreshold;
+		var warning = "Remember that your dataset will only be archived when enough data from your group is available to do so (" + threshold + ").";
+		var $warning = $('<p>').text(warning);
+		$window.append($warning);
+
+		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+		$btnCancel.click(function() {
+		    Util.unblockUI();
+		});
+
+		$window.append($btnAccept).append('&nbsp;').append($btnCancel);
+
+		var css = {
+		        'text-align' : 'left',
+		        'top' : '15%',
+		        'width' : '70%',
+		        'left' : '15%',
+		        'right' : '20%',
+		        'overflow' : 'hidden',
+				'background' : '#ffffbf'
+		};
+
+		Util.blockUI($window, css);
+	}
+
+	this.revokeArchivingRequest = function() {
+		this._dataSetFormController.setArchivingRequested(false);
+	}
+
 }

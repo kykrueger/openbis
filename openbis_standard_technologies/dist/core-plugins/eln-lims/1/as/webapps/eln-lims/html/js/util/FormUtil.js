@@ -856,9 +856,14 @@ var FormUtil = new function() {
 		for(var tbIdx = 0; tbIdx < toolbarModel.length; tbIdx++) {
 			var $toolbarComponent = toolbarModel[tbIdx].component;
 			var toolbarComponentTooltip = toolbarModel[tbIdx].tooltip;
+			var $toolbarComponentTooltip = toolbarModel[tbIdx].$tooltip;
 			if(toolbarComponentTooltip) {
 				$toolbarComponent.attr("title", toolbarComponentTooltip);
 				$toolbarComponent.tooltipster();
+			} else if ($toolbarComponentTooltip) {
+				$toolbarComponent.tooltipster({
+					content: $toolbarComponentTooltip
+				});
 			}
 			$toolbarContainer.append($toolbarComponent);
 			$toolbarContainer.append("&nbsp;");
@@ -1078,6 +1083,7 @@ var FormUtil = new function() {
 
 			// attach events
 			$dataSetTypeSelector = $("#dataSetTypeSelector");
+			$dataSetTypeSelector.select2({ width: '100%', theme: "bootstrap" });
 			$nameInput = $("#nameInput");
 			$dropboxFolderName = $("#dropboxFolderName");
 			$copyToClipboardButton = $("#copyToClipboardButton");

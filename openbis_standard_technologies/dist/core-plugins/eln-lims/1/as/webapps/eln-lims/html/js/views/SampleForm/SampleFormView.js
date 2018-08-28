@@ -17,6 +17,7 @@
 function SampleFormView(sampleFormController, sampleFormModel) {
 	this._sampleFormController = sampleFormController;
 	this._sampleFormModel = sampleFormModel;
+	this.enableSelect2 = [];
 	
 	this.repaint = function(views, loadFromTemplate) {
 		var $container = views.content;
@@ -153,6 +154,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				});
 				toolbarModel.push({ component : $editButton, tooltip: "Edit" });
 			}
+			
+			//Move
+			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+				var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
+				moveEntityController.init();
+			});
+			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
 			
 			//Copy
 			var $copyButton = $("<a>", { 'class' : 'btn btn-default'} )
@@ -526,6 +534,12 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		$container.append($form);
 		
+		// Select2
+		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
+			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
+		}
+		//
+		
 		//
 		// Extra content
 		//
@@ -614,6 +628,11 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					}
 				} else {
 					var $component = FormUtil.getFieldForPropertyType(propertyType, value);
+					
+					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
+							this.enableSelect2.push($component);
+					}
+					
 					//Update values if is into edit mode
 					if(this._sampleFormModel.mode === FormMode.EDIT || loadFromTemplate) {
 						if(propertyType.dataType === "BOOLEAN") {
@@ -693,7 +712,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		$fieldsetOwner.append($fieldset);
 		
 		$fieldset.append(FormUtil.getFieldForLabelWithText("Type", this._sampleFormModel.sample.sampleTypeCode));
-		$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName(this._sampleFormModel.sample.experimentIdentifierOrNull), this._sampleFormModel.sample.experimentIdentifierOrNull));
+		if(this._sampleFormModel.sample.experimentIdentifierOrNull) {
+			$fieldset.append(FormUtil.getFieldForLabelWithText(ELNDictionary.getExperimentKindName(this._sampleFormModel.sample.experimentIdentifierOrNull), this._sampleFormModel.sample.experimentIdentifierOrNull));
+		}
 		
 		//
 		// Identification Info - Code
@@ -870,6 +891,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			if($childrenStorageDropdown && !$("#childrenStorageSelector").length) {
 				var $childrenStorageDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenStorageDropdown, 'Storage');
 				$("#newChildrenOnBenchDropDown").append($childrenStorageDropdownWithLabel);
+				$childrenStorageDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		});
 	}
@@ -1065,6 +1087,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $childrenTypeDropdown = FormUtil.getSampleTypeDropdown('childrenTypeSelector', true);
 		var $childrenTypeDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenTypeDropdown, 'Type');
 		$childrenComponent.append($childrenTypeDropdownWithLabel);
+		$childrenTypeDropdown.select2({ width: '100%', theme: "bootstrap" });
 		
 		var $childrenReplicas = FormUtil._getInputField('number', 'childrenReplicas', 'Children Replicas', '1', true);
 		$childrenReplicas.val("1");

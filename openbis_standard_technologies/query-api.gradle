@@ -79,7 +79,8 @@ dependencies {
                         'springframework:spring-web:+',
                         'springframework:spring-webmvc:+',
                         'springframework:spring-expression:+',
-                        'apache:commons-logging:+',				
+                        'apache:commons-logging:+',
+                        'apache:commons-lang:+',
                         'marathon:marathon-spring-util:+',
                         'aopalliance:aopalliance:+'
 }
@@ -123,6 +124,7 @@ configurations.create('apiV3Dependencies')
 dependencies {
   apiV3Dependencies 'sis:sis-base:+',
                     'apache:httpclient:+',
+                    'apache:commons-lang:+',
                     'springframework:spring-web:+',
                     'marathon:marathon-spring-util:+'
 }

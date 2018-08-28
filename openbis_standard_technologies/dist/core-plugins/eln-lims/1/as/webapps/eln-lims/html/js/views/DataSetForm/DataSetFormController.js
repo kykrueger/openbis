@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-function DataSetFormController(parentController, mode, entity, dataSet, isMini) {
+function DataSetFormController(parentController, mode, entity, dataSet, isMini, dataSetV3) {
 	this._parentController = parentController;
-	this._dataSetFormModel = new DataSetFormModel(mode, entity, dataSet, isMini);
+	this._dataSetFormModel = new DataSetFormModel(mode, entity, dataSet, isMini, dataSetV3);
 	this._dataSetFormView = new DataSetFormView(this, this._dataSetFormModel);
 	
 	this.init = function(views) {
@@ -225,4 +225,34 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini) 
 			Util.showError("No DSS available.", function() {Util.unblockUI();});
 		}
 	}
+
+	this.setArchivingRequested = function(archivingRequested) {
+		var _this = this;
+		var dataSetPermId = this._dataSetFormModel.dataSetV3.permId.permId;
+		var physicalDataUpdate = { archivingRequested : archivingRequested }
+		Util.blockUI();
+		mainController.serverFacade.updateDataSet(dataSetPermId, physicalDataUpdate, function() {
+			_this._reloadView();
+			Util.unblockUI();
+		});
+	}
+
+	this.unarchive = function() {
+		var _this = this;
+		var dataSetPermId = this._dataSetFormModel.dataSetV3.permId.permId;
+		Util.blockUI();
+		mainController.serverFacade.unarchiveDataSet(dataSetPermId, function() {
+			_this._reloadView();
+			Util.unblockUI();
+		});
+	}
+
+	this._reloadView = function() {
+		if(this._dataSetFormModel.mode === FormMode.VIEW) {
+			mainController.changeView('showViewDataSetPageFromPermId', this._dataSetFormModel.dataSet.code);
+		} else {
+			mainController.changeView('showEditDataSetPageFromPermId', this._dataSetFormModel.dataSet.code);
+		}
+	}
+
 }

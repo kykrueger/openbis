@@ -96,18 +96,18 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 	this.deleteSample = function(reason) {
 		var _this = this;
 		
-		var samplesToDelete = [this._sampleFormModel.sample.id];
+		var samplesToDelete = [this._sampleFormModel.sample.permId];
 		
 		for(var idx = 0; idx < this._sampleFormModel.sample.children.length; idx++) {
 			var child = this._sampleFormModel.sample.children[idx];
 			if(child.sampleTypeCode === "STORAGE_POSITION") {
-				samplesToDelete.push(child.id);
+				samplesToDelete.push(child.permId);
 			}
 		}
 		
-		mainController.serverFacade.deleteSamples(samplesToDelete, reason, function(data) {
-			if(data.error) {
-				Util.showError(data.error.message);
+		mainController.serverFacade.deleteSamples(samplesToDelete, reason, function(response) {
+			if(response.error) {
+				Util.showError(response.error.message);
 			} else {
 				Util.showSuccess("" + ELNDictionary.Sample + " Deleted");
 				if(_this._sampleFormModel.isELNSample) {
@@ -258,7 +258,11 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						storagePosition.properties[storagePropertyGroup.rowProperty] = 1;
 						storagePosition.properties[storagePropertyGroup.columnProperty] = 1;
 						storagePosition.properties[storagePropertyGroup.boxSizeProperty] = "1X1";
-						storagePosition.properties[storagePropertyGroup.boxProperty] = experimentIdentifier.replace(/\//g,'\/') + "_" + sample.code + "_EXP_RESULTS";
+						var boxProperty = sample.code + "_EXP_RESULTS";
+						if (experimentIdentifier) {
+							boxProperty = experimentIdentifier.replace(/\//g,'\/') + "_" + boxProperty;
+						}
+						storagePosition.properties[storagePropertyGroup.boxProperty] = boxProperty;
 						storagePosition.properties[storagePropertyGroup.userProperty] = mainController.serverFacade.openbisServer.getSession().split("-")[0];
 						storagePosition.properties[storagePropertyGroup.positionProperty] = "A1";
 					
@@ -276,7 +280,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						if(!samplesToDelete) {
 							samplesToDelete = [];
 						}
-						samplesToDelete.push(child.id);
+						samplesToDelete.push(child.permId);
 					}
 				});
 			}

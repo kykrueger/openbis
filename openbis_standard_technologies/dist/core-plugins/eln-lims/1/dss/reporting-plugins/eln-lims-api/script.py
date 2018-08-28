@@ -15,6 +15,7 @@
 #
 
 # IDataSetRegistrationTransactionV2 Class
+from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from ch.systemsx.cisd.openbis.dss.client.api.v1 import DssComponentFactory
 from ch.systemsx.cisd.openbis.generic.shared.api.v1.dto import SearchCriteria
 from ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria import MatchClause, SearchOperator, MatchClauseAttribute
@@ -104,7 +105,7 @@ def getDirectLinkURL():
 						});
 	
 def createSampleIdentifier(sampleSpace, sampleProject, sampleCode, projectSamplesEnabled):
-	template = '/%(sampleSpace)s/%(sampleProject)s/%(sampleCode)s' if projectSamplesEnabled else '/%(sampleSpace)s/%(sampleCode)s'
+	template = '/%(sampleSpace)s/%(sampleProject)s/%(sampleCode)s' if projectSamplesEnabled and (sampleProject is not None)  else '/%(sampleSpace)s/%(sampleCode)s'
 	return template % vars()
 	
 def isSampleTypeAvailable(sampleTypes, sampleTypeCode):
@@ -688,13 +689,13 @@ def insertDataSet(tr, parameters, tableBuilder):
 	tempDirFile.mkdirs();
 	
 	#tempDir = System.getProperty("java.io.tmpdir");
-	dss_component = DssComponentFactory.tryCreate(parameters.get("sessionID"), OPENBISURL);
+	dss_component = ServiceProvider.getDssServiceRpcGeneric().getService();
 	
 	for fileName in fileNames:
 		folderFile = File(tempDir + "/" + folderName);
 		folderFile.mkdir();
 		temFile = File(tempDir + "/" + folderName + "/" + fileName);
-		inputStream = dss_component.getFileFromSessionWorkspace(fileName);
+		inputStream = dss_component.getFileFromSessionWorkspace(parameters.get("sessionID"), fileName);
 		outputStream = FileOutputStream(temFile);
 		IOUtils.copyLarge(inputStream, outputStream);
 		IOUtils.closeQuietly(inputStream);
@@ -731,7 +732,7 @@ def insertDataSet(tr, parameters, tableBuilder):
 			tr.moveFile(temFile.getAbsolutePath(), dataSet);
 	#Clean Files from workspace
 	for fileName in fileNames:
-		dss_component.deleteSessionWorkspaceFile(fileName);
+		dss_component.deleteSessionWorkspaceFile(parameters.get("sessionID"), fileName);
 	
 	#Return from the call
 	return True;
@@ -852,7 +853,7 @@ def insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder):
 	
 	#Create/Get for update sample	
 	sampleIdentifier = createSampleIdentifier(sampleSpace, sampleProject, sampleCode, projectSamplesEnabled)
-	
+	print "sampleIdentifier: " + sampleIdentifier
 	method = parameters.get("method");
 	if method == "insertSample":
 		sample = tr.createNewSample(sampleIdentifier, sampleType); #Create Sample given his id
