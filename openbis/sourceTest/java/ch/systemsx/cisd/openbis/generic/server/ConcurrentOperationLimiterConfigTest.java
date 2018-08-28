@@ -88,12 +88,12 @@ public class ConcurrentOperationLimiterConfigTest
     {
         Properties properties = new Properties();
         properties.setProperty("concurrent-operation-limiter.limits", "limit-1, limit-2");
-        properties.setProperty("limit-1.operation", "test-1");
-        properties.setProperty("limit-1.limit", "1");
-        properties.setProperty("limit-2.operation", "test-2");
-        properties.setProperty("limit-2.limit", "2");
-        properties.setProperty("limit-3.operation", "test-3");
-        properties.setProperty("limit-3.limit", "3");
+        properties.setProperty("concurrent-operation-limiter.limit-1.operation", "test-1");
+        properties.setProperty("concurrent-operation-limiter.limit-1.limit", "1");
+        properties.setProperty("concurrent-operation-limiter.limit-2.operation", "test-2");
+        properties.setProperty("concurrent-operation-limiter.limit-2.limit", "2");
+        properties.setProperty("concurrent-operation-limiter.limit-3.operation", "test-3");
+        properties.setProperty("concurrent-operation-limiter.limit-3.limit", "3");
 
         ConcurrentOperationLimiterConfig config = new ConcurrentOperationLimiterConfig(properties);
         assertEquals(config.getLimits().get(0).getOperation(), "test-1");
@@ -127,8 +127,8 @@ public class ConcurrentOperationLimiterConfigTest
     {
         Properties properties = new Properties();
         properties.setProperty("concurrent-operation-limiter.limits", "limit");
-        properties.setProperty("limit.operation", "test");
-        properties.setProperty("limit.limit", "-1");
+        properties.setProperty("concurrent-operation-limiter.limit.operation", "test");
+        properties.setProperty("concurrent-operation-limiter.limit.limit", "-1");
 
         ConcurrentOperationLimiterConfig config = new ConcurrentOperationLimiterConfig(properties);
         assertEquals(config.getLimits(), Collections.emptyList());
@@ -139,8 +139,8 @@ public class ConcurrentOperationLimiterConfigTest
     {
         Properties properties = new Properties();
         properties.setProperty("concurrent-operation-limiter.limits", "limit");
-        properties.setProperty("limit.operation", "test");
-        properties.setProperty("limit.limit", " ");
+        properties.setProperty("concurrent-operation-limiter.limit.operation", "test");
+        properties.setProperty("concurrent-operation-limiter.limit.limit", " ");
 
         ConcurrentOperationLimiterConfig config = new ConcurrentOperationLimiterConfig(properties);
         assertEquals(config.getLimits(), Collections.emptyList());
@@ -151,8 +151,8 @@ public class ConcurrentOperationLimiterConfigTest
     {
         Properties properties = new Properties();
         properties.setProperty("concurrent-operation-limiter.limits", "limit");
-        properties.setProperty("limit.operation", " ");
-        properties.setProperty("limit.limit", "1");
+        properties.setProperty("concurrent-operation-limiter.limit.operation", " ");
+        properties.setProperty("concurrent-operation-limiter.limit.limit", "1");
 
         ConcurrentOperationLimiterConfig config = new ConcurrentOperationLimiterConfig(properties);
         assertEquals(config.getLimits(), Collections.emptyList());
