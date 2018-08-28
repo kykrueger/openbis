@@ -157,7 +157,7 @@ var Util = new function() {
 			userErrorWarning = "<b>This error looks like a user error:</b>" + "<br>";
 		}
 		
-		var warning = "<b>Please send this error report if you wish SIS to review it:</b>" +  "<br>" +
+		var warning = "<b>Please send an error report if you wish SIS to review it:</b>" +  "<br>" +
 			          "This report contains information about the user and the action it was performing when it happened, including it's data!: <br>" +
 				      "Pressing the 'Send error report' button will open your default mail application and gives you the opportunity to delete any sensitive information before sending.";
 					 
@@ -192,7 +192,7 @@ var Util = new function() {
 				  LongTrip :20,
 				  HorizontalPosition : 'center',
 				  VerticalPosition : 'top',
-				  ShowOverlay : true,
+				  ShowOverlay : false,
 		   		  ColorOverlay : '#000',
 				  OpacityOverlay : 0.3,
 				  onClosed : function(){ if(andCallback) { andCallback();} else { localReference.unblockUI();}},
