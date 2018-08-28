@@ -1083,6 +1083,7 @@ var FormUtil = new function() {
 
 			// attach events
 			$dataSetTypeSelector = $("#dataSetTypeSelector");
+			$dataSetTypeSelector.select2({ width: '100%', theme: "bootstrap" });
 			$nameInput = $("#nameInput");
 			$dropboxFolderName = $("#dropboxFolderName");
 			$copyToClipboardButton = $("#copyToClipboardButton");
