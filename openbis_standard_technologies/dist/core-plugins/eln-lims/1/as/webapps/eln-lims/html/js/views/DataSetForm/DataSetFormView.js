@@ -687,7 +687,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		$window.append($('<legend>').append('Request archiving'));
 
 		var threshold = profile.archivingThreshold;
-		var warning = "Remember that your dataset will only be archived when enough data from your group is available to do so (" + threshold + ").";
+		var warning = "Archiving of your dataset will not be done immediately. " +
+				"Your dataset will be archived if enough other archiving requests are gather from your group (" + threshold + ").";
 		var $warning = $('<p>').text(warning);
 		$window.append($warning);
 
