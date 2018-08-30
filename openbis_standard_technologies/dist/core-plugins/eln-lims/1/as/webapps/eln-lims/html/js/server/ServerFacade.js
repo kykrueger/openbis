@@ -903,24 +903,26 @@ function ServerFacade(openbisServer) {
 			
 				//Setting the fetchOptions given standard settings
 				var fetchOptions = new EntityFetchOptions();
-				if(fetchOptions.withType) {
-					fetchOptions.withType();
-				}
-				if(fetchOptions.withSpace) {
-					fetchOptions.withSpace();
-				}
-				if(fetchOptions.withRegistrator) {
-					fetchOptions.withRegistrator();
-				}
-				if(fetchOptions.withModifier) {
-					fetchOptions.withModifier();
-				}
-				if(fetchOptions.withProperties) {
-					fetchOptions.withProperties();
-				}
+				
 				
 				//Optional fetchOptions
-				if(!advancedFetchOptions || !advancedFetchOptions.minTableInfo) {
+				if(!advancedFetchOptions) {
+					if(fetchOptions.withType) {
+						fetchOptions.withType();
+					}
+					if(fetchOptions.withSpace) {
+						fetchOptions.withSpace();
+					}
+					if(fetchOptions.withRegistrator) {
+						fetchOptions.withRegistrator();
+					}
+					if(fetchOptions.withModifier) {
+						fetchOptions.withModifier();
+					}
+					if(fetchOptions.withProperties) {
+						fetchOptions.withProperties();
+					}
+					
 					if(fetchOptions.withProject) {
 						fetchOptions.withProject();
 					}
@@ -952,6 +954,22 @@ function ServerFacade(openbisServer) {
 						fetchOptions.withChildrenUsing(fetchOptions);
 					}
 				} else if(advancedFetchOptions.minTableInfo) {
+					if(fetchOptions.withType) {
+						fetchOptions.withType();
+					}
+					if(fetchOptions.withSpace) {
+						fetchOptions.withSpace();
+					}
+					if(fetchOptions.withRegistrator) {
+						fetchOptions.withRegistrator();
+					}
+					if(fetchOptions.withModifier) {
+						fetchOptions.withModifier();
+					}
+					if(fetchOptions.withProperties) {
+						fetchOptions.withProperties();
+					}
+					
 					if(advancedFetchOptions.withExperiment && fetchOptions.withExperiment) {
 						fetchOptions.withExperiment();
 					}
@@ -966,6 +984,28 @@ function ServerFacade(openbisServer) {
 						if(advancedFetchOptions.withChildrenInfo) {
 							childrenFetchOptions.withType();
 							childrenFetchOptions.withProperties();
+						}
+					}
+				} else if(advancedFetchOptions.only) {
+					if(advancedFetchOptions.withProperties) {
+						fetchOptions.withProperties();
+					}
+					if(advancedFetchOptions.withType) {
+						fetchOptions.withType();
+					}
+					if(advancedFetchOptions.withExperiment) {
+						fetchOptions.withExperiment();
+					}
+					if(advancedFetchOptions.withParents) {
+						var parentFetchOptions = fetchOptions.withParents();
+						if(advancedFetchOptions.withParentsType) {
+							parentFetchOptions.withType();
+						}
+					}
+					if(advancedFetchOptions.withChildren) {
+						var childrenFetchOptions = fetchOptions.withChildren();
+						if(advancedFetchOptions.withChildrenType) {
+							childrenFetchOptions.withType();
 						}
 					}
 				}

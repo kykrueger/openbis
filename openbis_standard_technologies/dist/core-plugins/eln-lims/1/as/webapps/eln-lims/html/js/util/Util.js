@@ -169,7 +169,7 @@ var Util = new function() {
 					 "isEnvironmentError: " + isEnvironmentError + "%0D%0A" +
 					 "href: " + location.href.replace(new RegExp("&", 'g'), " - ") + "%0D%0A" +
 					 "error: " + withHTML;
-		debugger;
+		
 		var withHTMLToShow = userErrorWarning + withHTML + "<br><br>" + warning + "<br><br>";
           	withHTMLToShow += "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
 		
