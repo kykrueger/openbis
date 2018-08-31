@@ -460,6 +460,7 @@ def _subcriteria_for_code(code, object_type):
         return get_search_type_for_entity(object_type.lower())
 
 
+
 class Openbis:
     """Interface for communicating with openBIS. 
     A recent version of openBIS is required (minimum 16.05.2).
@@ -580,6 +581,31 @@ class Openbis:
             'update_sample(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)',
             'update_object(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)', # 'update_sample(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)' alias
         ]
+
+    def _repr_html_(self):
+        html = """
+            <table border="1" class="dataframe">
+            <thead>
+                <tr style="text-align: right;">
+                <th>attribute</th>
+                <th>value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        attrs = ['url', 'port', 'hostname', 'verify_certificates', 'as_v3', 'as_v1', 'reg_v1', 'token']
+        for attr in attrs:
+            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
+                attr, getattr(self, attr, '')
+            )
+
+        html += """
+            </tbody>
+            </table>
+        """
+        return html
+
 
     @property
     def spaces(self):
