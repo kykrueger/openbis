@@ -36,6 +36,8 @@ function ExperimentTableView(experimentTableController, experimentTableModel) {
 		
 		$container.append(FormUtil.getToolbar(toolbarModel));
 		$container.append(this._tableContainer);
+		$("#what-experiments-drop-down").select2({ width: '100%', theme: "bootstrap" });
+		$("#project-experiment-type-drop-down").select2({ width: '100%', theme: "bootstrap" });
 	}
 	
 	this.getTableContainer = function() {
@@ -58,6 +60,7 @@ function ExperimentTableView(experimentTableController, experimentTableModel) {
 		
 		
 		var $experimentDropdown = FormUtil.getDropdown(expDropModel, "Select what " + ELNDictionary.getExperimentKindName(projectIdentifier, true) + " to show");
+		$experimentDropdown.attr("id", "what-experiments-drop-down");
 		
 		$experimentDropdown.change(function() {
 			switch($(this).val()){
@@ -75,7 +78,7 @@ function ExperimentTableView(experimentTableController, experimentTableModel) {
 	
 	this._getProjectExperimentTypesDropdown = function() {
 		var _this = this;
-		var	$typesSelector = $('<select>', { class : 'form-control' });
+		var	$typesSelector = $('<select>', { class : 'form-control', id : 'project-experiment-type-drop-down' });
 		var projectIdentifier = IdentifierUtil.getProjectIdentifier(this._experimentTableModel.project.spaceCode, this._experimentTableModel.project.code);
 		$typesSelector.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text("Select an " + ELNDictionary.getExperimentKindName(projectIdentifier, true) + " type"));
 		for(typeCode in this._experimentTableModel.types) {

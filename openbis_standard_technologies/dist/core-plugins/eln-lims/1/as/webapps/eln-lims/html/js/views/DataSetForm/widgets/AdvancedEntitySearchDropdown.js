@@ -19,19 +19,39 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 										placeholder,
 										selectsExperiments,
 										selectsSamples,
-										selectsDatasets) {
+										selectsDatasets,
+										selectsProjects) {
 	var isMultiple = isMultiple;
 	var isRequired = isRequired;
 	var placeholder = placeholder;
 	var selectsExperiments = selectsExperiments;
 	var selectsSamples = selectsSamples;
 	var selectsDatasets = selectsDatasets;
+	var selectsProjects = selectsProjects;
 	var $select = FormUtil.getDropdown({}, "");
 	var storedParams = null;
 	
 	//
 	// External API
 	//
+	
+	var onChangeCallback = null;
+	
+	this.onChange = function(onChangeCallbackGiven) {
+		onChangeCallback = onChangeCallbackGiven
+	}
+	
+	this.addSelectedProject = function(projectIdentifier) {
+		var _this = this;
+		require([ 'as/dto/project/id/ProjectIdentifier', "as/dto/project/fetchoptions/ProjectFetchOptions" ],
+				function(ProjectIdentifier, ProjectFetchOptions) {
+		            var id1 = new ProjectIdentifier(projectIdentifier);
+		            var fetchOptions = new ProjectFetchOptions();
+		            mainController.openbisV3.getProjects([ id1 ], fetchOptions).done(function(map) {
+		            	_this.addSelected(map[projectIdentifier]);
+		            });
+		});
+	}
 	
 	this.addSelectedExperiment = function(experimentIdentifier) {
 		var _this = this;
@@ -126,13 +146,15 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 	//
 	var getDisplayName = function(entity) {
 		var text = null;
+		if(entity.identifier && entity.identifier.identifier) {
+			text = entity.identifier.identifier;
+		}
 		if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
-			text = entity.code + " (" + entity.properties[profile.propertyReplacingCode] + ")";
-		} else {
-			text = entity.code;
+			text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
 		}
 		
 		if(entity["@type"] === "as.dto.dataset.DataSet") {
+			text = entity.permId.permId;
 			if(entity.sample) {
 				text += " " + ELNDictionary.Sample + " [" + getDisplayName(entity.sample) + "]";
 			}
@@ -144,13 +166,24 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 		return text;
 	}
 	
+	var searchProject = function(action) {
+		var criteria = { 	
+						entityKind : "PROJECT", 
+						logicalOperator : "OR", 
+						rules : {
+							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
+						}
+					};
+		mainController.serverFacade.searchForProjectsAdvanced(criteria, null, function(results) { results.type = "Projects"; action(results) });
+	}
+	
 	var searchExperiment = function(action) {
 		var criteria = { 	
 						entityKind : "EXPERIMENT", 
 						logicalOperator : "OR", 
 						rules : {
 							"UUIDv4-1": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", value: storedParams.data.q }
+							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
 		mainController.serverFacade.searchForExperimentsAdvanced(criteria, null, function(results) { results.type = "Experiments"; action(results) });
@@ -162,7 +195,7 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						logicalOperator : "OR", 
 						rules : {
 							"UUIDv4-1": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", value: storedParams.data.q }
+							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
 		mainController.serverFacade.searchForSamplesAdvanced(criteria, null, function(results) { results.type = "Samples"; action(results) });
@@ -174,11 +207,11 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						logicalOperator : "OR", 
 						rules : {
 							"UUIDv4-1": { type: "Sample", 				name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-2": { type: "Sample", 				name: "ATTR.CODE", value: storedParams.data.q },
+							"UUIDv4-2": { type: "Sample", 				name: "ATTR.CODE", operator : "thatContains",		value: storedParams.data.q },
 							"UUIDv4-3": { type: "Experiment", 			name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-4": { type: "Experiment", 			name: "ATTR.CODE", value: storedParams.data.q },
+							"UUIDv4-4": { type: "Experiment", 			name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q },
 							"UUIDv4-5": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
-							"UUIDv4-6": { type: "Property/Attribute", 	name: "ATTR.CODE", value: storedParams.data.q }
+							"UUIDv4-6": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
 		
@@ -250,6 +283,9 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						// Searches
 						var searches = [];
 						var searchesResults = [];
+						if(selectsProjects) {
+							searches.push(searchProject);
+						}
 						if(selectsExperiments) {
 							searches.push(searchExperiment);
 						}
@@ -264,10 +300,10 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						action = function(result) {
 							searchesResults.push(result);
 						 	if(searches.length > 0) {
-						    	var search = searches.shift();
-						    	search(action);
+							    	var search = searches.shift();
+							    	search(action);
 						    } else {
-						    	success(searchesResults);
+						    		success(searchesResults);
 						    }
 						};
 						      
@@ -280,6 +316,13 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 				    }
 			  }
 		});
+		
+		var _this = this;
+		if(onChangeCallback) {
+			$select.on('select2:select', function (e) {
+    				onChangeCallback(_this.getSelected());
+			});
+		}
 	}
 	
 }

@@ -16,6 +16,11 @@
 
 function HierarchyTableModel(entity) {
 	this.entity = entity;
+	
+	if(this.entity["@type"] === "as.dto.sample.Sample") {  // V3 Sample
+		profile.deleteSampleConnectionsByType(this.entity);
+	}
+	
 	this.relationShipsMap = HierarchyUtil.createRelationShipsMap(entity);
 	
 	this.getData = function(dataList) {

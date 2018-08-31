@@ -69,8 +69,9 @@ function MoveSampleView(moveSampleController, moveSampleModel) {
 		var _this = this;
 		$experimentSection.empty();
 		FormUtil.getProjectAndExperimentsDropdown(true, false, true, function($dropdown) {
+			$dropdown.attr("id", "future-projects-drop-down");
 			//Fields
-			var $expTypeField = FormUtil.getExperimentTypeDropdown(null, true);
+			var $expTypeField = FormUtil.getExperimentTypeDropdown("future-experiment-type-drop-down", true);
 			var $expNameField = FormUtil._getInputField('text', null, 'Future ' + ELNDictionary.getExperimentDualName() + ' Name', null, true);
 			
 			//Events
@@ -96,16 +97,16 @@ function MoveSampleView(moveSampleController, moveSampleModel) {
 			$experimentSection.append(FormUtil.getFieldForComponentWithLabel($dropdown, "Future Project"))
 							.append(FormUtil.getFieldForComponentWithLabel($expTypeField, "Future " + ELNDictionary.getExperimentDualName() + " Type"))
 							.append(FormUtil.getFieldForComponentWithLabel($expNameField, "Future " + ELNDictionary.getExperimentDualName() + " Name"));
+			$("#future-projects-drop-down").select2({ width: '100%', theme: "bootstrap" });
+			$("#future-experiment-type-drop-down").select2({ width: '100%', theme: "bootstrap" });
 		});
-		
-		
-		
 	}
 	
 	this.repaintExistingExperiment = function() {
 		var _this = this;
 		$experimentSection.empty();
 		FormUtil.getProjectAndExperimentsDropdown(false, true, true, function($dropdown) {
+			$dropdown.attr("id", "existing-experiments-drop-down");
 			//Events
 			$dropdown.change(function(event){
 				var value = $(event.target).val();
@@ -113,6 +114,7 @@ function MoveSampleView(moveSampleController, moveSampleModel) {
 			});
 			//Attach Fields
 			$experimentSection.append(FormUtil.getFieldForComponentWithLabel($dropdown, "Future " + ELNDictionary.getExperimentDualName() + ""));
+			$("#existing-experiments-drop-down").select2({ width: '100%', theme: "bootstrap" });
 		});
 	}
 	

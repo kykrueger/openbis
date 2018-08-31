@@ -36,7 +36,7 @@ $.extend(DefaultProfile.prototype, {
 		//
 		// DEFAULTS, TYPICALLY DON'T TOUCH IF YOU DON'T KNOW WHAT YOU DO
 		//
-		this.showDatasetArchivingButton = false;
+		this.showDatasetArchivingButton = true;
 		
 		this.mainMenu = {
 				showLabNotebook : true,
@@ -278,6 +278,65 @@ $.extend(DefaultProfile.prototype, {
 				"experimentTypeCodes" : []
 		}
 		
+		this._deleteSampleConnectionsByTypeIfNotVisited = function(sample, visited) {
+			var permId = null;
+			
+			if(sample["@type"] === "as.dto.sample.Sample") {
+				permId = sample.getPermId().getPermId();
+			} else if(sample["@type"] === "Sample") {
+				permId = sample.permId;
+			}
+					
+			if(visited[permId]) {
+				return;
+			} else {
+				visited[permId] = true;
+			}
+			
+			if(sample.parents) {
+				for(var i=0; i < sample.parents.length; i++) {
+					var sampleParent = sample.parents[i];
+					var sampleTypeCode = null;
+					
+					if(sample["@type"] === "as.dto.sample.Sample") {
+						sampleTypeCode = sampleParent.getType().getCode();
+					} else if(sample["@type"] === "Sample") {
+						sampleTypeCode = sampleParent.sampleTypeCode;
+					}
+					
+					if($.inArray(sampleTypeCode, this.hideTypes["sampleTypeCodes"]) !== -1) {
+						sample.parents.splice(i, 1);
+						i--;
+					} else {
+						this._deleteSampleConnectionsByTypeIfNotVisited(sampleParent, visited);
+					}
+				}
+			}
+			if(sample.children) {
+				for(var i=0; i < sample.children.length; i++) {
+					var sampleChild = sample.children[i];
+					var sampleTypeCode = null;
+					
+					if(sample["@type"] === "as.dto.sample.Sample") {
+						sampleTypeCode = sampleChild.getType().getCode();
+					} else if(sample["@type"] === "Sample") {
+						sampleTypeCode = sampleChild.sampleTypeCode;
+					}
+					
+					if($.inArray(sampleTypeCode, this.hideTypes["sampleTypeCodes"]) !== -1) {
+						sample.children.splice(i, 1);
+						i--;
+					} else {
+						this._deleteSampleConnectionsByTypeIfNotVisited(sampleChild, visited);
+					}
+				}
+			}
+		}
+		
+		this.deleteSampleConnectionsByType = function(sample) {
+			var visited = {};
+			this._deleteSampleConnectionsByTypeIfNotVisited(sample, visited);
+		}
 		
 		this.propertyReplacingCode = "NAME";
 		

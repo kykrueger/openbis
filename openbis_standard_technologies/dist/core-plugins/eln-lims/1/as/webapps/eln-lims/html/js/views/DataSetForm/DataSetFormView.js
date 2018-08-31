@@ -92,6 +92,13 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			});
 			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
 
+			//Move
+			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+				var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSet.code);
+				moveEntityController.init();
+			});
+			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+			
 			//Archiving Requested Button
 			var physicalData = this._dataSetFormModel.dataSetV3.physicalData;
 
@@ -390,7 +397,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					} else {
 						var showSelectDatasetType = function() {
 							var $dropdown = FormUtil.getDataSetsDropDown("datasetTypeForDataset", _this._dataSetFormModel.dataSetTypes);
-							Util.blockUI("Select the type for the Dataset: <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='datasetTypeForDatasetCancel'>Cancel</a>");
+							Util.showDropdownAndBlockUI("datasetTypeForDataset", $dropdown);
 							
 							$("#datasetTypeForDataset").on("change", function(event) {
 								var datasetTypeCode = $("#datasetTypeForDataset")[0].value;
@@ -680,7 +687,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		$window.append($('<legend>').append('Request archiving'));
 
 		var threshold = profile.archivingThreshold;
-		var warning = "Remember that your dataset will only be archived when enough data from your group is available to do so (" + threshold + ").";
+		var warning = "Archiving of your dataset will not be done immediately. " +
+				"Your dataset will be archived if enough other archiving requests are gather from your group (" + threshold + ").";
 		var $warning = $('<p>').text(warning);
 		$window.append($warning);
 

@@ -398,7 +398,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    		break;
     	    	case "EXPERIMENT":
     	    		var sampleRules = { "UUIDv4" : { type : "Experiment", name : "ATTR.PERM_ID", value : permId } };
-    	    		mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules }, null,
+    	    		mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules }, 
+    	    		{ only : true, withProperties : true, withType : true, withExperiment : true, withParents : true, withChildren : true, withParentsType : true, withChildrenType : true},
     	    		function(searchResult) {
     	    			var samples = searchResult.objects;
     	    			var samplesToShow = [];
@@ -419,7 +420,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    					}
     	    					if(!parentIsExperiment) {
     	    						samplesToShow.push(sample);
-	    						}
+	    					}
     	    				}
     	    			}
     	    			
@@ -430,7 +431,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 	        	                    var sample = samples[i];
 	        	                    var sampleDisplayName = sample.code;
 	        	                    if(sample.properties && sample.properties[profile.propertyReplacingCode]) {
-	        	                    	sampleDisplayName = sample.properties[profile.propertyReplacingCode];
+	        	                    		sampleDisplayName = sample.properties[profile.propertyReplacingCode];
 	        	                    }
 	        	                    
 	        	                    var sampleLink = _this.getLinkForNode(sampleDisplayName, sample.getPermId().getPermId(), "showViewSamplePageFromPermId", sample.getPermId().getPermId());
@@ -446,18 +447,18 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 	                for (var i = 0; i < datasets.length; i++) {
                 	                    var dataset = datasets[i];
                 	                    if(!dataset.sample) {
-                	                    	experimentDatasets.push(dataset);
+                	                    		experimentDatasets.push(dataset);
                 	                    }
                 	                }
                 	                
                 	                if(experimentDatasets.length > 50) {
-                	                	Util.showInfo("More than 50 Datasets, please use the dataset viewer on the experiment to navigate them.");
+                	                		Util.showInfo("More than 50 Datasets, please use the dataset viewer on the experiment to navigate them.");
                 	                } else {
-                	                	for (var i = 0; i < experimentDatasets.length; i++) {
+                	                		for (var i = 0; i < experimentDatasets.length; i++) {
                     	                    var dataset = experimentDatasets[i];
                     	                    var datasetDisplayName = dataset.code;
                     	                    if(dataset.properties && dataset.properties[profile.propertyReplacingCode]) {
-                    	                    	datasetDisplayName = dataset.properties[profile.propertyReplacingCode];
+                    	                    		datasetDisplayName = dataset.properties[profile.propertyReplacingCode];
                     	                    }
                     	                    
                     	                    var datasetLink = _this.getLinkForNode(datasetDisplayName, dataset.getPermId().getPermId(), "showViewDataSetPageFromPermId", dataset.getPermId().getPermId());
@@ -473,27 +474,29 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                }
     	                
     	                var getCancelResultsFunction = function(dfd) {
-    	                	return function() {
-    	                		dfd.resolve([]);
-    	                	}
+    	                		return function() {
+    	                			dfd.resolve([]);
+    	                		}
     	                }
     	                
     	                if(samplesToShow.length > 50) {
-    	                	var toExecute = function() {
-        	                	Util.blockUIConfirm("Do you want to show " + samplesWithoutELNParents.length + " " + ELNDictionary.Samples + " on the tree?", 
-        	    	                	getOkResultsFunction(dfd, samplesToShow),
-        	    	                	getCancelResultsFunction(dfd));
+    	                		var toExecute = function() {
+	        	                	Util.blockUIConfirm("Do you want to show " + samplesWithoutELNParents.length + " " + ELNDictionary.Samples + " on the tree?", 
+	        	    	                	getOkResultsFunction(dfd, samplesToShow),
+	        	    	                	getCancelResultsFunction(dfd));
         	                }
     	                	
-    	                	setTimeout(toExecute, 1000);
+    	                		setTimeout(toExecute, 1000);
     	                } else {
-    	                	getOkResultsFunction(dfd, samplesToShow)();
+    	                		getOkResultsFunction(dfd, samplesToShow)();
     	                }
     	    		});
     	    		break;
     	    	case "SAMPLE":
     	    		var sampleRules = { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : permId } };
-    	    		mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules }, null, function(searchResult) {
+    	    		mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules }, 
+    	    		{ only : true, withProperties : true, withType : true, withExperiment : true, withParents : true, withChildren : true, withParentsType : true, withChildrenType : true}
+    	    		, function(searchResult) {
     	    			var results = [];
     	    			var samples = searchResult.objects;
     	    			if(samples && samples[0] && samples[0].children) {

@@ -26,7 +26,6 @@ var Util = new function() {
 	//
 	this.blockUINoMessage = function() {
 		this.unblockUI();
-		BlockScrollUtil.disable_scroll();
 		$('#navbar').block({ message: '', css: { width: '0px' } });
 		$.blockUI({ message: '', css: { width: '0px' } });
 	}
@@ -49,9 +48,13 @@ var Util = new function() {
 		});
 	}
 	
+	this.showDropdownAndBlockUI = function(id, $dropdown) {
+		Util.blockUI($dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='" + id + "Cancel'>Cancel</a>");
+		$("#" + id).select2({ width: '100%', theme: "bootstrap" });
+	}
+	
 	this.blockUI = function(message, extraCSS, disabledFadeAnimation) {
 		this.unblockUI();
-		BlockScrollUtil.disable_scroll();
 		
 		var css = { 
 					'border': 'none', 
@@ -72,7 +75,7 @@ var Util = new function() {
 		
 		$('#navbar').block({ message: '', css: { width: '0px' } });
 		var params = { css : css };
-		if(message) {
+		if (message) {
 			params.message = message;
 		} else {
 			params.message = '<h1><img src="./img/busy.gif" /> Just a moment...</h1>';
@@ -82,25 +85,6 @@ var Util = new function() {
 			params.fadeOut = 0;
 		}
 		$.blockUI(params);
-		
-		//Enable/Disable scroll when the mouse goes in/out
-		$('.blockUI.blockMsg.blockPage').hover(function() {
-				if(this.scrollHeight > this.clientHeight) { //Inside, if has scroll, enable when hovering in
-					BlockScrollUtil.enable_scroll();
-				}
-			}, function() {
-				BlockScrollUtil.disable_scroll(); //Always disable when hovering out
-			}
-		);
-		
-		//Enable/Disable scroll when components change
-		$('.blockUI.blockMsg.blockPage').bind("DOMSubtreeModified",function() {
-			if(this.scrollHeight > this.clientHeight) { //Inside, if has scroll, enable
-				BlockScrollUtil.enable_scroll();
-			} else { //If doesn't disable
-				BlockScrollUtil.disable_scroll(); 
-			}
-		});
 	}
 	
 	//
@@ -111,8 +95,7 @@ var Util = new function() {
 		$.unblockUI({ 
 			onUnblock: function() {
 				window.setTimeout(function() { //Enable after all possible enable/disable events happen
-					BlockScrollUtil.enable_scroll();
-					if(callback) {
+					if (callback) {
 						callback();
 					}
 				}, 150);
@@ -139,7 +122,7 @@ var Util = new function() {
 			endIndex = stacktrace.length;
 		}
 		var errorMessage = stacktrace.substring(startIndex, endIndex).trim();
-		Util.showError(errorMessage, function() {Util.unblockUI();});
+		Util.showError(errorMessage, function() {Util.unblockUI();}, undefined, isUserFailureException || isAuthorizationException);
 	}
 	
 	this.showWarning = function(text, okCallback) {
@@ -166,26 +149,29 @@ var Util = new function() {
 		});
 	}
 	
-	this.showError = function(withHTML, andCallback, noBlock) {
+	this.showError = function(withHTML, andCallback, noBlock, isUserError, isEnvironmentError) {
 		var withHTMLToShow = null;
 		
-		if(withHTML.length > 200 && !withHTML.startsWith("Authorization failure")) { // Typical big errors come from the server side and should not happen
-			var warning = "<b>Please send this error report if you wish SIS to review it:</b>" +  "<br>" +
-			          "This report contains the user session token, user browser and the action it was performing when it happened, including it's data!: <br>" +
-				      "Pressing the 'Send error report' button will open your default mail application and gives you the oportunity to delete any sensible information before sending.";
-					 
-			var report = "agent: " + navigator.userAgent + "\n" +
-					 "domain: " + location.hostname + "\n" +
-					 "session: " + mainController.serverFacade.openbisServer.getSession() + "\n" +
-					 "timestamp: " + new Date() + "\n" +
-					 "error: \n" +
-					 withHTML;
-			var withHTMLToShow = warning + "<br><br><textarea rows=\"8\" cols=\"170\">" + report + "</textarea>";
-          		withHTMLToShow += "<br>" + "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
-		} else {
-			withHTMLToShow = withHTML + "<br>" + "<a class='btn btn-default'>Dismiss</a>";
+		var userErrorWarning = "";
+		if(isUserError) {
+			userErrorWarning = "<b>This error looks like a user error:</b>" + "<br>";
 		}
 		
+		var warning = "<b>Please send an error report if you wish SIS to review it:</b>" +  "<br>" +
+			          "This report contains information about the user and the action it was performing when it happened, including it's data!: <br>" +
+				      "Pressing the 'Send error report' button will open your default mail application and gives you the opportunity to delete any sensitive information before sending.";
+					 
+		var report = "agent: " + navigator.userAgent + "%0D%0A" +
+					 "domain: " + location.hostname + "%0D%0A" +
+					 "session: " + mainController.serverFacade.openbisServer.getSession() + "%0D%0A" +
+					 "timestamp: " + new Date() + "%0D%0A" +
+					 "isUserError: " + isUserError + "%0D%0A" +
+					 "isEnvironmentError: " + isEnvironmentError + "%0D%0A" +
+					 "href: " + location.href.replace(new RegExp("&", 'g'), " - ") + "%0D%0A" +
+					 "error: " + withHTML;
+		
+		var withHTMLToShow = userErrorWarning + "<br><br><textarea rows=\"8\" cols=\"170\">" + report + "</textarea>" + "<br><br>" + warning + "<br><br>";
+          	withHTMLToShow += "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
 		
 		var isiPad = navigator.userAgent.match(/iPad/i) != null;
 		

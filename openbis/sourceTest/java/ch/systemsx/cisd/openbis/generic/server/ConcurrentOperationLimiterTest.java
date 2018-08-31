@@ -44,8 +44,8 @@ public class ConcurrentOperationLimiterTest
         Properties properties = new Properties();
         properties.setProperty("concurrent-operation-limiter.timeout", "1000");
         properties.setProperty("concurrent-operation-limiter.limits", "test-limit");
-        properties.setProperty("test-limit.operation", "test");
-        properties.setProperty("test-limit.limit", "1");
+        properties.setProperty("concurrent-operation-limiter.test-limit.operation", "test");
+        properties.setProperty("concurrent-operation-limiter.test-limit.limit", "1");
 
         ConcurrentOperationLimiter limiter = new ConcurrentOperationLimiter(new ConcurrentOperationLimiterConfig(properties));
 
@@ -93,10 +93,10 @@ public class ConcurrentOperationLimiterTest
         Properties properties = new Properties();
         properties.setProperty("concurrent-operation-limiter.timeout", "1000");
         properties.setProperty("concurrent-operation-limiter.limits", "test-limit-1, test-limit-2");
-        properties.setProperty("test-limit-1.operation", "test-1");
-        properties.setProperty("test-limit-1.limit", "1");
-        properties.setProperty("test-limit-2.operation", "test-2");
-        properties.setProperty("test-limit-2.limit", "1");
+        properties.setProperty("concurrent-operation-limiter.test-limit-1.operation", "test-1");
+        properties.setProperty("concurrent-operation-limiter.test-limit-1.limit", "1");
+        properties.setProperty("concurrent-operation-limiter.test-limit-2.operation", "test-2");
+        properties.setProperty("concurrent-operation-limiter.test-limit-2.limit", "1");
 
         ConcurrentOperationLimiter limiter = new ConcurrentOperationLimiter(new ConcurrentOperationLimiterConfig(properties));
 
@@ -113,8 +113,8 @@ public class ConcurrentOperationLimiterTest
         Properties properties = new Properties();
         properties.setProperty("concurrent-operation-limiter.timeout", "1000");
         properties.setProperty("concurrent-operation-limiter.limits", "test-limit");
-        properties.setProperty("test-limit.operation", "test");
-        properties.setProperty("test-limit.limit", "1");
+        properties.setProperty("concurrent-operation-limiter.test-limit.operation", "test");
+        properties.setProperty("concurrent-operation-limiter.test-limit.limit", "1");
 
         ConcurrentOperationLimiter limiter = new ConcurrentOperationLimiter(new ConcurrentOperationLimiterConfig(properties));
 
@@ -147,8 +147,8 @@ public class ConcurrentOperationLimiterTest
         Properties properties = new Properties();
         properties.setProperty("concurrent-operation-limiter.timeout", "1000");
         properties.setProperty("concurrent-operation-limiter.limits", "test-limit");
-        properties.setProperty("test-limit.operation", "test");
-        properties.setProperty("test-limit.limit", "1");
+        properties.setProperty("concurrent-operation-limiter.test-limit.operation", "test");
+        properties.setProperty("concurrent-operation-limiter.test-limit.limit", "1");
 
         MessageChannel mainChannel = new MessageChannelBuilder(1000).name("main").getChannel();
         MessageChannel threadsChannel = new MessageChannelBuilder(1000).name("threads").getChannel();

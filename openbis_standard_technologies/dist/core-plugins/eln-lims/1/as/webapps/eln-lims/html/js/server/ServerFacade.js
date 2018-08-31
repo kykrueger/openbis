@@ -57,7 +57,7 @@ function ServerFacade(openbisServer) {
 					location.reload(true);
 				}, true);
 			} else if(response.error === "Request failed: ") {
-				Util.showError(response.error + "openBIS or DSS cannot be reached. Please try again or contact your admin.", null, true);
+				Util.showError(response.error + "openBIS or DSS cannot be reached. Please try again or contact your admin.", null, true, false, true);
 			}
 		}
 		
@@ -903,26 +903,30 @@ function ServerFacade(openbisServer) {
 			
 				//Setting the fetchOptions given standard settings
 				var fetchOptions = new EntityFetchOptions();
-				if(fetchOptions.withType) {
-					fetchOptions.withType();
-				}
-				if(fetchOptions.withSpace) {
-					fetchOptions.withSpace();
-				}
-				if(fetchOptions.withRegistrator) {
-					fetchOptions.withRegistrator();
-				}
-				if(fetchOptions.withModifier) {
-					fetchOptions.withModifier();
-				}
-				if(fetchOptions.withProperties) {
-					fetchOptions.withProperties();
-				}
+				
 				
 				//Optional fetchOptions
-				if(!advancedFetchOptions || !advancedFetchOptions.minTableInfo) {
-					if(fetchOptions.withProjects) {
-						fetchOptions.withProjects();
+				if(!advancedFetchOptions || 
+					(advancedFetchOptions && !advancedFetchOptions.withType) || 
+					(advancedFetchOptions && !advancedFetchOptions.only)) {
+					if(fetchOptions.withType) {
+						fetchOptions.withType();
+					}
+					if(fetchOptions.withSpace) {
+						fetchOptions.withSpace();
+					}
+					if(fetchOptions.withRegistrator) {
+						fetchOptions.withRegistrator();
+					}
+					if(fetchOptions.withModifier) {
+						fetchOptions.withModifier();
+					}
+					if(fetchOptions.withProperties) {
+						fetchOptions.withProperties();
+					}
+					
+					if(fetchOptions.withProject) {
+						fetchOptions.withProject();
 					}
 					if(fetchOptions.withSample) {
 						fetchOptions.withSample();
@@ -952,6 +956,22 @@ function ServerFacade(openbisServer) {
 						fetchOptions.withChildrenUsing(fetchOptions);
 					}
 				} else if(advancedFetchOptions.minTableInfo) {
+					if(fetchOptions.withType) {
+						fetchOptions.withType();
+					}
+					if(fetchOptions.withSpace) {
+						fetchOptions.withSpace();
+					}
+					if(fetchOptions.withRegistrator) {
+						fetchOptions.withRegistrator();
+					}
+					if(fetchOptions.withModifier) {
+						fetchOptions.withModifier();
+					}
+					if(fetchOptions.withProperties) {
+						fetchOptions.withProperties();
+					}
+					
 					if(advancedFetchOptions.withExperiment && fetchOptions.withExperiment) {
 						fetchOptions.withExperiment();
 					}
@@ -966,6 +986,28 @@ function ServerFacade(openbisServer) {
 						if(advancedFetchOptions.withChildrenInfo) {
 							childrenFetchOptions.withType();
 							childrenFetchOptions.withProperties();
+						}
+					}
+				} else if(advancedFetchOptions.only) {
+					if(advancedFetchOptions.withProperties) {
+						fetchOptions.withProperties();
+					}
+					if(advancedFetchOptions.withType) {
+						fetchOptions.withType();
+					}
+					if(advancedFetchOptions.withExperiment) {
+						fetchOptions.withExperiment();
+					}
+					if(advancedFetchOptions.withParents) {
+						var parentFetchOptions = fetchOptions.withParents();
+						if(advancedFetchOptions.withParentsType) {
+							parentFetchOptions.withType();
+						}
+					}
+					if(advancedFetchOptions.withChildren) {
+						var childrenFetchOptions = fetchOptions.withChildren();
+						if(advancedFetchOptions.withChildrenType) {
+							childrenFetchOptions.withType();
 						}
 					}
 				}
@@ -1081,7 +1123,17 @@ function ServerFacade(openbisServer) {
 						switch(attributeName) {
 							//Used by all entities
 							case "CODE":
-								criteria.withCode().thatEquals(attributeValue);
+								if(!comparisonOperator) {
+									comparisonOperator = "thatEquals";
+								}
+								switch(comparisonOperator) {
+									case "thatEquals":
+											criteria.withCode().thatEquals(attributeValue);
+											break;
+									case "thatContains":
+											criteria.withCode().thatContains(attributeValue);
+											break;
+								}
 								break;
 							case "PERM_ID":
 								criteria.withPermId().thatEquals(attributeValue);
