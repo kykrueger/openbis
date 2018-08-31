@@ -906,7 +906,9 @@ function ServerFacade(openbisServer) {
 				
 				
 				//Optional fetchOptions
-				if(!advancedFetchOptions) {
+				if(!advancedFetchOptions || 
+					(advancedFetchOptions && !advancedFetchOptions.withType) || 
+					(advancedFetchOptions && !advancedFetchOptions.only)) {
 					if(fetchOptions.withType) {
 						fetchOptions.withType();
 					}
