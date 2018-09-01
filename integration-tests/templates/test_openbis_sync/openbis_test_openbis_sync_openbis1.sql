@@ -3660,7 +3660,7 @@ SELECT pg_catalog.setval('sample_code_seq', 1, false);
 -- Name: sample_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('sample_id_seq', 2, true);
+SELECT pg_catalog.setval('sample_id_seq', 7, true);
 
 
 --
