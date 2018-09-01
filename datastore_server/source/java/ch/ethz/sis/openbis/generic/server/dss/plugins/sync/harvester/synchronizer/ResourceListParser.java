@@ -340,7 +340,16 @@ public class ResourceListParser
         SampleIdentifier sampleIdentifier = SampleIdentifierFactory.parse(sampleIdentifierStr);
         SpaceIdentifier spaceLevel = sampleIdentifier.getSpaceLevel();
         String originalSpaceCode = spaceLevel.getSpaceCode();
-        return new SampleIdentifier(new SpaceIdentifier(nameTranslator.translate(originalSpaceCode)), sampleIdentifier.getSampleCode());
+        SpaceIdentifier translatedSpaceIdentifier = new SpaceIdentifier(nameTranslator.translate(originalSpaceCode));
+
+        if (sampleIdentifier.isProjectLevel())
+        {
+            return new SampleIdentifier(new ProjectIdentifier(translatedSpaceIdentifier, sampleIdentifier.getProjectLevel().getProjectCode()),
+                    sampleIdentifier.getSampleCode());
+        } else
+        {
+            return new SampleIdentifier(translatedSpaceIdentifier, sampleIdentifier.getSampleCode());
+        }
     }
 
     private ExperimentIdentifier getExperimentIdentifier(String experimentIdentifierStr)

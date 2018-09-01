@@ -500,6 +500,9 @@ class OpenbisController(_Controller):
     def setDssMaxHeapSize(self, maxHeapSize):
         self._setMaxHeapSize("datastore_server/etc/datastore_server.conf", maxHeapSize)
         
+    def enableProjectSamples(self):
+        self.asProperties['project-samples-enabled'] = "true"
+        
     def assertFileExist(self, pathRelativeToInstallPath):
         """
         Asserts that the specified path (relative to the installation path) exists.
