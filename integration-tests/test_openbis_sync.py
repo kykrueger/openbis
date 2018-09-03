@@ -38,6 +38,7 @@ class TestCase(systemtest.testcase.TestCase):
         '''create data source openbis (openbis1)'''
         self.installOpenbis(instanceName ='openbis1', technologies = ['screening'])
         openbis1 = self.createOpenbisController('openbis1')
+        openbis1.enableProjectSamples()
         openbis1.setDummyAuthentication()
         openbis1.setDataStoreServerUsername('etlserver1')
         openbis1.setDataStoreServerProperty("host-address", "https://localhost")
@@ -63,6 +64,7 @@ class TestCase(systemtest.testcase.TestCase):
         '''create harvester openbis (openbis2)'''
         self.installOpenbis(instanceName ='openbis2', technologies = ['screening', 'proteomics'])
         openbis2 = self.createOpenbisController('openbis2', port = openbis2_port)
+        openbis2.enableProjectSamples()
         openbis2.setDummyAuthentication()
         openbis2.setDataStoreServerUsername('etlserver2')
         openbis2.setDataStoreServerPort(openbis2_dss_port)
@@ -113,6 +115,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis2_dss_port = '8446'
 
         openbis1=self.createOpenbisController(instanceName = 'openbis1', dropDatabases=False)
+        openbis1.enableProjectSamples()
         openbis1.setDummyAuthentication()
         self.installDataSourcePlugin(openbis1, openbis1_dss_port)
          
@@ -133,6 +136,7 @@ class TestCase(systemtest.testcase.TestCase):
 #        openbis1.dropAndWait("ENTITY_REGISTRATION", "openbis-sync-entity-reg")
 
         openbis2 = self.createOpenbisController(instanceName = 'openbis2', port = openbis2_port, dropDatabases=False)
+        openbis2.enableProjectSamples()
         openbis2.setDataStoreServerPort(openbis2_dss_port)
         openbis2.setOpenbisPortDataStoreServer(openbis2_port)
         openbis2.setDataStoreServerProperty("host-address", "https://localhost")

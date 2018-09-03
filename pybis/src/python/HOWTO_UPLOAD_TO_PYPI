@@ -1,0 +1,15 @@
+# create a python2 / python 3 universal distribution
+python setup.py bdist_wheel --universal
+
+# create a pure python distribution, which only works for a specific python version
+python setup.py bdist_wheel
+
+# create a source-distribution
+python setup.py sdist
+
+# see distributions
+ls -la dist/
+
+# upload distribution(s) to pypi
+twine upload dist/*
+

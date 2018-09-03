@@ -133,6 +133,7 @@ public class EntityRetriever implements IEntityRetriever
             Node<Project> prjNode = new Node<Project>(project);
             graph.addNode(prjNode);
             addExperiments(prjNode);
+            addSamplesForProject(prjNode);
         }
 
         // add space samples
@@ -164,8 +165,11 @@ public class EntityRetriever implements IEntityRetriever
 
     private void addSpaceSamples(String spaceCode)
     {
+        // Add samples that are connected with a space only (i.e. have project == null and experiment == null).
+
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withSpace().withCode().thatEquals(spaceCode);
+        criteria.withoutProject();
         criteria.withoutExperiment();
         criteria.withAndOperator();
 
@@ -195,11 +199,30 @@ public class EntityRetriever implements IEntityRetriever
     {
         for (Sample sample : expNode.getEntity().getSamples())
         {
+            // Add samples that are connected with an experiment and optionally a project.
+
             Node<Sample> sampleNode = new Node<Sample>(sample);
             graph.addEdge(expNode, sampleNode, new Edge(CONNECTION));
 
             addDataSetsForSample(sampleNode);
             addChildAndComponentSamples(sampleNode);
+        }
+    }
+
+    private void addSamplesForProject(Node<Project> prjNode)
+    {
+        for (Sample sample : prjNode.getEntity().getSamples())
+        {
+            // Add samples that are connected with a project only (i.e. have experiment == null).
+
+            if (sample.getExperiment() == null)
+            {
+                Node<Sample> sampleNode = new Node<Sample>(sample);
+                graph.addEdge(prjNode, sampleNode, new Edge(CONNECTION));
+
+                addDataSetsForSample(sampleNode);
+                addChildAndComponentSamples(sampleNode);
+            }
         }
     }
 
@@ -339,6 +362,7 @@ public class EntityRetriever implements IEntityRetriever
         fo.withSpace();
         fo.withAttachments();
         fo.withExperimentsUsing(createExperimentFetchOptions());
+        fo.withSamplesUsing(createSampleFetchOptions());
         return fo;
     }
 
@@ -361,6 +385,7 @@ public class EntityRetriever implements IEntityRetriever
         fo.withDataSets();
         fo.withType();
         fo.withExperiment();
+        fo.withProject();
         fo.withSpace();
         fo.withAttachments();
         fo.withChildrenUsing(fo);

@@ -190,7 +190,7 @@ public class MasterDataParser
             String entityKind = getAttribute(pluginElement, "entityKind").trim();
             plugin.setScriptType(ScriptType.valueOf(getAttribute(pluginElement, "type")));
             plugin.setPluginType(PluginType.JYTHON);
-            plugin.setEntityKind(entityKind.equals("") ? null : new EntityKind[] { EntityKind.valueOf(entityKind) });
+            plugin.setEntityKind((entityKind.equals("") || entityKind.equals("All")) ? null : new EntityKind[] { EntityKind.valueOf(entityKind) });
             plugin.setScript(pluginElement.getTextContent());
             validationPlugins.put(plugin.getName(), plugin);
         }
