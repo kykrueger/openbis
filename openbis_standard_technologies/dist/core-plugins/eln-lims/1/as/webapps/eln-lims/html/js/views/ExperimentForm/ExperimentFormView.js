@@ -17,7 +17,6 @@
 function ExperimentFormView(experimentFormController, experimentFormModel) {
 	this._experimentFormController = experimentFormController;
 	this._experimentFormModel = experimentFormModel;
-	this.enableSelect2 = [];
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -250,12 +249,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 		$container.append($form);
 		
-		// Select2
-		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
-			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
-		}
-		//
-		
 		Util.unblockUI();
 		
 		if(this._experimentFormModel.mode !== FormMode.CREATE) {
@@ -423,16 +416,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					var $component = null;
 					if(propertyType.code === "DEFAULT_OBJECT_TYPE") {
 						$component = FormUtil.getSampleTypeDropdown(propertyType.code, true);
-						this.enableSelect2.push($component);
 					} else {
 						$component = FormUtil.getFieldForPropertyType(propertyType, value);
 					}
 					
-					//Update values if is into edit mode
-					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-							this.enableSelect2.push($component);
-					}
-						
 					if(this._experimentFormModel.mode === FormMode.EDIT) {
 						if(propertyType.dataType === "BOOLEAN") {
 							$($($component.children()[0]).children()[0]).prop('checked', value === "true");

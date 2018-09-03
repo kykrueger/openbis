@@ -92,7 +92,6 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 				//Paint
 				var $controlGroupStorages = FormUtil.getFieldForComponentWithLabel(_this._defaultStoragesDropDown);
 				addToTitleLine("Storage:", $controlGroupStorages);
-				_this._defaultStoragesDropDown.select2({ width: '100%', theme: "bootstrap" });
 				//Attach Event
 				_this._defaultStoragesDropDown.change(function(event) {
 					var storageName = $(this).val();
@@ -170,7 +169,6 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 					_this._storageController.setBoxSizeSelected(_this._storageModel.sample.properties[_this._storageModel.storagePropertyGroup.boxSizeProperty], false);
 					_this._boxSizeDropDown.attr("disabled", "");
 				}
-				_this._boxSizeDropDown.select2({ width: '100%', theme: "bootstrap" });
 			}
 			
 			if(_this._storageModel.config.positionSelector === "on") {

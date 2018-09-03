@@ -203,6 +203,7 @@ var FormUtil = new function() {
 				$component.append($("<option>").attr('value',storageConfiguration.code).text(label));
 			}
 			callbackFunction($component);
+			Select2Manager.add($component);
 		});
 	}
 	
@@ -233,6 +234,7 @@ var FormUtil = new function() {
 			}
 			
 		}
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -268,7 +270,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',sampleType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -295,7 +297,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',experimentType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -311,11 +313,17 @@ var FormUtil = new function() {
 		for(var i = 0; i < spaces.length; i++) {
 			$component.append($("<option>").attr('value', spaces[i]).text(Util.getDisplayNameFromCode(spaces[i])));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
 	this.getDropdown = function(mapVals, placeHolder) {
+		$dropdown = this.getPlainDropdown(mapVals, placeHolder);
+		Select2Manager.add($dropdown);
+		return $dropdown;
+	}
+	
+	this.getPlainDropdown = function(mapVals, placeHolder) {
 
 		var $component = $("<select>", {class : 'form-control'});
 		if(placeHolder) {
@@ -331,10 +339,8 @@ var FormUtil = new function() {
 			}
 			$component.append($option);
 		}
-		
 		return $component;
 	}
-	
 	
 	this.getDataSetsDropDown = function(code, dataSetTypes) {
 		var $component = $("<select>", { class : 'form-control ' });
@@ -354,7 +360,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',datasetType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -446,8 +452,7 @@ var FormUtil = new function() {
                 			}
             			}
             		}
-            		//
-            		//
+            		Select2Manager.add($component);
             		callbackForComponent($component);
             	}
             });
@@ -730,7 +735,7 @@ var FormUtil = new function() {
 		for(var i = 0; i < terms.length; i++) {
 			$component.append($("<option>").attr('value',terms[i].code).text(terms[i].label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -1083,7 +1088,7 @@ var FormUtil = new function() {
 
 			// attach events
 			$dataSetTypeSelector = $("#dataSetTypeSelector");
-			$dataSetTypeSelector.select2({ width: '100%', theme: "bootstrap" });
+			Select2Manager.add($dataSetTypeSelector);
 			$nameInput = $("#nameInput");
 			$dropboxFolderName = $("#dropboxFolderName");
 			$copyToClipboardButton = $("#copyToClipboardButton");
