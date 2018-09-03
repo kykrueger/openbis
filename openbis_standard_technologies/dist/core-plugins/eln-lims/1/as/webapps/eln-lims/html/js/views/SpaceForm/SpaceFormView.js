@@ -52,7 +52,18 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 			});
 		});
 		toolbarModel.push({ component : $export, tooltip: "Export" });
-		
+
+		if (this._spaceFormModel.roles.indexOf("ADMIN") > -1 ) {
+			var $share = FormUtil.getButtonWithIcon("fa fa-users", function() {
+				FormUtil.showShareDialog({
+					spaceOrProjectLabel: _this._spaceFormModel.space.code,
+					acceptCallback: function(role, shareWith, groupOrUser) {
+						_this._spaceFormController.authorizeUserOrGroup(role, shareWith, groupOrUser);
+					},
+				});
+			});
+			toolbarModel.push({ component : $share, tooltip: "Manage access" });
+		}
 		
 		//Jupyter Button
 		if(profile.jupyterIntegrationServerEndpoint) {

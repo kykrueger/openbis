@@ -18,12 +18,41 @@ function SpaceFormController(mainController, space) {
 	this._mainController = mainController;
 	this._spaceFormModel = new SpaceFormModel(space);
 	this._spaceFormView = new SpaceFormView(this, this._spaceFormModel);
-	
+
 	this.init = function(views) {
-		this._spaceFormView.repaint(views);
+		var _this = this;
+		mainController.serverFacade.searchRoleAssignments({
+			user: mainController.serverFacade.getUserId(),
+			space: _this._spaceFormModel.space.code
+		}, function(roleAssignments) {
+			_this._spaceFormModel.roles = [];
+			for (var i=0; i<roleAssignments.length; i++) {
+				if (roleAssignments[i].roleLevel == "SPACE") {
+					_this._spaceFormModel.roles.push(roleAssignments[i].role);
+				}
+			}
+			_this._spaceFormView.repaint(views);
+		});
 	}
 	
 	this.createProject = function() {
 		this._mainController.changeView('showCreateProjectPage', this._spaceFormModel.space.code);
 	}
+
+	this.authorizeUserOrGroup = function(role, shareWith, groupOrUser) {
+		var _this = this;
+		Util.blockUI();
+		this._mainController.serverFacade.createRoleAssignment({
+			user: shareWith == "User" ? groupOrUser : null,
+			group: shareWith == "Group" ? groupOrUser : null,
+			role: role,
+			space: _this._spaceFormModel.space.code
+		}, function(result) {
+			Util.unblockUI();
+			if (result) {
+				Util.showSuccess("Access granted.");
+			}
+		});
+	}
+
 }

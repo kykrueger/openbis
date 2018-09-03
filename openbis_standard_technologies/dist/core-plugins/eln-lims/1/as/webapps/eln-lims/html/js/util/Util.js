@@ -53,7 +53,7 @@ var Util = new function() {
 		$("#" + id).select2({ width: '100%', theme: "bootstrap" });
 	}
 	
-	this.blockUI = function(message, extraCSS, disabledFadeAnimation) {
+	this.blockUI = function(message, extraCSS, disabledFadeAnimation, onBlock) {
 		this.unblockUI();
 		
 		var css = { 
@@ -83,6 +83,9 @@ var Util = new function() {
 		if (disabledFadeAnimation) {
 			params.fadeIn = 0;
 			params.fadeOut = 0;
+		}
+		if (onBlock) {
+			params.onBlock = onBlock;
 		}
 		$.blockUI(params);
 	}

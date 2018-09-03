@@ -1280,4 +1280,78 @@ var FormUtil = new function() {
 		}
 		return type;
 	}
+
+	// share project or space with user or group
+	// params.title
+	// params.components: array of compoments (info, input fields etc.)
+	// params.focusedComponent: component which gains focus
+	// params.buttons: array of buttons
+	// params.css: css as a map
+	// params.callback: function to be called on submit
+	this.showDialog = function(params) {
+		var _this = this;
+
+		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+		$window.submit(params.callback);
+
+		$window.append($('<legend>').append(params.title));
+
+		for (var i=0; i<params.components.length; i++) {
+			$window.append($('<p>').append(params.components[i]));
+			params.components[i].find('select').select2();
+		}
+		var $buttons = $('<p>');
+		for (var i=0; i<params.buttons.length; i++) {
+			$buttons.append(params.buttons[i]);
+			$buttons.append('&nbsp;');
+		}
+		$window.append($buttons);
+
+		Util.blockUI($window, params.css, false, function() {
+			if (params.focuseComponent) {
+				params.focuseComponent.focus();
+			}
+		});
+	}
+
+	// params.spaceOrProjectLabel: label of item to be shared
+	// params.acceptCallback: function to be called with (shareWith, groupOrUser)
+	this.showShareDialog = function(params) {
+		// components
+		var $text = $('<span>').text('To which group or user do you want to grant access to ' + params.spaceOrProjectLabel + '?');
+		var $roleDropdown = FormUtil.getDropdown([
+			{ label: 'Observer', value: 'OBSERVER', selected: true },
+			{ label: 'User', value: 'USER' },
+			{ label: 'Admin', value: 'ADMIN' },
+		]);
+		var $role = FormUtil.getFieldForComponentWithLabel($roleDropdown, 'Role');
+		var $shareWithDropdown = FormUtil.getDropdown([
+			{ label: 'Group', value: 'Group', selected: true },
+			{ label: 'User', value: 'User', selected: true },
+		]);
+		var $shareWith = FormUtil.getFieldForComponentWithLabel($shareWithDropdown, 'share with');
+		var $groupOrUser = FormUtil.getTextInputField('id', 'Group or User');
+		// buttons
+		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Grant access' });
+		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+		$btnCancel.click(function() {
+		    Util.unblockUI();
+		});
+		// dialog
+		this.showDialog({
+			title: 'Manage access to ' + params.spaceOrProjectLabel,
+			components: [$text, $role, $shareWith, $groupOrUser],
+			focuseComponent: $groupOrUser,
+			buttons: [$btnAccept, $btnCancel],
+			css: {'text-align' : 'left'},
+			callback: function() {
+				if ($groupOrUser.val() == null || $groupOrUser.val().length == 0) {
+					alert("Please enter a user or group name.");
+				} else {
+				    Util.unblockUI();
+					params.acceptCallback($roleDropdown.val(), $shareWithDropdown.val(), $groupOrUser.val());
+				}
+			},
+		});
+	}
 }

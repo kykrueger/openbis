@@ -2182,6 +2182,72 @@ function ServerFacade(openbisServer) {
 			});
 	}
 
+	this.searchRoleAssignments = function(criteriaParams, callbackFunction) {
+		require(["as/dto/roleassignment/search/RoleAssignmentSearchCriteria", "as/dto/roleassignment/fetchoptions/RoleAssignmentFetchOptions"], 
+			function(RoleAssignmentSearchCriteria, RoleAssignmentFetchOptions) {
+				var criteria = new RoleAssignmentSearchCriteria();
+
+				if (criteriaParams.space) {
+					criteria.withSpace().withCode().thatEquals(criteriaParams.space);
+				}
+				if (criteriaParams.user) {
+					criteria.withUser().withUserId().thatEquals(criteriaParams.user);
+				}
+				var fetchOptions = new RoleAssignmentFetchOptions();
+
+				mainController.openbisV3.searchRoleAssignments(criteria, fetchOptions).done(function(result) {
+					callbackFunction(result.objects);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			});
+	}
+
+	this.createRoleAssignment = function(creationParams, callbackFunction) {
+		require(["as/dto/roleassignment/create/RoleAssignmentCreation", "as/dto/roleassignment/Role", 
+				"as/dto/space/id/SpacePermId", "as/dto/project/id/ProjectPermId", "as/dto/person/id/PersonPermId",
+				"as/dto/authorizationgroup/id/AuthorizationGroupPermId"],
+			function(RoleAssignmentCreation, Role, SpacePermId, ProjectPermId, PersonPermId, AuthorizationGroupPermId) {
+				var creation = new RoleAssignmentCreation();
+				// user or group
+				if (creationParams.user) {
+					creation.setUserId(new PersonPermId(creationParams.user));
+				} else if (creationParams.group) {
+					creation.setAuthorizationGroupId(new AuthorizationGroupPermId(creationParams.group));
+				}
+				// space or project
+				if (creationParams.space) {
+					creation.setSpaceId(new SpacePermId(creationParams.space));
+				} else if (creationParams.project) {
+					creation.setSpaceId(new ProjectPermId(creationParams.project));
+				}
+				// role
+				if (creationParams.role == "OBSERVER"){
+					creation.setRole(Role.OBSERVER);
+				} else if (creationParams.role == "USER") {
+					creation.setRole(Role.USER);
+				} else if (creationParams.role == "ADMIN") {
+					creation.setRole(Role.ADMIN);
+				}
+
+				mainController.openbisV3.createRoleAssignments([creation]).done(function(response) {
+					if (response.length == 1) {
+						callbackFunction(response[0]);
+					} else {
+						callbackFunction(false);
+					}
+				}).fail(function(result) {
+					if (result.message) {
+						Util.showError(result.message);
+					} else {
+						Util.showError("Call failed to server: " + JSON.stringify(result));
+					}
+					callbackFunction(false);
+				});
+			});
+	}
+
 	this.getSessionInformation = function(callbackFunction) {
 		mainController.openbisV3.getSessionInformation().done(function(sessionInfo) {
                 callbackFunction(sessionInfo);
