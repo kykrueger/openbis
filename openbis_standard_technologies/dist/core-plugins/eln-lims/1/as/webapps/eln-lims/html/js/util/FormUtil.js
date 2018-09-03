@@ -1319,13 +1319,13 @@ var FormUtil = new function() {
 	this.showShareDialog = function(params) {
 		// components
 		var $text = $('<span>').text('To which group or user do you want to grant access to ' + params.spaceOrProjectLabel + '?');
-		var $roleDropdown = FormUtil.getDropdown([
+		var $roleDropdown = FormUtil.getPlainDropdown([
 			{ label: 'Observer', value: 'OBSERVER', selected: true },
 			{ label: 'User', value: 'USER' },
 			{ label: 'Admin', value: 'ADMIN' },
 		]);
 		var $role = FormUtil.getFieldForComponentWithLabel($roleDropdown, 'Role');
-		var $shareWithDropdown = FormUtil.getDropdown([
+		var $shareWithDropdown = FormUtil.getPlainDropdown([
 			{ label: 'Group', value: 'Group', selected: true },
 			{ label: 'User', value: 'User', selected: true },
 		]);
