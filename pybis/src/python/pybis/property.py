@@ -59,8 +59,9 @@ class PropertyHolder():
         data_type = property_type['dataType']
         if data_type == 'CONTROLLEDVOCABULARY':
             voc = self._openbis.get_terms(name)
-            if value not in voc.terms:
-                raise ValueError("Value must be one of these terms: " + ", ".join(voc.terms))
+            value = value.upper()
+            if value not in voc.df['code'].values:
+                raise ValueError("Value must be one of these terms: " + ", ".join(voc.df['code'].values))
         elif data_type in ('INTEGER', 'BOOLEAN', 'VARCHAR'):
             if not check_datatype(data_type, value):
                 raise ValueError("Value must be of type {}".format(data_type))

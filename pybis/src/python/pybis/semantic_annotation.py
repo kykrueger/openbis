@@ -116,6 +116,33 @@ class SemanticAnnotation():
         self._openbis.delete_entity(entity='SemanticAnnotation', id=self.permId, reason=reason)
         if VERBOSE: print("Semantic annotation successfully deleted.")
 
+    def _repr_html_(self):
+        attrs = [ 'permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate',
+        ]
+
+        html = """
+            <table border="1" class="dataframe">
+            <thead>
+                <tr style="text-align: right;">
+                <th>attribute</th>
+                <th>value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        for attr in attrs:
+            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
+                attr, getattr(self, attr, '')
+            )
+
+        html += """
+            </tbody>
+            </table>
+        """
+        return html
+        
+
     def __repr__(self):
         headers = ['attribute', 'value']
         lines = []
