@@ -28,7 +28,7 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 	var selectsSamples = selectsSamples;
 	var selectsDatasets = selectsDatasets;
 	var selectsProjects = selectsProjects;
-	var $select = FormUtil.getDropdown({}, "");
+	var $select = FormUtil.getPlainDropdown({}, "");
 	var storedParams = null;
 	
 	//

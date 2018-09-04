@@ -203,6 +203,7 @@ var FormUtil = new function() {
 				$component.append($("<option>").attr('value',storageConfiguration.code).text(label));
 			}
 			callbackFunction($component);
+			Select2Manager.add($component);
 		});
 	}
 	
@@ -233,6 +234,7 @@ var FormUtil = new function() {
 			}
 			
 		}
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -268,7 +270,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',sampleType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -295,7 +297,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',experimentType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -311,11 +313,17 @@ var FormUtil = new function() {
 		for(var i = 0; i < spaces.length; i++) {
 			$component.append($("<option>").attr('value', spaces[i]).text(Util.getDisplayNameFromCode(spaces[i])));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
 	this.getDropdown = function(mapVals, placeHolder) {
+		$dropdown = this.getPlainDropdown(mapVals, placeHolder);
+		Select2Manager.add($dropdown);
+		return $dropdown;
+	}
+	
+	this.getPlainDropdown = function(mapVals, placeHolder) {
 
 		var $component = $("<select>", {class : 'form-control'});
 		if(placeHolder) {
@@ -331,10 +339,8 @@ var FormUtil = new function() {
 			}
 			$component.append($option);
 		}
-		
 		return $component;
 	}
-	
 	
 	this.getDataSetsDropDown = function(code, dataSetTypes) {
 		var $component = $("<select>", { class : 'form-control ' });
@@ -354,7 +360,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',datasetType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -446,8 +452,7 @@ var FormUtil = new function() {
                 			}
             			}
             		}
-            		//
-            		//
+            		Select2Manager.add($component);
             		callbackForComponent($component);
             	}
             });
@@ -730,7 +735,7 @@ var FormUtil = new function() {
 		for(var i = 0; i < terms.length; i++) {
 			$component.append($("<option>").attr('value',terms[i].code).text(terms[i].label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -1083,7 +1088,7 @@ var FormUtil = new function() {
 
 			// attach events
 			$dataSetTypeSelector = $("#dataSetTypeSelector");
-			$dataSetTypeSelector.select2({ width: '100%', theme: "bootstrap" });
+			Select2Manager.add($dataSetTypeSelector);
 			$nameInput = $("#nameInput");
 			$dropboxFolderName = $("#dropboxFolderName");
 			$copyToClipboardButton = $("#copyToClipboardButton");
@@ -1274,5 +1279,79 @@ var FormUtil = new function() {
 			type = entity.sampleTypeCode;
 		}
 		return type;
+	}
+
+	// share project or space with user or group
+	// params.title
+	// params.components: array of compoments (info, input fields etc.)
+	// params.focusedComponent: component which gains focus
+	// params.buttons: array of buttons
+	// params.css: css as a map
+	// params.callback: function to be called on submit
+	this.showDialog = function(params) {
+		var _this = this;
+
+		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+		$window.submit(params.callback);
+
+		$window.append($('<legend>').append(params.title));
+
+		for (var i=0; i<params.components.length; i++) {
+			$window.append($('<p>').append(params.components[i]));
+			params.components[i].find('select').select2();
+		}
+		var $buttons = $('<p>');
+		for (var i=0; i<params.buttons.length; i++) {
+			$buttons.append(params.buttons[i]);
+			$buttons.append('&nbsp;');
+		}
+		$window.append($buttons);
+
+		Util.blockUI($window, params.css, false, function() {
+			if (params.focuseComponent) {
+				params.focuseComponent.focus();
+			}
+		});
+	}
+
+	// params.spaceOrProjectLabel: label of item to be shared
+	// params.acceptCallback: function to be called with (shareWith, groupOrUser)
+	this.showShareDialog = function(params) {
+		// components
+		var $text = $('<span>').text('To which group or user do you want to grant access to ' + params.spaceOrProjectLabel + '?');
+		var $roleDropdown = FormUtil.getPlainDropdown([
+			{ label: 'Observer', value: 'OBSERVER', selected: true },
+			{ label: 'User', value: 'USER' },
+			{ label: 'Admin', value: 'ADMIN' },
+		]);
+		var $role = FormUtil.getFieldForComponentWithLabel($roleDropdown, 'Role');
+		var $shareWithDropdown = FormUtil.getPlainDropdown([
+			{ label: 'Group', value: 'Group', selected: true },
+			{ label: 'User', value: 'User', selected: true },
+		]);
+		var $shareWith = FormUtil.getFieldForComponentWithLabel($shareWithDropdown, 'share with');
+		var $groupOrUser = FormUtil.getTextInputField('id', 'Group or User');
+		// buttons
+		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Grant access' });
+		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+		$btnCancel.click(function() {
+		    Util.unblockUI();
+		});
+		// dialog
+		this.showDialog({
+			title: 'Manage access to ' + params.spaceOrProjectLabel,
+			components: [$text, $role, $shareWith, $groupOrUser],
+			focuseComponent: $groupOrUser,
+			buttons: [$btnAccept, $btnCancel],
+			css: {'text-align' : 'left'},
+			callback: function() {
+				if ($groupOrUser.val() == null || $groupOrUser.val().length == 0) {
+					alert("Please enter a user or group name.");
+				} else {
+				    Util.unblockUI();
+					params.acceptCallback($roleDropdown.val(), $shareWithDropdown.val(), $groupOrUser.val());
+				}
+			},
+		});
 	}
 }

@@ -836,6 +836,7 @@ function PlateView(plateController, plateModel) {
 			}
 		});
 		var $componentWithLabel = $("<span>").append("Color Encoded Annotation: ").append($component);
+		Select2Manager.add($component);
 		return $componentWithLabel;
 	}
 }

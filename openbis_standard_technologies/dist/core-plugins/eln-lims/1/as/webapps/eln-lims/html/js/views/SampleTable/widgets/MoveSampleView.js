@@ -97,8 +97,6 @@ function MoveSampleView(moveSampleController, moveSampleModel) {
 			$experimentSection.append(FormUtil.getFieldForComponentWithLabel($dropdown, "Future Project"))
 							.append(FormUtil.getFieldForComponentWithLabel($expTypeField, "Future " + ELNDictionary.getExperimentDualName() + " Type"))
 							.append(FormUtil.getFieldForComponentWithLabel($expNameField, "Future " + ELNDictionary.getExperimentDualName() + " Name"));
-			$("#future-projects-drop-down").select2({ width: '100%', theme: "bootstrap" });
-			$("#future-experiment-type-drop-down").select2({ width: '100%', theme: "bootstrap" });
 		});
 	}
 	
@@ -114,7 +112,6 @@ function MoveSampleView(moveSampleController, moveSampleModel) {
 			});
 			//Attach Fields
 			$experimentSection.append(FormUtil.getFieldForComponentWithLabel($dropdown, "Future " + ELNDictionary.getExperimentDualName() + ""));
-			$("#existing-experiments-drop-down").select2({ width: '100%', theme: "bootstrap" });
 		});
 	}
 	

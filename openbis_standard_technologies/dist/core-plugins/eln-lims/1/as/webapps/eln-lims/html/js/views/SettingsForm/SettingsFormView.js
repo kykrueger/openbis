@@ -856,7 +856,6 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			if (this._settingsFormModel.mode === FormMode.VIEW) {
 				$widget.prop("disabled", true);
 			}
-			this._styleWidget($widget);
 		}
 		// remove row button if in edit mode
 		if (tableModel.dynamicRows) {
@@ -882,12 +881,6 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		// add extra row
 		if ($extraRow) {
 			$tbody.append($extraRow);
-		}
-	}
-
-	this._styleWidget = function($widget) {
-		if ($widget.is("select")) {
-			$widget.select2({ width: '100%', theme: "bootstrap" })
 		}
 	}
 

@@ -132,6 +132,7 @@ function DilutionTableView(dilutionTableController, dilutionTableModel) {
 		if(!_this._dilutionTableModel.isEnabled) {
 			$component.attr('disabled', true)
 		}
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -224,6 +225,7 @@ function DilutionTableView(dilutionTableController, dilutionTableModel) {
 		if(!this._dilutionTableModel.isEnabled) {
 			$component.attr('disabled', true)
 		}
+		Select2Manager.add($component);
 	}
 	
 	this._updateCalculatedValues = function() {
