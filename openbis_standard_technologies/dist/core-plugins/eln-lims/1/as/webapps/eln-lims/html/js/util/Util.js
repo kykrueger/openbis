@@ -170,7 +170,7 @@ var Util = new function() {
 					 "href: " + location.href.replace(new RegExp("&", 'g'), " - ") + "%0D%0A" +
 					 "error: " + withHTML;
 		
-		var withHTMLToShow = userErrorWarning + "<br><br><textarea rows=\"8\" cols=\"170\">" + report + "</textarea>" + "<br><br>" + warning + "<br><br>";
+		var withHTMLToShow = userErrorWarning + "<br><br><textarea style=\"background: transparent;\" rows=\"8\" cols=\"170\">" + withHTML + "</textarea>" + "<br><br>" + warning + "<br><br>";
           	withHTMLToShow += "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
 		
 		var isiPad = navigator.userAgent.match(/iPad/i) != null;
