@@ -2190,10 +2190,15 @@ function ServerFacade(openbisServer) {
 				if (criteriaParams.space) {
 					criteria.withSpace().withCode().thatEquals(criteriaParams.space);
 				}
+				if (criteriaParams.project) {
+					criteria.withProject().withCode().thatEquals(criteriaParams.project);
+				}
 				if (criteriaParams.user) {
 					criteria.withUser().withUserId().thatEquals(criteriaParams.user);
 				}
 				var fetchOptions = new RoleAssignmentFetchOptions();
+				fetchOptions.withSpace();
+				fetchOptions.withProject();
 
 				mainController.openbisV3.searchRoleAssignments(criteria, fetchOptions).done(function(result) {
 					callbackFunction(result.objects);
@@ -2220,7 +2225,7 @@ function ServerFacade(openbisServer) {
 				if (creationParams.space) {
 					creation.setSpaceId(new SpacePermId(creationParams.space));
 				} else if (creationParams.project) {
-					creation.setSpaceId(new ProjectPermId(creationParams.project));
+					creation.setProjectId(new ProjectPermId(creationParams.project));
 				}
 				// role
 				if (creationParams.role == "OBSERVER"){
@@ -2239,7 +2244,7 @@ function ServerFacade(openbisServer) {
 					}
 				}).fail(function(result) {
 					if (result.message) {
-						Util.showError(result.message);
+						Util.showError(result.message, null, null, null, null, true);
 					} else {
 						Util.showError("Call failed to server: " + JSON.stringify(result));
 					}

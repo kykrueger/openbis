@@ -1316,7 +1316,7 @@ var FormUtil = new function() {
 
 	// params.spaceOrProjectLabel: label of item to be shared
 	// params.acceptCallback: function to be called with (shareWith, groupOrUser)
-	this.showShareDialog = function(params) {
+	this.showAuthorizationDialog = function(params) {
 		// components
 		var $text = $('<span>').text('To which group or user do you want to grant access to ' + params.spaceOrProjectLabel + '?');
 		var $roleDropdown = FormUtil.getPlainDropdown([

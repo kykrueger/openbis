@@ -127,7 +127,20 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				});
 				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
 			}
-			
+
+			// authorization
+			if (this._projectFormModel.roles.indexOf("ADMIN") > -1 ) {
+				var $share = FormUtil.getButtonWithIcon("fa fa-users", function() {
+					FormUtil.showAuthorizationDialog({
+						spaceOrProjectLabel: _this._projectFormModel.project.code,
+						acceptCallback: function(role, shareWith, groupOrUser) {
+							mainController.authorizeUserOrGroup(role, shareWith, groupOrUser, null,  _this._projectFormModel.project.permId);
+						},
+					});
+				});
+				toolbarModel.push({ component : $share, tooltip: "Manage access" });
+			}
+
 			//Operations
 			var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + ELNDictionary.getExperimentKindName(projectIdentifier), event: function() {
 				showSelectExperimentType();

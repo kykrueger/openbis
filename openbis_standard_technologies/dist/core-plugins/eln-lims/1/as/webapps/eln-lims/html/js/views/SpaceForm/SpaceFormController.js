@@ -21,38 +21,16 @@ function SpaceFormController(mainController, space) {
 
 	this.init = function(views) {
 		var _this = this;
-		mainController.serverFacade.searchRoleAssignments({
-			user: mainController.serverFacade.getUserId(),
+		this._mainController.getUserRole({
 			space: _this._spaceFormModel.space.code
-		}, function(roleAssignments) {
-			_this._spaceFormModel.roles = [];
-			for (var i=0; i<roleAssignments.length; i++) {
-				if (roleAssignments[i].roleLevel == "SPACE") {
-					_this._spaceFormModel.roles.push(roleAssignments[i].role);
-				}
-			}
+		}, function(roles){
+			_this._spaceFormModel.roles = roles;
 			_this._spaceFormView.repaint(views);
 		});
 	}
-	
+
 	this.createProject = function() {
 		this._mainController.changeView('showCreateProjectPage', this._spaceFormModel.space.code);
-	}
-
-	this.authorizeUserOrGroup = function(role, shareWith, groupOrUser) {
-		var _this = this;
-		Util.blockUI();
-		this._mainController.serverFacade.createRoleAssignment({
-			user: shareWith == "User" ? groupOrUser : null,
-			group: shareWith == "Group" ? groupOrUser : null,
-			role: role,
-			space: _this._spaceFormModel.space.code
-		}, function(result) {
-			Util.unblockUI();
-			if (result) {
-				Util.showSuccess("Access granted.");
-			}
-		});
 	}
 
 }

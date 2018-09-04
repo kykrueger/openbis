@@ -252,6 +252,52 @@ function MainController(profile) {
 	}
 
 	//
+	// authorization
+	//
+
+	// params.space: space code
+	// params.project: (optional) project code
+	// params.callback: function to be called with the role list
+	this.getUserRole = function(params, callback) {
+		if (profile.isAdmin) {
+			return ["ADMIN"];
+		}
+		var roles = [];
+		mainController.serverFacade.searchRoleAssignments({
+			user: mainController.serverFacade.getUserId(),
+		}, function(roleAssignments) {
+			for (var i=0; i<roleAssignments.length; i++) {
+				var ra = roleAssignments[i];
+				if (ra.space && ra.space.code == params.space
+						&& roles.indexOf(ra.role) < 0) {
+					roles.push(ra.role);
+				}
+				if (ra.project && params.project && ra.project.code == params.project
+						&& roles.indexOf(ra.role) < 0) {
+					roles.push(ra.role);
+				}
+			}
+			callback(roles);
+		});
+	}
+
+	this.authorizeUserOrGroup = function(role, shareWith, groupOrUser, spaceCode, projectPermId) {
+		Util.blockUI();
+		mainController.serverFacade.createRoleAssignment({
+			user: shareWith == "User" ? groupOrUser : null,
+			group: shareWith == "Group" ? groupOrUser : null,
+			role: role,
+			space: spaceCode,
+			project: projectPermId
+		}, function(result) {
+			Util.unblockUI();
+			if (result) {
+				Util.showSuccess("Access granted.");
+			}
+		});
+	}
+
+	//
 	// Main View Changer - Everything on the application rely on this method to alter the views, arg should be a string
 	//
 	this.changeView = function(newViewChange, arg, shouldStateBePushToHistory) {
