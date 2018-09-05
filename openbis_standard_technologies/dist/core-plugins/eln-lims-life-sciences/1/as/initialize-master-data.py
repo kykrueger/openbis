@@ -21,25 +21,28 @@ from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.operation import SynchronousOperationExecutionOptions
 from parsers import ExcelToPoiParser, PoiToDefinitionParser, DefinitionToCreationParser, CreationToOperationParser, DuplicatesHandler
 from openbis_logic import ServerDuplicatesCreationHandler
+from file_handling import list_xls_files
 
-TYPES_FOLDER = "%s/life-sciences-types/" % [p for p in sys.path if p.find('core-plugins') >= 0][0];
- 
-api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME);
+api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 
-for excel_file in os.listdir(TYPES_FOLDER):
-    excel_file_path = os.path.join(TYPES_FOLDER, excel_file)
+creations = {}
+for excel_file_path in list_xls_files():
     poi_definitions = ExcelToPoiParser.parse(excel_file_path)
     definitions = PoiToDefinitionParser.parse(poi_definitions)
-    creations = DefinitionToCreationParser.parse(definitions)
-    distinct_creations = DuplicatesHandler.get_distinct_creations(creations)
-    sessionToken = api.loginAsSystem()
-    server_duplicates_handler = ServerDuplicatesCreationHandler(api, sessionToken, distinct_creations)
-    print(server_duplicates_handler)
-    print(server_duplicates_handler.creations)
-    creations = server_duplicates_handler.remove_already_existing_elements()
-    operations = CreationToOperationParser.parse(creations)
-    result = api.executeOperations(sessionToken, operations, SynchronousOperationExecutionOptions())
-    print("========================eln-life-sciences-types xls ingestion result========================")
-    print("Ingested " + excel_file)
-    print(result)
+    partial_creations = DefinitionToCreationParser.parse(definitions)
+    print(partial_creations)
+    for creation_type, partial_creation in partial_creations.items():
+        if creation_type not in creations:
+            creations[creation_type] = partial_creation
+        else:
+            creations[creation_type].extend(partial_creation)
+distinct_creations = DuplicatesHandler.get_distinct_creations(creations)
+sessionToken = api.loginAsSystem()
+server_duplicates_handler = ServerDuplicatesCreationHandler(api, sessionToken, distinct_creations)
+creations = server_duplicates_handler.remove_already_existing_elements()
+operations = CreationToOperationParser.parse(creations)
+result = api.executeOperations(sessionToken, operations, SynchronousOperationExecutionOptions())
+print("========================eln-life-sciences-types xls ingestion result========================")
+print(result)
+print("========================eln-life-sciences-types xls ingestion result========================")
 
