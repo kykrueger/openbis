@@ -21,7 +21,13 @@ class DataMgmtRunner(object):
         self.halt_on_error_log = halt_on_error_log
         self.dm = self._shared_data_mgmt(ctx.obj)
 
-    def run(self, function):
+
+    def run(self, command, function):
+        result = self._run(function)
+        return check_result(command, result)
+
+
+    def _run(self, function):
         try:
             return function()
         except CommandException as e:
