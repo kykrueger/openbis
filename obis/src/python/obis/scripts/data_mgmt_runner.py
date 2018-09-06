@@ -42,15 +42,3 @@ class DataMgmtRunner(object):
             click_echo("Error: A previous command did not finish. Please check the log ({}) and remove it when you want to continue using obis".format(log.folder_path))
             sys.exit(-1)
         return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config, log=log, debug=context['debug'])
-
-
-    def init_handle_cleanup(self, result, object_id, collection_id, repository, data_mgmt):
-        if (not object_id and not collection_id) or result.failure():
-            return check_result("init_data", result)
-        with dm.cd(repository):
-            if object_id:
-                resolver = data_mgmt.object
-                return check_result("init_data", set_property(data_mgmt, resolver, 'id', object_id, False, False))
-            if collection_id:
-                resolver = data_mgmt.collection
-                return check_result("init_data", set_property(data_mgmt, resolver, 'id', collection_id, False, False))

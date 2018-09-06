@@ -57,7 +57,7 @@ def cli(ctx, quiet, skip_verification, debug):
     ctx.obj['debug'] = debug
 
 
-def init_data_impl(ctx, object_id, collection_id, repository, desc):
+def init_data_impl(ctx, repository, desc):
     """Shared implementation for the init_data command."""
     if repository is None:
         repository = "."
@@ -65,15 +65,15 @@ def init_data_impl(ctx, object_id, collection_id, repository, desc):
     runner = DataMgmtRunner(ctx)
     desc = desc if desc != "" else None
     result = runner.run(lambda: runner.dm.init_data(repository, desc, create=True))
-    runner.init_handle_cleanup(result, object_id, collection_id, repository, runner.dm)
+    return check_result("init_data", result)
 
 
-def init_analysis_impl(ctx, parent, object_id, collection_id, repository, description):
+def init_analysis_impl(ctx, parent, repository, description):
     click_echo("init_analysis {}".format(repository))
     runner = DataMgmtRunner(ctx)
     description = description if description != "" else None
     result = runner.run(lambda: runner.dm.init_analysis(repository, parent, description, create=True))
-    runner.init_handle_cleanup(result, object_id, collection_id, repository, runner.dm)
+    return check_result("init_analysis", result)
 
 
 # settings commands
@@ -489,8 +489,6 @@ def commit(ctx, msg, auto_add, ignore_missing_parent, repository):
 ## init
 
 _init_params = [
-    click.option('-oi', '--object_id', help='Set the id of the owning sample.'),
-    click.option('-ci', '--collection_id', help='Set the id of the owning experiment.'),
     click.argument('repository', type=click.Path(exists=False, file_okay=False), required=False),
     click.argument('description', default=""),
 ]
@@ -498,14 +496,14 @@ _init_params = [
 @repository.command("init", short_help="Initialize the folder as a data repository.")
 @click.pass_context
 @add_params(_init_params)
-def repository_init(ctx, object_id, collection_id, repository, description):
-    return init_data_impl(ctx, object_id, collection_id, repository, description)
+def repository_init(ctx, repository, description):
+    return init_data_impl(ctx, repository, description)
 
 @cli.command(short_help="Initialize the folder as a data repository.")
 @click.pass_context
 @add_params(_init_params)
-def init(ctx, object_id, collection_id, repository, description):
-    ctx.invoke(repository_init, object_id=object_id, collection_id=collection_id, repository=repository, description=description)
+def init(ctx, repository, description):
+    ctx.invoke(repository_init, repository=repository, description=description)
 
 ## init analysis
 
@@ -517,14 +515,14 @@ _init_analysis_params += _init_params
 @repository.command("init_analysis", short_help="Initialize the folder as an analysis folder.")
 @click.pass_context
 @add_params(_init_analysis_params)
-def repository_init_analysis(ctx, parent, object_id, collection_id, repository, description):
-    return init_analysis_impl(ctx, parent, object_id, collection_id, repository, description)
+def repository_init_analysis(ctx, parent, repository, description):
+    return init_analysis_impl(ctx, parent, repository, description)
 
 @cli.command(short_help="Initialize the folder as an analysis folder.")
 @click.pass_context
 @add_params(_init_analysis_params)
-def init_analysis(ctx, parent, object_id, collection_id, repository, description):
-    ctx.invoke(repository_init_analysis, parent=parent, object_id=object_id, collection_id=collection_id, repository=repository, description=description)
+def init_analysis(ctx, parent, repository, description):
+    ctx.invoke(repository_init_analysis, parent=parent, repository=repository, description=description)
 
 ## status
 
