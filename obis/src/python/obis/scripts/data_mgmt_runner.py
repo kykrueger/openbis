@@ -51,3 +51,11 @@ class DataMgmtRunner(object):
 
     def get_settings(self):
         return self.dm.settings_resolver.config_dict()
+
+
+    def get_settings_resolver(self):
+        return self.dm.settings_resolver
+
+
+    def config(self, resolver, is_global, is_data_set_property, prop, value, set, get, clear):
+        self.dm.config(resolver, is_global, is_data_set_property, prop, value, set, get, clear)
