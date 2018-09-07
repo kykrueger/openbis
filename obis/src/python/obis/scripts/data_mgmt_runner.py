@@ -6,8 +6,7 @@ from datetime import datetime
 
 from .. import dm
 from ..dm.utils import cd
-from ..dm.command_result import CommandResult
-from ..dm.command_result import CommandException
+from ..dm.command_result import CommandResult, CommandException
 from ..dm.command_log import CommandLog
 from .click_util import click_echo, check_result
 

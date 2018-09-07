@@ -17,11 +17,9 @@ from datetime import datetime
 import click
 
 from ..dm.command_result import CommandResult
-from ..dm.command_result import CommandException
 from ..dm.utils import cd
-from ..dm.command_log import CommandLog
 from .data_mgmt_runner import DataMgmtRunner
-from .click_util import click_echo, check_result
+from .click_util import click_echo
 
 
 def click_progress(progress_data):
