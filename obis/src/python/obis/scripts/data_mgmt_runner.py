@@ -10,7 +10,6 @@ from ..dm.command_result import CommandResult
 from ..dm.command_result import CommandException
 from ..dm.command_log import CommandLog
 from .click_util import click_echo, check_result
-from .config_util import set_property
 
 
 class DataMgmtRunner(object):
@@ -48,3 +47,7 @@ class DataMgmtRunner(object):
             click_echo("Error: A previous command did not finish. Please check the log ({}) and remove it when you want to continue using obis".format(log.folder_path))
             sys.exit(-1)
         return dm.DataMgmt(openbis_config=openbis_config, git_config=git_config, log=log, debug=context['debug'])
+
+
+    def get_settings(self):
+        return self.dm.settings_resolver.config_dict()

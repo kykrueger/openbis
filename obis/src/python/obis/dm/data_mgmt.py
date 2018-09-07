@@ -10,6 +10,7 @@ Created by Chandrasekhar Ramakrishnan on 2017-02-01.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
 import abc
+import json
 import os
 import shutil
 import traceback
@@ -33,6 +34,7 @@ from .utils import complete_git_config
 from .utils import complete_openbis_config
 from .utils import cd
 from ..scripts import cli
+from ..scripts.click_util import click_echo, check_result
 
 
 # noinspection PyPep8Naming
@@ -315,7 +317,7 @@ class GitDataMgmt(AbstractDataMgmt):
             return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
         # set data_set_id to analysis repository so it will be used as parent when committing
         with cd(path):
-            cli.set_property(self, self.settings_resolver.repository, "data_set_id", parent_data_set_id, False, False)
+            self.set_property(self.settings_resolver.repository, "data_set_id", parent_data_set_id, False, False)
         return result
 
 
@@ -332,9 +334,9 @@ class GitDataMgmt(AbstractDataMgmt):
     def commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True, path=None):
         if path is not None:
             with cd(path):
-                return self._commit(msg, auto_add, ignore_missing_parent, sync);
+                return self._commit(msg, auto_add, ignore_missing_parent, sync)
         else:
-            return self._commit(msg, auto_add, ignore_missing_parent, sync);
+            return self._commit(msg, auto_add, ignore_missing_parent, sync)
 
 
     @with_restore
@@ -415,3 +417,74 @@ class GitDataMgmt(AbstractDataMgmt):
     def download(self, data_set_id, content_copy_index, file, skip_integrity_check):
         cmd = Download(self, data_set_id, content_copy_index, file, skip_integrity_check)
         return cmd.run()
+
+    #
+    # settings
+    #
+
+    def config(self, resolver, is_global, is_data_set_property, prop=None, value=None, set=False, get=False, clear=False):
+        if set == True:
+            assert get == False
+            assert clear == False
+            assert prop is not None
+            assert value is not None
+        elif get == True:
+            assert set == False
+            assert clear == False
+            assert value is None
+        elif clear == True:
+            assert get == False
+            assert set == False
+            assert value is None
+
+        assert set == True or get == True or clear == True
+        if is_global:
+            resolver.set_location_search_order(['global'])
+        else:
+            top_level_path = self.git_wrapper.git_top_level_path()
+            if top_level_path.success():
+                resolver.set_resolver_location_roots('data_set', top_level_path.output)
+                resolver.set_location_search_order(['local'])
+            else:
+                resolver.set_location_search_order(['global'])
+
+        config_dict = resolver.config_dict()
+        if is_data_set_property:
+            config_dict = config_dict['properties']
+        if get == True:
+            if prop is None:
+                config_str = json.dumps(config_dict, indent=4, sort_keys=True)
+                click_echo("{}".format(config_str), with_timestamp=False)
+            else:
+                if not prop in config_dict:
+                    raise ValueError("Unknown setting {} for {}.".format(prop, resolver.categoty))
+                little_dict = {prop: config_dict[prop]}
+                config_str = json.dumps(little_dict, indent=4, sort_keys=True)
+                click_echo("{}".format(config_str), with_timestamp=False)
+        elif set == True:
+            return check_result("config", self.set_property(resolver, prop, value, is_global, is_data_set_property))
+        elif clear == True:
+            if prop is None:
+                returncode = 0
+                for prop in config_dict.keys():
+                    returncode += check_result("config", self.set_property(resolver, prop, None, is_global, is_data_set_property))
+                return returncode
+            else:
+                return check_result("config", self.set_property(resolver, prop, None, is_global, is_data_set_property))
+
+    def set_property(self, resolver, prop, value, is_global, is_data_set_property=False):
+        """Helper function to implement the property setting semantics."""
+        loc = 'global' if is_global else 'local'
+        try:
+            if is_data_set_property:
+                resolver.set_value_for_json_parameter('properties', prop, value, loc, apply_rules=True)
+            else:
+                resolver.set_value_for_parameter(prop, value, loc, apply_rules=True)
+        except ValueError as e:
+            if self.debug ==  True:
+                raise e
+            return CommandResult(returncode=-1, output="Error: " + str(e))
+        if not is_global:
+            return self.commit_metadata_updates(prop)
+        else:
+            return CommandResult(returncode=0, output="")

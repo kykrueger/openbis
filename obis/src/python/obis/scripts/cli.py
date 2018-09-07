@@ -16,14 +16,12 @@ from datetime import datetime
 
 import click
 
-from .. import dm
 from ..dm.command_result import CommandResult
 from ..dm.command_result import CommandException
 from ..dm.utils import cd
 from ..dm.command_log import CommandLog
 from .data_mgmt_runner import DataMgmtRunner
 from .click_util import click_echo, check_result
-from .config_util import set_property
 
 
 def click_progress(progress_data):
@@ -152,57 +150,6 @@ def _join_settings_get(setting_lists):
     return joined
 
 
-def config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop=None, value=None, set=False, get=False, clear=False):
-    if set == True:
-        assert get == False
-        assert clear == False
-        assert prop is not None
-        assert value is not None
-    elif get == True:
-        assert set == False
-        assert clear == False
-        assert value is None
-    elif clear == True:
-        assert get == False
-        assert set == False
-        assert value is None
-
-    assert set == True or get == True or clear == True
-    if is_global:
-        resolver.set_location_search_order(['global'])
-    else:
-        top_level_path = data_mgmt.git_wrapper.git_top_level_path()
-        if top_level_path.success():
-            resolver.set_resolver_location_roots('data_set', top_level_path.output)
-            resolver.set_location_search_order(['local'])
-        else:
-            resolver.set_location_search_order(['global'])
-
-    config_dict = resolver.config_dict()
-    if is_data_set_property:
-        config_dict = config_dict['properties']
-    if get == True:
-        if prop is None:
-            config_str = json.dumps(config_dict, indent=4, sort_keys=True)
-            click.echo("{}".format(config_str))
-        else:
-            if not prop in config_dict:
-                raise ValueError("Unknown setting {} for {}.".format(prop, resolver.categoty))
-            little_dict = {prop: config_dict[prop]}
-            config_str = json.dumps(little_dict, indent=4, sort_keys=True)
-            click.echo("{}".format(config_str))            
-    elif set == True:
-        return check_result("config", set_property(data_mgmt, resolver, prop, value, is_global, is_data_set_property))
-    elif clear == True:
-        if prop is None:
-            returncode = 0
-            for prop in config_dict.keys():
-                returncode += check_result("config", set_property(data_mgmt, resolver, prop, None, is_global, is_data_set_property))
-            return returncode
-        else:
-            return check_result("config", set_property(data_mgmt, resolver, prop, None, is_global, is_data_set_property))
-
-
 def _access_settings(ctx, prop=None, value=None, set=False, get=False, clear=False):
     is_global = ctx.obj['is_global']
     data_mgmt = ctx.obj['data_mgmt']
@@ -210,7 +157,7 @@ def _access_settings(ctx, prop=None, value=None, set=False, get=False, clear=Fal
     is_data_set_property = False
     if 'is_data_set_property' in ctx.obj:
         is_data_set_property = ctx.obj['is_data_set_property']
-    config_internal(data_mgmt, resolver, is_global, is_data_set_property, prop=prop, value=value, set=set, get=get, clear=clear)
+    data_mgmt.config(resolver, is_global, is_data_set_property, prop=prop, value=value, set=set, get=get, clear=clear)
 
 
 def _set(ctx, settings):
@@ -253,7 +200,7 @@ def settings(ctx, is_global):
 @click.pass_context
 def settings_get(ctx):
     runner = DataMgmtRunner(ctx, halt_on_error_log=False)
-    settings = runner.dm.settings_resolver.config_dict()
+    settings = runner.get_settings()
     settings_str = json.dumps(settings, indent=4, sort_keys=True)
     click.echo("{}".format(settings_str))
 

@@ -1,9 +1,12 @@
 import click
 from datetime import datetime
 
-def click_echo(message):
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    click.echo("{} {}".format(timestamp, message))
+def click_echo(message, with_timestamp=True):
+    if with_timestamp:
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        click.echo("{} {}".format(timestamp, message))
+    else:
+        click.echo(message)
 
 def check_result(command, result):
     if result.failure():
