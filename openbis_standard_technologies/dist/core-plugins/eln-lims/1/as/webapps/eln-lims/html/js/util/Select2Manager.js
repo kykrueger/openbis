@@ -25,25 +25,33 @@ var Select2Manager = new function() {
 		});
 		if (isPolling === false) {
 			isPolling = true;
-			setTimeout(_polling, 100);
+			setTimeout(_polling, 50);
 		}
 	}
 	
 	var _polling = function() {
 		try {
-			if (toInitialize.length > 0) {
+			var toReschedule = [];
+			while(toInitialize.length > 0) {
 				var next = toInitialize.shift();
 				if (_isInDom(next.element)) {
 					next.element.select2(next.element.properties ? next.element.properties : { width: '100%', theme: "bootstrap" });
 				} else {
-					toInitialize.push(next);
-				}
-				setTimeout(_polling, 100);
-			} else {
-				isPolling = false;
+					toReschedule.push(next);
+				}	
 			}
+			
+			toInitialize = toReschedule;
+			
+			if (toInitialize.length === 0) {
+				isPolling = false;
+			} else {
+				setTimeout(_polling, 50);
+			}
+			
 		} catch(err) {
 			isPolling = false;
+			toInitialize = [];
 		}
 	}
 	

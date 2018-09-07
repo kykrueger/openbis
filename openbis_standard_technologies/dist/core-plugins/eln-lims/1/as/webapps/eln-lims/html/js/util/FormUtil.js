@@ -1298,7 +1298,6 @@ var FormUtil = new function() {
 
 		for (var i=0; i<params.components.length; i++) {
 			$window.append($('<p>').append(params.components[i]));
-			params.components[i].find('select').select2();
 		}
 		var $buttons = $('<p>');
 		for (var i=0; i<params.buttons.length; i++) {
@@ -1319,13 +1318,13 @@ var FormUtil = new function() {
 	this.showAuthorizationDialog = function(params) {
 		// components
 		var $text = $('<span>').text('To which group or user do you want to grant access to ' + params.spaceOrProjectLabel + '?');
-		var $roleDropdown = FormUtil.getPlainDropdown([
+		var $roleDropdown = FormUtil.getDropdown([
 			{ label: 'Observer', value: 'OBSERVER', selected: true },
 			{ label: 'User', value: 'USER' },
 			{ label: 'Admin', value: 'ADMIN' },
 		]);
 		var $role = FormUtil.getFieldForComponentWithLabel($roleDropdown, 'Role');
-		var $shareWithDropdown = FormUtil.getPlainDropdown([
+		var $shareWithDropdown = FormUtil.getDropdown([
 			{ label: 'Group', value: 'Group', selected: true },
 			{ label: 'User', value: 'User', selected: true },
 		]);
