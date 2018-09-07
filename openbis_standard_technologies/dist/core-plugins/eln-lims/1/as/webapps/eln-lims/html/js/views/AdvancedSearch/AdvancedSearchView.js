@@ -77,7 +77,9 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	
 	this._paintMenuPanel = function($menuPanelContainer) {
 		this._$entityTypeDropdown = this._getEntityTypeDropdown();
-		$menuPanelContainer.append(FormUtil.getFieldForComponentWithLabel(this._$entityTypeDropdown, "Search For", null, true));
+		var entityTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this._$entityTypeDropdown, "Search For", null, true);
+		entityTypeDropdownFormGroup.css("width","50%");
+		$menuPanelContainer.append(entityTypeDropdownFormGroup);
 
 		var andOrOptions = [{value : "AND", label : "AND", selected : true}, {value : "OR", label : "OR"}];
 		this._$andOrDropdownComponent = FormUtil.getDropdown(andOrOptions, "Select logical operator");
