@@ -29,7 +29,7 @@ class DataMgmtRunner(object):
 
     def _run(self, function):
         try:
-            return function()
+            return function(self.dm)
         except CommandException as e:
             return e.command_result
         except Exception as e:
