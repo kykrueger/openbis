@@ -410,18 +410,13 @@ _commit_params = [
     click.argument('repository', type=click.Path(exists=True, file_okay=False), required=False),
 ]
 
-def _repository_commit(ctx, msg, auto_add, ignore_missing_parent):
-    runner = DataMgmtRunner(ctx)
-    return runner.run("commit", lambda dm: dm.commit(msg, auto_add, ignore_missing_parent))
 
 @repository.command("commit", short_help="Commit the repository to git and inform openBIS.")
 @click.pass_context
 @add_params(_commit_params)
 def repository_commit(ctx, msg, auto_add, ignore_missing_parent, repository):
-    if repository is None:
-        return _repository_commit(ctx, msg, auto_add, ignore_missing_parent)
-    with cd(repository):
-        return _repository_commit(ctx, msg, auto_add, ignore_missing_parent)
+    runner = DataMgmtRunner(ctx)
+    return runner.run("commit", lambda dm: dm.commit(msg, auto_add, ignore_missing_parent), repository)
 
 @cli.command(short_help="Commit the repository to git and inform openBIS.")
 @click.pass_context
@@ -473,18 +468,12 @@ _status_params = [
     click.argument('repository', type=click.Path(exists=True, file_okay=False), required=False),
 ]
 
-def _repository_status(ctx):
-    runner = DataMgmtRunner(ctx)
-    return runner.run("repository_status", lambda dm: dm.status())
-
 @repository.command("status", short_help="Show the state of the obis repository.")
 @click.pass_context
 @add_params(_status_params)
 def repository_status(ctx, repository):
-    if repository is None:
-        return _repository_status(ctx)
-    with cd(repository):
-        return _repository_status(ctx)        
+    runner = DataMgmtRunner(ctx)
+    return runner.run("repository_status", lambda dm: dm.status(), repository)
 
 @cli.command(short_help="Show the state of the obis repository.")
 @click.pass_context
@@ -499,18 +488,12 @@ _sync_params = [
     click.argument('repository', type=click.Path(exists=True, file_okay=False), required=False),
 ]
 
-def _repository_sync(ctx, ignore_missing_parent):
-    runner = DataMgmtRunner(ctx)
-    return runner.run("sync", lambda dm: dm.sync(ignore_missing_parent))
-
 @repository.command("sync", short_help="Sync the repository with openBIS.")
 @click.pass_context
 @add_params(_sync_params)
 def repository_sync(ctx, ignore_missing_parent, repository):
-    if repository is None:
-        return _repository_sync(ctx, ignore_missing_parent)
-    with cd(repository):
-        return _repository_sync(ctx, ignore_missing_parent)
+    runner = DataMgmtRunner(ctx)
+    return runner.run("sync", lambda dm: dm.sync(ignore_missing_parent), repository)
 
 @cli.command(short_help="Sync the repository with openBIS.")
 @click.pass_context
@@ -524,18 +507,12 @@ _addref_params = [
     click.argument('repository', type=click.Path(exists=True, file_okay=False), required=False),
 ]
 
-def _repository_addref(ctx):
-    runner = DataMgmtRunner(ctx)
-    return runner.run("addref", lambda dm: dm.addref())
-
 @repository.command("addref", short_help="Add the given repository as a reference to openBIS.")
 @click.pass_context
 @add_params(_addref_params)
 def repository_addref(ctx, repository):
-    if repository is None:
-        return _repository_addref(ctx)
-    with cd(repository):
-        return _repository_addref(ctx)
+    runner = DataMgmtRunner(ctx)
+    return runner.run("addref", lambda dm: dm.addref(), repository)
 
 @cli.command(short_help="Add the given repository as a reference to openBIS.")
 @click.pass_context
@@ -550,25 +527,15 @@ _removeref_params = [
     click.argument('repository', type=click.Path(exists=True, file_okay=False), required=False),
 ]
 
-def _repository_removeref(ctx, data_set_id=None):
-    runner = DataMgmtRunner(ctx)
-    return runner.run("removeref", lambda dm: dm.removeref(data_set_id=data_set_id))
-
 @repository.command("removeref", short_help="Remove the reference to the given repository from openBIS.")
 @click.pass_context
 @add_params(_removeref_params)
 def repository_removeref(ctx, data_set_id, repository):
-    if data_set_id is None:
-        if repository is None:
-            return _repository_removeref(ctx)
-        with cd(repository):
-            return _repository_removeref(ctx)
-    else:
-        if repository is not None:
-            print(repository)
-            click_echo("Only provide the data_set id OR the repository.")
-            return -1
-        return _repository_removeref(ctx, data_set_id=data_set_id)
+    if data_set_id is not None and repository is not None:
+        click_echo("Only provide the data_set id OR the repository.")
+        return -1
+    runner = DataMgmtRunner(ctx)
+    return runner.run("removeref", lambda dm: dm.removeref(data_set_id=data_set_id), repository)
 
 
 @cli.command(short_help="Remove the reference to the given repository from openBIS.")

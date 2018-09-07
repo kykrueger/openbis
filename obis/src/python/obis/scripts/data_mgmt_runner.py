@@ -20,8 +20,12 @@ class DataMgmtRunner(object):
         self._dm = None
 
 
-    def run(self, command, function):
-        result = self._run(function)
+    def run(self, command, function, repository=None):
+        if repository is not None:
+            with cd(repository):
+                result = self._run(function)
+        else:
+            result = self._run(function)
         return check_result(command, result)
 
 
