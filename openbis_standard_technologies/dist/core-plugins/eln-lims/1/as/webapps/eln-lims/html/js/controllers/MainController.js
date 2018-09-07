@@ -260,25 +260,26 @@ function MainController(profile) {
 	// params.callback: function to be called with the role list
 	this.getUserRole = function(params, callback) {
 		if (profile.isAdmin) {
-			return ["ADMIN"];
+			callback(["ADMIN"]);
+		} else {
+			var roles = [];
+			mainController.serverFacade.searchRoleAssignments({
+				user: mainController.serverFacade.getUserId(),
+			}, function(roleAssignments) {
+				for (var i=0; i<roleAssignments.length; i++) {
+					var ra = roleAssignments[i];
+					if (ra.space && ra.space.code == params.space
+							&& roles.indexOf(ra.role) < 0) {
+						roles.push(ra.role);
+					}
+					if (ra.project && params.project && ra.project.code == params.project
+							&& roles.indexOf(ra.role) < 0) {
+						roles.push(ra.role);
+					}
+				}
+				callback(roles);
+			});
 		}
-		var roles = [];
-		mainController.serverFacade.searchRoleAssignments({
-			user: mainController.serverFacade.getUserId(),
-		}, function(roleAssignments) {
-			for (var i=0; i<roleAssignments.length; i++) {
-				var ra = roleAssignments[i];
-				if (ra.space && ra.space.code == params.space
-						&& roles.indexOf(ra.role) < 0) {
-					roles.push(ra.role);
-				}
-				if (ra.project && params.project && ra.project.code == params.project
-						&& roles.indexOf(ra.role) < 0) {
-					roles.push(ra.role);
-				}
-			}
-			callback(roles);
-		});
 	}
 
 	this.authorizeUserOrGroup = function(role, shareWith, groupOrUser, spaceCode, projectPermId) {
