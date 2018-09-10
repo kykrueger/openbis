@@ -2,7 +2,7 @@ import hashlib
 import json
 import os
 from abc import ABC, abstractmethod
-from .utils import run_shell
+from .utils import run_shell, cd
 from .command_result import CommandResult, CommandException
 
 
@@ -27,7 +27,6 @@ def validate_checksum(openbis, files, data_set_id, folder):
         dataset_files_by_path[dataset_file['path']] = dataset_file
     for filename in files:
         dataset_file = dataset_files_by_path[filename]
-        filename_dest = os.path.join(folder, filename)
         checksum_generator = None
         if dataset_file['checksumCRC32'] is not None and dataset_file['checksumCRC32'] > 0:
             checksum_generator = ChecksumGeneratorCrc32()
@@ -36,7 +35,7 @@ def validate_checksum(openbis, files, data_set_id, folder):
             checksum_generator = get_checksum_generator(dataset_file['checksumType'])
             expected_checksum = dataset_file['checksum']
         if checksum_generator is not None:
-            checksum = checksum_generator.get_checksum(filename_dest)['checksum']
+            with cd(folder): checksum = checksum_generator.get_checksum(filename)['checksum']
             if checksum != expected_checksum:
                 invalid_files.append(filename)
     return invalid_files
