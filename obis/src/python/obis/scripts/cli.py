@@ -58,16 +58,14 @@ def init_data_impl(ctx, repository, desc):
     if repository is None:
         repository = "."
     click_echo("init_data {}".format(repository))
-    runner = DataMgmtRunner(ctx.obj)
     desc = desc if desc != "" else None
-    return runner.run("init_data", lambda dm: dm.init_data(repository, desc, create=True))
+    return ctx.obj['runner'].run("init_data", lambda dm: dm.init_data(repository, desc, create=True))
 
 
 def init_analysis_impl(ctx, parent, repository, description):
     click_echo("init_analysis {}".format(repository))
-    runner = DataMgmtRunner(ctx.obj)
     description = description if description != "" else None
-    return runner.run("init_analysis", lambda dm: dm.init_analysis(repository, parent, description, create=True))
+    return ctx.obj['runner'].run("init_analysis", lambda dm: dm.init_analysis(repository, parent, description, create=True))
 
 
 # settings commands
@@ -221,24 +219,21 @@ def repository(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def repository_set(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("repository_set", lambda dm: _set(ctx, settings))
+    return ctx.obj['runner'].run("repository_set", lambda dm: _set(ctx, settings))
 
 
 @repository.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def repository_get(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("repository_get", lambda dm: _get(ctx, settings))
+    return ctx.obj['runner'].run("repository_get", lambda dm: _get(ctx, settings))
 
 
 @repository.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def repository_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("repository_clear", lambda dm: _clear(ctx, settings))
+    return ctx.obj['runner'].run("repository_clear", lambda dm: _clear(ctx, settings))
 
 
 ## data_set: type, properties
@@ -262,24 +257,21 @@ def data_set(ctx, is_global, is_data_set_property):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def data_set_set(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("data_set_set", lambda dm: _set(ctx, settings))
+    return ctx.obj['runner'].run("data_set_set", lambda dm: _set(ctx, settings))
 
 
 @data_set.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def data_set_get(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("data_set_get", lambda dm: _get(ctx, settings))
+    return ctx.obj['runner'].run("data_set_get", lambda dm: _get(ctx, settings))
 
 
 @data_set.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def data_set_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("data_set_clear", lambda dm: _clear(ctx, settings))
+    return ctx.obj['runner'].run("data_set_clear", lambda dm: _clear(ctx, settings))
 
 
 ## object: object_id
@@ -301,24 +293,21 @@ def object(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def object_set(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("object_set", lambda dm: _set(ctx, settings))
+    return ctx.obj['runner'].run("object_set", lambda dm: _set(ctx, settings))
 
 
 @object.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def object_get(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("object_get", lambda dm: _get(ctx, settings))
+    return ctx.obj['runner'].run("object_get", lambda dm: _get(ctx, settings))
 
 
 @object.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def object_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("object_clear", lambda dm: _clear(ctx, settings))
+    return ctx.obj['runner'].run("object_clear", lambda dm: _clear(ctx, settings))
 
 
 ## collection: collection_id
@@ -340,24 +329,21 @@ def collection(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def collection_set(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("collection_set", lambda dm: _set(ctx, settings))
+    return ctx.obj['runner'].run("collection_set", lambda dm: _set(ctx, settings))
 
 
 @collection.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def collection_get(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("collection_get", lambda dm: _get(ctx, settings))
+    return ctx.obj['runner'].run("collection_get", lambda dm: _get(ctx, settings))
 
 
 @collection.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def collection_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("collection_clear", lambda dm: _clear(ctx, settings))
+    return ctx.obj['runner'].run("collection_clear", lambda dm: _clear(ctx, settings))
 
 
 ## config: fileservice_url, git_annex_hash_as_checksum, hostname, openbis_url, user, verify_certificates
@@ -379,24 +365,21 @@ def config(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def config_set(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("config_set", lambda dm: _set(ctx, settings))
+    return ctx.obj['runner'].run("config_set", lambda dm: _set(ctx, settings))
 
 
 @config.command('get')
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def config_get(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("config_get", lambda dm: _get(ctx, settings))
+    return ctx.obj['runner'].run("config_get", lambda dm: _get(ctx, settings))
 
 
 @config.command('clear')
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def config_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("config_clear", lambda dm: _clear(ctx, settings))
+    return ctx.obj['runner'].run("config_clear", lambda dm: _clear(ctx, settings))
 
 
 # repository commands: status, sync, commit, init, addref, removeref, init_analysis
@@ -415,13 +398,13 @@ _commit_params = [
 @click.pass_context
 @add_params(_commit_params)
 def repository_commit(ctx, msg, auto_add, ignore_missing_parent, repository):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("commit", lambda dm: dm.commit(msg, auto_add, ignore_missing_parent), repository)
+    return ctx.obj['runner'].run("commit", lambda dm: dm.commit(msg, auto_add, ignore_missing_parent), repository)
 
 @cli.command(short_help="Commit the repository to git and inform openBIS.")
 @click.pass_context
 @add_params(_commit_params)
 def commit(ctx, msg, auto_add, ignore_missing_parent, repository):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(repository_commit, msg=msg, auto_add=auto_add, ignore_missing_parent=ignore_missing_parent, repository=repository)
 
 ## init
@@ -441,6 +424,7 @@ def repository_init(ctx, repository, description):
 @click.pass_context
 @add_params(_init_params)
 def init(ctx, repository, description):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(repository_init, repository=repository, description=description)
 
 ## init analysis
@@ -460,6 +444,7 @@ def repository_init_analysis(ctx, parent, repository, description):
 @click.pass_context
 @add_params(_init_analysis_params)
 def init_analysis(ctx, parent, repository, description):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(repository_init_analysis, parent=parent, repository=repository, description=description)
 
 ## status
@@ -472,13 +457,13 @@ _status_params = [
 @click.pass_context
 @add_params(_status_params)
 def repository_status(ctx, repository):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("repository_status", lambda dm: dm.status(), repository)
+    return ctx.obj['runner'].run("repository_status", lambda dm: dm.status(), repository)
 
 @cli.command(short_help="Show the state of the obis repository.")
 @click.pass_context
 @add_params(_status_params)
 def status(ctx, repository):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(repository_status, repository=repository)
 
 ## sync
@@ -492,13 +477,13 @@ _sync_params = [
 @click.pass_context
 @add_params(_sync_params)
 def repository_sync(ctx, ignore_missing_parent, repository):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("sync", lambda dm: dm.sync(ignore_missing_parent), repository)
+    return ctx.obj['runner'].run("sync", lambda dm: dm.sync(ignore_missing_parent), repository)
 
 @cli.command(short_help="Sync the repository with openBIS.")
 @click.pass_context
 @add_params(_sync_params)
 def sync(ctx, ignore_missing_parent, repository):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(repository_sync, ignore_missing_parent=ignore_missing_parent, repository=repository)
 
 ## addref
@@ -511,13 +496,13 @@ _addref_params = [
 @click.pass_context
 @add_params(_addref_params)
 def repository_addref(ctx, repository):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("addref", lambda dm: dm.addref(), repository)
+    return ctx.obj['runner'].run("addref", lambda dm: dm.addref(), repository)
 
 @cli.command(short_help="Add the given repository as a reference to openBIS.")
 @click.pass_context
 @add_params(_addref_params)
 def addref(ctx, repository):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(repository_addref, repository=repository)
 
 # removeref
@@ -534,14 +519,14 @@ def repository_removeref(ctx, data_set_id, repository):
     if data_set_id is not None and repository is not None:
         click_echo("Only provide the data_set id OR the repository.")
         return -1
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("removeref", lambda dm: dm.removeref(data_set_id=data_set_id), repository)
+    return ctx.obj['runner'].run("removeref", lambda dm: dm.removeref(data_set_id=data_set_id), repository)
 
 
 @cli.command(short_help="Remove the reference to the given repository from openBIS.")
 @click.pass_context
 @add_params(_removeref_params)
 def removeref(ctx, data_set_id, repository):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(repository_removeref, data_set_id=data_set_id, repository=repository)
 
 
@@ -560,13 +545,13 @@ _download_params = [
 @add_params(_download_params)
 @click.pass_context 
 def data_set_download(ctx, content_copy_index, file, data_set_id, skip_integrity_check):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("download", lambda dm: dm.download(data_set_id, content_copy_index, file, skip_integrity_check))
+    return ctx.obj['runner'].run("download", lambda dm: dm.download(data_set_id, content_copy_index, file, skip_integrity_check))
 
 @cli.command(short_help="Download files of a linked data set.")
 @add_params(_download_params)
 @click.pass_context
 def download(ctx, content_copy_index, file, data_set_id, skip_integrity_check):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(data_set_download, content_copy_index=content_copy_index, file=file, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 ## clone
@@ -582,13 +567,13 @@ _clone_move_params = [
 @click.pass_context
 @add_params(_clone_move_params)
 def data_set_clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("clone", lambda dm: dm.clone(data_set_id, ssh_user, content_copy_index, skip_integrity_check))
+    return ctx.obj['runner'].run("clone", lambda dm: dm.clone(data_set_id, ssh_user, content_copy_index, skip_integrity_check))
 
 @cli.command(short_help="Clone the repository found in the given data set id.")
 @click.pass_context
 @add_params(_clone_move_params)
 def clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(data_set_clone, ssh_user=ssh_user, content_copy_index=content_copy_index, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 
@@ -598,13 +583,13 @@ def clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
 @click.pass_context
 @add_params(_clone_move_params)
 def data_set_move(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
-    runner = DataMgmtRunner(ctx.obj)
-    return runner.run("move", lambda dm: dm.move(data_set_id, ssh_user, content_copy_index, skip_integrity_check))
+    return ctx.obj['runner'].run("move", lambda dm: dm.move(data_set_id, ssh_user, content_copy_index, skip_integrity_check))
 
 @cli.command(short_help="Move the repository found in the given data set id.")
 @click.pass_context
 @add_params(_clone_move_params)
 def move(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
+    ctx.obj['runner'] = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.invoke(data_set_move, ssh_user=ssh_user, content_copy_index=content_copy_index, data_set_id=data_set_id, skip_integrity_check=skip_integrity_check)
 
 
