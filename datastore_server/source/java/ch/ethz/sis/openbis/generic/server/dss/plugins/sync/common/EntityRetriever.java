@@ -331,6 +331,7 @@ public class EntityRetriever implements IEntityRetriever
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
 
         final MaterialFetchOptions fetchOptions = new MaterialFetchOptions();
+        fetchOptions.withRegistrator();
         fetchOptions.withType();
         fetchOptions.withProperties();
 
@@ -359,6 +360,8 @@ public class EntityRetriever implements IEntityRetriever
     private ProjectFetchOptions createProjectFetchOptions()
     {
         ProjectFetchOptions fo = new ProjectFetchOptions();
+        fo.withRegistrator();
+        fo.withModifier();
         fo.withSpace();
         fo.withAttachments();
         fo.withExperimentsUsing(createExperimentFetchOptions());
@@ -369,6 +372,8 @@ public class EntityRetriever implements IEntityRetriever
     private ExperimentFetchOptions createExperimentFetchOptions()
     {
         ExperimentFetchOptions fo = new ExperimentFetchOptions();
+        fo.withRegistrator();
+        fo.withModifier();
         fo.withProperties();
         fo.withProject().withSpace();
         fo.withType();
@@ -381,6 +386,8 @@ public class EntityRetriever implements IEntityRetriever
     private SampleFetchOptions createSampleFetchOptions()
     {
         SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withRegistrator();
+        fo.withModifier();
         fo.withProperties();
         fo.withDataSets();
         fo.withType();
@@ -397,6 +404,8 @@ public class EntityRetriever implements IEntityRetriever
     private DataSetFetchOptions createDataSetFetchOptions()
     {
         DataSetFetchOptions fo = new DataSetFetchOptions();
+        fo.withRegistrator();
+        fo.withModifier();
         fo.withType();
         fo.withSample();
         fo.withExperiment();
