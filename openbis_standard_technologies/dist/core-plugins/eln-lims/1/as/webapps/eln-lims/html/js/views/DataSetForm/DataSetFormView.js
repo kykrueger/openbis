@@ -164,18 +164,11 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
 			
 			//Export
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-				Util.blockUI();
-				var facade = mainController.serverFacade;
-				facade.exportAll([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], false, function(error, result) {
-					if(error) {
-						Util.showError(error);
-					} else {
-						Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-					}
-				});
-			});
-			toolbarModel.push({ component : $export, tooltip: "Export" });
+			var $exportAll = FormUtil.getExportButton([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], false);
+			toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
+		
+			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], true);
+			toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
 			
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {

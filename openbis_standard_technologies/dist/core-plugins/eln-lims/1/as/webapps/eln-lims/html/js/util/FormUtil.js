@@ -469,11 +469,18 @@ var FormUtil = new function() {
 		return $deleteBtn;
 	}
 	
-	this.getButtonWithImage = function(src, clickEvent) {
-		var $pinBtn = $("<a>", { 'class' : 'btn btn-default' });
-		$pinBtn.append($("<img>", { 'src' : src, 'style' : 'width:16px; height:16px;'}));
-		$pinBtn.click(clickEvent);
-		return $pinBtn;
+	this.getButtonWithImage = function(src, clickEvent, text, tooltip) {
+		var $btn = $("<a>", { 'class' : 'btn btn-default' });
+		$btn.append($("<img>", { 'src' : src, 'style' : 'width:16px; height:16px;'}));
+		$btn.click(clickEvent);
+		if(text) {
+			$btn.append("&nbsp;").append(text);
+		}
+		if(tooltip) {
+			$btn.attr("title", tooltip);
+			$btn.tooltipster();
+		}
+		return $btn;
 	}
 	
 	this.getButtonWithText = function(text, clickEvent, btnClass) {
@@ -485,6 +492,10 @@ var FormUtil = new function() {
 		$pinBtn.append(text);
 		$pinBtn.click(clickEvent);
 		return $pinBtn;
+	}
+	
+	this.getFormAwesomeIcon = function(iconClass) {
+		return $("<i>", { 'class' : 'fa ' + iconClass });
 	}
 	
 	this.getButtonWithIcon = function(iconClass, clickEvent, text, tooltip) {
@@ -1353,4 +1364,22 @@ var FormUtil = new function() {
 			},
 		});
 	}
+	
+	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
+			$export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
+					Util.blockUI();
+					var facade = mainController.serverFacade;
+					facade.exportAll(exportConfig, (includeRoot)?true:false, metadataOnly, function(error, result) {
+						if(error) {
+							Util.showError(error);
+						} else {
+							Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
+						}
+					});
+			});
+			if(metadataOnly) {
+				$export.append(" M");
+			}
+			return $export;
+	};
 }

@@ -129,21 +129,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				FormUtil.showDropboxFolderNameDialog(nameElements);
 			}).bind(this));
 			toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
-
-			//Export
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-				Util.blockUI();
-				var facade = mainController.serverFacade;
-				facade.exportAll([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false, function(error, result) {
-					if(error) {
-						Util.showError(error);
-					} else {
-						Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-					}
-				});
-			});
-			toolbarModel.push({ component : $export, tooltip: "Export" });
 			
+			//Export
+			var $exportAll = FormUtil.getExportButton([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false);
+			toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
+		
+			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], true);
+			toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
+		
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
 				var $jupyterBtn = FormUtil.getButtonWithImage("./img/jupyter-icon.png", function () {

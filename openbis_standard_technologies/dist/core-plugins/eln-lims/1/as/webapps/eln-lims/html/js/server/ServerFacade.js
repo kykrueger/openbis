@@ -295,11 +295,12 @@ function ServerFacade(openbisServer) {
 	//
 	//
 	//
-	this.exportAll = function(entities, includeRoot, callbackFunction) {
+	this.exportAll = function(entities, includeRoot, metadataOnly, callbackFunction) {
 		this.customELNApi({
 			"method" : "exportAll",
 			"includeRoot" : includeRoot,
 			"entities" : entities,
+			"metadataOnly" : metadataOnly,
 		}, callbackFunction, "exports-api");
 	}
 	

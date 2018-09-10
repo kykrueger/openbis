@@ -40,19 +40,13 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		});
 		toolbarModel.push({ component : $createProj, tooltip: "Create Project" });
 		
-		var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-			Util.blockUI();
-			var facade = mainController.serverFacade;
-			facade.exportAll([{ type: "SPACE", permId : _this._spaceFormModel.space.code, expand : true }], false, function(error, result) {
-				if(error) {
-					Util.showError(error);
-				} else {
-					Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-				}
-			});
-		});
-		toolbarModel.push({ component : $export, tooltip: "Export" });
-
+		//Export
+		var $exportAll = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space.code, expand : true }], false);
+		toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
+		
+		var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space.code, expand : true }], true);
+		toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
+		
 		//Jupyter Button
 		if(profile.jupyterIntegrationServerEndpoint) {
 			var $jupyterBtn = FormUtil.getButtonWithImage("./img/jupyter-icon.png", function () {
