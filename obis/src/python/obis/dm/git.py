@@ -9,9 +9,17 @@ from .checksum import ChecksumGeneratorCrc32, ChecksumGeneratorGitAnnex
 class GitWrapper(object):
     """A wrapper on commands to git."""
 
-    def __init__(self, git_path=None, git_annex_path=None, find_git=None):
+    def __init__(self, git_path=None, git_annex_path=None, find_git=None, data_path=None, metadata_path=None):
         self.git_path = git_path
         self.git_annex_path = git_annex_path
+        self.data_path = data_path
+        self.metadata_path = metadata_path
+
+    def _git(self, params, strip_leading_whitespace=True):
+        return run_shell([self.git_path] + params, strip_leading_whitespace=strip_leading_whitespace)
+
+    def _git_annex(self, params):
+        return run_shell([self.git_annex_path] + params)
 
     def can_run(self):
         """Return true if the perquisites are satisfied to run"""
@@ -19,47 +27,47 @@ class GitWrapper(object):
             return False
         if self.git_annex_path is None:
             return False
-        if run_shell([self.git_path, 'help']).failure():
+        if self._git(['help']).failure():
             # git help should have a returncode of 0
             return False
-        if run_shell([self.git_annex_path, 'help']).failure():
+        if self._git_annex(['help']).failure():
             # git help should have a returncode of 0
             return False
         return True
 
     def git_init(self, path):
-        return run_shell([self.git_path, "init", path])
+        return self._git(["init", path])
 
     def git_status(self, path=None):
         if path is None:
-            return run_shell([self.git_path, "annex", "status"], strip_leading_whitespace=False)
+            return self._git(["annex", "status"], strip_leading_whitespace=False)
         else:
-            return run_shell([self.git_path, "annex", "status", path], strip_leading_whitespace=False)
+            return self._git(["annex", "status", path], strip_leading_whitespace=False)
 
     def git_annex_init(self, path, desc, git_annex_backend=None):
-        cmd = [self.git_path, "-C", path, "annex", "init", "--version=5"]
+        cmd = ["-C", path, "annex", "init", "--version=5"]
         if desc is not None:
             cmd.append(desc)
-        result = run_shell(cmd)
+        result = self._git(cmd)
         if result.failure():
             return result
 
         # annex.thin to avoid copying big files
-        cmd = [self.git_path, "-C", path, "config", "annex.thin", "true"]
-        result = run_shell(cmd)
+        cmd = ["-C", path, "config", "annex.thin", "true"]
+        result = self._git(cmd)
         if result.failure():
             return result
 
         # direct mode so annex uses hard links instead of soft links
-        cmd = [self.git_path, "-C", path, "annex", "direct"]
-        result = run_shell(cmd)
+        cmd = ["-C", path, "annex", "direct"]
+        result = self._git(cmd)
         if result.failure():
             return result
 
         # re-enable the repository to be used with git directly
         # though we need to know what we do since annex can lead to unexpected behaviour
-        cmd = [self.git_path, "-C", path, "config", "--unset", "core.bare"]
-        result = run_shell(cmd)
+        cmd = ["-C", path, "config", "--unset", "core.bare"]
+        result = self._git(cmd)
         if result.failure():
             return result
 
@@ -99,35 +107,35 @@ class GitWrapper(object):
 
     def git_add(self, path):
         # git annex add to avoid out of memory error when adding files bigger than RAM
-        return run_shell([self.git_path, "annex", "add", path, "--include-dotfiles"])
+        return self._git(["annex", "add", path, "--include-dotfiles"])
 
     def git_commit(self, msg):
-        return run_shell([self.git_path, "commit", '-m', msg])
+        return self._git(["commit", '-m', msg])
 
     def git_top_level_path(self):
-        return run_shell([self.git_path, 'rev-parse', '--show-toplevel'])
+        return self._git(['rev-parse', '--show-toplevel'])
 
     def git_commit_hash(self):
-        return run_shell([self.git_path, 'rev-parse', '--short', 'HEAD'])
+        return self._git(['rev-parse', '--short', 'HEAD'])
 
     def git_ls_tree(self):
-        return run_shell([self.git_path, 'ls-tree', '--full-tree', '-r', 'HEAD'])
+        return self._git(['ls-tree', '--full-tree', '-r', 'HEAD'])
 
     def git_checkout(self, path):
-        return run_shell([self.git_path, "checkout", path])
+        return self._git(["checkout", path])
 
     def git_reset_to(self, commit_hash):
-        return run_shell([self.git_path, 'reset', commit_hash])
+        return self._git(['reset', commit_hash])
 
     def git_ignore(self, path):
-        result = run_shell([self.git_path, 'check-ignore', path])
+        result = self._git(['check-ignore', path])
         if result.returncode == 1:
             with open(".gitignore", "a") as gitignore:
                 gitignore.write(path)
                 gitignore.write("\n")
 
     def git_delete_if_untracked(self, file):
-        result = run_shell([self.git_path, 'ls-files', '--error-unmatch', file])
+        result = self._git(['ls-files', '--error-unmatch', file])
         if 'did not match' in result.output:
             run_shell(['rm', file])
 
