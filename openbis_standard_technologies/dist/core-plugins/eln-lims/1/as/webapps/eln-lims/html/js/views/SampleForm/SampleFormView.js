@@ -920,7 +920,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			//Number of Replicas
 			var numberOfReplicas = parseInt($("#childrenReplicas").val());
 			if(isNaN(numberOfReplicas) || numberOfReplicas < 0 || numberOfReplicas > 1000) {
-				Util.showError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
+				Util.showUserError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
 				return;
 			}
 			
@@ -954,13 +954,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			var generatedChildrenProject = IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier);
 			var numberOfReplicas = parseInt($("#childrenReplicas").val());
 			if(isNaN(numberOfReplicas) || numberOfReplicas < 0 || numberOfReplicas > 1000) {
-				Util.showError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
+				Util.showUserError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
 				return;
 			}
 			var generatedChildrenCodes = getGeneratedChildrenCodes();
 			var generatedChildrenType = $("#childrenTypeSelector").val();
 			if(generatedChildrenType === "") {
-				Util.showError("Please select the children type.", function() {}, true);
+				Util.showUserError("Please select the children type.", function() {}, true);
 			} else {
 				for(var i = 0; i < generatedChildrenCodes.length; i++) {
 					var virtualSample = new Object();

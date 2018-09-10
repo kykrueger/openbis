@@ -96,7 +96,7 @@ function MainController(profile) {
 		if(data.result == null){
 			$("#username").focus();
 			var callback = function() {Util.unblockUI();};
-			Util.showError('The given username or password is not correct.', callback, undefined, true, false, true);
+			Util.showUserError('The given username or password is not correct.', callback);
 			this.serverFacade.doIfFileAuthenticationService((function() {
 	            this._enablePasswordResetLink();
 			}).bind(this));
@@ -247,7 +247,7 @@ function MainController(profile) {
                 Util.showInfo("A new password has been sent as an email to user " + userId + " if this user exists.");                
             });
         } else {
-            Util.showError("To reset the password, the parameters 'userId' and 'token' need to be set.");
+            Util.showUserError("To reset the password, the parameters 'userId' and 'token' need to be set.");
         }
 	}
 

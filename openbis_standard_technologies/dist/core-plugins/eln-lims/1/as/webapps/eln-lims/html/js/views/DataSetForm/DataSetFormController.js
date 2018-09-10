@@ -110,13 +110,13 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 		if(this._dataSetFormModel.mode === FormMode.CREATE) {
 			if(this._dataSetFormModel.files.length === 0) {
 				Util.blockUI();
-				Util.showError("You should upload at least one file.", function() { Util.unblockUI(); });
+				Util.showUserError("You should upload at least one file.", function() { Util.unblockUI(); });
 				return;
 			}
 			
 			if(Uploader.uploadsInProgress()) {
 				Util.blockUI();
-				Util.showError("Please wait the upload to finish.", function() { Util.unblockUI(); });
+				Util.showUserError("Please wait the upload to finish.", function() { Util.unblockUI(); });
 				return;
 			}
 		}

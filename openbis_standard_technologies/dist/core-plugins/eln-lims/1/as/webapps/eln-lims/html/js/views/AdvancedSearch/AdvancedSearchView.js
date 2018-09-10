@@ -535,7 +535,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				delete _this._advancedSearchModel.criteria.rules[uuid];
 				$row.remove();
 			} else {
-				Util.showError("There must be at least one row of search criteria present.");
+				Util.showUserError("There must be at least one row of search criteria present.");
 			}
 		});
 		return $minusButton;

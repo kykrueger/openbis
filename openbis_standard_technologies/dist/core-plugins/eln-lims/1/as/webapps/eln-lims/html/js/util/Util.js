@@ -152,6 +152,10 @@ var Util = new function() {
 		});
 	}
 	
+	this.showUserError = function(withHTML, andCallback, noBlock) {
+		this.showError(withHTML, andCallback, noBlock, true, false, true);
+	}
+	
 	this.showError = function(withHTML, andCallback, noBlock, isUserError, isEnvironmentError, disableReport) {
 		var withHTMLToShow = null;
 		
@@ -175,7 +179,7 @@ var Util = new function() {
 		
 		var withHTMLToShow = "";
 		if(disableReport) {
-			withHTMLToShow += "<textarea style=\"background: transparent;\" rows=\"8\" cols=\"170\">" + withHTML + "</textarea><br><br>";
+			withHTMLToShow += "<textarea style=\"background: transparent; border: none;\" rows=\"1\" cols=\"170\">" + withHTML + "</textarea><br>";
 			withHTMLToShow += "<a class='btn btn-default'>Dismiss</a>";
 		} else {
 			withHTMLToShow += userErrorWarning + "<br><br><textarea style=\"background: transparent;\" rows=\"8\" cols=\"170\">" + withHTML + "</textarea>" + "<br><br>" + warning + "<br><br>";
