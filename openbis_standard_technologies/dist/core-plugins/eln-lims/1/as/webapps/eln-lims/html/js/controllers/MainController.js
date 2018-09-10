@@ -96,7 +96,7 @@ function MainController(profile) {
 		if(data.result == null){
 			$("#username").focus();
 			var callback = function() {Util.unblockUI();};
-			Util.showError('The given username or password is not correct.', callback);
+			Util.showError('The given username or password is not correct.', callback, undefined, true, false, true);
 			this.serverFacade.doIfFileAuthenticationService((function() {
 	            this._enablePasswordResetLink();
 			}).bind(this));
