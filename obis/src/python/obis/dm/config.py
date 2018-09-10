@@ -110,6 +110,7 @@ class ConfigEnv(object):
         self.add_param(ConfigParam(name='hostname', private=False))
         self.add_param(ConfigParam(name='git_annex_hash_as_checksum', private=False, is_json=True, default_value=True))
         self.add_param(ConfigParam(name='git_annex_backend', private=False))
+        self.add_param(ConfigParam(name='obis_metadata_folder', private=False))
 
     def add_param(self, param):
         self.params[param.name] = param

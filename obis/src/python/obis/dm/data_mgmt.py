@@ -246,45 +246,43 @@ def with_restore(f):
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
-    def setup_local_settings(self, all_settings, path):
-        with cd(path):
-            self.settings_resolver.set_resolver_location_roots('data_set', '.')
-            for resolver_type, settings in all_settings.items():
-                resolver = getattr(self.settings_resolver, resolver_type)
-                for key, value in settings.items():
-                    resolver.set_value_for_parameter(key, value, 'local')
+    def setup_local_settings(self, all_settings):
+        self.settings_resolver.set_resolver_location_roots('data_set', '.')
+        for resolver_type, settings in all_settings.items():
+            resolver = getattr(self.settings_resolver, resolver_type)
+            for key, value in settings.items():
+                resolver.set_value_for_parameter(key, value, 'local')
 
 
-    def check_repository_state(self, path):
+    def check_repository_state(self):
         """Checks if the repo already exists and has uncommitted files."""
-        with cd(path):
-            git_status = self.git_wrapper.git_status()
-            if git_status.failure():
-                return ('NOT_INITIALIZED', None)
-            if git_status.output is not None and len(git_status.output) > 0:
-                return ('PENDING_CHANGES', git_status.output)
-            return ('SYNCHRONIZED', None)
+        git_status = self.git_wrapper.git_status()
+        if git_status.failure():
+            return ('NOT_INITIALIZED', None)
+        if git_status.output is not None and len(git_status.output) > 0:
+            return ('PENDING_CHANGES', git_status.output)
+        return ('SYNCHRONIZED', None)
 
 
-    def get_data_set_id(self, path):
-        with cd(path):
+    def get_data_set_id(self, relative_path):
+        with cd(relative_path):
             return self.settings_resolver.repository.config_dict().get('data_set_id')
 
-    def get_repository_id(self, path):
-        with cd(path):
+    def get_repository_id(self, relative_path):
+        with cd(relative_path):
             return self.settings_resolver.repository.config_dict().get('id')
 
-    def init_data(self, path, desc=None, create=True, apply_config=False):
-        if not os.path.exists(path) and create:
-            os.mkdir(path)
-        result = self.git_wrapper.git_init(path)
+    def init_data(self, relative_path, desc=None, create=True, apply_config=False):
+        if not os.path.exists(relative_path) and create:
+            os.mkdir(relative_path)
+        result = self.git_wrapper.git_init(relative_path)
         if result.failure():
             return result
         git_annex_backend = self.settings_resolver.config.config_dict().get('git_annex_backend')
-        result = self.git_wrapper.git_annex_init(path, desc, git_annex_backend)
+        result = self.git_wrapper.git_annex_init(relative_path, desc, git_annex_backend)
         if result.failure():
             return result
-        with cd(path):
+        with cd(relative_path):
             result = self.git_wrapper.initial_commit()
             if result.failure():
                 return result
@@ -295,7 +293,7 @@ class GitDataMgmt(AbstractDataMgmt):
         return CommandResult(returncode=0, output="")
 
 
-    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
+    def init_analysis(self, relative_path, parent, desc=None, create=True, apply_config=False):
 
         # get data_set_id of parent from current folder or explicit parent argument
         parent_folder = parent if parent is not None and len(parent) > 0 else "."
@@ -304,19 +302,19 @@ class GitDataMgmt(AbstractDataMgmt):
         if self.get_repository_id(parent_folder) is None:
             return CommandResult(returncode=-1, output="Parent data set must be committed to openBIS before creating an analysis data set.")
         # check that analysis repository does not already exist
-        if os.path.exists(path):
-            return CommandResult(returncode=-1, output="Data set already exists: " + path)
+        if os.path.exists(relative_path):
+            return CommandResult(returncode=-1, output="Data set already exists: " + relative_path)
         # init analysis repository
-        result = self.init_data(path, desc, create, apply_config)
+        result = self.init_data(relative_path, desc, create, apply_config)
         if result.failure():
             return result
         # add analysis repository folder to .gitignore of parent
         if os.path.exists('.obis'):
-            self.git_wrapper.git_ignore(path)
+            self.git_wrapper.git_ignore(relative_path)
         elif parent is None:
             return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
         # set data_set_id to analysis repository so it will be used as parent when committing
-        with cd(path):
+        with cd(relative_path):
             self.set_property(self.settings_resolver.repository, "data_set_id", parent_data_set_id, False, False)
         return result
 
@@ -331,16 +329,8 @@ class GitDataMgmt(AbstractDataMgmt):
         return cmd.run()
 
 
-    def commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True, path=None):
-        if path is not None:
-            with cd(path):
-                return self._commit(msg, auto_add, ignore_missing_parent, sync)
-        else:
-            return self._commit(msg, auto_add, ignore_missing_parent, sync)
-
-
     @with_restore
-    def _commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True):
+    def commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True):
         if auto_add:
             result = self.git_wrapper.git_top_level_path()
             if result.failure():

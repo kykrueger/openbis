@@ -58,14 +58,14 @@ def init_data_impl(ctx, repository, desc):
     if repository is None:
         repository = "."
     click_echo("init_data {}".format(repository))
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     desc = desc if desc != "" else None
     return runner.run("init_data", lambda dm: dm.init_data(repository, desc, create=True))
 
 
 def init_analysis_impl(ctx, parent, repository, description):
     click_echo("init_analysis {}".format(repository))
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     description = description if description != "" else None
     return runner.run("init_analysis", lambda dm: dm.init_analysis(repository, parent, description, create=True))
 
@@ -197,7 +197,7 @@ def settings(ctx, is_global):
 @settings.command('get')
 @click.pass_context
 def settings_get(ctx):
-    runner = DataMgmtRunner(ctx, halt_on_error_log=False)
+    runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     settings = runner.get_settings()
     settings_str = json.dumps(settings, indent=4, sort_keys=True)
     click.echo("{}".format(settings_str))
@@ -211,7 +211,7 @@ def settings_get(ctx):
 def repository(ctx, is_global):
     """ Get/set settings related to the repository.
     """
-    runner = DataMgmtRunner(ctx, halt_on_error_log=False)
+    runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['runner'] = runner
     ctx.obj['resolver'] = runner.get_settings_resolver().repository
@@ -221,7 +221,7 @@ def repository(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def repository_set(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("repository_set", lambda dm: _set(ctx, settings))
 
 
@@ -229,7 +229,7 @@ def repository_set(ctx, settings):
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def repository_get(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("repository_get", lambda dm: _get(ctx, settings))
 
 
@@ -237,7 +237,7 @@ def repository_get(ctx, settings):
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def repository_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("repository_clear", lambda dm: _clear(ctx, settings))
 
 
@@ -251,7 +251,7 @@ def repository_clear(ctx, settings):
 def data_set(ctx, is_global, is_data_set_property):
     """ Get/set settings related to the data set.
     """
-    runner = DataMgmtRunner(ctx, halt_on_error_log=False)
+    runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['is_data_set_property'] = is_data_set_property
     ctx.obj['runner'] = runner
@@ -262,7 +262,7 @@ def data_set(ctx, is_global, is_data_set_property):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def data_set_set(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("data_set_set", lambda dm: _set(ctx, settings))
 
 
@@ -270,7 +270,7 @@ def data_set_set(ctx, settings):
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def data_set_get(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("data_set_get", lambda dm: _get(ctx, settings))
 
 
@@ -278,7 +278,7 @@ def data_set_get(ctx, settings):
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def data_set_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("data_set_clear", lambda dm: _clear(ctx, settings))
 
 
@@ -291,7 +291,7 @@ def data_set_clear(ctx, settings):
 def object(ctx, is_global):
     """ Get/set settings related to the object.
     """
-    runner = DataMgmtRunner(ctx, halt_on_error_log=False)
+    runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['runner'] = runner
     ctx.obj['resolver'] = runner.get_settings_resolver().object
@@ -301,7 +301,7 @@ def object(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def object_set(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("object_set", lambda dm: _set(ctx, settings))
 
 
@@ -309,7 +309,7 @@ def object_set(ctx, settings):
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def object_get(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("object_get", lambda dm: _get(ctx, settings))
 
 
@@ -317,7 +317,7 @@ def object_get(ctx, settings):
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def object_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("object_clear", lambda dm: _clear(ctx, settings))
 
 
@@ -330,7 +330,7 @@ def object_clear(ctx, settings):
 def collection(ctx, is_global):
     """ Get/set settings related to the collection.
     """
-    runner = DataMgmtRunner(ctx, halt_on_error_log=False)
+    runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['runner'] = runner
     ctx.obj['resolver'] = runner.get_settings_resolver().collection
@@ -340,7 +340,7 @@ def collection(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def collection_set(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("collection_set", lambda dm: _set(ctx, settings))
 
 
@@ -348,7 +348,7 @@ def collection_set(ctx, settings):
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def collection_get(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("collection_get", lambda dm: _get(ctx, settings))
 
 
@@ -356,7 +356,7 @@ def collection_get(ctx, settings):
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def collection_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("collection_clear", lambda dm: _clear(ctx, settings))
 
 
@@ -369,7 +369,7 @@ def collection_clear(ctx, settings):
 def config(ctx, is_global):
     """ Get/set configurations.
     """
-    runner = DataMgmtRunner(ctx, halt_on_error_log=False)
+    runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['runner'] = runner
     ctx.obj['resolver'] = runner.get_settings_resolver().config
@@ -379,7 +379,7 @@ def config(ctx, is_global):
 @click.argument('settings', type=SettingsSet(), nargs=-1)
 @click.pass_context
 def config_set(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("config_set", lambda dm: _set(ctx, settings))
 
 
@@ -387,7 +387,7 @@ def config_set(ctx, settings):
 @click.argument('settings', type=SettingsGet(), nargs=-1)
 @click.pass_context
 def config_get(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("config_get", lambda dm: _get(ctx, settings))
 
 
@@ -395,7 +395,7 @@ def config_get(ctx, settings):
 @click.argument('settings', type=SettingsClear(), nargs=-1)
 @click.pass_context
 def config_clear(ctx, settings):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("config_clear", lambda dm: _clear(ctx, settings))
 
 
@@ -415,7 +415,7 @@ _commit_params = [
 @click.pass_context
 @add_params(_commit_params)
 def repository_commit(ctx, msg, auto_add, ignore_missing_parent, repository):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("commit", lambda dm: dm.commit(msg, auto_add, ignore_missing_parent), repository)
 
 @cli.command(short_help="Commit the repository to git and inform openBIS.")
@@ -472,7 +472,7 @@ _status_params = [
 @click.pass_context
 @add_params(_status_params)
 def repository_status(ctx, repository):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("repository_status", lambda dm: dm.status(), repository)
 
 @cli.command(short_help="Show the state of the obis repository.")
@@ -492,7 +492,7 @@ _sync_params = [
 @click.pass_context
 @add_params(_sync_params)
 def repository_sync(ctx, ignore_missing_parent, repository):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("sync", lambda dm: dm.sync(ignore_missing_parent), repository)
 
 @cli.command(short_help="Sync the repository with openBIS.")
@@ -511,7 +511,7 @@ _addref_params = [
 @click.pass_context
 @add_params(_addref_params)
 def repository_addref(ctx, repository):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("addref", lambda dm: dm.addref(), repository)
 
 @cli.command(short_help="Add the given repository as a reference to openBIS.")
@@ -534,7 +534,7 @@ def repository_removeref(ctx, data_set_id, repository):
     if data_set_id is not None and repository is not None:
         click_echo("Only provide the data_set id OR the repository.")
         return -1
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("removeref", lambda dm: dm.removeref(data_set_id=data_set_id), repository)
 
 
@@ -560,7 +560,7 @@ _download_params = [
 @add_params(_download_params)
 @click.pass_context 
 def data_set_download(ctx, content_copy_index, file, data_set_id, skip_integrity_check):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("download", lambda dm: dm.download(data_set_id, content_copy_index, file, skip_integrity_check))
 
 @cli.command(short_help="Download files of a linked data set.")
@@ -582,7 +582,7 @@ _clone_move_params = [
 @click.pass_context
 @add_params(_clone_move_params)
 def data_set_clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("clone", lambda dm: dm.clone(data_set_id, ssh_user, content_copy_index, skip_integrity_check))
 
 @cli.command(short_help="Clone the repository found in the given data set id.")
@@ -598,7 +598,7 @@ def clone(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
 @click.pass_context
 @add_params(_clone_move_params)
 def data_set_move(ctx, ssh_user, content_copy_index, data_set_id, skip_integrity_check):
-    runner = DataMgmtRunner(ctx)
+    runner = DataMgmtRunner(ctx.obj)
     return runner.run("move", lambda dm: dm.move(data_set_id, ssh_user, content_copy_index, skip_integrity_check))
 
 @cli.command(short_help="Move the repository found in the given data set id.")
