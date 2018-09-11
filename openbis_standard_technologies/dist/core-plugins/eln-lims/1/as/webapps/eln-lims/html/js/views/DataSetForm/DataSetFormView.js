@@ -201,6 +201,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		$wrapper.append($dataSetTypeFieldSet);
 		
 		var $dataSetTypeSelector = null;
+		
 		if(this._dataSetFormModel.mode === FormMode.CREATE) {
 			$dataSetTypeSelector = FormUtil.getDataSetsDropDown('DATASET_TYPE', this._dataSetFormModel.dataSetTypes);
 			$dataSetTypeSelector.change(function() { 
@@ -229,7 +230,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			$dataSetTypeFieldSet.append($dataSetTypeLabel);
 			var $dataSetCodeLabel = FormUtil.getFieldForLabelWithText('Code', this._dataSetFormModel.dataSet.code, null);
 			$dataSetTypeFieldSet.append($dataSetCodeLabel);
-			
+		}
+		
+		var $dataSetParentsCodeLabel = $("<div>");
+		if(this._dataSetFormModel.mode === FormMode.VIEW) {
 			var datasetParents = "N/A";
 			for(var pIdx = 0; pIdx < this._dataSetFormModel.dataSet.parentCodes.length; pIdx++) {
 				if(pIdx === 0) {
@@ -238,10 +242,14 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					datasetParents += ", " + this._dataSetFormModel.dataSet.parentCodes[pIdx];
 				}
 			}
-			
-			var $dataSetParentsCodeLabel = FormUtil.getFieldForLabelWithText('Parents', datasetParents, null);
-			$dataSetTypeFieldSet.append($dataSetParentsCodeLabel);
+			$dataSetParentsCodeLabel.append(datasetParents);
+		} else {
+			this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add", false, false, true, false);
+			this._dataSetFormModel.datasetParentsComponent.init($dataSetParentsCodeLabel);
+			this._dataSetFormModel.datasetParentsComponent.addSelectedDataSets(this._dataSetFormModel.dataSet.parentCodes);
 		}
+		
+		$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetParentsCodeLabel, 'Parents'));
 		
 		var ownerName = null;
 		var owner = null;

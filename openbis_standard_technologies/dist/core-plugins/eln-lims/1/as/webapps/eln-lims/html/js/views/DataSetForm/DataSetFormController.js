@@ -164,6 +164,12 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 			dataSetTypeCode = this._dataSetFormModel.dataSet.dataSetTypeCode;
 		}
 		
+		var dataSetParentObjects = this._dataSetFormModel.datasetParentsComponent.getSelected();
+		var dataSetParents = [];
+		for(var oIdx = 0; oIdx < dataSetParentObjects.length; oIdx++) {
+			dataSetParents.push(dataSetParentObjects[oIdx].permId.permId)
+		}
+		
 		var parameters = {
 				//API Method
 				"method" : method,
@@ -171,6 +177,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 				"dataSetCode" : dataSetCode, //Used for updates
 				"sampleIdentifier" : sampleIdentifier, //Use for creation
 				"experimentIdentifier" : experimentIdentifier, //Use for creation
+				"dataSetParents" : dataSetParents,
 				"dataSetType" : dataSetTypeCode,
 				"filenames" : _this._dataSetFormModel.files,
 				"folderName" : folderName,
