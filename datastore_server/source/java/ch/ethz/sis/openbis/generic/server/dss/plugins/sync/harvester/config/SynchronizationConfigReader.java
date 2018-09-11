@@ -106,10 +106,10 @@ public class SynchronizationConfigReader
 
     private static final String LOG_FILE_PROPERTY_NAME = "log-file";
 
-    List<SyncConfig> configs = new ArrayList<>();
 
     public List<SyncConfig> readConfiguration(File harvesterConfigFile, Logger logger) throws IOException
     {
+        List<SyncConfig> configs = new ArrayList<>();
         ConfigReader reader = new ConfigReader(harvesterConfigFile);
         int sectionCount = reader.getSectionCount();
         for (int i = 0; i < sectionCount; i++)
@@ -117,7 +117,7 @@ public class SynchronizationConfigReader
             String section = reader.getSection(i);
             SyncConfig config = new SyncConfig();
             config.setEmailAddresses(reader.getString(section, EMAIL_ADDRESSES_PROPERTY_NAME, null, true));
-            config.setDataSourceAlias(reader.getString(section, DATA_SOURCE_ALIAS_PROPERTY_NAME, null, true));
+            config.setDataSourceAlias(reader.getString(section, DATA_SOURCE_ALIAS_PROPERTY_NAME, section, false));
             defaultLogFileName = defaultLogFileName.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
             config.setLogFilePath(reader.getString(section, LOG_FILE_PROPERTY_NAME, defaultLogFileName, false));
             if (config.getLogFilePath() != null)
