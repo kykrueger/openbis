@@ -36,7 +36,7 @@ $.extend(DefaultProfile.prototype, {
 		//
 		// DEFAULTS, TYPICALLY DON'T TOUCH IF YOU DON'T KNOW WHAT YOU DO
 		//
-		this.showDatasetArchivingButton = true;
+		this.showDatasetArchivingButton = false;
 		
 		this.mainMenu = {
 				showLabNotebook : true,
