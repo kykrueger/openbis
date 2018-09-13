@@ -33,7 +33,7 @@ dependencies {
 			'apache:commons-fileupload:+',
 			'lyncode:xoai-data-provider:+'
 
-  runtime 'bioformats:bioformats:+'
+  runtime 'bioformats:bioformats:5.1.8'
 
 	testCompile (project(path: ':openbis', configuration: 'tests')) {
 		exclude group: 'google', module: 'gwt-user'
