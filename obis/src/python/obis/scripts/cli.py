@@ -11,6 +11,7 @@ Created by Chandrasekhar Ramakrishnan on 2017-01-27.
 Copyright (c) 2017 Chandrasekhar Ramakrishnan. All rights reserved.
 """
 import json
+import os
 import sys
 from datetime import datetime
 
@@ -62,10 +63,15 @@ def init_data_impl(ctx, repository, desc):
     return ctx.obj['runner'].run("init_data", lambda dm: dm.init_data(desc, create=True), repository)
 
 
+# TODO ensure parent and repository are relative
 def init_analysis_impl(ctx, parent, repository, description):
     click_echo("init_analysis {}".format(repository))
     description = description if description != "" else None
-    return ctx.obj['runner'].run("init_analysis", lambda dm: dm.init_analysis(repository, parent, description, create=True), repository)
+    parent_dir = os.getcwd() if parent is None else os.path.join(os.getcwd(), parent)
+    analysis_dir = os.path.join(os.getcwd(), repository)
+    parent = os.path.relpath(parent_dir, analysis_dir)
+    parent = '..' if parent is None else parent
+    return ctx.obj['runner'].run("init_analysis", lambda dm: dm.init_analysis(parent, description, create=True), repository)
 
 
 # settings commands

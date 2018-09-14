@@ -18,6 +18,7 @@ import pybis
 import requests
 import signal
 import sys
+from pathlib import Path
 from . import config as dm_config
 from .commands.addref import Addref
 from .commands.removeref import Removeref
@@ -93,9 +94,9 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
+    def init_analysis(self, parent_folder, desc=None, create=True, apply_config=False):
         """Initialize an analysis repository at the path.
-        :param path: Path for the repository.
+        :param parent_folder: Path for the repository.
         :param parent: (required when outside of existing repository) Path for the parent repositort
         :return: A CommandResult.
         """
@@ -186,7 +187,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def init_data(self, desc=None, create=True):
         self.error_raise("init data", "No git command found.")
 
-    def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
+    def init_analysis(self, parent_folder, desc=None, create=True, apply_config=False):
         self.error_raise("init analysis", "No git command found.")
 
     def commit(self, msg, auto_add=True, ignore_missing_parent=False, sync=True):
@@ -284,6 +285,7 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(relative_path):
             return self.settings_resolver.repository.config_dict().get('id')
 
+    # TODO error when folder is already a repository
     def init_data(self, desc=None, create=True, apply_config=False):
         result = self.git_wrapper.git_init()
         if result.failure():
@@ -302,29 +304,30 @@ class GitDataMgmt(AbstractDataMgmt):
         return CommandResult(returncode=0, output="")
 
 
-    def init_analysis(self, relative_path, parent, desc=None, create=True, apply_config=False):
-
+    # TODO error when folder is already a repository
+    # TODO ensure parent is a repository
+    def init_analysis(self, parent_folder, desc=None, create=True, apply_config=False):
         # get data_set_id of parent from current folder or explicit parent argument
-        parent_folder = parent if parent is not None and len(parent) > 0 else "."
         parent_data_set_id = self.get_data_set_id(parent_folder)
         # check that parent repository has been added to openBIS
         if self.get_repository_id(parent_folder) is None:
             return CommandResult(returncode=-1, output="Parent data set must be committed to openBIS before creating an analysis data set.")
         # check that analysis repository does not already exist
-        if os.path.exists(relative_path):
-            return CommandResult(returncode=-1, output="Data set already exists: " + relative_path)
         # init analysis repository
-        result = self.init_data(relative_path, desc, create, apply_config)
+        result = self.init_data(desc, create, apply_config)
         if result.failure():
             return result
+
         # add analysis repository folder to .gitignore of parent
-        if os.path.exists('.obis'):
-            self.git_wrapper.git_ignore(relative_path)
-        elif parent is None:
-            return CommandResult(returncode=-1, output="Not within a repository and no parent set.")
+        parent_folder_abs = os.path.join(os.getcwd(), parent_folder)
+        analysis_folder_abs = os.getcwd()
+        if Path(analysis_folder_abs) in Path(parent_folder_abs).parents:
+            analysis_folder_relative = os.path.relpath(analysis_folder_abs, parent_folder_abs)
+            with cd(parent_folder):
+                self.git_wrapper.git_ignore(analysis_folder_relative)
+
         # set data_set_id to analysis repository so it will be used as parent when committing
-        with cd(relative_path):
-            self.set_property(self.settings_resolver.repository, "data_set_id", parent_data_set_id, False, False)
+        self.set_property(self.settings_resolver.repository, "data_set_id", parent_data_set_id, False, False)
         return result
 
 
