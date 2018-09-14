@@ -78,6 +78,11 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         raise ValueError(message)
 
     @abc.abstractmethod
+    def get_settings_resolver(self):
+        """ Get the settings resolver """
+        return
+
+    @abc.abstractmethod
     def init_data(self, path, desc=None, create=True):
         """Initialize a data repository at the path with the description.
         :param path: Path for the repository.
@@ -175,6 +180,9 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
 class NoGitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations when git is not available -- show error messages."""
 
+    def get_settings_resolver(self):
+        self.error_raise("get settings resolver", "No git command found.")
+
     def init_data(self, path, desc=None, create=True):
         self.error_raise("init data", "No git command found.")
 
@@ -246,6 +254,10 @@ def with_restore(f):
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
+    def get_settings_resolver(self):
+        return self.settings_resolver
+
+
     def setup_local_settings(self, all_settings):
         self.settings_resolver.set_resolver_location_roots('data_set', '.')
         for resolver_type, settings in all_settings.items():
@@ -273,8 +285,6 @@ class GitDataMgmt(AbstractDataMgmt):
             return self.settings_resolver.repository.config_dict().get('id')
 
     def init_data(self, relative_path, desc=None, create=True, apply_config=False):
-        if not os.path.exists(relative_path) and create:
-            os.mkdir(relative_path)
         result = self.git_wrapper.git_init(relative_path)
         if result.failure():
             return result
@@ -282,14 +292,13 @@ class GitDataMgmt(AbstractDataMgmt):
         result = self.git_wrapper.git_annex_init(relative_path, desc, git_annex_backend)
         if result.failure():
             return result
-        with cd(relative_path):
-            result = self.git_wrapper.initial_commit()
-            if result.failure():
-                return result
-            # Update the resolvers location
-            self.settings_resolver.set_resolver_location_roots('data_set', '.')
-            self.settings_resolver.copy_global_to_local()
-            self.commit_metadata_updates('local with global')
+        result = self.git_wrapper.initial_commit()
+        if result.failure():
+            return result
+        # Update the resolvers location
+        self.settings_resolver.set_resolver_location_roots('data_set', '.')
+        self.settings_resolver.copy_global_to_local()
+        self.commit_metadata_updates('local with global')
         return CommandResult(returncode=0, output="")
 
 

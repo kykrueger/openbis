@@ -59,13 +59,13 @@ def init_data_impl(ctx, repository, desc):
         repository = "."
     click_echo("init_data {}".format(repository))
     desc = desc if desc != "" else None
-    return ctx.obj['runner'].run("init_data", lambda dm: dm.init_data(repository, desc, create=True))
+    return ctx.obj['runner'].run("init_data", lambda dm: dm.init_data(repository, desc, create=True), repository)
 
 
 def init_analysis_impl(ctx, parent, repository, description):
     click_echo("init_analysis {}".format(repository))
     description = description if description != "" else None
-    return ctx.obj['runner'].run("init_analysis", lambda dm: dm.init_analysis(repository, parent, description, create=True))
+    return ctx.obj['runner'].run("init_analysis", lambda dm: dm.init_analysis(repository, parent, description, create=True), repository)
 
 
 # settings commands

@@ -15,11 +15,14 @@ class GitWrapper(object):
         self.data_path = data_path
         self.metadata_path = metadata_path
 
-    def _git(self, params, strip_leading_whitespace=True):
-        return run_shell([self.git_path] + params, strip_leading_whitespace=strip_leading_whitespace)
+    def _git(self, params, strip_leading_whitespace=True, relative_repo_path=''):
+        cmd = [self.git_path]
+        if self.data_path is not None and self.metadata_path is not None:
+            git_dir = os.path.join(self.metadata_path, relative_repo_path, '.git') # TODO add repo folder if not already in
+            cmd += ['--work-tree', self.data_path, '--git-dir', git_dir]
+        cmd += params
+        return run_shell(cmd, strip_leading_whitespace=strip_leading_whitespace)
 
-    def _git_annex(self, params):
-        return run_shell([self.git_annex_path] + params)
 
     def can_run(self):
         """Return true if the perquisites are satisfied to run"""
@@ -30,13 +33,15 @@ class GitWrapper(object):
         if self._git(['help']).failure():
             # git help should have a returncode of 0
             return False
-        if self._git_annex(['help']).failure():
+        if self._git(['annex', 'help']).failure():
             # git help should have a returncode of 0
             return False
         return True
 
+    # TODO remove path
     def git_init(self, path):
-        return self._git(["init", path])
+        return self._git(["init"])
+        # return self._git(["init", path])
 
     def git_status(self, path=None):
         if path is None:
@@ -45,7 +50,7 @@ class GitWrapper(object):
             return self._git(["annex", "status", path], strip_leading_whitespace=False)
 
     def git_annex_init(self, path, desc, git_annex_backend=None):
-        cmd = ["-C", path, "annex", "init", "--version=5"]
+        cmd = ["annex", "init", "--version=5"]
         if desc is not None:
             cmd.append(desc)
         result = self._git(cmd)
@@ -53,26 +58,26 @@ class GitWrapper(object):
             return result
 
         # annex.thin to avoid copying big files
-        cmd = ["-C", path, "config", "annex.thin", "true"]
+        cmd = ["config", "annex.thin", "true"]
         result = self._git(cmd)
         if result.failure():
             return result
 
         # direct mode so annex uses hard links instead of soft links
-        cmd = ["-C", path, "annex", "direct"]
+        cmd = ["annex", "direct"]
         result = self._git(cmd)
         if result.failure():
             return result
 
         # re-enable the repository to be used with git directly
         # though we need to know what we do since annex can lead to unexpected behaviour
-        cmd = ["-C", path, "config", "--unset", "core.bare"]
+        cmd = ["config", "--unset", "core.bare"]
         result = self._git(cmd)
         if result.failure():
             return result
 
         attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
-        attributes_dst = os.path.join(path, ".git/info/attributes")
+        attributes_dst = '.git/info/attributes'
         shutil.copyfile(attributes_src, attributes_dst)
         self._apply_git_annex_backend(attributes_dst, git_annex_backend)
 
@@ -112,6 +117,7 @@ class GitWrapper(object):
     def git_commit(self, msg):
         return self._git(["commit", '-m', msg])
 
+    # TODO where is this used - does is make sense?
     def git_top_level_path(self):
         return self._git(['rev-parse', '--show-toplevel'])
 
@@ -121,8 +127,10 @@ class GitWrapper(object):
     def git_ls_tree(self):
         return self._git(['ls-tree', '--full-tree', '-r', 'HEAD'])
 
-    def git_checkout(self, path):
-        return self._git(["checkout", path])
+    def git_checkout(self, path_or_hash, relative_repo_path=''):
+        if relative_repo_path:
+            return self._git(['checkout', path_or_hash], relative_repo_path=relative_repo_path)
+        return self._git(["checkout", path_or_hash])
 
     def git_reset_to(self, commit_hash):
         return self._git(['reset', commit_hash])
