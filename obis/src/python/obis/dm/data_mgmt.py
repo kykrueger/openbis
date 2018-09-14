@@ -83,7 +83,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         return
 
     @abc.abstractmethod
-    def init_data(self, path, desc=None, create=True):
+    def init_data(self, desc=None, create=True):
         """Initialize a data repository at the path with the description.
         :param path: Path for the repository.
         :param desc: An optional short description of the repository (used by git-annex)
@@ -183,7 +183,7 @@ class NoGitDataMgmt(AbstractDataMgmt):
     def get_settings_resolver(self):
         self.error_raise("get settings resolver", "No git command found.")
 
-    def init_data(self, path, desc=None, create=True):
+    def init_data(self, desc=None, create=True):
         self.error_raise("init data", "No git command found.")
 
     def init_analysis(self, path, parent, desc=None, create=True, apply_config=False):
@@ -284,12 +284,12 @@ class GitDataMgmt(AbstractDataMgmt):
         with cd(relative_path):
             return self.settings_resolver.repository.config_dict().get('id')
 
-    def init_data(self, relative_path, desc=None, create=True, apply_config=False):
-        result = self.git_wrapper.git_init(relative_path)
+    def init_data(self, desc=None, create=True, apply_config=False):
+        result = self.git_wrapper.git_init()
         if result.failure():
             return result
         git_annex_backend = self.settings_resolver.config.config_dict().get('git_annex_backend')
-        result = self.git_wrapper.git_annex_init(relative_path, desc, git_annex_backend)
+        result = self.git_wrapper.git_annex_init(desc, git_annex_backend)
         if result.failure():
             return result
         result = self.git_wrapper.initial_commit()

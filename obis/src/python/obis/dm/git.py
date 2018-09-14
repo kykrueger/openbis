@@ -39,9 +39,8 @@ class GitWrapper(object):
         return True
 
     # TODO remove path
-    def git_init(self, path):
+    def git_init(self):
         return self._git(["init"])
-        # return self._git(["init", path])
 
     def git_status(self, path=None):
         if path is None:
@@ -49,7 +48,7 @@ class GitWrapper(object):
         else:
             return self._git(["annex", "status", path], strip_leading_whitespace=False)
 
-    def git_annex_init(self, path, desc, git_annex_backend=None):
+    def git_annex_init(self, desc, git_annex_backend=None):
         cmd = ["annex", "init", "--version=5"]
         if desc is not None:
             cmd.append(desc)

@@ -59,7 +59,7 @@ def init_data_impl(ctx, repository, desc):
         repository = "."
     click_echo("init_data {}".format(repository))
     desc = desc if desc != "" else None
-    return ctx.obj['runner'].run("init_data", lambda dm: dm.init_data(repository, desc, create=True), repository)
+    return ctx.obj['runner'].run("init_data", lambda dm: dm.init_data(desc, create=True), repository)
 
 
 def init_analysis_impl(ctx, parent, repository, description):
