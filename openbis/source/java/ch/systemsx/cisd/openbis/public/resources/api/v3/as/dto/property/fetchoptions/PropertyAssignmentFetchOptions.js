@@ -1,5 +1,5 @@
 define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/property/fetchoptions/PropertyTypeFetchOptions", "as/dto/person/fetchoptions/PersonFetchOptions",
-		"as/dto/property/fetchoptions/PropertyAssignmentSortOptions", "as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions" ], function(stjs, FetchOptions) {
+		"as/dto/plugin/fetchoptions/PluginFetchOptions", "as/dto/property/fetchoptions/PropertyAssignmentSortOptions", "as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions" ], function(stjs, FetchOptions) {
 	var PropertyAssignmentFetchOptions = function() {
 	};
 	stjs.extend(PropertyAssignmentFetchOptions, FetchOptions, [ FetchOptions ], function(constructor, prototype) {
@@ -92,6 +92,7 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/property/fet
 		propertyType : "PropertyTypeFetchOptions",
 		semanticAnnotations : "SemanticAnnotationFetchOptions",
 		registrator : "PersonFetchOptions",
+		plugin : "PluginFetchOptions",
 		sort : "PropertyAssignmentSortOptions"
 	});
 	return PropertyAssignmentFetchOptions;

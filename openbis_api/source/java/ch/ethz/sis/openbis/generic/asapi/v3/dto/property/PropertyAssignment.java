@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHo
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISemanticAnnotationsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
@@ -39,7 +40,8 @@ import java.util.List;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.property.PropertyAssignment")
-public class PropertyAssignment implements Serializable, IPermIdHolder, IPropertyTypeHolder, IRegistrationDateHolder, IRegistratorHolder, ISemanticAnnotationsHolder
+public class PropertyAssignment
+        implements Serializable, IPermIdHolder, IPropertyTypeHolder, IRegistrationDateHolder, IRegistratorHolder, ISemanticAnnotationsHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -81,7 +83,7 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
 
     @JsonProperty
     private Date registrationDate;
-    
+
     @JsonProperty
     private Plugin plugin;
 
@@ -145,8 +147,7 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
         if (getFetchOptions() != null && getFetchOptions().hasEntityType())
         {
             return entityType;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Entity type has not been fetched.");
         }
@@ -166,8 +167,7 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
         if (getFetchOptions() != null && getFetchOptions().hasPropertyType())
         {
             return propertyType;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Property type has not been fetched.");
         }
@@ -226,8 +226,7 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
         if (getFetchOptions() != null && getFetchOptions().hasSemanticAnnotations())
         {
             return semanticAnnotations;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Semantic annotations have not been fetched.");
         }
@@ -246,8 +245,7 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
         if (getFetchOptions() != null && getFetchOptions().hasSemanticAnnotations())
         {
             return semanticAnnotationsInherited;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Semantic annotations have not been fetched.");
         }
@@ -267,8 +265,7 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }
@@ -293,7 +290,8 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
     {
         this.registrationDate = registrationDate;
     }
-    
+
+    @JsonIgnore
     public Plugin getPlugin()
     {
         if (getFetchOptions() != null && getFetchOptions().hasPlugin())
@@ -314,7 +312,8 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
     @Override
     public String toString()
     {
-        return "PropertyAssignment entity type: " + (entityType != null ? entityType.getCode() : null) + ", property type: " + (propertyType != null ? propertyType.getCode() : null) + ", mandatory: " + mandatory;
+        return "PropertyAssignment entity type: " + (entityType != null ? entityType.getCode() : null) + ", property type: "
+                + (propertyType != null ? propertyType.getCode() : null) + ", mandatory: " + mandatory;
     }
 
 }
