@@ -249,7 +249,7 @@ public abstract class AbstractGetEntityTypeTest extends AbstractTest
 
         assertEquals(((EntityTypePermId) type.getPermId()).getPermId(), permId.getPermId());
         assertEquals(type.getCode(), permId.getPermId());
-        assertPropertyAssignments(type.getPropertyAssignments(), "ENTITY_TEST_TYPE.DESCRIPTION");
+        assertPropertyAssignments(type.getPropertyAssignments(), "properties", "ENTITY_TEST_TYPE.DESCRIPTION");
 
         assertValidationPluginNotFetched(type);
     }

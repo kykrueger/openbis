@@ -188,11 +188,11 @@ public class PropertyAssignmentTranslator implements IPropertyAssignmentTranslat
         
         if (assignmentFetchOptions.hasPlugin())
         {
-            Map<Long, List<PropertyAssignment>> assignmentsByRegistatorId = getAssignments(assignments, assignmentRecords, r -> r.script_id);
+            Map<Long, List<PropertyAssignment>> assignmentsByPluginId = getAssignments(assignments, assignmentRecords, r -> r.script_id);
             Map<Long, Plugin> registratorMap =
-                    pluginTranslator.translate(context, assignmentsByRegistatorId.keySet(), assignmentFetchOptions.withPlugin());
+                    pluginTranslator.translate(context, assignmentsByPluginId.keySet(), assignmentFetchOptions.withPlugin());
 
-            for (Map.Entry<Long, List<PropertyAssignment>> entry : assignmentsByRegistatorId.entrySet())
+            for (Map.Entry<Long, List<PropertyAssignment>> entry : assignmentsByPluginId.entrySet())
             {
                 Plugin plugin = registratorMap.get(entry.getKey());
                 for (PropertyAssignment assignment : entry.getValue())
@@ -216,15 +216,18 @@ public class PropertyAssignmentTranslator implements IPropertyAssignmentTranslat
             PropertyAssignmentKey key = new PropertyAssignmentKey(assignmentRecord.id, entityKind);
             PropertyAssignment assignment = assignments.get(key);
             Long id = extractor.apply(assignmentRecord);
-            List<PropertyAssignment> list = map.get(id);
-
-            if (list == null)
+            if (id != null)
             {
-                list = new ArrayList<PropertyAssignment>();
-                map.put(id, list);
+                List<PropertyAssignment> list = map.get(id);
+                
+                if (list == null)
+                {
+                    list = new ArrayList<PropertyAssignment>();
+                    map.put(id, list);
+                }
+                
+                list.add(assignment);
             }
-
-            list.add(assignment);
         }
 
         return map;
