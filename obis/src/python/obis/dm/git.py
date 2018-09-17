@@ -84,16 +84,7 @@ class GitWrapper(object):
 
     def initial_commit(self):
         # initial commit is needed. we can restore to it when something fails
-        folder = '.obis'
-        file = '.gitignore'
-        path = folder + '/' + file
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        Path(path).touch()
-        result = self.git_add(path)
-        if result.failure():
-            return result
-        return self.git_commit("Initial commit.")
+        return self._git(['commit', '--allow-empty', '-m', 'Initial commit.'])
 
     def _apply_git_annex_backend(self, filename, git_annex_backend):
         if git_annex_backend is not None:
