@@ -97,6 +97,7 @@ public class SearchPropertyAssignmentsOperationExecutor extends
             assignmentRecord.show_raw_value = assignment.getShowRawValue();
             assignmentRecord.type_code = assignment.getEntityType().getCode();
             assignmentRecord.type_id = assignment.getEntityType().getId();
+            assignmentRecord.script_id = assignment.getScript().getId();
             assignmentRecords.add(assignmentRecord);
         }
 

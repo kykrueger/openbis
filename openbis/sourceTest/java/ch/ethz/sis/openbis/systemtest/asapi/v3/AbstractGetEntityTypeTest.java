@@ -239,6 +239,7 @@ public abstract class AbstractGetEntityTypeTest extends AbstractTest
 
         PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
         assignmentCreation.setPropertyTypeId(new PropertyTypePermId("DESCRIPTION"));
+        assignmentCreation.setPluginId(new PluginPermId("properties"));
 
         EntityTypePermId permId = createEntityType(sessionToken, "ENTITY_TEST_TYPE", Arrays.asList(assignmentCreation), null);
 
@@ -263,6 +264,7 @@ public abstract class AbstractGetEntityTypeTest extends AbstractTest
 
         PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
         assignmentCreation.setPropertyTypeId(new PropertyTypePermId(propertyTypeCodeWithDolar));
+        assignmentCreation.setPluginId(new PluginPermId("properties"));
 
         EntityTypePermId permId = createEntityType(sessionToken, entityTypeCode, Arrays.asList(assignmentCreation), null);
 

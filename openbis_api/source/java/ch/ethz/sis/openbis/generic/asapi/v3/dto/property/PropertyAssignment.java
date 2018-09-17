@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationD
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISemanticAnnotationsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
@@ -80,6 +81,9 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
 
     @JsonProperty
     private Date registrationDate;
+    
+    @JsonProperty
+    private Plugin plugin;
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -288,6 +292,22 @@ public class PropertyAssignment implements Serializable, IPermIdHolder, IPropert
     public void setRegistrationDate(Date registrationDate)
     {
         this.registrationDate = registrationDate;
+    }
+    
+    public Plugin getPlugin()
+    {
+        if (getFetchOptions() != null && getFetchOptions().hasPlugin())
+        {
+            return plugin;
+        } else
+        {
+            throw new NotFetchedException("Plugin has not been fetched.");
+        }
+    }
+
+    public void setPlugin(Plugin plugin)
+    {
+        this.plugin = plugin;
     }
 
     // Method automatically generated with DtoGenerator

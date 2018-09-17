@@ -1127,6 +1127,7 @@ public class AbstractTest extends SystemTestCase
         for (PropertyAssignment propertyAssignment : propertyAssignments)
         {
             actualSet.add(propertyAssignment.getEntityType().getCode() + "." + propertyAssignment.getPropertyType().getCode());
+            assertEquals(propertyAssignment.getPlugin().getName(), "properties");
         }
 
         assertCollectionContainsOnly(actualSet, expectedEntityTypeAndPropertyTypeCodes);
