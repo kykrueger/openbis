@@ -254,6 +254,56 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    var type = data.node.data.entityType;
     	    var permId = data.node.key;
     	    
+    	    var showLabNotebooks = function(dfd, showEnabled, showDisabled) {
+    	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
+    	    		mainController.serverFacade.getPersons([mainController.serverFacade.getUserId()], function(persons) {
+    	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
+    	    			var HOME_SPACE = null;
+    	    			if(persons !== null) {
+    	    				HOME_SPACE = (persons[0].getSpace()?persons[0].getSpace().getCode():null);
+    	    			}
+    	    			if(HOME_SPACE === null) {
+    	    				HOME_SPACE = mainController.serverFacade.getUserId().toUpperCase();
+    	    			}
+    	    			var results = [];
+    	    			var spaces = searchResult.objects;
+    	            var nonInventoryNonHiddenSpaces = []; 
+    	                for (var i = 0; i < spaces.length; i++) {
+    	                    var space = spaces[i];
+    	                    var isInventorySpace = profile.isInventorySpace(space.code);
+    	                    var isHiddenSpace = profile.isHiddenSpace(space.code);
+        	                if(!isInventorySpace && (space.code !== HOME_SPACE) && !isHiddenSpace) {
+        	                		nonInventoryNonHiddenSpaces.push(space.code);
+        	                }
+    	                }
+    	                
+    	                mainController.serverFacade.customELNASAPI({
+    	                		"method" : "doSpacesBelongToDisabledUsers",
+    	                		"spaceCodes" : nonInventoryNonHiddenSpaces
+    	                }, function(disabledSpaces) {
+    	                		for(var i = 0; i < nonInventoryNonHiddenSpaces.length; i++) {
+    	                			var spaceCode = nonInventoryNonHiddenSpaces[i];
+    	                			var foundDisabled = $.inArray(spaceCode, disabledSpaces) !== -1;
+    	                			
+    	                			if(!showDisabled && foundDisabled) {
+    	                				continue; //Skip disabled spaces
+    	                			}
+    	                			
+    	                			if(!showEnabled && !foundDisabled) {
+    	                				continue; //Skip enabled spaces
+    	                			}
+    	                			
+    	                			var normalizedSpaceTitle = Util.getDisplayNameFromCode(spaceCode);
+        	                		var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, spaceCode, "showSpacePage", spaceCode);
+        	              		var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
+        	               		results.push(spaceNode);
+    	                		}
+    	                		dfd.resolve(results);
+    	                });
+    	    			});
+    	    		});
+    	    }
+    	    
     	    switch(type) {
     	    	case "LAB_NOTEBOOK":
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
@@ -280,38 +330,17 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	                }
     	                }
     	                
-	                    results.push({ title : "Others", entityType: "LAB_NOTEBOOK_OTHERS", key : "LAB_NOTEBOOK_OTHERS", folder : true, lazy : true, view : "showLabNotebookPage" });
+	               	results.push({ title : "Others", entityType: "LAB_NOTEBOOK_OTHERS", key : "LAB_NOTEBOOK_OTHERS", folder : true, lazy : true, view : "showLabNotebookPage" });
+	               	results.push({ title : "Others (disabled)", entityType: "LAB_NOTEBOOK_OTHERS_DISABLED", key : "LAB_NOTEBOOK_OTHERS_DISABLED", folder : true, lazy : true, view : "showLabNotebookPage" });
     	                dfd.resolve(results);
     	    			});
     	    		});
     	    		break;
     	    	case "LAB_NOTEBOOK_OTHERS":
-    	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		mainController.serverFacade.getPersons([mainController.serverFacade.getUserId()], function(persons) {
-    	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
-    	    			var HOME_SPACE = null;
-    	    			if(persons !== null) {
-    	    				HOME_SPACE = (persons[0].getSpace()?persons[0].getSpace().getCode():null);
-    	    			}
-    	    			if(HOME_SPACE === null) {
-    	    				HOME_SPACE = mainController.serverFacade.getUserId().toUpperCase();
-    	    			}
-    	    			var results = [];
-    	    			var spaces = searchResult.objects;
-    	                for (var i = 0; i < spaces.length; i++) {
-    	                    var space = spaces[i];
-    	                    var isInventorySpace = profile.isInventorySpace(space.code);
-    	                    var isHiddenSpace = profile.isHiddenSpace(space.code);
-        	                if(!isInventorySpace && (space.code !== HOME_SPACE) && !isHiddenSpace) {
-        	                	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
-        	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
-        	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
-        	                    results.push(spaceNode);
-        	                }
-    	                }
-    	                dfd.resolve(results);
-    	    			});
-    	    		});
+    	        showLabNotebooks(dfd, true, false);
+    	    		break;
+    	    	case "LAB_NOTEBOOK_OTHERS_DISABLED":
+    	        showLabNotebooks(dfd, false, true);
     	    		break;
     	    	case "INVENTORY":
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
