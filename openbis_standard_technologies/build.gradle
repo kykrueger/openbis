@@ -84,7 +84,7 @@ dependencies {
 					 project(':screening'),
 					 project(':rtd_phosphonetx'),
 					 project(':plasmid'),
-					 'bioformats:bioformats:+',
+					 'bioformats:bioformats:5.9.2',
 					 'imagej:ij:+',
 					 'cisd:cisd-openbis-knime-server:+',
 					 'apache:xml-apis:+',
