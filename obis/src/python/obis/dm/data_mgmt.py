@@ -255,8 +255,13 @@ def with_restore(f):
 class GitDataMgmt(AbstractDataMgmt):
     """DataMgmt operations in normal state."""
 
-    def get_settings_resolver(self):
-        return self.settings_resolver
+    def get_settings_resolver(self, relative_path=None):
+        if relative_path is None:
+            return self.settings_resolver
+        else:
+            settings_resolver = dm_config.SettingsResolver()
+            settings_resolver.set_resolver_location_roots('data_set', relative_path)
+            return settings_resolver
 
 
     def setup_local_settings(self, all_settings):
@@ -278,15 +283,19 @@ class GitDataMgmt(AbstractDataMgmt):
 
 
     def get_data_set_id(self, relative_path):
-        with cd(relative_path):
-            return self.settings_resolver.repository.config_dict().get('data_set_id')
+        settings_resolver = self.get_settings_resolver(relative_path)
+        return settings_resolver.repository.config_dict().get('data_set_id')
+
 
     def get_repository_id(self, relative_path):
-        with cd(relative_path):
-            return self.settings_resolver.repository.config_dict().get('id')
+        settings_resolver = self.get_settings_resolver(relative_path)
+        return settings_resolver.repository.config_dict().get('id')
 
-    # TODO error when folder is already a repository
+
     def init_data(self, desc=None, create=True, apply_config=False):
+        # check that analysis repository does not already exist
+        if os.path.exists('.obis'):
+            return CommandResult(returncode=-1, output="Folder is already an obis repository.")
         result = self.git_wrapper.git_init()
         if result.failure():
             return result
@@ -304,15 +313,12 @@ class GitDataMgmt(AbstractDataMgmt):
         return CommandResult(returncode=0, output="")
 
 
-    # TODO error when folder is already a repository
-    # TODO ensure parent is a repository
     def init_analysis(self, parent_folder, desc=None, create=True, apply_config=False):
         # get data_set_id of parent from current folder or explicit parent argument
         parent_data_set_id = self.get_data_set_id(parent_folder)
         # check that parent repository has been added to openBIS
         if self.get_repository_id(parent_folder) is None:
             return CommandResult(returncode=-1, output="Parent data set must be committed to openBIS before creating an analysis data set.")
-        # check that analysis repository does not already exist
         # init analysis repository
         result = self.init_data(desc, create, apply_config)
         if result.failure():

@@ -63,9 +63,14 @@ def init_data_impl(ctx, repository, desc):
     return ctx.obj['runner'].run("init_data", lambda dm: dm.init_data(desc, create=True), repository)
 
 
-# TODO ensure parent and repository are relative
 def init_analysis_impl(ctx, parent, repository, description):
     click_echo("init_analysis {}".format(repository))
+    if parent is not None and os.path.isabs(parent):
+        click_echo('Error: The parent must be given as a relative path.')
+        return -1
+    if repository is not None and os.path.isabs(repository):
+        click_echo('Error: The repository must be given as a relative path.')
+        return -1
     description = description if description != "" else None
     parent_dir = os.getcwd() if parent is None else os.path.join(os.getcwd(), parent)
     analysis_dir = os.path.join(os.getcwd(), repository)
