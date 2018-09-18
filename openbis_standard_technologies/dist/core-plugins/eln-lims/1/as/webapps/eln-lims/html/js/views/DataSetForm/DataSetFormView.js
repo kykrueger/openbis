@@ -234,10 +234,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		
 		var $dataSetParentsCodeLabel = $("<div>");
 		if(this._dataSetFormModel.mode === FormMode.VIEW) {
-			if(this._dataSetFormModel.dataSetV3.parents.length === 0) {
-				$dataSetParentsCodeLabel.append("--");
-			} else {
-				for(var i = 0; i < this._dataSetFormModel.dataSetV3.parents.length; i++) {
+			for(var i = 0; i < this._dataSetFormModel.dataSetV3.parents.length; i++) {
 					var parent = this._dataSetFormModel.dataSetV3.parents[i];
 					var $span = $("<span>");
 					$span.append(FormUtil.getFormLink(parent.permId.permId, "DataSet", parent.permId.permId));
@@ -246,15 +243,19 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 						$span.append(" : ").append(name);
 					}
 					$dataSetParentsCodeLabel.append($("<div>").append($span));
-				}
 			}
+			
 		} else {
 			this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add", false, false, true, false);
 			this._dataSetFormModel.datasetParentsComponent.init($dataSetParentsCodeLabel);
 			this._dataSetFormModel.datasetParentsComponent.addSelectedDataSets(this._dataSetFormModel.dataSet.parentCodes);
 		}
 		
-		$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetParentsCodeLabel, 'Parents'));
+		if((this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.parents.length !== 0) 
+			|| 
+			this._dataSetFormModel.mode !== FormMode.VIEW) {
+			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetParentsCodeLabel, 'Parents'));
+		}
 		
 		var ownerName = null;
 		var owner = null;
