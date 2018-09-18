@@ -1,6 +1,6 @@
 import os
 from .openbis_command import OpenbisCommand
-from ..command_result import CommandResult
+from ..command_result import CommandResult, CommandException
 from ..utils import complete_openbis_config
 
 
@@ -11,6 +11,8 @@ class Addref(OpenbisCommand):
     """
 
     def __init__(self, dm):
+        if dm.data_path != dm.metadata_path:
+            raise CommandException(CommandResult(returncode=-1, output='Addref not supported with obis_metadata_folder.'))
         super(Addref, self).__init__(dm)
 
 

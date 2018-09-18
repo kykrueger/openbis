@@ -9,7 +9,7 @@ from .checksum import ChecksumGeneratorCrc32, ChecksumGeneratorGitAnnex
 class GitWrapper(object):
     """A wrapper on commands to git."""
 
-    def __init__(self, git_path=None, git_annex_path=None, find_git=None, data_path=None, metadata_path=None):
+    def __init__(self, git_path=None, git_annex_path=None, find_git=None, data_path=None, metadata_path=None, invocation_path=None):
         self.git_path = git_path
         self.git_annex_path = git_annex_path
         self.data_path = data_path
@@ -104,7 +104,7 @@ class GitWrapper(object):
         return self._git(["annex", "add", path, "--include-dotfiles"])
 
     def git_commit(self, msg):
-        return self._git(["commit", '-m', msg])
+        return self._git(['commit', '--allow-empty', '-m', msg])
 
     # TODO where is this used - does is make sense?
     def git_top_level_path(self):

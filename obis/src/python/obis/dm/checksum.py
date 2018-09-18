@@ -1,3 +1,4 @@
+import abc
 import hashlib
 import json
 import os
@@ -41,14 +42,22 @@ def validate_checksum(openbis, files, data_set_id, data_path, metadata_path):
     return invalid_files
 
 
-class ChecksumGenerator(object):
+class ChecksumGenerator(metaclass=abc.ABCMeta):
+
     def __init__(self, data_path, metadata_path=None):
         self.data_path = data_path
         self.metadata_path = metadata_path
 
+    def get_checksum(self, file):
+        with cd(self.data_path):
+            return self._get_checksum(file)
+
+    @abc.abstractmethod
+    def _get_checksum(self, file):
+        return
 
 class ChecksumGeneratorCrc32(ChecksumGenerator):
-    def get_checksum(self, file):
+    def _get_checksum(self, file):
         result = run_shell(['cksum', file])
         if result.failure():
             raise CommandException(result)
@@ -68,15 +77,13 @@ class ChecksumGeneratorHashlib(ChecksumGenerator):
     def hash_type(self):
         pass
 
-    def get_checksum(self, file):
-        # TODO error when clone - repository folder missing
-        with cd(self.data_path):
-            return {
-                'checksum': self._checksum(file),
-                'checksumType': self.hash_type(),
-                'fileLength': os.path.getsize(file),
-                'path': file
-            }
+    def _get_checksum(self, file):
+        return {
+            'checksum': self._checksum(file),
+            'checksumType': self.hash_type(),
+            'fileLength': os.path.getsize(file),
+            'path': file
+        }
 
     def _checksum(self, file):
         hash_function = self.hash_function()
@@ -101,7 +108,7 @@ class ChecksumGeneratorMd5(ChecksumGeneratorHashlib):
 
 
 class ChecksumGeneratorWORM(ChecksumGenerator):
-    def get_checksum(self, file):
+    def _get_checksum(self, file):
         return {
             'checksum': self.worm(file),
             'checksumType': 'WORM',
@@ -128,13 +135,14 @@ class ChecksumGeneratorGitAnnex(ChecksumGenerator):
             self.backend, self.data_path, self.metadata_path, 
             default=ChecksumGeneratorCrc32(self.data_path, self.metadata_path))
 
-    def get_checksum(self, file):
+    def _get_checksum(self, file):
         if self.checksum_generator_replacement is not None:
             return self.checksum_generator_replacement.get_checksum(file)
-        return self._get_checksum(file)
+        return self.__get_checksum(file)
 
-    def _get_checksum(self, file):
-        annex_result = run_shell(['git', 'annex', 'info', '-j', file], raise_exception_on_failure=True)
+    def __get_checksum(self, file):
+        git_dir = os.path.join(self.metadata_path, '.git')
+        annex_result = run_shell(['git', '--work-tree', self.data_path, '--git-dir', git_dir, 'annex', 'info', '-j', file], raise_exception_on_failure=True)
         if 'Not a valid object name' in annex_result.output:
             return self.checksum_generator_supplement.get_checksum(file)
         annex_info = json.loads(annex_result.output)

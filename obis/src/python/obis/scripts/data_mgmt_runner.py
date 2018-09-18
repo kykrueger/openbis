@@ -13,7 +13,8 @@ from ..dm.utils import run_shell
 from .click_util import click_echo, check_result
 
 
-# TODO use data_path and metadata_path in git.py
+# TODO obis metadata not always tracked in git.
+# there are cases when we want to undo some obis settings - does this still make sense?
 class DataMgmtRunner(object):
 
 
@@ -22,6 +23,7 @@ class DataMgmtRunner(object):
         self.halt_on_error_log = halt_on_error_log
         self.data_path = None
         self.metadata_path = None
+        self.invocation_path = os.getcwd()
 
 
     def init_paths(self, repository=None):
@@ -101,7 +103,8 @@ class DataMgmtRunner(object):
         git_config = {
                 'find_git': True,
                 'data_path': self.data_path,
-                'metadata_path': self.metadata_path
+                'metadata_path': self.metadata_path,
+                'invocation_path': self.invocation_path
             }
         openbis_config = {}
         if self.context.get('verify_certificates') is not None:

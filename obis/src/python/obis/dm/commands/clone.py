@@ -83,9 +83,11 @@ class Clone(OpenbisCommand):
         with cd(repository_folder):
             data_path = os.path.join(self.data_mgmt.data_path, repository_folder)
             metadata_path = os.path.join(self.data_mgmt.metadata_path, repository_folder)
+            invocation_path = self.data_mgmt.invocation_path
             data_mgmt = dm.DataMgmt(openbis_config={}, git_config={
                     'find_git': True,
                     'data_path': data_path,
                     'metadata_path': metadata_path,
+                    'invocation_path': invocation_path
                 })
             return data_mgmt.addref()

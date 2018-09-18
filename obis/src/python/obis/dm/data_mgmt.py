@@ -46,18 +46,19 @@ def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_conf
 
     data_path = git_config['data_path']
     metadata_path = git_config['metadata_path']
+    invocation_path = git_config['invocation_path']
 
     complete_git_config(git_config)
     git_wrapper = GitWrapper(**git_config)
     if not git_wrapper.can_run():
-        return NoGitDataMgmt(settings_resolver, None, git_wrapper, openbis, log, data_path, metadata_path)
+        return NoGitDataMgmt(settings_resolver, None, git_wrapper, openbis, log, data_path, metadata_path, invocation_path)
 
     if settings_resolver is None:
         settings_resolver = dm_config.SettingsResolver()
 
     complete_openbis_config(openbis_config, settings_resolver)
 
-    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis, log, data_path, metadata_path, debug)
+    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis, log, data_path, metadata_path, invocation_path, debug)
 
 
 class AbstractDataMgmt(metaclass=abc.ABCMeta):
@@ -66,7 +67,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis, log, data_path, metadata_path, debug=False):
+    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis, log, data_path, metadata_path, invocation_path, debug=False):
         self.settings_resolver = settings_resolver
         self.openbis_config = openbis_config
         self.git_wrapper = git_wrapper
@@ -74,6 +75,7 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
         self.log = log
         self.data_path = data_path
         self.metadata_path = metadata_path
+        self.invocation_path = invocation_path
         self.debug = debug
 
     def error_raise(self, command, reason):
@@ -401,6 +403,8 @@ class GitDataMgmt(AbstractDataMgmt):
     def set_restorepoint(self):
         self.previous_git_commit_hash = self.git_wrapper.git_commit_hash().output
 
+    # TODO make sure this works with obis_metadata_folder
+    # TODO e.g. repository.data_set_id needs to be reset?
     def restore(self):
         self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
         properties_paths = self.settings_resolver.local_public_properties_paths()
