@@ -234,15 +234,20 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		
 		var $dataSetParentsCodeLabel = $("<div>");
 		if(this._dataSetFormModel.mode === FormMode.VIEW) {
-			var datasetParents = "N/A";
-			for(var pIdx = 0; pIdx < this._dataSetFormModel.dataSet.parentCodes.length; pIdx++) {
-				if(pIdx === 0) {
-					datasetParents = this._dataSetFormModel.dataSet.parentCodes[pIdx];
-				} else {
-					datasetParents += ", " + this._dataSetFormModel.dataSet.parentCodes[pIdx];
+			if(this._dataSetFormModel.dataSetV3.parents.length === 0) {
+				$dataSetParentsCodeLabel.append("--");
+			} else {
+				for(var i = 0; i < this._dataSetFormModel.dataSetV3.parents.length; i++) {
+					var parent = this._dataSetFormModel.dataSetV3.parents[i];
+					var $span = $("<span>");
+					$span.append(FormUtil.getFormLink(parent.permId.permId, "DataSet", parent.permId.permId));
+					var name = parent.properties[profile.propertyReplacingCode];
+					if(name) {
+						$span.append(" : ").append(name);
+					}
+					$dataSetParentsCodeLabel.append($("<div>").append($span));
 				}
 			}
-			$dataSetParentsCodeLabel.append(datasetParents);
 		} else {
 			this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add", false, false, true, false);
 			this._dataSetFormModel.datasetParentsComponent.init($dataSetParentsCodeLabel);
