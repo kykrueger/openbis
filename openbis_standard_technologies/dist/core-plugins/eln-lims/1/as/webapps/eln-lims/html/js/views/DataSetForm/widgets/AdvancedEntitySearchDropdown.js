@@ -146,21 +146,24 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 	//
 	var getDisplayName = function(entity) {
 		var text = null;
-		if(entity.identifier && entity.identifier.identifier) {
-			text = entity.identifier.identifier;
-		}
-		if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
-			text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
-		}
-		
 		if(entity["@type"] === "as.dto.dataset.DataSet") {
 			text = entity.permId.permId;
+			if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
+				text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
+			}
 			if(entity.sample) {
 				text += " " + ELNDictionary.Sample + " [" + getDisplayName(entity.sample) + "]";
 			}
 			
 			if(entity.experiment) {
 				text += " " + ELNDictionary.getExperimentDualName() + " [" + getDisplayName(entity.experiment) + "]";
+			}
+		} else {
+			if(entity.identifier && entity.identifier.identifier) {
+				text = entity.identifier.identifier;
+			}
+			if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
+				text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
 			}
 		}
 		return text;
