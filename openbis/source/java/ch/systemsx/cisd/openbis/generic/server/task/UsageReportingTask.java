@@ -188,7 +188,7 @@ public class UsageReportingTask extends AbstractMaintenanceTask
     {
         StringBuilder builder = new StringBuilder();
         builder.append("period start" + DELIM + "period end" + DELIM + "group name" + DELIM + "number of users" + DELIM
-                + "idle users" + DELIM + "number of new experiments" + DELIM + "number of new samples" + DELIM
+                + "idle users" + DELIM + "number of new collections" + DELIM + "number of new objects" + DELIM
                 + "number of new data sets");
         if (usageAndGroupsInfoForAllEntitiesOrNull != null)
         {
