@@ -20,10 +20,10 @@ import sys
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.operation import SynchronousOperationExecutionOptions
 from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
-from file_handling import list_xls_files
-from openbis_logic import OpenbisLogicHandler
 from parsers import ExcelToPoiParser, PoiToDefinitionParser, DefinitionToCreationParser, DuplicatesHandler, CreationToOperationParser
+from processors import OpenbisDuplicatesHandler
 from search_engines import SearchEngine
+from utils.file_handling import list_xls_files
 
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 
@@ -38,11 +38,10 @@ for excel_file_path in list_xls_files():
         else:
             creations[creation_type].extend(partial_creation)
 distinct_creations = DuplicatesHandler.get_distinct_creations(creations)
-
 sessionToken = api.loginAsSystem()
 search_engine = SearchEngine(api, sessionToken)
 existing_elements = search_engine.find_all_existing_elements(distinct_creations)
-server_duplicates_handler = OpenbisLogicHandler(distinct_creations, existing_elements)
+server_duplicates_handler = OpenbisDuplicatesHandler(distinct_creations, existing_elements)
 creations = server_duplicates_handler.remove_existing_elements_from_creations()
 creations = server_duplicates_handler.rewrite_parentchild_creationid_to_permid()
 # creations = server_duplicates_handler.rewrite_vocabulary_labels()

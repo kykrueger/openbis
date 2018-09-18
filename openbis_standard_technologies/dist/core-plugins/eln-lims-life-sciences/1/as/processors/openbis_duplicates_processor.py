@@ -7,7 +7,7 @@ from parsers import VocabularyDefinitionToCreationParser, PropertyTypeDefinition
                     ProjectDefinitionToCreationParser, ExperimentDefinitionToCreationParser, ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
 
 
-class OpenbisLogicHandler(object):
+class OpenbisDuplicatesHandler(object):
 
     def __init__(self, creations, existing_elements):
         self.creations = creations
@@ -101,7 +101,6 @@ class OpenbisLogicHandler(object):
     def _create_sample_identifier_string(self, creation):
         spaceId = creation.spaceId.creationId if creation.spaceId is not None else None
         projectId = creation.projectId.creationId if creation.projectId is not None else None
-#         experimentId = creation.experimentId.creationId if creation.experimentId is not None else None
         code = creation.code
         sample_identifier = SampleIdentifier(spaceId, projectId, None, code)
         return sample_identifier.identifier

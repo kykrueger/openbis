@@ -1,3 +1,4 @@
+from java.lang import UnsupportedOperationException
 from .definition import Definition
 from .poi_cleaner import PoiCleaner
 
