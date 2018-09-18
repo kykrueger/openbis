@@ -232,6 +232,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			$dataSetTypeFieldSet.append($dataSetCodeLabel);
 		}
 		
+		// Parents
+		
 		var $dataSetParentsCodeLabel = $("<div>");
 		if(this._dataSetFormModel.mode === FormMode.VIEW) {
 			for(var i = 0; i < this._dataSetFormModel.dataSetV3.parents.length; i++) {
@@ -256,6 +258,28 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			this._dataSetFormModel.mode !== FormMode.VIEW) {
 			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetParentsCodeLabel, 'Parents'));
 		}
+		
+		// Children
+		
+		var $dataSetChildrenCodeLabel = $("<div>");
+		if(this._dataSetFormModel.mode === FormMode.VIEW) {
+			for(var i = 0; i < this._dataSetFormModel.dataSetV3.children.length; i++) {
+					var child = this._dataSetFormModel.dataSetV3.children[i];
+					var $span = $("<span>");
+					$span.append(FormUtil.getFormLink(child.permId.permId, "DataSet", child.permId.permId));
+					var name = child.properties[profile.propertyReplacingCode];
+					if(name) {
+						$span.append(" : ").append(name);
+					}
+					$dataSetChildrenCodeLabel.append($("<div>").append($span));
+			}
+		}
+		
+		if(this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.children.length !== 0) {
+			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetChildrenCodeLabel, 'Children'));
+		}
+		
+		//
 		
 		var ownerName = null;
 		var owner = null;
