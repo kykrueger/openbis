@@ -223,7 +223,7 @@ def repository(ctx, is_global):
     runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['runner'] = runner
-    ctx.obj['resolver'] = runner.get_settings_resolver().repository
+    ctx.obj['resolver'] = 'repository'
 
 
 @repository.command('set')
@@ -261,7 +261,7 @@ def data_set(ctx, is_global, is_data_set_property):
     ctx.obj['is_global'] = is_global
     ctx.obj['is_data_set_property'] = is_data_set_property
     ctx.obj['runner'] = runner
-    ctx.obj['resolver'] = runner.get_settings_resolver().data_set
+    ctx.obj['resolver'] = 'data_set'
 
 
 @data_set.command('set')
@@ -297,7 +297,7 @@ def object(ctx, is_global):
     runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['runner'] = runner
-    ctx.obj['resolver'] = runner.get_settings_resolver().object
+    ctx.obj['resolver'] = 'object'
 
 
 @object.command('set')
@@ -333,7 +333,7 @@ def collection(ctx, is_global):
     runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['runner'] = runner
-    ctx.obj['resolver'] = runner.get_settings_resolver().collection
+    ctx.obj['resolver'] = 'collection'
 
 
 @collection.command('set')
@@ -369,7 +369,7 @@ def config(ctx, is_global):
     runner = DataMgmtRunner(ctx.obj, halt_on_error_log=False)
     ctx.obj['is_global'] = is_global
     ctx.obj['runner'] = runner
-    ctx.obj['resolver'] = runner.get_settings_resolver().config
+    ctx.obj['resolver'] = 'config'
 
 
 @config.command('set')

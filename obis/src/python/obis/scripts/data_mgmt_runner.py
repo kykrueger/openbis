@@ -42,6 +42,8 @@ class DataMgmtRunner(object):
                 self.metadata_path = os.path.join(obis_metadata_folder, self.data_path[1:])
         if not os.path.exists(self.metadata_path):
             os.makedirs(self.metadata_path)
+        if not os.path.exists(self.data_path):
+            os.makedirs(self.data_path)
 
 
     def _validate_obis_metadata_folder(self, obis_metadata_folder):

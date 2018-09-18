@@ -44,19 +44,20 @@ def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_conf
 
     echo_func = echo_func if echo_func is not None else default_echo
 
+    data_path = git_config['data_path']
+    metadata_path = git_config['metadata_path']
+
     complete_git_config(git_config)
     git_wrapper = GitWrapper(**git_config)
     if not git_wrapper.can_run():
-        return NoGitDataMgmt(settings_resolver, None, git_wrapper, openbis, log)
+        return NoGitDataMgmt(settings_resolver, None, git_wrapper, openbis, log, data_path, metadata_path)
 
     if settings_resolver is None:
         settings_resolver = dm_config.SettingsResolver()
-        result = git_wrapper.git_top_level_path()
-        if result.success():
-            settings_resolver.set_resolver_location_roots('data_set', result.output)
+
     complete_openbis_config(openbis_config, settings_resolver)
 
-    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis, log, debug)
+    return GitDataMgmt(settings_resolver, openbis_config, git_wrapper, openbis, log, data_path, metadata_path, debug)
 
 
 class AbstractDataMgmt(metaclass=abc.ABCMeta):
@@ -65,12 +66,14 @@ class AbstractDataMgmt(metaclass=abc.ABCMeta):
     All operations throw an exepction if they fail.
     """
 
-    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis, log, debug=False):
+    def __init__(self, settings_resolver, openbis_config, git_wrapper, openbis, log, data_path, metadata_path, debug=False):
         self.settings_resolver = settings_resolver
         self.openbis_config = openbis_config
         self.git_wrapper = git_wrapper
         self.openbis = openbis
         self.log = log
+        self.data_path = data_path
+        self.metadata_path = metadata_path
         self.debug = debug
 
     def error_raise(self, command, reason):
@@ -430,7 +433,8 @@ class GitDataMgmt(AbstractDataMgmt):
     # settings
     #
 
-    def config(self, resolver, is_global, is_data_set_property, prop=None, value=None, set=False, get=False, clear=False):
+    def config(self, category, is_global, is_data_set_property, prop=None, value=None, set=False, get=False, clear=False):
+        resolver = self.settings_resolver.get(category)
         if set == True:
             assert get == False
             assert clear == False
@@ -449,12 +453,7 @@ class GitDataMgmt(AbstractDataMgmt):
         if is_global:
             resolver.set_location_search_order(['global'])
         else:
-            top_level_path = self.git_wrapper.git_top_level_path()
-            if top_level_path.success():
-                resolver.set_resolver_location_roots('data_set', top_level_path.output)
-                resolver.set_location_search_order(['local'])
-            else:
-                resolver.set_location_search_order(['global'])
+            resolver.set_location_search_order(['local'])
 
         config_dict = resolver.config_dict()
         if is_data_set_property:

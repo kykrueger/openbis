@@ -1,7 +1,7 @@
 import shutil
 import os
 from pathlib import Path
-from .utils import run_shell
+from .utils import run_shell, cd
 from .command_result import CommandResult, CommandException
 from .checksum import ChecksumGeneratorCrc32, ChecksumGeneratorGitAnnex
 
@@ -18,7 +18,7 @@ class GitWrapper(object):
     def _git(self, params, strip_leading_whitespace=True, relative_repo_path=''):
         cmd = [self.git_path]
         if self.data_path is not None and self.metadata_path is not None:
-            git_dir = os.path.join(self.metadata_path, relative_repo_path, '.git') # TODO add repo folder if not already in
+            git_dir = os.path.join(self.metadata_path, relative_repo_path, '.git')
             cmd += ['--work-tree', self.data_path, '--git-dir', git_dir]
         cmd += params
         return run_shell(cmd, strip_leading_whitespace=strip_leading_whitespace)
@@ -38,7 +38,6 @@ class GitWrapper(object):
             return False
         return True
 
-    # TODO remove path
     def git_init(self):
         return self._git(["init"])
 
@@ -168,9 +167,9 @@ class GitRepoFileInfo(object):
     def cksum(self, files, git_annex_hash_as_checksum=False):
 
         if git_annex_hash_as_checksum == False:
-            checksum_generator = ChecksumGeneratorCrc32()
+            checksum_generator = ChecksumGeneratorCrc32(self.git_wrapper.data_path, self.git_wrapper.metadata_path)
         else:
-            checksum_generator = ChecksumGeneratorGitAnnex()
+            checksum_generator = ChecksumGeneratorGitAnnex(self.git_wrapper.data_path, self.git_wrapper.metadata_path)
 
         checksums = []
 

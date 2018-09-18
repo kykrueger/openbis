@@ -258,6 +258,7 @@ class ConfigResolver(object):
         location_path = param.location_path(loc)
         location = self.env.location_at_path(location_path)
         location_dir_path = self.location_resolver.resolve_location(location)
+
         if not os.path.exists(location_dir_path):
             os.makedirs(location_dir_path)
         config_path = os.path.join(location_dir_path, self.categoty + '.json')
@@ -337,6 +338,7 @@ class ConfigResolver(object):
 class SettingsResolver(object):
     """ This class functions as a wrapper since we have multiple config resolvers. """
     def __init__(self, location_resolver=None):
+        self.path = os.getcwd()
         self.repository = ConfigResolver(location_resolver=location_resolver, env=RepositoryEnv(), categoty='repository')
         self.data_set = ConfigResolver(location_resolver=location_resolver, env=DataSetEnv(), categoty='data_set')
         self.object = ConfigResolver(location_resolver=location_resolver, env=ObjectEnv(), categoty='object')
@@ -348,6 +350,13 @@ class SettingsResolver(object):
         self.resolvers.append(self.object)
         self.resolvers.append(self.collection)
         self.resolvers.append(self.config)
+
+
+    def get(self, category):
+        for resolver in self.resolvers:
+            if resolver.categoty == category:
+                return resolver
+
 
     def config_dict(self, local_only=False):
         combined_dict = {}

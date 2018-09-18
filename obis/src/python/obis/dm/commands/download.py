@@ -33,7 +33,7 @@ class Download(OpenbisCommand):
         if self.skip_integrity_check != True:
             files = [file for file in files if file not in invalid_files]
             target_folder = os.path.join(destination, data_set.permId)
-            invalid_files += validate_checksum(self.openbis, files, data_set.permId, target_folder)
+            invalid_files += validate_checksum(self.openbis, files, data_set.permId, target_folder, None)
             self.redownload_invalid_files_on_demand(invalid_files, target_folder)
         return CommandResult(returncode=0, output="Files downloaded to: %s" % target_folder)
 
