@@ -398,7 +398,7 @@ def config_clear(ctx, settings):
 ## commit
 
 _commit_params = [
-    click.option('-m', '--msg', prompt=True, help='A message explaining what was done.'),
+    click.option('-m', '--msg', default="obis commit", help='A message explaining what was done.'),
     click.option('-a', '--auto_add', default=True, is_flag=True, help='Automatically add all untracked files.'),
     click.option('-i', '--ignore_missing_parent', default=True, is_flag=True, help='If parent data set is missing, ignore it.'),
     click.argument('repository', type=click.Path(exists=True, file_okay=False), required=False),
