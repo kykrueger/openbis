@@ -31,7 +31,7 @@ class ConfigLocation(object):
 class ConfigParam(object):
     """Class for configuration parameters."""
 
-    def __init__(self, name, private, is_json=False, ignore_global=False, default_value=None):
+    def __init__(self, name, private=False, is_json=False, ignore_global=False, default_value=None):
         """
         :param name: Name of the parameter.
         :param private: Should the parameter be private to the repo or visible in the data set?
@@ -102,15 +102,15 @@ class ConfigEnv(object):
                 locations = locations[sub_desc]
 
     def initialize_params(self):
-        self.add_param(ConfigParam(name='openbis_url', private=False))
-        self.add_param(ConfigParam(name='fileservice_url', private=False))
-        self.add_param(ConfigParam(name='user', private=True))
-        self.add_param(ConfigParam(name='verify_certificates', private=True, is_json=True, default_value=True))
-        self.add_param(ConfigParam(name='allow_only_https', private=True, is_json=True, default_value=True))
-        self.add_param(ConfigParam(name='hostname', private=False))
-        self.add_param(ConfigParam(name='git_annex_hash_as_checksum', private=False, is_json=True, default_value=True))
-        self.add_param(ConfigParam(name='git_annex_backend', private=False))
-        self.add_param(ConfigParam(name='obis_metadata_folder', private=False))
+        self.add_param(ConfigParam(name='openbis_url'))
+        self.add_param(ConfigParam(name='fileservice_url'))
+        self.add_param(ConfigParam(name='user'))
+        self.add_param(ConfigParam(name='verify_certificates', is_json=True, default_value=True))
+        self.add_param(ConfigParam(name='allow_only_https', is_json=True, default_value=True))
+        self.add_param(ConfigParam(name='hostname'))
+        self.add_param(ConfigParam(name='git_annex_hash_as_checksum', is_json=True, default_value=True))
+        self.add_param(ConfigParam(name='git_annex_backend'))
+        self.add_param(ConfigParam(name='obis_metadata_folder'))
 
     def add_param(self, param):
         self.params[param.name] = param
@@ -134,8 +134,8 @@ class ConfigEnv(object):
 class CollectionEnv(ConfigEnv):
 
     def initialize_params(self):
-        self.add_param(ConfigParam(name='id', private=False, ignore_global=True))
-        self.add_param(ConfigParam(name='permId', private=False, ignore_global=True))
+        self.add_param(ConfigParam(name='id', ignore_global=True))
+        self.add_param(ConfigParam(name='permId', ignore_global=True))
 
     def initialize_rules(self):
         self.add_rule(ClearPermIdRule())
@@ -145,8 +145,8 @@ class CollectionEnv(ConfigEnv):
 class ObjectEnv(ConfigEnv):
 
     def initialize_params(self):
-        self.add_param(ConfigParam(name='id', private=False, ignore_global=True))
-        self.add_param(ConfigParam(name='permId', private=False, ignore_global=True))
+        self.add_param(ConfigParam(name='id', ignore_global=True))
+        self.add_param(ConfigParam(name='permId', ignore_global=True))
 
     def initialize_rules(self):
         self.add_rule(ClearPermIdRule())
@@ -156,17 +156,17 @@ class ObjectEnv(ConfigEnv):
 class DataSetEnv(ConfigEnv):
 
     def initialize_params(self):
-        self.add_param(ConfigParam(name='type', private=False))
-        self.add_param(ConfigParam(name='properties', private=False, is_json=True))        
+        self.add_param(ConfigParam(name='type'))
+        self.add_param(ConfigParam(name='properties', is_json=True))        
 
 
 class RepositoryEnv(ConfigEnv):
     """ These are properties which are not configured by the user but set by obis. """
 
     def initialize_params(self):
-        self.add_param(ConfigParam(name='id', private=True))
-        self.add_param(ConfigParam(name='external_dms_id', private=True))
-        self.add_param(ConfigParam(name='data_set_id', private=True))
+        self.add_param(ConfigParam(name='id'))
+        self.add_param(ConfigParam(name='external_dms_id'))
+        self.add_param(ConfigParam(name='data_set_id'))
 
     def is_usersetting(self):
         return False
