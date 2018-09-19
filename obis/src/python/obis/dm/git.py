@@ -39,7 +39,10 @@ class GitWrapper(object):
         return True
 
     def git_init(self):
-        return self._git(["init"])
+        result = self._git(["init"])
+        self.git_ignore('.obis')
+        self.git_ignore('.obis_restorepoint')
+        return result
 
     def git_status(self, path=None):
         if path is None:
@@ -131,10 +134,6 @@ class GitWrapper(object):
                 gitignore.write(path)
                 gitignore.write("\n")
 
-    def git_delete_if_untracked(self, file):
-        result = self._git(['ls-files', '--error-unmatch', file])
-        if 'did not match' in result.output:
-            run_shell(['rm', file])
 
 class GitRepoFileInfo(object):
     """Class that gathers checksums and file lengths for all files in the repo."""

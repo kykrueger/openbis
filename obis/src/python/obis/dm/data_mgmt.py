@@ -248,11 +248,13 @@ def with_restore(f):
             result = f(self, *args)
             if result.failure():
                 self.restore()
+            self.clear_restorepoint()
             return result
         except Exception as e:
             self.restore()
             if self.debug == True:
                 raise e
+            self.clear_restorepoint()
             return CommandResult(returncode=-1, output="Error: " + str(e))
     return f_with_restore
 
@@ -314,7 +316,6 @@ class GitDataMgmt(AbstractDataMgmt):
         # Update the resolvers location
         self.settings_resolver.set_resolver_location_roots('data_set', '.')
         self.settings_resolver.copy_global_to_local()
-        self.commit_metadata_updates('local with global')
         return CommandResult(returncode=0, output="")
 
 
@@ -383,34 +384,19 @@ class GitDataMgmt(AbstractDataMgmt):
             output += sync_status.output
         return CommandResult(returncode=0, output=output)
 
-    def commit_metadata_updates(self, msg_fragment=None, omit_usersettings=True):
-        properties_paths = self.settings_resolver.local_public_properties_paths(omit_usersettings=omit_usersettings)
-        total_status = ''
-        for properties_path in properties_paths:
-            status = self.git_wrapper.git_status(properties_path).output.strip()
-            total_status += status
-            if len(status) > 0:
-                self.git_wrapper.git_add(properties_path)
-        if len(total_status) < 1:
-            # Nothing to commit
-            return CommandResult(returncode=0, output="")
-        if msg_fragment is None:
-            msg = "OBIS: Update openBIS metadata cache."
-        else:
-            msg = "OBIS: Update {}.".format(msg_fragment)
-        return self.git_wrapper.git_commit(msg)
-
     def set_restorepoint(self):
         self.previous_git_commit_hash = self.git_wrapper.git_commit_hash().output
+        self.clear_restorepoint()
+        shutil.copytree('.obis', '.obis_restorepoint')
 
-    # TODO make sure this works with obis_metadata_folder
-    # TODO e.g. repository.data_set_id needs to be reset?
     def restore(self):
         self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
-        properties_paths = self.settings_resolver.local_public_properties_paths()
-        for properties_path in properties_paths:
-            self.git_wrapper.git_checkout(properties_path)
-            self.git_wrapper.git_delete_if_untracked(properties_path)
+        shutil.rmtree('.obis')
+        shutil.copytree('.obis_restorepoint', '.obis')
+
+    def clear_restorepoint(self):
+        if os.path.exists('.obis_restorepoint'):
+            shutil.rmtree('.obis_restorepoint')
 
     def clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
         cmd = Clone(self, data_set_id, ssh_user, content_copy_index, skip_integrity_check)
@@ -439,6 +425,8 @@ class GitDataMgmt(AbstractDataMgmt):
 
     def config(self, category, is_global, is_data_set_property, prop=None, value=None, set=False, get=False, clear=False):
         resolver = self.settings_resolver.get(category)
+        if resolver is None:
+            raise ValueError('Invalid settings category: ' + category)
         if set == True:
             assert get == False
             assert clear == False
@@ -495,7 +483,5 @@ class GitDataMgmt(AbstractDataMgmt):
             if self.debug ==  True:
                 raise e
             return CommandResult(returncode=-1, output="Error: " + str(e))
-        if not is_global:
-            return self.commit_metadata_updates(prop)
         else:
             return CommandResult(returncode=0, output="")
