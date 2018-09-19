@@ -247,7 +247,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					$dataSetParentsCodeLabel.append($("<div>").append($span));
 			}
 			
-		} else {
+		} else if(!this._dataSetFormModel.isMini) {
 			this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add", false, false, true, false);
 			this._dataSetFormModel.datasetParentsComponent.init($dataSetParentsCodeLabel);
 			this._dataSetFormModel.datasetParentsComponent.addSelectedDataSets(this._dataSetFormModel.dataSet.parentCodes);
@@ -255,7 +255,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		
 		if((this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.parents.length !== 0) 
 			|| 
-			this._dataSetFormModel.mode !== FormMode.VIEW) {
+			(this._dataSetFormModel.mode !== FormMode.VIEW && !this._dataSetFormModel.isMini)
+			) {
 			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetParentsCodeLabel, 'Parents'));
 		}
 		

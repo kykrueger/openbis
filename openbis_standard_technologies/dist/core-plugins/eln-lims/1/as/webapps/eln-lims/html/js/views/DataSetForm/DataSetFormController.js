@@ -164,10 +164,13 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 			dataSetTypeCode = this._dataSetFormModel.dataSet.dataSetTypeCode;
 		}
 		
-		var dataSetParentObjects = this._dataSetFormModel.datasetParentsComponent.getSelected();
 		var dataSetParents = [];
-		for(var oIdx = 0; oIdx < dataSetParentObjects.length; oIdx++) {
-			dataSetParents.push(dataSetParentObjects[oIdx].permId.permId)
+		
+		if(this._dataSetFormModel.datasetParentsComponent) {
+			var dataSetParentObjects = this._dataSetFormModel.datasetParentsComponent.getSelected();
+			for(var oIdx = 0; oIdx < dataSetParentObjects.length; oIdx++) {
+				dataSetParents.push(dataSetParentObjects[oIdx].permId.permId)
+			}
 		}
 		
 		var parameters = {
