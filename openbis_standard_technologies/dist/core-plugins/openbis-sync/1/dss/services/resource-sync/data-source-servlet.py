@@ -332,7 +332,7 @@ def injectMaterialMetaData(material, url_elm):
 
 def injectMasterData(url_elm):
     masterDataXML = v3EntityRetriever.fetchMasterDataAsXML()
-    masterDataTree = ET.fromstring(masterDataXML)
+    masterDataTree = ET.fromstring(masterDataXML.encode('utf-8'))
     #print ET.tostring(masterDataTree, None, None)
     url_elm.append(masterDataTree)
 #    ET.SubElement(url_elm, masterDataTree)
@@ -375,7 +375,7 @@ def injectMetaDataXML(materials, entities, xml_in):
         elif entityKind == "DATA_SET":
             dsMap[str(entity.getPermId())] = entity
           
-    tree = ET.fromstring(xml_in)
+    tree = ET.fromstring(xml_in.encode('utf-8'))
     for url_elm in tree.findall(".//{http://www.sitemaps.org/schemas/sitemap/0.9}url"):
         #print url_elm
         loc_elm = url_elm.findall(".//{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
