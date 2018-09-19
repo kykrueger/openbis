@@ -28,7 +28,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -371,6 +370,7 @@ public class MasterDataExtractor
             if (plugin != null)
             {
                 propertyAssignmentElement.setAttribute("plugin", plugin.getPermId().getPermId());
+                propertyAssignmentElement.setAttribute("pluginType", plugin.getPluginType().toString());
             }
         }
         return propertyAssignmentsElement;
