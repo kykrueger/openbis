@@ -976,7 +976,7 @@ function MainController(profile) {
 	this._showSampleHierarchyPage = function(permId) {
 		//Show View
 		var localInstance = this;
-		this.serverFacade.searchWithUniqueId(permId, function(data) {
+		this.serverFacade.searchWithUniqueIdCompleteTree(permId, function(data) {
 			var views = localInstance._getNewViewModel(true, true, false);
 			var sampleHierarchy = new SampleHierarchy(localInstance.serverFacade, views, localInstance.profile, data[0]);
 			sampleHierarchy.init();

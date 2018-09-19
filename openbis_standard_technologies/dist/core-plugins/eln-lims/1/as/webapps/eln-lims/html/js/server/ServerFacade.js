@@ -907,9 +907,9 @@ function ServerFacade(openbisServer) {
 				
 				
 				//Optional fetchOptions
-				if(!advancedFetchOptions || 
-					(advancedFetchOptions && !advancedFetchOptions.withType) || 
-					(advancedFetchOptions && !advancedFetchOptions.only)) {
+				if(!advancedFetchOptions ||
+				   (advancedFetchOptions && !(advancedFetchOptions.minTableInfo || advancedFetchOptions.only))
+				   ) {
 					if(fetchOptions.withType) {
 						fetchOptions.withType();
 					}
@@ -1747,6 +1747,22 @@ function ServerFacade(openbisServer) {
             if(fechOptions["withDescendants"]) {
             		fetchOptions.withChildrenUsing(fetchOptions);
             }
+            if(fechOptions["withParents"]) {
+            		var pfo = fetchOptions.withParents();
+            		pfo.withSpace();
+            		pfo.withType();
+            		pfo.withRegistrator();
+            		pfo.withModifier();
+            		pfo.withExperiment();
+            }
+            if(fechOptions["withChildren"]) {
+            		var cfo = fetchOptions.withChildren();
+            		cfo.withSpace();
+            		cfo.withType();
+            		cfo.withRegistrator();
+            		cfo.withModifier();
+            		cfo.withExperiment();
+            }
             
             var id = null;
             if(fechOptions["samplePermId"]) {
@@ -1764,6 +1780,16 @@ function ServerFacade(openbisServer) {
 	}
 	
 	this.searchWithUniqueId = function(samplePermId, callbackFunction)
+	{	
+		this.searchSamples({
+			"samplePermId" : samplePermId,
+			"withProperties" : true,
+			"withParents" : true,
+			"withChildren" : true
+		}, callbackFunction);
+	}
+	
+	this.searchWithUniqueIdCompleteTree = function(samplePermId, callbackFunction)
 	{	
 		this.searchSamples({
 			"samplePermId" : samplePermId,
@@ -1852,8 +1878,8 @@ function ServerFacade(openbisServer) {
 		var searchFunction = function(sampleIdentifier) {
 			_this.searchSamples({
 				"withProperties" : true,
-				"withAncestors" : true,
-				"withDescendants" : true,
+				"withParents" : true,
+				"withChildren" : true,
 				"sampleIdentifier" : sampleIdentifier
 			}, function(samples) {
 				samples.forEach(function(sample) {
