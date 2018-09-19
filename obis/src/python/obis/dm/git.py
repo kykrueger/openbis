@@ -127,7 +127,7 @@ class GitWrapper(object):
     def git_ignore(self, path):
         result = self._git(['check-ignore', path])
         if result.returncode == 1:
-            with open(".gitignore", "a") as gitignore:
+            with open(".git/info/exclude", "a") as gitignore:
                 gitignore.write(path)
                 gitignore.write("\n")
 
