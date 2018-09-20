@@ -442,6 +442,14 @@ public class MasterDataParser
             assignment.setSection(getAttribute(propertyAssignmentElement, "section"));
             assignment.setOrdinal(Long.valueOf(getAttribute(propertyAssignmentElement, "ordinal")));
             assignment.setShownInEditView(Boolean.valueOf(getAttribute(propertyAssignmentElement, "showInEdit")));
+            String pluginId = getAttribute(propertyAssignmentElement, "plugin");
+            if (pluginId != null)
+            {
+                assignment.setScriptName(pluginId);
+                String pluginType = getAttribute(propertyAssignmentElement, "pluginType");
+                assignment.setDynamic(ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType.DYNAMIC_PROPERTY.toString().equals(pluginType));
+                assignment.setManaged(ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType.MANAGED_PROPERTY.toString().equals(pluginType));
+            }
             list.add(assignment);
         }
         entityPropertyAssignments.put(entityType.getEntityKind().name(), entityType.getCode(), list);
