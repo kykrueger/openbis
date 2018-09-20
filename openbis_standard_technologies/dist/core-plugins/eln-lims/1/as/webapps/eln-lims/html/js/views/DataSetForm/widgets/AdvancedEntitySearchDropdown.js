@@ -201,7 +201,13 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
-		mainController.serverFacade.searchForSamplesAdvanced(criteria, null, function(results) { results.type = "Samples"; action(results) });
+		mainController.serverFacade.searchForSamplesAdvanced(criteria, {
+			only : true,
+			withType : true,
+			withProperties : true,
+			withExperiment : true,
+			withExperimentProperties : true 
+		}, function(results) { results.type = "Samples"; action(results) });
 	}
 	
 	var searchDataset = function(action) {
@@ -218,7 +224,15 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						}
 					};
 		
-		mainController.serverFacade.searchForDataSetsAdvanced(criteria, { withSampleProperties : true, withExperimentProperties : true }, function(results) { results.type = "DataSets"; action(results) });
+		mainController.serverFacade.searchForDataSetsAdvanced(criteria, { 
+			only : true,
+			withType : true, 
+			withSample : true, 
+			withProperties : true, 
+			withExperiment : true, 
+			withSampleProperties : true, 
+			withExperimentProperties : true 
+		}, function(results) { results.type = "DataSets"; action(results) });
 	}
 	
 	//

@@ -990,6 +990,19 @@ function ServerFacade(openbisServer) {
 						}
 					}
 				} else if(advancedFetchOptions.only) {
+					if(advancedFetchOptions.withSample) {
+						fetchOptions.withSample();
+						if(advancedFetchOptions.withSampleProperties) {
+							fetchOptions.withSample().withProperties();
+						}
+					}
+					if(advancedFetchOptions.withExperiment) {
+						fetchOptions.withExperiment();
+						if(advancedFetchOptions.withExperimentProperties) {
+							fetchOptions.withExperiment().withProperties();
+						}
+					}
+					
 					if(advancedFetchOptions.withProperties) {
 						fetchOptions.withProperties();
 					}
