@@ -41,7 +41,7 @@ def shared_dm():
 
 
 def test_no_git(tmpdir):
-    git_config = {'find_git': False}
+    git_config = {'find_git': False, 'data_path': None, 'metadata_path': None, 'invocation_path': None}
     dm = data_mgmt.DataMgmt(git_config=git_config)
     try:
         dm.init_data(str(tmpdir), "")
