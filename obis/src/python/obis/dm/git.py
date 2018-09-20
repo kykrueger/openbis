@@ -109,7 +109,6 @@ class GitWrapper(object):
     def git_commit(self, msg):
         return self._git(['commit', '--allow-empty', '-m', msg])
 
-    # TODO where is this used - does is make sense?
     def git_top_level_path(self):
         return self._git(['rev-parse', '--show-toplevel'])
 

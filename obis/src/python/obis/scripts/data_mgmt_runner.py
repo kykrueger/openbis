@@ -13,8 +13,6 @@ from ..dm.utils import run_shell
 from .click_util import click_echo, check_result
 
 
-# TODO obis metadata not always tracked in git.
-# there are cases when we want to undo some obis settings - does this still make sense?
 class DataMgmtRunner(object):
 
 
