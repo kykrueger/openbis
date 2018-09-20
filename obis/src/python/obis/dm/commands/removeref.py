@@ -12,8 +12,6 @@ class Removeref(OpenbisCommand):
     """
 
     def __init__(self, dm, data_set_id=None):
-        if dm.data_path != dm.metadata_path:
-            raise CommandException(CommandResult(returncode=-1, output='Removeref not supported with obis_metadata_folder.'))
         self._data_set_id = data_set_id
         self.load_global_config(dm)
         super(Removeref, self).__init__(dm)
