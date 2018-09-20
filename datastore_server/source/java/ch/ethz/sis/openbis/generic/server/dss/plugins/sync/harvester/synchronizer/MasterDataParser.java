@@ -386,21 +386,14 @@ public class MasterDataParser
             dataSetType.setCode(nameTranslator.translate(getAttribute(dataSetTypeElement, "code")));
             dataSetType.setDescription(getAttribute(dataSetTypeElement, "description"));
             String mainDataSetPattern = getAttribute(dataSetTypeElement, "mainDataSetPattern");
-            if (mainDataSetPattern.length() < 1)
-            {
-                dataSetType.setMainDataSetPattern(null);
-            }
-            else
+            if (StringUtils.isNotBlank(mainDataSetPattern))
             {
                 dataSetType.setMainDataSetPattern(mainDataSetPattern);
             }
-            if (mainDataSetPattern.length() < 1)
+            String mainDataSetPath = getAttribute(dataSetTypeElement, "mainDataSetPath");
+            if (StringUtils.isNotBlank(mainDataSetPath))
             {
-                dataSetType.setMainDataSetPath(null);
-            }
-            else
-            {
-                dataSetType.setMainDataSetPath(mainDataSetPattern);
+                dataSetType.setMainDataSetPath(mainDataSetPath);
             }
             dataSetType.setDeletionDisallow(Boolean.valueOf(getAttribute(dataSetTypeElement, "deletionDisallowed")));
             String validationPluginName = getAttribute(dataSetTypeElement, "validationPlugin");

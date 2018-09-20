@@ -65,6 +65,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 
 /**
  * @author Ganime Betul Akin
@@ -79,8 +80,6 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
 
     protected static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, HarvesterMaintenanceTask.class);
-
-    final DateFormat formatter = new SimpleDateFormat("dd-MM-yy HH-mm-ss", Locale.ENGLISH);
 
     private static final String HARVESTER_CONFIG_FILE_PROPERTY_NAME = "harvester-config-file";
 
@@ -238,17 +237,15 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
 
     private Timestamps loadCutOffTimeStamps(File lastSyncTimestampFile) throws IOException, ParseException
     {
-        if (lastSyncTimestampFile.exists())
-        {
-            ConfigReader reader = new ConfigReader(lastSyncTimestampFile);
-            String incSyncTimestampStr = reader.getString(TIMESTAMPS_SECTION_HEADER, LAST_INCREMENTAL_SYNC_TIMESTAMP, null, true);
-            String fullSyncTimestampStr = reader.getString(TIMESTAMPS_SECTION_HEADER, LAST_FULL_SYNC_TIMESTAMP, incSyncTimestampStr, false);
-            return new Timestamps(formatter.parse(incSyncTimestampStr), formatter.parse(fullSyncTimestampStr));
-        }
-        else
+        if (lastSyncTimestampFile.exists() == false)
         {
             return new Timestamps(new Date(0L), new Date(0L));
         }
+        ConfigReader reader = new ConfigReader(lastSyncTimestampFile);
+        String incSyncTimestampStr = reader.getString(TIMESTAMPS_SECTION_HEADER, LAST_INCREMENTAL_SYNC_TIMESTAMP, null, true);
+        String fullSyncTimestampStr = reader.getString(TIMESTAMPS_SECTION_HEADER, LAST_FULL_SYNC_TIMESTAMP, incSyncTimestampStr, false);
+        SimpleDateFormat format = createDateFormat();
+        return new Timestamps(format.parse(incSyncTimestampStr), format.parse(fullSyncTimestampStr));
     }
 
     private boolean isTimeForFullSync(SyncConfig config, Date lastFullSyncTimestamp) throws IOException, ParseException
@@ -376,9 +373,16 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
 
     private void saveSyncTimestamp(File lastSyncTimestampFile, Date newLastIncSyncTimestamp, Date newLastFullSyncTimestamp)
     {
+        SimpleDateFormat formatter = createDateFormat();
         FileUtilities.writeToFile(lastSyncTimestampFile, "[" + TIMESTAMPS_SECTION_HEADER + "]");
         FileUtilities.appendToFile(lastSyncTimestampFile, "\n", true);
         FileUtilities.appendToFile(lastSyncTimestampFile, LAST_INCREMENTAL_SYNC_TIMESTAMP + " = " + formatter.format(newLastIncSyncTimestamp), true);
         FileUtilities.appendToFile(lastSyncTimestampFile, LAST_FULL_SYNC_TIMESTAMP + " = " + formatter.format(newLastFullSyncTimestamp), true);
     }
+
+    private SimpleDateFormat createDateFormat()
+    {
+        return new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
+    }
+
 }
