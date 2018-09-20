@@ -272,6 +272,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		// Removing them can bring more issues so better keep them
 		
 		var spacesOptions = this._settingsFormController.getInventorySpacesOptions();
+			spacesOptions = JSON.parse(JSON.stringify(spacesOptions));
 		var initialValues = this._profileToEdit.inventorySpaces;
 		
 		for(var i = 0; i < initialValues.length; i++) {
