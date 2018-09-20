@@ -268,11 +268,23 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	}
 
 	this._getInventorySpacesTableModel = function() {
+		// Not accessible spaces are known on the config anyway, hidding them now will not increase security
+		// Removing them can bring more issues so better keep them
+		
+		var spacesOptions = this._settingsFormController.getInventorySpacesOptions();
+		var initialValues = this._profileToEdit.inventorySpaces;
+		
+		for(var i = 0; i < initialValues.length; i++) {
+			if($.inArray(initialValues[i], spacesOptions) === -1) {
+				spacesOptions.push(initialValues);
+			}
+		}
+		
 		return this._getSingleColumnDropdownTableModel({
 			columnName : "Space",
 			placeholder : "select space",
-			options : this._settingsFormController.getInventorySpacesOptions(),
-			initialValues : this._profileToEdit.inventorySpaces,
+			options : spacesOptions,
+			initialValues : initialValues,
 		});
 	}
 
