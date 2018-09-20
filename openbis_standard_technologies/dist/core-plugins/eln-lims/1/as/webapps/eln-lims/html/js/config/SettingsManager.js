@@ -24,9 +24,9 @@ function SettingsManager(serverFacade) {
 			if(settingsObjects && settingsObjects.length > 0) {
 				settingsObjects.sort(function(a, b) {
 				    if(a.identifier === "/ELN_SETTINGS/GENERAL_ELN_SETTINGS") { // Global settings are applied first to be overriden by others
-				    		return 1;
-				    } else {
 				    		return -1;
+				    } else {
+				    		return 1;
 				    }
 				});
 				callback(settingsObjects);
