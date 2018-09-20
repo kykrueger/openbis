@@ -90,4 +90,5 @@ class Clone(OpenbisCommand):
                     'metadata_path': metadata_path,
                     'invocation_path': invocation_path
                 })
+            data_mgmt.set_property(data_mgmt.settings_resolver.config, 'hostname', None, False)
             return data_mgmt.addref()
