@@ -136,12 +136,13 @@ def test_child_data_set(tmpdir):
 
     tmp_dir_path = str(tmpdir)
 
-    result = dm.init_data(tmp_dir_path, "test")
-    assert result.returncode == 0
-
-    copy_test_data(tmpdir)
-
     with data_mgmt.cd(tmp_dir_path):
+
+        result = dm.init_data(tmp_dir_path, "test")
+        assert result.returncode == 0
+
+        copy_test_data(tmpdir)
+
         dm = shared_dm(tmpdir)
         prepare_registration_expectations(dm)
         set_registration_configuration(dm)
@@ -167,9 +168,9 @@ def test_child_data_set(tmpdir):
                                         properties, contents)
 
 
-def test_external_dms_code_and_address():
+def test_external_dms_code_and_address(tmpdir):
     # given
-    dm = shared_dm()
+    dm = shared_dm(tmpdir)
     prepare_registration_expectations(dm)
     obis_sync = data_mgmt.OpenbisSync(dm)
     set_registration_configuration(dm)
@@ -191,7 +192,7 @@ def test_external_dms_code_and_address():
 
 def test_undo_commit_when_sync_fails(tmpdir):
     # given
-    dm = shared_dm()
+    dm = shared_dm(tmpdir)
     dm.git_wrapper = Mock()
     dm.git_wrapper.git_top_level_path = MagicMock(return_value = CommandResult(returncode=0, output=None))
     dm.git_wrapper.git_add = MagicMock(return_value = CommandResult(returncode=0, output=None))
@@ -205,17 +206,18 @@ def test_undo_commit_when_sync_fails(tmpdir):
 
 
 def test_init_analysis(tmpdir):
-    dm = shared_dm()
+    dm = shared_dm(tmpdir)
 
     tmp_dir_path = str(tmpdir)
 
-    result = dm.init_data(tmp_dir_path, "test")
-    assert result.returncode == 0
-
-    copy_test_data(tmpdir)
-
     with data_mgmt.cd(tmp_dir_path):
-        dm = shared_dm()
+
+        result = dm.init_data(tmp_dir_path, "test")
+        assert result.returncode == 0
+
+        copy_test_data(tmpdir)
+
+        dm = shared_dm(tmp_dir_path)
         prepare_registration_expectations(dm)
         set_registration_configuration(dm)
 
