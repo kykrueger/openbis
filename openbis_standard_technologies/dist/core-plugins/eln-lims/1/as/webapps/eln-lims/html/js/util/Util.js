@@ -180,23 +180,21 @@ var Util = new function() {
 		var withHTMLToShow = "";
 		if(disableReport) {
 			withHTMLToShow += "<textarea style=\"background: transparent; border: none;\" rows=\"1\" cols=\"170\">" + withHTML + "</textarea><br>";
-			withHTMLToShow += "<a class='btn btn-default'>Dismiss</a>";
+			withHTMLToShow += "<a id='jNotifyDismiss' class='btn btn-default'>Dismiss</a>";
 		} else {
 			withHTMLToShow += userErrorWarning + "<br><br><textarea style=\"background: transparent;\" rows=\"8\" cols=\"170\">" + withHTML + "</textarea>" + "<br><br>" + warning + "<br><br>";
-			withHTMLToShow += "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
+			withHTMLToShow += "<a id='jNotifyDismiss' class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
 		}
-		
-		var isiPad = navigator.userAgent.match(/iPad/i) != null;
-		
+				
 		if(!noBlock) {
 			this.blockUINoMessage();
 		}
 		
 		var localReference = this;
-		jError(
+		var popUp = jError(
 				withHTMLToShow,
 				{
-				  autoHide : isiPad,
+				  autoHide : false,
 				  clickOverlay : false,
 				  MinWidth : 250,
 				  TimeShown : 2000,
@@ -210,6 +208,10 @@ var Util = new function() {
 				  OpacityOverlay : 0.3,
 				  onClosed : function(){ if(andCallback) { andCallback();} else { localReference.unblockUI();}},
 				  onCompleted : function(){ }
+		});
+		
+		$("#jNotifyDismiss").click(function(e) {
+			popUp._close();
 		});
 	}
 	
@@ -236,20 +238,16 @@ var Util = new function() {
 	}
 	
 	this.showInfo = function(withHTML, andCallback, noBlock) {
-		var isiPad = navigator.userAgent.match(/iPad/i) != null;
-		if(!isiPad) {
-			withHTML = withHTML + "<br>" + "<a class='btn btn-default'>OK</a>";
-		}
 		
 		if(!noBlock) {
 			this.blockUINoMessage();
 		}
 		
 		var localReference = this;
-		jNotify(
-				withHTML,
+		var popUp = jNotify(
+				withHTML + "<br>" + "<a id='jNotifyDismiss' class='btn btn-default'>Dismiss</a>",
 				{
-				  autoHide : isiPad,
+				  autoHide : false,
 				  clickOverlay : false,
 				  MinWidth : 250,
 				  TimeShown : 2000,
@@ -263,6 +261,10 @@ var Util = new function() {
 				  OpacityOverlay : 0.3,
 				  onClosed : function(){ if(andCallback) { andCallback();} else { localReference.unblockUI();}},
 				  onCompleted : function(){ }
+		});
+		
+		$("#jNotifyDismiss").click(function(e) {
+			popUp._close();
 		});
 	}
 
@@ -403,15 +405,11 @@ var Util = new function() {
 			$imageWrapper.append($image);
 			
 			var imageHTML = $imageWrapper[0].outerHTML;
-			var isiPad = navigator.userAgent.match(/iPad/i) != null;
-			if(!isiPad) {
-				imageHTML = "<div style='text-align:right;'><a class='btn btn-default'><span class='glyphicon glyphicon-remove'></span></a></div>" + imageHTML;
-			}
-			
+						
 			Util.blockUINoMessage();
-			jNotifyImage(imageHTML,
+			var popUp = jNotifyImage("<div style='text-align:right;'><a id='jNotifyDismiss' class='btn btn-default'><span class='glyphicon glyphicon-remove'></span></a></div>" + imageHTML,
 					{
-					  autoHide : isiPad,
+					  autoHide : false,
 					  clickOverlay : false,
 					  MinWidth : 250,
 					  TimeShown : 2000,
@@ -426,6 +424,9 @@ var Util = new function() {
 					  onClosed : function(){ Util.unblockUI(); },
 					  onCompleted : function(){ }
 					});
+			$("#jNotifyDismiss").click(function(e) {
+				popUp._close();
+			});
 		};
 		
 		var containerWidth = $(window).width()*0.85;
