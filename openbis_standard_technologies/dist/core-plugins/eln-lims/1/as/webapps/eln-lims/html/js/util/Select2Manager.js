@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+// Don't bind events when the UI is block or Select2 will not work correctly.
+$.blockUI.defaults.bindEvents = false;
+
 var Select2Manager = new function() {
 	var toInitialize = [];
 	var isPolling = false;
