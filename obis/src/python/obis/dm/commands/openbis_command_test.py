@@ -16,17 +16,20 @@ def test_prepare_run(monkeypatch):
         'invocation_path': ''
     })
     openbis_command = OpenbisCommand(dm)
+    define_config(openbis_command)
     monkeypatch.setattr(getpass, 'getpass', lambda s: 'password')
     dm.openbis.is_session_active.return_value = False
     # when
     openbis_command.prepare_run()
     # then
     dm.openbis.is_session_active.assert_called()
-    dm.openbis.login.assert_called_with('auser', 'password', save_token=True)
+    dm.openbis.login.assert_called_with('watney', 'password', save_token=True)
 
 
 def define_config(openbis_command):
     openbis_command.config_dict = {
-        'hostname': None
+        'config': {
+            'user': 'watney'
+        }
     }
     
