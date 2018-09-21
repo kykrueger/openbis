@@ -156,7 +156,7 @@ class GitRepoFileInfo(object):
 
     def file_list(self):
         tree = self.git_wrapper.git_ls_tree()
-        if tree.failure():
+        if tree.failure() or len(tree.output) == 0:
             return []
         lines = tree.output.split("\n")
         files = [line.split("\t")[-1].strip() for line in lines]

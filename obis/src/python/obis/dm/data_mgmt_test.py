@@ -211,19 +211,19 @@ def test_undo_commit_when_sync_fails(tmpdir):
 
 
 def test_init_analysis(tmpdir):
-    dm = shared_dm(tmpdir)
-
     tmp_dir_path = str(tmpdir)
 
     with data_mgmt.cd(tmp_dir_path):
+
+        dm = shared_dm(tmp_dir_path)
+        prepare_registration_expectations(dm)
+        openbis = dm.openbis
 
         result = dm.init_data(tmp_dir_path, "test")
         assert result.returncode == 0
 
         copy_test_data(tmpdir)
 
-        dm = shared_dm(tmp_dir_path)
-        prepare_registration_expectations(dm)
         set_registration_configuration(dm)
 
         result = dm.commit("Added data.")
@@ -231,10 +231,16 @@ def test_init_analysis(tmpdir):
         parent_ds_code = dm.settings_resolver.config_dict()['repository']['data_set_id']
 
         analysis_repo = "analysis"
-        result = dm.init_analysis(analysis_repo, None)
-        assert result.returncode == 0
+        os.mkdir(analysis_repo)
 
         with data_mgmt.cd(analysis_repo):
+
+            dm = shared_dm(os.path.join(tmpdir, analysis_repo))
+            dm.openbis = openbis
+            prepare_new_data_set_expectations(dm)
+
+            result = dm.init_analysis("..")
+            assert result.returncode == 0
 
             set_registration_configuration(dm)
             prepare_new_data_set_expectations(dm)
