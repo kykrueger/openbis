@@ -169,25 +169,30 @@ def test_child_data_set(tmpdir):
 
 
 def test_external_dms_code_and_address(tmpdir):
-    # given
-    dm = shared_dm(tmpdir)
-    prepare_registration_expectations(dm)
-    obis_sync = data_mgmt.OpenbisSync(dm)
-    set_registration_configuration(dm)
-    user = obis_sync.user()
-    hostname = socket.gethostname()
-    expected_edms_id = obis_sync.external_dms_id()
-    result = obis_sync.git_wrapper.git_top_level_path()
-    assert result.failure() == False
-    edms_path, folder = os.path.split(result.output)
-    path_hash = hashlib.sha1(edms_path.encode("utf-8")).hexdigest()[0:8]
-    if expected_edms_id is None:
-        expected_edms_id = "{}-{}-{}".format(user, hostname, path_hash).upper()
-    # when
-    result = obis_sync.get_or_create_external_data_management_system();
-    # then
-    assert result.failure() == False
-    dm.openbis.get_external_data_management_system.assert_called_with(expected_edms_id)
+    tmp_dir_path = str(tmpdir)
+
+    with data_mgmt.cd(tmp_dir_path):
+        # given
+        dm = shared_dm(tmp_dir_path)
+        prepare_registration_expectations(dm)
+        obis_sync = data_mgmt.OpenbisSync(dm)
+        set_registration_configuration(dm)
+        user = obis_sync.user()
+        hostname = socket.gethostname()
+        expected_edms_id = obis_sync.external_dms_id()
+        result = obis_sync.git_wrapper.git_init()
+        assert result.failure() == False
+        result = obis_sync.git_wrapper.git_top_level_path()
+        assert result.failure() == False
+        edms_path, folder = os.path.split(result.output)
+        path_hash = hashlib.sha1(edms_path.encode("utf-8")).hexdigest()[0:8]
+        if expected_edms_id is None:
+            expected_edms_id = "{}-{}-{}".format(user, hostname, path_hash).upper()
+        # when
+        result = obis_sync.get_or_create_external_data_management_system();
+        # then
+        assert result.failure() == False
+        dm.openbis.get_external_data_management_system.assert_called_with(expected_edms_id)
 
 
 def test_undo_commit_when_sync_fails(tmpdir):
