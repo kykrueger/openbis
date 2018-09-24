@@ -165,7 +165,7 @@ var Util = new function() {
 		}
 		
 		var warning = "<b>Please send an error report if you wish SIS to review it:</b>" +  "<br>" +
-			          "This report contains information about the user and the action it was performing when it happened, including it's data!: <br>" +
+			          "This report contains information about the user and the action it was performing when it happened, including its data!: <br>" +
 				      "Pressing the 'Send error report' button will open your default mail application and gives you the opportunity to delete any sensitive information before sending.";
 					 
 		var report = "agent: " + navigator.userAgent + "%0D%0A" +
