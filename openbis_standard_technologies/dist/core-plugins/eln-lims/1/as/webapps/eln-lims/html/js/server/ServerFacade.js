@@ -2239,6 +2239,7 @@ function ServerFacade(openbisServer) {
 				var fetchOptions = new RoleAssignmentFetchOptions();
 				fetchOptions.withSpace();
 				fetchOptions.withProject();
+				fetchOptions.withUser();
 
 				mainController.openbisV3.searchRoleAssignments(criteria, fetchOptions).done(function(result) {
 					callbackFunction(result.objects);

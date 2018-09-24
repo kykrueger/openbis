@@ -1300,7 +1300,6 @@ var FormUtil = new function() {
 	// params.css: css as a map
 	// params.callback: function to be called on submit
 	this.showDialog = function(params) {
-		var _this = this;
 
 		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
 		$window.submit(params.callback);
@@ -1324,47 +1323,87 @@ var FormUtil = new function() {
 		});
 	}
 
-	// params.spaceOrProjectLabel: label of item to be shared
+	// params.space: space code (set this or project)
+	// params.project: project code (set this or space)
 	// params.acceptCallback: function to be called with (shareWith, groupOrUser)
 	this.showAuthorizationDialog = function(params) {
-		// components
-		var $text = $('<span>').text('To which group or user do you want to grant access to ' + params.spaceOrProjectLabel + '?');
-		var $roleDropdown = FormUtil.getDropdown([
-			{ label: 'Observer', value: 'OBSERVER', selected: true },
-			{ label: 'User', value: 'USER' },
-			{ label: 'Admin', value: 'ADMIN' },
-		]);
-		var $role = FormUtil.getFieldForComponentWithLabel($roleDropdown, 'Role');
-		var $shareWithDropdown = FormUtil.getDropdown([
-			{ label: 'Group', value: 'Group', selected: true },
-			{ label: 'User', value: 'User', selected: true },
-		]);
-		var $shareWith = FormUtil.getFieldForComponentWithLabel($shareWithDropdown, 'share with');
-		var $groupOrUser = FormUtil.getTextInputField('id', 'Group or User');
-		// buttons
-		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Grant access' });
-		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
-		$btnCancel.click(function() {
-		    Util.unblockUI();
-		});
-		// dialog
-		this.showDialog({
-			title: 'Manage access to ' + params.spaceOrProjectLabel,
-			components: [$text, $role, $shareWith, $groupOrUser],
-			focuseComponent: $groupOrUser,
-			buttons: [$btnAccept, $btnCancel],
-			css: {'text-align' : 'left'},
-			callback: function() {
-				if ($groupOrUser.val() == null || $groupOrUser.val().length == 0) {
-					alert("Please enter a user or group name.");
-				} else {
-				    Util.unblockUI();
-					params.acceptCallback($roleDropdown.val(), $shareWithDropdown.val(), $groupOrUser.val());
-				}
-			},
+
+		var _this = this;
+
+		mainController.serverFacade.searchRoleAssignments({
+			space: params.space,
+			project: params.project,
+		}, function(roleAssignments) {
+
+			// components
+			var $roleAssignmentTable = _this._getRoleAssignmentTable(roleAssignments);
+			var spaceOrProjectLabel = params.space ? params.space : params.project;
+			var $text = $('<span>').text('Grant access to ' + spaceOrProjectLabel + ':');
+			var $roleDropdown = FormUtil.getDropdown([
+				{ label: 'Observer', value: 'OBSERVER', selected: true },
+				{ label: 'User', value: 'USER' },
+				{ label: 'Admin', value: 'ADMIN' },
+			]);
+			var $role = FormUtil.getFieldForComponentWithLabel($roleDropdown, 'Role');
+			var $shareWithDropdown = FormUtil.getDropdown([
+				{ label: 'Group', value: 'Group', selected: true },
+				{ label: 'User', value: 'User', selected: true },
+			]);
+			var $shareWith = FormUtil.getFieldForComponentWithLabel($shareWithDropdown, 'grant to');
+			var $groupOrUser = FormUtil.getTextInputField('id', 'Group or User');
+			// buttons
+			var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Grant access' });
+			var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+			$btnCancel.click(function() {
+			    Util.unblockUI();
+			});
+			// dialog
+			_this.showDialog({
+				title: 'Manage access to ' + spaceOrProjectLabel,
+				components: [$roleAssignmentTable, $text, $role, $shareWith, $groupOrUser],
+				focuseComponent: $groupOrUser,
+				buttons: [$btnAccept, $btnCancel],
+				css: {'text-align' : 'left'},
+				callback: function() {
+					if ($groupOrUser.val() == null || $groupOrUser.val().length == 0) {
+						alert("Please enter a user or group name.");
+					} else {
+					    Util.unblockUI();
+						params.acceptCallback($roleDropdown.val(), $shareWithDropdown.val(), $groupOrUser.val());
+					}
+				},
+			});
+
 		});
 	}
-	
+
+	this._getRoleAssignmentTable = function(roleAssignments) {
+		var $table = $('<table>');
+		var $thead = $('<thead>')
+			.append($('<tr>')
+				.append($('<th>').text('User'))
+				.append($('<th>').text('Role')
+				.append($('<th>')
+			)));
+		var $tbody = $('<tbody>');
+		for (var i=0; i<roleAssignments.length; i++) {
+			var user = roleAssignments[i].user.userId;
+			var role = roleAssignments[i].role;
+			var revokeAction = (function(user, role) {
+				console.log(user);
+				console.log(role);
+			}).bind(this, user, role);
+			var $revokeButton = this.getButtonWithIcon('glyphicon-remove', revokeAction, null, 'revoke');
+			$tbody.append($('<tr>')
+				.append($('<td>').text(user))
+				.append($('<td>').text(role))
+				.append($('<td>').append($revokeButton)));
+		}
+		$table.append($thead).append($tbody);
+		$table.css({ width: '100%' });
+		return $table;
+	}
+
 	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
 			$export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
 					Util.blockUI();

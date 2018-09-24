@@ -282,6 +282,18 @@ function MainController(profile) {
 		}
 	}
 
+	// gets all role assignments for one space or project (all users)
+	// params.space: space for which the role assignments should be loaded
+	// params.project: project for which the role assignments should be loaded
+	this.getRoleAssignments = function(params, callback) {
+		mainController.serverFacade.searchRoleAssignments({
+			space: params.space,
+			project: params.project,
+		}, function(roleAssignments) {
+			callback(roleAssignments);
+		});
+	}
+
 	this.authorizeUserOrGroup = function(role, shareWith, groupOrUser, spaceCode, projectPermId) {
 		Util.blockUI();
 		mainController.serverFacade.createRoleAssignment({
