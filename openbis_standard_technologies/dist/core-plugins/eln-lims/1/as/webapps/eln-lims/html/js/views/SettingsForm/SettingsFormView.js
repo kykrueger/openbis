@@ -277,7 +277,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		
 		for(var i = 0; i < initialValues.length; i++) {
 			if($.inArray(initialValues[i], spacesOptions) === -1) {
-				spacesOptions.push(initialValues);
+				spacesOptions.push(initialValues[i]);
 			}
 		}
 		
