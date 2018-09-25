@@ -25,8 +25,6 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.systemsx.cisd.common.io.DelegatedReader;
 import ch.systemsx.cisd.common.parser.ExcelFileLoader;
 import ch.systemsx.cisd.common.parser.IParserObjectFactory;
@@ -363,10 +361,23 @@ public class SampleUploadSectionsParser
             			String[] experimentIdentifierParts = newSamples.get(i).getExperimentIdentifier().split("/");
             			projectCodeOrNull = experimentIdentifierParts[experimentIdentifierParts.length - 2];
             		}
-            		SampleIdentifier identifier = new SampleIdentifier(spaceCodeOrNull, projectCodeOrNull, null, codes.get(i));
-            		newSamples.get(i).setIdentifier(identifier.getIdentifier());
+            		newSamples.get(i).setIdentifier(createIdentifier(spaceCodeOrNull, projectCodeOrNull, codes.get(i)));
             }
         }
+    }
+    
+    private static String createIdentifier(String spaceCodeOrNull, String projectCodeOrNull, String sampleCode)
+    {
+        StringBuilder builder = new StringBuilder("/");
+        if (spaceCodeOrNull != null)
+        {
+            builder.append(spaceCodeOrNull).append("/");
+        }
+        if (projectCodeOrNull != null)
+        {
+            builder.append(projectCodeOrNull).append("/");
+        }
+        return builder.append(sampleCode).toString();
     }
 
     private static void fillIdentifiers(String defaultGroupIdentifier,
