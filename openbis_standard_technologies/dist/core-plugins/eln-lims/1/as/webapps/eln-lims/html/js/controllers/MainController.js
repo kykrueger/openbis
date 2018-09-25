@@ -294,20 +294,13 @@ function MainController(profile) {
 		});
 	}
 
-	this.authorizeUserOrGroup = function(role, shareWith, groupOrUser, spaceCode, projectPermId) {
-		Util.blockUI();
-		mainController.serverFacade.createRoleAssignment({
-			user: shareWith == "User" ? groupOrUser : null,
-			group: shareWith == "Group" ? groupOrUser : null,
-			role: role,
-			space: spaceCode,
-			project: projectPermId
-		}, function(result) {
-			Util.unblockUI();
-			if (result) {
-				Util.showSuccess("Access granted.");
-			}
-		});
+	// role, grantTo, groupOrUser, spaceCode, projectPermId
+	this.authorizeUserOrGroup = function(params, callback) {
+		mainController.serverFacade.createRoleAssignment(params, callback);
+	}
+
+	this.deleteRoleAssignment = function(roleAssignmentTechId, callback) {
+		mainController.serverFacade.deleteRoleAssignment(roleAssignmentTechId, callback);
 	}
 
 	//

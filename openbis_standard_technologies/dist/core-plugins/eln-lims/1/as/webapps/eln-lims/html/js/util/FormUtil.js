@@ -1329,15 +1329,18 @@ var FormUtil = new function() {
 	this.showAuthorizationDialog = function(params) {
 
 		var _this = this;
+		Util.blockUI();
 
 		mainController.serverFacade.searchRoleAssignments({
-			space: params.space,
-			project: params.project,
+			space: params.space ? params.space.code : null,
+			project: params.project ? params.project.code : null,
 		}, function(roleAssignments) {
 
+			Util.unblockUI();
+
 			// components
-			var $roleAssignmentTable = _this._getRoleAssignmentTable(roleAssignments);
-			var spaceOrProjectLabel = params.space ? params.space : params.project;
+			var $roleAssignmentTable = _this._getRoleAssignmentTable(roleAssignments, _this._revokeRoleAssignment.bind(_this, params));
+			var spaceOrProjectLabel = params.space ? params.space.code : params.project.code;
 			var $text = $('<span>').text('Grant access to ' + spaceOrProjectLabel + ':');
 			var $roleDropdown = FormUtil.getDropdown([
 				{ label: 'Observer', value: 'OBSERVER', selected: true },
@@ -1345,15 +1348,15 @@ var FormUtil = new function() {
 				{ label: 'Admin', value: 'ADMIN' },
 			]);
 			var $role = FormUtil.getFieldForComponentWithLabel($roleDropdown, 'Role');
-			var $shareWithDropdown = FormUtil.getDropdown([
+			var $grantToDropdown = FormUtil.getDropdown([
 				{ label: 'Group', value: 'Group', selected: true },
 				{ label: 'User', value: 'User', selected: true },
 			]);
-			var $shareWith = FormUtil.getFieldForComponentWithLabel($shareWithDropdown, 'grant to');
+			var $shareWith = FormUtil.getFieldForComponentWithLabel($grantToDropdown, 'grant to');
 			var $groupOrUser = FormUtil.getTextInputField('id', 'Group or User');
 			// buttons
 			var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Grant access' });
-			var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+			var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Close');
 			$btnCancel.click(function() {
 			    Util.unblockUI();
 			});
@@ -1368,8 +1371,7 @@ var FormUtil = new function() {
 					if ($groupOrUser.val() == null || $groupOrUser.val().length == 0) {
 						alert("Please enter a user or group name.");
 					} else {
-					    Util.unblockUI();
-						params.acceptCallback($roleDropdown.val(), $shareWithDropdown.val(), $groupOrUser.val());
+						_this._grantRoleAssignment(params, $roleDropdown.val(), $grantToDropdown.val(), $groupOrUser.val());
 					}
 				},
 			});
@@ -1377,7 +1379,7 @@ var FormUtil = new function() {
 		});
 	}
 
-	this._getRoleAssignmentTable = function(roleAssignments) {
+	this._getRoleAssignmentTable = function(roleAssignments, revokeAction) {
 		var $table = $('<table>');
 		var $thead = $('<thead>')
 			.append($('<tr>')
@@ -1389,11 +1391,8 @@ var FormUtil = new function() {
 		for (var i=0; i<roleAssignments.length; i++) {
 			var user = roleAssignments[i].user.userId;
 			var role = roleAssignments[i].role;
-			var revokeAction = (function(user, role) {
-				console.log(user);
-				console.log(role);
-			}).bind(this, user, role);
-			var $revokeButton = this.getButtonWithIcon('glyphicon-remove', revokeAction, null, 'revoke');
+			var roleAssignmentTechId = roleAssignments[i].id;
+			var $revokeButton = this.getButtonWithIcon('glyphicon-remove', revokeAction.bind(this, roleAssignmentTechId), null, 'revoke');
 			$tbody.append($('<tr>')
 				.append($('<td>').text(user))
 				.append($('<td>').text(role))
@@ -1402,6 +1401,37 @@ var FormUtil = new function() {
 		$table.append($thead).append($tbody);
 		$table.css({ width: '100%' });
 		return $table;
+	}
+
+	this._grantRoleAssignment = function(dialogParams, role, grantTo, groupOrUser) {
+		var _this = this;
+		// Util.blockUI();
+		mainController.authorizeUserOrGroup({
+			user: grantTo == "User" ? groupOrUser : null,
+			group: grantTo == "Group" ? groupOrUser : null,
+			role: role,
+			space: dialogParams.space ? dialogParams.space.code : null,
+			project: dialogParams.project ? dialogParams.project.permId : null,
+		}, function(success, result) {
+			if (success) {
+				Util.showSuccess("Access granted.");
+				_this.showAuthorizationDialog(dialogParams);
+		} else {
+				Util.showUserError(result, function() {}, true);
+			}
+		});
+	}
+
+	this._revokeRoleAssignment = function(dialogParams, roleAssignmentTechId) {
+		var _this = this;
+		mainController.deleteRoleAssignment(roleAssignmentTechId, function(success, result) {
+			if (success) {
+				Util.showSuccess("Access revoked.");
+				_this.showAuthorizationDialog(dialogParams);
+			} else {
+				Util.showUserError(result, function() {}, true);
+			}
+		});
 	}
 
 	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
