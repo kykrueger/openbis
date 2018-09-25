@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.io.DelegatedReader;
 import ch.systemsx.cisd.common.parser.ExcelFileLoader;
 import ch.systemsx.cisd.common.parser.IParserObjectFactory;
@@ -383,6 +384,10 @@ public class SampleUploadSectionsParser
                         && !newSamples.get(i).getExperimentIdentifier().isEmpty())
                 {
                     String[] experimentIdentifierParts = newSamples.get(i).getExperimentIdentifier().split("/");
+                    if(experimentIdentifierParts.length != 4) {
+                        throw new UserFailureException("Incorrect format for the experiment identifier: " + newSamples.get(i).getExperimentIdentifier());
+                    }
+                    spaceCodeOrNull = experimentIdentifierParts[experimentIdentifierParts.length - 3];
                     projectCodeOrNull = experimentIdentifierParts[experimentIdentifierParts.length - 2];
                 }
                 newSamples.get(i).setIdentifier(createIdentifier(spaceCodeOrNull, projectCodeOrNull, codes.get(i)));
