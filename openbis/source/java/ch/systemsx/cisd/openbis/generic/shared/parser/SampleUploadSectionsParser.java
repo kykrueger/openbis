@@ -85,9 +85,29 @@ public class SampleUploadSectionsParser
         List<String> generateCodes(int size);
     }
 
+    /*
+     * This overloaded method has been kept to provide backwards compatibility for a couple of older uses
+     */
     public static BatchSamplesOperation prepareSamples(
-    			final boolean projectSamplesEnabled,
-    			final SampleType sampleType,
+            final SampleType sampleType,
+            final String spaceIdentifierSilentOverrideOrNull,
+            final String experimentIdentifierSilentOverrideOrNull,
+            final Collection<NamedInputStream> files, String defaultGroupIdentifier,
+            final SampleCodeGenerator sampleCodeGeneratorOrNull, final boolean allowExperiments,
+            String excelSheetName, BatchOperationKind operationKind)
+    {
+        return prepareSamples(false,
+                sampleType,
+                spaceIdentifierSilentOverrideOrNull,
+                experimentIdentifierSilentOverrideOrNull,
+                files, defaultGroupIdentifier,
+                sampleCodeGeneratorOrNull, allowExperiments,
+                excelSheetName, operationKind);
+    }
+
+    public static BatchSamplesOperation prepareSamples(
+            final boolean projectSamplesEnabled,
+            final SampleType sampleType,
             final String spaceIdentifierSilentOverrideOrNull,
             final String experimentIdentifierSilentOverrideOrNull,
             final Collection<NamedInputStream> files, String defaultGroupIdentifier,
@@ -269,8 +289,9 @@ public class SampleUploadSectionsParser
                                 createSampleLoaderFromExcel(typeFromSection, isAutoGenerateCodes,
                                         allowExperiments, operationKind);
                         String sectionInFile =
-                                sampleSections.size() == 1 ? "" : " (section:"
-                                        + fs.getSectionName() + ")";
+                                sampleSections.size() == 1 ? ""
+                                        : " (section:"
+                                                + fs.getSectionName() + ")";
                         final List<NewSample> loadedSamples =
                                 excelFileLoader.load(fs.getSheet(), fs.getBegin(), fs.getEnd(),
                                         fileName + sectionInFile, defaults);
@@ -313,8 +334,9 @@ public class SampleUploadSectionsParser
                                 createSampleLoader(typeFromSection, isAutoGenerateCodes,
                                         allowExperiments, operationKind);
                         String sectionInFile =
-                                sampleSections.size() == 1 ? "" : " (section:"
-                                        + fs.getSectionName() + ")";
+                                sampleSections.size() == 1 ? ""
+                                        : " (section:"
+                                                + fs.getSectionName() + ")";
                         final List<NewSample> loadedSamples =
                                 tabFileLoader.load(new DelegatedReader(reader, fileName
                                         + sectionInFile), defaults);
@@ -335,7 +357,7 @@ public class SampleUploadSectionsParser
     }
 
     private static void generateIdentifiers(boolean projectSamplesEnabled,
-    		String defaultGroupIdentifier,
+            String defaultGroupIdentifier,
             SampleCodeGenerator sampleCodeGenerator, boolean isAutoGenerateCodes,
             List<NewSamplesWithTypes> newSamplesWithTypes)
     {
@@ -347,25 +369,27 @@ public class SampleUploadSectionsParser
             List<String> codes = sampleCodeGenerator.generateCodes(newSamples.size());
             for (int i = 0; i < newSamples.size(); i++)
             {
-            		String spaceCodeOrNull = null;
-            		if (newSamples.get(i).getDefaultSpaceIdentifier() == null || newSamples.get(i).getDefaultSpaceIdentifier().isEmpty())
+                String spaceCodeOrNull = null;
+                if (newSamples.get(i).getDefaultSpaceIdentifier() == null || newSamples.get(i).getDefaultSpaceIdentifier().isEmpty())
                 {
-            			spaceCodeOrNull = defaultGroupIdentifier;
+                    spaceCodeOrNull = defaultGroupIdentifier;
                 } else
                 {
-                		spaceCodeOrNull = newSamples.get(i).getDefaultSpaceIdentifier();
+                    spaceCodeOrNull = newSamples.get(i).getDefaultSpaceIdentifier();
                 }
-            		spaceCodeOrNull = spaceCodeOrNull.substring(1);
-            		String projectCodeOrNull = null;
-            		if(projectSamplesEnabled && newSamples.get(i).getExperimentIdentifier() != null && !newSamples.get(i).getExperimentIdentifier().isEmpty()) {
-            			String[] experimentIdentifierParts = newSamples.get(i).getExperimentIdentifier().split("/");
-            			projectCodeOrNull = experimentIdentifierParts[experimentIdentifierParts.length - 2];
-            		}
-            		newSamples.get(i).setIdentifier(createIdentifier(spaceCodeOrNull, projectCodeOrNull, codes.get(i)));
+                spaceCodeOrNull = spaceCodeOrNull.substring(1);
+                String projectCodeOrNull = null;
+                if (projectSamplesEnabled && newSamples.get(i).getExperimentIdentifier() != null
+                        && !newSamples.get(i).getExperimentIdentifier().isEmpty())
+                {
+                    String[] experimentIdentifierParts = newSamples.get(i).getExperimentIdentifier().split("/");
+                    projectCodeOrNull = experimentIdentifierParts[experimentIdentifierParts.length - 2];
+                }
+                newSamples.get(i).setIdentifier(createIdentifier(spaceCodeOrNull, projectCodeOrNull, codes.get(i)));
             }
         }
     }
-    
+
     private static String createIdentifier(String spaceCodeOrNull, String projectCodeOrNull, String sampleCode)
     {
         StringBuilder builder = new StringBuilder("/");
