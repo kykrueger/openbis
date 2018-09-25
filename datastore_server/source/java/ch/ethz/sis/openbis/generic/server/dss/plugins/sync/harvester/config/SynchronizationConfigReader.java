@@ -22,10 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.DailyRollingFileAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
@@ -107,7 +103,7 @@ public class SynchronizationConfigReader
     private static final String LOG_FILE_PROPERTY_NAME = "log-file";
 
 
-    public List<SyncConfig> readConfiguration(File harvesterConfigFile, Logger logger) throws IOException
+    public static List<SyncConfig> readConfiguration(File harvesterConfigFile) throws IOException
     {
         List<SyncConfig> configs = new ArrayList<>();
         ConfigReader reader = new ConfigReader(harvesterConfigFile);
@@ -120,10 +116,6 @@ public class SynchronizationConfigReader
             config.setDataSourceAlias(reader.getString(section, DATA_SOURCE_ALIAS_PROPERTY_NAME, section, false));
             String defaultLogFilePath = DEFAULT_LOG_FILE_PATH.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
             config.setLogFilePath(reader.getString(section, LOG_FILE_PROPERTY_NAME, defaultLogFilePath, false));
-            if (config.getLogFilePath() != null)
-            {
-                configureFileAppender(config, logger);
-            }
             config.setDataSourceURI(reader.getString(section, DATA_SOURCE_URL_PROPERTY_NAME, null, true));
             config.setDataSourceOpenbisURL(reader.getString(section, DATA_SOURCE_OPENBIS_URL_PROPERTY_NAME, null, true));
             config.setDataSourceDSSURL(reader.getString(section, DATA_SOURCE_DSS_URL_PROPERTY_NAME, null, true));
@@ -190,23 +182,7 @@ public class SynchronizationConfigReader
         return configs;
     }
 
-    private void configureFileAppender(SyncConfig config, Logger logger)
-    {
-        DailyRollingFileAppender console = new DailyRollingFileAppender(); // create appender
-        // configure the appender
-        console.setName("bdfile");
-        String PATTERN = "%d %-5p [%t] %c - %m%n";
-        console.setLayout(new PatternLayout(PATTERN));
-        // console.setThreshold(Level.FATAL);
-        console.setAppend(true);// set to false to overwrite log at every start
-        console.setFile(config.getLogFilePath());
-        console.activateOptions();
-        // add appender to any Logger (here is root)
-        logger.addAppender(console);
-        logger.setAdditivity(false);
-    }
-
-    private void createDataSourceToHarvesterSpaceMappings(SyncConfig config)
+    private static void createDataSourceToHarvesterSpaceMappings(SyncConfig config)
     {
         List<String> dataSourceSpaceList = config.getDataSourceSpaces();
         List<String> harvesterSpaceList = config.getHarvesterSpaces();
