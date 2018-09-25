@@ -53,6 +53,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis1.createTestDatabase('openbis')
         openbis1.createTestDatabase('pathinfo')
         openbis1.createTestDatabase('imaging')
+        openbis1.enableCorePlugin("openbis-sync")
 
         '''Copy master data script'''
         filePath = "%s/servers/core-plugins/%s/1/as" % (openbis1.installPath, openbis1.instanceName)
