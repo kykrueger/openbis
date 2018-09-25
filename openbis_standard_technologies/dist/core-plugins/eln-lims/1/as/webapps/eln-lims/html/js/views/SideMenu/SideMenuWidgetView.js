@@ -295,7 +295,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                			
     	                			var normalizedSpaceTitle = Util.getDisplayNameFromCode(spaceCode);
         	                		var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, spaceCode, "showSpacePage", spaceCode);
-        	              		var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
+        	              		var spaceNode = { title : spaceLink, entityType: "SPACE", key : spaceCode, folder : true, lazy : true, view : "showSpacePage", viewData: spaceCode };
         	               		results.push(spaceNode);
     	                		}
     	                		dfd.resolve(results);
