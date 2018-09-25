@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.systemsx.cisd.common.io.DelegatedReader;
 import ch.systemsx.cisd.common.parser.ExcelFileLoader;
 import ch.systemsx.cisd.common.parser.IParserObjectFactory;
@@ -85,7 +87,9 @@ public class SampleUploadSectionsParser
         List<String> generateCodes(int size);
     }
 
-    public static BatchSamplesOperation prepareSamples(final SampleType sampleType,
+    public static BatchSamplesOperation prepareSamples(
+    			final boolean projectSamplesEnabled,
+    			final SampleType sampleType,
             final String spaceIdentifierSilentOverrideOrNull,
             final String experimentIdentifierSilentOverrideOrNull,
             final Collection<NamedInputStream> files, String defaultGroupIdentifier,
@@ -107,7 +111,7 @@ public class SampleUploadSectionsParser
                 case REGISTRATION:
                     if (isAutoGenerateCodes)
                     {
-                        generateIdentifiers(defaultGroupIdentifier, sampleCodeGeneratorOrNull,
+                        generateIdentifiers(projectSamplesEnabled, defaultGroupIdentifier, sampleCodeGeneratorOrNull,
                                 isAutoGenerateCodes, newSamples);
                     }
                     break;
@@ -332,7 +336,8 @@ public class SampleUploadSectionsParser
         return results;
     }
 
-    private static void generateIdentifiers(String defaultGroupIdentifier,
+    private static void generateIdentifiers(boolean projectSamplesEnabled,
+    		String defaultGroupIdentifier,
             SampleCodeGenerator sampleCodeGenerator, boolean isAutoGenerateCodes,
             List<NewSamplesWithTypes> newSamplesWithTypes)
     {
@@ -344,14 +349,22 @@ public class SampleUploadSectionsParser
             List<String> codes = sampleCodeGenerator.generateCodes(newSamples.size());
             for (int i = 0; i < newSamples.size(); i++)
             {
-                if (newSamples.get(i).getDefaultSpaceIdentifier() == null || newSamples.get(i).getDefaultSpaceIdentifier().isEmpty())
+            		String spaceCodeOrNull = null;
+            		if (newSamples.get(i).getDefaultSpaceIdentifier() == null || newSamples.get(i).getDefaultSpaceIdentifier().isEmpty())
                 {
-                    newSamples.get(i).setIdentifier(defaultGroupIdentifier + "/" + codes.get(i));
+            			spaceCodeOrNull = defaultGroupIdentifier;
                 } else
                 {
-                    newSamples.get(i).setIdentifier(
-                            newSamples.get(i).getDefaultSpaceIdentifier() + "/" + codes.get(i));
+                		spaceCodeOrNull = newSamples.get(i).getDefaultSpaceIdentifier();
                 }
+            		spaceCodeOrNull = spaceCodeOrNull.substring(1);
+            		String projectCodeOrNull = null;
+            		if(projectSamplesEnabled && newSamples.get(i).getExperimentIdentifier() != null && !newSamples.get(i).getExperimentIdentifier().isEmpty()) {
+            			String[] experimentIdentifierParts = newSamples.get(i).getExperimentIdentifier().split("/");
+            			projectCodeOrNull = experimentIdentifierParts[experimentIdentifierParts.length - 2];
+            		}
+            		SampleIdentifier identifier = new SampleIdentifier(spaceCodeOrNull, projectCodeOrNull, null, codes.get(i));
+            		newSamples.get(i).setIdentifier(identifier.getIdentifier());
             }
         }
     }
