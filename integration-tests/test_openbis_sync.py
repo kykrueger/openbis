@@ -81,6 +81,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis2.createTestDatabase('pathinfo')
         openbis2.createTestDatabase('imaging')
         openbis2.createTestDatabase('proteomics')
+        openbis2.enableCorePlugin("openbis-sync")
         
         '''set openbis2 as harvester'''
         source = self.getHarvesterConfigFolder()
@@ -294,7 +295,7 @@ class TestCase(systemtest.testcase.TestCase):
         base64string = base64.encodestring('%s:%s' % (user, password)).replace('\n', '')
         request.add_header("Authorization", "Basic %s" % base64string)
         data = urllib.urlencode({'mode' : 'test'})
-        response = urllib2.urlopen(request, data)
+        response = urllib2.urlopen(request, data, context=ssl._create_unverified_context())
         return response
 
     def getHarvesterConfigFolder(self):
