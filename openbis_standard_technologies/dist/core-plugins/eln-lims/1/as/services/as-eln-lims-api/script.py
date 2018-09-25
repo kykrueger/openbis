@@ -38,6 +38,9 @@ def doSpacesBelongToDisabledUsers(context, parameters):
     # TO-DO Replace generating SQL manually by variable substitution
     
     spaceCodes = parameters.get("spaceCodes");
+    if spaceCodes is None or len(spaceCodes) == 0:
+        return []
+    
     spaceCodesList = "("
     isFirst = True
     for spaceCode in spaceCodes:
