@@ -22,6 +22,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search import Vocabular
 from parsers import VocabularyDefinitionToCreationParser, PropertyTypeDefinitionToCreationParser, SampleTypeDefinitionToCreationParser, \
                     ExperimentTypeDefinitionToCreationParser, DatasetTypeDefinitionToCreationParser, SpaceDefinitionToCreationParser, \
                     ProjectDefinitionToCreationParser, ExperimentDefinitionToCreationParser, ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
+from search_criteria_factory import DefaultCreationElementSearchCriteria, SampleCreationSampleSearchCriteria, ScriptCreationScriptSearchCriteria, EntityCreationEntityTypeSearchCriteria
 
 
 class SearchEngine():
@@ -30,127 +31,141 @@ class SearchEngine():
             self.api = api
             self.session_token = sesstion_token
 
-    def find_all_existing_elements(self, creations):
+    def find_existing_vocabularies_in_entity_definitions(self, creations):
+        experiment_fetch_options = ExperimentTypeFetchOptions()
+        experiment_fetch_options.withPropertyAssignments().withPropertyType().withVocabulary().withTerms()
+        sample_fetch_options = SampleTypeFetchOptions()
+        sample_fetch_options.withPropertyAssignments().withPropertyType().withVocabulary().withTerms()
+
         search_strategy = [
             {
-            'creations_type': VocabularyDefinitionToCreationParser.type,
-            'search_criteria_object' : VocabularySearchCriteria,
-            'search_operation':SearchVocabulariesOperation,
-            'fetch_options':VocabularyFetchOptions
-            },
-            {
-            'creations_type': PropertyTypeDefinitionToCreationParser.type,
-            'search_criteria_object' : PropertyTypeSearchCriteria,
-            'search_operation': SearchPropertyTypesOperation,
-            'fetch_options': PropertyTypeFetchOptions
-            },
-            {
-            'creations_type': SampleTypeDefinitionToCreationParser.type,
-            'search_criteria_object' : SampleTypeSearchCriteria,
+            'creations_type': SampleDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : EntityCreationEntityTypeSearchCriteria,
+            'search_criteria_class' : SampleTypeSearchCriteria,
             'search_operation': SearchSampleTypesOperation,
-            'fetch_options': SampleTypeFetchOptions
-            },
-            {
-            'creations_type': ExperimentTypeDefinitionToCreationParser.type,
-            'search_criteria_object' : ExperimentTypeSearchCriteria,
-            'search_operation': SearchExperimentTypesOperation,
-            'fetch_options': ExperimentTypeFetchOptions
-            },
-            {
-            'creations_type': DatasetTypeDefinitionToCreationParser.type,
-            'search_criteria_object' : DataSetTypeSearchCriteria,
-            'search_operation': SearchDataSetTypesOperation,
-            'fetch_options': DataSetTypeFetchOptions
-            },
-            {
-            'creations_type': SpaceDefinitionToCreationParser.type,
-            'search_criteria_object' : SpaceSearchCriteria,
-            'search_operation': SearchSpacesOperation,
-            'fetch_options': SpaceFetchOptions
-            },
-            {
-            'creations_type': ProjectDefinitionToCreationParser.type,
-            'search_criteria_object' : ProjectSearchCriteria,
-            'search_operation': SearchProjectsOperation,
-            'fetch_options': ProjectFetchOptions
+            'fetch_options': sample_fetch_options
             },
             {
             'creations_type': ExperimentDefinitionToCreationParser.type,
-            'search_criteria_object' : ExperimentSearchCriteria,
-            'search_operation': SearchExperimentsOperation,
-            'fetch_options': ExperimentFetchOptions
-            },
-            {
-            'creations_type': SampleDefinitionToCreationParser.type,
-            'search_criteria_object' : SampleSearchCriteria,
-            'search_operation': SearchSamplesOperation,
-            'fetch_options': SampleFetchOptions
-            },
-            {
-            'creations_type': ScriptDefinitionToCreationParser.type,
-            'search_criteria_object' : PluginSearchCriteria,
-            'search_operation': SearchPluginsOperation,
-            'fetch_options': PluginFetchOptions
+            'search_criteria_build_strategy' : EntityCreationEntityTypeSearchCriteria,
+            'search_criteria_class' : ExperimentTypeSearchCriteria,
+            'search_operation': SearchExperimentTypesOperation,
+            'fetch_options': experiment_fetch_options
             }
         ]
 
         existing_elements = {}
         for strategy in search_strategy:
             creations_type = strategy['creations_type']
+            search_criteria_class = strategy['search_criteria_class']
+            search_criteria_builder = strategy['search_criteria_build_strategy'](search_criteria_class)
             if creations_type in creations:
-                existing_specific_elements = self._get_existing_elements(creations=creations, **strategy)
+                search_criterias = search_criteria_builder.get_search_criteria(creations[creations_type])
+                existing_specific_elements = self._get_existing_elements(search_criterias, **strategy)
+                if existing_specific_elements is not None:
+                    existing_elements[creations_type] = existing_specific_elements
+
+        return existing_elements
+
+    def find_all_existing_elements(self, creations):
+        search_strategy = [
+            {
+            'creations_type': VocabularyDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
+            'search_criteria_class' : VocabularySearchCriteria,
+            'search_operation':SearchVocabulariesOperation,
+            'fetch_options':VocabularyFetchOptions()
+            },
+            {
+            'creations_type': PropertyTypeDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
+            'search_criteria_class' : PropertyTypeSearchCriteria,
+            'search_operation': SearchPropertyTypesOperation,
+            'fetch_options': PropertyTypeFetchOptions()
+            },
+            {
+            'creations_type': SampleTypeDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
+            'search_criteria_class' : SampleTypeSearchCriteria,
+            'search_operation': SearchSampleTypesOperation,
+            'fetch_options': SampleTypeFetchOptions()
+            },
+            {
+            'creations_type': ExperimentTypeDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
+            'search_criteria_class' : ExperimentTypeSearchCriteria,
+            'search_operation': SearchExperimentTypesOperation,
+            'fetch_options': ExperimentTypeFetchOptions()
+            },
+            {
+            'creations_type': DatasetTypeDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
+            'search_criteria_class' : DataSetTypeSearchCriteria,
+            'search_operation': SearchDataSetTypesOperation,
+            'fetch_options': DataSetTypeFetchOptions()
+            },
+            {
+            'creations_type': SpaceDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
+            'search_criteria_class' : SpaceSearchCriteria,
+            'search_operation': SearchSpacesOperation,
+            'fetch_options': SpaceFetchOptions()
+            },
+            {
+            'creations_type': ProjectDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
+            'search_criteria_class' : ProjectSearchCriteria,
+            'search_operation': SearchProjectsOperation,
+            'fetch_options': ProjectFetchOptions()
+            },
+            {
+            'creations_type': ExperimentDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
+            'search_criteria_class' : ExperimentSearchCriteria,
+            'search_operation': SearchExperimentsOperation,
+            'fetch_options': ExperimentFetchOptions()
+            },
+            {
+            'creations_type': SampleDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : SampleCreationSampleSearchCriteria,
+            'search_criteria_class' : SampleSearchCriteria,
+            'search_operation': SearchSamplesOperation,
+            'fetch_options': SampleFetchOptions()
+            },
+            {
+            'creations_type': ScriptDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : ScriptCreationScriptSearchCriteria,
+            'search_criteria_class': PluginSearchCriteria,
+            'search_operation': SearchPluginsOperation,
+            'fetch_options': PluginFetchOptions()
+            }
+        ]
+
+        existing_elements = {}
+        for strategy in search_strategy:
+            creations_type = strategy['creations_type']
+            search_criteria_class = strategy['search_criteria_class']
+            search_criteria_builder = strategy['search_criteria_build_strategy'](search_criteria_class)
+            if creations_type in creations:
+                search_criterias = search_criteria_builder.get_search_criteria(creations[creations_type])
+                existing_specific_elements = self._get_existing_elements(search_criterias, **strategy)
                 if existing_specific_elements is not None:
                     existing_elements[creations_type] = existing_specific_elements
         return existing_elements
 
-    def _get_existing_elements(self, creations, creations_type, search_criteria_object, search_operation, fetch_options):
-        search_criteria = self._get_search_criteria(creations_type, creations[creations_type], search_criteria_object)
-        if search_criteria is []:
+    def _get_existing_elements(self, search_criterias, **kwargs):
+        search_operation = kwargs['search_operation']
+        fetch_options = kwargs['fetch_options']
+        if not search_criterias:
             return None
-        result = self._execute_search_operation(search_operation(search_criteria, fetch_options()))
-        return result.getObjects()
+        search_criterias = search_criterias if type(search_criterias) == list else [search_criterias]
+        operations = [search_operation(search_criteria, fetch_options) for search_criteria in search_criterias]
+        return self._execute_search_operation(operations)
 
-    def _get_search_criteria(self, creations_type, specific_creations, search_criteria_class):
-        search_criteria = search_criteria_class()
-
-        if creations_type == SampleDefinitionToCreationParser.type:
-            search_criterias = []
-            for creation in specific_creations:
-                search_criteria.withOrOperator()
-                if creation.code is not None:
-                    search_criteria.withCode().thatEquals(creation.code)
-                    if creation.experimentId is not None:
-                        search_criteria.withExperiment().withCode().thatEquals(creation.experimentId.creationId)
-                    else:
-                        search_criteria.withoutExperiment()
-
-                    if creation.projectId is not None:
-                        search_criteria.withProject().withCode().thatEquals(creation.projectId.creationId)
-                    else:
-                        search_criteria.withoutProject()
-
-                    if creation.spaceId is not None:
-                        search_criteria.withSpace().withCode().thatEquals(creation.spaceId.creationId)
-                    else:
-                        search_criteria.withoutSpace()
-
-                    search_criterias.append(search_criteria)
-            return search_criteria
-
-        if 'withCodes' in dir(search_criteria):
-            search_criteria.withCodes().thatIn([creation.code for creation in specific_creations])
-        elif 'withName' in dir(search_criteria):
-            for creation in specific_creations:
-                search_criteria.withName().thatEquals(creation.name)
-            search_criteria.withOrOperator()
-        else:
-            for creation in specific_creations:
-                search_criteria.withCode().thatEquals(creation.code)
-            search_criteria.withOrOperator()
-        return search_criteria
-
-    def _execute_search_operation(self, operation):
-        operations = []
-        operations.extend(operation if type(operation) == list else [operation])
-        return self.api.executeOperations(self.session_token, operations, SynchronousOperationExecutionOptions()).getResults().get(0).getSearchResult()
+    def _execute_search_operation(self, operations):
+        execution_results = self.api.executeOperations(self.session_token, operations, SynchronousOperationExecutionOptions())
+        result_objects = []
+        for search_result in execution_results.getResults():
+            result_objects.extend(search_result.getSearchResult().getObjects())
+        return result_objects
 

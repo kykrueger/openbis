@@ -21,7 +21,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.operation import SynchronousOperat
 from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
 from parsers import ExcelToPoiParser, PoiToDefinitionParser, DefinitionToCreationParser, DuplicatesHandler, CreationToOperationParser
-from processors import OpenbisDuplicatesHandler
+from processors import OpenbisDuplicatesHandler, VocabularyLabelHandler
 from search_engines import SearchEngine
 from utils.file_handling import list_xls_files
 
@@ -44,8 +44,8 @@ existing_elements = search_engine.find_all_existing_elements(distinct_creations)
 server_duplicates_handler = OpenbisDuplicatesHandler(distinct_creations, existing_elements)
 creations = server_duplicates_handler.remove_existing_elements_from_creations()
 creations = server_duplicates_handler.rewrite_parentchild_creationid_to_permid()
-# creations = server_duplicates_handler.rewrite_vocabulary_labels()
-
+entity_types = search_engine.find_existing_vocabularies_in_entity_definitions(creations)
+creations = VocabularyLabelHandler.rewrite_vocabularies(creations, entity_types)
 operations = CreationToOperationParser.parse(creations)
 result = api.executeOperations(sessionToken, operations, SynchronousOperationExecutionOptions())
 print("========================eln-life-sciences-types xls ingestion result========================")
