@@ -357,7 +357,7 @@ public class SampleUploadSectionsParser
         return results;
     }
 
-    private static void generateIdentifiers(boolean projectSamplesEnabled,
+    static void generateIdentifiers(boolean projectSamplesEnabled,
             String defaultGroupIdentifier,
             SampleCodeGenerator sampleCodeGenerator, boolean isAutoGenerateCodes,
             List<NewSamplesWithTypes> newSamplesWithTypes)
@@ -370,27 +370,28 @@ public class SampleUploadSectionsParser
             List<String> codes = sampleCodeGenerator.generateCodes(newSamples.size());
             for (int i = 0; i < newSamples.size(); i++)
             {
+                NewSample sample = newSamples.get(i);
                 String spaceCodeOrNull = null;
-                if (newSamples.get(i).getDefaultSpaceIdentifier() == null || newSamples.get(i).getDefaultSpaceIdentifier().isEmpty())
+                if (StringUtils.isBlank(sample.getDefaultSpaceIdentifier()))
                 {
                     spaceCodeOrNull = defaultGroupIdentifier;
                 } else
                 {
-                    spaceCodeOrNull = newSamples.get(i).getDefaultSpaceIdentifier();
+                    spaceCodeOrNull = sample.getDefaultSpaceIdentifier();
                 }
                 spaceCodeOrNull = spaceCodeOrNull.substring(1);
                 String projectCodeOrNull = null;
-                if (projectSamplesEnabled && newSamples.get(i).getExperimentIdentifier() != null
-                        && !newSamples.get(i).getExperimentIdentifier().isEmpty())
+                if (projectSamplesEnabled && StringUtils.isNotBlank(sample.getExperimentIdentifier()))
                 {
-                    String[] experimentIdentifierParts = newSamples.get(i).getExperimentIdentifier().split("/");
-                    if(experimentIdentifierParts.length != 4) {
-                        throw new UserFailureException("Incorrect format for the experiment identifier: " + newSamples.get(i).getExperimentIdentifier());
+                    String[] experimentIdentifierParts = sample.getExperimentIdentifier().split("/");
+                    if (experimentIdentifierParts.length != 4)
+                    {
+                        throw new UserFailureException("Incorrect format for the experiment identifier: " + sample.getExperimentIdentifier());
                     }
                     spaceCodeOrNull = experimentIdentifierParts[experimentIdentifierParts.length - 3];
                     projectCodeOrNull = experimentIdentifierParts[experimentIdentifierParts.length - 2];
                 }
-                newSamples.get(i).setIdentifier(createIdentifier(spaceCodeOrNull, projectCodeOrNull, codes.get(i)));
+                sample.setIdentifier(createIdentifier(spaceCodeOrNull, projectCodeOrNull, codes.get(i)));
             }
         }
     }
