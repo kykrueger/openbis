@@ -115,10 +115,6 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.ResourceNames;
 @Component(value = ResourceNames.GENERIC_PLUGIN_SERVICE)
 public class GenericClientService extends AbstractClientService implements IGenericClientService, IEntityImportService
 {
-
-	@Resource(name = ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME)
-    private ExposablePropertyPlaceholderConfigurer configurer;
-	
     @Resource(name = ResourceNames.GENERIC_PLUGIN_SERVER)
     private IGenericServerInternal genericServer;
 
@@ -597,11 +593,11 @@ public class GenericClientService extends AbstractClientService implements IGene
         {
             files.add(new NamedInputStream(f.getInputStream(), f.getOriginalFilename()));
         }
-        	
-        boolean projectSamplesEnabled = PropertyUtils.getBoolean(configurer.getResolvedProps(), Constants.PROJECT_SAMPLES_ENABLED_KEY, false);
-        
+        boolean projectSamplesEnabled = genericServer.isProjectSamplesEnabled(sessionToken);
+
         BatchSamplesOperation batchSamplesOperation =
-                SampleUploadSectionsParser.prepareSamples(projectSamplesEnabled, sampleType, spaceIdentifierSilentOverrideOrNull, experimentIdentifierSilentOverrideOrNull,
+                SampleUploadSectionsParser.prepareSamples(projectSamplesEnabled, sampleType, spaceIdentifierSilentOverrideOrNull,
+                        experimentIdentifierSilentOverrideOrNull,
                         files,
                         defaultGroupIdentifier, sampleCodeGeneratorOrNull, allowExperiments,
                         excelSheetName, operationKind);
@@ -1379,10 +1375,10 @@ public class GenericClientService extends AbstractClientService implements IGene
         Map<String, Object> info = new HashMap<String, Object>();
         try
         {
-        		boolean projectSamplesEnabled = PropertyUtils.getBoolean(configurer.getResolvedProps(), Constants.PROJECT_SAMPLES_ENABLED_KEY, false);
-        	
+            boolean projectSamplesEnabled = genericServer.isProjectSamplesEnabled(getSessionToken());
+
             BatchSamplesOperation batchSamplesOperation = SampleUploadSectionsParser.prepareSamples(
-            			projectSamplesEnabled,
+                    projectSamplesEnabled,
                     sampleType,
                     null,
                     null,
