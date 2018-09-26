@@ -1341,7 +1341,6 @@ var FormUtil = new function() {
 			// components
 			var $roleAssignmentTable = _this._getRoleAssignmentTable(roleAssignments, _this._revokeRoleAssignment.bind(_this, params));
 			var spaceOrProjectLabel = params.space ? params.space.code : params.project.code;
-			var $text = $('<span>').text('Grant access to ' + spaceOrProjectLabel + ':');
 			var $roleDropdown = FormUtil.getDropdown([
 				{ label: 'Observer', value: 'OBSERVER', selected: true },
 				{ label: 'User', value: 'USER' },
@@ -1363,10 +1362,10 @@ var FormUtil = new function() {
 			// dialog
 			_this.showDialog({
 				title: 'Manage access to ' + spaceOrProjectLabel,
-				components: [$roleAssignmentTable, $text, $role, $shareWith, $groupOrUser],
+				components: [$roleAssignmentTable, $role, $shareWith, $groupOrUser],
 				focuseComponent: $groupOrUser,
 				buttons: [$btnAccept, $btnCancel],
-				css: {'text-align' : 'left'},
+				css: {'text-align': 'left', 'top': '15%'},
 				callback: function() {
 					if ($groupOrUser.val() == null || $groupOrUser.val().length == 0) {
 						alert("Please enter a user or group name.");
@@ -1380,21 +1379,28 @@ var FormUtil = new function() {
 	}
 
 	this._getRoleAssignmentTable = function(roleAssignments, revokeAction) {
-		var $table = $('<table>');
+		if (roleAssignments.length == 0) {
+			return $('<span>');
+		}
+		var $table = $('<table>').css({'margin-top': '20px'});
 		var $thead = $('<thead>')
 			.append($('<tr>')
 				.append($('<th>').text('User'))
-				.append($('<th>').text('Role')
+				.append($('<th>').text('Group'))
+				.append($('<th>').text('Role'))
 				.append($('<th>')
-			)));
+			));
 		var $tbody = $('<tbody>');
 		for (var i=0; i<roleAssignments.length; i++) {
-			var user = roleAssignments[i].user.userId;
+			var user = roleAssignments[i].user ? roleAssignments[i].user.userId : '';
+			var group = roleAssignments[i].authorizationGroup ? roleAssignments[i].authorizationGroup.code : '';
 			var role = roleAssignments[i].role;
 			var roleAssignmentTechId = roleAssignments[i].id;
 			var $revokeButton = this.getButtonWithIcon('glyphicon-remove', revokeAction.bind(this, roleAssignmentTechId), null, 'revoke');
+			$revokeButton.css({'margin-top': '5px'});
 			$tbody.append($('<tr>')
 				.append($('<td>').text(user))
+				.append($('<td>').text(group))
 				.append($('<td>').text(role))
 				.append($('<td>').append($revokeButton)));
 		}
@@ -1405,10 +1411,9 @@ var FormUtil = new function() {
 
 	this._grantRoleAssignment = function(dialogParams, role, grantTo, groupOrUser) {
 		var _this = this;
-		// Util.blockUI();
 		mainController.authorizeUserOrGroup({
 			user: grantTo == "User" ? groupOrUser : null,
-			group: grantTo == "Group" ? groupOrUser : null,
+			group: grantTo == "Group" ? groupOrUser.toUpperCase() : null,
 			role: role,
 			space: dialogParams.space ? dialogParams.space.code : null,
 			project: dialogParams.project ? dialogParams.project.permId : null,

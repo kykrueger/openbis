@@ -2240,6 +2240,7 @@ function ServerFacade(openbisServer) {
 				fetchOptions.withSpace();
 				fetchOptions.withProject();
 				fetchOptions.withUser();
+				fetchOptions.withAuthorizationGroup();
 
 				mainController.openbisV3.searchRoleAssignments(criteria, fetchOptions).done(function(result) {
 					callbackFunction(result.objects);
