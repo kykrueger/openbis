@@ -199,8 +199,8 @@ class TestCase(systemtest.testcase.TestCase):
         openbis2.dssUp()
         monitor = util.LogMonitor("%s synchronization.log" % openbis2.instanceName,
             "%s/synchronization.log" % openbis2.installPath)  # "%s/servers/datastore_server/log/datastore_server_log.txt" % openbis2.installPath
-        monitor.addNotificationCondition(util.RegexCondition('OPERATION.HarvesterMaintenanceTask'))
-        monitor.waitUntilEvent(util.RegexCondition('OPERATION.HarvesterMaintenanceTask - Dry run finished'),
+        monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
+        monitor.waitUntilEvent(util.RegexCondition('OPERATION.EntitySynchronizer.* - Dry run finished'),
                                startTime=monitoringStartTime)
         '''read entity graph from harvester after dry run finished'''
         harvester_graph_lines_after_dry_run = self.getEntityGraph(openbis2_dss_port, openbis2, 'testuser1', '123')
@@ -224,8 +224,8 @@ class TestCase(systemtest.testcase.TestCase):
         remove the prefix'''
         monitor = util.LogMonitor("%s synchronization.log" % openbis2.instanceName,
             "%s/synchronization.log" % openbis2.installPath)  # "%s/servers/datastore_server/log/datastore_server_log.txt" % openbis2.installPath
-        monitor.addNotificationCondition(util.RegexCondition('OPERATION.HarvesterMaintenanceTask'))
-        monitor.waitUntilEvent(util.RegexCondition('OPERATION.HarvesterMaintenanceTask - Saving the timestamp of sync start to file'),
+        monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
+        monitor.waitUntilEvent(util.RegexCondition('OPERATION.EntitySynchronizer.* - Saving the timestamp of sync start to file'),
                                startTime=monitoringStartTime)
         graph_lines = self.getEntityGraph(openbis2_dss_port, openbis2, 'testuser1', '123')
         content2 = self.removePrefixFromLines(graph_lines, data_source_alias)
