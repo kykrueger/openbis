@@ -69,7 +69,7 @@ def test_parent_child(space):
     sample_parent.save()
 
     child_code='child_sample_{}'.format(timestamp)
-    sample_child =  o.new_sample(code=child_code, type=sample_type, space=space, parent=sample_parent)
+    sample_child = o.new_sample(code=child_code, type=sample_type, space=space, parent=sample_parent)
     sample_child.save()
     time.sleep(5)
 

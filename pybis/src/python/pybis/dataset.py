@@ -36,6 +36,18 @@ class DataSet(OpenBisObject):
 
         self.__dict__['folder'] = folder
 
+        if getattr(self, 'parents') is None:
+            self.a.__dict__['_parents'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_parents_orig'] = self.a.__dict__['_parents']
+
+        if getattr(self, 'children') is None:
+            self.a.__dict__['_children'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_children_orig'] = self.a.__dict__['_children']
+
 
     def __str__(self):
         return self.data['code']
@@ -394,8 +406,6 @@ class DataSet(OpenBisObject):
             request = self._up_attrs()
             props = self.p._all_props()
             request["params"][1][0]["properties"] = props
-            request["params"][1][0].pop('parentIds')
-            request["params"][1][0].pop('childIds')
 
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE: print("DataSet successfully updated.")
