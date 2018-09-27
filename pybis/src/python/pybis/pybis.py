@@ -119,18 +119,42 @@ def get_attrs_for_entity(entity):
         yield search_arg
 
 
-def search_request_for_identifier(ident, entity):
+def _type_for_id(ident, entity):
+    """Returns the data type for a given identifier/permId for use with the API call, e.g.
+    {
+        "identifier": "/DEFAULT/SAMPLE_NAME",
+        "@type": "as.dto.sample.id.SampleIdentifier"
+    }
+    or
+    {
+        "permId": "20160817175233002-331",
+        "@type": "as.dto.sample.id.SamplePermId"
+    }
+    """
+    entities = {
+        "sample"            : "Sample",
+        "dataset"           : "DataSet",
+        "experiment"        : "Experiment",
+        "plugin"            : "Plugin",
+        "space"             : "Space",
+        "project"           : "Project",
+        "semanticannotation": "SemanticAnnotation",
+    }
     search_request = {}
+    if entity.lower() in entities:
+        entity_capitalize = entities[entity.lower()]
+    else:
+        entity_capitalize = entity.capitalize()
 
     if is_identifier(ident):
         search_request = {
             "identifier": ident.upper(),
-            "@type": "as.dto.{}.id.{}Identifier".format(entity.lower(), entity.capitalize())
+            "@type": "as.dto.{}.id.{}Identifier".format(entity.lower(), entity_capitalize)
         }
     else:
         search_request = {
             "permId": ident,
-            "@type": "as.dto.{}.id.{}PermId".format(entity.lower(), entity.capitalize())
+            "@type": "as.dto.{}.id.{}PermId".format(entity.lower(), entity_capitalize)
         }
     return search_request
 
@@ -1331,30 +1355,8 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        attrs = ['identifier', 'permId', 'experiment', 'sample_type',
-                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
-        if len(resp['objects']) == 0:
-            samples = DataFrame(columns=attrs)
-        else:
-            objects = resp['objects']
-            parse_jackson(objects)
+        return self._sample_list_for_response(response=resp['objects'], props=props)
 
-            samples = DataFrame(objects)
-            samples['registrationDate'] = samples['registrationDate'].map(format_timestamp)
-            samples['modificationDate'] = samples['modificationDate'].map(format_timestamp)
-            samples['registrator'] = samples['registrator'].map(extract_person)
-            samples['modifier'] = samples['modifier'].map(extract_person)
-            samples['identifier'] = samples['identifier'].map(extract_identifier)
-            samples['permId'] = samples['permId'].map(extract_permid)
-            samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
-            samples['sample_type'] = samples['type'].map(extract_nested_permid)
-
-        if props is not None:
-            for prop in props:
-                samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
-
-        return Things(self, 'sample', samples[attrs], 'identifier')
 
     get_objects = get_samples # Alias
 
@@ -1436,10 +1438,10 @@ class Openbis:
         return Things(self, 'experiment', experiments[attrs], 'identifier')
 
 
-    def get_datasets(self,
-                     code=None, type=None, withParents=None, withChildren=None, status=None,
-                     sample=None, experiment=None, project=None, tags=None, props=None, **properties
-                     ):
+    def get_datasets(self, code=None, type=None, withParents=None, withChildren=None, 
+            status=None, sample=None, experiment=None, project=None, tags=None, props=None, 
+            **properties
+        ):
 
         sub_criteria = []
 
@@ -1491,7 +1493,11 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        attrs = ['permId', 'properties', 'type', 'experiment', 'sample', 'registrationDate', 'modificationDate', 'location']
+        return self._dataset_list_for_response(response=resp['objects'], props=props)
+
+        attrs = ['permId', 'type', 'experiment', 'sample', 
+            'registrationDate', 'modificationDate', 'location', 'properties'
+        ]
 
         if len(resp['objects']) == 0:
             datasets = DataFrame(columns=attrs)
@@ -1527,7 +1533,7 @@ class Openbis:
             },
         }
 
-        search_request = search_request_for_identifier(expId, 'experiment')
+        search_request = _type_for_id(expId, 'experiment')
         for option in ['tags', 'properties', 'attachments', 'project', 'samples']:
             fetchopts[option] = fetch_option[option]
 
@@ -1931,7 +1937,7 @@ class Openbis:
         if method is None:
             method = 'get' + entity + 's'
 
-        search_request = search_request_for_identifier(identifier, entity)
+        search_request = _type_for_id(identifier, entity)
         fetchopts = get_fetchoption_for_entity(entity)
         
         request = {
@@ -2232,7 +2238,7 @@ class Openbis:
 
 
     def get_plugin(self, permId, only_data=False, with_script=True):
-        search_request = search_request_for_identifier(permId, 'plugin')
+        search_request = _type_for_id(permId, 'plugin')
         fetchopts = fetch_option['plugin']
         options = ['registrator']
         if with_script:
@@ -2437,7 +2443,7 @@ class Openbis:
         return resp
 
 
-    def get_dataset(self, permid, only_data=False):
+    def get_dataset(self, permIds, only_data=False, props=None):
         """fetch a dataset and some metadata attached to it:
         - properties
         - sample
@@ -2450,10 +2456,18 @@ class Openbis:
         :return: a DataSet object
         """
 
-        criteria = [{
-            "permId": permid,
-            "@type": "as.dto.dataset.id.DataSetPermId"
-        }]
+        just_one = True
+        identifiers = []
+        if isinstance(permIds, list):
+            just_one = False
+            for permId in permIds:
+                identifiers.append(
+                    _type_for_id(permId, 'dataset')
+                )
+        else:
+            identifiers.append(
+                _type_for_id(permIds, 'dataset')
+            )
 
         fetchopts = {
             "parents": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
@@ -2470,35 +2484,77 @@ class Openbis:
             "method": "getDataSets",
             "params": [
                 self.token,
-                criteria,
+                identifiers,
                 fetchopts,
             ],
         }
 
         resp = self._post_request(self.as_v3, request)
-        if resp is None or len(resp) == 0:
-            raise ValueError('no such dataset found: ' + permid)
+        if just_one:
+            if len(resp) == 0:
+                raise ValueError('no such dataset found: {}'.format(permIds))
 
-        parse_jackson(resp)
+            parse_jackson(resp)
 
-        for permid in resp:
-            if only_data:
-                return resp[permid]
-            else:
-                return DataSet(
-                    self, 
-                    type=self.get_dataset_type(resp[permid]["type"]["code"]),
-                    data=resp[permid]
-                )
+            for permId in resp:
+                if only_data:
+                    return resp[permId]
+                else:
+                    return DataSet(
+                        openbis_obj = self, 
+                        type = self.get_dataset_type(resp[permId]["type"]["code"]),
+                        data = resp[permId]
+                    )
+        else:
+            return self._dataset_list_for_response(response=list(resp.values()), props=props)
 
-    def get_sample(self, sample_ident, only_data=False, withAttachments=False):
+
+    def _dataset_list_for_response(self, response, props=None):
+        """returns a Things object, containing a DataFrame plus some additional information
+        """
+
+        parse_jackson(response)
+        attrs = ['permId', 'type', 'experiment', 'sample', 
+                 'registrationDate', 'modificationDate', 'location', 'properties']
+        if len(response) == 0:
+            datasets = DataFrame(columns=attrs)
+        else:
+            datasets = DataFrame(response)
+            datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
+            datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
+            datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
+            datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
+            datasets['type'] = datasets['type'].map(extract_code)
+            datasets['permId'] = datasets['code']
+            datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
+
+        if props is not None:
+            for prop in props:
+                datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
+                attrs.append(prop.upper())
+
+        return Things(self, 'dataset', datasets[attrs], 'permId')
+
+
+    def get_sample(self, sample_ident, only_data=False, withAttachments=False, props=None):
         """Retrieve metadata for the sample.
         Get metadata for the sample and any directly connected parents of the sample to allow access
         to the same information visible in the ELN UI. The metadata will be on the file system.
         :param sample_identifiers: A list of sample identifiers to retrieve.
         """
 
-        search_request = search_request_for_identifier(sample_ident, 'sample')
+        just_one = True
+        identifiers = []
+        if isinstance(sample_ident, list):
+            just_one = False
+            for ident in sample_ident:
+                identifiers.append(
+                    _type_for_id(ident, 'sample')
+                )
+        else:
+            identifiers.append(
+                _type_for_id(sample_ident, 'sample')
+            )
 
         fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
         for option in ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets', 'project']:
@@ -2514,17 +2570,18 @@ class Openbis:
             "method": "getSamples",
             "params": [
                 self.token,
-                [search_request],
+                identifiers,
                 fetchopts
             ],
         }
 
         resp = self._post_request(self.as_v3, request)
-        parse_jackson(resp)
 
-        if resp is None or len(resp) == 0:
-            raise ValueError('no such sample found: ' + sample_ident)
-        else:
+        if just_one:
+            if len(resp) == 0:
+                raise ValueError('no such sample found: {}'.format(sample_ident))
+
+            parse_jackson(resp)
             for sample_ident in resp:
                 if only_data:
                     return resp[sample_ident]
@@ -2534,8 +2591,39 @@ class Openbis:
                         type = self.get_sample_type(resp[sample_ident]["type"]["code"]),
                         data = resp[sample_ident]
                     )
+        else:
+            return self._sample_list_for_response(response=list(resp.values()), props=props)
+
+    def _sample_list_for_response(self, response, props=None):
+        """returns a Things object, containing a DataFrame plus some additional information
+        """
+
+        parse_jackson(response)
+        attrs = ['identifier', 'permId', 'experiment', 'sample_type',
+                 'registrator', 'registrationDate', 'modifier', 'modificationDate']
+        if len(response) == 0:
+            samples = DataFrame(columns=attrs)
+        else:
+            samples = DataFrame(response)
+            samples['registrationDate'] = samples['registrationDate'].map(format_timestamp)
+            samples['modificationDate'] = samples['modificationDate'].map(format_timestamp)
+            samples['registrator'] = samples['registrator'].map(extract_person)
+            samples['modifier'] = samples['modifier'].map(extract_person)
+            samples['identifier'] = samples['identifier'].map(extract_identifier)
+            samples['permId'] = samples['permId'].map(extract_permid)
+            samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
+            samples['sample_type'] = samples['type'].map(extract_nested_permid)
+
+        if props is not None:
+            for prop in props:
+                samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
+                attrs.append(prop.upper())
+
+        return Things(self, 'sample', samples[attrs], 'identifier')
+
 
     get_object = get_sample # Alias
+
 
     def get_external_data_management_system(self, permId, only_data=False):
         """Retrieve metadata for the external data management system.
@@ -2677,7 +2765,7 @@ class Openbis:
     def new_sample(self, type, project=None, props=None, **kwargs):
         """ Creates a new sample of a given sample type.
         """
-        return Sample(self, self.get_sample_type(type), project, None, props, **kwargs)
+        return Sample(self, type=self.get_sample_type(type), project=project, data=None, props=props, **kwargs)
 
     new_object = new_sample # Alias
 

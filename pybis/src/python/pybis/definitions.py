@@ -5,7 +5,7 @@ def openbis_definitions(entity):
     attrs: Attributes that are displayed when fetched
     multi: multivalue-elements which appear in an entity. E.g. parents or children in a Sample.
     identifier: to update entities, the identifier must be specified. Usually identityName + "Id"
-    (Entity-Name in camel-case, starting with lowercase letter, with «Id» added)
+    (Entity-Name in camel-case, starting with lowercase letter, with Id added)
     """
     entities = {
         "Space": {

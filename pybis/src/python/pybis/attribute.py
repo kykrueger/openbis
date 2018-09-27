@@ -120,12 +120,6 @@ class AttrHolder():
                 atts_data = [attachment.get_data() for attachment in attachments]
                 items = atts_data
 
-            elif attr in defs['multi']:
-                # parents, children, components, container, tags, attachments
-                items = getattr(self, '_' + attr)
-                if items is None:
-                    items = []
-
             elif attr == 'userIds':
                 if '_changed_users' not in self.__dict__:
                     continue
@@ -201,14 +195,14 @@ class AttrHolder():
                 if getattr(self, '_prev_'+attr) is None:
                     self.__dict__['_prev_'+attr] = []
                 actions = []
-                for id in self.get('_prev_'+attr):
+                for id in getattr(self, '_prev_'+attr):
                     if id not in self.get('_'+attr):
                         actions.append({
                             "items": [id],
                             "@type": "as.dto.common.update.ListUpdateActionRemove"
                         })
 
-                for id in self.get('_'+attr):
+                for id in getattr(self,'_'+attr):
                     if id not in self.get('_prev_'+attr):
                         actions.append({
                             "items": [id],
@@ -311,6 +305,9 @@ class AttrHolder():
             array of values, whereas attachments, users (of groups) and
             roleAssignments are returned as an array of dictionaries.
         """
+        #if name == 'parents':
+        #    import pdb; pdb.set_trace()
+
 
         name_map = {
             'group': 'authorizationGroup',
@@ -433,10 +430,17 @@ class AttrHolder():
 
             permids = []
             for item in objs:
-                permid = item._permId
+                if getattr(item, '_identifier') is not None:
+                    id = item._identifier
+                elif getattr(item, '_permId') is not None:
+                    id = item._permId
+                else:
+                    return
+                    
                 # remove any existing @id keys to prevent jackson parser errors
-                if '@id' in permid: permid.pop('@id')
-                permids.append(permid)
+                if '@id' in id: id.pop('@id')
+                    
+                permids.append(id)
 
             self.__dict__['_' + name] = permids
         elif name in ["tags"]:
@@ -540,30 +544,33 @@ class AttrHolder():
         return ident
 
     def get_parents(self, **kwargs):
-        identifier = self.identifier
-        if identifier is None:
-            identifier = self.permId
+        '''get the current parents and return them as a list (Things/DataFrame)
+        or return empty list
+        '''
+        return getattr(self._openbis, 'get_'+self._entity.lower())( self.parents, **kwargs )
 
-        if identifier is None:
-            # TODO: if this is a new object, return the list of the parents which have been assigned
-            pass
-        else:
-            return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withChildren=identifier, **kwargs)
+    def set_parents(self, parents_to_set):
+        '''set the new _parents list
+        '''
+        self.__dict__['_parents'] = []
+        self.add_parents(parents_to_set)
 
-    def add_parents(self, parents):
-        if getattr(self, '_parents') is None:
-            self.__dict__['_parents'] = []
-        if not isinstance(parents, list):
-            parents = [parents]
-        for parent in parents:
-            self.__dict__['_parents'].append(self._ident_for_whatever(parent))
+    def add_parents(self, parents_to_add):
+        '''add parent to _parents list
+        '''
+        if not isinstance(parents_to_add, list):
+            parents_to_add = [parents_to_add]
+        for parent in parents_to_add:
+            ident = self._ident_for_whatever(parent)
+            if ident not in self.__dict__['_parents']:
+                self.__dict__['_parents'].append(ident)
 
-    def del_parents(self, parents):
-        if getattr(self, '_parents') is None:
-            return
-        if not isinstance(parents, list):
-            parents = [parents]
-        for parent in parents:
+    def del_parents(self, parents_to_remove):
+        '''remove parent from _parents list
+        '''
+        if not isinstance(parents_to_remove, list):
+            parents_to_remove = [parents_to_remove]
+        for parent in parents_to_remove:
             ident = self._ident_for_whatever(parent)
             for i, item in enumerate(self.__dict__['_parents']):
                 if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
@@ -571,19 +578,22 @@ class AttrHolder():
                 elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
                     self.__dict__['_parents'].pop(i)
 
-    def get_children(self, **kwargs):
-        identifier = self.identifier
-        if identifier is None:
-            identifier = self.permId
 
-        if identifier is None:
-            # TODO: if this is a new object, return the list of the children which have been assigned
-            pass
-        else:
-            # e.g. self._openbis.get_samples(withParents=self.identifier)
-            return getattr(self._openbis, 'get_' + self._entity.lower() + 's')(withParents=identifier, **kwargs)
+    def get_children(self, **kwargs):
+        '''get the current children and return them as a list (Things/DataFrame)
+        or return empty list
+        '''
+        return getattr(self._openbis, 'get_'+self._entity.lower())( self.children, **kwargs )
+
+    def set_children(self, children_to_set):
+        '''set the new _children list
+        '''
+        self.__dict__['_children'] = []
+        self.add_children(children_to_set)
 
     def add_children(self, children):
+        '''add children to _children list
+        '''
         if getattr(self, '_children') is None:
             self.__dict__['_children'] = []
         if not isinstance(children, list):
@@ -592,6 +602,8 @@ class AttrHolder():
             self.__dict__['_children'].append(self._ident_for_whatever(child))
 
     def del_children(self, children):
+        '''remove children from _children list
+        '''
         if getattr(self, '_children') is None:
             return
         if not isinstance(children, list):
