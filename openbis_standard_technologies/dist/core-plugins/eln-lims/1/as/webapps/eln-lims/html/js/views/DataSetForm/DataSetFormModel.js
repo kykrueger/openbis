@@ -36,4 +36,6 @@ function DataSetFormModel(mode, entity, dataSet, isMini, dataSetV3) {
 	
 	this.dataSetTypes = null;
 	this.files = [];
+	
+	this.datasetParentsComponent = null; 
 }

@@ -16,30 +16,39 @@
 # MasterDataRegistrationTransaction Class
 import os
 import sys
-from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
-from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
+
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.operation import SynchronousOperationExecutionOptions
-from parsers import ExcelToPoiParser, PoiToDefinitionParser, DefinitionToCreationParser, CreationToOperationParser, DuplicatesHandler
-from openbis_logic import ServerDuplicatesCreationHandler
+from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
+from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
+from parsers import ExcelToPoiParser, PoiToDefinitionParser, DefinitionToCreationParser, DuplicatesHandler, CreationToOperationParser
+from processors import OpenbisDuplicatesHandler, VocabularyLabelHandler
+from search_engines import SearchEngine
+from utils.file_handling import list_xls_files
 
-TYPES_FOLDER = "%s/life-sciences-types/" % [p for p in sys.path if p.find('core-plugins') >= 0][0];
- 
-api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME);
+api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 
-for excel_file in os.listdir(TYPES_FOLDER):
-    excel_file_path = os.path.join(TYPES_FOLDER, excel_file)
+creations = {}
+for excel_file_path in list_xls_files():
     poi_definitions = ExcelToPoiParser.parse(excel_file_path)
     definitions = PoiToDefinitionParser.parse(poi_definitions)
-    creations = DefinitionToCreationParser.parse(definitions)
-    distinct_creations = DuplicatesHandler.get_distinct_creations(creations)
-    sessionToken = api.loginAsSystem()
-    server_duplicates_handler = ServerDuplicatesCreationHandler(api, sessionToken, distinct_creations)
-    print(server_duplicates_handler)
-    print(server_duplicates_handler.creations)
-    creations = server_duplicates_handler.remove_already_existing_elements()
-    operations = CreationToOperationParser.parse(creations)
-    result = api.executeOperations(sessionToken, operations, SynchronousOperationExecutionOptions())
-    print("========================eln-life-sciences-types xls ingestion result========================")
-    print("Ingested " + excel_file)
-    print(result)
+    partial_creations = DefinitionToCreationParser.parse(definitions)
+    for creation_type, partial_creation in partial_creations.items():
+        if creation_type not in creations:
+            creations[creation_type] = partial_creation
+        else:
+            creations[creation_type].extend(partial_creation)
+distinct_creations = DuplicatesHandler.get_distinct_creations(creations)
+sessionToken = api.loginAsSystem()
+search_engine = SearchEngine(api, sessionToken)
+existing_elements = search_engine.find_all_existing_elements(distinct_creations)
+server_duplicates_handler = OpenbisDuplicatesHandler(distinct_creations, existing_elements)
+creations = server_duplicates_handler.remove_existing_elements_from_creations()
+creations = server_duplicates_handler.rewrite_parentchild_creationid_to_permid()
+entity_types = search_engine.find_existing_vocabularies_in_entity_definitions(creations)
+creations = VocabularyLabelHandler.rewrite_vocabularies(creations, entity_types)
+operations = CreationToOperationParser.parse(creations)
+result = api.executeOperations(sessionToken, operations, SynchronousOperationExecutionOptions())
+print("========================eln-life-sciences-types xls ingestion result========================")
+print(result)
+print("========================eln-life-sciences-types xls ingestion result========================")
 

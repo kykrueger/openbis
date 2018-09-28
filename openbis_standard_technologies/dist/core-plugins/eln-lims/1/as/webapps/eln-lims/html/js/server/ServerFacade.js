@@ -295,11 +295,12 @@ function ServerFacade(openbisServer) {
 	//
 	//
 	//
-	this.exportAll = function(entities, includeRoot, callbackFunction) {
+	this.exportAll = function(entities, includeRoot, metadataOnly, callbackFunction) {
 		this.customELNApi({
 			"method" : "exportAll",
 			"includeRoot" : includeRoot,
 			"entities" : entities,
+			"metadataOnly" : metadataOnly,
 		}, callbackFunction, "exports-api");
 	}
 	
@@ -906,9 +907,9 @@ function ServerFacade(openbisServer) {
 				
 				
 				//Optional fetchOptions
-				if(!advancedFetchOptions || 
-					(advancedFetchOptions && !advancedFetchOptions.withType) || 
-					(advancedFetchOptions && !advancedFetchOptions.only)) {
+				if(!advancedFetchOptions ||
+				   (advancedFetchOptions && !(advancedFetchOptions.minTableInfo || advancedFetchOptions.only))
+				   ) {
 					if(fetchOptions.withType) {
 						fetchOptions.withType();
 					}
@@ -989,6 +990,19 @@ function ServerFacade(openbisServer) {
 						}
 					}
 				} else if(advancedFetchOptions.only) {
+					if(advancedFetchOptions.withSample) {
+						fetchOptions.withSample();
+						if(advancedFetchOptions.withSampleProperties) {
+							fetchOptions.withSample().withProperties();
+						}
+					}
+					if(advancedFetchOptions.withExperiment) {
+						fetchOptions.withExperiment();
+						if(advancedFetchOptions.withExperimentProperties) {
+							fetchOptions.withExperiment().withProperties();
+						}
+					}
+					
 					if(advancedFetchOptions.withProperties) {
 						fetchOptions.withProperties();
 					}
@@ -1746,6 +1760,22 @@ function ServerFacade(openbisServer) {
             if(fechOptions["withDescendants"]) {
             		fetchOptions.withChildrenUsing(fetchOptions);
             }
+            if(fechOptions["withParents"]) {
+            		var pfo = fetchOptions.withParents();
+            		pfo.withSpace();
+            		pfo.withType();
+            		pfo.withRegistrator();
+            		pfo.withModifier();
+            		pfo.withExperiment();
+            }
+            if(fechOptions["withChildren"]) {
+            		var cfo = fetchOptions.withChildren();
+            		cfo.withSpace();
+            		cfo.withType();
+            		cfo.withRegistrator();
+            		cfo.withModifier();
+            		cfo.withExperiment();
+            }
             
             var id = null;
             if(fechOptions["samplePermId"]) {
@@ -1763,6 +1793,16 @@ function ServerFacade(openbisServer) {
 	}
 	
 	this.searchWithUniqueId = function(samplePermId, callbackFunction)
+	{	
+		this.searchSamples({
+			"samplePermId" : samplePermId,
+			"withProperties" : true,
+			"withParents" : true,
+			"withChildren" : true
+		}, callbackFunction);
+	}
+	
+	this.searchWithUniqueIdCompleteTree = function(samplePermId, callbackFunction)
 	{	
 		this.searchSamples({
 			"samplePermId" : samplePermId,
@@ -1851,8 +1891,8 @@ function ServerFacade(openbisServer) {
 		var searchFunction = function(sampleIdentifier) {
 			_this.searchSamples({
 				"withProperties" : true,
-				"withAncestors" : true,
-				"withDescendants" : true,
+				"withParents" : true,
+				"withChildren" : true,
 				"sampleIdentifier" : sampleIdentifier
 			}, function(samples) {
 				samples.forEach(function(sample) {
@@ -2178,6 +2218,98 @@ function ServerFacade(openbisServer) {
 				}).fail(function(result) {
 					Util.showError("Call failed to server: " + JSON.stringify(result));
 					callbackFunction(false);
+				});
+			});
+	}
+
+	this.searchRoleAssignments = function(criteriaParams, callbackFunction) {
+		require(["as/dto/roleassignment/search/RoleAssignmentSearchCriteria", "as/dto/roleassignment/fetchoptions/RoleAssignmentFetchOptions"], 
+			function(RoleAssignmentSearchCriteria, RoleAssignmentFetchOptions) {
+				var criteria = new RoleAssignmentSearchCriteria();
+
+				if (criteriaParams.space) {
+					criteria.withSpace().withCode().thatEquals(criteriaParams.space);
+				}
+				if (criteriaParams.project) {
+					criteria.withProject().withCode().thatEquals(criteriaParams.project);
+				}
+				if (criteriaParams.user) {
+					criteria.withUser().withUserId().thatEquals(criteriaParams.user);
+				}
+				var fetchOptions = new RoleAssignmentFetchOptions();
+				fetchOptions.withSpace();
+				fetchOptions.withProject();
+				fetchOptions.withUser();
+				fetchOptions.withAuthorizationGroup();
+
+				mainController.openbisV3.searchRoleAssignments(criteria, fetchOptions).done(function(result) {
+					callbackFunction(result.objects);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			});
+	}
+
+	this.deleteRoleAssignment = function(roleAssignmentTechId, callbackFunction) {
+		var userId = this.getUserId()
+		require(["as/dto/roleassignment/delete/RoleAssignmentDeletionOptions"], 
+			function(RoleAssignmentDeletionOptions) {
+
+				var deleteOptions = new RoleAssignmentDeletionOptions();
+				deleteOptions.setReason('deleted by ELN user ' + userId);
+
+				mainController.openbisV3.deleteRoleAssignments([roleAssignmentTechId], deleteOptions).done(function(result) {
+					callbackFunction(true, result);
+				}).fail(function(result) {
+					if (result.message) {
+						callbackFunction(false, result.message);
+					} else {
+						callbackFunction(false, "Call failed to server: " + JSON.stringify(result));
+					}
+				});
+			});
+	}
+
+	this.createRoleAssignment = function(creationParams, callbackFunction) {
+		require(["as/dto/roleassignment/create/RoleAssignmentCreation", "as/dto/roleassignment/Role", 
+				"as/dto/space/id/SpacePermId", "as/dto/project/id/ProjectPermId", "as/dto/person/id/PersonPermId",
+				"as/dto/authorizationgroup/id/AuthorizationGroupPermId"],
+			function(RoleAssignmentCreation, Role, SpacePermId, ProjectPermId, PersonPermId, AuthorizationGroupPermId) {
+				var creation = new RoleAssignmentCreation();
+				// user or group
+				if (creationParams.user) {
+					creation.setUserId(new PersonPermId(creationParams.user));
+				} else if (creationParams.group) {
+					creation.setAuthorizationGroupId(new AuthorizationGroupPermId(creationParams.group));
+				}
+				// space or project
+				if (creationParams.space) {
+					creation.setSpaceId(new SpacePermId(creationParams.space));
+				} else if (creationParams.project) {
+					creation.setProjectId(new ProjectPermId(creationParams.project));
+				}
+				// role
+				if (creationParams.role == "OBSERVER"){
+					creation.setRole(Role.OBSERVER);
+				} else if (creationParams.role == "USER") {
+					creation.setRole(Role.USER);
+				} else if (creationParams.role == "ADMIN") {
+					creation.setRole(Role.ADMIN);
+				}
+
+				mainController.openbisV3.createRoleAssignments([creation]).done(function(response) {
+					if (response.length == 1) {
+						callbackFunction(true, response[0]);
+					} else {
+						callbackFunction(false, "No role assignments created.");
+					}
+				}).fail(function(result) {
+					if (result.message) {
+						callbackFunction(false, result.message);
+					} else {
+						callbackFunction(false, "Call failed to server: " + JSON.stringify(result));
+					}
 				});
 			});
 	}

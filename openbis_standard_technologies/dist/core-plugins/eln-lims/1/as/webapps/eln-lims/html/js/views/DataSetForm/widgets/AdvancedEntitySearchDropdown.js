@@ -28,7 +28,7 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 	var selectsSamples = selectsSamples;
 	var selectsDatasets = selectsDatasets;
 	var selectsProjects = selectsProjects;
-	var $select = FormUtil.getDropdown({}, "");
+	var $select = FormUtil.getPlainDropdown({}, "");
 	var storedParams = null;
 	
 	//
@@ -146,21 +146,24 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 	//
 	var getDisplayName = function(entity) {
 		var text = null;
-		if(entity.identifier && entity.identifier.identifier) {
-			text = entity.identifier.identifier;
-		}
-		if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
-			text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
-		}
-		
 		if(entity["@type"] === "as.dto.dataset.DataSet") {
 			text = entity.permId.permId;
+			if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
+				text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
+			}
 			if(entity.sample) {
 				text += " " + ELNDictionary.Sample + " [" + getDisplayName(entity.sample) + "]";
 			}
 			
 			if(entity.experiment) {
 				text += " " + ELNDictionary.getExperimentDualName() + " [" + getDisplayName(entity.experiment) + "]";
+			}
+		} else {
+			if(entity.identifier && entity.identifier.identifier) {
+				text = entity.identifier.identifier;
+			}
+			if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
+				text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
 			}
 		}
 		return text;
@@ -198,7 +201,13 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 							"UUIDv4-2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", 		value: storedParams.data.q }
 						}
 					};
-		mainController.serverFacade.searchForSamplesAdvanced(criteria, null, function(results) { results.type = "Samples"; action(results) });
+		mainController.serverFacade.searchForSamplesAdvanced(criteria, {
+			only : true,
+			withType : true,
+			withProperties : true,
+			withExperiment : true,
+			withExperimentProperties : true 
+		}, function(results) { results.type = "Samples"; action(results) });
 	}
 	
 	var searchDataset = function(action) {
@@ -215,7 +224,15 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 						}
 					};
 		
-		mainController.serverFacade.searchForDataSetsAdvanced(criteria, { withSampleProperties : true, withExperimentProperties : true }, function(results) { results.type = "DataSets"; action(results) });
+		mainController.serverFacade.searchForDataSetsAdvanced(criteria, { 
+			only : true,
+			withType : true, 
+			withSample : true, 
+			withProperties : true, 
+			withExperiment : true, 
+			withSampleProperties : true, 
+			withExperimentProperties : true 
+		}, function(results) { results.type = "DataSets"; action(results) });
 	}
 	
 	//

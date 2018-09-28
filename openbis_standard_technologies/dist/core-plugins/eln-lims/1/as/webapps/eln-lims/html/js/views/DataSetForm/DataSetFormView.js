@@ -17,7 +17,6 @@
 function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	this._dataSetFormController = dataSetFormController;
 	this._dataSetFormModel = dataSetFormModel;
-	this.enableSelect2 = [];
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -165,18 +164,11 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
 			
 			//Export
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-				Util.blockUI();
-				var facade = mainController.serverFacade;
-				facade.exportAll([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], false, function(error, result) {
-					if(error) {
-						Util.showError(error);
-					} else {
-						Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-					}
-				});
-			});
-			toolbarModel.push({ component : $export, tooltip: "Export" });
+			var $exportAll = FormUtil.getExportButton([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], false);
+			toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
+		
+			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "DATASET", permId : _this._dataSetFormModel.dataSet.code, expand : true }], true);
+			toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
 			
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
@@ -209,6 +201,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		$wrapper.append($dataSetTypeFieldSet);
 		
 		var $dataSetTypeSelector = null;
+		
 		if(this._dataSetFormModel.mode === FormMode.CREATE) {
 			$dataSetTypeSelector = FormUtil.getDataSetsDropDown('DATASET_TYPE', this._dataSetFormModel.dataSetTypes);
 			$dataSetTypeSelector.change(function() { 
@@ -219,7 +212,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				}
 				_this.isFormDirty = true;
 			});
-			this.enableSelect2.push($dataSetTypeSelector);
 			var $dataSetTypeDropDown = $('<div>', { class : 'form-group' });
 			if(!this._dataSetFormModel.isMini) {
 				$dataSetTypeDropDown.append($('<label>', {class: "control-label"}).html('Data Set Type&nbsp;(*):'));
@@ -238,19 +230,57 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			$dataSetTypeFieldSet.append($dataSetTypeLabel);
 			var $dataSetCodeLabel = FormUtil.getFieldForLabelWithText('Code', this._dataSetFormModel.dataSet.code, null);
 			$dataSetTypeFieldSet.append($dataSetCodeLabel);
-			
-			var datasetParents = "N/A";
-			for(var pIdx = 0; pIdx < this._dataSetFormModel.dataSet.parentCodes.length; pIdx++) {
-				if(pIdx === 0) {
-					datasetParents = this._dataSetFormModel.dataSet.parentCodes[pIdx];
-				} else {
-					datasetParents += ", " + this._dataSetFormModel.dataSet.parentCodes[pIdx];
-				}
+		}
+		
+		// Parents
+		
+		var $dataSetParentsCodeLabel = $("<div>");
+		if(this._dataSetFormModel.mode === FormMode.VIEW) {
+			for(var i = 0; i < this._dataSetFormModel.dataSetV3.parents.length; i++) {
+					var parent = this._dataSetFormModel.dataSetV3.parents[i];
+					var $span = $("<span>");
+					$span.append(FormUtil.getFormLink(parent.permId.permId, "DataSet", parent.permId.permId));
+					var name = parent.properties[profile.propertyReplacingCode];
+					if(name) {
+						$span.append(" : ").append(name);
+					}
+					$dataSetParentsCodeLabel.append($("<div>").append($span));
 			}
 			
-			var $dataSetParentsCodeLabel = FormUtil.getFieldForLabelWithText('Parents', datasetParents, null);
-			$dataSetTypeFieldSet.append($dataSetParentsCodeLabel);
+		} else if(!this._dataSetFormModel.isMini) {
+			this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add", false, false, true, false);
+			this._dataSetFormModel.datasetParentsComponent.init($dataSetParentsCodeLabel);
+			this._dataSetFormModel.datasetParentsComponent.addSelectedDataSets(this._dataSetFormModel.dataSet.parentCodes);
 		}
+		
+		if((this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.parents.length !== 0) 
+			|| 
+			(this._dataSetFormModel.mode !== FormMode.VIEW && !this._dataSetFormModel.isMini)
+			) {
+			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetParentsCodeLabel, 'Parents'));
+		}
+		
+		// Children
+		
+		var $dataSetChildrenCodeLabel = $("<div>");
+		if(this._dataSetFormModel.mode === FormMode.VIEW) {
+			for(var i = 0; i < this._dataSetFormModel.dataSetV3.children.length; i++) {
+					var child = this._dataSetFormModel.dataSetV3.children[i];
+					var $span = $("<span>");
+					$span.append(FormUtil.getFormLink(child.permId.permId, "DataSet", child.permId.permId));
+					var name = child.properties[profile.propertyReplacingCode];
+					if(name) {
+						$span.append(" : ").append(name);
+					}
+					$dataSetChildrenCodeLabel.append($("<div>").append($span));
+			}
+		}
+		
+		if(this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.dataSetV3.children.length !== 0) {
+			$dataSetTypeFieldSet.append(FormUtil.getFieldForComponentWithLabel($dataSetChildrenCodeLabel, 'Children'));
+		}
+		
+		//
 		
 		var ownerName = null;
 		var owner = null;
@@ -445,12 +475,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var dataSetViewer = new DataSetViewerController("filesViewer", profile, this._dataSetFormModel.entity, mainController.serverFacade, profile.getDefaultDataStoreURL(), [this._dataSetFormModel.dataSet], false, true);
 			dataSetViewer.init();
 		}
-		
-		// Select2
-		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
-			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
-		}
-		//
 	}
 	
 	this._updateFileOptions = function() {
@@ -518,7 +542,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	
 	this._repaintMetadata = function(dataSetType) {
 		var _this = this;
-		this.enableSelect2 = [];
 		$("#metadataContainer").empty();
 		var $wrapper = $("<div>");
 		
@@ -622,10 +645,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							}
 						}
 						
-						if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-								this.enableSelect2.push($component);
-						} 
-						
 						//Update values if is into edit mode
 						if(this._dataSetFormModel.mode === FormMode.EDIT) {
 							if(propertyType.dataType === "BOOLEAN") {
@@ -667,12 +686,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		$("#metadataContainer").append($wrapper);
-		
-		// Select2
-		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
-			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
-		}
-		//
 	}
 
 	this.requestArchiving = function() {

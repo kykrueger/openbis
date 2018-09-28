@@ -297,7 +297,7 @@ public class ResourceListParser
         ds.setSampleIdentifierOrNull(getSampleIdentifier(sampleIdentifier));
         ds.setExperimentIdentifierOrNull(getExperimentIdentifier(experimentIdentifier));
 
-        IncomingDataSet incomingDataSet = data.new IncomingDataSet(ds, lastModificationDate);
+        IncomingDataSet incomingDataSet = new IncomingDataSet(ds, lastModificationDate);
         data.getDataSetsToProcess().put(permId, incomingDataSet);
         incomingDataSet.setConnections(parseConnections(xpath, xdNode));
         ds.setDataSetProperties(parseDataSetProperties(xpath, xdNode));
@@ -375,8 +375,7 @@ public class ResourceListParser
         ProjectIdentifier projectIdentifier = createProjectIdentifier(code, space);
         NewProject newProject = new NewProject(projectIdentifier.toString(), desc);
         newProject.setPermID(permId);
-        IncomingProject incomingProject =
-                data.new IncomingProject(newProject, lastModificationDate);
+        IncomingProject incomingProject = new IncomingProject(newProject, lastModificationDate);
         data.getProjectsToProcess().put(permId, incomingProject);
         incomingProject.setConnections(parseConnections(xpath, xdNode));
         incomingProject.setHasAttachments(hasAttachments(xpath, xdNode));
@@ -422,7 +421,7 @@ public class ResourceListParser
         String type = extractType(xdNode);
         NewMaterialWithType newMaterial = new NewMaterialWithType(code, type);
         MaterialWithLastModificationDate materialWithLastModDate =
-                data.new MaterialWithLastModificationDate(newMaterial, lastModificationDate);
+                new MaterialWithLastModificationDate(newMaterial, lastModificationDate);
         data.getMaterialsToProcess().put(code, type, materialWithLastModDate);
         newMaterial.setProperties(parseProperties(xpath, xdNode));
     }
@@ -440,7 +439,7 @@ public class ResourceListParser
             {
                 String to = connNodes.item(i).getAttributes().getNamedItem("to").getTextContent();
                 String type = connNodes.item(i).getAttributes().getNamedItem("type").getTextContent();
-                conns.add(data.new Connection(to, type));
+                conns.add(new Connection(to, type));
             }
         }
         return conns;
@@ -543,7 +542,7 @@ public class ResourceListParser
         ExperimentIdentifier experimentIdentifier = createExperimentIdentifier(space, project, code);
         NewExperiment newExp = new NewExperiment(experimentIdentifier.toString(), type);
         newExp.setPermID(permId);
-        IncomingExperiment incomingExperiment = data.new IncomingExperiment(newExp, lastModificationDate);
+        IncomingExperiment incomingExperiment = new IncomingExperiment(newExp, lastModificationDate);
         data.getExperimentsToProcess().put(permId, incomingExperiment);
         incomingExperiment.setConnections(parseConnections(xpath, xdNode));
         incomingExperiment.setHasAttachments(hasAttachments(xpath, xdNode));
@@ -584,7 +583,7 @@ public class ResourceListParser
         {
             newSample.setProjectIdentifier(createProjectIdentifier(project, space).toString());
         }
-        IncomingSample incomingSample = data.new IncomingSample(newSample, lastModificationDate);
+        IncomingSample incomingSample = new IncomingSample(newSample, lastModificationDate);
         data.getSamplesToProcess().put(permId, incomingSample);
         incomingSample.setHasAttachments(hasAttachments(xpath, xdNode));
         incomingSample.setConnections(parseConnections(xpath, xdNode));
