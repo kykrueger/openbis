@@ -69,14 +69,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			this._advancedSearchModel.forceLoadCriteria = undefined;
 		}
 		
-		this._$entityTypeDropdown.select2({ width: '100%', theme: "bootstrap" });
-		this._$andOrDropdownComponent.select2({ width: '100%', theme: "bootstrap" });
-		
-//		$("select").each(function() {
-//			if(!$(this).hasClass('select2-selection__rendered')) {
-//				$(this).select2({ width: '100%', theme: "bootstrap" });
-//			}
-//		});
 	}
 	
 	//
@@ -85,7 +77,9 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	
 	this._paintMenuPanel = function($menuPanelContainer) {
 		this._$entityTypeDropdown = this._getEntityTypeDropdown();
-		$menuPanelContainer.append(FormUtil.getFieldForComponentWithLabel(this._$entityTypeDropdown, "Search For", null, true));
+		var entityTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this._$entityTypeDropdown, "Search For", null, true);
+		entityTypeDropdownFormGroup.css("width","50%");
+		$menuPanelContainer.append(entityTypeDropdownFormGroup);
 
 		var andOrOptions = [{value : "AND", label : "AND", selected : true}, {value : "OR", label : "OR"}];
 		this._$andOrDropdownComponent = FormUtil.getDropdown(andOrOptions, "Select logical operator");
@@ -203,11 +197,8 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				$fieldValue.val(rule.value);
 				var $fieldNameDropdown = $($newFieldNameContainer.children()[0]);
 				$fieldNameDropdown.val(rule.name);
-				$fieldNameDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		}
-		
-		$fieldTypeDropdown.select2({ width: '100%', theme: "bootstrap" });
 	}
 	
 	//should make new objects every time. otherwise, using the same object will produce odd results!
@@ -287,9 +278,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					break;
 				default:
 					//Do Nothing
-			}
-			if($mergedDropdown && !_this._advancedSearchModel.forceLoadCriteria) {
-				$mergedDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		});
 		
@@ -387,8 +375,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				comparisonDropdown.trigger("change");
 				
 				$newFieldOperatorContainer.append(comparisonDropdown);
-				
-				comparisonDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		});
 		
@@ -520,7 +506,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					var $newFieldTypeComponent = _this._getNewFieldTypeDropdownComponent($(tds[1]), $(tds[2]), _this._advancedSearchModel.criteria.entityKind, $row.attr("id"));
 					$(tds[0]).empty();
 					$(tds[0]).append($newFieldTypeComponent);
-					$newFieldTypeComponent.select2({ width: '100%', theme: "bootstrap" });
 				}				
 			} else {
 				_this._advancedSearchModel.resetModel(kindAndType[0]); //Restart model
@@ -550,7 +535,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				delete _this._advancedSearchModel.criteria.rules[uuid];
 				$row.remove();
 			} else {
-				Util.showError("There must be at least one row of search criteria present.");
+				Util.showUserError("There must be at least one row of search criteria present.");
 			}
 		});
 		return $minusButton;

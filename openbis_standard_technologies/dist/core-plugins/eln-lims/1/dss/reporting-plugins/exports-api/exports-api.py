@@ -168,7 +168,7 @@ def expandAndexport(tr, params):
     v3 = ServiceProvider.getV3ApplicationService();
     v3d = ServiceProvider.getApplicationContext().getBean(V3_DSS_BEAN);
     mailClient = tr.getGlobalState().getMailClient();
-    
+    metadataOnly = params.get("metadataOnly");
     entitiesToExport = [];
     entitiesToExpand = deque([]);
         
@@ -243,7 +243,7 @@ def expandAndexport(tr, params):
                 entityFound = { "type" : "DATASET", "permId" : dataset.getPermId().getPermId() };
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
                 entitiesToExpand.append(entityFound);
-        if type == "DATASET":
+        if type == "DATASET" and not metadataOnly:
             criteria = DataSetFileSearchCriteria();
             criteria.withDataSet().withPermId().thatEquals(permId);
             results = v3d.searchFiles(sessionToken, criteria, DataSetFileFetchOptions());

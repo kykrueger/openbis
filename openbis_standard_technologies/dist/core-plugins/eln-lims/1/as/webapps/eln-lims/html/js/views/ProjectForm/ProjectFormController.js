@@ -20,7 +20,14 @@ function ProjectFormController(mainController, mode, project) {
 	this._projectFormView = new ProjectFormView(this, this._projectFormModel);
 	
 	this.init = function(views) {
-		this._projectFormView.repaint(views);
+		var _this = this;
+		this._mainController.getUserRole({
+			space: _this._projectFormModel.project.spaceCode,
+			project: _this._projectFormModel.project.code,
+		}, function(roles){
+			_this._projectFormModel.roles = roles;
+			_this._projectFormView.repaint(views);
+		});
 	}
 	
 	this.deleteProject = function(reason) {

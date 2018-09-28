@@ -696,12 +696,17 @@ class OpenbisController(_Controller):
         destination = "%s/%s" % (corePluginsFolder, self.instanceName)
         shutil.rmtree(destination, ignore_errors=True)
         shutil.copytree("%s/core-plugins/%s" % (self.templatesFolder, self.instanceName), destination)
+        self.enableCorePlugin(self.instanceName)
+        
+    def enableCorePlugin(self, pluginName):
+        corePluginsFolder = "%s/servers/core-plugins" % self.installPath
         corePluginsPropertiesFile = "%s/core-plugins.properties" % corePluginsFolder
         corePluginsProperties = util.readProperties(corePluginsPropertiesFile)
         enabledModules = corePluginsProperties['enabled-modules']
-        enabledModules = "%s, %s" % (enabledModules, self.instanceName) if len(enabledModules) > 0 else self.instanceName
+        enabledModules = "%s, %s" % (enabledModules, pluginName) if len(enabledModules) > 0 else pluginName
         corePluginsProperties['enabled-modules'] = enabledModules
         util.writeProperties(corePluginsPropertiesFile, corePluginsProperties)
+        
         
     def _setUpStore(self):
         templateStore = "%s/stores/%s" % (self.templatesFolder, self.instanceName)

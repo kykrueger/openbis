@@ -24,9 +24,9 @@ function SettingsManager(serverFacade) {
 			if(settingsObjects && settingsObjects.length > 0) {
 				settingsObjects.sort(function(a, b) {
 				    if(a.identifier === "/ELN_SETTINGS/GENERAL_ELN_SETTINGS") { // Global settings are applied first to be overriden by others
-				    		return 1;
-				    } else {
 				    		return -1;
+				    } else {
+				    		return 1;
 				    }
 				});
 				callback(settingsObjects);
@@ -143,7 +143,6 @@ function SettingsManager(serverFacade) {
 		var errors = [];
 		this._validateForcedDisableRTF(settings, errors);
 		this._validateForcedMonospaceFont(settings, errors);
-		this._validateInventorySpaces(settings, errors);
 		this._validateDataSetTypeForFileNameMap(settings, errors);
 		this._validateSampleTypeDefinitionsExtension(settings, errors);
 		return errors;
@@ -218,16 +217,6 @@ function SettingsManager(serverFacade) {
 			for (var item of settings.forceMonospaceFont) {
 				if (this.getForcedMonospaceFontOptions().indexOf(item) === -1) {
 					errors.push(item + " is not a property type.");
-				}
-			}
-		}
-	}
-
-	this._validateInventorySpaces = function(settings, errors) {
-		if (settings.inventorySpaces) {
-			for (var item of settings.inventorySpaces) {
-				if (this.getInventorySpacesOptions().indexOf(item) === -1) {
-					errors.push(item + " is not space.");
 				}
 			}
 		}

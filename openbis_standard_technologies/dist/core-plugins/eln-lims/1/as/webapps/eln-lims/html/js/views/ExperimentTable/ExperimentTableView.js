@@ -36,8 +36,6 @@ function ExperimentTableView(experimentTableController, experimentTableModel) {
 		
 		$container.append(FormUtil.getToolbar(toolbarModel));
 		$container.append(this._tableContainer);
-		$("#what-experiments-drop-down").select2({ width: '100%', theme: "bootstrap" });
-		$("#project-experiment-type-drop-down").select2({ width: '100%', theme: "bootstrap" });
 	}
 	
 	this.getTableContainer = function() {
@@ -90,6 +88,7 @@ function ExperimentTableView(experimentTableController, experimentTableModel) {
 			_this._experimentTableController._reloadTableWithType(typeToShow);
 		});
 		this.typeSelector = $typesSelector;
+		Select2Manager.add($typesSelector);
 		return $("<span>").append($typesSelector);
 	}
 	

@@ -3,7 +3,6 @@ import os
 import pybis
 from .clone import Clone
 from .openbis_command import OpenbisCommand, ContentCopySelector
-from ..checksum import validate_checksum
 from ..command_result import CommandResult
 from ..utils import cd
 from ..utils import run_shell

@@ -17,7 +17,6 @@
 function SampleFormView(sampleFormController, sampleFormModel) {
 	this._sampleFormController = sampleFormController;
 	this._sampleFormModel = sampleFormModel;
-	this.enableSelect2 = [];
 	
 	this.repaint = function(views, loadFromTemplate) {
 		var $container = views.content;
@@ -253,18 +252,11 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
 			
 			//Export
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-				Util.blockUI();
-				var facade = mainController.serverFacade;
-				facade.exportAll([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false, function(error, result) {
-					if(error) {
-						Util.showError(error);
-					} else {
-						Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-					}
-				});
-			});
-			toolbarModel.push({ component : $export, tooltip: "Export" });
+			var $exportAll = FormUtil.getExportButton([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false);
+			toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
+		
+			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], true);
+			toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
 			
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
@@ -534,12 +526,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		$container.append($form);
 		
-		// Select2
-		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
-			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
-		}
-		//
-		
 		//
 		// Extra content
 		//
@@ -628,10 +614,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					}
 				} else {
 					var $component = FormUtil.getFieldForPropertyType(propertyType, value);
-					
-					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-							this.enableSelect2.push($component);
-					}
 					
 					//Update values if is into edit mode
 					if(this._sampleFormModel.mode === FormMode.EDIT || loadFromTemplate) {
@@ -891,7 +873,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			if($childrenStorageDropdown && !$("#childrenStorageSelector").length) {
 				var $childrenStorageDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenStorageDropdown, 'Storage');
 				$("#newChildrenOnBenchDropDown").append($childrenStorageDropdownWithLabel);
-				$childrenStorageDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		});
 	}
@@ -939,7 +920,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			//Number of Replicas
 			var numberOfReplicas = parseInt($("#childrenReplicas").val());
 			if(isNaN(numberOfReplicas) || numberOfReplicas < 0 || numberOfReplicas > 1000) {
-				Util.showError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
+				Util.showUserError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
 				return;
 			}
 			
@@ -973,13 +954,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			var generatedChildrenProject = IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier);
 			var numberOfReplicas = parseInt($("#childrenReplicas").val());
 			if(isNaN(numberOfReplicas) || numberOfReplicas < 0 || numberOfReplicas > 1000) {
-				Util.showError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
+				Util.showUserError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
 				return;
 			}
 			var generatedChildrenCodes = getGeneratedChildrenCodes();
 			var generatedChildrenType = $("#childrenTypeSelector").val();
 			if(generatedChildrenType === "") {
-				Util.showError("Please select the children type.", function() {}, true);
+				Util.showUserError("Please select the children type.", function() {}, true);
 			} else {
 				for(var i = 0; i < generatedChildrenCodes.length; i++) {
 					var virtualSample = new Object();
@@ -1087,7 +1068,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $childrenTypeDropdown = FormUtil.getSampleTypeDropdown('childrenTypeSelector', true);
 		var $childrenTypeDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenTypeDropdown, 'Type');
 		$childrenComponent.append($childrenTypeDropdownWithLabel);
-		$childrenTypeDropdown.select2({ width: '100%', theme: "bootstrap" });
 		
 		var $childrenReplicas = FormUtil._getInputField('number', 'childrenReplicas', 'Children Replicas', '1', true);
 		$childrenReplicas.val("1");

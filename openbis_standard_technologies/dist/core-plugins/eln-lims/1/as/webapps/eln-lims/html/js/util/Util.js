@@ -53,7 +53,7 @@ var Util = new function() {
 		$("#" + id).select2({ width: '100%', theme: "bootstrap" });
 	}
 	
-	this.blockUI = function(message, extraCSS, disabledFadeAnimation) {
+	this.blockUI = function(message, extraCSS, disabledFadeAnimation, onBlock) {
 		this.unblockUI();
 		
 		var css = { 
@@ -83,6 +83,9 @@ var Util = new function() {
 		if (disabledFadeAnimation) {
 			params.fadeIn = 0;
 			params.fadeOut = 0;
+		}
+		if (onBlock) {
+			params.onBlock = onBlock;
 		}
 		$.blockUI(params);
 	}
@@ -149,7 +152,11 @@ var Util = new function() {
 		});
 	}
 	
-	this.showError = function(withHTML, andCallback, noBlock, isUserError, isEnvironmentError) {
+	this.showUserError = function(withHTML, andCallback, noBlock) {
+		this.showError(withHTML, andCallback, noBlock, true, false, true);
+	}
+	
+	this.showError = function(withHTML, andCallback, noBlock, isUserError, isEnvironmentError, disableReport) {
 		var withHTMLToShow = null;
 		
 		var userErrorWarning = "";
@@ -158,7 +165,7 @@ var Util = new function() {
 		}
 		
 		var warning = "<b>Please send an error report if you wish SIS to review it:</b>" +  "<br>" +
-			          "This report contains information about the user and the action it was performing when it happened, including it's data!: <br>" +
+			          "This report contains information about the user and the action it was performing when it happened, including its data!: <br>" +
 				      "Pressing the 'Send error report' button will open your default mail application and gives you the opportunity to delete any sensitive information before sending.";
 					 
 		var report = "agent: " + navigator.userAgent + "%0D%0A" +
@@ -170,20 +177,24 @@ var Util = new function() {
 					 "href: " + location.href.replace(new RegExp("&", 'g'), " - ") + "%0D%0A" +
 					 "error: " + withHTML;
 		
-		var withHTMLToShow = userErrorWarning + "<br><br><textarea rows=\"8\" cols=\"170\">" + report + "</textarea>" + "<br><br>" + warning + "<br><br>";
-          	withHTMLToShow += "<a class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
-		
-		var isiPad = navigator.userAgent.match(/iPad/i) != null;
-		
+		var withHTMLToShow = "";
+		if(disableReport) {
+			withHTMLToShow += "<textarea style=\"background: transparent; border: none;\" rows=\"1\" cols=\"170\">" + withHTML + "</textarea><br>";
+			withHTMLToShow += "<a id='jNotifyDismiss' class='btn btn-default'>Dismiss</a>";
+		} else {
+			withHTMLToShow += userErrorWarning + "<br><br><textarea style=\"background: transparent;\" rows=\"8\" cols=\"170\">" + withHTML + "</textarea>" + "<br><br>" + warning + "<br><br>";
+			withHTMLToShow += "<a id='jNotifyDismiss' class='btn btn-default'>Dismiss</a>" + "<a class='btn btn-default' href='mailto:" + profile.devEmail + "?subject=ELN Error Report [" + location.hostname +"] ["+ mainController.serverFacade.openbisServer.getSession() + "]&body=" + report +"'>Send error report</a>";
+		}
+				
 		if(!noBlock) {
 			this.blockUINoMessage();
 		}
 		
 		var localReference = this;
-		jError(
+		var popUp = jError(
 				withHTMLToShow,
 				{
-				  autoHide : isiPad,
+				  autoHide : false,
 				  clickOverlay : false,
 				  MinWidth : 250,
 				  TimeShown : 2000,
@@ -197,6 +208,10 @@ var Util = new function() {
 				  OpacityOverlay : 0.3,
 				  onClosed : function(){ if(andCallback) { andCallback();} else { localReference.unblockUI();}},
 				  onCompleted : function(){ }
+		});
+		
+		$("#jNotifyDismiss").click(function(e) {
+			popUp._close();
 		});
 	}
 	
@@ -223,20 +238,16 @@ var Util = new function() {
 	}
 	
 	this.showInfo = function(withHTML, andCallback, noBlock) {
-		var isiPad = navigator.userAgent.match(/iPad/i) != null;
-		if(!isiPad) {
-			withHTML = withHTML + "<br>" + "<a class='btn btn-default'>OK</a>";
-		}
 		
 		if(!noBlock) {
 			this.blockUINoMessage();
 		}
 		
 		var localReference = this;
-		jNotify(
-				withHTML,
+		var popUp = jNotify(
+				withHTML + "<br>" + "<a id='jNotifyDismiss' class='btn btn-default'>Dismiss</a>",
 				{
-				  autoHide : isiPad,
+				  autoHide : false,
 				  clickOverlay : false,
 				  MinWidth : 250,
 				  TimeShown : 2000,
@@ -250,6 +261,10 @@ var Util = new function() {
 				  OpacityOverlay : 0.3,
 				  onClosed : function(){ if(andCallback) { andCallback();} else { localReference.unblockUI();}},
 				  onCompleted : function(){ }
+		});
+		
+		$("#jNotifyDismiss").click(function(e) {
+			popUp._close();
 		});
 	}
 
@@ -390,15 +405,11 @@ var Util = new function() {
 			$imageWrapper.append($image);
 			
 			var imageHTML = $imageWrapper[0].outerHTML;
-			var isiPad = navigator.userAgent.match(/iPad/i) != null;
-			if(!isiPad) {
-				imageHTML = "<div style='text-align:right;'><a class='btn btn-default'><span class='glyphicon glyphicon-remove'></span></a></div>" + imageHTML;
-			}
-			
+						
 			Util.blockUINoMessage();
-			jNotifyImage(imageHTML,
+			var popUp = jNotifyImage("<div style='text-align:right;'><a id='jNotifyDismiss' class='btn btn-default'><span class='glyphicon glyphicon-remove'></span></a></div>" + imageHTML,
 					{
-					  autoHide : isiPad,
+					  autoHide : false,
 					  clickOverlay : false,
 					  MinWidth : 250,
 					  TimeShown : 2000,
@@ -413,6 +424,9 @@ var Util = new function() {
 					  onClosed : function(){ Util.unblockUI(); },
 					  onCompleted : function(){ }
 					});
+			$("#jNotifyDismiss").click(function(e) {
+				popUp._close();
+			});
 		};
 		
 		var containerWidth = $(window).width()*0.85;
