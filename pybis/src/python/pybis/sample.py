@@ -28,6 +28,19 @@ class Sample(OpenBisObject):
             for key in kwargs:
                 setattr(self, key, kwargs[key])
 
+        if getattr(self, 'parents') is None:
+            self.a.__dict__['_parents'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_parents_orig'] = self.a.__dict__['_parents']
+
+        if getattr(self, 'children') is None:
+            self.a.__dict__['_children'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_children_orig'] = self.a.__dict__['_children']
+
+
     def _set_data(self, data):
         # assign the attribute data to self.a by calling it
         # (invoking the AttrHolder.__call__ function)
@@ -71,6 +84,7 @@ class Sample(OpenBisObject):
         if name in ['set_properties', 'set_tags', 'add_tags']:
             raise ValueError("These are methods which should not be overwritten")
 
+        # must be an attribute in the AttributeHolder class
         setattr(self.__dict__['a'], name, value)
 
     def _repr_html_(self):
