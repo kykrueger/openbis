@@ -48,6 +48,18 @@ class DataSet(OpenBisObject):
             if not self.is_new:
                 self.a.__dict__['_children_orig'] = self.a.__dict__['_children']
 
+        if getattr(self, 'container') is None:
+            self.a.__dict__['_container'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_container_orig'] = self.a.__dict__['_container']
+
+        if getattr(self, 'component') is None:
+            self.a.__dict__['_component'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_component_orig'] = self.a.__dict__['_component']
+
 
     def __str__(self):
         return self.data['code']
@@ -57,6 +69,8 @@ class DataSet(OpenBisObject):
             'props', 
             'get_parents()', 'add_parents()', 'del_parents()', 
             'get_children()', 'add_children()', 'del_children()',
+            'get_containers()', 'add_containers()', 'del_containers()',
+            'get_components()', 'add_components()', 'del_components()',
             'sample', 
             'experiment', 
             'physicalData',

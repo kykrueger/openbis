@@ -34,9 +34,9 @@ def openbis_definitions(entity):
             "identifier": "experimentId",
         },
         "Sample": {
-            "attrs_new": "code type project parents children space experiment tags attachments".split(),
-            "attrs_up": "project parents children space experiment tags attachments".split(),
-            "attrs": "code permId identifier type project parents children components space experiment tags attachments".split(),
+            "attrs_new": "code type project parents children components space experiment tags attachments".split(),
+            "attrs_up": "project parents children components space experiment tags attachments".split(),
+            "attrs": "code permId identifier type project parents children components space experiment tags attachments container".split(),
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
                 'childIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
@@ -63,9 +63,9 @@ def openbis_definitions(entity):
             "multi": "parents children components tags attachments".split(),
         },
         "DataSet": {
-            "attrs_new": "type experiment sample parents children components tags".split(),
-            "attrs_up": "parents children experiment sample components tags".split(),
-            "attrs": "code permId type experiment sample parents children components tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore measured".split(),
+            "attrs_new": "type experiment sample parents children components containers tags".split(),
+            "attrs_up": "parents children experiment sample components containers tags".split(),
+            "attrs": "code permId type experiment sample parents children components containers tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore measured".split(),
 
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.dataset.id.DataSetPermId'}},
@@ -73,7 +73,7 @@ def openbis_definitions(entity):
                 'componentIds': {'permId': {'@type': 'as.dto.dataset.id.DataSetPermId'}},
                 'containerIds': {'permId': {'@type': 'as.dto.dataset.id.DataSetPermId'}},
             },
-            "multi": "parents children container".split(),
+            "multi": "parents children containers components".split(),
             "identifier": "dataSetId",
         },
         "Material": {
@@ -149,6 +149,7 @@ def openbis_definitions(entity):
             "material": "materialId",
             "materials": "materialIds",
             "container": "containerId",
+            "containers": "containerIds",
             "component": "componentId",
             "components": "componentIds",
             "parents": "parentIds",

@@ -46,14 +46,13 @@ class AttrHolder():
             }
         but when fetching the attribute without the underscore, we only return
         the relevant data for the user:
-            sample.space    # MATERIALS
+            sample.space   # MATERIALS
         """
         # entity is read from openBIS, so it is not new anymore
         self.__dict__['_is_new'] = False
 
         for attr in self._allowed_attrs:
-            if attr in ["code", "permId", "identifier",
-                        "type", "container", "components"]:
+            if attr in ["code", "permId", "identifier", "type"]:
                 self.__dict__['_' + attr] = data.get(attr, None)
                 # remove the @id attribute
                 if isinstance(self.__dict__['_' + attr], dict):
@@ -68,13 +67,13 @@ class AttrHolder():
                     d = d['permId']
                 self.__dict__['_' + attr] = d
 
-            elif attr in ["sample", "experiment", "project"]:
+            elif attr in ["sample", "experiment", "project", "container"]:
                 d = data.get(attr, None)
                 if d is not None:
                     d = d['identifier']
                 self.__dict__['_' + attr] = d
 
-            elif attr in ["parents", "children", "samples"]:
+            elif attr in ["parents", "children", "samples", "components", "containers"]:
                 self.__dict__['_' + attr] = []
                 if data[attr] is not None:
                     for item in data[attr]:
@@ -542,6 +541,79 @@ class AttrHolder():
 
         if '@id' in ident: ident.pop('@id')
         return ident
+
+    def get_container(self, **kwargs):
+        return getattr(self._openbis, 'get_'+self._entity.lower())( self.container, **kwargs )
+
+    def get_containers(self, **kwargs):
+        '''get the containers and return them as a list (Things/DataFrame)
+        or return empty list
+        '''
+        return getattr(self._openbis, 'get_'+self._entity.lower())( self.containers, **kwargs )
+
+    def set_containers(self, containers_to_set):
+        '''set the new _containers list
+        '''
+        self.__dict__['_containers'] = []
+        self.add_containers(containers_to_set)
+
+    def add_containers(self, containers_to_add):
+        '''add component to _containers list
+        '''
+        if not isinstance(containers_to_add, list):
+            containers_to_add = [containers_to_add]
+        for component in containers_to_add:
+            ident = self._ident_for_whatever(component)
+            if ident not in self.__dict__['_containers']:
+                self.__dict__['_containers'].append(ident)
+
+    def del_containers(self, containers_to_remove):
+        '''remove component from _containers list
+        '''
+        if not isinstance(containers_to_remove, list):
+            containers_to_remove = [containers_to_remove]
+        for component in containers_to_remove:
+            ident = self._ident_for_whatever(component)
+            for i, item in enumerate(self.__dict__['_containers']):
+                if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
+                    self.__dict__['_containers'].pop(i)
+                elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
+                    self.__dict__['_containers'].pop(i)
+
+    def get_components(self, **kwargs):
+        '''get the components and return them as a list (Things/DataFrame)
+        or return empty list
+        '''
+        return getattr(self._openbis, 'get_'+self._entity.lower())( self.components, **kwargs )
+
+    def set_components(self, components_to_set):
+        '''set the new _components list
+        '''
+        self.__dict__['_components'] = []
+        self.add_components(components_to_set)
+
+    def add_components(self, components_to_add):
+        '''add component to _components list
+        '''
+        if not isinstance(components_to_add, list):
+            components_to_add = [components_to_add]
+        for component in components_to_add:
+            ident = self._ident_for_whatever(component)
+            if ident not in self.__dict__['_components']:
+                self.__dict__['_components'].append(ident)
+
+    def del_components(self, components_to_remove):
+        '''remove component from _components list
+        '''
+        if not isinstance(components_to_remove, list):
+            components_to_remove = [components_to_remove]
+        for component in components_to_remove:
+            ident = self._ident_for_whatever(component)
+            for i, item in enumerate(self.__dict__['_components']):
+                if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
+                    self.__dict__['_components'].pop(i)
+                elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
+                    self.__dict__['_components'].pop(i)
 
     def get_parents(self, **kwargs):
         '''get the current parents and return them as a list (Things/DataFrame)
