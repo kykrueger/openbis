@@ -141,7 +141,13 @@ class DataSet(OpenBisObject):
         return
 
     def set_properties(self, properties):
-        self.openbis.update_dataset(self.permId, properties=properties)
+        """expects a dictionary of property names and their values.
+        Does not save the dataset.
+        """
+        for prop in properties.keys():
+            setattr(self.p, prop, properties[prop])
+
+    set_props = set_properties
 
     def download(self, files=None, destination=None, wait_until_finished=True, workers=10,
         linked_dataset_fileservice_url=None, content_copy_index=0):

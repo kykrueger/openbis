@@ -61,7 +61,9 @@ class PropertyHolder():
             voc = self._openbis.get_terms(name)
             value = value.upper()
             if value not in voc.df['code'].values:
-                raise ValueError("Value must be one of these terms: " + ", ".join(voc.df['code'].values))
+                raise ValueError("Value for attribute {} must be one of these terms: {}".format(
+                    name, ", ".join(voc.df['code'].values)
+                ))
         elif data_type in ('INTEGER', 'BOOLEAN', 'VARCHAR'):
             if not check_datatype(data_type, value):
                 raise ValueError("Value must be of type {}".format(data_type))

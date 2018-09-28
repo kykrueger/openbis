@@ -94,7 +94,10 @@ class Sample(OpenBisObject):
         return self.a.__repr__()
 
     def set_properties(self, properties):
-        self.openbis.update_sample(self.permId, properties=properties)
+        for prop in properties.keys():
+            setattr(self.p, prop, properties[prop])
+
+    set_props = set_properties
 
     def save(self):
         props = self.p._all_props()

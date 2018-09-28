@@ -91,7 +91,10 @@ class Experiment(OpenBisObject):
         return html
 
     def set_properties(self, properties):
-        self.openbis.update_experiment(self.permId, properties=properties)
+        for prop in properties.keys():
+            setattr(self.p, prop, properties[prop])
+
+    set_props = set_properties
 
     def save(self):
         if self.is_new:
@@ -179,6 +182,4 @@ class Experiment(OpenBisObject):
         self.samples = objects
 
     del_objects = del_samples # Alias
-
-
 
