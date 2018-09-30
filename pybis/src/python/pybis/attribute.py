@@ -83,14 +83,8 @@ class AttrHolder():
                             self.__dict__['_' + attr].append(item['permId'])
 
             elif attr in ["tags"]:
-                tags = []
-                for item in data[attr]:
-                    tags.append({
-                        "code": item['code'],
-                        "@type": "as.dto.tag.id.TagCode"
-                    })
-                self.__dict__['_tags'] = tags
-                self.__dict__['_prev_tags'] = copy.deepcopy(tags)
+                self.add_tags(data[attr])
+
             else:
                 self.__dict__['_' + attr] = data.get(attr, None)
 
@@ -189,28 +183,21 @@ class AttrHolder():
                 }
 
             elif attr == 'tags':
-                # look which tags/users have been added or removed and update them
-
-                if getattr(self, '_prev_'+attr) is None:
-                    self.__dict__['_prev_'+attr] = []
-                actions = []
-                for id in getattr(self, '_prev_'+attr):
-                    if id not in self.get('_'+attr):
-                        actions.append({
-                            "items": [id],
-                            "@type": "as.dto.common.update.ListUpdateActionRemove"
-                        })
-
-                for id in getattr(self,'_'+attr):
-                    if id not in self.get('_prev_'+attr):
-                        actions.append({
-                            "items": [id],
-                            "@type": "as.dto.common.update.ListUpdateActionAdd"
-                        })
+                items = []
+                for tag in self.__dict__['_tags']:
+                    items.append({
+                        "permId": tag['permId'],
+                        "@type" : "as.dto.tag.id.TagPermId"
+                    })
 
                 up_obj['tagIds'] = {
-                    "@type": "as.dto.common.update.IdListUpdateValue",
-                    "actions": actions
+                    "actions": [
+                        {
+                            "items": items,
+                            "@type": "as.dto.common.update.ListUpdateActionSet",
+                        }
+                    ],
+                    "@type": "as.dto.common.update.IdListUpdateValue"
                 }
 
             elif attr == 'userIds':
@@ -693,21 +680,51 @@ class AttrHolder():
         if getattr(self, '_tags') is not None:
             return [x['code'] for x in self._tags]
 
+    def get_tags(self):
+        if getattr(self, '_tags') is not None:
+            return self._openbis.get_tag([x['permId'] for x in self._tags])
+
     def set_tags(self, tags):
-        if getattr(self, '_tags') is None:
-            self.__dict__['_tags'] = []
+        '''set _tags list
+        '''
 
-        tagIds = _create_tagIds(tags)
+        self.__dict__['_tags'] = []
+        self.add_tags(tags)
 
-        # remove tags that are not in the new tags list
-        for tagId in self.__dict__['_tags']:
-            if tagId not in tagIds:
-                self.__dict__['_tags'].remove(tagId)
 
-        # add all new tags that are not in the list yet
-        for tagId in tagIds:
-            if tagId not in self.__dict__['_tags']:
-                self.__dict__['_tags'].append(tagId)
+    def add_tags(self, tags):
+        '''add tags to _tags list
+        '''
+        if not isinstance(tags, list):
+            tags = [tags]
+        
+        for tag in tags:
+            if isinstance(tag, str):
+                tag_obj = self._openbis.get_tag(tag)
+                tag_dict = {
+                    "code": tag_obj.code,
+                    "permId": tag_obj.permId,
+                }
+            else:
+                tag_dict = {
+                    "code": tag['code'],
+                    "permId": tag['permId']['permId'],
+                }
+
+            if tag_dict not in self.__dict__['_tags']:
+                self.__dict__['_tags'].append(tag_dict)
+
+    def del_tags(self, tags):
+        '''remove tags from _tags list
+        '''
+        if not isinstance(tags, list):
+            tags = [tags]
+
+        for tag in tags:
+            for i, tag_dict in enumerate(self.__dict__['_tags']):
+                if tag in self.__dict__['_tags'][i]['code'] or \
+                   tag in self.__dict__['_tags'][i]['permId']:
+                    self.__dict__['_tags'].pop(i)
 
     def set_users(self, userIds):
         if userIds is None:
@@ -753,28 +770,6 @@ class AttrHolder():
                 "action": "Remove"
             }
     del_members = del_users  # Alias
-
-    def add_tags(self, tags):
-        if getattr(self, '_tags') is None:
-            self.__dict__['_tags'] = []
-
-        # add the new tags to the _tags and _new_tags list,
-        # if not listed yet
-        tagIds = _create_tagIds(tags)
-        for tagId in tagIds:
-            if not tagId in self.__dict__['_tags']:
-                self.__dict__['_tags'].append(tagId)
-
-    def del_tags(self, tags):
-        if getattr(self, '_tags') is None:
-            self.__dict__['_tags'] = []
-
-        # remove the tags from the _tags and _del_tags list,
-        # if listed there
-        tagIds = _create_tagIds(tags)
-        for tagId in tagIds:
-            if tagId in self.__dict__['_tags']:
-                self.__dict__['_tags'].remove(tagId)
 
     def get_attachments(self):
         if getattr(self, '_attachments') is None:
