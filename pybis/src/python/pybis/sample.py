@@ -40,6 +40,12 @@ class Sample(OpenBisObject):
             if not self.is_new:
                 self.a.__dict__['_children_orig'] = self.a.__dict__['_children']
 
+        if getattr(self, 'components') is None:
+            self.a.__dict__['_components'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_components_orig'] = self.a.__dict__['_components']
+
 
     def _set_data(self, data):
         # assign the attribute data to self.a by calling it
@@ -54,10 +60,14 @@ class Sample(OpenBisObject):
 
     def __dir__(self):
         return [
-            'props', 'get_parents()', 'get_children()', 
-            'add_parents()', 'add_children()', 'del_parents()', 'del_children()',
-            'get_datasets()', 'get_experiment()',
-            'space', 'project', 'experiment', 'tags',
+            'props', 
+            'get_parents()', 'get_children()', 'get_components()',
+            'add_parents()', 'add_children()', 'add_components()', 
+            'del_parents()', 'del_children()', 'del_components()',
+            'set_parents()', 'set_children()', 'set_components()',
+            'get_datasets()', 
+            'get_experiment()', 
+            'space', 'project', 'experiment', 'container', 'tags',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'save()', 'delete()'
@@ -130,15 +140,16 @@ class Sample(OpenBisObject):
     def get_projects(self, **kwargs):
         return self.openbis.get_project(withSamples=[self.permId], **kwargs)
 
-    def get_experiment(self):
+    @property
+    def experiment(self):
         try:
             return self.openbis.get_experiment(self._experiment['identifier'])
         except Exception:
             pass
 
     @property
-    def experiment(self):
+    def container(self):
         try:
-            return self.openbis.get_experiment(self._experiment['identifier'])
+            return self.openbis.get_sample(self._container['identifier'])
         except Exception:
             pass
