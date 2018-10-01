@@ -34,8 +34,8 @@ def openbis_definitions(entity):
             "identifier": "experimentId",
         },
         "Sample": {
-            "attrs_new": "code type project parents children components space experiment tags attachments".split(),
-            "attrs_up": "project parents children components space experiment tags attachments".split(),
+            "attrs_new": "code type project parents children container components space experiment tags attachments".split(),
+            "attrs_up": "project parents children container components space experiment tags attachments".split(),
             "attrs": "code permId identifier type project parents children components space experiment tags attachments container".split(),
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},

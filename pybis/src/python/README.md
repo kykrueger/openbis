@@ -116,14 +116,19 @@ sample.code
 sample.permId
 sample.identifier
 sample.type  # once the sample type is defined, you cannot modify it
+
 sample.space
 sample.space = 'MY_OTHER_SPACE'
+
 sample.experiment    # a sample can belong to one experiment only
-sample.experiment = 'MY_SPACE/MY_PROJECT/MY_EXPERIMENT'
-sample.get_experiment()  # will return an experiment object
+sample.experiment = '/MY_SPACE/MY_PROJECT/MY_EXPERIMENT'
+
+sample.project
+sample.project = '/MY_SPACE/MY_PROJECT'  # only works if project samples are
+enabled
+
 sample.tags
 sample.tags = ['guten_tag', 'zahl_tag' ]
-sample.get_container()   # will return a sample object
 
 sample.get_parents()
 sample.set_parents(['/MY_SPACE/PARENT_SAMPLE_NAME')
@@ -134,6 +139,11 @@ sample.get_children()
 sample.set_children('/MY_SPACE/CHILD_SAMPLE_NAME')
 sample.add_children('/MY_SPACE/CHILD_SAMPLE_NAME')
 sample.del_children('/MY_SPACE/CHILD_SAMPLE_NAME')
+
+sample.container    # returns a sample object
+sample.container = '/MY_SPACE/CONTAINER_SAMPLE_NAME'   # watch out, this will change the identifier of the sample to:
+                                                       # /MY_SPACE/CONTAINER_SAMPLE_NAME:SAMPLE_NAME
+sample.container = ''                                  # this will remove the container. 
 
 sample.get_components()
 sample.set_components('/MY_SPACE/COMPONENT_NAME')
