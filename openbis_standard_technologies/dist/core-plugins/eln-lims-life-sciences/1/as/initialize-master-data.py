@@ -45,7 +45,18 @@ server_duplicates_handler = OpenbisDuplicatesHandler(distinct_creations, existin
 creations = server_duplicates_handler.remove_existing_elements_from_creations()
 creations = server_duplicates_handler.rewrite_parentchild_creationid_to_permid()
 entity_types = search_engine.find_existing_vocabularies_in_entity_definitions(creations)
-creations = VocabularyLabelHandler.rewrite_vocabularies(creations, entity_types)
+
+# Build initial Codes/labels and Property Code/labels during parsing
+# Map<String, Map<String, String>> propertiesHelperMap
+# Map<ENTITY_TYPE_CODE, Map<PROPERTY_CODE|PROPERTY_LABEL, { code: PROPERTY_CODE, dataType: DATA_TYPE, vocabularyCode: VOCABULARY_CODE}> vocabulariesHelperMap
+# properties_helper_map = extractProperties(creations, {})
+
+# Build initial Codes/labels and Vocabulary Terms/labels during parsing
+# Map<String, Map<String, String>> vocabulariesHelperMap
+# Map<VOCABULARY_CODE, Map<VOCABULARY_TERM_CODE|VOCABULARY_TERM_LABEL, VOCABULARY_TERM_CODE> vocabulariesHelperMap
+# vocabularies_helper_map = extractVocabularies(creations, entity_types)
+# creations = VocabularyLabelHandler.rewrite_vocabularies(creations, vocabularies_helper_map)
+
 operations = CreationToOperationParser.parse(creations)
 result = api.executeOperations(sessionToken, operations, SynchronousOperationExecutionOptions())
 print("========================eln-life-sciences-types xls ingestion result========================")

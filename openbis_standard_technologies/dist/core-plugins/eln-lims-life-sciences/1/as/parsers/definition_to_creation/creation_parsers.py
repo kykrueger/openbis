@@ -65,7 +65,7 @@ class PropertyTypeDefinitionToCreationParser(DefinitionToCreationParser):
             property_type_creation.code = prop[u'code']
             property_type_creation.label = prop[u'property label']
             property_type_creation.description = prop[u'description']
-            property_type_creation.dataType = DataType.valueOf(prop[u'property type'])
+            property_type_creation.dataType = DataType.valueOf(prop[u'data type'])
             property_type_creation.internalNameSpace = is_internal_namespace(prop[u'code'])
             property_type_creation.vocabularyId = VocabularyPermId(prop[u'vocabulary code']) if prop[u'vocabulary code'] is not None else None
             property_creations.append(property_type_creation)
