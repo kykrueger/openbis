@@ -1,7 +1,7 @@
 import os
 import sys
 
-TYPES_FOLDER = "%s/test_files/" % [p for p in sys.path if p.find('core-plugins') >= 0][0]
+TYPES_FOLDER = "%s/life-sciences-types/" % [p for p in sys.path if p.find('core-plugins') >= 0][0]
 SCRIPTS = os.path.join(TYPES_FOLDER + 'scripts')
 
 

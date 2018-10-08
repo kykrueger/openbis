@@ -34,10 +34,9 @@ class PropertyTypeDefinitionParser(object):
         }
 
         poi_definition = PoiCleaner.clean_data(poi_definition, row_numbers)
-
         definition = Definition()
         definition.type = poi_definition[DEFINITION_TYPE_ROW][DEFINITION_TYPE_CELL]
-        if GeneralDefinitionParser.hasProperties(poi_definition):
+        if PropertyTypeDefinitionParser.hasProperties(poi_definition):
             properties_headers = poi_definition[PROPERTIES_HEADER_ROW]
 
             for property_definitions in poi_definition[PROPERTIES_VALUES_ROW_START:]:

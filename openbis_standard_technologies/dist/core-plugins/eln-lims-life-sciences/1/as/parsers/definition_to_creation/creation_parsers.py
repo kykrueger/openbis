@@ -26,15 +26,18 @@ def get_boolean_from_string(text):
 class DefinitionToCreationParserFactory(object):
 
     @staticmethod
-    def getParsers(definition):
+    def get_parsers(definition):
         if definition.type == u'VOCABULARY_TYPE':
             return [VocabularyDefinitionToCreationParser()]
         elif definition.type == u'SAMPLE_TYPE':
-            return [SampleTypeDefinitionToCreationParser(), PropertyTypeDefinitionToCreationParser(), ScriptDefinitionToCreationParser()]
+            return [SampleTypeDefinitionToCreationParser(), PropertyTypeDefinitionToCreationParser(),
+                    ScriptDefinitionToCreationParser()]
         elif definition.type == u'EXPERIMENT_TYPE':
-            return [ExperimentTypeDefinitionToCreationParser(), PropertyTypeDefinitionToCreationParser(), ScriptDefinitionToCreationParser()]
+            return [ExperimentTypeDefinitionToCreationParser(), PropertyTypeDefinitionToCreationParser(),
+                    ScriptDefinitionToCreationParser()]
         elif definition.type == u'DATASET_TYPE':
-            return [DatasetTypeDefinitionToCreationParser(), PropertyTypeDefinitionToCreationParser(), ScriptDefinitionToCreationParser()]
+            return [DatasetTypeDefinitionToCreationParser(), PropertyTypeDefinitionToCreationParser(),
+                    ScriptDefinitionToCreationParser()]
         elif definition.type == u'SPACE':
             return [SpaceDefinitionToCreationParser()]
         elif definition.type == u'PROJECT':
@@ -46,7 +49,8 @@ class DefinitionToCreationParserFactory(object):
         elif definition.type == u'PROPERTY_TYPE':
             return [PropertyTypeDefinitionToCreationParser()]
         else:
-            raise UnsupportedOperationException("Definition of " + str(definition.type) + " is not supported (probably yet).")
+            raise UnsupportedOperationException(
+                "Definition of " + str(definition.type) + " is not supported (probably yet).")
 
 
 class DefinitionToCreationParser(object):
@@ -54,7 +58,6 @@ class DefinitionToCreationParser(object):
 
 
 class PropertyTypeDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "PropertyTypeCreation"
 
     def parse(self, definition):
@@ -77,7 +80,6 @@ class PropertyTypeDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class VocabularyDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "VocabularyCreation"
 
     def parse(self, definition):
@@ -104,7 +106,6 @@ class VocabularyDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class PropertyAssignmentDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "PropertyAssignmentCreation"
 
     def parse(self, prop):
@@ -127,7 +128,6 @@ class PropertyAssignmentDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class SampleTypeDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "SampleTypeCreation"
 
     def parse(self, definition):
@@ -154,7 +154,6 @@ class SampleTypeDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class ExperimentTypeDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "ExperimentTypeCreation"
 
     def parse(self, definition):
@@ -175,7 +174,6 @@ class ExperimentTypeDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class DatasetTypeDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "DatasetTypeCreation"
 
     def parse(self, definition):
@@ -196,7 +194,6 @@ class DatasetTypeDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class SpaceDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "SpaceCreation"
 
     def parse(self, definition):
@@ -212,7 +209,6 @@ class SpaceDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class ProjectDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "ProjectCreation"
 
     def parse(self, definition):
@@ -229,7 +225,6 @@ class ProjectDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class ExperimentDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "ExperimentCreation"
 
     def parse(self, definition):
@@ -253,12 +248,12 @@ class ExperimentDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class SampleDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "SampleCreation"
 
     def parse(self, definition):
         samples = []
-        mandatory_attributes = [u'$', u'code', u'space', u'project', u'experiment', u'auto generate code', u'parents', u'children']
+        mandatory_attributes = [u'$', u'code', u'space', u'project', u'experiment', u'auto generate code', u'parents',
+                                u'children']
         for sample_properties in definition.properties:
             sample_creation = SampleCreation()
             sample_creation.typeId = EntityTypePermId(definition.attributes[u'sample type'])
@@ -269,7 +264,8 @@ class SampleDefinitionToCreationParser(DefinitionToCreationParser):
             if u'$' in sample_properties and sample_properties[u'$'] is not None:
                 # may overwrite creationId from code, which is intended
                 sample_creation.creationId = CreationId(sample_properties[u'$'])
-            if u'auto generate code' in sample_properties and sample_properties[u'auto generate code'] is not None and sample_properties[u'auto generate code'] != '':
+            if u'auto generate code' in sample_properties and sample_properties[u'auto generate code'] is not None and \
+                    sample_properties[u'auto generate code'] != '':
                 sample_creation.autoGeneratedCode = get_boolean_from_string(sample_properties[u'auto generate code'])
             if u'space' in sample_properties and sample_properties[u'space'] is not None:
                 sample_creation.spaceId = CreationId(sample_properties[u'space'])
@@ -301,7 +297,6 @@ class SampleDefinitionToCreationParser(DefinitionToCreationParser):
 
 
 class ScriptDefinitionToCreationParser(DefinitionToCreationParser):
-
     type = "ScriptCreation"
 
     def parse(self, definition):

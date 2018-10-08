@@ -65,3 +65,12 @@ class EntityCreationEntityTypeSearchCriteria(object):
     def get_search_criteria(self, specific_creations):
         self.search_criteria.withCodes().thatIn([creation.typeId.permId for creation in specific_creations])
         return self.search_criteria
+
+
+class FindAllSearchCriteria(object):
+
+    def __init__(self, search_criteria_class):
+        self.search_criteria = search_criteria_class()
+
+    def get_search_criteria(self, *args):
+        return self.search_criteria
