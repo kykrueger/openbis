@@ -1,3 +1,6 @@
+from utils.dotdict import dotdict
+
+
 class SampleCreationSampleSearchCriteria(object):
 
     def __init__(self, search_criteria_class):
@@ -28,6 +31,39 @@ class SampleCreationSampleSearchCriteria(object):
                 search_criterias.append(search_criteria)
 
         return search_criterias
+
+
+class SpaceFromPropertiesSearchCriteria(object):
+
+    def __init__(self, search_criteria_class):
+        self.search_criteria = search_criteria_class
+
+    def get_search_criteria(self, specific_creations):
+        space_codes = [dotdict({'code': str(creation.spaceId)}) for creation in specific_creations if creation.spaceId is not None]
+        default_search_criteria_builder = DefaultCreationElementSearchCriteria(self.search_criteria)
+        return default_search_criteria_builder.get_search_criteria(space_codes)
+
+
+class ProjectFromPropertiesSearchCriteria(object):
+
+    def __init__(self, search_criteria_class):
+        self.search_criteria = search_criteria_class
+
+    def get_search_criteria(self, specific_creations):
+        project_codes = [dotdict({'code': str(creation.projectId)}) for creation in specific_creations if creation.projectId is not None]
+        default_search_criteria_builder = DefaultCreationElementSearchCriteria(self.search_criteria)
+        return default_search_criteria_builder.get_search_criteria(project_codes)
+
+
+class ExperimentFromPropertiesSearchCriteria(object):
+
+    def __init__(self, search_criteria_class):
+        self.search_criteria = search_criteria_class
+
+    def get_search_criteria(self, specific_creations):
+        experiment_codes = [dotdict({'code': str(creation.experimentId)}) for creation in specific_creations if creation.experimentId is not None]
+        default_search_criteria_builder = DefaultCreationElementSearchCriteria(self.search_criteria)
+        return default_search_criteria_builder.get_search_criteria(experiment_codes)
 
 
 class DefaultCreationElementSearchCriteria(object):

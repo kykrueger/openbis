@@ -27,17 +27,17 @@ class OpenbisDuplicatesHandler(object):
             for creation in self.creations[SampleDefinitionToCreationParser.type]:
                 if creation.spaceId is not None:
                     for existing_element in self.existing_elements[SpaceDefinitionToCreationParser.type]:
-                        if existing_element.code == creation.spaceId.creationId:
+                        if existing_element.code == str(creation.spaceId):
                             creation.spaceId = existing_element.permId
                             break
                 if creation.projectId is not None:
                     for existing_element in self.existing_elements[ProjectDefinitionToCreationParser.type]:
-                        if existing_element.code == creation.projectId.creationId:
+                        if existing_element.code == str(creation.projectId):
                             creation.projectId = existing_element.permId
                             break
                 if creation.experimentId is not None:
                     for existing_element in self.existing_elements[ExperimentDefinitionToCreationParser.type]:
-                        if existing_element.code == creation.experimentId.creationId:
+                        if existing_element.code == str(creation.experimentId):
                             creation.experimentId = existing_element.permId
                             break
 
@@ -81,6 +81,8 @@ class OpenbisDuplicatesHandler(object):
 
     def remove_existing_elements_from_creations(self):
         for creations_type, existing_elements in self.existing_elements.items():
+            if not creations_type in self.creations:
+                continue
             if creations_type == SampleDefinitionToCreationParser.type:
                 existing_object_codes = [obj.identifier.identifier for obj in existing_elements]
                 self.creations[creations_type] = list(filter(

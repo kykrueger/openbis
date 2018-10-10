@@ -3,6 +3,8 @@ from parsers import PropertyTypeDefinitionToCreationParser, SampleTypeDefinition
                     SampleDefinitionToCreationParser, ExperimentDefinitionToCreationParser, \
                     VocabularyDefinitionToCreationParser
 
+from utils.dotdict import dotdict
+
 sample = "sample"
 experiment = "experiment"
 property = "property"
@@ -18,7 +20,11 @@ entity_and_type_uniform_mapping = {
 
 def unify_properties_representation_of(creations, entity_types, vocabularies, existing_elements):
     properties = {}
-    properties = _fill_properties_from_creations(properties, creations, vocabularies[VocabularyDefinitionToCreationParser.type], existing_elements[PropertyTypeDefinitionToCreationParser.type])
+    vocabulary_type = VocabularyDefinitionToCreationParser.type
+    property_type = PropertyTypeDefinitionToCreationParser.type
+    existing_vocabularies = vocabularies[vocabulary_type] if vocabulary_type in vocabularies else []
+    existing_properties = existing_elements[property_type] if property_type in existing_elements else []
+    properties = _fill_properties_from_creations(properties, creations, existing_vocabularies, existing_properties)
     properties = _fill_properties_from_existing_entity_types(properties, entity_types)
     return properties
 
@@ -58,13 +64,6 @@ def _find_vocabulary(vocabularies, vocabulary_code):
     for vocabulary in vocabularies:
         if str(vocabulary.code).lower() == str(vocabulary_code).lower():
             return vocabulary
-
-
-class dotdict(dict):
-        """dot.notation access to dictionary attributes"""
-        __getattr__ = dict.get
-        __setattr__ = dict.__setitem__
-        __delattr__ = dict.__delitem__
 
 
 def property_type_representation_from(property_type, creations, existing_vocabularies):

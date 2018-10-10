@@ -24,7 +24,8 @@ from parsers import VocabularyDefinitionToCreationParser, PropertyTypeDefinition
                     ProjectDefinitionToCreationParser, ExperimentDefinitionToCreationParser, ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
 from search_criteria_factory import DefaultCreationElementSearchCriteria, SampleCreationSampleSearchCriteria, \
                                     ScriptCreationScriptSearchCriteria, EntityCreationEntityTypeSearchCriteria, \
-                                    FindAllSearchCriteria
+                                    FindAllSearchCriteria, SpaceFromPropertiesSearchCriteria, ProjectFromPropertiesSearchCriteria, \
+                                    ExperimentFromPropertiesSearchCriteria
 
 
 class SearchEngine():
@@ -146,6 +147,14 @@ class SearchEngine():
             'fetch_options': ProjectFetchOptions()
             },
             {
+            'creations_type': ProjectDefinitionToCreationParser.type,
+            'result_creations_type': SpaceDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : SpaceFromPropertiesSearchCriteria,
+            'search_criteria_class' : SpaceSearchCriteria,
+            'search_operation': SearchSpacesOperation,
+            'fetch_options': SpaceFetchOptions()
+            },
+            {
             'creations_type': ExperimentDefinitionToCreationParser.type,
             'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
             'search_criteria_class' : ExperimentSearchCriteria,
@@ -153,11 +162,43 @@ class SearchEngine():
             'fetch_options': ExperimentFetchOptions()
             },
             {
+            'creations_type': ExperimentDefinitionToCreationParser.type,
+            'result_creations_type': ProjectDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : ProjectFromPropertiesSearchCriteria,
+            'search_criteria_class' : ProjectSearchCriteria,
+            'search_operation': SearchProjectsOperation,
+            'fetch_options': ProjectFetchOptions()
+            },
+            {
             'creations_type': SampleDefinitionToCreationParser.type,
             'search_criteria_build_strategy' : SampleCreationSampleSearchCriteria,
             'search_criteria_class' : SampleSearchCriteria,
             'search_operation': SearchSamplesOperation,
             'fetch_options': SampleFetchOptions()
+            },
+            {
+            'creations_type': SampleDefinitionToCreationParser.type,
+            'result_creations_type': SpaceDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : SpaceFromPropertiesSearchCriteria,
+            'search_criteria_class' : SpaceSearchCriteria,
+            'search_operation': SearchSpacesOperation,
+            'fetch_options': SpaceFetchOptions()
+            },
+            {
+            'creations_type': SampleDefinitionToCreationParser.type,
+            'result_creations_type': ProjectDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : ProjectFromPropertiesSearchCriteria,
+            'search_criteria_class' : ProjectSearchCriteria,
+            'search_operation': SearchProjectsOperation,
+            'fetch_options': ProjectFetchOptions()
+            },
+            {
+            'creations_type': SampleDefinitionToCreationParser.type,
+            'result_creations_type': ExperimentDefinitionToCreationParser.type,
+            'search_criteria_build_strategy' : ExperimentFromPropertiesSearchCriteria,
+            'search_criteria_class' : ExperimentSearchCriteria,
+            'search_operation': SearchExperimentsOperation,
+            'fetch_options': ExperimentFetchOptions()
             },
             {
             'creations_type': ScriptDefinitionToCreationParser.type,
@@ -176,8 +217,13 @@ class SearchEngine():
             if creations_type in creations:
                 search_criterias = search_criteria_builder.get_search_criteria(creations[creations_type])
                 existing_specific_elements = self._get_existing_elements(search_criterias, **strategy)
+                results_key = strategy['result_creations_type'] if 'result_creations_type' in strategy else creations_type
                 if existing_specific_elements is not None:
-                    existing_elements[creations_type] = existing_specific_elements
+                    if results_key not in existing_elements:
+                        existing_elements[results_key] = []
+                    # May contain duplicates when i.e Project exists on the server but is also
+                    # explicitly mentioned in xls sheet, it is ok.
+                    existing_elements[results_key].extend(existing_specific_elements)
         return existing_elements
 
     def _get_existing_elements(self, search_criterias, **kwargs):
