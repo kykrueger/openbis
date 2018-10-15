@@ -280,7 +280,7 @@ public class TrackingClient
     private static IApplicationServerApi initV3(Parameters params) {
         v3 = HttpInvokerUtils
                 .createServiceStub(IApplicationServerApi.class, params.getOpenbisServerURL()
-                        + IApplicationServerApi.SERVICE_URL, 30000);
+                        + IApplicationServerApi.SERVICE_URL, 10000);
         return v3;
    }
 }
