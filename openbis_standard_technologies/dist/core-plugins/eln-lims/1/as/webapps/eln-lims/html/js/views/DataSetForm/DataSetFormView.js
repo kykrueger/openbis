@@ -357,6 +357,26 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		
 		$wrapper.append($('<div>', { 'id' : 'fileOptionsContainer' } ));
 		
+		//Microscopy images viewer MICROSCOPY_IMG
+		if(_this._dataSetFormModel.dataSetV3.type.code === "MICROSCOPY_IMG_CONTAINER") {
+			var $imageWidget = new $('<div>');
+			$wrapper.append($imageWidget);
+    			require(["openbis-screening", "components/imageviewer/ImageViewerWidget" ], function(openbis, ImageViewerWidget) {
+				var screningFacade = new openbis(null);
+				screningFacade._internal.sessionToken = mainController.openbisV1._internal.sessionToken;
+				
+		        // Create the image viewer component for the specific data sets
+		        var widget = new ImageViewerWidget(screningFacade, [_this._dataSetFormModel.dataSetV3.permId.permId]);
+		
+		        // Render the component and add it to the page
+		        $imageWidget.append($('<legend>').text('Microscopy Viewer'));
+		        var $imageWidgetContainer = new $('<div>');
+		        	$imageWidgetContainer.css("margin", "20px");
+		        $imageWidget.append($imageWidgetContainer);
+		        $imageWidgetContainer.append(widget.render());
+   		 	});
+		}
+		
 		//Show Files
 		var filesViewer = $('<div>', { 'id' : 'filesViewer' } );
 		$wrapper.append(filesViewer);
