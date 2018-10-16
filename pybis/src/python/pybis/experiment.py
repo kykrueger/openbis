@@ -113,7 +113,7 @@ class Experiment(OpenBisObject):
             request["params"][1][0]["properties"] = props
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE: print("Experiment successfully updated.")
-            new_exp_data = self.openbis.get_experiment(resp[0]['permId'], only_data=True)
+            new_exp_data = self.openbis.get_experiment(self.permId, only_data=True)
             self._set_data(new_exp_data)
 
     def delete(self, reason):
