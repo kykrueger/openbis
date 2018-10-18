@@ -131,6 +131,10 @@ $.extend(DefaultProfile.prototype, {
 		this.systemProperties = ["ANNOTATIONS_STATE", "FREEFORM_TABLE_STATE"];
 		this.forcedDisableRTF = ["NAME", "SEQUENCE"];
 		this.forceMonospaceFont = ["SEQUENCE"];
+		this.imageViewerDataSetCodes = [];
+		this.isImageViewerDataSetCode = function(code) {
+			return (code && $.inArray(code, this.imageViewerDataSetCodes) !== -1);
+		}
 		
 		this.isRTF = function(propertytype) {
 			return (propertytype && 
@@ -341,6 +345,10 @@ $.extend(DefaultProfile.prototype, {
 		this.propertyReplacingCode = "NAME";
 		
 		this.sampleTypeDefinitionsExtension = {
+		
+		}
+		
+		this.dataSetTypeDefinitionsExtension = {
 		
 		}
 		

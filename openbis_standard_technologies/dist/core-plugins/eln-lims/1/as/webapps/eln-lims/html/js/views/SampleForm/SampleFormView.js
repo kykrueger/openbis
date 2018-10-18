@@ -322,6 +322,28 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		}
 		
 		//
+		// Image viewer
+		//
+		if(_this._sampleFormModel.datasets && profile.isImageViewerDataSetCode(_this._sampleFormModel.datasets[0].dataSetTypeCode)) {
+			var $imageWidget = new $('<div>');
+			$formColumn.append($imageWidget);
+		    	require(["openbis-screening", "components/imageviewer/ImageViewerWidget" ], function(openbis, ImageViewerWidget) {
+				var screningFacade = new openbis(null);
+				screningFacade._internal.sessionToken = mainController.openbisV1._internal.sessionToken;
+						
+				// Create the image viewer component for the specific data sets
+				var widget = new ImageViewerWidget(screningFacade, [_this._sampleFormModel.datasets[0].code]);
+				
+				// Render the component and add it to the page
+				$imageWidget.append($('<legend>').text('Microscopy Viewer'));
+				var $imageWidgetContainer = new $('<div>');
+				$imageWidgetContainer.css("margin", "20px");
+				$imageWidget.append($imageWidgetContainer);
+				$imageWidgetContainer.append(widget.render());
+		   	});
+		}
+		
+		//
 		// Form Defined Properties from General Section
 		//
 		for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
