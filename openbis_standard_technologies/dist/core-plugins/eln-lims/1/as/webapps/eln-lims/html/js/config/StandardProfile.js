@@ -7,6 +7,8 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 	init: function(serverFacade){
 		DefaultProfile.prototype.init.call(this, serverFacade);
 		
+		this.imageViewerDataSetCodes = ["MICROSCOPY_IMG_CONTAINER"];
+		
 		this.hideCodes = true;
 		
 		this.storagesConfiguration = { "isEnabled" : false };
@@ -318,9 +320,47 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 														"ANNOTATION_PROPERTIES" : [{"TYPE" : "COMMENTS", "MANDATORY" : false }]
 													}																																		
 												],
+				},
+				"MICROSCOPY_SAMPLE_TYPE" : {
+					"SHOW" : false,
+					"SAMPLE_CHILDREN_DISABLED" : true,
+					"SAMPLE_PARENTS_DISABLED" : true,
+					"TOOLBAR" : { CREATE : false, EDIT : true, MOVE : false, COPY : false, DELETE : false, PRINT : true, HIERARCHY_GRAPH : true, HIERARCHY_TABLE : true, UPLOAD_DATASET : false, UPLOAD_DATASET_HELPER : false, EXPORT_ALL : true, EXPORT_METADATA : true }
 				}
-		
 		} 
+		
+		this.dataSetTypeDefinitionsExtension = {
+			"MICROSCOPY_ACCESSORY_FILE" : {
+				"SHOW" : false,
+				"DATASET_CHILDREN_DISABLED" : true,
+				"DATASET_PARENTS_DISABLED" : true,
+				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+			},
+			"MICROSCOPY_IMG" : {
+				"SHOW" : false,
+				"DATASET_CHILDREN_DISABLED" : true,
+				"DATASET_PARENTS_DISABLED" : true,
+				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+			},
+			"MICROSCOPY_IMG_OVERVIEW" : {
+				"SHOW" : false,
+				"DATASET_CHILDREN_DISABLED" : true,
+				"DATASET_PARENTS_DISABLED" : true,
+				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+			},
+			"MICROSCOPY_IMG_THUMBNAIL" : {
+				"SHOW" : false,
+				"DATASET_CHILDREN_DISABLED" : true,
+				"DATASET_PARENTS_DISABLED" : true,
+				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+			},
+			"MICROSCOPY_IMG_CONTAINER" : {
+				"SHOW" : false,
+				"DATASET_CHILDREN_DISABLED" : true,
+				"DATASET_PARENTS_DISABLED" : true,
+				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+			}
+		}
 		
 		this.sampleFormOnSubmit = function(sample, action) {
 			if(sample.sampleTypeCode === "ORDER") {
