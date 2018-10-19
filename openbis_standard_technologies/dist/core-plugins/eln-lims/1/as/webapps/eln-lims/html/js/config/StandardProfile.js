@@ -331,34 +331,24 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 		
 		this.dataSetTypeDefinitionsExtension = {
 			"MICROSCOPY_ACCESSORY_FILE" : {
-				"SHOW" : false,
-				"DATASET_CHILDREN_DISABLED" : true,
 				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
 			},
 			"MICROSCOPY_IMG" : {
-				"SHOW" : false,
-				"DATASET_CHILDREN_DISABLED" : true,
 				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
 			},
 			"MICROSCOPY_IMG_OVERVIEW" : {
-				"SHOW" : false,
-				"DATASET_CHILDREN_DISABLED" : true,
 				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
 			},
 			"MICROSCOPY_IMG_THUMBNAIL" : {
-				"SHOW" : false,
-				"DATASET_CHILDREN_DISABLED" : true,
 				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
 			},
 			"MICROSCOPY_IMG_CONTAINER" : {
-				"SHOW" : false,
-				"DATASET_CHILDREN_DISABLED" : true,
 				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, DELETE : false, EXPORT_ALL : true, EXPORT_METADATA : true }
+				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
 			}
 		}
 		

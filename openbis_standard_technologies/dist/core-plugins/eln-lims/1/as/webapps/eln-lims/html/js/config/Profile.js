@@ -245,6 +245,17 @@ $.extend(DefaultProfile.prototype, {
 		this.searchSamplesUsingV3OnDropbox = false;
 		this.searchSamplesUsingV3OnDropboxRunCustom = false;
 		
+		this.getDataSetTypeToolbarConfiguration = function(dataSetTypeCode) {
+			var defaultToolbar = { EDIT : true, MOVE : true, ARCHIVE : true, DELETE : true, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true };
+			if(this.dataSetTypeDefinitionsExtension[dataSetTypeCode] && this.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"]) {
+				var toolbarOptions = this.dataSetTypeDefinitionsExtension[dataSetTypeCode]["TOOLBAR"];
+				for(key in toolbarOptions) {
+					defaultToolbar[key] = toolbarOptions[key];
+				}
+			}
+			return defaultToolbar;
+		}
+		
 		this.getSampleTypeToolbarConfiguration = function(sampleTypeCode) {
 			var defaultToolbar = { CREATE : true, EDIT : true, MOVE : true, COPY: true, DELETE : true, PRINT: true, HIERARCHY_GRAPH : true, HIERARCHY_TABLE : true, UPLOAD_DATASET : true, UPLOAD_DATASET_HELPER : true, EXPORT_ALL : true, EXPORT_METADATA : true };
 			if(this.sampleTypeDefinitionsExtension[sampleTypeCode] && this.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"]) {
