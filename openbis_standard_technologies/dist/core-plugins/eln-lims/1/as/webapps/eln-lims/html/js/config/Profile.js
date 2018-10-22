@@ -124,6 +124,28 @@ $.extend(DefaultProfile.prototype, {
 //				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
 		}
 		
+		this.plugins = [new MicroscopyTechnology()];
+		this.sampleFormTop = function($container, model) {
+			for(var i = 0; i < this.plugins.length; i++) {
+				this.plugins[i].sampleFormTop($container, model);
+			}
+		}
+		this.sampleFormBottom = function($container, model) {
+			for(var i = 0; i < this.plugins.length; i++) {
+				this.plugins[i].sampleFormBottom($container, model);
+			}
+		}
+		this.dataSetFormTop = function($container, model) {
+			for(var i = 0; i < this.plugins.length; i++) {
+				this.plugins[i].dataSetFormTop($container, model);
+			}
+		}
+		this.dataSetFormBottom = function($container, model) {
+			for(var i = 0; i < this.plugins.length; i++) {
+				this.plugins[i].dataSetFormBottom($container, model);
+			}
+		}
+		
 //		Jupyter integration config
 //		this.jupyterIntegrationServerEndpoint = "https://127.0.0.1:8002";
 //		this.jupyterEndpoint = "https://127.0.0.1:8000/";

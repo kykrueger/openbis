@@ -348,27 +348,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			this._paintIdentificationInfo($formColumn, sampleType);
 		}
 		
-		//
-		// Image viewer
-		//
-		if(_this._sampleFormModel.datasets && _this._sampleFormModel.datasets.length > 0 && profile.isImageViewerDataSetCode(_this._sampleFormModel.datasets[0].dataSetTypeCode)) {
-			var $imageWidget = new $('<div>');
-			$formColumn.append($imageWidget);
-		    	require(["openbis-screening", "components/imageviewer/ImageViewerWidget" ], function(openbis, ImageViewerWidget) {
-				var screningFacade = new openbis(null);
-				screningFacade._internal.sessionToken = mainController.openbisV1._internal.sessionToken;
-						
-				// Create the image viewer component for the specific data sets
-				var widget = new ImageViewerWidget(screningFacade, [_this._sampleFormModel.datasets[0].code]);
-				
-				// Render the component and add it to the page
-				$imageWidget.append($('<legend>').text('Microscopy Viewer'));
-				var $imageWidgetContainer = new $('<div>');
-				$imageWidgetContainer.css("margin", "20px");
-				$imageWidget.append($imageWidgetContainer);
-				$imageWidgetContainer.append(widget.render());
-		   	});
-		}
+		// Plugin Hook
+		var $sampleFormTop = new $('<div>');
+		$formColumn.append($sampleFormTop);
+		profile.sampleFormTop($sampleFormTop, _this._sampleFormModel);
 		
 		//
 		// Form Defined Properties from General Section
@@ -519,6 +502,11 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Extra Content
 		//
 		$formColumn.append($("<div>", { 'id' : 'sample-form-content-extra' }));
+		
+		// Plugin Hook
+		var $sampleFormBottom = new $('<div>');
+		$formColumn.append($sampleFormBottom);
+		profile.sampleFormBottom($sampleFormBottom, _this._sampleFormModel);
 		
 		//
 		// Identification Info on View/Edit
