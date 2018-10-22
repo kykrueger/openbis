@@ -1020,6 +1020,16 @@ $.extend(DefaultProfile.prototype, {
 		}
 
 		this.initSettings = function(callback) {
+			// sampleTypeDefinitionsExtension and  dataSetTypeDefinitionsExtension gets overwritten with plugins definitions
+			for(var i = 0; i < this.plugins.length; i++) {
+				for(key in this.plugins[i].sampleTypeDefinitionsExtension) {
+					this.sampleTypeDefinitionsExtension[key] = this.plugins[i].sampleTypeDefinitionsExtension[key];
+				}
+				for(key in this.plugins[i].dataSetTypeDefinitionsExtension) {
+					this.dataSetTypeDefinitionsExtension[key] = this.plugins[i].dataSetTypeDefinitionsExtension[key];
+				}
+			}
+			
 			// sampleTypeDefinitionsExtension gets overwritten with settings if found
 			for (var sampleTypeCode of Object.keys(this.sampleTypeDefinitionsExtension)) {
 				var sampleTypDefExt = this.sampleTypeDefinitionsExtension[sampleTypeCode];

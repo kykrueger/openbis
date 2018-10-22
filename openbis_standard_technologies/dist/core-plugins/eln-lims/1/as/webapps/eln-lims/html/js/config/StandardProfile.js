@@ -320,36 +320,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 														"ANNOTATION_PROPERTIES" : [{"TYPE" : "COMMENTS", "MANDATORY" : false }]
 													}																																		
 												],
-				},
-				"MICROSCOPY_SAMPLE_TYPE" : {
-					"SHOW" : false,
-					"SAMPLE_CHILDREN_DISABLED" : true,
-					"SAMPLE_PARENTS_DISABLED" : true,
-					"TOOLBAR" : { CREATE : false, EDIT : true, MOVE : false, COPY : false, DELETE : false, PRINT : true, HIERARCHY_GRAPH : true, HIERARCHY_TABLE : true, UPLOAD_DATASET : false, UPLOAD_DATASET_HELPER : false, EXPORT_ALL : true, EXPORT_METADATA : true }
 				}
-		} 
-		
-		this.dataSetTypeDefinitionsExtension = {
-			"MICROSCOPY_ACCESSORY_FILE" : {
-				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
-			},
-			"MICROSCOPY_IMG" : {
-				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
-			},
-			"MICROSCOPY_IMG_OVERVIEW" : {
-				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
-			},
-			"MICROSCOPY_IMG_THUMBNAIL" : {
-				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
-			},
-			"MICROSCOPY_IMG_CONTAINER" : {
-				"DATASET_PARENTS_DISABLED" : true,
-				"TOOLBAR" : { EDIT : true, MOVE : false, ARCHIVE : true, DELETE : false, HIERARCHY_TABLE : true, EXPORT_ALL : true, EXPORT_METADATA : true }
-			}
 		}
 		
 		this.sampleFormOnSubmit = function(sample, action) {
