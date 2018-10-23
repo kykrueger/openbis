@@ -81,6 +81,36 @@ class Sample(OpenBisObject):
     def type(self):
         return self.__dict__['type']
 
+    def _container(self, value=None):
+        if value is not None:
+            if value == '':
+                if self.is_new:
+                    pass
+                else:
+                    self.a.__dict__['_container'] = {}
+            else:
+                obj = None
+                if isinstance(value, str):
+                    # fetch object in openBIS, make sure it actually exists
+                    obj = getattr(self._openbis, "get_sample")(value)
+                elif value is None:
+                    self.a.__dict__['_container'] = {}
+                else:
+                    obj = value
+
+                self.a.__dict__['_container'] = obj.data['identifier']
+
+                # mark attribute as modified, if it's an existing entity
+                if self.is_new:
+                    pass
+                else:
+                    self.a.__dict__['_container']['isModified'] = True
+        else:
+            try:
+                return self.openbis.get_sample(self.a._container['identifier'])
+            except Exception:
+                pass
+
     @type.setter
     def type(self, type_name):
         sample_type = self.openbis.get_sample_type(type_name)
@@ -88,11 +118,17 @@ class Sample(OpenBisObject):
         self.a.__dict__['_type'] = sample_type
 
     def __getattr__(self, name):
+        if name in ['container']:
+            return getattr(self, "_"+name)()
+
         return getattr(self.__dict__['a'], name)
 
     def __setattr__(self, name, value):
         if name in ['set_properties', 'set_tags', 'add_tags']:
             raise ValueError("These are methods which should not be overwritten")
+
+        if name in ['container']:
+            return getattr(self, "_"+name)(value)
 
         # must be an attribute in the AttributeHolder class
         setattr(self.__dict__['a'], name, value)
@@ -147,9 +183,4 @@ class Sample(OpenBisObject):
         except Exception:
             pass
 
-    @property
-    def container(self):
-        try:
-            return self.openbis.get_sample(self._container['identifier'])
-        except Exception:
-            pass
+

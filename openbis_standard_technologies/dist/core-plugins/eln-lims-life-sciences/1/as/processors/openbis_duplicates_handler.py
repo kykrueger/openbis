@@ -1,6 +1,5 @@
-from parsers import VocabularyDefinitionToCreationParser, PropertyTypeDefinitionToCreationParser, SampleTypeDefinitionToCreationParser, \
-                    ExperimentTypeDefinitionToCreationParser, DatasetTypeDefinitionToCreationParser, SpaceDefinitionToCreationParser, \
-                    ProjectDefinitionToCreationParser, ExperimentDefinitionToCreationParser, ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
+from parsers import SpaceDefinitionToCreationParser, ProjectDefinitionToCreationParser, \
+    ExperimentDefinitionToCreationParser, ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
 
 from utils.openbis_utils import create_sample_identifier_string
 
@@ -28,17 +27,17 @@ class OpenbisDuplicatesHandler(object):
             for creation in self.creations[SampleDefinitionToCreationParser.type]:
                 if creation.spaceId is not None:
                     for existing_element in self.existing_elements[SpaceDefinitionToCreationParser.type]:
-                        if existing_element.code == creation.spaceId.creationId:
+                        if existing_element.code == str(creation.spaceId):
                             creation.spaceId = existing_element.permId
                             break
                 if creation.projectId is not None:
                     for existing_element in self.existing_elements[ProjectDefinitionToCreationParser.type]:
-                        if existing_element.code == creation.projectId.creationId:
+                        if existing_element.code == str(creation.projectId):
                             creation.projectId = existing_element.permId
                             break
                 if creation.experimentId is not None:
                     for existing_element in self.existing_elements[ExperimentDefinitionToCreationParser.type]:
-                        if existing_element.code == creation.experimentId.creationId:
+                        if existing_element.code == str(creation.experimentId):
                             creation.experimentId = existing_element.permId
                             break
 
@@ -82,12 +81,18 @@ class OpenbisDuplicatesHandler(object):
 
     def remove_existing_elements_from_creations(self):
         for creations_type, existing_elements in self.existing_elements.items():
+            if not creations_type in self.creations:
+                continue
             if creations_type == SampleDefinitionToCreationParser.type:
-                existing_object_codes = [object.identifier.identifier for object in existing_elements]
-                self.creations[creations_type] = list(filter(lambda creation: creation.code is None or create_sample_identifier_string(creation) not in existing_object_codes, self.creations[creations_type]))
+                existing_object_codes = [obj.identifier.identifier for obj in existing_elements]
+                self.creations[creations_type] = list(filter(
+                    lambda creation: creation.code is None or create_sample_identifier_string(
+                        creation) not in existing_object_codes, self.creations[creations_type]))
             else:
                 distinct_property_name = self._get_distinct_property_name(creations_type)
-                self.creations[creations_type] = self._filter_creations_from_existing_objects(creations_type, existing_elements, distinct_property_name)
+                self.creations[creations_type] = self._filter_creations_from_existing_objects(creations_type,
+                                                                                              existing_elements,
+                                                                                              distinct_property_name)
         return self.creations
 
     def _get_distinct_property_name(self, creation_type):
@@ -97,5 +102,6 @@ class OpenbisDuplicatesHandler(object):
             return 'code'
 
     def _filter_creations_from_existing_objects(self, creations_type, existing_objects, attr):
-        existing_object_codes = [getattr(object, attr) for object in existing_objects]
-        return list(filter(lambda creation: getattr(creation, attr) not in existing_object_codes, self.creations[creations_type]))
+        existing_object_codes = [getattr(obj, attr) for obj in existing_objects]
+        return list(filter(lambda creation: getattr(creation, attr) not in existing_object_codes,
+                           self.creations[creations_type]))

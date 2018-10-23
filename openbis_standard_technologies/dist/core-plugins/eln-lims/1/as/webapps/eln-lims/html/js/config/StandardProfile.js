@@ -7,6 +7,8 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 	init: function(serverFacade){
 		DefaultProfile.prototype.init.call(this, serverFacade);
 		
+		this.imageViewerDataSetCodes = ["MICROSCOPY_IMG_CONTAINER"];
+		
 		this.hideCodes = true;
 		
 		this.storagesConfiguration = { "isEnabled" : false };
@@ -319,8 +321,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 													}																																		
 												],
 				}
-		
-		} 
+		}
 		
 		this.sampleFormOnSubmit = function(sample, action) {
 			if(sample.sampleTypeCode === "ORDER") {

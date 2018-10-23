@@ -463,8 +463,9 @@ def handle(req, resp):
         params[str(param)] = values
         
     '''TODO fix capability list below''' 
-    rl = ResourceList()
-    #rl.max_sitemap_entries = 500
+#    rl = ResourceList()
+    rl = ResourceList(allow_multifile=False)
+    rl.max_sitemap_entries = None
     
     maintainResourceListPartDir()
     
@@ -477,6 +478,15 @@ def handle(req, resp):
         with open(part_path, 'r') as part_file:
             writer.write(part_file.read())
     elif "resourcelist.xml" in  params['verb']:
+        deliverResourceList(rl, params, writer)
+    else:
+        writer.write(getSourceDescription());
+
+    v3EntityRetriever.finish()
+    writer.flush();
+
+def deliverResourceList(rl, params, writer):
+    try:
         '''TODO Maybe keep a list of allowed params and throw error if any other param is sent over'''
         for param in params:
             if param not in ALLOWED_PARAMS:
@@ -505,7 +515,9 @@ def handle(req, resp):
         rl.md_at = convertToW3CDate(time)
         '''Add master data as a single element to the RL'''
         res = Resource(getServerUrl() + "/MASTER_DATA/MASTER_DATA/M", lastmod=convertToW3CDate(Date()))
-        rl.add(res)         
+        rl.add(res)
+
+        v3EntityRetriever.start(writer)
 
         '''then add the materials to the resource list'''
         materials = getMaterialsAsResources(rl)
@@ -558,6 +570,7 @@ def handle(req, resp):
        # writer.write(injectMetaDataXML(materials, all_entities, rl_xml))
         if mode in ["test", "dot"]:
             resp.setContentType("text/plain");
+            v3EntityRetriever.finish()
             writer.write(cluster_str)
         else:
             if rl.requires_multifile():
@@ -576,12 +589,14 @@ def handle(req, resp):
                     part_path = os.path.join(getResourceListPartDir(), getResourceListPartFileName(timestamp, part_number))
                     with open(part_path, 'w+') as part_file:
                         part_file.write(part_xml)
+                v3EntityRetriever.finish()
             else:
-                writer.write(injectMetaDataXML(materials, all_entities, rl.as_xml()))
-    else:
-        writer.write(getSourceDescription());
+                xml = injectMetaDataXML(materials, all_entities, rl.as_xml())
+                v3EntityRetriever.finish()
+                writer.write(xml)
+    finally:
+        v3EntityRetriever.finish()
 
-    writer.flush();
     #===========================================================================
     # cl.read("https://raw.github.com/resync/resync/0.6/resync/test/testdata/examples_from_spec/resourcesync_ex_2_6.xml")
     # for resource in cl:

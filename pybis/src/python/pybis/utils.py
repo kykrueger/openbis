@@ -16,7 +16,7 @@ def parse_jackson(input_json):
        This function is used to dereference the output.
     """
     interesting=['tags', 'registrator', 'modifier', 'owner', 'type', 'parents', 
-        'children', 'containers', 'properties', 'experiment', 'sample',
+        'children', 'containers', 'container', 'properties', 'experiment', 'sample',
         'project', 'space', 'propertyType', 'entityType', 'propertyType', 'propertyAssignment',
         'externalDms', 'roleAssignments', 'user', 'authorizationGroup', 'vocabulary'
     ]

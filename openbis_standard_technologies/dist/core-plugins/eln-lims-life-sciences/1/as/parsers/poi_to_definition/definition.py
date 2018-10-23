@@ -16,6 +16,6 @@ class Definition(object):
             str(self.attributes),
             "Properties:",
             str(self.properties),
-            "==================" * 3])
+            "==================" * 3, ''])
 
     __repr__ = __str__

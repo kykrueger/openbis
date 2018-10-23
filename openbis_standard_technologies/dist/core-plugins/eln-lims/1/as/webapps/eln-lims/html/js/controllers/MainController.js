@@ -333,6 +333,9 @@ function MainController(profile) {
 			this.currentView.finalize) {
 			this.currentView.finalize();
 		}
+		
+		CKEditorManager.destroy();
+		
 		//
 		//
 		//

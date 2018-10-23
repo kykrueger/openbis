@@ -1,4 +1,4 @@
-from .creation_parsers import ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
+from parsers import ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
 
 
 class DuplicatesHandler(object):

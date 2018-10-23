@@ -2804,6 +2804,10 @@ class Openbis:
         elif isinstance(files, str):
             files = [files]
 
+        for file in files:
+            if not os.path.exists(file):
+                raise ValueError('File {} does not exist'.format(file))
+
         type_obj = self.get_dataset_type(type.upper())
 
         return DataSet(self, type=type_obj, files=files, folder=folder, props=props, **kwargs)
