@@ -140,11 +140,16 @@ sample.set_children('/MY_SPACE/CHILD_SAMPLE_NAME')
 sample.add_children('/MY_SPACE/CHILD_SAMPLE_NAME')
 sample.del_children('/MY_SPACE/CHILD_SAMPLE_NAME')
 
+# A Sample may belong to another Sample, which acts as a container.
+# As opposed to DataSets, a Sample may only belong to one container.
 sample.container    # returns a sample object
 sample.container = '/MY_SPACE/CONTAINER_SAMPLE_NAME'   # watch out, this will change the identifier of the sample to:
                                                        # /MY_SPACE/CONTAINER_SAMPLE_NAME:SAMPLE_NAME
 sample.container = ''                                  # this will remove the container. 
 
+# A Sample may contain other Samples, in order to act like a container (see above)
+# The Sample-objects inside that Sample are called «components» or «contained Samples»
+# You may also use the xxx_contained() functions, which are just aliases.
 sample.get_components()
 sample.set_components('/MY_SPACE/COMPONENT_NAME')
 sample.add_components('/MY_SPACE/COMPONENT_NAME')
@@ -253,6 +258,16 @@ dataset.set_children(['20170115220259155-412'])
 dataset.add_children(['20170115220259155-412'])
 dataset.del_children(['20170115220259155-412'])
 
+# A DataSet may belong to other DataSets, which then act as containers.
+# As opposed to Samples, DataSets may belong (contained) to more than one container-DataSet
+dataset.get_containers()
+dataset.set_containers(['20170115220259155-412'])
+dataset.add_containers(['20170115220259155-412'])
+dataset.del_containers(['20170115220259155-412'])
+
+# A DataSet may contain other DataSets, to act like a container (see above)
+# The DataSet-objects inside that DataSet are called components or contained DataSets
+# You may also use the xxx_contained() functions, which are just aliases.
 dataset.get_components()
 dataset.set_components(['20170115220259155-412'])
 dataset.add_components(['20170115220259155-412'])

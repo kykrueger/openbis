@@ -1,3 +1,10 @@
+## Changes with pybis-1.7.1
+
+* fixed bug in controlled vocabulary when property name did not match the vocabulary name
+* added `xxx_contained()` methods to Samples and DataSets
+* updated documentation
+
+
 ## Changes with pybis-1.7.0
 
 * added components and containers functionality to both datasets and samples

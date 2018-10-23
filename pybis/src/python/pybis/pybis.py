@@ -2496,12 +2496,7 @@ class Openbis:
                 _type_for_id(permIds, 'dataset')
             )
 
-        fetchopts = {
-            "parents": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
-            "children": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
-            "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
-            "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
-        }
+        fetchopts = fetch_option['dataSet']
 
         for option in ['tags', 'properties', 'dataStore', 'physicalData', 'linkedData',
                        'experiment', 'sample']:

@@ -191,6 +191,14 @@ fetch_option = {
         "type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}
     },
     "samples": {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"},
+    "dataSet": {
+        "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions",
+        "type":       {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
+        "parents":    {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
+        "children":   {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
+        "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
+        "components": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
+    },
     "dataSets": {
         "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions",
         "properties": {"@type": "as.dto.property.fetchoptions.PropertyFetchOptions"},
