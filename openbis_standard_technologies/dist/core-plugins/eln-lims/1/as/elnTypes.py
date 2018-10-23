@@ -932,15 +932,6 @@ GENERAL_ELN_SETTINGS = [MANDATORY_ITEM_VERSION, False, False, "GENERAL_ELN_SETTI
 ]];
 
 ##
-## Types - Organization
-##
-ORGANIZATION_UNIT = [MANDATORY_ITEM_VERSION, False, True, "ORGANIZATION_UNIT", "", [
-    [MANDATORY_ITEM_VERSION, "NAME",                          "General",              "Name",                                     DataType.VARCHAR,                   None,                           "Name",                                     None, None],
-    [MANDATORY_ITEM_VERSION, "XMLCOMMENTS",                   "Comments",             "Comments List",                            DataType.XML,                       None,                           "Several comments can be added by different users", "COMMENTS_SAMPLE", None],
-    [MANDATORY_ITEM_VERSION, "ANNOTATIONS_STATE",             "Comments",             "Annotations State",                        DataType.XML,                       None,                           "Annotations State", "ANNOTATIONS_STORAGE_POSITION", None]                                                                        
-]];
-
-##
 ## Types - Storage
 ##
 STORAGE_RACK = [MANDATORY_ITEM_VERSION, False, True, "STORAGE", "", [
