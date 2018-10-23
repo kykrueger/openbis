@@ -67,10 +67,10 @@ class DataSet(OpenBisObject):
     def __dir__(self):
         return [
             'props', 
-            'get_parents()', 'get_children()', 'get_components()', 'get_containers()',
-            'add_parents()', 'add_children()', 'add_components()', 'add_containers()', 
-            'del_parents()', 'del_children()', 'del_components()', 'del_containers()',
-            'set_parents()', 'set_children()', 'set_components()', 'set_containers()',
+            'get_parents()', 'get_children()', 'get_components()', 'get_contained()', 'get_containers()',
+            'add_parents()', 'add_children()', 'add_components()', 'add_contained()', 'add_containers()', 
+            'del_parents()', 'del_children()', 'del_components()', 'del_contained()', 'del_containers()',
+            'set_parents()', 'set_children()', 'set_components()', 'set_contained()', 'set_containers()',
             'sample', 
             'experiment', 
             'physicalData',

@@ -568,19 +568,25 @@ class AttrHolder():
                     self.__dict__['_containers'].pop(i)
 
     def get_components(self, **kwargs):
-        '''get the components and return them as a list (Things/DataFrame)
-        or return empty list
+        '''Samples and DataSets may contain other DataSets and Samples. This function returns the
+        contained Samples/DataSets (a.k.a. components) as a list (Things/DataFrame)
         '''
         return getattr(self._openbis, 'get_'+self._entity.lower())( self.components, **kwargs )
 
+    get_contained = get_components  # Alias
+
     def set_components(self, components_to_set):
-        '''set the new _components list
+        '''Samples and DataSets may contain other DataSets and Samples. This function sets the
+        contained Samples/DataSets (a.k.a. components)
         '''
         self.__dict__['_components'] = []
         self.add_components(components_to_set)
 
+    set_contained = set_components  # Alias
+
     def add_components(self, components_to_add):
-        '''add component to _components list
+        '''Samples and DataSets may contain other DataSets and Samples. This function adds
+        additional Samples/DataSets to the current object.
         '''
         if not isinstance(components_to_add, list):
             components_to_add = [components_to_add]
@@ -589,8 +595,11 @@ class AttrHolder():
             if ident not in self.__dict__['_components']:
                 self.__dict__['_components'].append(ident)
 
+    add_contained = add_components  # Alias
+
     def del_components(self, components_to_remove):
-        '''remove component from _components list
+        '''Samples and DataSets may contain other DataSets and Samples. This function removes
+        additional Samples/DataSets from the current object.
         '''
         if not isinstance(components_to_remove, list):
             components_to_remove = [components_to_remove]
@@ -601,6 +610,8 @@ class AttrHolder():
                     self.__dict__['_components'].pop(i)
                 elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
                     self.__dict__['_components'].pop(i)
+
+    del_contained = del_components  # Alias
 
     def get_parents(self, **kwargs):
         '''get the current parents and return them as a list (Things/DataFrame)
