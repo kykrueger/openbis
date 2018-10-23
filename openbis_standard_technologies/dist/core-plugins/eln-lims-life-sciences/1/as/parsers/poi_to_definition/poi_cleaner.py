@@ -4,9 +4,8 @@ from copy import deepcopy
 class PoiCleaner(object):
 
     @staticmethod
-    def hasProperties(poi_definition):
-        PROPERTIES_HEADER_ROW = 3
-        return len(poi_definition) > PROPERTIES_HEADER_ROW
+    def hasProperties(poi_definition, properties_header_row):
+        return len(poi_definition) > properties_header_row
 
     @staticmethod
     def clean_data(xls_definition, row_numbers):
@@ -35,7 +34,7 @@ class PoiCleaner(object):
                 PoiCleaner.create_cells_if_no_value_but_header_exists(definition, ATTRIBUTES_HEADER_ROW, ATTRIBUTES_VALUES_ROW)
             definition[ATTRIBUTES_HEADER_ROW] = PoiCleaner.dict_values_to_lowercase(definition[ATTRIBUTES_HEADER_ROW])
 
-        if PoiCleaner.hasProperties(definition) and PROPERTIES_HEADER_ROW is not None:
+        if PROPERTIES_HEADER_ROW is not None and PoiCleaner.hasProperties(definition, PROPERTIES_HEADER_ROW):
             PoiCleaner.delete_empty_cells_from(definition, PROPERTIES_HEADER_ROW)
             if PROPERTIES_VALUES_ROW_START is not None:
                 for property_value_row_num in range(PROPERTIES_VALUES_ROW_START, len(definition)):

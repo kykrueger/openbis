@@ -349,7 +349,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
     {
         String description = removeFromDataStore ? ARCHIVING_PROCESSING_PLUGIN_KEY : COPYING_TO_ARCHIVE_PROCESSING_PLUGIN_KEY;
         IProcessingPluginTask task = new ArchiveProcessingPluginTask(getArchiverPlugin(), removeFromDataStore);
-        System.err.println("archive "+datasets+" options:"+options);
+        System.err.println("archive " + datasets + " options:" + options);
 
         scheduleTask(sessionToken, userSessionToken, description, task, datasets, userId, userEmailOrNull, options);
     }

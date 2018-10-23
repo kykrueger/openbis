@@ -9,7 +9,7 @@ class DefinitionToCreationParser(object):
 
         for definition in definitions:
             # One definition may contain more than one creation
-            parsers = DefinitionToCreationParserFactory.getParsers(definition)
+            parsers = DefinitionToCreationParserFactory.get_parsers(definition)
             for parser in parsers:
                 creation = parser.parse(definition)
                 if creation is None or creation == []:
@@ -20,4 +20,3 @@ class DefinitionToCreationParser(object):
                 creations[creation_type].extend(creation if type(creation) == list else [creation])
 
         return creations
-
