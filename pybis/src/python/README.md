@@ -2,6 +2,7 @@
 pyBIS is a Python module for interacting with openBIS, designed to be used in Jupyter. It offers a sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
 
 
+
 # SYNOPSIS
 
 ## connecting to OpenBIS
@@ -98,10 +99,11 @@ Samples are nowadays called **Objects** in openBIS. pyBIS is not yet thoroughly 
 
 ```
 sample = o.new_sample(
-    type='YEAST', 
-    space='MY_SPACE', 
-    parents=[parent_sample, '/MY_SPACE/YEA66'], 
-    children=[child_sample]
+    type     = 'YEAST', 
+    space    = 'MY_SPACE', 
+    parents  = [parent_sample, '/MY_SPACE/YEA66'], 
+    children = [child_sample],
+    props    = {"name": "some name", "description": "something interesting"}
 )
 sample = space.new_sample( type='YEAST' )
 sample.save()
@@ -114,24 +116,46 @@ sample.code
 sample.permId
 sample.identifier
 sample.type  # once the sample type is defined, you cannot modify it
+
 sample.space
 sample.space = 'MY_OTHER_SPACE'
+
 sample.experiment    # a sample can belong to one experiment only
-sample.experiment = 'MY_SPACE/MY_PROJECT/MY_EXPERIMENT'
+sample.experiment = '/MY_SPACE/MY_PROJECT/MY_EXPERIMENT'
+
+sample.project
+sample.project = '/MY_SPACE/MY_PROJECT'  # only works if project samples are
+enabled
+
 sample.tags
 sample.tags = ['guten_tag', 'zahl_tag' ]
+
 sample.get_parents()
-sample.parents = ['/MY_SPACE/PARENT_SAMPLE_NAME']
+sample.set_parents(['/MY_SPACE/PARENT_SAMPLE_NAME')
 sample.add_parents('/MY_SPACE/PARENT_SAMPLE_NAME')
 sample.del_parents('/MY_SPACE/PARENT_SAMPLE_NAME')
 
-sample.get_childeren()
-sample.children = ['/MY_SPACE/CHILD_SAMPLE_NAME']
+sample.get_children()
+sample.set_children('/MY_SPACE/CHILD_SAMPLE_NAME')
 sample.add_children('/MY_SPACE/CHILD_SAMPLE_NAME')
 sample.del_children('/MY_SPACE/CHILD_SAMPLE_NAME')
-sample.get_childeren()
 
-sample.props
+sample.container    # returns a sample object
+sample.container = '/MY_SPACE/CONTAINER_SAMPLE_NAME'   # watch out, this will change the identifier of the sample to:
+                                                       # /MY_SPACE/CONTAINER_SAMPLE_NAME:SAMPLE_NAME
+sample.container = ''                                  # this will remove the container. 
+
+sample.get_components()
+sample.set_components('/MY_SPACE/COMPONENT_NAME')
+sample.add_components('/MY_SPACE/COMPONENT_NAME')
+sample.del_components('/MY_SPACE/COMPONENT_NAME')
+
+sample.get_tags()
+sample.set_tags('tag1')
+sample.add_tags(['tag2','tag3'])
+sample.del_tags('tag1')
+
+sample.set_props({ ... })
 sample.p                              # same thing as .props
 sample.p.my_property = "some value"   # set the value of a property (value is checked)
 sample.p + TAB                        # in IPython or Jupyter: show list of available properties
@@ -142,17 +166,18 @@ sample.download_attachments()
 sample.add_attachment('testfile.xls')
 
 samples = o.get_samples(
-    space='MY_SPACE',
-    type='YEAST',
-    tags=['*'],                          # tags must be present
-    NAME = 'some name',                  # properties are always uppercase to distinguish them from attributes
-    **{ "SOME.WEIRD:PROPERTY": "value"}  # in case your property name contains a dot or a colon which cannot be passed as an argument name 
-    props=['NAME', 'MATING_TYPE','SHOW_IN_PROJECT_OVERVIEW'] # show these properties in the results
+    space ='MY_SPACE',
+    type  ='YEAST',
+    tags  =['*'],                     # only sample with existing tags
+    NAME  = 'some name',              # properties are always uppercase 
+                                      # to distinguish them from attributes
+    **{ "SOME.WEIRD:PROP": "value"}   # property name contains a dot or a
+                                      # colon: cannot be passed as an argument 
+    props=['NAME', 'MATING_TYPE']     # show these properties in the result
 )
 samples.df                            # returns a pandas dataframe object
 samples.get_datasets(type='ANALYZED_DATA')
 ```
-Note: Project samples are not implemented yet.
 
 
 ## Experiments
@@ -194,12 +219,14 @@ sample.get_datasets()
 ds = o.get_dataset('20160719143426517-259')
 ds.get_parents()
 ds.get_children()
-sample = ds.sample
-experiment = ds.experiment
+ds.sample
+ds.experiment
 ds.physicalData
-ds.status        # AVAILABLE LOCKED ARCHIVED UNARCHIVE_PENDING ARCHIVE_PENDING BACKUP_PENDING
+ds.status              # AVAILABLE LOCKED ARCHIVED 
+                       # UNARCHIVE_PENDING ARCHIVE_PENDING BACKUP_PENDING
 ds.archive()
 ds.unarchive()
+
 ds.get_files(start_folder="/")
 ds.file_list
 ds.add_attachment()
@@ -208,28 +235,44 @@ ds.download_attachments()
 ds.download(destination='/tmp', wait_until_finished=False)
 
 ds_new = o.new_dataset(
-    type='ANALYZED_DATA', 
-    experiment=exp, 
-    sample= samp,
-    files = ['my_analyzed_data.dat'], 
-    props={'name': 'we give this dataset a name', 'notes': 'and we might need some notes, too'})
+    type       = 'ANALYZED_DATA', 
+    experiment = '/SPACE/PROJECT/EXP1', 
+    sample     = '/SPACE/SAMP1',
+    files      = ['my_analyzed_data.dat'], 
+    props      = {'name': 'some good name', 'description': '...' })
 )
 ds_new.save()
 
+dataset.get_parents()
+dataset.set_parents(['20170115220259155-412'])
+dataset.add_parents(['20170115220259155-412'])
+dataset.del_parents(['20170115220259155-412'])
+
+dataset.get_children()
+dataset.set_children(['20170115220259155-412'])
+dataset.add_children(['20170115220259155-412'])
+dataset.del_children(['20170115220259155-412'])
+
+dataset.get_components()
+dataset.set_components(['20170115220259155-412'])
+dataset.add_components(['20170115220259155-412'])
+dataset.del_components(['20170115220259155-412'])
+
+ds.set_properties({...})
 ds.props
 ds.p                              # same thing as .props
-ds.p.my_property = "some value"   # set the value of a property (value is checked)
-ds.p + TAB                        # in IPython or Jupyter: show list of available properties
-ds.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
+ds.p.my_property = "some value"   # set the value of a property
+ds.p + TAB                        # show list of available properties
+ds.p.my_property_ + TAB           # show datatype or controlled vocabulary
 
-# complex query with chaining. props adds a "name" column. To filter for some property, the name of the property must be in UPPERCASE
+# complex query with chaining.
+# properties must be in UPPERCASE
 datasets = o.get_experiments(project='YEASTS').get_samples(type='FLY').get_datasets(type='ANALYZED_DATA', props=['MY_PROPERTY'],MY_PROPERTY='some analyzed data')
 
 # another example
 datasets = o.get_experiment('/MY_NEW_SPACE/VERMEUL_PROJECT/MY_EXPERIMENT4').get_samples(type='UNKNOWN').get_parents().get_datasets(type='RAW_DATA')
 
-# get a pandas dataFrame object
-datasets.df
+datasets.df                       # get a pandas dataFrame object
 
 # use it in a for-loop:
 for dataset in datasets:
@@ -239,16 +282,19 @@ for dataset in datasets:
 ## Semantic Annotations
 ```
 # create semantic annotation for sample type 'UNKNOWN'
-sa = o.new_semantic_annotation(entityType = 'UNKNOWN',
-                      predicateOntologyId = 'po_id',
-                      predicateOntologyVersion = 'po_version',
-                      predicateAccessionId = 'pa_id',
-                      descriptorOntologyId = 'do_id',
-                      descriptorOntologyVersion = 'do_version',
-                      descriptorAccessionId = 'da_id')
+sa = o.new_semantic_annotation(
+	entityType = 'UNKNOWN',
+	predicateOntologyId = 'po_id',
+	predicateOntologyVersion = 'po_version',
+	predicateAccessionId = 'pa_id',
+	descriptorOntologyId = 'do_id',
+	descriptorOntologyVersion = 'do_version',
+	descriptorAccessionId = 'da_id'
+)
 sa.save()
 
-# create semantic annotation for property type (predicate and descriptor values omitted for brevity)
+# create semantic annotation for property type 
+# (predicate and descriptor values omitted for brevity)
 sa = o.new_semantic_annotation(propertyType = 'DESCRIPTION', ...)
 sa.save()
 
@@ -278,12 +324,16 @@ sa.delete('reason')
 
 ## Tags
 ```
-new_tag = o.new_tag('my_tag', description='some descriptive text')
+new_tag = o.new_tag(
+	code        = 'my_tag', 
+	description = 'some descriptive text'
+)
+new_tag.description = 'some new description'
 new_tag.save()
 o.get_tags()
-tag = o.get_tag('/username/TAG_Name')
-tag.description = 'some new description'
-tag.save()
+o.get_tag('/username/TAG_Name')
+o.get_tag('TAG_Name')
+
 tag.get_experiments()
 tag.get_samples()
 tag.delete()

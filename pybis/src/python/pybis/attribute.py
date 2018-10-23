@@ -46,14 +46,13 @@ class AttrHolder():
             }
         but when fetching the attribute without the underscore, we only return
         the relevant data for the user:
-            sample.space    # MATERIALS
+            sample.space   # MATERIALS
         """
         # entity is read from openBIS, so it is not new anymore
         self.__dict__['_is_new'] = False
 
         for attr in self._allowed_attrs:
-            if attr in ["code", "permId", "identifier",
-                        "type", "container", "components"]:
+            if attr in ["code", "permId", "identifier", "type"]:
                 self.__dict__['_' + attr] = data.get(attr, None)
                 # remove the @id attribute
                 if isinstance(self.__dict__['_' + attr], dict):
@@ -68,13 +67,13 @@ class AttrHolder():
                     d = d['permId']
                 self.__dict__['_' + attr] = d
 
-            elif attr in ["sample", "experiment", "project"]:
+            elif attr in ["sample", "experiment", "project", "container"]:
                 d = data.get(attr, None)
                 if d is not None:
                     d = d['identifier']
                 self.__dict__['_' + attr] = d
 
-            elif attr in ["parents", "children", "samples"]:
+            elif attr in ["parents", "children", "samples", "components", "containers"]:
                 self.__dict__['_' + attr] = []
                 if data[attr] is not None:
                     for item in data[attr]:
@@ -84,14 +83,8 @@ class AttrHolder():
                             self.__dict__['_' + attr].append(item['permId'])
 
             elif attr in ["tags"]:
-                tags = []
-                for item in data[attr]:
-                    tags.append({
-                        "code": item['code'],
-                        "@type": "as.dto.tag.id.TagCode"
-                    })
-                self.__dict__['_tags'] = tags
-                self.__dict__['_prev_tags'] = copy.deepcopy(tags)
+                self.add_tags(data[attr])
+
             else:
                 self.__dict__['_' + attr] = data.get(attr, None)
 
@@ -190,28 +183,21 @@ class AttrHolder():
                 }
 
             elif attr == 'tags':
-                # look which tags/users have been added or removed and update them
-
-                if getattr(self, '_prev_'+attr) is None:
-                    self.__dict__['_prev_'+attr] = []
-                actions = []
-                for id in getattr(self, '_prev_'+attr):
-                    if id not in self.get('_'+attr):
-                        actions.append({
-                            "items": [id],
-                            "@type": "as.dto.common.update.ListUpdateActionRemove"
-                        })
-
-                for id in getattr(self,'_'+attr):
-                    if id not in self.get('_prev_'+attr):
-                        actions.append({
-                            "items": [id],
-                            "@type": "as.dto.common.update.ListUpdateActionAdd"
-                        })
+                items = []
+                for tag in self.__dict__['_tags']:
+                    items.append({
+                        "permId": tag['permId'],
+                        "@type" : "as.dto.tag.id.TagPermId"
+                    })
 
                 up_obj['tagIds'] = {
-                    "@type": "as.dto.common.update.IdListUpdateValue",
-                    "actions": actions
+                    "actions": [
+                        {
+                            "items": items,
+                            "@type": "as.dto.common.update.ListUpdateActionSet",
+                        }
+                    ],
+                    "@type": "as.dto.common.update.IdListUpdateValue"
                 }
 
             elif attr == 'userIds':
@@ -543,6 +529,79 @@ class AttrHolder():
         if '@id' in ident: ident.pop('@id')
         return ident
 
+    def get_container(self, **kwargs):
+        return getattr(self._openbis, 'get_'+self._entity.lower())( self.container, **kwargs )
+
+    def get_containers(self, **kwargs):
+        '''get the containers and return them as a list (Things/DataFrame)
+        or return empty list
+        '''
+        return getattr(self._openbis, 'get_'+self._entity.lower())( self.containers, **kwargs )
+
+    def set_containers(self, containers_to_set):
+        '''set the new _containers list
+        '''
+        self.__dict__['_containers'] = []
+        self.add_containers(containers_to_set)
+
+    def add_containers(self, containers_to_add):
+        '''add component to _containers list
+        '''
+        if not isinstance(containers_to_add, list):
+            containers_to_add = [containers_to_add]
+        for component in containers_to_add:
+            ident = self._ident_for_whatever(component)
+            if ident not in self.__dict__['_containers']:
+                self.__dict__['_containers'].append(ident)
+
+    def del_containers(self, containers_to_remove):
+        '''remove component from _containers list
+        '''
+        if not isinstance(containers_to_remove, list):
+            containers_to_remove = [containers_to_remove]
+        for component in containers_to_remove:
+            ident = self._ident_for_whatever(component)
+            for i, item in enumerate(self.__dict__['_containers']):
+                if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
+                    self.__dict__['_containers'].pop(i)
+                elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
+                    self.__dict__['_containers'].pop(i)
+
+    def get_components(self, **kwargs):
+        '''get the components and return them as a list (Things/DataFrame)
+        or return empty list
+        '''
+        return getattr(self._openbis, 'get_'+self._entity.lower())( self.components, **kwargs )
+
+    def set_components(self, components_to_set):
+        '''set the new _components list
+        '''
+        self.__dict__['_components'] = []
+        self.add_components(components_to_set)
+
+    def add_components(self, components_to_add):
+        '''add component to _components list
+        '''
+        if not isinstance(components_to_add, list):
+            components_to_add = [components_to_add]
+        for component in components_to_add:
+            ident = self._ident_for_whatever(component)
+            if ident not in self.__dict__['_components']:
+                self.__dict__['_components'].append(ident)
+
+    def del_components(self, components_to_remove):
+        '''remove component from _components list
+        '''
+        if not isinstance(components_to_remove, list):
+            components_to_remove = [components_to_remove]
+        for component in components_to_remove:
+            ident = self._ident_for_whatever(component)
+            for i, item in enumerate(self.__dict__['_components']):
+                if 'identifier' in ident and 'identifier' in item and ident['identifier'] == item['identifier']:
+                    self.__dict__['_components'].pop(i)
+                elif 'permId' in ident and 'permId' in item and ident['permId'] == item['permId']:
+                    self.__dict__['_components'].pop(i)
+
     def get_parents(self, **kwargs):
         '''get the current parents and return them as a list (Things/DataFrame)
         or return empty list
@@ -621,21 +680,51 @@ class AttrHolder():
         if getattr(self, '_tags') is not None:
             return [x['code'] for x in self._tags]
 
+    def get_tags(self):
+        if getattr(self, '_tags') is not None:
+            return self._openbis.get_tag([x['permId'] for x in self._tags])
+
     def set_tags(self, tags):
-        if getattr(self, '_tags') is None:
-            self.__dict__['_tags'] = []
+        '''set _tags list
+        '''
 
-        tagIds = _create_tagIds(tags)
+        self.__dict__['_tags'] = []
+        self.add_tags(tags)
 
-        # remove tags that are not in the new tags list
-        for tagId in self.__dict__['_tags']:
-            if tagId not in tagIds:
-                self.__dict__['_tags'].remove(tagId)
 
-        # add all new tags that are not in the list yet
-        for tagId in tagIds:
-            if tagId not in self.__dict__['_tags']:
-                self.__dict__['_tags'].append(tagId)
+    def add_tags(self, tags):
+        '''add tags to _tags list
+        '''
+        if not isinstance(tags, list):
+            tags = [tags]
+        
+        for tag in tags:
+            if isinstance(tag, str):
+                tag_obj = self._openbis.get_tag(tag)
+                tag_dict = {
+                    "code": tag_obj.code,
+                    "permId": tag_obj.permId,
+                }
+            else:
+                tag_dict = {
+                    "code": tag['code'],
+                    "permId": tag['permId']['permId'],
+                }
+
+            if tag_dict not in self.__dict__['_tags']:
+                self.__dict__['_tags'].append(tag_dict)
+
+    def del_tags(self, tags):
+        '''remove tags from _tags list
+        '''
+        if not isinstance(tags, list):
+            tags = [tags]
+
+        for tag in tags:
+            for i, tag_dict in enumerate(self.__dict__['_tags']):
+                if tag in self.__dict__['_tags'][i]['code'] or \
+                   tag in self.__dict__['_tags'][i]['permId']:
+                    self.__dict__['_tags'].pop(i)
 
     def set_users(self, userIds):
         if userIds is None:
@@ -681,28 +770,6 @@ class AttrHolder():
                 "action": "Remove"
             }
     del_members = del_users  # Alias
-
-    def add_tags(self, tags):
-        if getattr(self, '_tags') is None:
-            self.__dict__['_tags'] = []
-
-        # add the new tags to the _tags and _new_tags list,
-        # if not listed yet
-        tagIds = _create_tagIds(tags)
-        for tagId in tagIds:
-            if not tagId in self.__dict__['_tags']:
-                self.__dict__['_tags'].append(tagId)
-
-    def del_tags(self, tags):
-        if getattr(self, '_tags') is None:
-            self.__dict__['_tags'] = []
-
-        # remove the tags from the _tags and _del_tags list,
-        # if listed there
-        tagIds = _create_tagIds(tags)
-        for tagId in tagIds:
-            if tagId in self.__dict__['_tags']:
-                self.__dict__['_tags'].remove(tagId)
 
     def get_attachments(self):
         if getattr(self, '_attachments') is None:

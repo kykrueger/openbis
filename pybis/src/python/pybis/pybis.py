@@ -131,6 +131,19 @@ def _type_for_id(ident, entity):
         "@type": "as.dto.sample.id.SamplePermId"
     }
     """
+    # Tags have strange permIds...
+    if entity.lower() == 'tag':
+        if '/' in ident:
+            return {
+                "permId": ident,
+                "@type" : "as.dto.tag.id.TagPermId"
+            }
+        else:
+            return {
+                "code": ident,
+                "@type": "as.dto.tag.id.TagCode"
+            }
+
     entities = {
         "sample"            : "Sample",
         "dataset"           : "DataSet",
@@ -2029,49 +2042,63 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
-        attrs = ['permId', 'code', 'description', 'owner', 'private', 'registrationDate']
-        if len(resp['objects']) == 0:
-            tags = DataFrame(columns = attrs)
-        else: 
-            objects = resp['objects']
-            parse_jackson(resp)
-            tags = DataFrame(objects)
-            tags['registrationDate'] = tags['registrationDate'].map(format_timestamp)
-            tags['permId'] = tags['permId'].map(extract_permid)
-            tags['description'] = tags['description'].map(lambda x: '' if x is None else x)
-            tags['owner'] = tags['owner'].map(extract_person)
-
-        return Things(self, 'tag', tags[attrs], 'permId')
+        return self._tag_list_for_response(response=resp['objects'])
 
 
     def get_tag(self, permId, only_data=False):
         """ Returns a specific tag
         """
-        fetchopts = {}
 
+        just_one = True
+        identifiers = []
+        if isinstance(permId, list):
+            just_one = False
+            for ident in permId:
+                identifiers.append(_type_for_id(ident, 'tag'))
+        else:
+            identifiers.append(_type_for_id(permId, 'tag'))
+
+        fetchopts = fetch_option['tag']
+        for option in ['owner']:
+            fetchopts[option] = fetch_option[option]
         request = {
             "method": "getTags",
             "params": [
                 self.token,
-                [{
-                    "permId": permId,
-                    "@type": "as.dto.tag.id.TagPermId"
-                }],
+                identifiers,
                 fetchopts
             ],
         }
 
         resp = self._post_request(self.as_v3, request)
 
-        if resp is None or len(resp) == 0:
-            raise ValueError('no such tag: ' + permId)
-        else:
+        if just_one:
+            if len(resp) == 0:
+                raise ValueError('no such tag found: {}'.format(permId))
+
             parse_jackson(resp)
             for permId in resp:
                 if only_data:
                     return resp[permId]
                 else:
                     return Tag(self, data=resp[permId])
+        else:
+            return self._tag_list_for_response(response=list(resp.values()))
+
+    def _tag_list_for_response(self, response):
+
+        parse_jackson(response)
+        attrs = ['permId', 'code', 'description', 'owner', 'private', 'registrationDate']
+        if len(response) == 0:
+            tags = DataFrame(columns = attrs)
+        else: 
+            tags = DataFrame(response)
+            tags['registrationDate'] = tags['registrationDate'].map(format_timestamp)
+            tags['permId']           = tags['permId'].map(extract_permid)
+            tags['description']      = tags['description'].map(lambda x: '' if x is None else x)
+            tags['owner']            = tags['owner'].map(extract_person)
+
+        return Things(self, 'tag', tags[attrs], 'permId')
 
 
     def search_semantic_annotations(self, permId=None, entityType=None, propertyType=None, only_data = False):
@@ -2776,6 +2803,10 @@ class Openbis:
             raise ValueError('please provide at least one file')
         elif isinstance(files, str):
             files = [files]
+
+        for file in files:
+            if not os.path.exists(file):
+                raise ValueError('File {} does not exist'.format(file))
 
         type_obj = self.get_dataset_type(type.upper())
 

@@ -48,6 +48,18 @@ class DataSet(OpenBisObject):
             if not self.is_new:
                 self.a.__dict__['_children_orig'] = self.a.__dict__['_children']
 
+        if getattr(self, 'container') is None:
+            self.a.__dict__['_container'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_container_orig'] = self.a.__dict__['_container']
+
+        if getattr(self, 'component') is None:
+            self.a.__dict__['_component'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_component_orig'] = self.a.__dict__['_component']
+
 
     def __str__(self):
         return self.data['code']
@@ -55,8 +67,10 @@ class DataSet(OpenBisObject):
     def __dir__(self):
         return [
             'props', 
-            'get_parents()', 'add_parents()', 'del_parents()', 
-            'get_children()', 'add_children()', 'del_children()',
+            'get_parents()', 'get_children()', 'get_components()', 'get_containers()',
+            'add_parents()', 'add_children()', 'add_components()', 'add_containers()', 
+            'del_parents()', 'del_children()', 'del_components()', 'del_containers()',
+            'set_parents()', 'set_children()', 'set_components()', 'set_containers()',
             'sample', 
             'experiment', 
             'physicalData',
@@ -141,7 +155,13 @@ class DataSet(OpenBisObject):
         return
 
     def set_properties(self, properties):
-        self.openbis.update_dataset(self.permId, properties=properties)
+        """expects a dictionary of property names and their values.
+        Does not save the dataset.
+        """
+        for prop in properties.keys():
+            setattr(self.p, prop, properties[prop])
+
+    set_props = set_properties
 
     def download(self, files=None, destination=None, wait_until_finished=True, workers=10,
         linked_dataset_fileservice_url=None, content_copy_index=0):

@@ -44,7 +44,7 @@ class PropertyHolder():
             name = name.rstrip('_')
             property_type = self._type.prop[name]['propertyType']
             if property_type['dataType'] == 'CONTROLLEDVOCABULARY':
-                return self._openbis.get_terms(name)
+                return self._get_terms(property_type['vocabulary']['code'])
             else:
                 syntax = { property_type["label"] : property_type["dataType"]}
                 if property_type["dataType"] == "TIMESTAMP":
@@ -54,14 +54,16 @@ class PropertyHolder():
 
     def __setattr__(self, name, value):
         if name not in self._property_names:
-            raise KeyError("No such property: '{}'".format(name)+". Allowed properties are: {}".format(self._property_names)) 
+            raise KeyError("No such property: '{}'. Allowed properties are: {}".format(name, self._property_names)) 
         property_type = self._type.prop[name]['propertyType']
         data_type = property_type['dataType']
         if data_type == 'CONTROLLEDVOCABULARY':
-            voc = self._openbis.get_terms(name)
-            value = value.upper()
+            voc = self._get_terms(property_type['vocabulary']['code'])
+            value = str(value).upper()
             if value not in voc.df['code'].values:
-                raise ValueError("Value must be one of these terms: " + ", ".join(voc.df['code'].values))
+                raise ValueError("Value for attribute {} must be one of these terms: {}".format(
+                    name, ", ".join(voc.df['code'].values)
+                ))
         elif data_type in ('INTEGER', 'BOOLEAN', 'VARCHAR'):
             if not check_datatype(data_type, value):
                 raise ValueError("Value must be of type {}".format(data_type))

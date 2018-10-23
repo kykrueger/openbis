@@ -40,6 +40,12 @@ class Sample(OpenBisObject):
             if not self.is_new:
                 self.a.__dict__['_children_orig'] = self.a.__dict__['_children']
 
+        if getattr(self, 'components') is None:
+            self.a.__dict__['_components'] = []
+        else:
+            if not self.is_new:
+                self.a.__dict__['_components_orig'] = self.a.__dict__['_components']
+
 
     def _set_data(self, data):
         # assign the attribute data to self.a by calling it
@@ -54,10 +60,14 @@ class Sample(OpenBisObject):
 
     def __dir__(self):
         return [
-            'props', 'get_parents()', 'get_children()', 
-            'add_parents()', 'add_children()', 'del_parents()', 'del_children()',
-            'get_datasets()', 'get_experiment()',
-            'space', 'project', 'experiment', 'tags',
+            'props', 
+            'get_parents()', 'get_children()', 'get_components()',
+            'add_parents()', 'add_children()', 'add_components()', 
+            'del_parents()', 'del_children()', 'del_components()',
+            'set_parents()', 'set_children()', 'set_components()',
+            'get_datasets()', 
+            'get_experiment()', 
+            'space', 'project', 'experiment', 'container', 'tags',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'save()', 'delete()'
@@ -71,6 +81,36 @@ class Sample(OpenBisObject):
     def type(self):
         return self.__dict__['type']
 
+    def _container(self, value=None):
+        if value is not None:
+            if value == '':
+                if self.is_new:
+                    pass
+                else:
+                    self.a.__dict__['_container'] = {}
+            else:
+                obj = None
+                if isinstance(value, str):
+                    # fetch object in openBIS, make sure it actually exists
+                    obj = getattr(self._openbis, "get_sample")(value)
+                elif value is None:
+                    self.a.__dict__['_container'] = {}
+                else:
+                    obj = value
+
+                self.a.__dict__['_container'] = obj.data['identifier']
+
+                # mark attribute as modified, if it's an existing entity
+                if self.is_new:
+                    pass
+                else:
+                    self.a.__dict__['_container']['isModified'] = True
+        else:
+            try:
+                return self.openbis.get_sample(self.a._container['identifier'])
+            except Exception:
+                pass
+
     @type.setter
     def type(self, type_name):
         sample_type = self.openbis.get_sample_type(type_name)
@@ -78,11 +118,17 @@ class Sample(OpenBisObject):
         self.a.__dict__['_type'] = sample_type
 
     def __getattr__(self, name):
+        if name in ['container']:
+            return getattr(self, "_"+name)()
+
         return getattr(self.__dict__['a'], name)
 
     def __setattr__(self, name, value):
         if name in ['set_properties', 'set_tags', 'add_tags']:
             raise ValueError("These are methods which should not be overwritten")
+
+        if name in ['container']:
+            return getattr(self, "_"+name)(value)
 
         # must be an attribute in the AttributeHolder class
         setattr(self.__dict__['a'], name, value)
@@ -94,7 +140,10 @@ class Sample(OpenBisObject):
         return self.a.__repr__()
 
     def set_properties(self, properties):
-        self.openbis.update_sample(self.permId, properties=properties)
+        for prop in properties.keys():
+            setattr(self.p, prop, properties[prop])
+
+    set_props = set_properties
 
     def save(self):
         props = self.p._all_props()
@@ -127,15 +176,11 @@ class Sample(OpenBisObject):
     def get_projects(self, **kwargs):
         return self.openbis.get_project(withSamples=[self.permId], **kwargs)
 
-    def get_experiment(self):
-        try:
-            return self.openbis.get_experiment(self._experiment['identifier'])
-        except Exception:
-            pass
-
     @property
     def experiment(self):
         try:
             return self.openbis.get_experiment(self._experiment['identifier'])
         except Exception:
             pass
+
+
