@@ -63,10 +63,9 @@ public class Migration
     private static final String OPENBIS_LOCAL_DEV = "http://localhost:8888";
     private static final String OPENBIS_LOCAL_PROD = "https://localhost:8443";
     private static final String OPENBIS_SCU = "https://openbis-scu.ethz.ch";
-        
-    private static final String OPENBIS_URL = OPENBIS_LOCAL_DEV + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL;
-
-    private static final int TIMEOUT = 300000;
+    private static final String OPENBIS_SCU_TEST = "https://bs-lamp09.ethz.ch:8443/";
+    
+    private static final int TIMEOUT = Integer.MAX_VALUE;
     
     private static final List<String> EXCLUDE_SPACES = Collections.EMPTY_LIST;
     
@@ -80,7 +79,7 @@ public class Migration
             doTheWork(COMMIT_CHANGES_TO_OPENBIS, URL, user, pass, true, true, true);
         } else {
             System.out.println("Example: java -jar microscopy_migration_tool.jar https://openbis-domain.ethz.ch user password");
-            //doTheWork(true, OPENBIS_URL, "pontia", "a", true, true, true);
+            doTheWork(false, OPENBIS_SCU_TEST + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL, "migration", "migrationtool", true, true, true);
         }
     }
     
@@ -89,6 +88,15 @@ public class Migration
         SslCertificateHelper.trustAnyCertificate(URL);
         IApplicationServerApi v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, URL, TIMEOUT);
         String sessionToken = v3.login(userId, pass);
+        Map<String, String> serverInfo = v3.getServerInformation(sessionToken);
+        
+        if(serverInfo.containsKey("project-samples-enabled") && serverInfo.get("project-samples-enabled").equals("true")) {
+            System.out.println("Project samples enabled.");
+        } else {
+            System.out.println("Enable project samples before running the migration.");
+            return;
+        }
+        
         if(installELNTypes) {
             installELNTypes(sessionToken, v3, COMMIT_CHANGES_TO_OPENBIS);
         }
