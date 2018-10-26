@@ -329,18 +329,33 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 				var samplesToDelete = null;
 				var changesToDo = null;
 				if((orderStatus === "ORDERED" || orderStatus === "DELIVERED" || orderStatus === "PAID") && !sample.properties["ORDER_STATE"]) {
-					//Set property
-					sample.properties["ORDER_STATE"] = window.btoa(unescape(encodeURIComponent(JSON.stringify(JSON.decycle(sample)))));
-					//Update order state on the requests
-					changesToDo = [];
-					var requests = sample.parents;
-					if(requests) {
-						for(var rIdx = 0; rIdx < requests.length; rIdx++) {
-							changesToDo.push({ "permId" : requests[rIdx].permId, "identifier" : requests[rIdx].identifier, "properties" : {"ORDER_STATUS" : orderStatus } });
-						}
+					//Update parents to hold all info
+    	    				var searchSamples = { entityKind : "SAMPLE", logicalOperator : "OR", rules : {} };
+					for(var pIdx = 0; pIdx < sample.parents.length; pIdx++) {
+						searchSamples.rules["UUIDv4_" + pIdx] = { type : "Attribute", name : "PERM_ID", value : sample.parents[pIdx].permId };
 					}
+					
+					mainController.serverFacade.searchForSamplesAdvanced(searchSamples, { only : true, withProperties : true, withAncestors : true, withAncestorsProperties : true }, function(result) {
+						sample.parents = mainController.serverFacade.getV3SamplesAsV1(result.objects);
+						
+						//Set property
+						sample.properties["ORDER_STATE"] = window.btoa(unescape(encodeURIComponent(JSON.stringify(sample))));
+						
+						//Update order state on the requests
+						changesToDo = [];
+						var requests = sample.parents;
+						if(requests) {
+							for(var rIdx = 0; rIdx < requests.length; rIdx++) {
+								changesToDo.push({ "permId" : requests[rIdx].permId, "identifier" : requests[rIdx].identifier, "properties" : {"ORDER_STATUS" : orderStatus } });
+							}
+						}
+						
+						action(sample, null, samplesToDelete, changesToDo);
+					});
+				} else {
+					action(sample, null, samplesToDelete, changesToDo);
 				}
-				action(sample, null, samplesToDelete, changesToDo);
+				
 			} else if(sample.sampleTypeCode === "REQUEST") {
 				mainController.currentView._newProductsController.createAndAddToForm(sample, action);
 			} else if(action) {

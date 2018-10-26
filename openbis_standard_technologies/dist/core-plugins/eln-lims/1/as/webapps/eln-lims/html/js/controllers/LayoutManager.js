@@ -428,8 +428,6 @@ var LayoutManager = {
 			}
 		}
 		
-		console.log("reloadView called with isFirstTime:" + isFirstTime);
-		
 		if (this.FOUND_SIZE === this.DESKTOP_SIZE) {
 			this._setDesktopLayout(view, isFirstTime);
 		} else if (this.FOUND_SIZE === this.TABLET_SIZE) {
