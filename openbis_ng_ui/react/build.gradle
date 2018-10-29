@@ -1,0 +1,14 @@
+plugins {
+  id "com.moowork.node" version "1.2.0"
+}
+
+node {
+  download = true
+  // npmVersion not defined => use the one bundled with node
+  version = '10.1.0'
+  workDir = file("${projectDir}/nodejs")
+  nodeModulesDir = file("${projectDir}")
+}
+
+npm_run_build.dependsOn npm_run_test
+build.dependsOn npm_run_build
