@@ -7,6 +7,10 @@ buildscript {
     }
 }
 
+plugins {
+  id "com.moowork.node" version "1.2.0"
+}
+
 configure(allprojects) {
   apply plugin:'base'
 
@@ -19,3 +23,11 @@ configure(allprojects) {
   }
 }
 
+node {
+  download = true
+  version = '10.1.0'
+  workDir = file("${projectDir}/nodejs")
+  nodeModulesDir = file("${projectDir}")
+}
+
+build.dependsOn npm_run_build

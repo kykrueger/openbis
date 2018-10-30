@@ -13,5 +13,4 @@ sed -i "/host-address =/ s/=.*/= https:\/\/localhost/" /home/vagrant/openbis/ser
 sed -i "/port =/ s/=.*/= 8123/" /home/vagrant/openbis/servers/datastore_server/etc/service.properties
 sed -i "/server-url =/ s/=.*/= \${host-address}:8122/" /home/vagrant/openbis/servers/datastore_server/etc/service.properties
 
-cd  /home/vagrant/openbis-ui-proto/react
-ln -s /node/node_modules
+cd  /home/vagrant/openbis-ui-proto
