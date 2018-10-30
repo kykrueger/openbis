@@ -457,8 +457,8 @@ task deleteOpenbisNgUi(type: Delete) {
   delete 'dist/core-plugins/openbis-ng-ui/1/as/webapps/openbis-ng-ui/html'
 }
 
-task copyOpenbisNgUiToCorePlugins(type: Copy, dependsOn: [deleteOpenbisNgUi, project(':openbis_ng_ui').tasks.build]) {
-    from project(':openbis_ng_ui').file('react/build')
+task copyOpenbisNgUiToCorePlugins(type: Copy, dependsOn: [deleteOpenbisNgUi, ':openbis_ng_ui:build']) {
+    from project(':openbis_ng_ui').file('build')
     into file('dist/core-plugins/openbis-ng-ui/1/as/webapps/openbis-ng-ui/html')
 }
 
