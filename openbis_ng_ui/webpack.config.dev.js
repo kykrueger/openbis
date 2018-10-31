@@ -14,7 +14,8 @@ module.exports = {
     https: false,
     proxy: {
       "/openbis": {
-        "target": 'https://localhost:8122',
+        "target": 'http://localhost:8888',
+        pathRewrite: {'^/openbis/resources' : '/openbis-test/resources'},
         "changeOrigin": true,
         "secure": false
       }
