@@ -1,4 +1,5 @@
 /* eslint-disable */
+const Webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
@@ -9,17 +10,23 @@ module.exports = {
   },
   
   devServer: {
+    host: "0.0.0.0",
+    port: 8124, 
+    inline: true,
     contentBase: "./src",
-    hot: true, 
     https: false,
+    watchOptions: {
+      aggregateTimeout: 300,
+      poll: 1000
+    },
     proxy: {
       "/openbis": {
-        "target": 'http://localhost:8888',
-        pathRewrite: {'^/openbis/resources' : '/openbis-test/resources'},
+        "target": 'http://192.168.222.2:8888',
+        "pathRewrite": {'^/openbis/resources' : '/openbis-test/resources'},
         "changeOrigin": true,
-        "secure": false
+        "secure": false,
       }
-    }    
+    }
   },
 
   devtool: "source-map",
@@ -57,6 +64,8 @@ module.exports = {
       inject: 'body',
       filename: './index.html',
       template: './index.html'
-    })
+    }),
+//    new Webpack.WatchIgnorePlugin(['/home/vagrant/openbis/openbis_ng_ui/react/node_modules/', '/home/vagrant/openbis/openbis_ng_ui/react/node/'])
+    new Webpack.WatchIgnorePlugin([new RegExp("/node_modules/"), new RegExp("/node/")])
   ]
-};
+}

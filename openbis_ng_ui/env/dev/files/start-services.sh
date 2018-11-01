@@ -1,14 +1,15 @@
 sudo /usr/sbin/VBoxService --timesync-set-start
 
-/home/vagrant/openbis/bin/allup.sh
+sudo mount --bind /home/vagrant/openbis-build /home/vagrant/openbis/openbis_ng_ui/node
+sudo mount --bind /home/vagrant/openbis-build/node_modules /home/vagrant/openbis/openbis_ng_ui/node_modules
 
-cd openbis-ui-proto
-./gradlew npmInstall
+cd openbis/openbis_ng_ui
+./gradlew --gradle-user-home /home/vagrant/openbis-build --project-cache-dir /home/vagrant/openbis-build npmSetup
+export PATH=$PATH:/home/vagrant/openbis-build/nodejs/node-v10.1.0-linux-x64/bin
+node /home/vagrant/openbis-build/nodejs/node-v10.1.0-linux-x64/bin/npm install
 cd 
 
-export PATH=$PATH:/home/vagrant/openbis-ui-proto/nodejs/node-v10.1.0-linux-x64/bin
-
-screen -S dev -t webpack -Adm bash -c "cd openbis-ui-proto; npm run dev; bash"
+screen -S dev -t webpack -Adm bash -c "cd openbis/openbis_ng_ui; export PATH=$PATH:/home/vagrant/openbis-build/nodejs/node-v10.1.0-linux-x64/bin; node /home/vagrant/openbis-build/nodejs/node-v10.1.0-linux-x64/bin/npm run dev; bash"
 
 echo "Waiting Webpack to launch on 8124..."
 

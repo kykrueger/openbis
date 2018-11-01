@@ -1,4 +1,4 @@
-# openBIS - prototypes for new UI
+# openBIS - next generation UI
 
 ## Setting up the environment
 
@@ -12,10 +12,9 @@
 
 5. vagrant up
 
-6. Browse to https://localhost:8122/openbis and accept the self-signed certificate
+6. Start openBIS in your Eclipse - it should be running at http://localhost:8888/openbis-test. Make sure you can log in with credentials 'admin / password'.
 
-* openBIS is now running at https://localhost:8122/openbis (login: admin/password)
-* React proto is now running at http://localhost:8124
+7. openBIS next generation UI is now running at http://localhost:8124
 
 ## Additional info for Linux users
 

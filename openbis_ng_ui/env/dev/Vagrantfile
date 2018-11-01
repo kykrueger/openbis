@@ -4,22 +4,21 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/bionic64"
   config.vm.box_version = "20180531.0.0"
-  
+
   config.vm.provider "virtualbox" do |v|
     v.memory = 4096
     v.cpus = 1
     v.name = "openbis-ng-ui"
+    v.customize ['modifyvm', :id, '--natnet1', '192.168.222.0/24']
   end
 
   # Needs to be unique among VMs
-  config.notify_forwarder.port = 22021
+  config.notify_forwarder.port = 21023
 
-  config.vm.synced_folder "../..", "/home/vagrant/openbis-ui-proto"
+  config.vm.synced_folder "../../..", "/home/vagrant/openbis", :mount_options => ["ro"]
   config.vm.synced_folder '.', '/vagrant', disabled: true
   config.vm.synced_folder "files", "/files", :mount_options => ["ro"]
 
-  config.vm.network "forwarded_port", guest: 8122, host: 8122, host_ip: "0.0.0.0"
-  config.vm.network "forwarded_port", guest: 8123, host: 8123, host_ip: "0.0.0.0"
   config.vm.network "forwarded_port", guest: 8124, host: 8124, host_ip: "0.0.0.0"
 
   config.vm.provision :shell, path: "bootstrap.sh"
