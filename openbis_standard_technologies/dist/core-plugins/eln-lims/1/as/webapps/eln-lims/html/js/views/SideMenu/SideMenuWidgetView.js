@@ -119,6 +119,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         
         var $body = $("<div>", {"id": "sideMenuBody"});
         $body.css("overflow-y", "auto");
+        $body.css("-webkit-overflow-scrolling", "touch");
         
         $widget.append($header)
                .append($body);
