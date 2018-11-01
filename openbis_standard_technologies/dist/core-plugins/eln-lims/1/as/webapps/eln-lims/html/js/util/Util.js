@@ -78,7 +78,7 @@ var Util = new function() {
 		if (message) {
 			params.message = message;
 		} else {
-			params.message = '<h1><img src="./img/busy.gif" /> Just a moment...</h1>';
+			params.message = '<img src="./img/busy.gif" />';
 		}
 		if (disabledFadeAnimation) {
 			params.fadeIn = 0;
