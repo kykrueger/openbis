@@ -3,7 +3,7 @@
 
 var LayoutManager = {
 	FOUND_SIZE : undefined,
-	DESKTOP_SIZE : 992,
+	DESKTOP_SIZE : 1024,
 	TABLET_SIZE : 768,
 	MOBILE_SIZE : 0,
 	MIN_HEADER_HEIGHT : 120,
