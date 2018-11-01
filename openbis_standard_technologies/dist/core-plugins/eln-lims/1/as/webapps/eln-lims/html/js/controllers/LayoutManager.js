@@ -407,8 +407,6 @@ var LayoutManager = {
 		this.isLoadingView = true;
 
 		var isFirstTime = this.mainContainer === null || forceFirstTime === true || forceFirstTime === undefined;
-		
-		this._init(isFirstTime);
 
 		var width = $( window ).width();
 		if (width > this.DESKTOP_SIZE) {
@@ -428,6 +426,7 @@ var LayoutManager = {
 			}
 		}
 		
+		this._init(isFirstTime);
 		if (this.FOUND_SIZE === this.DESKTOP_SIZE) {
 			this._setDesktopLayout(view, isFirstTime);
 		} else if (this.FOUND_SIZE === this.TABLET_SIZE) {
