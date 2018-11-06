@@ -29,7 +29,8 @@ from tabulate import tabulate
 from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
 from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
-from .property import PropertyHolder, PropertyAssignments
+from .property import PropertyHolder
+from .property_assignment import PropertyAssignments
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
 from .definitions import get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
@@ -562,6 +563,7 @@ class Openbis:
         return [
             'url', 'port', 'hostname',
             'login()', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
+            "server_information",
             "get_server_information()",
             "get_dataset('permId')",
             "get_datasets()",
@@ -783,6 +785,8 @@ class Openbis:
             raise ValueError("login to openBIS failed")
         else:
             self.token = result
+            self.server_information = self.get_server_information()
+
             if save_token:
                 self.save_token()
             # update the OPENBIS_TOKEN environment variable, if OPENBIS_URL is identical to self.url
@@ -1508,32 +1512,6 @@ class Openbis:
 
         return self._dataset_list_for_response(response=resp['objects'], props=props)
 
-        attrs = ['permId', 'type', 'experiment', 'sample', 
-            'registrationDate', 'modificationDate', 'location', 'properties'
-        ]
-
-        if len(resp['objects']) == 0:
-            datasets = DataFrame(columns=attrs)
-        else:
-            objects = resp['objects']
-            parse_jackson(objects)
-
-            datasets = DataFrame(objects)
-            datasets['registrationDate'] = datasets['registrationDate'].map(format_timestamp)
-            datasets['modificationDate'] = datasets['modificationDate'].map(format_timestamp)
-            datasets['experiment'] = datasets['experiment'].map(extract_nested_identifier)
-            datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
-            datasets['type'] = datasets['type'].map(extract_code)
-            datasets['permId'] = datasets['code']
-            datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
-
-        if props is not None:
-            for prop in props:
-                datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
-                attrs.append(prop.upper())
-
-        return Things(self, 'dataset', datasets[attrs], 'permId')
-
 
     def get_experiment(self, expId, withAttachments=False, only_data=False):
         """ Returns an experiment object for a given identifier (expId).
@@ -1942,7 +1920,7 @@ class Openbis:
                     return VocabularyTerm(self, resp[ident])
 
 
-    def get_any_entity(self, identifier, entity, only_data=False, method=None):
+    def _get_any_entity(self, identifier, entity, only_data=False, method=None):
 
         entity_def = get_definition_for_entity(entity)
 
@@ -2010,7 +1988,7 @@ class Openbis:
     def get_vocabulary(self, code, only_data=False):
         """ Returns the details of a given vocabulary (including vocabulary terms)
         """
-        return self.get_any_entity(code, 'Vocabulary', only_data=only_data, method='getVocabularies')
+        return self._get_any_entity(code, 'Vocabulary', only_data=only_data, method='getVocabularies')
 
 
     def new_tag(self, code, description=None):
@@ -2409,7 +2387,7 @@ class Openbis:
                 "code": type_name
             })
             fetch_options['propertyAssignments'] = fetch_option['propertyAssignments']
-            fetch_options['validationPlugin'] = fetch_option['plugin']
+            #fetch_options['validationPlugin'] = fetch_option['plugin']
 
         request = {
             "method": method_name,
@@ -2419,7 +2397,10 @@ class Openbis:
         parse_jackson(resp)
 
         if type_name is not None and len(resp['objects']) == 1:
-            return PropertyAssignments(self, resp['objects'][0])
+            return PropertyAssignments(
+                openbis_obj = self,
+                data        = resp['objects'][0]
+            )
 
         types = []
         attrs = self._get_attributes(type_name, types, additional_attributes, optional_attributes)
@@ -2537,7 +2518,10 @@ class Openbis:
 
         parse_jackson(response)
         attrs = ['permId', 'type', 'experiment', 'sample', 
-                 'registrationDate', 'modificationDate', 'location', 'properties']
+                 'registrationDate', 'modificationDate',
+                 'location', 'status', 'presentInArchive', 'size',
+                 'properties'
+                ]
         if len(response) == 0:
             datasets = DataFrame(columns=attrs)
         else:
@@ -2548,6 +2532,9 @@ class Openbis:
             datasets['sample'] = datasets['sample'].map(extract_nested_identifier)
             datasets['type'] = datasets['type'].map(extract_code)
             datasets['permId'] = datasets['code']
+            datasets['size'] = datasets['physicalData'].map(lambda x: x.get('size') if x else '')
+            datasets['status'] = datasets['physicalData'].map(lambda x: x.get('status') if x else '')
+            datasets['presentInArchive'] = datasets['physicalData'].map(lambda x: x.get('presentInArchive') if x else '')
             datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
 
         if props is not None:
@@ -2579,7 +2566,11 @@ class Openbis:
             )
 
         fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
-        for option in ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets', 'project']:
+
+        options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets']
+        if self.server_information.project_samples_enabled:
+            options.append('project')
+        for option in options:
             fetchopts[option] = fetch_option[option]
 
         if withAttachments:
@@ -2861,59 +2852,6 @@ class LinkedData():
             return ''
 
 
-class PhysicalData():
-    def __init__(self, data=None):
-        if data is None:
-            data = []
-        self.data = data
-        self.attrs = ['speedHint', 'complete', 'shareId', 'size',
-                      'fileFormatType', 'storageFormat', 'location', 'presentInArchive',
-                      'storageConfirmation', 'locatorType', 'status']
-
-    def __dir__(self):
-        return self.attrs
-
-    def __getattr__(self, name):
-        if name in self.attrs:
-            if name in self.data:
-                return self.data[name]
-        else:
-            return ''
-
-    def _repr_html_(self):
-        html = """
-            <table border="1" class="dataframe">
-            <thead>
-                <tr style="text-align: right;">
-                <th>attribute</th>
-                <th>value</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-
-        for attr in self.attrs:
-            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
-                attr, getattr(self, attr, '')
-            )
-
-        html += """
-            </tbody>
-            </table>
-        """
-        return html
-
-    def __repr__(self):
-        headers = ['attribute', 'value']
-        lines = []
-        for attr in self.attrs:
-            lines.append([
-                attr,
-                getattr(self, attr, '')
-            ])
-        return tabulate(lines, headers=headers)
-
-
 class ExternalDMS():
     """ managing openBIS external data management systems
     """
@@ -2945,15 +2883,16 @@ class ServerInformation():
     
     def __init__(self, info):
         self._info = info
-
-    def __dir__(self):
-        return [
+        self.attrs = [
             'api_version', 'archiving_configured', 'authentication_service', 
             'enabled_technologies', 'project_samples_enabled'
         ]
 
+    def __dir__(self):
+        return self.attrs
+
     def __getattr__(self, name):
-        return self._info[name.replace('_', '-')]
+        return self._info.get(name.replace('_', '-'))
     
     def get_major_version(self):
         return int(self._info["api-version"].split(".")[0]);
@@ -2966,3 +2905,26 @@ class ServerInformation():
     
     def is_openbis_1806(self):
         return (self.get_major_version() == 3) and (self.get_minor_version() >= 5);
+
+    def _repr_html_(self):
+        html = """
+            <table border="1" class="dataframe">
+            <thead>
+                <tr style="text-align: right;">
+                <th>attribute</th>
+                <th>value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        for attr in self.attrs:
+            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
+                attr, getattr(self, attr, '')
+            )
+
+        html += """
+            </tbody>
+            </table>
+        """
+        return html
