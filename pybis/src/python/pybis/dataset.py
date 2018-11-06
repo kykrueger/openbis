@@ -1,5 +1,6 @@
 import os
 from threading import Thread
+from tabulate import tabulate
 from queue import Queue
 from .openbis_object import OpenBisObject 
 from .utils import VERBOSE
@@ -66,6 +67,7 @@ class DataSet(OpenBisObject):
 
     def __dir__(self):
         return [
+            'kind',
             'props', 
             'get_parents()', 'get_children()', 'get_components()', 'get_contained()', 'get_containers()',
             'add_parents()', 'add_children()', 'add_components()', 'add_contained()', 'add_containers()', 
@@ -73,13 +75,14 @@ class DataSet(OpenBisObject):
             'set_parents()', 'set_children()', 'set_components()', 'set_contained()', 'set_containers()',
             'sample', 
             'experiment', 
+            'dataStore',
             'physicalData',
             'linkedData',
             'tags', 'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files(start_folder='/')", 'file_list',
             'download(files=None, destination=None, wait_until_finished=True)', 
-            'status', 'archive()', 'unarchive()' 
+            'status', 'size', 'archive()', 'unarchive()' 
         ]
 
     def __setattr__(self, name, value):
@@ -105,7 +108,7 @@ class DataSet(OpenBisObject):
     @property
     def physicalData(self):
         if 'physicalData' in self.data:
-            return PhysicalData(self.data['physicalData'])
+            return PhysicalData(data=self.data['physicalData'])
 
     @property
     def linkedData(self):
@@ -565,3 +568,61 @@ class DataSetDownloadQueue():
                         raise ValueError("File has the wrong length: {}".format(filename_dest))
             finally:
                 self.download_queue.task_done()
+
+
+class PhysicalData():
+    def __init__(self, data=None):
+        if data is None:
+            data = {}
+        self.data = data
+        self.attrs = ['speedHint', 'complete', 'shareId', 'size',
+                      'fileFormatType', 'storageFormat', 'location', 'presentInArchive',
+                      'storageConfirmation', 'locatorType', 'status']
+
+    def __dir__(self):
+        return self.attrs
+
+    def __getattr__(self, name):
+        if name in self.attrs:
+            if name in self.data:
+                return self.data[name]
+
+    def __getitem__(self, key):
+        if key in self.attrs:
+            if key in self.data:
+                return self.data[key]
+        else:
+            return ''
+
+    def _repr_html_(self):
+        html = """
+            <table border="1" class="dataframe">
+            <thead>
+                <tr style="text-align: right;">
+                <th>attribute</th>
+                <th>value</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+
+        for attr in self.attrs:
+            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
+                attr, getattr(self, attr, '')
+            )
+
+        html += """
+            </tbody>
+            </table>
+        """
+        return html
+
+    def __repr__(self):
+        headers = ['attribute', 'value']
+        lines = []
+        for attr in self.attrs:
+            lines.append([
+                attr,
+                getattr(self, attr, '')
+            ])
+        return tabulate(lines, headers=headers)
