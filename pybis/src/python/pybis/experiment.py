@@ -1,4 +1,4 @@
-from .property import PropertyHolder, PropertyAssignments
+from .property import PropertyHolder
 from .attribute import AttrHolder
 from .openbis_object import OpenBisObject 
 from .definitions import openbis_definitions

@@ -1,4 +1,4 @@
-from .property import PropertyAssignments
+from .property_assignment import PropertyAssignments
 from .semantic_annotation import SemanticAnnotation
 
 class SampleType(PropertyAssignments):
