@@ -63,9 +63,9 @@ def openbis_definitions(entity):
             "multi": "parents children components tags attachments".split(),
         },
         "DataSet": {
-            "attrs_new": "type experiment sample parents children components containers tags".split(),
-            "attrs_up": "parents children experiment sample components containers tags".split(),
-            "attrs": "code permId type experiment sample parents children components containers tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore measured".split(),
+            "attrs_new": "type kind experiment sample parents children components containers tags".split(),
+            "attrs_up": "kind parents children experiment sample components containers tags".split(),
+            "attrs": "code permId type kind experiment sample parents children components containers tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore size measured".split(),
 
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.dataset.id.DataSetPermId'}},
