@@ -1299,6 +1299,7 @@ var FormUtil = new function() {
 	// params.buttons: array of buttons
 	// params.css: css as a map
 	// params.callback: function to be called on submit
+	// params.onBlock: function to be called when dialog is rendered
 	this.showDialog = function(params) {
 
 		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
@@ -1319,6 +1320,9 @@ var FormUtil = new function() {
 		Util.blockUI($window, params.css, false, function() {
 			if (params.focuseComponent) {
 				params.focuseComponent.focus();
+			}
+			if (params.onBlock) {
+				params.onBlock();
 			}
 		});
 	}

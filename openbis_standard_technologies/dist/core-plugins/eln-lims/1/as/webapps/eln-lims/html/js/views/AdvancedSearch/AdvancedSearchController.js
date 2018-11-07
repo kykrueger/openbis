@@ -21,9 +21,11 @@ function AdvancedSearchController(mainController, forceSearch) {
 
 	this.init = function(views) {
 		var _this = this;
-		_this._advancedSearchView.repaint(views);
+		this._loadSavedSearches(function() {
+			_this._advancedSearchView.repaint(views);
+		});
 	}
-	
+
 	this.search = function() {
 		var criteria = this._advancedSearchModel.criteria;
 		var numberOfGeneralRules = 0;
@@ -216,5 +218,179 @@ function AdvancedSearchController(mainController, forceSearch) {
 					break;
 			}
 		}
+	}
+
+	//
+	// query loading / saving
+	//
+
+	this.selectSavedSearch = function(selcetedSavedSearchIndex) {
+		var savedSearch = this._advancedSearchModel.savedSearches[selcetedSavedSearchIndex];
+		this._advancedSearchModel.selcetedSavedSearchIndex = selcetedSavedSearchIndex;
+		this._advancedSearchModel.criteria = savedSearch.criteria;
+		this._advancedSearchModel.forceLoadCriteria = true;
+		this._advancedSearchView.repaintContent();
+	}
+
+	// params.name
+	// params.experiment
+	this.saveNewSample = function(params, callback) {
+		var _this = this;
+		var criteria = _this._getSerializedCriteria();
+
+		this._ensureProjectAndExperiment(params.experiment, function(experiment) {
+			_this._doIfAdmin(experiment, function() {
+				_this._mainController.serverFacade.createSample('SEARCH_QUERY', experiment, {
+					NAME: params.name,
+					CRITERIA: criteria,
+				}, function(result) {
+					var permId = result[0].permId;
+					_this._mainController.serverFacade.getSamples([permId], function(result) {
+						if (result[permId]) {
+							var savedSearch = _this._sampleToSavedSearch(result[permId]);
+							_this._advancedSearchModel.savedSearches.push(savedSearch);
+							_this.selectSavedSearch(_this._advancedSearchModel.savedSearches.length - 1);
+						}
+					callback();
+					});
+				});
+			});
+		});
+	}
+
+	this.updateSelectedSample = function(callback) {
+		var _this = this;
+		var criteria = _this._getSerializedCriteria();
+		var savedSearch = _this._advancedSearchModel.savedSearches[_this._advancedSearchModel.selcetedSavedSearchIndex];
+		_this._doIfAdmin(savedSearch.sample.experiment, function() {
+			_this._mainController.serverFacade.updateSample({
+				permId: savedSearch.sample.permId.permId,
+				properties: {
+					CRITERIA: criteria,
+				},
+			}, function(success) {
+				if (success) {
+					Util.showSuccess('Search updated.');
+				}
+				callback();
+			});
+		});
+	}
+
+	this.delete = function(selcetedSavedSearchIndex, callback) {
+		var _this = this;
+		var savedSearch = _this._advancedSearchModel.savedSearches[selcetedSavedSearchIndex];
+		this._mainController.serverFacade.deleteSamples(
+			[savedSearch.sample.permId.permId],
+			'Search query deletion by user',
+			function(deletionId) {
+				if (deletionId) {
+					_this._advancedSearchModel.selcetedSavedSearchIndex = -1;
+					Util.showSuccess('Search deleted.');
+					_this._loadSavedSearches(function() {
+						_this._advancedSearchView.repaintContent();
+					});
+				}
+				callback();
+			}
+		);
+	}
+
+	this._loadSavedSearches = function(callback) {
+		var _this = this;
+		this._mainController.serverFacade.searchSamplesV3('SEARCH_QUERY', function(result) {
+			_this._advancedSearchModel.savedSearches = [];
+			if(result != null && result.objects != null) {
+				var samples = _this._sortSavedSearchSamples(result.objects);
+				for (var i=0; i<samples.length; i++) {
+					_this._advancedSearchModel.savedSearches.push(_this._sampleToSavedSearch(samples[i]));
+				}
+			}
+			callback();
+		});
+	}
+
+	// puts own samples on top
+	// samples are assumed to already be sorted by date
+	this._sortSavedSearchSamples = function(samples) {
+		var ownSamples = [];
+		var otherSamples = [];
+		for (var i=0; i<samples.length; i++) {
+			if (samples[i].registrator.userId == this._mainController.serverFacade.getUserId()) {
+				ownSamples.push(samples[i]);
+			} else {
+				otherSamples.push(samples[i]);
+			}
+		}
+		return ownSamples.concat(otherSamples);
+	}
+
+	this._ensureProjectAndExperiment = function(experiment, callback) {
+		var _this = this;
+		if (experiment.defaultDummyExperiment) {
+			var dummyExperiment = experiment;
+			_this._mainController.serverFacade.getProject(dummyExperiment.projectIdentifier, function(result) {
+				if ($.isEmptyObject(result)) {
+					var description = ELNDictionary.generatedObjects.searchQueriesProject.description;
+					_this._mainController.serverFacade.createProject(
+						dummyExperiment.space, dummyExperiment.projectCode, description, function(result) {
+							_this._ensureExperiment(dummyExperiment, callback);
+						}
+					);
+				} else {
+					_this._ensureExperiment(experiment, callback);
+				}
+			});
+		} else {
+			callback(experiment);
+		}
+	}
+
+	this._ensureExperiment = function(dummyExperiment, callback) {
+		var _this = this;
+		_this._mainController.serverFacade.searchExperiments(
+			dummyExperiment.projectCode, dummyExperiment.code, function(result) {
+				if (result != null && result.objects != null && result.objects.length > 0) {
+					callback(result.objects[0]);
+				} else {
+					var experimentTypePermId = 'COLLECTION';
+					_this._mainController.serverFacade.createExperiment(
+						experimentTypePermId, dummyExperiment.projectIdentifier, dummyExperiment.code, function(result) {
+							if (result && result.length > 0) {
+								var experimentPermId = result[0].permId;
+								_this._mainController.serverFacade.getExperiments([experimentPermId], function(result) {
+									callback(result[experimentPermId]);
+								});
+							}
+					});
+				}
+		});
+	}
+
+	this._sampleToSavedSearch = function(sample) {
+		return {
+			sample: sample,
+			name: sample.properties.NAME,
+			criteria: JSON.parse(atob(sample.properties.CRITERIA.replace('<criteria>', '').replace('</criteria>', ''))),
+		};
+	}
+
+	this._getSerializedCriteria = function() {
+		return '<criteria>' + btoa(JSON.stringify(this._advancedSearchModel.criteria)) + '</criteria>';
+	}
+
+	this._doIfAdmin = function(experiment, action) {
+		var _this = this;
+		_this._mainController.getUserRole({
+			space: experiment.project.code,
+			project: experiment.project.space.code,
+		}, function(roles) {
+			var hasAdmin = roles.filter(function(role) { return role.indexOf('ADMIN') > -1 }).length > 0;
+			if (hasAdmin) {
+				action();
+			} else {
+				Util.showUserError('You need to be admin in the related space or project to save queries.');
+			}
+		});
 	}
 }

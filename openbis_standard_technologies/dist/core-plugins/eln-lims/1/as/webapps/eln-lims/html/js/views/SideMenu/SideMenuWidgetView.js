@@ -264,15 +264,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    
     	    var showLabNotebooks = function(dfd, showEnabled, showDisabled) {
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		mainController.serverFacade.getPersons([mainController.serverFacade.getUserId()], function(persons) {
+    	    		profile.getHomeSpace(true, function(HOME_SPACE) {
     	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
-    	    			var HOME_SPACE = null;
-    	    			if(persons !== null) {
-    	    				HOME_SPACE = (persons[0].getSpace()?persons[0].getSpace().getCode():null);
-    	    			}
-    	    			if(HOME_SPACE === null) {
-    	    				HOME_SPACE = mainController.serverFacade.getUserId().toUpperCase();
-    	    			}
     	    			var results = [];
     	    			var spaces = searchResult.objects;
     	            var nonInventoryNonHiddenSpaces = []; 
@@ -315,15 +308,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    switch(type) {
     	    	case "LAB_NOTEBOOK":
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		mainController.serverFacade.getPersons([mainController.serverFacade.getUserId()], function(persons) {
+    	    		profile.getHomeSpace(true, function(HOME_SPACE) {
     	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
-    	    			var HOME_SPACE = null;
-    	    			if(persons !== null) {
-    	    				HOME_SPACE = (persons[0].getSpace()?persons[0].getSpace().getCode():null);
-    	    			}
-    	    			if(HOME_SPACE === null) {
-    	    				HOME_SPACE = mainController.serverFacade.getUserId().toUpperCase();
-    	    			}
     	    			var results = [];
     	    			var spaces = searchResult.objects;
     	                for (var i = 0; i < spaces.length; i++) {
@@ -395,14 +381,18 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    		mainController.serverFacade.searchForProjectsAdvanced({ entityKind : "PROJECT", logicalOperator : "AND", rules : projectRules }, null, function(searchResult) {
     	    			var results = [];
     	                var projects = searchResult.objects;
-    	                for (var i = 0; i < projects.length; i++) {
-    	                    var project = projects[i];
-    	                    var normalizedProjectTitle = Util.getDisplayNameFromCode(project.code);
-    	                    var projectLink = _this.getLinkForNode(normalizedProjectTitle, project.getPermId().getPermId(), "showProjectPageFromPermId", project.getPermId().getPermId());
-    	                    results.push({ title : projectLink, entityType: "PROJECT", key : project.getPermId().getPermId(), folder : true, lazy : true, view : "showProjectPageFromPermId", viewData: project.getPermId().getPermId() });
-    	                    
-    	                }
-    	                dfd.resolve(results);
+                      for (var i = 0; i < projects.length; i++) {
+                          var project = projects[i];
+                          if (project.code == 'QUERIES' && 
+                              project.description == ELNDictionary.generatedObjects.searchQueriesProject.description) {
+                              continue;
+                          }
+                          var normalizedProjectTitle = Util.getDisplayNameFromCode(project.code);
+                          var projectLink = _this.getLinkForNode(normalizedProjectTitle, project.getPermId().getPermId(), "showProjectPageFromPermId", project.getPermId().getPermId());
+                          results.push({ title : projectLink, entityType: "PROJECT", key : project.getPermId().getPermId(), folder : true, lazy : true, view : "showProjectPageFromPermId", viewData: project.getPermId().getPermId() });
+                          
+                      }
+                      dfd.resolve(results);
     	    		});
     	    		break;
     	    	case "PROJECT":
