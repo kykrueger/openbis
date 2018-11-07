@@ -342,8 +342,14 @@ function AdvancedSearchController(mainController, forceSearch) {
 				}
 			});
 		} else {
-			callback(experiment);
+			_this._loadExperimentWithProjectAndSpace(experiment, callback);
 		}
+	}
+
+	this._loadExperimentWithProjectAndSpace = function(experiment, callback) {
+		this._mainController.serverFacade.getExperiments([experiment.permId.permId], function(result) {
+			callback(result[experiment.permId.permId]);
+		})
 	}
 
 	this._ensureExperiment = function(dummyExperiment, callback) {
