@@ -255,12 +255,18 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         super(sessionManager, context);
     }
 
+    /**
+     * This version is a dummy and should not be used. See {@link ApplicationServerApi}.
+     */
     @Override
     public int getMajorVersion()
     {
         return 3;
     }
 
+    /**
+     * This version is a dummy and should not be used. See {@link ApplicationServerApi}.
+     */
     @Override
     public int getMinorVersion()
     {

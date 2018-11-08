@@ -21,7 +21,13 @@ var require = (function() {
 			"jquery" : "lib/jquery/js/jquery",
 			"stjs" : "lib/stjs/js/stjs",
 			"underscore" : "lib/underscore/js/underscore",
-			"moment" : "lib/moment/js/moment"
+			"moment" : "lib/moment/js/moment",
+			// Backwards compatibility with V1 Components
+			"components" : "../../components",
+			// "openbis" : "../../js/openbis",
+			"openbis-screening" : "../../js/openbis-screening",
+			"bootstrap" : "../../lib/bootstrap/js/bootstrap.min",
+			"bootstrap-slider" : "../../lib/bootstrap-slider/js/bootstrap-slider.min"
 		},
 		shim : {
 			"stjs" : {
@@ -30,6 +36,15 @@ var require = (function() {
 			},
 			"underscore" : {
 				exports : "_"
+			},
+			// Backwards compatibility with V1 Components
+			// "openbis" : {
+			// 	deps : [ "jquery" ],
+			// 	exports : "openbis"
+			// },
+			"openbis-screening" : {
+				deps : [ "openbis" ],
+				exports : "openbis"
 			}
 		}
 	}

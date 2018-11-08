@@ -23,6 +23,8 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	this._$searchCriteriaPanelContainer = null;
 	this._$tbody = null;
 	this._$dataGridContainer = null;
+	this._$saveLoadContainer = null;
+	this._$savedSearchesDropdown = null;
 	
 	//
 	// Main Repaint Method
@@ -40,7 +42,9 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			'action' : 'javascript:void(0);'
 		});
 		$mainPanelHeader.append($("<h2>").append("Advanced Search"));
-		this._paintMenuPanel($mainPanelHeader);
+		this._$saveLoadContainer = $("<div>");
+		$mainPanelHeader.append(this._$saveLoadContainer);
+		this._paintSaveLoadPanel(this._$saveLoadContainer);
 		$header.append($mainPanelHeader);
 		
 		//Search Criteria Panel
@@ -69,23 +73,132 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			this._advancedSearchModel.forceLoadCriteria = undefined;
 		}
 		
-		this._$entityTypeDropdown.select2({ width: '100%', theme: "bootstrap" });
-		this._$andOrDropdownComponent.select2({ width: '100%', theme: "bootstrap" });
-		
-//		$("select").each(function() {
-//			if(!$(this).hasClass('select2-selection__rendered')) {
-//				$(this).select2({ width: '100%', theme: "bootstrap" });
-//			}
-//		});
 	}
-	
+
+	this.repaintContent = function() {
+		this._paintSaveLoadPanel(this._$saveLoadContainer);
+		this._paintCriteriaPanel(this._$searchCriteriaPanelContainer);
+	}	
+
 	//
 	// Repaint Panels Methods
 	//
-	
-	this._paintMenuPanel = function($menuPanelContainer) {
+
+	this._save = function() {
+		var _this = this;
+		profile.getHomeSpace(false, function(HOME_SPACE) {
+
+	    var $nameField = FormUtil.getTextInputField('Name', 'Name', true);
+
+	    var $searchDropdownContainer = $('<div>');
+	    var advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(false, true, "search entity to store query", true, false, false, false);
+	    advancedEntitySearchDropdown.init($searchDropdownContainer);
+			if (HOME_SPACE) {
+		    advancedEntitySearchDropdown.addSelected({
+		      defaultDummyExperiment: true,
+					space: HOME_SPACE,
+					code: 'QUERIES_COLLECTION',
+					projectCode: 'QUERIES',
+					projectIdentifier: IdentifierUtil.getProjectIdentifier(HOME_SPACE, 'QUERIES'),
+		      identifier: { identifier: IdentifierUtil.getExperimentIdentifier(HOME_SPACE, 'QUERIES', 'QUERIES_COLLECTION') },
+		      permId: { permId: 'permId' },
+		    });
+			}
+
+	    var $btnSave = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Save' });
+	    var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+	    $btnCancel.click(function() {
+	      Util.unblockUI();
+	    });
+
+	    // update existing sample or save new one
+	    if (_this._advancedSearchModel.selcetedSavedSearchIndex > -1) {
+	      Util.blockUI();
+	      _this._advancedSearchController.updateSelectedSample(function() {
+	        Util.unblockUI();
+	      });
+	    } else {
+	      FormUtil.showDialog({
+	        css: {'text-align': 'left'},
+	        title: 'Save search query',
+	        components: [$nameField, $searchDropdownContainer],
+	        buttons: [$btnSave, $btnCancel],
+	        callback: function() {
+	          Util.unblockUI();
+	          Util.blockUI();
+	          _this._advancedSearchController.saveNewSample({
+	            name: $nameField.val(),
+	            experiment: advancedEntitySearchDropdown.getSelected()[0],
+	          }, Util.unblockUI); 
+	        },
+	      });
+	    }
+
+		});
+	}
+
+	this._delete = function() {
+		var i = this._advancedSearchModel.selcetedSavedSearchIndex;
+		if (i !== null && i > -1) {
+			Util.blockUI();
+			this._advancedSearchController.delete(i, function() {
+				Util.unblockUI();
+			});
+		}
+	}
+
+	this._paintSaveLoadPanel = function($container) {
+		var _this = this;
+		$container.empty();
+
+		var savedSearchOptions = [{
+			label: 'load a saved search',
+			value: -1,
+			disabled: true,
+			selected: _this._advancedSearchModel.selcetedSavedSearchIndex == -1,
+		}];
+		for (var i=0; i<this._advancedSearchModel.savedSearches.length; i++) {
+			var savedSearch = this._advancedSearchModel.savedSearches[i];
+			savedSearchOptions.push({
+				label: savedSearch.name,
+				value: i,
+				selected: _this._advancedSearchModel.selcetedSavedSearchIndex == i,
+			});
+		}
+		this._$savedSearchesDropdown = FormUtil.getPlainDropdown(savedSearchOptions);
+		this._$savedSearchesDropdown.change(function(change) {
+			var i = _this._$savedSearchesDropdown.val();
+			_this._advancedSearchController.selectSavedSearch(i);
+		});
+		$container.append(this._$savedSearchesDropdown);
+		this._$savedSearchesDropdown.select2({
+			width: '400px',
+			theme: "bootstrap"
+		});
+
+		var $buttonSave = FormUtil.getButtonWithIcon('glyphicon-floppy-disk', function() {
+			_this._save();
+		}, 'Save');
+		$buttonSave.css({ 'margin-left': '8px'});
+		$container.append($buttonSave);
+
+		var $buttonDelete = FormUtil.getButtonWithIcon('glyphicon-trash', function() {
+			_this._delete();
+		}, 'Delete');
+		$buttonDelete.css({ 'margin-left': '8px'});
+		var i = this._advancedSearchModel.selcetedSavedSearchIndex;
+		if (i == null || i < 0) {
+			$buttonDelete.attr('disabled', '');
+		}
+		$container.append($buttonDelete);
+
+	}
+
+	this._paintTypeSelectionPanel = function($menuPanelContainer) {
 		this._$entityTypeDropdown = this._getEntityTypeDropdown();
-		$menuPanelContainer.append(FormUtil.getFieldForComponentWithLabel(this._$entityTypeDropdown, "Search For", null, true));
+		var entityTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this._$entityTypeDropdown, "Search For", null, true);
+		entityTypeDropdownFormGroup.css("width","50%");
+		$menuPanelContainer.append(entityTypeDropdownFormGroup);
 
 		var andOrOptions = [{value : "AND", label : "AND", selected : true}, {value : "OR", label : "OR"}];
 		this._$andOrDropdownComponent = FormUtil.getDropdown(andOrOptions, "Select logical operator");
@@ -111,9 +224,12 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	this._paintCriteriaPanel = function($searchCriteriaPanelContainer) {
 		$searchCriteriaPanelContainer.empty();
 		$searchCriteriaPanelContainer.append($("<legend>").append("Criteria"));
-		
+
+		this._paintTypeSelectionPanel(this._$searchCriteriaPanelContainer);
+
 		var _this = this;
 		var $table = $("<table>", { class : "table table-bordered"});
+		$table.css({ 'margin-top': '10px' });
 		$thead = $("<thead>");
 		this._$tbody = $("<tbody>");
 
@@ -203,11 +319,8 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				$fieldValue.val(rule.value);
 				var $fieldNameDropdown = $($newFieldNameContainer.children()[0]);
 				$fieldNameDropdown.val(rule.name);
-				$fieldNameDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		}
-		
-		$fieldTypeDropdown.select2({ width: '100%', theme: "bootstrap" });
 	}
 	
 	//should make new objects every time. otherwise, using the same object will produce odd results!
@@ -287,9 +400,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					break;
 				default:
 					//Do Nothing
-			}
-			if($mergedDropdown && !_this._advancedSearchModel.forceLoadCriteria) {
-				$mergedDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		});
 		
@@ -387,8 +497,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				comparisonDropdown.trigger("change");
 				
 				$newFieldOperatorContainer.append(comparisonDropdown);
-				
-				comparisonDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		});
 		
@@ -520,7 +628,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 					var $newFieldTypeComponent = _this._getNewFieldTypeDropdownComponent($(tds[1]), $(tds[2]), _this._advancedSearchModel.criteria.entityKind, $row.attr("id"));
 					$(tds[0]).empty();
 					$(tds[0]).append($newFieldTypeComponent);
-					$newFieldTypeComponent.select2({ width: '100%', theme: "bootstrap" });
 				}				
 			} else {
 				_this._advancedSearchModel.resetModel(kindAndType[0]); //Restart model
@@ -550,7 +657,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				delete _this._advancedSearchModel.criteria.rules[uuid];
 				$row.remove();
 			} else {
-				Util.showError("There must be at least one row of search criteria present.");
+				Util.showUserError("There must be at least one row of search criteria present.");
 			}
 		});
 		return $minusButton;

@@ -2,10 +2,7 @@
     "groups": 
     [
         {
-            "name":"SIS",
-            "key":"SIS",
-            "ldapGroupKeys": ["id-sis-source"],
-            "admins": ["blub"]
+            "key":"SIS"
         }
     ]
 }

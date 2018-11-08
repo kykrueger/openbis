@@ -96,7 +96,7 @@ function MainController(profile) {
 		if(data.result == null){
 			$("#username").focus();
 			var callback = function() {Util.unblockUI();};
-			Util.showError('The given username or password is not correct.', callback);
+			Util.showUserError('The given username or password is not correct.', callback);
 			this.serverFacade.doIfFileAuthenticationService((function() {
 	            this._enablePasswordResetLink();
 			}).bind(this));
@@ -247,8 +247,60 @@ function MainController(profile) {
                 Util.showInfo("A new password has been sent as an email to user " + userId + " if this user exists.");                
             });
         } else {
-            Util.showError("To reset the password, the parameters 'userId' and 'token' need to be set.");
+            Util.showUserError("To reset the password, the parameters 'userId' and 'token' need to be set.");
         }
+	}
+
+	//
+	// authorization
+	//
+
+	// params.space: space code
+	// params.project: (optional) project code
+	// params.callback: function to be called with the role list
+	this.getUserRole = function(params, callback) {
+		if (profile.isAdmin) {
+			callback(["ADMIN"]);
+		} else {
+			var roles = [];
+			mainController.serverFacade.searchRoleAssignments({
+				user: mainController.serverFacade.getUserId(),
+			}, function(roleAssignments) {
+				for (var i=0; i<roleAssignments.length; i++) {
+					var ra = roleAssignments[i];
+					if (ra.space && ra.space.code == params.space
+							&& roles.indexOf(ra.role) < 0) {
+						roles.push(ra.role);
+					}
+					if (ra.project && params.project && ra.project.code == params.project
+							&& roles.indexOf(ra.role) < 0) {
+						roles.push(ra.role);
+					}
+				}
+				callback(roles);
+			});
+		}
+	}
+
+	// gets all role assignments for one space or project (all users)
+	// params.space: space for which the role assignments should be loaded
+	// params.project: project for which the role assignments should be loaded
+	this.getRoleAssignments = function(params, callback) {
+		mainController.serverFacade.searchRoleAssignments({
+			space: params.space,
+			project: params.project,
+		}, function(roleAssignments) {
+			callback(roleAssignments);
+		});
+	}
+
+	// role, grantTo, groupOrUser, spaceCode, projectPermId
+	this.authorizeUserOrGroup = function(params, callback) {
+		mainController.serverFacade.createRoleAssignment(params, callback);
+	}
+
+	this.deleteRoleAssignment = function(roleAssignmentTechId, callback) {
+		mainController.serverFacade.deleteRoleAssignment(roleAssignmentTechId, callback);
 	}
 
 	//
@@ -281,6 +333,9 @@ function MainController(profile) {
 			this.currentView.finalize) {
 			this.currentView.finalize();
 		}
+		
+		CKEditorManager.destroy();
+		
 		//
 		//
 		//
@@ -929,7 +984,7 @@ function MainController(profile) {
 	this._showSampleHierarchyPage = function(permId) {
 		//Show View
 		var localInstance = this;
-		this.serverFacade.searchWithUniqueId(permId, function(data) {
+		this.serverFacade.searchWithUniqueIdCompleteTree(permId, function(data) {
 			var views = localInstance._getNewViewModel(true, true, false);
 			var sampleHierarchy = new SampleHierarchy(localInstance.serverFacade, views, localInstance.profile, data[0]);
 			sampleHierarchy.init();

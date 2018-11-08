@@ -8,14 +8,15 @@ import json
 import os
 import socket
 import subprocess
-from subprocess import PIPE
 from subprocess import SubprocessError
 from contextlib import contextmanager
 from random import randrange
 from pybis import Openbis
+from subprocess import PIPE
 
 
 output_buffer = ''
+
 
 def decorator_print(func):
     def wrapper(tmpdir, *args, **kwargs):
@@ -26,21 +27,13 @@ def decorator_print(func):
             raise
     return wrapper
 
-@decorator_print
-def test_obis(tmpdir):
+
+def init_global_settings():
     global output_buffer
-
-    o = Openbis('https://obisserver:8443', verify_certificates=False)
-    o.login('admin', 'admin', save_token=True)
-    setup_masterdata(o)
-
     output_buffer = '=================== 1. Global settings ===================\n'
-    if os.path.exists('~/.obis'):
-        os.rmdir('~/.obis')
-    cmd('obis config -g set openbis_url=https://obisserver:8443')
-    cmd('obis config -g set user=admin')
-    cmd('obis config -g set verify_certificates=false')
-    cmd('obis config -g set hostname=' + socket.gethostname())
+    cmd('obis config -g clear')
+    cmd('obis data_set -g clear')
+    cmd('obis config -g set openbis_url=https://obisserver:8443, user=admin, verify_certificates=false, hostname=' + socket.gethostname())
     cmd('obis data_set -g set type=UNKNOWN')
     settings = get_settings_global()
     assert settings['config']['openbis_url'] == 'https://obisserver:8443'
@@ -49,10 +42,37 @@ def test_obis(tmpdir):
     assert settings['config']['hostname'] == socket.gethostname()
     assert settings['data_set']['type'] == 'UNKNOWN'
 
+
+@decorator_print
+def test_obis(tmpdir):
+    o = get_openbis()
+    setup_masterdata(o)
+    init_global_settings()
+    run(tmpdir, o)
+
+
+@decorator_print
+def test_obis_with_metadata_folder(tmpdir):
+    o = get_openbis()
+    setup_masterdata(o)
+    init_global_settings()
+
+    obis_metadata_folder = os.path.join(tmpdir, 'obis_metadata')
+    os.makedirs(obis_metadata_folder)
+    cmd('obis config -g set obis_metadata_folder=' + obis_metadata_folder)
+    settings = get_settings_global()
+    assert settings['config']['obis_metadata_folder'] == obis_metadata_folder
+
+    run(tmpdir, o, skip=['clone', 'addref', 'removeref', 'sync'])
+
+
+def run(tmpdir, o, skip=[]):
+    global output_buffer
+
     with cd(tmpdir): cmd('mkdir obis_data')
     with cd(tmpdir + '/obis_data'):
 
-        output_buffer = '=================== 2. First commit ===================\n'
+        output_buffer = '=================== 2. First commit =================== skip: ' + str(skip) + '\n'
         cmd('obis init data1')
         with cd('data1'):
             cmd('touch file')
@@ -78,7 +98,7 @@ def test_obis(tmpdir):
             assert settings['repository']['external_dms_id'] == settings_before['repository']['external_dms_id']
             assert settings['repository']['id'] == settings_before['repository']['id']
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
-            result = cmd('git annex info big_file')
+            result = cmd_git('annex info big_file', settings, tmpdir, 'obis_data/data1')
             assert 'file: big_file' in result
             assert 'key: SHA256E-s1000000--d29751f2649b32ff572b5e0a9f541ea660a50f94ff0beedfb0b692b924cc8025' in result
             assert 'present: true' in result
@@ -149,32 +169,34 @@ def test_obis(tmpdir):
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data5')
 
-        output_buffer = '=================== 8. Addref ===================\n'
-        cmd('cp -r data1 data6')
-        cmd('obis addref data6')
-        with cd('data1'): settings_data1 = get_settings()
-        with cd('data6'): settings_data6 = get_settings()
-        assert settings_data6 == settings_data1
-        result = cmd('obis addref data6')
-        assert 'DataSet already exists in the database' in result
-        result = cmd('obis addref data7')
-        assert 'Invalid value' in result
-        data_set = o.get_dataset(settings_data6['repository']['data_set_id']).data
-        with cd('data6'): assert_matching(settings_data6, data_set, tmpdir, 'obis_data/data6')
+        if 'addref' not in skip:
+            output_buffer = '=================== 8. Addref ===================\n'
+            cmd('cp -r data1 data6')
+            cmd('obis addref data6')
+            with cd('data1'): settings_data1 = get_settings()
+            with cd('data6'): settings_data6 = get_settings()
+            assert settings_data6 == settings_data1
+            result = cmd('obis addref data6')
+            assert 'DataSet already exists in the database' in result
+            result = cmd('obis addref data7')
+            assert 'Invalid value' in result
+            data_set = o.get_dataset(settings_data6['repository']['data_set_id']).data
+            with cd('data6'): assert_matching(settings_data6, data_set, tmpdir, 'obis_data/data6')
 
-        output_buffer = '=================== 9. Local clone ===================\n'
-        with cd('data2'): settings_data2 = get_settings()
-        with cd('../obis_data_b'):
-            cmd('obis clone ' + settings_data2['repository']['data_set_id'])
-            with cd('data2'):
-                settings_data2_clone = get_settings()
-                assert settings_data2_clone['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
-                assert settings_data2_clone['repository']['external_dms_id'] != settings_data2['repository']['external_dms_id']
-                data_set = o.get_dataset(settings_data2_clone['repository']['data_set_id']).data
-                assert_matching(settings_data2_clone, data_set, tmpdir, 'obis_data_b/data2')
-                del settings_data2['repository']['external_dms_id']
-                del settings_data2_clone['repository']['external_dms_id']
-                assert settings_data2_clone == settings_data2
+        if 'clone' not in skip:
+            output_buffer = '=================== 9. Local clone ===================\n'
+            with cd('data2'): settings_data2 = get_settings()
+            with cd('../obis_data_b'):
+                cmd('obis clone ' + settings_data2['repository']['data_set_id'])
+                with cd('data2'):
+                    settings_data2_clone = get_settings()
+                    assert settings_data2_clone['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
+                    assert settings_data2_clone['repository']['external_dms_id'] != settings_data2['repository']['external_dms_id']
+                    data_set = o.get_dataset(settings_data2_clone['repository']['data_set_id']).data
+                    assert_matching(settings_data2_clone, data_set, tmpdir, 'obis_data_b/data2')
+                    del settings_data2['repository']['external_dms_id']
+                    del settings_data2_clone['repository']['external_dms_id']
+                    assert settings_data2_clone == settings_data2
 
         output_buffer = '=================== 11. Init analysis ===================\n'
         cmd('obis init_analysis -p data1 analysis1')
@@ -206,7 +228,7 @@ def test_obis(tmpdir):
                 data_set = o.get_dataset(settings_analysis2['repository']['data_set_id']).data
                 assert_matching(settings_analysis2, data_set, tmpdir, 'obis_data/data1/analysis2')
                 assert data_set['parents'][0]['code'] == settings_data1['repository']['data_set_id']
-            result = cmd('git check-ignore analysis2')
+            result = cmd_git('check-ignore analysis2', settings_data1, tmpdir, 'obis_data/data1')
             assert 'analysis2' in result
 
         output_buffer = '=================== 12. Metadata only commit ===================\n'
@@ -226,18 +248,19 @@ def test_obis(tmpdir):
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data7')
 
-        output_buffer = '=================== 13. obis sync ===================\n'
-        with cd('data7'):
-            cmd('touch file2')
-            cmd('git add file2')
-            cmd('git commit -m \'msg\'')
-            result = cmd('obis sync')
-            settings = get_settings()
-            assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
-            data_set = o.get_dataset(settings['repository']['data_set_id']).data
-            assert_matching(settings, data_set, tmpdir, 'obis_data/data7')
-            result = cmd('obis sync')
-            assert 'Nothing to sync' in result
+        if 'sync' not in skip:
+            output_buffer = '=================== 13. obis sync ===================\n'
+            with cd('data7'):
+                cmd('touch file2')
+                cmd('git add file2')
+                cmd('git commit -m \'msg\'')
+                result = cmd('obis sync')
+                settings = get_settings()
+                assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
+                data_set = o.get_dataset(settings['repository']['data_set_id']).data
+                assert_matching(settings, data_set, tmpdir, 'obis_data/data7')
+                result = cmd('obis sync')
+                assert 'Nothing to sync' in result
 
         output_buffer = '=================== 14. Set data set properties ===================\n'
         cmd('obis init data8')
@@ -252,22 +275,23 @@ def test_obis(tmpdir):
             result = cmd('obis data_set set properties={"a":"0","A":"1"}')
             assert 'Duplicate key after capitalizing JSON config: A' in result
 
-        output_buffer = '=================== 15. Removeref ===================\n'
-        with cd('data6'): settings = get_settings()
-        content_copies = get_data_set(o, settings)['linkedData']['contentCopies']
-        assert len(content_copies) == 2
-        cmd('obis removeref data6')
-        content_copies = get_data_set(o, settings)['linkedData']['contentCopies']
-        assert len(content_copies) == 1
-        assert content_copies[0]['path'].endswith('data1')
-        cmd('obis addref data6')
-        cmd('obis removeref data1')
-        content_copies = get_data_set(o, settings)['linkedData']['contentCopies']
-        assert len(content_copies) == 1
-        assert content_copies[0]['path'].endswith('data6')
-        result = cmd('obis removeref data1')
-        assert 'Matching content copy not fount in data set' in result
-        cmd('obis addref data1')
+        if 'removeref' not in skip:
+            output_buffer = '=================== 15. Removeref ===================\n'
+            with cd('data6'): settings = get_settings()
+            content_copies = get_data_set(o, settings)['linkedData']['contentCopies']
+            assert len(content_copies) == 2
+            cmd('obis removeref data6')
+            content_copies = get_data_set(o, settings)['linkedData']['contentCopies']
+            assert len(content_copies) == 1
+            assert content_copies[0]['path'].endswith('data1')
+            cmd('obis addref data6')
+            cmd('obis removeref data1')
+            content_copies = get_data_set(o, settings)['linkedData']['contentCopies']
+            assert len(content_copies) == 1
+            assert content_copies[0]['path'].endswith('data6')
+            result = cmd('obis removeref data1')
+            assert 'Matching content copy not fount in data set' in result
+            cmd('obis addref data1')
 
         output_buffer = '=================== 18. Use git-annex hashes as checksums ===================\n'
         cmd('obis init data10')
@@ -344,10 +368,12 @@ def assert_file_paths(files, expected_paths):
 
 
 def get_settings():
-    return json.loads(cmd('obis settings get'))
+    settings = cmd('obis settings get')
+    return json.loads(settings)
 
 def get_settings_global():
-    return json.loads(cmd('obis settings -g get'))
+    settings = cmd('obis settings -g get')
+    return json.loads(settings)
 
 def get_data_set(o, settings):
     return o.get_dataset(settings['repository']['data_set_id']).data
@@ -362,13 +388,6 @@ def cd(newdir):
     finally:
         os.chdir(prevdir)
 
-def cmd(cmd, timeout=None):
-    global output_buffer
-    output_buffer += '==== running: ' + cmd + '\n'
-    completed_process = subprocess.run(cmd.split(' '), stdout=PIPE, stderr=PIPE, timeout=timeout)
-    result = get_cmd_result(completed_process)
-    output_buffer += result + '\n'
-    return result
 
 def get_cmd_result(completed_process, tmpdir=''):
     result = ''
@@ -378,12 +397,32 @@ def get_cmd_result(completed_process, tmpdir=''):
         result += completed_process.stdout.decode('utf-8').strip()
     return result
 
+
+def cmd(cmd, timeout=None):
+    global output_buffer
+    output_buffer += '==== running: ' + cmd + '\n'
+    completed_process = subprocess.run(cmd.split(' '), stdout=PIPE, stderr=PIPE, timeout=timeout)
+    result = get_cmd_result(completed_process)
+    output_buffer += result + '\n'
+    return result
+
+
+def cmd_git(params, settings, tmpdir, path):
+    obis_metadata_folder = settings['config']['obis_metadata_folder']
+    if obis_metadata_folder is None:
+        return cmd('git ' + params)
+    else:
+        work_tree = os.path.join(tmpdir, path)
+        git_dir = os.path.join(obis_metadata_folder, work_tree[1:], '.git') 
+        return cmd('git --work-tree=' + work_tree + ' --git-dir=' + git_dir + ' ' + params)
+
+
 def assert_matching(settings, data_set, tmpdir, path):
     content_copies = data_set['linkedData']['contentCopies']
     content_copy = list(filter(lambda cc: cc['path'].endswith(path) == 1, content_copies))[0]
     assert data_set['type']['code'] == settings['data_set']['type']
     assert content_copy['externalDms']['code'] == settings['repository']['external_dms_id']
-    assert content_copy['gitCommitHash'] == cmd('git rev-parse --short HEAD')
+    assert content_copy['gitCommitHash'] == cmd_git('rev-parse --short HEAD', settings, tmpdir, path)
     assert content_copy['gitRepositoryId'] == settings['repository']['id']
     if settings['object']['id'] is not None:
         assert data_set['sample']['identifier']['identifier'] == settings['object']['id']
@@ -435,8 +474,13 @@ def commit_new_change(tmpdir, o, repo_name):
         return settings
 
 
+def get_openbis():
+    o = Openbis('https://obisserver:8443', verify_certificates=False)
+    o.login('admin', 'admin', save_token=True)
+    return o
+
+
 def setup_masterdata(o):
-    spaces = o.get_spaces()
     if 'BIGDATA' not in o.get_spaces().df.code.values:
         o.new_space(code='BIGDATA').save()
     if '/DEFAULT/BIGDATA2' not in o.get_samples().df.identifier.values:

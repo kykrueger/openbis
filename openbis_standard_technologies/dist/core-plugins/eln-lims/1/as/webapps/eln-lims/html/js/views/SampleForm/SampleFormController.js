@@ -171,7 +171,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		sampleChildrenFinal.sort();
 		var intersection = intersect_safe(sampleParentsFinal, sampleChildrenFinal);
 		if(intersection.length > 0) {
-			Util.showError("The same entity can't be a parent and a child, please check: " + intersection);
+			Util.showUserError("The same entity can't be a parent and a child, please check: " + intersection);
 			return;
 		}
 		
@@ -192,7 +192,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				}
 				
 				if(maxProducts && (sampleParentsFinal.length + newSampleParents.length) > maxProducts) {
-					Util.showError("There is more than " + maxProducts + " product.");
+					Util.showUserError("There is more than " + maxProducts + " product.");
 					return;
 				}
 			}

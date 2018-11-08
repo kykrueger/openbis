@@ -36,7 +36,8 @@ dependencies {
 			'jline:jline:+'
 			
 
-    runtime 'slf4j:slf4j-log4j12:+'
+    runtime 'slf4j:slf4j-log4j12:+',
+            'apache:commons-fileupload:+'
 
 	testCompile project(path: ':common', configuration: 'tests'),
 				project(path: ':dbmigration', configuration: 'tests'),

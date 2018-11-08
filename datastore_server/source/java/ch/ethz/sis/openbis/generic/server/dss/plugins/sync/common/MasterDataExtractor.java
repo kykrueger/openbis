@@ -44,6 +44,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.Experime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
@@ -365,6 +366,12 @@ public class MasterDataExtractor
             propertyAssignmentElement.setAttribute("showInEdit", String.valueOf(propAssignment.isShowInEditView()));
             propertyAssignmentElement.setAttribute("mandatory", String.valueOf(propAssignment.isMandatory()));
             propertyAssignmentElement.setAttribute("showRawValueInForms", String.valueOf(propAssignment.isShowRawValueInForms()));
+            Plugin plugin = propAssignment.getPlugin();
+            if (plugin != null)
+            {
+                propertyAssignmentElement.setAttribute("plugin", plugin.getPermId().getPermId());
+                propertyAssignmentElement.setAttribute("pluginType", plugin.getPluginType().toString());
+            }
         }
         return propertyAssignmentsElement;
     }
@@ -376,6 +383,7 @@ public class MasterDataExtractor
         DataSetTypeSearchCriteria searchCriteria = new DataSetTypeSearchCriteria();
         DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary();
+        fetchOptions.withPropertyAssignments().withPlugin();
 
         SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType> searchResult =
                 v3Api.searchDataSetTypes(sessionToken, searchCriteria, fetchOptions);
@@ -394,6 +402,7 @@ public class MasterDataExtractor
         SampleTypeSearchCriteria searchCriteria = new SampleTypeSearchCriteria();
         SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary();
+        fetchOptions.withPropertyAssignments().withPlugin();
 
         SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType> searchResult =
                 v3Api.searchSampleTypes(sessionToken, searchCriteria, fetchOptions);
@@ -412,6 +421,7 @@ public class MasterDataExtractor
         ExperimentTypeSearchCriteria searchCriteria = new ExperimentTypeSearchCriteria();
         ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary();
+        fetchOptions.withPropertyAssignments().withPlugin();
 
         SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType> searchResult =
                 v3Api.searchExperimentTypes(sessionToken, searchCriteria, fetchOptions);
@@ -430,6 +440,7 @@ public class MasterDataExtractor
         MaterialTypeSearchCriteria searchCriteria = new MaterialTypeSearchCriteria();
         MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary();
+        fetchOptions.withPropertyAssignments().withPlugin();
 
         SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType> searchResult =
                 v3Api.searchMaterialTypes(sessionToken, searchCriteria, fetchOptions);

@@ -39,6 +39,7 @@ evaluationDependsOn(':rtd_yeastx')
 evaluationDependsOn(':deep_sequencing_unit')
 evaluationDependsOn(':plasmid')
 evaluationDependsOn(':big_data_link_server')
+evaluationDependsOn(':openbis_ng_ui')
 
 
 apply from: '../gradle/javaproject.gradle'
@@ -84,7 +85,7 @@ dependencies {
 					 project(':screening'),
 					 project(':rtd_phosphonetx'),
 					 project(':plasmid'),
-					 'bioformats:bioformats:+',
+					 'bioformats:bioformats:5.9.2',
 					 'imagej:ij:+',
 					 'cisd:cisd-openbis-knime-server:+',
 					 'apache:xml-apis:+',
@@ -277,6 +278,7 @@ def downloadFile(url, filename) {
 import org.paleozogt.gradle.zip.SymZip;
 
 task zipCorePlugins(type: SymZip) {
+  includeEmptyDirs = false
   archiveName 'core-plugins.zip'
   downloadFile('https://github.com/aarpon/obit_flow_core_technology/archive/release/18.x.zip', 'flow.zip')
   downloadFile('https://github.com/aarpon/obit_microscopy_core_technology/archive/release/18.x.zip', 'microscopy.zip')
@@ -450,6 +452,17 @@ task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, 
     }
   }
 }
+
+task deleteOpenbisNgUi(type: Delete) {
+  delete 'dist/core-plugins/openbis-ng-ui/1/as/webapps/openbis-ng-ui/html'
+}
+
+task copyOpenbisNgUiToCorePlugins(type: Copy, dependsOn: [deleteOpenbisNgUi, ':openbis_ng_ui:build']) {
+    from project(':openbis_ng_ui').file('build')
+    into file('dist/core-plugins/openbis-ng-ui/1/as/webapps/openbis-ng-ui/html')
+}
+
+zipCorePlugins.dependsOn copyOpenbisNgUiToCorePlugins
 
 task generateJavadoc(type: Javadoc) {
 	source = configurations.javadoc_sources.collect { zipTree(it).matching {

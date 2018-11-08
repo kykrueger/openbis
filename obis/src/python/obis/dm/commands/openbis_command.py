@@ -12,7 +12,7 @@ from ...scripts import cli
 
 class OpenbisCommand(object):
 
-    def __init__(self, dm, openbis=None):
+    def __init__(self, dm):
         self.data_mgmt = dm
         self.openbis = dm.openbis
         self.git_wrapper = dm.git_wrapper
@@ -133,6 +133,8 @@ class OpenbisCommand(object):
                 return CommandResult(returncode=0, output="")
             else:
                 self.openbis.logout()
+        if self.data_mgmt.login  == False:
+            return CommandResult(returncode=-1, output="No active session.")
         passwd = getpass.getpass("Password for {}:".format(user))
         try:
             self.openbis.login(user, passwd, save_token=True)
@@ -162,13 +164,12 @@ class OpenbisCommand(object):
         result = self.git_wrapper.git_top_level_path()
         if result.failure():
             return result
-        top_level_path = result.output
         edms_path, path_name = os.path.split(result.output)
         if external_dms_id is None:
             external_dms_id = self.generate_external_data_management_system_code(user, hostname, edms_path)
         try:
             external_dms = self.openbis.get_external_data_management_system(external_dms_id.upper())
-        except ValueError as e:
+        except ValueError:
             # external dms does not exist - create it
             try:
                 external_dms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
@@ -187,8 +188,7 @@ class OpenbisCommand(object):
         # ask user
         hostname = self.ask_for_hostname(socket.gethostname())
         # store
-        resolver = self.data_mgmt.settings_resolver.config
-        cli.config_internal(self.data_mgmt, resolver, True, False, prop='hostname', value=hostname, set=True)
+        self.data_mgmt.config('config', True, False, prop='hostname', value=hostname, set=True)
         return hostname
 
     def ask_for_hostname(self, hostname):

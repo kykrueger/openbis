@@ -640,8 +640,10 @@ def insertUpdateProject(tr, parameters, tableBuilder):
 	
 def updateDataSet(tr, parameters, tableBuilder):
 	dataSetCode = parameters.get("dataSetCode"); #String
+	dataSetParents = parameters.get("dataSetParents"); #List<String>
 	metadata = parameters.get("metadata"); #java.util.LinkedHashMap<String, String> where the key is the name
 	dataSet = tr.getDataSetForUpdate(dataSetCode);
+	dataSet.setParentDatasets(dataSetParents);
 	properties = getProperties(tr, parameters);
 	#Hack - Fix Sample Lost bug from openBIS, remove when SSDM-1979 is fix
 	#Found in S211: In new openBIS versions if you set the already existing sample when doing a dataset update is deleted
@@ -664,12 +666,15 @@ def insertDataSet(tr, parameters, tableBuilder):
 	dataSetType = parameters.get("dataSetType"); #String
 	folderName = parameters.get("folderName"); #String
 	fileNames = parameters.get("filenames"); #List<String>
+	dataSetParents = parameters.get("dataSetParents"); #List<String>
 	isZipDirectoryUpload = parameters.get("isZipDirectoryUpload"); #String
 	metadata = parameters.get("metadata"); #java.util.LinkedHashMap<String, String> where the key is the name
 	properties = getProperties(tr, parameters);
 
 	#Create Dataset
 	dataSet = tr.createNewDataSet(dataSetType);
+	dataSet.setParentDatasets(dataSetParents);
+	
 	if sampleIdentifier is not None:
 		dataSetSample = getSampleByIdentifierForUpdate(tr, sampleIdentifier);
 		dataSet.setSample(dataSetSample);

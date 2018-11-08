@@ -17,7 +17,6 @@
 function ExperimentFormView(experimentFormController, experimentFormModel) {
 	this._experimentFormController = experimentFormController;
 	this._experimentFormModel = experimentFormModel;
-	this.enableSelect2 = [];
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -130,21 +129,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				FormUtil.showDropboxFolderNameDialog(nameElements);
 			}).bind(this));
 			toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
-
-			//Export
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-				Util.blockUI();
-				var facade = mainController.serverFacade;
-				facade.exportAll([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false, function(error, result) {
-					if(error) {
-						Util.showError(error);
-					} else {
-						Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-					}
-				});
-			});
-			toolbarModel.push({ component : $export, tooltip: "Export" });
 			
+			//Export
+			var $exportAll = FormUtil.getExportButton([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false);
+			toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
+		
+			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], true);
+			toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
+		
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
 				var $jupyterBtn = FormUtil.getButtonWithImage("./img/jupyter-icon.png", function () {
@@ -249,12 +241,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// INIT
 		//
 		$container.append($form);
-		
-		// Select2
-		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
-			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
-		}
-		//
 		
 		Util.unblockUI();
 		
@@ -423,16 +409,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					var $component = null;
 					if(propertyType.code === "DEFAULT_OBJECT_TYPE") {
 						$component = FormUtil.getSampleTypeDropdown(propertyType.code, true);
-						this.enableSelect2.push($component);
 					} else {
 						$component = FormUtil.getFieldForPropertyType(propertyType, value);
 					}
 					
-					//Update values if is into edit mode
-					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-							this.enableSelect2.push($component);
-					}
-						
 					if(this._experimentFormModel.mode === FormMode.EDIT) {
 						if(propertyType.dataType === "BOOLEAN") {
 							$($($component.children()[0]).children()[0]).prop('checked', value === "true");

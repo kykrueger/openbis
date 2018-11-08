@@ -17,7 +17,6 @@
 function SampleFormView(sampleFormController, sampleFormModel) {
 	this._sampleFormController = sampleFormController;
 	this._sampleFormModel = sampleFormModel;
-	this.enableSelect2 = [];
 	
 	this.repaint = function(views, loadFromTemplate) {
 		var $container = views.content;
@@ -112,6 +111,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
+		
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			//Create Experiment Step
 			if(_this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
@@ -139,7 +140,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					
 					repeatUntilSet();
 				});
-				toolbarModel.push({ component : $createBtn, tooltip: "Create Experimental Step" });
+				if(toolbarConfig.CREATE) {
+					toolbarModel.push({ component : $createBtn, tooltip: "Create Experimental Step" });
+				}
 			}
 			
 			//Edit
@@ -152,7 +155,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					
 					mainController.changeView('showEditSamplePageFromPermId', args);
 				});
-				toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+				if(toolbarConfig.EDIT) {
+					toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+				}
 			}
 			
 			//Move
@@ -160,13 +165,17 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
 				moveEntityController.init();
 			});
-			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+			if(toolbarConfig.MOVE) {
+				toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+			}
 			
 			//Copy
 			var $copyButton = $("<a>", { 'class' : 'btn btn-default'} )
 			.append($('<img>', { 'src' : './img/copy-icon.png', 'style' : 'width:16px; height:16px;' }));
 			$copyButton.click(_this._getCopyButtonEvent());
-			toolbarModel.push({ component : $copyButton, tooltip: "Copy" });
+			if(toolbarConfig.COPY) {
+				toolbarModel.push({ component : $copyButton, tooltip: "Copy" });
+			}
 			
 			//Delete
 			var warningText = null;
@@ -214,33 +223,44 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			var $deleteButton = FormUtil.getDeleteButton(function(reason) {
 				_this._sampleFormController.deleteSample(reason);
 			}, true, warningText);
-			toolbarModel.push({ component : $deleteButton, tooltip: "Delete" });
+			
+			if(toolbarConfig.DELETE) {
+				toolbarModel.push({ component : $deleteButton, tooltip: "Delete" });
+			}
 			
 			//Print
 			var $printButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
 			$printButton.click(function() {
 				PrintUtil.printEntity(_this._sampleFormModel.sample);
 			});
-			toolbarModel.push({ component : $printButton, tooltip: "Print" });
+			if(toolbarConfig.PRINT) {
+				toolbarModel.push({ component : $printButton, tooltip: "Print" });
+			}
 			
 			//Hierarchy Graph
 			var $hierarchyGraph = FormUtil.getButtonWithImage("./img/hierarchy-icon.png", function () {
 				mainController.changeView('showSampleHierarchyPage', _this._sampleFormModel.sample.permId);
 			});
-			toolbarModel.push({ component : $hierarchyGraph, tooltip: "Hierarchy Graph" });
+			if(toolbarConfig.HIERARCHY_GRAPH) {
+				toolbarModel.push({ component : $hierarchyGraph, tooltip: "Hierarchy Graph" });
+			}
 			
 			//Hierarchy Table
 			var $hierarchyTable = FormUtil.getButtonWithIcon("glyphicon-list", function () {
 				mainController.changeView('showSampleHierarchyTablePage', _this._sampleFormModel.sample.permId);
 			});
-			toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
+			if(toolbarConfig.HIERARCHY_TABLE) {
+				toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
+			}
 			
 			//Create Dataset
 			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 				mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
 			});
-			toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
-
+			if(toolbarConfig.UPLOAD_DATASET) {
+				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+			}
+			
 			//Get dropbox folder name
 			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
 				var nameElements = [
@@ -250,21 +270,20 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				];
 				FormUtil.showDropboxFolderNameDialog(nameElements);
 			}).bind(this));
-			toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+			if(toolbarConfig.UPLOAD_DATASET_HELPER) {
+				toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+			}
 			
 			//Export
-			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-				Util.blockUI();
-				var facade = mainController.serverFacade;
-				facade.exportAll([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false, function(error, result) {
-					if(error) {
-						Util.showError(error);
-					} else {
-						Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-					}
-				});
-			});
-			toolbarModel.push({ component : $export, tooltip: "Export" });
+			var $exportAll = FormUtil.getExportButton([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false);
+			if(toolbarConfig.EXPORT_ALL) {
+				toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
+			}
+			
+			var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], true);
+			if(toolbarConfig.EXPORT_METADATA) {
+				toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
+			}
 			
 			//Jupyter Button
 			if(profile.jupyterIntegrationServerEndpoint) {
@@ -328,6 +347,11 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		if(this._sampleFormModel.mode === FormMode.CREATE) {
 			this._paintIdentificationInfo($formColumn, sampleType);
 		}
+		
+		// Plugin Hook
+		var $sampleFormTop = new $('<div>');
+		$formColumn.append($sampleFormTop);
+		profile.sampleFormTop($sampleFormTop, _this._sampleFormModel);
 		
 		//
 		// Form Defined Properties from General Section
@@ -420,7 +444,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		// GENERATE CHILDREN
 		//
-		if((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample) {
+		var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
+		
+		if((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
 			var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate_children'}).text("Generate Children");
 			$generateChildrenBtn.click(function(event) {
 				_this._generateChildren();
@@ -476,6 +502,11 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// Extra Content
 		//
 		$formColumn.append($("<div>", { 'id' : 'sample-form-content-extra' }));
+		
+		// Plugin Hook
+		var $sampleFormBottom = new $('<div>');
+		$formColumn.append($sampleFormBottom);
+		profile.sampleFormBottom($sampleFormBottom, _this._sampleFormModel);
 		
 		//
 		// Identification Info on View/Edit
@@ -533,12 +564,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		// INIT
 		//
 		$container.append($form);
-		
-		// Select2
-		for(var cIdx = 0;cIdx < this.enableSelect2.length; cIdx++) {
-			this.enableSelect2[cIdx].select2({ width: '100%', theme: "bootstrap" });
-		}
-		//
 		
 		//
 		// Extra content
@@ -628,10 +653,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					}
 				} else {
 					var $component = FormUtil.getFieldForPropertyType(propertyType, value);
-					
-					if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-							this.enableSelect2.push($component);
-					}
 					
 					//Update values if is into edit mode
 					if(this._sampleFormModel.mode === FormMode.EDIT || loadFromTemplate) {
@@ -891,7 +912,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			if($childrenStorageDropdown && !$("#childrenStorageSelector").length) {
 				var $childrenStorageDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenStorageDropdown, 'Storage');
 				$("#newChildrenOnBenchDropDown").append($childrenStorageDropdownWithLabel);
-				$childrenStorageDropdown.select2({ width: '100%', theme: "bootstrap" });
 			}
 		});
 	}
@@ -939,7 +959,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			//Number of Replicas
 			var numberOfReplicas = parseInt($("#childrenReplicas").val());
 			if(isNaN(numberOfReplicas) || numberOfReplicas < 0 || numberOfReplicas > 1000) {
-				Util.showError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
+				Util.showUserError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
 				return;
 			}
 			
@@ -973,13 +993,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			var generatedChildrenProject = IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier);
 			var numberOfReplicas = parseInt($("#childrenReplicas").val());
 			if(isNaN(numberOfReplicas) || numberOfReplicas < 0 || numberOfReplicas > 1000) {
-				Util.showError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
+				Util.showUserError("The number of children replicas should be an integer number bigger than 0 and lower than 1000.", function() {}, true);
 				return;
 			}
 			var generatedChildrenCodes = getGeneratedChildrenCodes();
 			var generatedChildrenType = $("#childrenTypeSelector").val();
 			if(generatedChildrenType === "") {
-				Util.showError("Please select the children type.", function() {}, true);
+				Util.showUserError("Please select the children type.", function() {}, true);
 			} else {
 				for(var i = 0; i < generatedChildrenCodes.length; i++) {
 					var virtualSample = new Object();
@@ -1087,7 +1107,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		var $childrenTypeDropdown = FormUtil.getSampleTypeDropdown('childrenTypeSelector', true);
 		var $childrenTypeDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenTypeDropdown, 'Type');
 		$childrenComponent.append($childrenTypeDropdownWithLabel);
-		$childrenTypeDropdown.select2({ width: '100%', theme: "bootstrap" });
 		
 		var $childrenReplicas = FormUtil._getInputField('number', 'childrenReplicas', 'Children Replicas', '1', true);
 		$childrenReplicas.val("1");

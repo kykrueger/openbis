@@ -203,6 +203,7 @@ var FormUtil = new function() {
 				$component.append($("<option>").attr('value',storageConfiguration.code).text(label));
 			}
 			callbackFunction($component);
+			Select2Manager.add($component);
 		});
 	}
 	
@@ -233,6 +234,7 @@ var FormUtil = new function() {
 			}
 			
 		}
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -268,7 +270,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',sampleType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -295,7 +297,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',experimentType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -311,11 +313,17 @@ var FormUtil = new function() {
 		for(var i = 0; i < spaces.length; i++) {
 			$component.append($("<option>").attr('value', spaces[i]).text(Util.getDisplayNameFromCode(spaces[i])));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
 	this.getDropdown = function(mapVals, placeHolder) {
+		$dropdown = this.getPlainDropdown(mapVals, placeHolder);
+		Select2Manager.add($dropdown);
+		return $dropdown;
+	}
+	
+	this.getPlainDropdown = function(mapVals, placeHolder) {
 
 		var $component = $("<select>", {class : 'form-control'});
 		if(placeHolder) {
@@ -331,10 +339,8 @@ var FormUtil = new function() {
 			}
 			$component.append($option);
 		}
-		
 		return $component;
 	}
-	
 	
 	this.getDataSetsDropDown = function(code, dataSetTypes) {
 		var $component = $("<select>", { class : 'form-control ' });
@@ -354,7 +360,7 @@ var FormUtil = new function() {
 			
 			$component.append($("<option>").attr('value',datasetType.code).text(label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -446,8 +452,7 @@ var FormUtil = new function() {
                 			}
             			}
             		}
-            		//
-            		//
+            		Select2Manager.add($component);
             		callbackForComponent($component);
             	}
             });
@@ -464,11 +469,18 @@ var FormUtil = new function() {
 		return $deleteBtn;
 	}
 	
-	this.getButtonWithImage = function(src, clickEvent) {
-		var $pinBtn = $("<a>", { 'class' : 'btn btn-default' });
-		$pinBtn.append($("<img>", { 'src' : src, 'style' : 'width:16px; height:16px;'}));
-		$pinBtn.click(clickEvent);
-		return $pinBtn;
+	this.getButtonWithImage = function(src, clickEvent, text, tooltip) {
+		var $btn = $("<a>", { 'class' : 'btn btn-default' });
+		$btn.append($("<img>", { 'src' : src, 'style' : 'width:16px; height:16px;'}));
+		$btn.click(clickEvent);
+		if(text) {
+			$btn.append("&nbsp;").append(text);
+		}
+		if(tooltip) {
+			$btn.attr("title", tooltip);
+			$btn.tooltipster();
+		}
+		return $btn;
 	}
 	
 	this.getButtonWithText = function(text, clickEvent, btnClass) {
@@ -480,6 +492,10 @@ var FormUtil = new function() {
 		$pinBtn.append(text);
 		$pinBtn.click(clickEvent);
 		return $pinBtn;
+	}
+	
+	this.getFormAwesomeIcon = function(iconClass) {
+		return $("<i>", { 'class' : 'fa ' + iconClass });
 	}
 	
 	this.getButtonWithIcon = function(iconClass, clickEvent, text, tooltip) {
@@ -730,7 +746,7 @@ var FormUtil = new function() {
 		for(var i = 0; i < terms.length; i++) {
 			$component.append($("<option>").attr('value',terms[i].code).text(terms[i].label));
 		}
-		
+		Select2Manager.add($component);
 		return $component;
 	}
 	
@@ -1083,7 +1099,7 @@ var FormUtil = new function() {
 
 			// attach events
 			$dataSetTypeSelector = $("#dataSetTypeSelector");
-			$dataSetTypeSelector.select2({ width: '100%', theme: "bootstrap" });
+			Select2Manager.add($dataSetTypeSelector);
 			$nameInput = $("#nameInput");
 			$dropboxFolderName = $("#dropboxFolderName");
 			$copyToClipboardButton = $("#copyToClipboardButton");
@@ -1275,4 +1291,173 @@ var FormUtil = new function() {
 		}
 		return type;
 	}
+
+	// share project or space with user or group
+	// params.title
+	// params.components: array of compoments (info, input fields etc.)
+	// params.focusedComponent: component which gains focus
+	// params.buttons: array of buttons
+	// params.css: css as a map
+	// params.callback: function to be called on submit
+	// params.onBlock: function to be called when dialog is rendered
+	this.showDialog = function(params) {
+
+		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+		$window.submit(params.callback);
+
+		$window.append($('<legend>').append(params.title));
+
+		for (var i=0; i<params.components.length; i++) {
+			$window.append($('<p>').append(params.components[i]));
+		}
+		var $buttons = $('<p>');
+		for (var i=0; i<params.buttons.length; i++) {
+			$buttons.append(params.buttons[i]);
+			$buttons.append('&nbsp;');
+		}
+		$window.append($buttons);
+
+		Util.blockUI($window, params.css, false, function() {
+			if (params.focuseComponent) {
+				params.focuseComponent.focus();
+			}
+			if (params.onBlock) {
+				params.onBlock();
+			}
+		});
+	}
+
+	// params.space: space code (set this or project)
+	// params.project: project code (set this or space)
+	// params.acceptCallback: function to be called with (shareWith, groupOrUser)
+	this.showAuthorizationDialog = function(params) {
+
+		var _this = this;
+		Util.blockUI();
+
+		mainController.serverFacade.searchRoleAssignments({
+			space: params.space ? params.space.code : null,
+			project: params.project ? params.project.code : null,
+		}, function(roleAssignments) {
+
+			Util.unblockUI();
+
+			// components
+			var $roleAssignmentTable = _this._getRoleAssignmentTable(roleAssignments, _this._revokeRoleAssignment.bind(_this, params));
+			var spaceOrProjectLabel = params.space ? params.space.code : params.project.code;
+			var $roleDropdown = FormUtil.getDropdown([
+				{ label: 'Observer', value: 'OBSERVER', selected: true },
+				{ label: 'User', value: 'USER' },
+				{ label: 'Admin', value: 'ADMIN' },
+			]);
+			var $role = FormUtil.getFieldForComponentWithLabel($roleDropdown, 'Role');
+			var $grantToDropdown = FormUtil.getDropdown([
+				{ label: 'Group', value: 'Group', selected: true },
+				{ label: 'User', value: 'User', selected: true },
+			]);
+			var $shareWith = FormUtil.getFieldForComponentWithLabel($grantToDropdown, 'grant to');
+			var $groupOrUser = FormUtil.getTextInputField('id', 'Group or User');
+			// buttons
+			var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Grant access' });
+			var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Close');
+			$btnCancel.click(function() {
+			    Util.unblockUI();
+			});
+			// dialog
+			_this.showDialog({
+				title: 'Manage access to ' + spaceOrProjectLabel,
+				components: [$roleAssignmentTable, $role, $shareWith, $groupOrUser],
+				focuseComponent: $groupOrUser,
+				buttons: [$btnAccept, $btnCancel],
+				css: {'text-align': 'left', 'top': '15%'},
+				callback: function() {
+					if ($groupOrUser.val() == null || $groupOrUser.val().length == 0) {
+						alert("Please enter a user or group name.");
+					} else {
+						_this._grantRoleAssignment(params, $roleDropdown.val(), $grantToDropdown.val(), $groupOrUser.val());
+					}
+				},
+			});
+
+		});
+	}
+
+	this._getRoleAssignmentTable = function(roleAssignments, revokeAction) {
+		if (roleAssignments.length == 0) {
+			return $('<span>');
+		}
+		var $table = $('<table>').css({'margin-top': '20px'});
+		var $thead = $('<thead>')
+			.append($('<tr>')
+				.append($('<th>').text('User'))
+				.append($('<th>').text('Group'))
+				.append($('<th>').text('Role'))
+				.append($('<th>')
+			));
+		var $tbody = $('<tbody>');
+		for (var i=0; i<roleAssignments.length; i++) {
+			var user = roleAssignments[i].user ? roleAssignments[i].user.userId : '';
+			var group = roleAssignments[i].authorizationGroup ? roleAssignments[i].authorizationGroup.code : '';
+			var role = roleAssignments[i].role;
+			var roleAssignmentTechId = roleAssignments[i].id;
+			var $revokeButton = this.getButtonWithIcon('glyphicon-remove', revokeAction.bind(this, roleAssignmentTechId), null, 'revoke');
+			$revokeButton.css({'margin-top': '5px'});
+			$tbody.append($('<tr>')
+				.append($('<td>').text(user))
+				.append($('<td>').text(group))
+				.append($('<td>').text(role))
+				.append($('<td>').append($revokeButton)));
+		}
+		$table.append($thead).append($tbody);
+		$table.css({ width: '100%' });
+		return $table;
+	}
+
+	this._grantRoleAssignment = function(dialogParams, role, grantTo, groupOrUser) {
+		var _this = this;
+		mainController.authorizeUserOrGroup({
+			user: grantTo == "User" ? groupOrUser : null,
+			group: grantTo == "Group" ? groupOrUser.toUpperCase() : null,
+			role: role,
+			space: dialogParams.space ? dialogParams.space.code : null,
+			project: dialogParams.project ? dialogParams.project.permId : null,
+		}, function(success, result) {
+			if (success) {
+				Util.showSuccess("Access granted.");
+				_this.showAuthorizationDialog(dialogParams);
+		} else {
+				Util.showUserError(result, function() {}, true);
+			}
+		});
+	}
+
+	this._revokeRoleAssignment = function(dialogParams, roleAssignmentTechId) {
+		var _this = this;
+		mainController.deleteRoleAssignment(roleAssignmentTechId, function(success, result) {
+			if (success) {
+				Util.showSuccess("Access revoked.");
+				_this.showAuthorizationDialog(dialogParams);
+			} else {
+				Util.showUserError(result, function() {}, true);
+			}
+		});
+	}
+
+	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
+			$export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
+					Util.blockUI();
+					var facade = mainController.serverFacade;
+					facade.exportAll(exportConfig, (includeRoot)?true:false, metadataOnly, function(error, result) {
+						if(error) {
+							Util.showError(error);
+						} else {
+							Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
+						}
+					});
+			});
+			if(metadataOnly) {
+				$export.append(" M");
+			}
+			return $export;
+	};
 }

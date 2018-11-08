@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 
@@ -40,14 +41,16 @@ import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 @Component
 public class ConcurrentOperationLimiterConfig
 {
+    private static final String CONCURRENT_OPERATION_LIMITER_PROPERTY_PREFIX = "concurrent-operation-limiter";
+
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             ConcurrentOperationLimiter.class);
 
-    private static final String TIMEOUT_PROPERTY = "concurrent-operation-limiter.timeout";
+    private static final String TIMEOUT_PROPERTY = "timeout";
 
-    private static final String TIMEOUT_ASYNC_PROPERTY = "concurrent-operation-limiter.timeout-async";
+    private static final String TIMEOUT_ASYNC_PROPERTY = "timeout-async";
 
-    private static final String LIMITS_PROPERTY = "concurrent-operation-limiter.limits";
+    private static final String LIMITS_PROPERTY = "limits";
 
     private static final String OPERATION_PROPERTY_SUFFIX = ".operation";
 
@@ -84,10 +87,11 @@ public class ConcurrentOperationLimiterConfig
         init(configurer.getResolvedProps());
     }
 
-    private void init(Properties properties)
+    private void init(Properties allProperties)
     {
         List<ConcurrentOperationLimit> limits = new ArrayList<ConcurrentOperationLimit>();
-
+        Properties properties = PropertyParametersUtil.extractSingleSectionProperties(allProperties, 
+                CONCURRENT_OPERATION_LIMITER_PROPERTY_PREFIX, false).getProperties();
         for (String limitKey : PropertyUtils.getList(properties, LIMITS_PROPERTY))
         {
             String operation = PropertyUtils.getProperty(properties, limitKey + OPERATION_PROPERTY_SUFFIX);

@@ -14,7 +14,8 @@ dependencies {
             project(':datastore_server'),
             'openhms:jackcess:+',
             'reveregroup:gwt-image-loader:+',
-            'bioformats:bioformats:+'
+            'imagej:ij:+',
+            'bioformats:bioformats:5.9.2'
 
     testCompile project(path: ':datastore_server', configuration: 'tests')
 }

@@ -29,17 +29,17 @@ function MoveSampleController(samplePermId, successAction) {
 	this.move = function() {
 		var _this = this;
 		if(!this._moveSampleModel.isNewExperiment && !this._moveSampleModel.experimentIdentifier) {
-			Util.showError("Please choose an " + ELNDictionary.getExperimentDualName() + ".", function() {});
+			Util.showUserError("Please choose an " + ELNDictionary.getExperimentDualName() + ".", function() {});
 			return;
 		}
 		
 		if(this._moveSampleModel.isNewExperiment && !this._moveSampleModel.experimentIdentifier) {
-			Util.showError("Please choose the project and " + ELNDictionary.getExperimentDualName() + " name.", function() {});
+			Util.showUserError("Please choose the project and " + ELNDictionary.getExperimentDualName() + " name.", function() {});
 			return;
 		}
 		
 		if(this._moveSampleModel.isNewExperiment && !this._moveSampleModel.experimentType) {
-			Util.showError("Please choose the " + ELNDictionary.getExperimentDualName() + " type.", function() {});
+			Util.showUserError("Please choose the " + ELNDictionary.getExperimentDualName() + " type.", function() {});
 			return;
 		}
 		
