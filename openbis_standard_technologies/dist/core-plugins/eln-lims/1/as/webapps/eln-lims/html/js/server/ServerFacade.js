@@ -442,26 +442,22 @@ function ServerFacade(openbisServer) {
 	
 	this.deleteSamples = function(samplePermIds, reason, callback, confirmDeletions) {
 		require(["as/dto/sample/id/SamplePermId", "as/dto/sample/delete/SampleDeletionOptions" ], 
-			        function(SamplePermId, SampleDeletionOptions) {
-			            var samplePermIdsObj = [];
-			            for(var sPIdx = 0; sPIdx < samplePermIds.length; sPIdx++) {
-			            		samplePermIdsObj.push(new SamplePermId(samplePermIds[sPIdx]));
-			            }
-			 
-			            var deletionOptions = new SampleDeletionOptions();
-			            deletionOptions.setReason(reason);
-			 
-			            // logical deletion (move objects to the trash can)
-			            mainController.openbisV3.deleteSamples(samplePermIdsObj, deletionOptions).done(function(deletionId) {
-				            	if(confirmDeletions) {
-				            		// Confirm deletion of samples
-				            		mainController.openbisV3.confirmDeletions([deletionId]).then(function() {
-				            			callback({});
-				            		});
-				            	} else {
-				            		callback(deletionId);
-				            	}
-			            });
+			function(SamplePermId, SampleDeletionOptions) {
+				var samplePermIdsObj = samplePermIds.map(function(permId) { return new SamplePermId(permId)});
+				var deletionOptions = new SampleDeletionOptions();
+				deletionOptions.setReason(reason);
+
+				// logical deletion (move objects to the trash can)
+				mainController.openbisV3.deleteSamples(samplePermIdsObj, deletionOptions).done(function(deletionId) {
+					if(confirmDeletions) {
+						// Confirm deletion of samples
+						mainController.openbisV3.confirmDeletions([deletionId]).then(function() {
+							callback({});
+						});
+					} else {
+						callback(deletionId);
+					}
+				});
 		});
 	}
 	
@@ -2163,26 +2159,196 @@ function ServerFacade(openbisServer) {
 	}
 
 	//
-	// V3 Save Functions
+	// V3 Functions
 	//
 
-	this.updateSample = function(sampleV1, callbackFunction) {
-		require([ "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId"], 
-        function(SampleUpdate, SamplePermId) {
-			var sampleUpdate = new SampleUpdate();
-            sampleUpdate.setSampleId(new SamplePermId(sampleV1.permId));
-			
-			for(var propertyCode in sampleV1.properties) {
-				sampleUpdate.setProperty(propertyCode, sampleV1.properties[propertyCode]);
-			}
+	this.getProject = function(projectIdentifier, callbackFunction) {
+		require(["as/dto/project/id/ProjectIdentifier", "as/dto/project/fetchoptions/ProjectFetchOptions"],
+		  function(ProjectIdentifier, ProjectFetchOptions) {
+				var projectId = new ProjectIdentifier(projectIdentifier);
+				var fetchOptions = new ProjectFetchOptions();
 
-            mainController.openbisV3.updateSamples([ sampleUpdate ]).done(function() {
-                callbackFunction(true);
-            }).fail(function(result) {
+				mainController.openbisV3.getProjects([projectId], fetchOptions).done(function(result) {
+					callbackFunction(result);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
+
+	this.searchSamplesV3 = function(sampleType, callbackFunction) {
+		require(["as/dto/sample/search/SampleSearchCriteria", "as/dto/sample/fetchoptions/SampleFetchOptions"],
+				function(SampleSearchCriteria, SampleFetchOptions) {
+			var searchCriteria = new SampleSearchCriteria();
+			searchCriteria.withType().withCode().thatEquals(sampleType);
+			var fetchOptions = new SampleFetchOptions();
+			fetchOptions.withProperties();
+			fetchOptions.withExperiment().withProject().withSpace();
+			fetchOptions.withRegistrator();
+			fetchOptions.sortBy().modificationDate().desc();
+			mainController.openbisV3.searchSamples(searchCriteria, fetchOptions).done(function(result) {
+				callbackFunction(result);
+			}).fail(function(result) {
 				Util.showError("Call failed to server: " + JSON.stringify(result));
 				callbackFunction(false);
 			});
-        });
+		});
+	}
+
+	this.getSamples = function(permIds, callbackFunction) {
+		require(["as/dto/sample/id/SamplePermId", "as/dto/sample/fetchoptions/SampleFetchOptions"],
+			function(SamplePermId, SampleFetchOptions) {
+				var samplePermIds = permIds.map(function(permId) { return new SamplePermId(permId) });
+				var fetchOptions = new SampleFetchOptions();
+				fetchOptions.withProperties();
+				fetchOptions.withExperiment().withProject().withSpace();
+				fetchOptions.withRegistrator();
+				fetchOptions.sortBy().modificationDate().desc();
+				mainController.openbisV3.getSamples(samplePermIds, fetchOptions).done(function(result) {
+					callbackFunction(result);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
+
+	this.createSample = function(sampleType, experiment, properties, callbackFunction) {
+		require(["as/dto/sample/create/SampleCreation", "as/dto/entitytype/id/EntityTypePermId", 
+			"as/dto/experiment/id/ExperimentPermId", "as/dto/space/id/SpacePermId"], 
+				function(SampleCreation, EntityTypePermId, ExperimentPermId, SpacePermId) {
+			var experimentPermId = experiment.permId.permId;
+			var space = experiment.project.space.code;
+			var sampleCreation = new SampleCreation();
+			sampleCreation.setTypeId(new EntityTypePermId(sampleType));
+			sampleCreation.setExperimentId(new ExperimentPermId(experimentPermId));
+			sampleCreation.setSpaceId(new SpacePermId(space));
+			if (properties) {
+				for (var property in properties) {
+					if (properties.hasOwnProperty(property)) {
+						sampleCreation.setProperty(property, properties[property]);
+					}
+				}
+			}
+
+			mainController.openbisV3.createSamples([sampleCreation]).done(function(result) {
+				callbackFunction(result);
+			}).fail(function(result) {
+				Util.showError("Call failed to server: " + JSON.stringify(result));
+				callbackFunction(false);
+			});
+		});
+		
+	}
+
+	this.createProject = function(space, code, description, callbackFunction) {
+		require(["as/dto/project/create/ProjectCreation", "as/dto/space/id/SpacePermId"], 
+			function(ProjectCreation, SpacePermId) {
+				var projectCreation = new ProjectCreation();
+				projectCreation.setSpaceId(new SpacePermId(space));
+				projectCreation.setCode(code);
+				projectCreation.setDescription(description);
+
+				mainController.openbisV3.createProjects([projectCreation]).done(function(result) {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+		});
+	}
+
+	this.searchExperimentTypes = function(experimentTypeCode, callbackFunction) {
+		require(["as/dto/experiment/search/ExperimentTypeSearchCriteria", "as/dto/experiment/fetchoptions/ExperimentTypeFetchOptions"],
+			function(ExperimentTypeSearchCriteria, ExperimentTypeFetchOptions) {
+				var searchCriteria = new ExperimentTypeSearchCriteria();
+				var fetchOptions = new ExperimentTypeFetchOptions();
+				searchCriteria.withCode().thatEquals(experimentTypeCode);
+
+				mainController.openbisV3.searchExperimentTypes(searchCriteria, fetchOptions).done(function(result) {
+					callbackFunction(result);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
+
+	this.getExperiments = function(experimentPermIds, callbackFunction) {
+		require(["as/dto/experiment/id/ExperimentPermId", "as/dto/experiment/fetchoptions/ExperimentFetchOptions"],
+			function(ExperimentPermId, ExperimentFetchOptions) {
+				var expPermIds = experimentPermIds.map(function(permId) { return new ExperimentPermId(permId)});
+				var fetchOptions = new ExperimentFetchOptions();
+				fetchOptions.withProject().withSpace();
+
+				mainController.openbisV3.getExperiments(expPermIds, fetchOptions).done(function(result) {
+					callbackFunction(result);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
+
+	this.searchExperiments = function(projectCode, experimentCode, callbackFunction) {
+		require(["as/dto/experiment/search/ExperimentSearchCriteria", "as/dto/experiment/fetchoptions/ExperimentFetchOptions"],
+			function(ExperimentSearchCriteria, ExperimentFetchOptions) {
+				var searchCriteria = new ExperimentSearchCriteria();
+				var fetchOptions = new ExperimentFetchOptions();
+				searchCriteria.withProject().withCode().thatEquals(projectCode);
+				searchCriteria.withCode().thatEquals(experimentCode);
+				fetchOptions.withProject().withSpace();
+
+				mainController.openbisV3.searchExperiments(searchCriteria, fetchOptions).done(function(result) {
+					callbackFunction(result);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
+
+	this.createExperiment = function(experimentTypePermId, projectIdentifier, code, callbackFunction) {
+		require(["as/dto/experiment/create/ExperimentCreation", "as/dto/project/id/ProjectIdentifier", "as/dto/entitytype/id/EntityTypePermId"],
+			function(ExperimentCreation, ProjectIdentifier, EntityTypePermId) {
+				var experimentCreation = new ExperimentCreation();
+				experimentCreation.setTypeId(new EntityTypePermId(experimentTypePermId));
+				experimentCreation.setProjectId(new ProjectIdentifier(projectIdentifier));
+				experimentCreation.setCode(code);
+
+				mainController.openbisV3.createExperiments([experimentCreation]).done(function(result) {
+					callbackFunction(result);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
+
+	this.updateSample = function(sampleV1, callbackFunction) {
+		require([ "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId"], 
+			function(SampleUpdate, SamplePermId) {
+				var sampleUpdate = new SampleUpdate();
+				sampleUpdate.setSampleId(new SamplePermId(sampleV1.permId));
+				for(var propertyCode in sampleV1.properties) {
+					sampleUpdate.setProperty(propertyCode, sampleV1.properties[propertyCode]);
+				}
+
+				mainController.openbisV3.updateSamples([ sampleUpdate ]).done(function() {
+					callbackFunction(true);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
 	}
 
 	this.updateDataSet = function(dataSetPermId, newPhysicalData, callbackFunction) {

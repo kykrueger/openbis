@@ -23,7 +23,9 @@ function AdvancedSearchModel(forceSearch) {
 			logicalOperator : null,
 			rules : { } // { "UUIDv4" : { type : "PROPERTY", name : "GENE", value : "aa" } }
 	}
-	
+	this.savedSearches = []; // [{ sample: v3Sample, name: "name", criteria: { see this.criteria }}, ...]
+	this.selcetedSavedSearchIndex = -1;
+
 	if(typeof forceSearch === 'object') {
 		this.criteria = forceSearch;
 		this.forceLoadCriteria = true;
