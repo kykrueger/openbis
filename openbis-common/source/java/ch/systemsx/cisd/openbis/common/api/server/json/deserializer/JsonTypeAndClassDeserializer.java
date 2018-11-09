@@ -161,7 +161,7 @@ public class JsonTypeAndClassDeserializer extends AsPropertyTypeDeserializer
         { // need to merge id back in JSON input?
             if (actualTb == null)
             {
-                actualTb = new TokenBuffer(null);
+                actualTb = new TokenBuffer(null, false);
             }
             actualTb.writeFieldName(actualJp.getCurrentName());
             actualTb.writeString(type);
