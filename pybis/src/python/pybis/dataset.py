@@ -591,8 +591,6 @@ class PhysicalData():
         if key in self.attrs:
             if key in self.data:
                 return self.data[key]
-        else:
-            return ''
 
     def _repr_html_(self):
         html = """
