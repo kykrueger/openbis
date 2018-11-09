@@ -40,18 +40,18 @@ import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
+import org.hibernate.internal.StatelessSessionImpl;
+import org.hibernate.jdbc.ReturningWork;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.jdbc.datasource.DataSourceUtils;
-import org.springframework.orm.hibernate4.HibernateCallback;
-import org.springframework.orm.hibernate4.HibernateTemplate;
-import org.springframework.orm.hibernate4.SessionFactoryUtils;
-import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
+import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.HibernateTemplate;
+import org.springframework.orm.hibernate5.SessionFactoryUtils;
+import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import ch.systemsx.cisd.common.exceptions.ExceptionUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.DynamicPropertyEvaluationOperation;
@@ -85,8 +85,7 @@ public abstract class AbstractDAO extends HibernateDaoSupport
     /**
      * Validates given <i>Persistence Entity</i> using an appropriate {@link Validator}.
      */
-    @SuppressWarnings(
-    { "rawtypes" })
+    @SuppressWarnings({ "rawtypes" })
     protected final static <E> void validatePE(final E pe) throws DataIntegrityViolationException
     {
 
@@ -99,7 +98,7 @@ public abstract class AbstractDAO extends HibernateDaoSupport
             String msg = "";
             for (ConstraintViolation v : violations)
             {
-                String invalidValue = (v.getInvalidValue() != null)?v.getInvalidValue().toString():null;
+                String invalidValue = (v.getInvalidValue() != null) ? v.getInvalidValue().toString() : null;
                 if (invalidValue != null && invalidValue.length() > MAX_STRING_ERROR_LENGTH)
                 {
                     invalidValue =
@@ -284,59 +283,46 @@ public abstract class AbstractDAO extends HibernateDaoSupport
         return toReturn;
     }
 
-    protected final Object executeStatelessAction(final StatelessHibernateCallback action)
-            throws DataAccessException
+    protected final Object executeStatelessAction(final StatelessHibernateCallback action) throws DataAccessException
     {
         assert action != null;
-        return getHibernateTemplate().execute(new HibernateCallback()
+        return getHibernateTemplate().execute(new HibernateCallback<Object>()
             {
-
                 @Override
                 public final Object doInHibernate(final Session session) throws HibernateException
                 {
-                    StatelessSession sls = null;
-                    try
-                    {
-                        sls = this.getStatelessSession();
-                        return action.doInStatelessSession(sls);
-                    } catch (HibernateException ex)
-                    {
-                        throw SessionFactoryUtils.convertHibernateAccessException(ex);
-                    } catch (RuntimeException ex)
-                    {
-                        // Callback code threw application exception...
-                        throw ex;
-                    } finally
-                    {
-                        if (sls != null)
+                    return session.doReturningWork(new ReturningWork<Object>()
                         {
-                            releaseConnection(sls.connection());
-                            sls.close();
-                        }
-                    }
-
-                }
-
-                private StatelessSession getStatelessSession()
-                        throws CannotGetJdbcConnectionException
-                {
-                    return getSessionFactory().openStatelessSession(getThreadBoundConnection());
-                }
-
-                private Connection getThreadBoundConnection()
-                        throws CannotGetJdbcConnectionException
-                {
-                    return DataSourceUtils.getConnection(SessionFactoryUtils
-                            .getDataSource(getSessionFactory()));
-                }
-
-                private void releaseConnection(Connection connection)
-                {
-                    DataSourceUtils.releaseConnection(connection,
-                            SessionFactoryUtils.getDataSource(getSessionFactory()));
+                            @Override
+                            public Object execute(Connection connection) throws SQLException
+                            {
+                                StatelessSessionImpl sls = null;
+                                try
+                                {
+                                    sls = (StatelessSessionImpl) getSessionFactory().openStatelessSession(connection);
+                                    return action.doInStatelessSession(sls);
+                                } catch (HibernateException ex)
+                                {
+                                    throw SessionFactoryUtils.convertHibernateAccessException(ex);
+                                }
+                            }
+                        });
                 }
             });
     }
+
+    /*
+     * protected final Object executeStatelessAction(final StatelessHibernateCallback action) throws DataAccessException { assert action != null;
+     * return getHibernateTemplate().execute(new HibernateCallback() {
+     * @Override public final Object doInHibernate(final Session session) throws HibernateException { StatelessSession sls = null; try { sls =
+     * this.getStatelessSession(); return action.doInStatelessSession(sls); } catch (HibernateException ex) { throw
+     * SessionFactoryUtils.convertHibernateAccessException(ex); } catch (RuntimeException ex) { // Callback code threw application exception... throw
+     * ex; } finally { if (sls != null) { releaseConnection(sls.connection()); sls.close(); } } } private StatelessSession getStatelessSession()
+     * throws CannotGetJdbcConnectionException { return getSessionFactory().openStatelessSession(getThreadBoundConnection()); } private Connection
+     * getThreadBoundConnection() throws CannotGetJdbcConnectionException { return DataSourceUtils.getConnection(SessionFactoryUtils
+     * .getDataSource(getSessionFactory())); } private void releaseConnection(Connection connection) { DataSourceUtils.releaseConnection(connection,
+     * SessionFactoryUtils.getDataSource(getSessionFactory())); } }); }
+     */
 
     protected void lockEntities(Collection<? extends IIdHolder> entitiesOrNull)
     {

@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequenceNameMapper;
@@ -51,7 +51,7 @@ import ch.systemsx.cisd.dbmigration.IMassUploader;
  * 
  * @author Bernd Rinn
  */
-public class PostgreSQLMassUploader extends SimpleJdbcDaoSupport implements IMassUploader
+public class PostgreSQLMassUploader extends JdbcDaoSupport implements IMassUploader
 {
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, PostgreSQLMassUploader.class);
@@ -214,9 +214,10 @@ public class PostgreSQLMassUploader extends SimpleJdbcDaoSupport implements IMas
         {
             // The result returned by setval is just the value of its second argument.
             final long newSequenceValue =
-                    getSimpleJdbcTemplate().queryForLong(
+                    getJdbcTemplate().queryForObject(
                             String.format("select setval('%s', max(id)) from %s", sequenceName,
-                                    tableName));
+                                    tableName),
+                            Long.class);
             if (operationLog.isInfoEnabled())
             {
                 operationLog.info("Updating sequence " + sequenceName + " for table " + tableName

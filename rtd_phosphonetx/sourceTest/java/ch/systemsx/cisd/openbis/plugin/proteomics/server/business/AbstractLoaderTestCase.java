@@ -17,8 +17,9 @@
 package ch.systemsx.cisd.openbis.plugin.proteomics.server.business;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
@@ -32,7 +33,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 @ContextConfiguration(locations = "classpath:proteomics-applicationContext.xml")
 // In 'commonContext.xml', our transaction manager is called 'transaction-manager' (by default
 // Spring looks for 'transactionManager').
-@TransactionConfiguration(transactionManager = "transaction-manager")
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 public abstract class AbstractLoaderTestCase extends AbstractDAOWithoutContextTest
 {
     private static final Principal PRINCIPAL = new Principal(CommonTestUtils.USER_ID, "john",

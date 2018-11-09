@@ -1,6 +1,5 @@
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -199,7 +198,7 @@ public abstract class GlobalSearchBridge<T extends IEntityWithMetaprojects> impl
                 TokenStream tokenStream = an.tokenStream("global_search", new StringReader(indexedValue.toLowerCase()));
                 field = new Field("global_search", displayValue, TextField.TYPE_STORED);
                 field.setTokenStream(tokenStream);
-            } catch (IOException e)
+            } catch (Exception e)
             {
                 e.printStackTrace();
                 field = new TextField("global_search", indexedValue, Store.YES);
@@ -227,7 +226,7 @@ public abstract class GlobalSearchBridge<T extends IEntityWithMetaprojects> impl
                 metaprojectField = new Field("global_search_metaprojects", indexedValue, TextField.TYPE_STORED);
                 metaprojectField.setTokenStream(tokenStream);
                 document.add(metaprojectField);
-            } catch (IOException e)
+            } catch (Exception e)
             {
                 e.printStackTrace();
             } finally

@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -78,7 +78,7 @@ public class AuthorizationGroupDAO extends AbstractGenericEntityDAO<Authorizatio
     {
         return listByIDsOfName(AuthorizationGroupPE.class, "code", ids);
     }
-    
+
     @Override
     public void create(AuthorizationGroupPE authorizationGroup)
     {

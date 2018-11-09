@@ -22,7 +22,7 @@ import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Restrictions;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ICorePluginDAO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.CorePluginPE;

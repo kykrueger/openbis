@@ -25,7 +25,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.DetachedCriteria;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -51,9 +51,10 @@ final class EntityTypeDAO extends AbstractTypeDAO<EntityTypePE> implements IEnti
             LogFactory.getLogger(LogCategory.OPERATION, EntityTypeDAO.class);
 
     private final EntityKind entityKind;
+
     private final IDAOFactory daoFactory;
-    
-    EntityTypeDAO(final EntityKind entityKind, final SessionFactory sessionFactory, 
+
+    EntityTypeDAO(final EntityKind entityKind, final SessionFactory sessionFactory,
             EntityHistoryCreator historyCreator, IDAOFactory daoFactory)
     {
         super(sessionFactory, entityKind.getTypeClass(), historyCreator);
@@ -105,7 +106,7 @@ final class EntityTypeDAO extends AbstractTypeDAO<EntityTypePE> implements IEnti
         {
             operationLog.info(String.format("ADD: entity type '%s'.", entityType));
         }
-        
+
         if (entityType instanceof SampleTypePE)
         {
             ISampleDAO sampleDAO = daoFactory.getSampleDAO();

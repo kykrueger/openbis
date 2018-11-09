@@ -31,7 +31,7 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -69,7 +69,8 @@ public final class PersonDAO extends AbstractGenericEntityDAO<PersonPE> implemen
 
     /**
      * This logger does not output any SQL statement. If you want to do so, you had better set an appropriate debugging level for class
-     * {@link JdbcAccessor}. </p>
+     * {@link JdbcAccessor}.
+     * </p>
      */
     public static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             PersonDAO.class);
@@ -201,7 +202,8 @@ public final class PersonDAO extends AbstractGenericEntityDAO<PersonPE> implemen
                 cast(getHibernateTemplate().find(
                         String.format(
                                 "from %s p where p.email = ?",
-                                TABLE_NAME), toArray(emailAddress)));
+                                TABLE_NAME),
+                        toArray(emailAddress)));
         int numberOfResults = persons.size();
         final PersonPE person;
         // Take the first result

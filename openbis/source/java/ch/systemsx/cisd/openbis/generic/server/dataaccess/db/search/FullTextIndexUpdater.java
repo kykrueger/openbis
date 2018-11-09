@@ -23,7 +23,7 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
+import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.collection.ExtendedLinkedBlockingQueue;
@@ -205,7 +205,7 @@ public final class FullTextIndexUpdater extends HibernateDaoSupport implements
                         {
                             operationLog.info(operation.getOperationKind() + " of "
                                     + operation.getIds().size() + " " + operation.getClassName()
-                                    + "s " + CollectionUtils.abbreviate(operation.getIds(), 20) 
+                                    + "s " + CollectionUtils.abbreviate(operation.getIds(), 20)
                                     + " took " + stopWatch);
                         }
                     }

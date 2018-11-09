@@ -23,7 +23,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
+import com.fasterxml.jackson.databind.introspect.Annotated;
 
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.EmptyJsonClassValueToClassObjectMapping;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
@@ -64,7 +64,7 @@ public class ProgressDetailsToStringBuilder
         }
 
         @Override
-        public Object findFilterId(AnnotatedClass ac)
+        public Object findFilterId(Annotated ac)
         {
             if (ac.hasAnnotation(JsonObject.class))
             {
@@ -80,6 +80,7 @@ public class ProgressDetailsToStringBuilder
 
     private static class ProgressDetailsNullKeySerializer extends JsonSerializer<Object>
     {
+
         @Override
         public void serialize(Object nullKey, JsonGenerator jsonGenerator, SerializerProvider unused)
                 throws IOException, JsonProcessingException

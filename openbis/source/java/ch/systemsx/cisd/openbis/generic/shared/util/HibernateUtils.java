@@ -20,7 +20,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.Hibernate;
 import org.hibernate.Session;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.LazyInitializer;
 
@@ -87,15 +87,14 @@ public final class HibernateUtils
     /**
      * @return Unproxied <var>proxy</var>.
      */
-    @SuppressWarnings(
-    { "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     public final static <T> T unproxy(final T proxy)
     {
         if (proxy instanceof HibernateProxy && Hibernate.isInitialized(proxy))
         {
             LazyInitializer lazyInitializer =
                     ((HibernateProxy) proxy).getHibernateLazyInitializer();
-            SessionImplementor sessionImplementor = lazyInitializer.getSession();
+            SharedSessionContractImplementor sessionImplementor = lazyInitializer.getSession();
             // check if the given bean still has a session instance attached
             if (sessionImplementor != null)
             {

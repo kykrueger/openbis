@@ -20,7 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.SimpleObjectIdResolver;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.PropertyName;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
@@ -64,8 +66,8 @@ public class JsonTypeAndClassAnnotationIntrospector extends JacksonAnnotationInt
     @Override
     public ObjectIdInfo findObjectIdInfo(Annotated ann)
     {
-        return new ObjectIdInfo(JsonConstants.getIdField(), Object.class,
-                ObjectIdGenerators.IntSequenceGenerator.class);
+        return new ObjectIdInfo(new PropertyName(JsonConstants.getIdField()), Object.class,
+                ObjectIdGenerators.IntSequenceGenerator.class, SimpleObjectIdResolver.class);
     }
 
     @Override

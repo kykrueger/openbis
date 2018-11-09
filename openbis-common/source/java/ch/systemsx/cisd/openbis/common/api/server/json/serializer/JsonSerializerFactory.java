@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
@@ -51,37 +52,41 @@ public class JsonSerializerFactory extends BeanSerializerFactory
     }
 
     @Override
-    protected JsonSerializer<?> buildArraySerializer(SerializationConfig config, ArrayType type,
-            BeanDescription beanDesc, boolean staticTyping, TypeSerializer elementTypeSerializer,
-            JsonSerializer<Object> elementValueSerializer) throws JsonMappingException
-    {
-        TypeSerializer newTypeSerializer = createContentTypeSerializer(config, type, null);
-        ArrayType newType = type.withContentTypeHandler(newTypeSerializer);
-        return super.buildArraySerializer(config, newType, beanDesc, staticTyping,
-                newTypeSerializer, elementValueSerializer);
-    }
-
-    @Override
-    protected JsonSerializer<?> buildCollectionSerializer(SerializationConfig config,
-            CollectionType type, BeanDescription beanDesc, BeanProperty property,
-            boolean staticTyping, TypeSerializer elementTypeSerializer,
-            JsonSerializer<Object> elementValueSerializer) throws JsonMappingException
-    {
-        TypeSerializer newTypeSerializer = createContentTypeSerializer(config, type, property);
-        CollectionType newType = type.withContentTypeHandler(newTypeSerializer);
-        return super.buildCollectionSerializer(config, newType, beanDesc, property, staticTyping,
-                newTypeSerializer, elementValueSerializer);
-    }
-
-    @Override
-    protected JsonSerializer<?> buildMapSerializer(SerializationConfig config, MapType type,
-            BeanDescription beanDesc, boolean staticTyping, JsonSerializer<Object> keySerializer,
+    protected JsonSerializer<?> buildArraySerializer(SerializerProvider prov,
+            ArrayType type, BeanDescription beanDesc,
+            boolean staticTyping,
             TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer)
             throws JsonMappingException
     {
-        TypeSerializer newTypeSerializer = createContentTypeSerializer(config, type, null);
+        TypeSerializer newTypeSerializer = createContentTypeSerializer(prov.getConfig(), type, null);
+        ArrayType newType = type.withContentTypeHandler(newTypeSerializer);
+        return super.buildArraySerializer(prov, newType, beanDesc, staticTyping,
+                newTypeSerializer, elementValueSerializer);
+
+    }
+
+    @Override
+    protected JsonSerializer<?> buildCollectionSerializer(SerializerProvider prov,
+            CollectionType type, BeanDescription beanDesc, boolean staticTyping,
+            TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer)
+            throws JsonMappingException
+    {
+        TypeSerializer newTypeSerializer = createContentTypeSerializer(prov.getConfig(), type, null);
+        CollectionType newType = type.withContentTypeHandler(newTypeSerializer);
+        return super.buildCollectionSerializer(prov, newType, beanDesc, staticTyping,
+                newTypeSerializer, elementValueSerializer);
+    }
+
+    @Override
+    protected JsonSerializer<?> buildMapSerializer(SerializerProvider prov,
+            MapType type, BeanDescription beanDesc,
+            boolean staticTyping, JsonSerializer<Object> keySerializer,
+            TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer)
+            throws JsonMappingException
+    {
+        TypeSerializer newTypeSerializer = createContentTypeSerializer(prov.getConfig(), type, null);
         MapType newType = type.withContentTypeHandler(newTypeSerializer);
-        return super.buildMapSerializer(config, newType, beanDesc, staticTyping, keySerializer,
+        return super.buildMapSerializer(prov, newType, beanDesc, staticTyping, keySerializer,
                 newTypeSerializer, elementValueSerializer);
     }
 

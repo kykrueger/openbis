@@ -23,8 +23,8 @@ import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.jmock.Expectations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

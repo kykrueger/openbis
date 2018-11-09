@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -54,7 +54,8 @@ import ch.systemsx.cisd.openbis.systemtest.base.auth.SpaceDomain;
  * @author anttil
  * @author Franz-Josef Elmer
  */
-@TransactionConfiguration(transactionManager = "transaction-manager", defaultRollback = false)
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 public abstract class AbstractAssignmentSampleToExperimentTestCase extends BaseTest
 {
     Experiment sourceExperiment;

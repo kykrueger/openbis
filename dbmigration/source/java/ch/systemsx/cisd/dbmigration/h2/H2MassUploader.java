@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequenceNameMapper;
@@ -56,7 +56,7 @@ import ch.systemsx.cisd.dbmigration.IMassUploader;
  * 
  * @author Bernd Rinn
  */
-public class H2MassUploader extends SimpleJdbcDaoSupport implements IMassUploader
+public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
 {
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, H2MassUploader.class);
@@ -389,8 +389,8 @@ public class H2MassUploader extends SimpleJdbcDaoSupport implements IMassUploade
         try
         {
             final long maxId =
-                    getSimpleJdbcTemplate().queryForLong(
-                            String.format("select max(id) from %s", tableName));
+                    getJdbcTemplate().queryForObject(
+                            String.format("select max(id) from %s", tableName), Long.class);
             final long newSequenceValue = maxId + 1;
             if (operationLog.isInfoEnabled())
             {

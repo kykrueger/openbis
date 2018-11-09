@@ -860,6 +860,13 @@ FLY = [FIRST_TIME_VERSIONED, True, True, "FLY", "", [
         [FIRST_TIME_VERSIONED, "ANNOTATIONS_STATE",                "Comments",                "Annotations State",                    DataType.XML,                    None,                                "Annotations State", "ANNOTATIONS_FLY", None]
     ]];
 
+SEARCH_QUERY = [MANDATORY_ITEM_VERSION, True, True, "SEARCH_QUERY", "Used to store saved search queries", [
+        [MANDATORY_ITEM_VERSION, "NAME",               "General",   "Name",                     DataType.VARCHAR,  None,  "Name", None, None],
+        [MANDATORY_ITEM_VERSION, "CRITERIA",              "General",   "Criteria",                 DataType.XML,      None,  "Criteria", None, None],
+        [MANDATORY_ITEM_VERSION, "XMLCOMMENTS",        "Comments",  "Comments List",            DataType.XML,      None,  "Several comments can be added by different users", "COMMENTS_SAMPLE", None],
+        [MANDATORY_ITEM_VERSION, "ANNOTATIONS_STATE",  "Comments",  "Annotations State",        DataType.XML,      None,  "Annotations State", "ANNOTATIONS_CHEMICAL", None]
+    ]];
+
 ##
 ## Sample Types - Non Materials
 ##
@@ -929,15 +936,6 @@ WESTERN_BLOTTING_PROTOCOL = [FIRST_TIME_VERSIONED, True, True, "WESTERN_BLOTTING
 ##
 GENERAL_ELN_SETTINGS = [MANDATORY_ITEM_VERSION, False, False, "GENERAL_ELN_SETTINGS", "Used to store the settings of the ELN application", [
         [MANDATORY_ITEM_VERSION, "ELN_SETTINGS",   "Settings",    "ELN Settings",    DataType.VARCHAR,        None, "ELN Settings", None, None, False, False]
-]];
-
-##
-## Types - Organization
-##
-ORGANIZATION_UNIT = [MANDATORY_ITEM_VERSION, False, True, "ORGANIZATION_UNIT", "", [
-    [MANDATORY_ITEM_VERSION, "NAME",                          "General",              "Name",                                     DataType.VARCHAR,                   None,                           "Name",                                     None, None],
-    [MANDATORY_ITEM_VERSION, "XMLCOMMENTS",                   "Comments",             "Comments List",                            DataType.XML,                       None,                           "Several comments can be added by different users", "COMMENTS_SAMPLE", None],
-    [MANDATORY_ITEM_VERSION, "ANNOTATIONS_STATE",             "Comments",             "Annotations State",                        DataType.XML,                       None,                           "Annotations State", "ANNOTATIONS_STORAGE_POSITION", None]                                                                        
 ]];
 
 ##

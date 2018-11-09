@@ -20,7 +20,7 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.fail;
 
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -52,7 +52,8 @@ import ch.systemsx.cisd.openbis.systemtest.base.auth.SpaceDomain;
  * @author anttil
  * @author Franz-Josef Elmer
  */
-@TransactionConfiguration(transactionManager = "transaction-manager", defaultRollback = false)
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 public abstract class AbstractDataSetAssignmentTestCase extends BaseTest
 {
     Sample sourceSample;
@@ -775,8 +776,8 @@ public abstract class AbstractDataSetAssignmentTestCase extends BaseTest
         checkAssignmentToExperiment(sourceSpaceRole, destinationSpaceRole, instanceRole);
     }
 
-    @Test(dataProvider = "rolesNotAllowedToAssignDataSetToExperiment", expectedExceptions =
-    { AuthorizationFailureException.class }, groups = "authorization")
+    @Test(dataProvider = "rolesNotAllowedToAssignDataSetToExperiment", expectedExceptions = {
+            AuthorizationFailureException.class }, groups = "authorization")
     @Rollback(true)
     public void assigningDataSetToAnotherExperimentIsNotAllowedFor(
             RoleWithHierarchy sourceSpaceRole, RoleWithHierarchy destinationSpaceRole,
@@ -793,8 +794,8 @@ public abstract class AbstractDataSetAssignmentTestCase extends BaseTest
         checkAssignmentToSample(sourceSpaceRole, destinationSpaceRole, instanceRole);
     }
 
-    @Test(dataProvider = "rolesNotAllowedToAssignDataSetToSample", expectedExceptions =
-    { AuthorizationFailureException.class }, groups = "authorization")
+    @Test(dataProvider = "rolesNotAllowedToAssignDataSetToSample", expectedExceptions = {
+            AuthorizationFailureException.class }, groups = "authorization")
     @Rollback(true)
     public void assigningDataSetToSampleIsNotAllowedFor(RoleWithHierarchy sourceSpaceRole,
             RoleWithHierarchy destinationSpaceRole, RoleWithHierarchy instanceRole)
@@ -804,10 +805,9 @@ public abstract class AbstractDataSetAssignmentTestCase extends BaseTest
 
     private void assertDataSetToSampleExceptionMessage(UserFailureException ex, Sample sample, AbstractExternalData dataset)
     {
-        String postfix = sample.getSpace() == null ? "shared." :
-                "not connected to any experiment and the data set type ("
-                        + dataset.getDataSetType().getCode()
-                        + ") doesn't match one of the following regular expressions:   NO-EXP-.* ,   NE.*  .";
+        String postfix = sample.getSpace() == null ? "shared." : "not connected to any experiment and the data set type ("
+                + dataset.getDataSetType().getCode()
+                + ") doesn't match one of the following regular expressions:   NO-EXP-.* ,   NE.*  .";
         ex.printStackTrace();
         assertEquals("The dataset '" + dataset.getCode() + "' cannot be connected to the sample '"
                 + sample.getIdentifier() + "' because the new sample is " + postfix, getErrorMessage(ex));

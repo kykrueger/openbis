@@ -197,7 +197,7 @@ public class ProgressDetailsToStringBuilderTest
     {
         Map<String, String> map = new LinkedHashMap<String, String>();
         map.put("k1", "v1");
-        map.put(null, null);
+        map.put(null, "v2");
 
         TestClass o = new TestClass();
         o.stringMap = map;

@@ -132,7 +132,7 @@ public class JsonTypeAndClassDeserializer extends AsPropertyTypeDeserializer
 
             if (tb == null)
             {
-                tb = new TokenBuffer(null);
+                tb = new TokenBuffer(null, false);
             }
 
             tb.writeFieldName(name);

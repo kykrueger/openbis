@@ -27,8 +27,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -55,8 +55,8 @@ public final class MigrationStepFrom025To026 extends MigrationStepAdapter
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, MigrationStepFrom025To026.class);
 
-    private final static ParameterizedRowMapper<ExternalData> EXTERNAL_DATA_ROW_MAPPER =
-            new ParameterizedRowMapper<ExternalData>()
+    private final static RowMapper<ExternalData> EXTERNAL_DATA_ROW_MAPPER =
+            new RowMapper<ExternalData>()
                 {
                     @Override
                     public final ExternalData mapRow(final ResultSet rs, final int rowNum)
@@ -91,7 +91,7 @@ public final class MigrationStepFrom025To026 extends MigrationStepAdapter
     //
 
     @Override
-    public final void performPostMigration(final SimpleJdbcTemplate simpleJdbcTemplate,
+    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate,
             DataSource dataSource) throws DataAccessException
     {
 

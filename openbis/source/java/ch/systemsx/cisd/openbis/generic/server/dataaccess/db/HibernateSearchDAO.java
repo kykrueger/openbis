@@ -38,13 +38,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.AtomicReader;
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.DocValuesType;
 import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.FieldInfo.DocValuesType;
 import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.LeafReader;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -73,8 +73,8 @@ import org.hibernate.transform.BasicTransformerAdapter;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate4.HibernateCallback;
-import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
+import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.collection.CollectionUtils.ICollectionFilter;
@@ -160,9 +160,9 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
                         final FullTextSession fullTextSession = Search.getFullTextSession(this.currentSession());
                         indexProvider = new MyIndexReaderProvider(fullTextSession, searchableEntity);
                         IndexReader indexReader = indexProvider.getReader();
-                        for (AtomicReaderContext rc : indexReader.leaves())
+                        for (LeafReaderContext rc : indexReader.leaves())
                         {
-                            AtomicReader ar = rc.reader();
+                            LeafReader ar = rc.reader();
                             FieldInfos fis = ar.getFieldInfos();
                             for (Iterator<FieldInfo> iter = fis.iterator(); iter.hasNext();)
                             {
@@ -304,7 +304,8 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
 
             List<String> subqueries = subqueries(userQuery.toLowerCase());
 
-            BooleanQuery bq = new BooleanQuery();
+            BooleanQuery.Builder bq = new BooleanQuery.Builder();
+
             for (String q : subqueries)
             {
                 String subquery = QueryParser.escape(q);
@@ -314,35 +315,45 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
                 String[] parts = subquery.split("\\s+");
 
                 SpanQuery[] queryParts = new SpanQuery[parts.length];
+                String term = "";
                 for (int i = 0; i < parts.length; i++)
                 {
-                    String term = parts[i];
+                    term = parts[i];
                     queryParts[i] = new SpanMultiTermQueryWrapper<WildcardQuery>(
                             new WildcardQuery(new Term("global_search", term)));
                 }
-                bq.add(new SpanNearQuery(queryParts, 0, true), Occur.SHOULD);
+
+                if (queryParts.length == 1)
+                {
+                    bq.add(queryParts[0], Occur.SHOULD);
+                } else
+                {
+                    bq.add(new SpanNearQuery(queryParts, 0, true), Occur.SHOULD);
+                }
+
                 if (parts.length == 1)
                 {
                     bq.add(new WildcardQuery(new Term("global_search_metaprojects", "/" + userId + "/" + parts[0])),
                             Occur.SHOULD);
                 }
             }
-            query = bq;
+            query = bq.build();
 
         } else
         {
             List<String> subqueries = subqueries(userQuery.toLowerCase());
 
-            BooleanQuery bq = new BooleanQuery();
+            BooleanQuery.Builder bq = new BooleanQuery.Builder();
 
             for (String subquery : subqueries)
             {
                 String[] parts = subquery.split("\\s+");
 
                 SpanQuery[] queryParts = new SpanQuery[parts.length];
+                String term = "";
                 for (int i = 0; i < parts.length; i++)
                 {
-                    String term = QueryParser.escape(parts[i]);
+                    term = QueryParser.escape(parts[i]);
                     if (i == 0)
                     {
                         term = "*" + term;
@@ -354,12 +365,19 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
                     queryParts[i] = new SpanMultiTermQueryWrapper<WildcardQuery>(
                             new WildcardQuery(new Term("global_search", term)));
                 }
-                bq.add(new SpanNearQuery(queryParts, 0, true), Occur.SHOULD);
+
+                if (queryParts.length == 1)
+                {
+                    bq.add(queryParts[0], Occur.SHOULD);
+                } else
+                {
+                    bq.add(new SpanNearQuery(queryParts, 0, true), Occur.SHOULD);
+                }
                 bq.add(new WildcardQuery(new Term("global_search_metaprojects", "/" + userId + "/*" + QueryParser.escape(parts[0]) + "*")),
                         Occur.SHOULD);
 
             }
-            query = bq;
+            query = bq.build();
         }
 
         final FullTextQuery hibernateQuery =
@@ -381,6 +399,14 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
                 @Override
                 public Object transformTuple(Object[] tuple, String[] aliases)
                 {
+                    // This is a hack. The real problem is that after upgrading to Hibernate Search 5.8.2
+                    // the result transformer is called at least two times for each entry. When the second call
+                    // happens, the tuple already contains the transformed data. So we just return it.
+                    if (tuple.length < 2)
+                    {
+                        return tuple[0];
+                    }
+
                     IndexableField dataField = ((Document) tuple[1]).getField("global_search");
                     IndexableField headerField = ((Document) tuple[1]).getField("global_search_fields");
                     IndexableField metaprojectField = ((Document) tuple[1]).getField("global_search_metaprojects");

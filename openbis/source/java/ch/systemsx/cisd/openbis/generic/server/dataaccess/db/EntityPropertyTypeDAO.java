@@ -35,8 +35,8 @@ import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate4.HibernateCallback;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -501,7 +501,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
 
         String query =
                 String.format("UPDATE %s etpt SET etpt.ordinal = etpt.ordinal + ? "
-                        + "WHERE etpt.entityTypeInternal = ? AND etpt.ordinal >= ?", entityKind
+                        + "WHERE etpt.entityTypeInternal = ? AND etpt.ordinal >= ?",
+                        entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
         final int updatedRows =
                 hibernateTemplate.bulkUpdate(query,
@@ -524,7 +525,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         final HibernateTemplate hibernateTemplate = getHibernateTemplate();
         String query =
                 String.format("select max(etpt.ordinal) from %s etpt "
-                        + "WHERE etpt.entityTypeInternal = ?", entityKind
+                        + "WHERE etpt.entityTypeInternal = ?",
+                        entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
 
         List<Long> resultList = cast(hibernateTemplate.find(query, entityType));
@@ -550,7 +552,8 @@ final class EntityPropertyTypeDAO extends AbstractDAO implements IEntityProperty
         String query =
                 String.format("SELECT count(pv) FROM %s pa join pa.propertyValues pv "
                         + "WHERE pa.propertyTypeInternal.simpleCode = ? "
-                        + "AND pa.entityTypeInternal.code = ?", entityKind
+                        + "AND pa.entityTypeInternal.code = ?",
+                        entityKind
                                 .getEntityTypePropertyTypeAssignmentClass().getSimpleName());
         return ((Long) (getHibernateTemplate().find(query,
                 toArray(propertyTypeCode, entityTypeCode)).get(0))).intValue();

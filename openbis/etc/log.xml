@@ -53,6 +53,14 @@
       </category>
   -->
 
+  <logger name="org.hibernate.orm.deprecation">
+    <level value="ERROR" />
+  </logger>
+
+  <logger name="org.hibernate.hql.internal.ast.HqlSqlWalker">
+    <level value="ERROR" />
+  </logger>
+
   <!--
     <logger name="org.apache.commons.httpclient">
     <level value="DEBUG" />

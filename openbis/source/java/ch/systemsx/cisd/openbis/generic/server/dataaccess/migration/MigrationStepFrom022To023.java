@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import ch.systemsx.cisd.dbmigration.java.IMigrationStep;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
@@ -41,13 +41,13 @@ public final class MigrationStepFrom022To023 implements IMigrationStep
     //
 
     @Override
-    public final void performPostMigration(final SimpleJdbcTemplate simpleJdbcTemplate,
+    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate,
             DataSource dataSource) throws DataAccessException
     {
         final String uuid = UuidUtil.generateUUID();
         final int count =
-                simpleJdbcTemplate.queryForInt(String.format("select count(*) from %s",
-                        TableNames.DATABASE_INSTANCES_TABLE));
+                simpleJdbcTemplate.queryForObject(String.format("select count(*) from %s",
+                        TableNames.DATABASE_INSTANCES_TABLE), Integer.class);
         if (count == 1)
         {
             simpleJdbcTemplate.update(String.format("update %s set GLOBAL_CODE = ?",
@@ -59,7 +59,7 @@ public final class MigrationStepFrom022To023 implements IMigrationStep
     }
 
     @Override
-    public final void performPreMigration(final SimpleJdbcTemplate simpleJdbcTemplate,
+    public final void performPreMigration(final JdbcTemplate simpleJdbcTemplate,
             DataSource dataSource) throws DataAccessException
     {
     }

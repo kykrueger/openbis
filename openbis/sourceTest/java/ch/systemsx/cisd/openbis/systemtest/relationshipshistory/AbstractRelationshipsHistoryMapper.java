@@ -18,13 +18,13 @@ package ch.systemsx.cisd.openbis.systemtest.relationshipshistory;
 
 import java.sql.SQLException;
 
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.RowMapper;
 
 /**
  * @author Pawel Glyzewski
  */
 abstract class AbstractRelationshipsHistoryMapper<T extends AbstractRelationshipsHistory>
-        implements ParameterizedRowMapper<T>
+        implements RowMapper<T>
 {
     @Override
     public T mapRow(java.sql.ResultSet rs, int rowNum) throws SQLException

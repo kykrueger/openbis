@@ -57,7 +57,7 @@ public class QueryApiServerJsonTest extends RemoteApiTestCase
         {
             JsonRpcHttpClient client = new JsonRpcHttpClient(new URL(SERVICE_URL));
             return ProxyUtil
-                    .createProxy(getClass().getClassLoader(), IQueryApiServer.class, client);
+                    .createClientProxy(getClass().getClassLoader(), IQueryApiServer.class, client);
         } catch (MalformedURLException ex)
         {
             throw new RuntimeException("Failed to initialize json-rpc client: " + ex.getMessage(),

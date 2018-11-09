@@ -40,16 +40,27 @@ public class DynamicPropertiesInterceptor extends EmptyInterceptor
         this.dynamicPropertyScheduler = dynamicPropertyScheduler;
     }
 
-    //
-    // Interceptor
-    //
+    private static ThreadLocal<Boolean> wasCommited = new ThreadLocal<Boolean>();
+
+    @Override
+    public void beforeTransactionCompletion(Transaction tx)
+    {
+        // not called for rollback
+        wasCommited.set(Boolean.TRUE);
+    }
 
     @Override
     public void afterTransactionCompletion(Transaction tx)
     {
-        if (tx.wasCommitted())
+        if (!Boolean.TRUE.equals(wasCommited.get()))
         {
-            dynamicPropertyScheduler.synchronizeThreadQueue();
+            try
+            {
+                dynamicPropertyScheduler.synchronizeThreadQueue();
+            } finally
+            {
+                wasCommited.set(null);
+            }
         } else
         {
             dynamicPropertyScheduler.clearThreadQueue();

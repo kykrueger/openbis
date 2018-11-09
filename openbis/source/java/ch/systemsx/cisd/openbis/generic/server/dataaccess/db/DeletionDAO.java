@@ -32,8 +32,8 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
-import org.springframework.orm.hibernate4.HibernateCallback;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -58,7 +58,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
  * 
  * @author Christian Ribeaud
  */
-final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE>implements IDeletionDAO
+final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE> implements IDeletionDAO
 {
 
     private static final String ID = "id";
@@ -329,7 +329,7 @@ final class DeletionDAO extends AbstractGenericEntityDAO<DeletionPE>implements I
 
                     Query query = session
                             .createQuery(
-                                    "UPDATE VERSIONED "
+                                    "UPDATE "
                                             + entityKind.getEntityClass().getSimpleName()
                                             + " c SET c.deletion = :deletion" + ", c.originalDeletion = "
                                             + (isOriginalDeletion ? " :deletion" : " NULL")

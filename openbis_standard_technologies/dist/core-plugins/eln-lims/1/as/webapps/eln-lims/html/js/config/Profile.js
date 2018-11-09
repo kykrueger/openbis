@@ -31,7 +31,16 @@ function DefaultProfile(serverFacade) {
 }
 
 $.extend(DefaultProfile.prototype, {
-	init: function(serverFacade){
+	init: function(serverFacade) {
+		//
+		// Updating title and logo
+		//
+		this.mainLogo = "./img/openBIS_Logo.png";
+		this.mainLogoTitle = "Lab Notebook & Inventory Manager";
+		
+		//this.mainLogo = "./img/cross_Logo_alt.png";
+		//this.mainLogoTitle = "ETH RDH";
+		
 		this.serverFacade = serverFacade;
 		//
 		// DEFAULTS, TYPICALLY DON'T TOUCH IF YOU DON'T KNOW WHAT YOU DO
@@ -220,7 +229,20 @@ $.extend(DefaultProfile.prototype, {
     	    			callback();
     	    		});
 		}
-		
+
+		this.getHomeSpace = function(defaultToUsername, callback) {
+			mainController.serverFacade.getPersons([mainController.serverFacade.getUserId()], function(persons) {
+				var HOME_SPACE = null;
+				if(persons !== null) {
+					HOME_SPACE = (persons[0].getSpace()?persons[0].getSpace().getCode():null);
+				}
+				if(HOME_SPACE === null && defaultToUsername) {
+					HOME_SPACE = mainController.serverFacade.getUserId().toUpperCase();
+				}
+				callback(HOME_SPACE);
+			});
+		}
+
 		this.getSampleConfigSpacePrefix = function(sample) {
 			var prefix = null;
 			var spaceCode = sample.spaceCode;
@@ -321,6 +343,10 @@ $.extend(DefaultProfile.prototype, {
 		
 		this.copyPastePlainText = false;
 		this.hideCodes = true;
+		this.systemTypes = {
+				"sampleTypeCodes" : ["GENERAL_ELN_SETTINGS", "STORAGE_POSITION", "STORAGE"],
+				"experimentTypeCodes" : []
+		}
 		this.hideTypes = {
 				"sampleTypeCodes" : ["GENERAL_ELN_SETTINGS", "STORAGE_POSITION", "STORAGE"],
 				"experimentTypeCodes" : []
@@ -352,7 +378,7 @@ $.extend(DefaultProfile.prototype, {
 						sampleTypeCode = sampleParent.sampleTypeCode;
 					}
 					
-					if($.inArray(sampleTypeCode, this.hideTypes["sampleTypeCodes"]) !== -1) {
+					if($.inArray(sampleTypeCode, this.systemTypes["sampleTypeCodes"]) !== -1) {
 						sample.parents.splice(i, 1);
 						i--;
 					} else {
@@ -371,7 +397,7 @@ $.extend(DefaultProfile.prototype, {
 						sampleTypeCode = sampleChild.sampleTypeCode;
 					}
 					
-					if($.inArray(sampleTypeCode, this.hideTypes["sampleTypeCodes"]) !== -1) {
+					if($.inArray(sampleTypeCode, this.systemTypes["sampleTypeCodes"]) !== -1) {
 						sample.children.splice(i, 1);
 						i--;
 					} else {

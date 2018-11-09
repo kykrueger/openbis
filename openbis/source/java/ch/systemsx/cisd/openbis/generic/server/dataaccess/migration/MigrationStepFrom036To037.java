@@ -27,18 +27,18 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.dbmigration.java.MigrationStepAdapter;
-import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator.TimestampValidator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
+import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator.TimestampValidator;
 
 /**
  * A migration step from database version <code>v36</code> to version <code>v37</code>.
@@ -59,8 +59,8 @@ public final class MigrationStepFrom036To037 extends MigrationStepAdapter
                     + "SELECT id FROM property_types WHERE daty_id IN ("
                     + "SELECT id FROM data_types WHERE code = 'TIMESTAMP')));";
 
-    private final static ParameterizedRowMapper<EntityProperty> ENTITY_PROPERTY_ROW_MAPPER =
-            new ParameterizedRowMapper<EntityProperty>()
+    private final static RowMapper<EntityProperty> ENTITY_PROPERTY_ROW_MAPPER =
+            new RowMapper<EntityProperty>()
                 {
                     @Override
                     public final EntityProperty mapRow(final ResultSet rs, final int rowNum)
@@ -82,7 +82,7 @@ public final class MigrationStepFrom036To037 extends MigrationStepAdapter
     //
 
     @Override
-    public final void performPostMigration(final SimpleJdbcTemplate simpleJdbcTemplate,
+    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate,
             DataSource dataSource) throws DataAccessException
     {
         for (EntityKind entityKind : EntityKind.values())
@@ -91,7 +91,7 @@ public final class MigrationStepFrom036To037 extends MigrationStepAdapter
         }
     }
 
-    private void migrateEntityProperties(SimpleJdbcTemplate simpleJdbcTemplate,
+    private void migrateEntityProperties(JdbcTemplate simpleJdbcTemplate,
             EntityKind entityKind)
     {
         String entityName = entityKind.getDescription();
@@ -120,7 +120,7 @@ public final class MigrationStepFrom036To037 extends MigrationStepAdapter
         }
     }
 
-    private void migrateEntityProperties(final SimpleJdbcTemplate simpleJdbcTemplate,
+    private void migrateEntityProperties(final JdbcTemplate simpleJdbcTemplate,
             final String entityName, final String entityPropertiesTable,
             final String entityTypePropertyTypeColumnName, final String entityTypePropertyTypeTable)
     {

@@ -1,0 +1,8 @@
+.vagrant
+.project
+.settings
+ubuntu-bionic-18.04-cloudimg-console.log
+.gradle
+.DS_Store
+build
+package-lock.json

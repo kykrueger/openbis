@@ -22,7 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.testng.AssertJUnit;
 
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
@@ -44,14 +44,14 @@ public final class MigrationStepFrom002To003 implements IMigrationStep
     //
 
     @Override
-    public final void performPostMigration(final SimpleJdbcTemplate simpleJdbcTemplate,
+    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate,
             DataSource dataSource) throws DataAccessException
     {
         throw new EmptyResultDataAccessException(1);
     }
 
     @Override
-    public final void performPreMigration(final SimpleJdbcTemplate simpleJdbcTemplate,
+    public final void performPreMigration(final JdbcTemplate simpleJdbcTemplate,
             DataSource dataSource) throws DataAccessException
     {
         throw new DataIntegrityViolationException(StringUtils.EMPTY);

@@ -50,7 +50,7 @@ public class TestJsonServiceFactory
             JsonRpcHttpClient client =
                     new JsonRpcHttpClient(mapper, new URL(GENERAL_INFO_SERVICE_URL),
                             new HashMap<String, String>());
-            return ProxyUtil.createProxy(TestJsonServiceFactory.class.getClassLoader(),
+            return ProxyUtil.createClientProxy(TestJsonServiceFactory.class.getClassLoader(),
                     IGeneralInformationService.class, client);
         } catch (MalformedURLException ex)
         {
@@ -67,7 +67,7 @@ public class TestJsonServiceFactory
             JsonRpcHttpClient client =
                     new JsonRpcHttpClient(mapper, new URL(GENERAL_INFO_CHANGING_SERVICE_URL),
                             new HashMap<String, String>());
-            return ProxyUtil.createProxy(TestJsonServiceFactory.class.getClassLoader(),
+            return ProxyUtil.createClientProxy(TestJsonServiceFactory.class.getClassLoader(),
                     IGeneralInformationChangingService.class, client);
         } catch (MalformedURLException ex)
         {

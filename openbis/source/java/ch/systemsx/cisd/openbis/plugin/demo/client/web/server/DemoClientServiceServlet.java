@@ -17,9 +17,12 @@
 package ch.systemsx.cisd.openbis.plugin.demo.client.web.server;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 import ch.systemsx.cisd.common.servlet.GWTRPCServiceExporter;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
@@ -36,8 +39,6 @@ import ch.systemsx.cisd.openbis.plugin.demo.shared.ResourceNames;
  * @author Christian Ribeaud
  */
 @Controller
-@RequestMapping(
-{ "/demo", "/openbis/demo" })
 public final class DemoClientServiceServlet extends GWTRPCServiceExporter
 {
     private static final long serialVersionUID = 1L;
@@ -45,9 +46,12 @@ public final class DemoClientServiceServlet extends GWTRPCServiceExporter
     @Resource(name = ResourceNames.DEMO_PLUGIN_SERVICE)
     private IDemoClientService service;
 
-    //
-    // GWTRPCServiceExporter
-    //
+    @RequestMapping({ "/demo", "/openbis/demo" })
+    public final ModelAndView handleRequestExposed(final HttpServletRequest request,
+            final HttpServletResponse response) throws Exception
+    {
+        return super.handleRequest(request, response);
+    }
 
     @Override
     protected final Object getService()

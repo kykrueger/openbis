@@ -17,7 +17,6 @@
 package ch.systemsx.cisd.common.spring;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 
@@ -110,9 +109,8 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
     {
     }
 
-    @SuppressWarnings("deprecation")
     private String getResolvedProperty(final Properties props, final String key)
     {
-        return parseStringValue(resolvePlaceholder(key, props, systemPropertiesMode), props, new HashSet<Object>());
+        return resolvePlaceholder(key, props, systemPropertiesMode);
     }
 }

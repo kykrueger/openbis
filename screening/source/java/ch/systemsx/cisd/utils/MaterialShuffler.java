@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
@@ -37,11 +37,11 @@ import ch.systemsx.cisd.dbmigration.DatabaseEngine;
  * 
  * @author Izabela Adamczyk
  */
-public class MaterialShuffler extends SimpleJdbcDaoSupport
+public class MaterialShuffler extends JdbcDaoSupport
 {
 
-    private final static ParameterizedRowMapper<Integer> ID_MAPPER =
-            new ParameterizedRowMapper<Integer>()
+    private final static RowMapper<Integer> ID_MAPPER =
+            new RowMapper<Integer>()
                 {
                     @Override
                     public final Integer mapRow(final ResultSet rs, final int rowNum)
@@ -87,8 +87,8 @@ public class MaterialShuffler extends SimpleJdbcDaoSupport
 
     }
 
-    private final static ParameterizedRowMapper<EntityIdMaterialId> ENTITY_ID_MATERIAL_ID_MAPPER =
-            new ParameterizedRowMapper<EntityIdMaterialId>()
+    private final static RowMapper<EntityIdMaterialId> ENTITY_ID_MATERIAL_ID_MAPPER =
+            new RowMapper<EntityIdMaterialId>()
                 {
                     @Override
                     public final EntityIdMaterialId mapRow(final ResultSet rs, final int rowNum)
@@ -102,8 +102,8 @@ public class MaterialShuffler extends SimpleJdbcDaoSupport
 
     private static final Random GENERATOR = new Random();
 
-    private static final ParameterizedRowMapper<String> CODE_MAPPER =
-            new ParameterizedRowMapper<String>()
+    private static final RowMapper<String> CODE_MAPPER =
+            new RowMapper<String>()
                 {
 
                     @Override
@@ -182,7 +182,7 @@ public class MaterialShuffler extends SimpleJdbcDaoSupport
         }
         String sql =
                 String.format("update %s_properties set mate_prop_id = ? where id = ? ", entity);
-        getSimpleJdbcTemplate().getJdbcOperations().batchUpdate(sql,
+        getJdbcTemplate().batchUpdate(sql,
                 new BatchPreparedStatementSetter()
                     {
 
@@ -232,7 +232,7 @@ public class MaterialShuffler extends SimpleJdbcDaoSupport
                                         + " where p.mate_prop_id is not null and p.mate_prop_id in "
                                         + " (select distinct m.id from materials m, material_types t where m.maty_id=t.id and t.code = ?);",
                                 entity);
-        return getSimpleJdbcTemplate().query(propertySql, ENTITY_ID_MATERIAL_ID_MAPPER,
+        return getJdbcTemplate().query(propertySql, ENTITY_ID_MATERIAL_ID_MAPPER,
                 material_type);
     }
 
@@ -243,7 +243,7 @@ public class MaterialShuffler extends SimpleJdbcDaoSupport
     {
         String sql =
                 "select distinct m.id from materials m, material_types t where m.maty_id=t.id and t.code = ?;";
-        return getSimpleJdbcTemplate().query(sql, ID_MAPPER, material_type);
+        return getJdbcTemplate().query(sql, ID_MAPPER, material_type);
     }
 
     /**
@@ -252,6 +252,6 @@ public class MaterialShuffler extends SimpleJdbcDaoSupport
     private List<String> listMaterialTypes()
     {
         String sql = "select distinct code from material_types;";
-        return getSimpleJdbcTemplate().query(sql, CODE_MAPPER);
+        return getJdbcTemplate().query(sql, CODE_MAPPER);
     }
 }

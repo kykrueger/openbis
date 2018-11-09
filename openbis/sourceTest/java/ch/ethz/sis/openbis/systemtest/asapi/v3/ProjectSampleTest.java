@@ -29,8 +29,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.transaction.AfterTransaction;
-import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.BeforeClass;
@@ -79,32 +79,42 @@ import ch.systemsx.cisd.openbis.systemtest.base.BaseTest;
 import ch.systemsx.cisd.openbis.systemtest.base.builder.SessionBuilder;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
-@TransactionConfiguration(transactionManager = "transaction-manager", defaultRollback = false)
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 @Test(groups = "project-samples")
 public class ProjectSampleTest extends BaseTest
 {
     private static final String SYSTEM_USER = "system";
+
     private static final SpacePermId HOME_SPACE_ID = new SpacePermId("DEFAULT");
+
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, ProjectSampleTest.class);
+
     private static final EntityTypePermId ENTITY_TYPE_UNKNOWN = new EntityTypePermId("UNKNOWN");
-    
+
     @Autowired
     protected IApplicationServerApi v3api;
-    
+
     private ISpaceId space1;
+
     private ISpaceId space2;
+
     private ProjectPermId project1inSpace1;
+
     private ProjectPermId project2inSpace1;
+
     private ProjectPermId project1inSpace2;
+
     private ProjectPermId project2inSpace2;
+
     private ProjectPermId project1inHomeSpace;
+
     private String adminSessionToken;
+
     private String adminUser;
-    
+
     @BeforeClass
     public void createData()
     {
@@ -121,14 +131,14 @@ public class ProjectSampleTest extends BaseTest
         createSamples(systemSessionToken, space1, null, null, "SAMPLE1", "SAMPLE2");
         createSamples(systemSessionToken, space1, project1inSpace1, null, "SAMPLE3", "SAMPLE4");
         createSamples(systemSessionToken, space2, project2inSpace2, null, "SAMPLE5", "SAMPLE6");
-        waitAtLeastASecond(); // to allow checks on modification time stamps 
+        waitAtLeastASecond(); // to allow checks on modification time stamps
         UpdateUtils.waitUntilIndexUpdaterIsIdle(applicationContext, operationLog);
         SessionBuilder session = aSession().withInstanceRole(RoleCode.ADMIN);
         adminUser = session.getUserID();
         adminSessionToken = create(session);
         commonServer.changeUserHomeSpace(adminSessionToken, new TechId(1)); // home space = DEFAULT
     }
-    
+
     @Override
     @AfterTransaction
     @Test(enabled = false)
@@ -136,7 +146,7 @@ public class ProjectSampleTest extends BaseTest
     {
         // super method deletes samples, experiments and data sets from the database
     }
-    
+
     @Test
     public void testCreateASharedSampleWithASharedSampleAsComponent()
     {
@@ -148,14 +158,14 @@ public class ProjectSampleTest extends BaseTest
         s2.setCode("A01");
         s2.setTypeId(ENTITY_TYPE_UNKNOWN);
         s2.setContainerId(new SampleIdentifier(null, null, sampleCode));
-        
+
         List<SamplePermId> sampleIds = v3api.createSamples(systemSessionToken, Arrays.asList(s1, s2));
-        
+
         Map<ISampleId, Sample> samples = v3api.getSamples(systemSessionToken, sampleIds, new SampleFetchOptions());
         assertEquals(samples.get(sampleIds.get(0)).getIdentifier().getIdentifier(), "/" + sampleCode);
         assertEquals(samples.get(sampleIds.get(1)).getIdentifier().getIdentifier(), "/" + sampleCode + ":A01");
     }
-    
+
     @Test
     public void testCreateASharedSampleWithASpaceSampleAsComponent()
     {
@@ -168,14 +178,14 @@ public class ProjectSampleTest extends BaseTest
         s2.setTypeId(ENTITY_TYPE_UNKNOWN);
         s2.setSpaceId(space1);
         s2.setContainerId(new SampleIdentifier(null, null, sampleCode));
-        
+
         List<SamplePermId> sampleIds = v3api.createSamples(systemSessionToken, Arrays.asList(s1, s2));
-        
+
         Map<ISampleId, Sample> samples = v3api.getSamples(systemSessionToken, sampleIds, new SampleFetchOptions());
         assertEquals(samples.get(sampleIds.get(0)).getIdentifier().getIdentifier(), "/" + sampleCode);
         assertEquals(samples.get(sampleIds.get(1)).getIdentifier().getIdentifier(), "/SPACE1/" + sampleCode + ":A01");
     }
-    
+
     @Test
     public void testCreateASharedSampleWithAProjectSampleAsComponent()
     {
@@ -191,14 +201,14 @@ public class ProjectSampleTest extends BaseTest
         s2.setSpaceId(space1);
         s2.setProjectId(new ProjectIdentifier("SPACE1", projectCode));
         s2.setContainerId(new SampleIdentifier(null, null, sampleCode));
-        
+
         List<SamplePermId> sampleIds = v3api.createSamples(systemSessionToken, Arrays.asList(s1, s2));
-        
+
         Map<ISampleId, Sample> samples = v3api.getSamples(systemSessionToken, sampleIds, new SampleFetchOptions());
         assertEquals(samples.get(sampleIds.get(0)).getIdentifier().getIdentifier(), "/" + sampleCode);
         assertEquals(samples.get(sampleIds.get(1)).getIdentifier().getIdentifier(), "/SPACE1/" + projectCode + "/" + sampleCode + ":A01");
     }
-    
+
     @Test
     public void testCreateASharedSampleWithAProjectExperimentSampleAsComponent()
     {
@@ -217,14 +227,14 @@ public class ProjectSampleTest extends BaseTest
         s2.setProjectId(new ProjectIdentifier("SPACE1", projectCode));
         s2.setExperimentId(new ExperimentIdentifier("SPACE1", projectCode, experimentCode));
         s2.setContainerId(new SampleIdentifier(null, null, sampleCode));
-        
+
         List<SamplePermId> sampleIds = v3api.createSamples(systemSessionToken, Arrays.asList(s1, s2));
-        
+
         Map<ISampleId, Sample> samples = v3api.getSamples(systemSessionToken, sampleIds, new SampleFetchOptions());
         assertEquals(samples.get(sampleIds.get(0)).getIdentifier().getIdentifier(), "/" + sampleCode);
         assertEquals(samples.get(sampleIds.get(1)).getIdentifier().getIdentifier(), "/SPACE1/" + projectCode + "/" + sampleCode + ":A01");
     }
-    
+
     @Test
     public void testCreateASharedSampleWithAnExperimentSampleAsComponent()
     {
@@ -242,12 +252,12 @@ public class ProjectSampleTest extends BaseTest
         s2.setSpaceId(space1);
         s2.setExperimentId(new ExperimentIdentifier("SPACE1", projectCode, experimentCode));
         s2.setContainerId(new SampleIdentifier(null, null, sampleCode));
-        
+
         List<SamplePermId> sampleIds = v3api.createSamples(systemSessionToken, Arrays.asList(s1, s2));
-        
+
         Map<ISampleId, Sample> samples = v3api.getSamples(systemSessionToken, sampleIds, new SampleFetchOptions());
         assertEquals(samples.get(sampleIds.get(0)).getIdentifier().getIdentifier(), "/" + sampleCode);
-        assertEquals(samples.get(sampleIds.get(1)).getIdentifier().getIdentifier(), 
+        assertEquals(samples.get(sampleIds.get(1)).getIdentifier().getIdentifier(),
                 "/SPACE1/" + projectCode + "/" + sampleCode + ":A01");
     }
 
@@ -260,9 +270,9 @@ public class ProjectSampleTest extends BaseTest
         sampleCreation.setTypeId(ENTITY_TYPE_UNKNOWN);
         sampleCreation.setSpaceId(space1);
         sampleCreation.setProjectId(project1inSpace1);
-        
+
         List<SamplePermId> ids = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
         Map<ISampleId, Sample> samples = v3api.getSamples(systemSessionToken, ids, fetchOptions);
@@ -270,7 +280,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(sample.getIdentifier().getIdentifier(), "/SPACE1/PROJECT1/" + sampleCode);
         assertEquals(sample.getProject().getIdentifier().getIdentifier(), "/SPACE1/PROJECT1");
     }
-    
+
     @Test
     public void testCreateThreeSamplesWithSameCodeInDifferentProjectOfSameSpaceAndGetSamplesByIdentifier()
     {
@@ -289,9 +299,9 @@ public class ProjectSampleTest extends BaseTest
         s3.setCode(sampleCode);
         s3.setTypeId(ENTITY_TYPE_UNKNOWN);
         s3.setSpaceId(space1);
-        
+
         v3api.createSamples(systemSessionToken, Arrays.asList(s1, s2, s3));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
         List<ISampleId> ids = new ArrayList<>();
@@ -303,7 +313,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(samples.get(ids.get(1)).getProject().getIdentifier().toString(), "/SPACE1/PROJECT2");
         assertEquals(samples.get(ids.get(2)).getProject(), null);
     }
-    
+
     @Test
     public void testCreateProjectSampleWithAProjectSampleComponentFromAnotherSpace()
     {
@@ -320,9 +330,9 @@ public class ProjectSampleTest extends BaseTest
         s2.setSpaceId(space2);
         s2.setProjectId(project1inSpace2);
         s2.setContainerId(s1PermId);
-        
+
         v3api.createSamples(systemSessionToken, Arrays.asList(s2));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
         fetchOptions.withContainer();
@@ -350,9 +360,9 @@ public class ProjectSampleTest extends BaseTest
         s2.setSpaceId(HOME_SPACE_ID);
         s2.setProjectId(project1inHomeSpace);
         s2.setContainerId(s1PermId);
-        
+
         v3api.createSamples(systemSessionToken, Arrays.asList(s2));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
         fetchOptions.withContainer();
@@ -363,7 +373,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(samples.get(ids.get(0)).getProject().getIdentifier().toString(), "/DEFAULT/PROJECT1");
         assertEquals(samples.get(ids.get(1)).getProject().getIdentifier().toString(), "/DEFAULT/PROJECT1");
     }
-    
+
     @Test
     public void testCreateExperimentSample()
     {
@@ -371,7 +381,7 @@ public class ProjectSampleTest extends BaseTest
         String expCode = createUniqueCode("E");
         IExperimentId experimentId = createExperiments(systemSessionToken, project1inSpace1, expCode).get(0);
         Date now = sleep();
-        
+
         SamplePermId sampleId = createSamples(adminSessionToken, space1, null, experimentId, sampleCode).get(0);
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
@@ -386,7 +396,7 @@ public class ProjectSampleTest extends BaseTest
         assertModification(sample.getProject(), sample.getProject(), now, adminUser);
         assertModification(sample.getExperiment(), sample.getExperiment(), now, adminUser);
     }
-    
+
     @Test
     public void testAssignSpaceSampleToAProject()
     {
@@ -398,9 +408,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSampleId(new SampleIdentifier("/SPACE1/" + sampleCode));
         sampleUpdate.setProjectId(project);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -426,9 +436,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSampleId(new SampleIdentifier("//" + sampleCode));
         sampleUpdate.setProjectId(project);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -442,7 +452,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(sampleProject.getIdentifier().getIdentifier(), "/DEFAULT/" + projectCode);
         assertModification(sampleProject, sampleProject, now, adminUser);
     }
-    
+
     @Test
     public void testAssignProjectSampleToADifferentProjectInTheSameSpace()
     {
@@ -456,9 +466,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSampleId(new SampleIdentifier("/SPACE1/" + projectCode1 + "/" + sampleCode));
         sampleUpdate.setProjectId(project2);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -472,11 +482,11 @@ public class ProjectSampleTest extends BaseTest
         assertModification(sampleProject, sampleProject, now, adminUser);
         ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
         projectFetchOptions.withModifier();
-        Map<IProjectId, Project> projects = v3api.getProjects(systemSessionToken, 
+        Map<IProjectId, Project> projects = v3api.getProjects(systemSessionToken,
                 Arrays.asList(project1), projectFetchOptions);
         assertModification(projects.get(project1), projects.get(project1), now, adminUser);
     }
-    
+
     @Test
     public void testAssignProjectSampleWithComponentToAProjectInADifferentSpace()
     {
@@ -501,9 +511,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSpaceId(space2);
         sampleUpdate.setProjectId(project2);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -524,7 +534,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(componentProject.getIdentifier().getIdentifier(), "/SPACE1/" + projectCode);
         assertModification(componentProject, componentProject, now, adminUser);
     }
-    
+
     @Test
     public void testAssignProjectSampleToAProjectInADifferentSpace()
     {
@@ -538,9 +548,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSpaceId(space2);
         sampleUpdate.setProjectId(project2);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -553,7 +563,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(project.getIdentifier().getIdentifier(), "/SPACE2/" + projectCode);
         assertModification(project, project, now, adminUser);
     }
-    
+
     @Test
     public void testAssignExperimentWithProjectSamplesToADifferentProject()
     {
@@ -569,9 +579,9 @@ public class ProjectSampleTest extends BaseTest
         experimentUpdate.setExperimentId(experiment);
         experimentUpdate.setProjectId(new ProjectIdentifier("SPACE1", projectCode2));
         Date now = sleep();
-        
+
         v3api.updateExperiments(adminSessionToken, Arrays.asList(experimentUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -584,11 +594,11 @@ public class ProjectSampleTest extends BaseTest
         assertModification(project, project, now, adminUser);
         ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
         experimentFetchOptions.withModifier();
-        Experiment sampleExperiment = v3api.getExperiments(systemSessionToken, Arrays.asList(experiment), 
+        Experiment sampleExperiment = v3api.getExperiments(systemSessionToken, Arrays.asList(experiment),
                 experimentFetchOptions).values().iterator().next();
         assertModification(sampleExperiment, sampleExperiment, now, adminUser);
     }
-    
+
     @Test
     public void testDeleteExperimentWithProjectSamples()
     {
@@ -601,16 +611,16 @@ public class ProjectSampleTest extends BaseTest
         SamplePermId sample = createSamples(systemSessionToken, space1, project, experiment, sampleCode).get(0);
         ExperimentDeletionOptions deletionOptions = new ExperimentDeletionOptions();
         deletionOptions.setReason("a test");
-        
+
         v3api.deleteExperiments(adminSessionToken, Arrays.asList(experiment), deletionOptions);
-        
+
         assertEquals(v3api.getSamples(systemSessionToken, Arrays.asList(sample), new SampleFetchOptions()).size(), 0);
         ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
         experimentFetchOptions.withModifier();
-        assertEquals(v3api.getExperiments(systemSessionToken, Arrays.asList(experiment), 
+        assertEquals(v3api.getExperiments(systemSessionToken, Arrays.asList(experiment),
                 experimentFetchOptions).size(), 0);
     }
-    
+
     @Test
     public void testUnassignProjectSampleFromProject()
     {
@@ -622,9 +632,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSampleId(projectSample);
         sampleUpdate.setProjectId(null);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -636,12 +646,12 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(sample.getProject(), null);
         ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
         projectFetchOptions.withModifier();
-        Map<IProjectId, Project> projects = v3api.getProjects(systemSessionToken, 
+        Map<IProjectId, Project> projects = v3api.getProjects(systemSessionToken,
                 Arrays.asList(project), projectFetchOptions);
         Project previousProject = projects.values().iterator().next();
         assertModification(previousProject, previousProject, now, adminUser);
     }
-    
+
     @Test
     public void testUnassignProjectSampleFromProjectAndSpace()
     {
@@ -654,9 +664,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setProjectId(null);
         sampleUpdate.setSpaceId(null);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -668,12 +678,12 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(sample.getProject(), null);
         ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
         projectFetchOptions.withModifier();
-        Map<IProjectId, Project> projects = v3api.getProjects(systemSessionToken, 
+        Map<IProjectId, Project> projects = v3api.getProjects(systemSessionToken,
                 Arrays.asList(project), projectFetchOptions);
         Project previousProject = projects.values().iterator().next();
         assertModification(previousProject, previousProject, now, adminUser);
     }
-    
+
     @Test
     public void testUnassignProjectExperimentSampleFromExperiment()
     {
@@ -687,9 +697,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSampleId(projectSample);
         sampleUpdate.setExperimentId(null);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -703,11 +713,11 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(sampleProject.getModifier().getUserId(), SYSTEM_USER);
         ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
         experimentFetchOptions.withModifier();
-        Experiment previousExperiment = v3api.getExperiments(systemSessionToken, Arrays.asList(experiment), 
+        Experiment previousExperiment = v3api.getExperiments(systemSessionToken, Arrays.asList(experiment),
                 experimentFetchOptions).values().iterator().next();
         assertModification(previousExperiment, previousExperiment, now, adminUser);
     }
-    
+
     @Test
     public void testUpdateProjectSample()
     {
@@ -718,9 +728,9 @@ public class ProjectSampleTest extends BaseTest
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(projectSample);
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -732,12 +742,12 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(sample.getProject().getIdentifier().getIdentifier(), "/SPACE1/" + projectCode);
         ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
         projectFetchOptions.withModifier();
-        Map<IProjectId, Project> projects = v3api.getProjects(systemSessionToken, 
+        Map<IProjectId, Project> projects = v3api.getProjects(systemSessionToken,
                 Arrays.asList(project), projectFetchOptions);
         Project sampleProject = projects.values().iterator().next();
         assertEquals(sampleProject.getModifier().getUserId(), SYSTEM_USER);
     }
-    
+
     @Test
     public void testAssignSpaceSampleToAnExperimentInTheSameSpace()
     {
@@ -751,9 +761,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSampleId(projectSample);
         sampleUpdate.setExperimentId(new ExperimentIdentifier("SPACE1", projectCode, experimentCode));
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -768,7 +778,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(experiment.getIdentifier().getIdentifier(), "/SPACE1/" + projectCode + "/" + experimentCode);
         assertModification(experiment, experiment, now, adminUser);
     }
-    
+
     @Test
     public void testAssignProjectSampleToAnExperimentInTheSameProject()
     {
@@ -782,9 +792,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setSampleId(projectSample);
         sampleUpdate.setExperimentId(new ExperimentIdentifier("SPACE1", projectCode, experimentCode));
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -799,7 +809,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(experiment.getIdentifier().getIdentifier(), "/SPACE1/" + projectCode + "/" + experimentCode);
         assertModification(experiment, experiment, now, adminUser);
     }
-    
+
     @Test
     public void testAssignProjectSampleWithExperimentToAnotherExperimentInTheSameProject()
     {
@@ -809,15 +819,15 @@ public class ProjectSampleTest extends BaseTest
         String experimentCode2 = experimentCode1 + "A";
         createExperiments(systemSessionToken, project, experimentCode1, experimentCode2);
         String sampleCode = createUniqueCode("S");
-        SamplePermId projectSample = createSamples(systemSessionToken, space1, project, 
+        SamplePermId projectSample = createSamples(systemSessionToken, space1, project,
                 new ExperimentIdentifier("SPACE1", projectCode, experimentCode1), sampleCode).get(0);
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(projectSample);
         sampleUpdate.setExperimentId(new ExperimentIdentifier("SPACE1", projectCode, experimentCode2));
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -833,12 +843,12 @@ public class ProjectSampleTest extends BaseTest
         assertModification(experiment, experiment, now, adminUser);
         ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
         experimentFetchOptions.withModifier();
-        Experiment previousExperiment = v3api.getExperiments(systemSessionToken, 
-                Arrays.asList(new ExperimentIdentifier("SPACE1", projectCode, experimentCode1)), 
-                    experimentFetchOptions).values().iterator().next();
+        Experiment previousExperiment = v3api.getExperiments(systemSessionToken,
+                Arrays.asList(new ExperimentIdentifier("SPACE1", projectCode, experimentCode1)),
+                experimentFetchOptions).values().iterator().next();
         assertModification(previousExperiment, previousExperiment, now, adminUser);
     }
-    
+
     @Test
     public void testAssignProjectSampleToAnExperimentInADifferentProjectOfTheSameSpace()
     {
@@ -855,9 +865,9 @@ public class ProjectSampleTest extends BaseTest
         sampleUpdate.setProjectId(new ProjectIdentifier("SPACE1", projectCode2));
         sampleUpdate.setExperimentId(new ExperimentIdentifier("SPACE1", projectCode2, experimentCode));
         Date now = sleep();
-        
+
         v3api.updateSamples(adminSessionToken, Arrays.asList(sampleUpdate));
-        
+
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
@@ -876,7 +886,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(experiment.getIdentifier().getIdentifier(), "/SPACE1/" + projectCode2 + "/" + experimentCode);
         assertModification(experiment, experiment, now, adminUser);
     }
-    
+
     @Test
     public void testDeleteProjectSample()
     {
@@ -888,17 +898,17 @@ public class ProjectSampleTest extends BaseTest
         deletionOptions.setReason("test");
         List<SampleIdentifier> sampleIds = Arrays.asList(new SampleIdentifier("/SPACE1/" + projectCode + "/" + sampleCode));
         Date now = sleep();
-        
+
         v3api.deleteSamples(adminSessionToken, sampleIds, deletionOptions);
-        
+
         assertEquals(v3api.getSamples(systemSessionToken, sampleIds, new SampleFetchOptions()).size(), 0);
         ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
         projectFetchOptions.withModifier();
-        Project sampleProject = v3api.getProjects(systemSessionToken, Arrays.asList(project), 
+        Project sampleProject = v3api.getProjects(systemSessionToken, Arrays.asList(project),
                 projectFetchOptions).values().iterator().next();
         assertModification(sampleProject, sampleProject, now, adminUser);
     }
-    
+
     @Test
     public void testDeleteProjectExperimentSample()
     {
@@ -912,13 +922,13 @@ public class ProjectSampleTest extends BaseTest
         deletionOptions.setReason("test");
         List<SamplePermId> sampleIds = Arrays.asList(sample);
         Date now = sleep();
-        
+
         v3api.deleteSamples(adminSessionToken, sampleIds, deletionOptions);
-        
+
         assertEquals(v3api.getSamples(systemSessionToken, sampleIds, new SampleFetchOptions()).size(), 0);
         ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
         projectFetchOptions.withModifier();
-        Project sampleProject = v3api.getProjects(systemSessionToken, Arrays.asList(project), 
+        Project sampleProject = v3api.getProjects(systemSessionToken, Arrays.asList(project),
                 projectFetchOptions).values().iterator().next();
         assertModification(sampleProject, sampleProject, now, adminUser);
         ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
@@ -927,7 +937,7 @@ public class ProjectSampleTest extends BaseTest
                 experimentFetchOptions).values().iterator().next();
         assertModification(sampleExperiment, sampleExperiment, now, adminUser);
     }
-    
+
     @Test
     @Transactional(propagation = Propagation.NEVER)
     public void testCreateWithProjectAndSpaceInconsistent()
@@ -991,7 +1001,7 @@ public class ProjectSampleTest extends BaseTest
                     + "Sample: /SPACE1/PROJECT2/SAMPLE_WITH_INCONSISTENT_PROJECT_AND_EXPERIMENT", e.getMessage());
         }
     }
-    
+
     @Test
     @Transactional(propagation = Propagation.NEVER)
     public void testAssignSpaceSampleToProjectInDifferentSpace()
@@ -1012,7 +1022,7 @@ public class ProjectSampleTest extends BaseTest
             }, "Sample space must be the same as project space. Sample: /SPACE2/PROJECT2/" + code
                     + " (perm id: " + sampleId + "), Project: /SPACE2/PROJECT2 (perm id: " + project2inSpace2 + ") "
                     + "(Context: [verifying (1/1) {\n" + "  \"entity\" : {\n" + "    \"class\" : \"SamplePE\",\n"
-                    + "    \"permId\" : \"" + sampleId + "\",\n" 
+                    + "    \"permId\" : \"" + sampleId + "\",\n"
                     + "    \"identifier\" : \"/SPACE2/PROJECT2/" + code + "\"\n  }\n}])\n");
     }
 
@@ -1038,13 +1048,13 @@ public class ProjectSampleTest extends BaseTest
             }, "Sample project must be the same as experiment project. Sample: /SPACE1/PROJECT2/" + sampleCode
                     + " (perm id: " + sample + "), Project: /SPACE1/PROJECT2 (perm id: " + project2inSpace1
                     + "), Experiment: /SPACE1/PROJECT1/" + expCode + " (perm id: " + experiment + ") "
-                    + "(Context: [verifying (1/1) {\n" + "  \"entity\" : {\n" 
+                    + "(Context: [verifying (1/1) {\n" + "  \"entity\" : {\n"
                     + "    \"class\" : \"SamplePE\",\n"
-                    + "    \"permId\" : \"" + sample + "\",\n" 
+                    + "    \"permId\" : \"" + sample + "\",\n"
                     + "    \"identifier\" : \"/SPACE1/PROJECT2/" + sampleCode + "\"\n  }\n}])\n");
 
     }
-    
+
     @Test
     @Transactional(propagation = Propagation.NEVER)
     public void testAssignSharedSampleToProject()
@@ -1074,14 +1084,14 @@ public class ProjectSampleTest extends BaseTest
     @Test(priority = -1)
     public void testSearchForSamplesWithProject() throws InterruptedException
     {
-        
+
         SampleSearchCriteria searchCriteria = new SampleSearchCriteria();
         searchCriteria.withProject();
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
-        
+
         SearchResult<Sample> result = v3api.searchSamples(systemSessionToken, searchCriteria, fetchOptions);
-        
+
         assertEquals(result.getObjects().get(0).getIdentifier().getIdentifier(), "/DEFAULT/DEFAULT/DEFAULT");
         assertEquals(result.getObjects().get(0).getProject().getIdentifier().getIdentifier(), "/DEFAULT/DEFAULT");
         assertEquals(result.getObjects().get(1).getIdentifier().getIdentifier(), "/SPACE1/PROJECT1/SAMPLE3");
@@ -1094,7 +1104,7 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(result.getObjects().get(4).getProject().getIdentifier().getIdentifier(), "/SPACE2/PROJECT2");
         assertEquals(result.getTotalCount(), 5);
     }
-    
+
     @Test(priority = -1)
     public void testSearchForSamplesWithCodeAndWithProject()
     {
@@ -1103,14 +1113,14 @@ public class ProjectSampleTest extends BaseTest
         searchCriteria.withProject();
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
-        
+
         SearchResult<Sample> result = v3api.searchSamples(systemSessionToken, searchCriteria, fetchOptions);
-        
+
         assertEquals(result.getObjects().get(0).getIdentifier().getIdentifier(), "/SPACE1/PROJECT1/SAMPLE3");
         assertEquals(result.getObjects().get(0).getProject().getIdentifier().getIdentifier(), "/SPACE1/PROJECT1");
         assertEquals(result.getTotalCount(), 1);
     }
-    
+
     @Test(priority = -1)
     public void testSearchForSamplesWithProjectWithSpaceWithCode()
     {
@@ -1118,16 +1128,16 @@ public class ProjectSampleTest extends BaseTest
         searchCriteria.withProject().withSpace().withCode().thatEquals("SPACE1");
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
-        
+
         SearchResult<Sample> result = v3api.searchSamples(systemSessionToken, searchCriteria, fetchOptions);
-        
+
         assertEquals(result.getObjects().get(0).getIdentifier().getIdentifier(), "/SPACE1/PROJECT1/SAMPLE3");
         assertEquals(result.getObjects().get(0).getProject().getIdentifier().getIdentifier(), "/SPACE1/PROJECT1");
         assertEquals(result.getObjects().get(1).getIdentifier().getIdentifier(), "/SPACE1/PROJECT1/SAMPLE4");
         assertEquals(result.getObjects().get(1).getProject().getIdentifier().getIdentifier(), "/SPACE1/PROJECT1");
         assertEquals(result.getTotalCount(), 2);
     }
-    
+
     @Test(priority = -1)
     public void testSearchForSamplesWithProjectWithPermId()
     {
@@ -1135,16 +1145,16 @@ public class ProjectSampleTest extends BaseTest
         searchCriteria.withProject().withPermId().thatEquals(project2inSpace2.getPermId());
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
-        
+
         SearchResult<Sample> result = v3api.searchSamples(systemSessionToken, searchCriteria, fetchOptions);
-        
+
         assertEquals(result.getObjects().get(0).getIdentifier().getIdentifier(), "/SPACE2/PROJECT2/SAMPLE5");
         assertEquals(result.getObjects().get(0).getProject().getIdentifier().getIdentifier(), "/SPACE2/PROJECT2");
         assertEquals(result.getObjects().get(1).getIdentifier().getIdentifier(), "/SPACE2/PROJECT2/SAMPLE6");
         assertEquals(result.getObjects().get(1).getProject().getIdentifier().getIdentifier(), "/SPACE2/PROJECT2");
         assertEquals(result.getTotalCount(), 2);
     }
-    
+
     @Test(priority = -1)
     public void testSearchForSamplesWithoutProjects()
     {
@@ -1153,9 +1163,9 @@ public class ProjectSampleTest extends BaseTest
         searchCriteria.withoutProject();
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withProject();
-        
+
         SearchResult<Sample> result = v3api.searchSamples(systemSessionToken, searchCriteria, fetchOptions);
-        
+
         assertEquals(result.getObjects().get(0).getIdentifier().getIdentifier(), "/SPACE1/SAMPLE1");
         assertEquals(result.getObjects().get(0).getProject(), null);
         assertEquals(result.getObjects().get(1).getIdentifier().getIdentifier(), "/SPACE1/SAMPLE2");
@@ -1183,13 +1193,13 @@ public class ProjectSampleTest extends BaseTest
         }
     }
 
-    private void assertModification(IModificationDateHolder modificationDateHolder, IModifierHolder modifierHolder, 
+    private void assertModification(IModificationDateHolder modificationDateHolder, IModifierHolder modifierHolder,
             Date date, String modifier)
     {
         assertNotOlder(modificationDateHolder.getModificationDate(), date);
         assertEquals(modifierHolder.getModifier().getUserId(), modifier);
     }
-    
+
     private void assertNotOlder(Date actualDate, Date referenceDate)
     {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -1198,14 +1208,14 @@ public class ProjectSampleTest extends BaseTest
         assertEquals(renderedReferenceDate.compareTo(renderedActualDate) <= 0, true,
                 renderedActualDate + " > " + renderedReferenceDate);
     }
-    
+
     private Date sleep()
     {
         Date now = daoFactory.getTransactionTimestamp();
         return now;
     }
-    
-    private List<SpacePermId> createSpaces(String sessionToken, String...spaceCodes)
+
+    private List<SpacePermId> createSpaces(String sessionToken, String... spaceCodes)
     {
         List<SpaceCreation> newSpaces = new ArrayList<SpaceCreation>();
         for (String spaceCode : spaceCodes)
@@ -1216,8 +1226,8 @@ public class ProjectSampleTest extends BaseTest
         }
         return v3api.createSpaces(sessionToken, newSpaces);
     }
-    
-    private List<ProjectPermId> createProjects(String sessionToken, ISpaceId spaceId, String...projectCodes)
+
+    private List<ProjectPermId> createProjects(String sessionToken, ISpaceId spaceId, String... projectCodes)
     {
         List<ProjectCreation> newProjects = new ArrayList<ProjectCreation>();
         for (String projectCode : projectCodes)
@@ -1229,9 +1239,9 @@ public class ProjectSampleTest extends BaseTest
         }
         return v3api.createProjects(sessionToken, newProjects);
     }
-    
-    private List<SamplePermId> createSamples(String sessionToken, ISpaceId spaceOrNull, 
-            IProjectId projectOrNull, IExperimentId experimentOrNull, String...codes)
+
+    private List<SamplePermId> createSamples(String sessionToken, ISpaceId spaceOrNull,
+            IProjectId projectOrNull, IExperimentId experimentOrNull, String... codes)
     {
         List<SampleCreation> newSamples = new ArrayList<SampleCreation>();
         for (String code : codes)
@@ -1246,8 +1256,8 @@ public class ProjectSampleTest extends BaseTest
         }
         return v3api.createSamples(sessionToken, newSamples);
     }
-    
-    private List<ExperimentPermId> createExperiments(String sessionToken, IProjectId project, String...codes)
+
+    private List<ExperimentPermId> createExperiments(String sessionToken, IProjectId project, String... codes)
     {
         List<ExperimentCreation> newExperiments = new ArrayList<ExperimentCreation>();
         for (String code : codes)
@@ -1265,7 +1275,7 @@ public class ProjectSampleTest extends BaseTest
     {
         return prefix + "-" + System.currentTimeMillis();
     }
-    
+
     private void waitAtLeastASecond()
     {
         try

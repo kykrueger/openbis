@@ -16,7 +16,6 @@
 
 package ch.systemsx.cisd.openbis.remoteapitest;
 
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -25,9 +24,10 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -43,7 +43,8 @@ import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
  * @author Kaloyan Enimanev
  */
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
-@TransactionConfiguration(transactionManager = "transaction-manager")
+@Transactional(transactionManager = "transaction-manager")
+@Rollback
 public class RemoteApiTestCase extends AbstractTransactionalTestNGSpringContextTests
 {
     private Server server;

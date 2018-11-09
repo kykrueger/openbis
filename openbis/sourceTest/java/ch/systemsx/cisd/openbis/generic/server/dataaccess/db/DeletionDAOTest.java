@@ -48,8 +48,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 /**
  * @author Piotr Buczek
  */
-@Test(groups =
-{ "db" })
+@Test(groups = { "db" })
 public class DeletionDAOTest extends AbstractDAOTest
 {
 

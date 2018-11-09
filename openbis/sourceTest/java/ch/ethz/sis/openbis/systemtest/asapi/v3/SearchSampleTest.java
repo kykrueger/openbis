@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.testng.annotations.Test;
 
@@ -758,6 +759,35 @@ public class SearchSampleTest extends AbstractSampleTest
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withAnyProperty().thatEquals("\"very advanced\"");
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1");
+    }
+
+    @Test
+    public void testSearchWithAnyProperty2()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withAnyProperty().thatEquals("very");
+
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withProperties();
+
+        List<Sample> samples = search(sessionToken, criteria, fo);
+
+        for (Sample sample : samples)
+        {
+            System.out.println("-----");
+            System.out.println(sample.getCode());
+            for (Entry<String, String> entry : sample.getProperties().entrySet())
+            {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
+            System.out.println("-----");
+        }
+
+        System.out.println(samples);
+        v3api.logout(sessionToken);
+
     }
 
     @Test

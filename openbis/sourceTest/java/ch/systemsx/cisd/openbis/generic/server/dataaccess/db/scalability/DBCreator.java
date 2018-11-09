@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 import java.util.Date;
 
 import org.hibernate.Session;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -75,8 +75,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
  * 
  * @author Piotr Buczek
  */
-@Test(groups =
-{ "scalability" })
+@Test(groups = { "scalability" })
 public final class DBCreator extends AbstractDAOTest
 {
     /** a sufix that will be used in the created DB name */
@@ -87,6 +86,7 @@ public final class DBCreator extends AbstractDAOTest
     // "sourceTest/sql/postgresql/" + DatabaseVersionHolder.getDatabaseVersion();
     // number properties
     /** a factor for scaling number of all created entities */
+
     // private static final int FACTOR = 1;
     /** the overall number of Materials created */
     // private static final int MATERIALS_NO = 0;// FACTOR * 1000;

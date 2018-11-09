@@ -52,8 +52,7 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.json.ScreeningObj
 /**
  * @author Chandrasekhar Ramakrishnan
  */
-@Test(groups =
-{ "slow", "systemtest" })
+@Test(groups = { "slow", "systemtest" })
 public class TransformedImageRepresentationsTest extends AbstractScreeningSystemTestCase
 {
     private IDssServiceRpcScreening screeningJsonApi;
@@ -75,7 +74,7 @@ public class TransformedImageRepresentationsTest extends AbstractScreeningSystem
                                 + "/rmi-datastore-server-screening-api-v1.json/"),
                         new HashMap<String, String>());
         screeningJsonApi =
-                ProxyUtil.createProxy(this.getClass().getClassLoader(),
+                ProxyUtil.createClientProxy(this.getClass().getClassLoader(),
                         IDssServiceRpcScreening.class, client);
     }
 

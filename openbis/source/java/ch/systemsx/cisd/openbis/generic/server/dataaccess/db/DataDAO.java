@@ -41,10 +41,11 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.dao.DataAccessException;
-import org.springframework.orm.hibernate4.HibernateCallback;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.collection.CollectionStyle;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
@@ -1063,15 +1064,15 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             @Override
             public Object doInStatelessSession(StatelessSession session)
             {
-                final SQLQuery selectPermIds = session.createSQLQuery(sqls.selectPermIds);
-                final SQLQuery selectLocations = session.createSQLQuery(sqls.selectLocations);
-                final SQLQuery deleteProperties = session.createSQLQuery(sqls.deleteProperties);
-                final SQLQuery deleteEntities = session.createSQLQuery(sqls.deleteDataSets);
-                final SQLQuery insertEvent = session.createSQLQuery(sqls.insertEvent);
-                final SQLQuery deleteExternalData = session.createSQLQuery(sqls.deleteExternalData);
-                final SQLQuery deleteContentCopies = session.createSQLQuery(sqls.deleteContentCopies);
-                final SQLQuery deleteChildrenConnections = session.createSQLQuery(sqls.deleteChildrenConnections);
-                final SQLQuery deleteParentConnections = session.createSQLQuery(sqls.deleteParentConnections);
+                final NativeQuery<?> selectPermIds = session.createNativeQuery(sqls.selectPermIds);
+                final NativeQuery<?> selectLocations = session.createNativeQuery(sqls.selectLocations);
+                final NativeQuery<?> deleteProperties = session.createNativeQuery(sqls.deleteProperties);
+                final NativeQuery<?> deleteEntities = session.createNativeQuery(sqls.deleteDataSets);
+                final NativeQuery<?> insertEvent = session.createNativeQuery(sqls.insertEvent);
+                final NativeQuery<?> deleteExternalData = session.createNativeQuery(sqls.deleteExternalData);
+                final NativeQuery<?> deleteContentCopies = session.createNativeQuery(sqls.deleteContentCopies);
+                final NativeQuery<?> deleteChildrenConnections = session.createNativeQuery(sqls.deleteChildrenConnections);
+                final NativeQuery<?> deleteParentConnections = session.createNativeQuery(sqls.deleteParentConnections);
 
                 final List<String> permIds =
                         selectPermIds(selectPermIds, entityIdsToDelete);
@@ -1131,7 +1132,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                 return cast(sqlQuerySelectLocations.list());
             }
 
-            private void executeUpdate(final SQLQuery a1,
+            private void executeUpdate(final NativeQuery<?> a1,
                     List<Long> entityIds)
             {
                 a1.setParameterList(ENTITY_IDS_PARAM, entityIds);

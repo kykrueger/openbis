@@ -18,7 +18,7 @@ package ch.systemsx.cisd.dbmigration.java;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.Script;
@@ -40,7 +40,7 @@ import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
  * 
  * @author Izabela Adamczyk
  */
-public class MigrationStepExecutor extends SimpleJdbcDaoSupport implements IMigrationStepExecutor
+public class MigrationStepExecutor extends JdbcDaoSupport implements IMigrationStepExecutor
 {
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             MigrationStepExecutor.class);
@@ -145,7 +145,8 @@ public class MigrationStepExecutor extends SimpleJdbcDaoSupport implements IMigr
         {
             operationLog.info(String.format(
                     "Migration step class '%s' found for migration script '%s'.", migrationStep
-                            .getClass().getSimpleName(), migrationScript.getName()));
+                            .getClass().getSimpleName(),
+                    migrationScript.getName()));
         } else
         {
             operationLog.debug(String.format(
@@ -161,7 +162,7 @@ public class MigrationStepExecutor extends SimpleJdbcDaoSupport implements IMigr
         assert inited : "Executor not initialized.";
         if (migrationStep != null)
         {
-            migrationStep.performPreMigration(getSimpleJdbcTemplate(), getDataSource());
+            migrationStep.performPreMigration(getJdbcTemplate(), getDataSource());
         }
     }
 
@@ -171,7 +172,7 @@ public class MigrationStepExecutor extends SimpleJdbcDaoSupport implements IMigr
         assert inited : "Executor not initialized.";
         if (migrationStep != null)
         {
-            migrationStep.performPostMigration(getSimpleJdbcTemplate(), getDataSource());
+            migrationStep.performPostMigration(getJdbcTemplate(), getDataSource());
         }
     }
 

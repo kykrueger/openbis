@@ -38,7 +38,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import com.googlecode.jsonrpc4j.Base64;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import com.googlecode.jsonrpc4j.ProxyUtil;
 
@@ -50,9 +49,9 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetR
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
+import net.iharder.Base64;
 
-@Test(groups =
-{ "slow", "systemtest" })
+@Test(groups = { "slow", "systemtest" })
 public class ImageBase64EncodingTest extends AbstractScreeningSystemTestCase
 {
     private static String IMAGE1_FILENAME = getTestDataFolder()
@@ -78,7 +77,7 @@ public class ImageBase64EncodingTest extends AbstractScreeningSystemTestCase
                 new JsonRpcHttpClient(new URL(TestInstanceHostUtils.getDSSUrl()
                         + "/rmi-datastore-server-screening-api-v1.json/"));
         screeningJsonApi =
-                ProxyUtil.createProxy(this.getClass().getClassLoader(),
+                ProxyUtil.createClientProxy(this.getClass().getClassLoader(),
                         IDssServiceRpcScreening.class, client);
 
     }

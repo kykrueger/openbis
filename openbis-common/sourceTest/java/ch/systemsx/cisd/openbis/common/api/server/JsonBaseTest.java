@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.is;
 
 import java.net.URL;
 
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -80,8 +79,7 @@ public class JsonBaseTest
 
     }
 
-    @RequestMapping(
-    { "/service.json" })
+    @RequestMapping({ "/service.json" })
     public static class MappedJsonServiceExporter extends JsonServiceExporter
     {
     }
@@ -133,7 +131,7 @@ public class JsonBaseTest
 
         JsonRpcHttpClient client =
                 new JsonRpcHttpClient(new URL("http://localhost:8882/service.json"));
-        echo = ProxyUtil.createProxy(this.getClass().getClassLoader(), EchoService.class, client);
+        echo = ProxyUtil.createClientProxy(this.getClass().getClassLoader(), EchoService.class, client);
     }
 
     @AfterClass

@@ -24,7 +24,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.test.context.transaction.TestTransaction;
 import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
@@ -39,8 +42,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
  * 
  * @author Izabela Adamczyk
  */
-@Test(groups =
-{ "db", "event" })
+@Test(groups = { "db", "event" })
 public class EventDAOTest extends AbstractDAOTest
 {
 
@@ -175,9 +177,23 @@ public class EventDAOTest extends AbstractDAOTest
         assertCorrectResult(2, result);
     }
 
+    @BeforeClass
+    public void m()
+    {
+        System.out.println("ASDFads");
+    }
+
+    @BeforeMethod
+    public void x()
+    {
+        System.out.println("ASDFads");
+    }
+
     @Test
+    // @Rollback
     public void testListDeletedDataSetsWithAContainerDataSet()
     {
+        System.out.println("ACTIVE: " + TestTransaction.isActive());
         daoFactory.getDataDAO().delete(
                 Arrays.asList(new TechId(13), new TechId(14), new TechId(15)),
                 daoFactory.getPersonDAO().getByTechId(new TechId(1)),
