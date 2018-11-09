@@ -106,6 +106,10 @@ class AttrHolder():
                 new_obj['typeId'] = self._type['permId']
                 continue
 
+            elif attr == 'kind':
+                # when creating a new dataset, the attribute «kind» is called «dataSetKind»
+                new_obj['dataSetKind'] = self._kind
+
             elif attr == 'attachments':
                 attachments = getattr(self, '_new_attachments')
                 if attachments is None:
