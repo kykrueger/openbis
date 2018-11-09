@@ -1,3 +1,9 @@
+## Changes with pybis-1.7.2
+
+* pyBIS now allows to create dataset-containers
+* datasets now show a «kind» attribute, which can be either PHYSICAL, LINK or CONTAINER
+* PropertyAssignments and other internal data are now finally nicely presented in Jupyter
+
 ## Changes with pybis-1.7.1
 
 * fixed bug in controlled vocabulary when property name did not match the vocabulary name

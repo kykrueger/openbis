@@ -67,6 +67,7 @@ class DataSet(OpenBisObject):
 
     def __dir__(self):
         return [
+            'permId',
             'kind',
             'props', 
             'get_parents()', 'get_children()', 'get_components()', 'get_contained()', 'get_containers()',
@@ -471,7 +472,6 @@ class DataSet(OpenBisObject):
                 + '&startByte=0&endByte=0'
                 + '&sessionID=' + self.openbis.token
             )
-            print(upload_url)
             queue.put([upload_url, filename, self.openbis.verify_certificates])
 
         # wait until all files have uploaded

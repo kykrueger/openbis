@@ -2387,7 +2387,8 @@ class Openbis:
                 "code": type_name
             })
             fetch_options['propertyAssignments'] = fetch_option['propertyAssignments']
-            #fetch_options['validationPlugin'] = fetch_option['plugin']
+            if self.server_information.api_version > '3.3':
+                fetch_options['validationPlugin'] = fetch_option['plugin']
 
         request = {
             "method": method_name,
@@ -2782,7 +2783,7 @@ class Openbis:
 
     new_object = new_sample # Alias
 
-    def new_dataset(self, type=None, files=None, props=None, folder=None, **kwargs):
+    def new_dataset(self, type=None, files=None, props=None, folder=None, kind='PHYSICAL_DATA', **kwargs):
         """ Creates a new dataset of a given sample type.
         """
         if files is None:
