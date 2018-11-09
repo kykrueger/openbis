@@ -1,4 +1,3 @@
-from .property import PropertyHolder, PropertyAssignments
 from .attribute import AttrHolder
 from .openbis_object import OpenBisObject 
 from .utils import VERBOSE

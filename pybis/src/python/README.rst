@@ -263,6 +263,16 @@ Datasets
        files      = ['my_analyzed_data.dat'], 
        props      = {'name': 'some good name', 'description': '...' })
    )
+
+   # DataSet CONTAINER (contains other DataSets, but no files)
+   ds_new = o.new_dataset(
+       type       = 'ANALYZED_DATA', 
+       experiment = '/SPACE/PROJECT/EXP1', 
+       sample     = '/SPACE/SAMP1',
+       kind       = 'CONTAINER',
+       props      = {'name': 'some good name', 'description': '...' })
+   )
+
    ds_new.save()
 
    dataset.get_parents()
@@ -275,14 +285,14 @@ Datasets
    dataset.add_children(['20170115220259155-412'])
    dataset.del_children(['20170115220259155-412'])
 
-   # A DataSet may belong to other DataSets, which then act as containers.
-   # As opposed to Samples, DataSets may belong (contained) to more than one container-DataSet
+   # A DataSet may belong to other DataSets, which must be of kind=CONTAINER
+   # As opposed to Samples, DataSets may belong (contained) to more than one DataSet-container
    dataset.get_containers()
    dataset.set_containers(['20170115220259155-412'])
    dataset.add_containers(['20170115220259155-412'])
    dataset.del_containers(['20170115220259155-412'])
 
-   # A DataSet may contain other DataSets, to act like a container (see above)
+   # A DataSet of kind=CONTAINER may contain other DataSets, to act like a folder (see above)
    # The DataSet-objects inside that DataSet are called components or contained DataSets
    # You may also use the xxx_contained() functions, which are just aliases.
    dataset.get_components()

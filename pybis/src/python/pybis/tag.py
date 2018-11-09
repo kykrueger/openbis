@@ -1,6 +1,5 @@
 from .openbis_object import OpenBisObject 
 from .utils import VERBOSE
-from .property import PropertyHolder, PropertyAssignments
 from .attribute import AttrHolder
 import json
 

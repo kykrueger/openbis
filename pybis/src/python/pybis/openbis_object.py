@@ -1,4 +1,4 @@
-from .property import PropertyHolder, PropertyAssignments
+from .property import PropertyHolder
 from .attribute import AttrHolder
 
 class OpenBisObject():
