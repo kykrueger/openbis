@@ -118,7 +118,7 @@ import ch.systemsx.cisd.openbis.systemtest.entitygraph.EntityGraphManager;
  */
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
-@Rollback
+@Rollback(value = false)
 @Test(groups = { "system-cleandb" })
 public abstract class BaseTest extends AbstractTransactionalTestNGSpringContextTests
 {
