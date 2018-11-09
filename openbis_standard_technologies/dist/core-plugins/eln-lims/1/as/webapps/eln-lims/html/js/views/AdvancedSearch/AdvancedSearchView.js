@@ -21,6 +21,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	this._$andOrDropdownComponent = null;
 	this._$menuPanelContainer = null;
 	this._$searchCriteriaPanelContainer = null;
+	this._$rulesPanelContainer = null;
 	this._$tbody = null;
 	this._$dataGridContainer = null;
 	this._$saveLoadContainer = null;
@@ -67,18 +68,27 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		//Triggers Layout refresh
 		$container.append($mainPanel);
 		
-		if(this._advancedSearchModel.forceLoadCriteria) {
-			this._$entityTypeDropdown.val(this._advancedSearchModel.criteria.entityKind);
-			this._$andOrDropdownComponent.val(this._advancedSearchModel.criteria.logicalOperator);
-			this._advancedSearchModel.forceLoadCriteria = undefined;
-		}
-		
+		this._updateEntityTypeAndUsingDropdownValues();
 	}
 
 	this.repaintContent = function() {
 		this._paintSaveLoadPanel(this._$saveLoadContainer);
 		this._paintCriteriaPanel(this._$searchCriteriaPanelContainer);
+		this._updateEntityTypeAndUsingDropdownValues();
 	}	
+
+	this._updateEntityTypeAndUsingDropdownValues = function() {
+		if(this._advancedSearchModel.forceLoadCriteria) {
+			var hiddenRule = this._advancedSearchModel.getHiddenRule();
+			if (hiddenRule) {
+				this._$entityTypeDropdown.val('SAMPLE$' + hiddenRule.value);
+			} else {
+				this._$entityTypeDropdown.val(this._advancedSearchModel.criteria.entityKind);
+			}
+			this._$andOrDropdownComponent.val(this._advancedSearchModel.criteria.logicalOperator);
+			this._advancedSearchModel.forceLoadCriteria = undefined;
+		}
+	}
 
 	//
 	// Repaint Panels Methods
@@ -176,6 +186,13 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			theme: "bootstrap"
 		});
 
+		if (_this._advancedSearchModel.selcetedSavedSearchIndex > -1) {
+			var $buttonClear = FormUtil.getButtonWithIcon('glyphicon-remove', function() {
+				_this._advancedSearchController.clearSelection();
+			}, null, 'Clear selection');
+			$container.append($buttonClear);	
+		}
+
 		var $buttonSave = FormUtil.getButtonWithIcon('glyphicon-floppy-disk', function() {
 			_this._save();
 		}, 'Save');
@@ -227,6 +244,15 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 
 		this._paintTypeSelectionPanel(this._$searchCriteriaPanelContainer);
 
+		// TODO put the rest in separate panel
+		this._$rulesPanelContainer = $("<div>");
+		this._paintRulesPanel(this._$rulesPanelContainer);
+		$searchCriteriaPanelContainer.append(this._$rulesPanelContainer);
+	}
+
+
+	this._paintRulesPanel = function($container) {
+		$container.empty();
 		var _this = this;
 		var $table = $("<table>", { class : "table table-bordered"});
 		$table.css({ 'margin-top': '10px' });
@@ -250,24 +276,31 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 						.append($("<th>").text("Field Value"))
 						.append($("<th>", { "style" : "width : 56px !important;" }).append(this._$addButton))
 					);
-		
-		this._paintInputRow();
-		
-		$searchCriteriaPanelContainer.append($table);
+
+		if ($.isEmptyObject(this._advancedSearchModel.criteria.rules)) {
+				this._paintInputRow();
+		} else {
+			for(var ruleKey in this._advancedSearchModel.criteria.rules) {
+				if ( ! this._advancedSearchModel.criteria.rules[ruleKey].hidden) {
+					this._paintInputRow(ruleKey);
+				}
+			}
+		}
+
+		$container.append($table);
 	}
 	
 	//
 	// Auxiliar Components Methods
 	//
-	
-	this._paintInputRow = function() {
+
+	// paints a row for the given ruleKey or a new empty row if no ruleKey is given
+	this._paintInputRow = function(ruleKey) {
 		var _this = this;
-		
-		if(this._advancedSearchModel.forceLoadCriteria) {
-			var uuidValue = null;
-			for(var ruleKey in this._advancedSearchModel.criteria.rules) {
-				uuidValue = ruleKey;
-			}
+
+		var uuidValue = null;
+		if (ruleKey) {
+			uuidValue = ruleKey;
 		} else {
 			var uuidValue = Util.guid();
 			this._advancedSearchModel.criteria.rules[uuidValue] = { };
@@ -313,13 +346,11 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		}
 		
 		if(this._advancedSearchModel.forceLoadCriteria) {
-			for(var ruleKey in this._advancedSearchModel.criteria.rules) {
-				var rule = this._advancedSearchModel.criteria.rules[ruleKey];
-				$fieldTypeDropdown.val(rule.type).change();
-				$fieldValue.val(rule.value);
-				var $fieldNameDropdown = $($newFieldNameContainer.children()[0]);
-				$fieldNameDropdown.val(rule.name);
-			}
+			var rule = this._advancedSearchModel.criteria.rules[uuidValue];
+			$fieldTypeDropdown.val(rule.type).change();
+			$fieldValue.val(rule.value);
+			var $fieldNameDropdown = $($newFieldNameContainer.children()[0]);
+			$fieldNameDropdown.val(rule.name);
 		}
 	}
 	
@@ -631,7 +662,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				}				
 			} else {
 				_this._advancedSearchModel.resetModel(kindAndType[0]); //Restart model
-				_this._paintCriteriaPanel(_this._$searchCriteriaPanelContainer); //Restart view	
+				_this._paintRulesPanel(_this._$rulesPanelContainer);
 			}
 			
 			if(kindAndType.length === 2) {
@@ -640,6 +671,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				_this._advancedSearchModel.criteria.rules[uuidValue].type = 'Attribute';
 				_this._advancedSearchModel.criteria.rules[uuidValue].name = 'ATTR.SAMPLE_TYPE';
 				_this._advancedSearchModel.criteria.rules[uuidValue].value = kindAndType[1];
+				_this._advancedSearchModel.criteria.rules[uuidValue].hidden = true;
 				_this._advancedSearchModel.isSampleTypeForced = true;
 			} else {
 				_this._advancedSearchModel.isSampleTypeForced = false;

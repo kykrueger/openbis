@@ -227,7 +227,7 @@ function AdvancedSearchController(mainController, forceSearch) {
 	this.selectSavedSearch = function(selcetedSavedSearchIndex) {
 		var savedSearch = this._advancedSearchModel.savedSearches[selcetedSavedSearchIndex];
 		this._advancedSearchModel.selcetedSavedSearchIndex = selcetedSavedSearchIndex;
-		this._advancedSearchModel.criteria = savedSearch.criteria;
+		this._advancedSearchModel.criteria = this._clone(savedSearch.criteria);
 		this._advancedSearchModel.forceLoadCriteria = true;
 		this._advancedSearchView.repaintContent();
 	}
@@ -271,6 +271,7 @@ function AdvancedSearchController(mainController, forceSearch) {
 			}, function(success) {
 				if (success) {
 					Util.showSuccess('Search updated.');
+					savedSearch.criteria = _this._clone(_this._advancedSearchModel.criteria);
 				}
 				callback();
 			});
@@ -294,6 +295,11 @@ function AdvancedSearchController(mainController, forceSearch) {
 				callback();
 			}
 		);
+	}
+
+	this.clearSelection = function() {
+		this._advancedSearchModel.selcetedSavedSearchIndex = -1;
+		this._advancedSearchView.repaintContent();
 	}
 
 	this._loadSavedSearches = function(callback) {
@@ -398,5 +404,9 @@ function AdvancedSearchController(mainController, forceSearch) {
 				Util.showUserError('You need to be admin in the related space or project to save queries.');
 			}
 		});
+	}
+
+	this._clone = function(object) {
+		return JSON.parse(JSON.stringify(object));
 	}
 }

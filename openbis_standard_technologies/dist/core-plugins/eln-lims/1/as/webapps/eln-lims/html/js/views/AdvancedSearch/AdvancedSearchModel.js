@@ -47,7 +47,17 @@ function AdvancedSearchModel(forceSearch) {
 	this.setEntityKind = function(entityKind) {
 		this.criteria.entityKind = entityKind;
 	}
-	
+
+	// a hidden object type rule is used for the "Search For" dropdown
+	this.getHiddenRule = function() {
+		for(var ruleKey in this.criteria.rules) {
+			if (this.criteria.rules[ruleKey].hidden) {
+				return this.criteria.rules[ruleKey];
+			}
+		}
+		return null;
+	}
+
 	this.resetModel = function(entityKind) {
 		this.criteria.entityKind = entityKind;
 		this.criteria.rules = {};
