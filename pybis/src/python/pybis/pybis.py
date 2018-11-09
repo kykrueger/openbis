@@ -2783,21 +2783,13 @@ class Openbis:
 
     new_object = new_sample # Alias
 
-    def new_dataset(self, type=None, files=None, props=None, folder=None, kind='PHYSICAL_DATA', **kwargs):
+    def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given sample type.
         """
-        if files is None:
-            raise ValueError('please provide at least one file')
-        elif isinstance(files, str):
-            files = [files]
-
-        for file in files:
-            if not os.path.exists(file):
-                raise ValueError('File {} does not exist'.format(file))
 
         type_obj = self.get_dataset_type(type.upper())
 
-        return DataSet(self, type=type_obj, files=files, folder=folder, props=props, **kwargs)
+        return DataSet(self, type=type_obj, kind=kind, files=files, folder=folder, props=props, **kwargs)
     
     def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):
         """ Note: not functional yet. """
@@ -2834,7 +2826,6 @@ class Openbis:
             return dss['downloadUrl'][0]
         else:
             return dss[dss['code'] == dss_code]['downloadUrl'][0]
-
 
 
 class LinkedData():
