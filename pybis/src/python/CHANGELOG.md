@@ -1,8 +1,9 @@
 ## Changes with pybis-1.7.2
 
-* pyBIS now allows to create dataset-containers
+* pyBIS now allows to create dataset-containers that contain no data themselves
 * datasets now show a «kind» attribute, which can be either PHYSICAL, LINK or CONTAINER
 * PropertyAssignments and other internal data are now finally nicely presented in Jupyter
+* various bugfixes
 
 ## Changes with pybis-1.7.1
 
