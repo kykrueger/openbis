@@ -82,7 +82,7 @@ import ch.systemsx.cisd.openbis.systemtest.base.builder.SessionBuilder;
  * @author Franz-Josef Elmer
  */
 @Transactional(transactionManager = "transaction-manager")
-@Rollback(value = false)
+@Rollback(false)
 @Test(groups = "project-samples")
 public class ProjectSampleTest extends BaseTest
 {

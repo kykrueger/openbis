@@ -44,6 +44,7 @@ import ch.systemsx.cisd.openbis.systemtest.base.builder.SessionBuilder;
  * @author Franz-Josef Elmer
  */
 @Transactional(transactionManager = "transaction-manager")
+@Rollback(false)
 public abstract class AbstractEntityDeletionTestCase extends BaseTest
 {
     @Test

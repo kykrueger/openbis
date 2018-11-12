@@ -29,7 +29,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAOWithoutC
  */
 @ContextConfiguration(locations = "classpath:screening-applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
-@Rollback(value = false)
+@Rollback
 public class AbstractScreeningDAOTest extends AbstractDAOWithoutContextTest
 {
 

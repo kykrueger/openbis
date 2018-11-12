@@ -44,7 +44,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
  */
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
-@Rollback(value = false)
+@Rollback
 public class RemoteApiTestCase extends AbstractTransactionalTestNGSpringContextTests
 {
     private Server server;

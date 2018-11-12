@@ -34,7 +34,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 // In 'commonContext.xml', our transaction manager is called 'transaction-manager' (by default
 // Spring looks for 'transactionManager').
 @Transactional(transactionManager = "transaction-manager")
-@Rollback(value = false)
+@Rollback
 public abstract class AbstractLoaderTestCase extends AbstractDAOWithoutContextTest
 {
     private static final Principal PRINCIPAL = new Principal(CommonTestUtils.USER_ID, "john",

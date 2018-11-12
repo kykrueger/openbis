@@ -83,6 +83,7 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServer;
 // In 'commonContext.xml', our transaction manager is called 'transaction-manager' (by default
 // Spring looks for 'transactionManager').
 @Transactional(transactionManager = "transaction-manager")
+@Rollback
 public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringContextTests
 {
     private static final String SOURCE_TEST_CORE_PLUGINS = "sourceTest/core-plugins";

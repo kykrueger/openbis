@@ -53,6 +53,7 @@ import ch.systemsx.cisd.openbis.systemtest.base.auth.SpaceDomain;
  * @author Franz-Josef Elmer
  */
 @Transactional(transactionManager = "transaction-manager")
+@Rollback(false)
 public abstract class AbstractDataSetAssignmentTestCase extends BaseTest
 {
     Sample sourceSample;
