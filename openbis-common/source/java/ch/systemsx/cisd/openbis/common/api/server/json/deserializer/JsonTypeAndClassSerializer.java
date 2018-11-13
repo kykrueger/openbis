@@ -19,7 +19,8 @@ package ch.systemsx.cisd.openbis.common.api.server.json.deserializer;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.WritableTypeId;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.AsPropertyTypeSerializer;
@@ -46,58 +47,55 @@ public class JsonTypeAndClassSerializer extends AsPropertyTypeSerializer
     }
 
     @Override
-    public void writeTypePrefixForObject(Object value, JsonGenerator jgen) throws IOException,
-            JsonProcessingException
+    public WritableTypeId writeTypePrefix(JsonGenerator g, WritableTypeId idMetadata) throws IOException
     {
-        if (isValueWithType(value))
+        Object value = idMetadata.forValue;
+        JsonToken valueShape = idMetadata.valueShape;
+        if (JsonToken.START_OBJECT == valueShape)
         {
-            jgen.writeStartObject();
-            jgen.writeStringField(_typePropertyName, idFromValue(value));
+            g.writeStartObject();
+            if (isValueWithType(value))
+            {
+                g.writeStringField(_typePropertyName, idFromValue(value));
+            }
+        } else if (JsonToken.VALUE_STRING == valueShape)
+        {
+            if (isValueWithType(value))
+            {
+                g.writeTypePrefix(idMetadata);
+            }
+        } else if (JsonToken.START_ARRAY == valueShape)
+        {
+            g.writeStartArray();
         } else
         {
-            jgen.writeStartObject();
+            g.writeTypePrefix(idMetadata);
         }
+        return idMetadata;
     }
 
     @Override
-    public void writeTypeSuffixForObject(Object value, JsonGenerator jgen) throws IOException,
-            JsonProcessingException
+    public WritableTypeId writeTypeSuffix(JsonGenerator g, WritableTypeId idMetadata) throws IOException
     {
-        jgen.writeEndObject();
-    }
-
-    @Override
-    public void writeTypePrefixForScalar(Object value, JsonGenerator jgen) throws IOException,
-            JsonProcessingException
-    {
-        if (isValueWithType(value))
+        Object value = idMetadata.forValue;
+        JsonToken valueShape = idMetadata.valueShape;
+        if (JsonToken.START_OBJECT == valueShape)
         {
-            super.writeTypePrefixForScalar(value, jgen);
-        }
-    }
-
-    @Override
-    public void writeTypeSuffixForScalar(Object value, JsonGenerator jgen) throws IOException,
-            JsonProcessingException
-    {
-        if (isValueWithType(value))
+            g.writeEndObject();
+        } else if (JsonToken.VALUE_STRING == valueShape)
         {
-            super.writeTypeSuffixForScalar(value, jgen);
+            if (isValueWithType(value))
+            {
+                g.writeTypeSuffix(idMetadata);
+            }
+        } else if (JsonToken.START_ARRAY == valueShape)
+        {
+            g.writeEndArray();
+        } else
+        {
+            g.writeTypeSuffix(idMetadata);
         }
-    }
-
-    @Override
-    public void writeTypePrefixForArray(Object value, JsonGenerator jgen) throws IOException,
-            JsonProcessingException
-    {
-        jgen.writeStartArray();
-    }
-
-    @Override
-    public void writeTypeSuffixForArray(Object value, JsonGenerator jgen) throws IOException,
-            JsonProcessingException
-    {
-        jgen.writeEndArray();
+        return idMetadata;
     }
 
     private boolean isValueWithType(Object value)

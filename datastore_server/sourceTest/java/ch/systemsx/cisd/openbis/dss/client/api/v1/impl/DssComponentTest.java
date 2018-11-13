@@ -119,6 +119,8 @@ public class DssComponentTest extends AbstractFileSystemTestCase
 
     private IShareIdManager shareIdManager;
 
+    private StaticListableBeanFactory applicationContext;
+
     @SuppressWarnings("unchecked")
     private <T extends IRpcService> T getAdvisedDssService(final T service)
     {
@@ -140,6 +142,7 @@ public class DssComponentTest extends AbstractFileSystemTestCase
                     { advisor };
                 }
             };
+        ((AbstractAutoProxyCreator) processor).setBeanFactory(applicationContext);
         final Object proxy =
                 processor.postProcessAfterInitialization(service, "proxy of "
                         + service.getClass().getName());
@@ -157,7 +160,7 @@ public class DssComponentTest extends AbstractFileSystemTestCase
     {
         super.setUp();
         DssSessionAuthorizationHolder.setAuthorizer(new DatasetSessionAuthorizer());
-        final StaticListableBeanFactory applicationContext = new StaticListableBeanFactory();
+        applicationContext = new StaticListableBeanFactory();
         ServiceProviderTestWrapper.setApplicationContext(applicationContext);
         context = new Mockery();
         openBisService = context.mock(IGeneralInformationService.class);
