@@ -108,6 +108,19 @@ dependencies {
 
 	javadoc_compilation	project(path:':rtd_phosphonetx'),
 				    	project(path:':screening')
+				    	
+    testCompile (project(path: ':openbis', configuration: 'tests')) {
+         exclude group: 'google', module: 'gwt-user'
+    }
+
+}
+
+sourceSets { 
+	test {
+		resources {
+			srcDirs = ['source/java', 'sourceTest/java']
+		}
+	}
 }
 
 task compileGwt (dependsOn: classes, type: JavaExec) {
