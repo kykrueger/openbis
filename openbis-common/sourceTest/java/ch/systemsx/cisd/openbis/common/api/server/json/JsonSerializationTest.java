@@ -16,6 +16,14 @@
 
 package ch.systemsx.cisd.openbis.common.api.server.json;
 
+import static org.testng.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -48,7 +56,6 @@ import ch.systemsx.cisd.openbis.common.api.server.json.object.ObjectWithTypeFact
  */
 public class JsonSerializationTest
 {
-
     @Test
     public void testSerializeRootType() throws Exception
     {
@@ -169,6 +176,19 @@ public class JsonSerializationTest
         testSerialize(new ObjectWithReusedReferencesFactory());
     }
 
+    @Test
+    public void testMapWithValueOfTypeList() throws Exception
+    {
+        Map<String, List<String>> map = new LinkedHashMap<>();
+        map.put("abc", Arrays.asList("A", "B", "C"));
+
+        String jsonFromObject = new JsonTestObjectMapper().writeValueAsString(map);
+
+        assertEquals(jsonFromObject, "{\"abc\":[\"A\",\"B\",\"C\"]}");
+        Map<String, Set<String>> recreatedMap = new JsonTestObjectMapper().readValue(jsonFromObject, LinkedHashMap.class);
+        assertEquals(recreatedMap.toString(), map.toString());
+    }
+
     private void testSerialize(ObjectFactory<?> factory) throws Exception
     {
         Object object = factory.createObjectToSerialize();
@@ -177,7 +197,7 @@ public class JsonSerializationTest
         Object expectedObject = factory.createExpectedMapAfterSerialization(new ObjectCounter());
         String jsonFromExpectedMap = new ObjectMapper().writeValueAsString(expectedObject);
 
-        Assert.assertEquals(jsonFromObject, jsonFromExpectedMap);
+        assertEquals(jsonFromObject, jsonFromExpectedMap);
     }
 
 }
