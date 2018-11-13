@@ -87,7 +87,8 @@ public class JsonTypeAndClassAnnotationIntrospector extends JacksonAnnotationInt
 
     private boolean useCustomResolver(JavaType type)
     {
-        return type.getRawClass().isAnnotationPresent(JsonObject.class) && false == type.getRawClass().isEnum();
+        return type.getRawClass().equals(Object.class)
+                || (type.getRawClass().isAnnotationPresent(JsonObject.class) && false == type.getRawClass().isEnum());
     }
 
 }
