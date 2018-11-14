@@ -16,13 +16,17 @@
 
 package ch.systemsx.cisd.openbis.generic.client.api.gui;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
 
 import ch.systemsx.cisd.common.string.Template;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
@@ -32,9 +36,6 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.DataSetTypeFilter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 
 @Controller
-@RequestMapping({ "/" + BasicConstant.DATA_SET_UPLOAD_CLIENT_PATH,
-        "/openbis/" + BasicConstant.DATA_SET_UPLOAD_CLIENT_PATH,
-        "/openbis/openbis/" + BasicConstant.DATA_SET_UPLOAD_CLIENT_PATH })
 public class DataSetUploadClientServingServlet extends AbstractWebStartClientServingServlet
 {
     private static final Template JNLP_TEMPLATE =
@@ -95,6 +96,15 @@ public class DataSetUploadClientServingServlet extends AbstractWebStartClientSer
     private WebClientConfigurationProvider webClientConfigurationProvider;
 
     private String codebaseUrl = null;
+
+    @RequestMapping({ "/" + BasicConstant.DATA_SET_UPLOAD_CLIENT_PATH,
+            "/openbis/" + BasicConstant.DATA_SET_UPLOAD_CLIENT_PATH,
+            "/openbis/openbis/" + BasicConstant.DATA_SET_UPLOAD_CLIENT_PATH })
+    @Override
+    protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
+    {
+        super.respondToRequest(request, response);
+    }
 
     @Override
     protected String getTitle()

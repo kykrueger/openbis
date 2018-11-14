@@ -18,8 +18,11 @@ package ch.systemsx.cisd.openbis.plugin.generic.client.web.server;
 
 import static ch.systemsx.cisd.openbis.generic.shared.basic.AttachmentDownloadConstants.ATTACHMENT_DOWNLOAD_SERVLET_NAME;
 
+import java.io.IOException;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -44,8 +47,6 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.IGenericServer;
  * @author Izabela Adamczyk
  */
 @Controller
-@RequestMapping(
-{ "/" + ATTACHMENT_DOWNLOAD_SERVLET_NAME, "/openbis/" + ATTACHMENT_DOWNLOAD_SERVLET_NAME })
 public class AttachmentDownloadServlet extends AbstractFileDownloadServlet
 {
 
@@ -65,6 +66,13 @@ public class AttachmentDownloadServlet extends AbstractFileDownloadServlet
     public AttachmentDownloadServlet(final IGenericServer server)
     {
         this.server = server;
+    }
+
+    @Override
+    @RequestMapping({ "/" + ATTACHMENT_DOWNLOAD_SERVLET_NAME, "/openbis/" + ATTACHMENT_DOWNLOAD_SERVLET_NAME })
+    protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
+    {
+        super.respondToRequest(request, response);
     }
 
     @Override

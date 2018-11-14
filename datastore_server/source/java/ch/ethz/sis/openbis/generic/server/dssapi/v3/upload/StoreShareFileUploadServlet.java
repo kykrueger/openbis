@@ -31,7 +31,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
@@ -46,7 +45,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
  * @author Ganime Betul Akin
  */
 @RestController
-@RequestMapping({ "store_share_file_upload", "/datastore_server/store_share_file_upload" })
 public class StoreShareFileUploadServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
