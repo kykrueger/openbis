@@ -209,7 +209,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			
 			var fAction = function(facade) {
 				return $.when(c.createDataSet(facade)).then(function(permId) {
-					dataSetCode = permId;
+					dataSetCode = permId.getPermId();
 					var serviceId = new c.DssServicePermId("test-reporting-service", new c.DataStorePermId("DSS1"));
 					var options = new c.ReportingServiceExecutionOptions();
 					options.withDataSets(dataSetCode);
