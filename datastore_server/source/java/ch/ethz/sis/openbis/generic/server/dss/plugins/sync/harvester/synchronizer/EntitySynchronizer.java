@@ -33,14 +33,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.xpath.XPathExpressionException;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.w3c.dom.Document;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -66,7 +66,6 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.EntityGraph;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.IEntityRetriever;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.INode;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.HarvesterMaintenanceTask;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.ParallelizedExecutionPreferences;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.Connection;
@@ -78,7 +77,6 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.MasterData;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.MaterialWithLastModificationDate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.datasourceconnector.DataSourceConnector;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.datasourceconnector.IDataSourceConnector;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentSynchronizationSummary;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentSynchronizationTaskExecutor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetRegistrationTaskExecutor;
@@ -91,8 +89,6 @@ import ch.systemsx.cisd.cifex.shared.basic.UserFailureException;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.ConversionUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
@@ -170,117 +166,43 @@ public class EntitySynchronizer
 
     private final Set<String> blackListedDataSetCodes;
 
-    public EntitySynchronizer(IEncapsulatedOpenBISService service, String dataStoreCode, File storeRoot, Date lastSyncTimestamp,
-            Date lastIncSyncTimestamp, Set<String> dataSetsCodesToRetry, Set<String> blackListedDataSetCodes,
-            Set<String> attachmentHolderCodesToRetry,
-            DataSetProcessingContext context,
-            SyncConfig config, Logger operationLog)
+    public EntitySynchronizer(SynchronizationContext synContext)
     {
-        this.service = service;
-        this.dataStoreCode = dataStoreCode;
-        this.storeRoot = storeRoot;
-        this.lastSyncTimestamp = lastSyncTimestamp;
-        this.lastIncSyncTimestamp = lastIncSyncTimestamp;
-        this.dataSetsCodesToRetry = dataSetsCodesToRetry;
-        this.attachmentHolderCodesToRetry = attachmentHolderCodesToRetry;
-        this.blackListedDataSetCodes = blackListedDataSetCodes;
-        this.context = context;
-        this.config = config;
-        this.operationLog = operationLog;
+        this.service = synContext.getService();
+        this.dataStoreCode = synContext.getDataStoreCode();
+        this.storeRoot = synContext.getStoreRoot();
+        this.lastSyncTimestamp = synContext.getLastSyncTimestamp();
+        this.lastIncSyncTimestamp = synContext.getLastIncSyncTimestamp();
+        this.dataSetsCodesToRetry = synContext.getDataSetsCodesToRetry();
+        this.attachmentHolderCodesToRetry = synContext.getAttachmentHolderCodesToRetry();
+        this.blackListedDataSetCodes = synContext.getBlackListedDataSetCodes();
+        this.context = synContext.getContext();
+        this.config = synContext.getConfig();
+        this.operationLog = synContext.getOperationLog();
     }
 
     public Date synchronizeEntities() throws Exception
     {
-        DataSourceConnector dataSourceConnector =
-                new DataSourceConnector(config.getDataSourceURI(), config.getAuthenticationCredentials(), operationLog);
-        return synchronizeEntities(dataSourceConnector);
-    }
-
-    private Date synchronizeEntities(IDataSourceConnector dataSourceConnector) throws Exception
-    {
-        // retrieve the document from the data source
-        operationLog.info("\n");
-        operationLog.info("Retrieving the resource list...");
-        Document doc = dataSourceConnector.getResourceListAsXMLDoc(Arrays.asList(ArrayUtils.EMPTY_STRING_ARRAY));
-
-        // Parse the resource list: This sends back all projects,
-        // experiments, samples and data sets contained in the XML together with their last modification date to be used for filtering
-        operationLog.info("\n");
-        operationLog.info("Parsing the resource list xml document...");
-        String dataSourceAlias = config.getDataSourceAlias();
-        INameTranslator nameTranslator = null;
-        if (config.isTranslateUsingDataSourceAlias() == true)
-        {
-            if (StringUtils.isBlank(dataSourceAlias) == true)
-            {
-                throw new UserFailureException("Please specify a data source alias in the config file to be used in name translations.");
-            }
-            nameTranslator = new PrefixBasedNameTranslator(dataSourceAlias);
-        }
-
-        ResourceListParser parser = ResourceListParser.create(nameTranslator, dataStoreCode);
-        ResourceListParserData data = parser.parseResourceListDocument(doc);
+        Document doc = getResourceList();
+        ResourceListParserData data = parseResourceList(doc);
 
         processDeletions(data);
-
-        operationLog.info("\n");
-        operationLog.info("Registering master data...");
         registerMasterData(data.getMasterData());
+        MultiKeyMap<String, String> newEntities = registerEntities(data);
+        List<String> notSyncedAttachmentsHolders = registerAttachments(data, newEntities);
 
-        AtomicEntityOperationDetailsBuilder builder = new AtomicEntityOperationDetailsBuilder();
+        registerDataSets(data, notSyncedAttachmentsHolders);
 
-        for (String spaceCode : data.getHarvesterSpaceList())
-        {
-            Space space = service.tryGetSpace(new SpaceIdentifier(spaceCode));
-            if (space == null)
-            {
-                builder.space(new NewSpace(spaceCode, "Synchronized from: " + config.getDataSourceURI(), null));
-            }
-        }
+        return data.getResourceListTimestamp();
+    }
 
-        processMetaData(data, builder);
-
-        if (config.isVerbose() == true)
-        {
-            verboseLogEntityOperations(builder.getDetails());
-        }
-
-        MultiKeyMap<String, String> newEntities = new MultiKeyMap<String, String>();
-        if (config.isDryRun() == false)
-        {
-            AtomicEntityOperationResult operationResult = service.performEntityOperations(builder.getDetails());
-            newEntities = getNewEntities(builder);
-            operationLog.info("Entity operation result: " + operationResult);
-        }
-        operationLog.info("\n");
-        operationLog.info("Processing attachments...");
-        List<IncomingEntity<?>> attachmentHoldersToProcess =
-                data.filterAttachmentHoldersByLastModificationDate(lastSyncTimestamp, attachmentHolderCodesToRetry);
-
-        if (config.isVerbose())
-        {
-            verboseLogProcessAttachments(attachmentHoldersToProcess, newEntities);
-        }
-
-        List<String> notSyncedAttachmentsHolders = new ArrayList<String>();
-        if (config.isDryRun() == false)
-        {
-            AttachmentSynchronizationSummary syncSummary = processAttachments(attachmentHoldersToProcess);
-            notSyncedAttachmentsHolders = syncSummary.notRegisteredAttachmentHolderCodes;
-            operationLog.info("Attachment synchronization summary:\n" + syncSummary.addedCount + " attachment(s) were added.\n"
-                    + syncSummary.updatedCount + " attachment(s) were updated.\n"
-                    + syncSummary.deletedCount + " attachment(s) were deleted.\n"
-                    + (notSyncedAttachmentsHolders.isEmpty() ? ""
-                            : "synchronization of attachments for "
-                                    + notSyncedAttachmentsHolders.size() + " entitities FAILED."));
-        }
-
+    private void registerDataSets(ResourceListParserData data, List<String> notSyncedAttachmentsHolders) throws IOException
+    {
         // register physical data sets without any hierarchy
         // Note that container/component and parent/child relationships are established post-reg.
         // setParentDataSetsOnTheChildren(data);
         Map<String, IncomingDataSet> physicalDSMap =
                 data.filterPhysicalDataSetsByLastModificationDate(lastSyncTimestamp, dataSetsCodesToRetry, blackListedDataSetCodes);
-        operationLog.info("\n");
         operationLog.info("Registering data sets...");
 
         if (config.isVerbose())
@@ -315,26 +237,115 @@ public class EntitySynchronizer
         skippedDataSets.addAll(notRegisteredDataSetCodes);
         skippedDataSets.addAll(blackListedDataSetCodes);
         establishDataSetRelationships(data.getDataSetsToProcess(), skippedDataSets, physicalDSMap);
-
-        // cleanup();
-
-        return data.getResourceListTimestamp();
     }
 
-    private MultiKeyMap<String, String> getNewEntities(AtomicEntityOperationDetailsBuilder builder)
+    private List<String> registerAttachments(ResourceListParserData data, MultiKeyMap<String, String> newEntities)
+    {
+        operationLog.info("Processing attachments...");
+        List<IncomingEntity<?>> attachmentHoldersToProcess =
+                data.filterAttachmentHoldersByLastModificationDate(lastSyncTimestamp, attachmentHolderCodesToRetry);
+
+        if (config.isVerbose())
+        {
+            verboseLogProcessAttachments(attachmentHoldersToProcess, newEntities);
+        }
+
+        List<String> notSyncedAttachmentsHolders = new ArrayList<String>();
+        if (config.isDryRun() == false)
+        {
+            AttachmentSynchronizationSummary syncSummary = processAttachments(attachmentHoldersToProcess);
+            notSyncedAttachmentsHolders = syncSummary.notRegisteredAttachmentHolderCodes;
+            operationLog.info("Attachment synchronization summary:\n" + syncSummary.addedCount + " attachment(s) were added.\n"
+                    + syncSummary.updatedCount + " attachment(s) were updated.\n"
+                    + syncSummary.deletedCount + " attachment(s) were deleted.\n"
+                    + (notSyncedAttachmentsHolders.isEmpty() ? ""
+                            : "synchronization of attachments for "
+                                    + notSyncedAttachmentsHolders.size() + " entitities FAILED."));
+        }
+        return notSyncedAttachmentsHolders;
+    }
+
+    private MultiKeyMap<String, String> registerEntities(ResourceListParserData data)
+    {
+        AtomicEntityOperationDetails entityOperationDetails = createEntityOperationDetails(data);
+
+        MultiKeyMap<String, String> newEntities = new MultiKeyMap<String, String>();
+        if (config.isDryRun() == false)
+        {
+            AtomicEntityOperationResult operationResult = service.performEntityOperations(entityOperationDetails);
+            newEntities = getNewEntities(entityOperationDetails);
+            operationLog.info("Entity operation result: " + operationResult);
+        }
+        return newEntities;
+    }
+
+    private AtomicEntityOperationDetails createEntityOperationDetails(ResourceListParserData data)
+    {
+        AtomicEntityOperationDetailsBuilder builder = new AtomicEntityOperationDetailsBuilder();
+
+        processSpaces(data, builder);
+        processProjects(data, builder);
+        processExperiments(data, builder);
+        processSamples(data, builder);
+        processMaterials(data, builder);
+
+        AtomicEntityOperationDetails entityOperationDetails = builder.getDetails();
+        if (config.isVerbose() == true)
+        {
+            verboseLogEntityOperations(entityOperationDetails);
+        }
+        return entityOperationDetails;
+    }
+
+    private void processSpaces(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
+    {
+        for (String spaceCode : data.getHarvesterSpaceList())
+        {
+            Space space = service.tryGetSpace(new SpaceIdentifier(spaceCode));
+            if (space == null)
+            {
+                builder.space(new NewSpace(spaceCode, "Synchronized from: " + config.getDataSourceURI(), null));
+            }
+        }
+    }
+
+    private ResourceListParserData parseResourceList(Document doc) throws XPathExpressionException
+    {
+        // Parse the resource list: This sends back all projects,
+        // experiments, samples and data sets contained in the XML together with their last modification date to be used for filtering
+        operationLog.info("Parsing the resource list xml document...");
+        INameTranslator nameTranslator = new PrefixBasedNameTranslator(config.getDataSourceAlias());
+
+        ResourceListParser parser = ResourceListParser.create(nameTranslator, dataStoreCode);
+        ResourceListParserData data = parser.parseResourceListDocument(doc);
+        return data;
+    }
+
+    private Document getResourceList() throws Exception
+    {
+        
+        DataSourceConnector dataSourceConnector =
+                new DataSourceConnector(config.getDataSourceURI(), config.getAuthenticationCredentials(), operationLog);
+        operationLog.info("\nRetrieving the resource list...");
+        Document doc = dataSourceConnector.getResourceListAsXMLDoc(Arrays.asList(ArrayUtils.EMPTY_STRING_ARRAY));
+        
+        return doc;
+    }
+
+    private MultiKeyMap<String, String> getNewEntities(AtomicEntityOperationDetails details)
     {
         MultiKeyMap<String, String> newEntities = new MultiKeyMap<String, String>();
-        List<NewSample> sampleRegistrations = builder.getDetails().getSampleRegistrations();
+        List<NewSample> sampleRegistrations = details.getSampleRegistrations();
         for (NewSample newSample : sampleRegistrations)
         {
             newEntities.put(SyncEntityKind.SAMPLE.getLabel(), newSample.getPermID(), newSample.getIdentifier());
         }
-        List<NewExperiment> experimentRegistrations = builder.getDetails().getExperimentRegistrations();
+        List<NewExperiment> experimentRegistrations = details.getExperimentRegistrations();
         for (NewExperiment newExperiment : experimentRegistrations)
         {
             newEntities.put(SyncEntityKind.EXPERIMENT.getLabel(), newExperiment.getPermID(), newExperiment.getIdentifier());
         }
-        List<NewProject> projectRegistrations = builder.getDetails().getProjectRegistrations();
+        List<NewProject> projectRegistrations = details.getProjectRegistrations();
         for (NewProject newProject : projectRegistrations)
         {
             newEntities.put(SyncEntityKind.PROJECT.getLabel(), newProject.getPermID(), newProject.getIdentifier());
@@ -723,19 +734,9 @@ public class EntitySynchronizer
         FileUtils.writeStringToFile(notSyncedDataSetsFile, "");
     }
 
-    private void processMetaData(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
-    {
-        processProjects(data, builder);
-
-        processExperiments(data, builder);
-
-        processSamples(data, builder);
-
-        processMaterials(data, builder);
-    }
-
     private void registerMasterData(MasterData masterData)
     {
+        operationLog.info("Registering master data...");
         if (config.isVerbose() == true)
         {
             // operationLog.info("-------The following master data will be synchronized-------");
