@@ -323,6 +323,7 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
                 public void execute(List<V> entities)
                 {
                     List<?> mappedValues = valuesMapperOrNull != null ? valuesMapperOrNull.map(entities) : entities;
+                    assertNoNullElements(mappedValues);
                     query.setParameterList(parameterName, mappedValues);
 
                     List<R> singleResults = cast(query.list());
@@ -355,6 +356,17 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
             });
 
         return fullResults;
+    }
+    
+    private void assertNoNullElements(List<?> list)
+    {
+        for (Object object : list)
+        {
+            if (object == null)
+            {
+                throw new NullPointerException();
+            }
+        }
     }
 
     @Override
