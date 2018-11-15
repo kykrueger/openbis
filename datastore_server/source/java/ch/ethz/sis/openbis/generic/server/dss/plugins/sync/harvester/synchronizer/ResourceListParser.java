@@ -26,7 +26,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,6 +57,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.MaterialWithLastModificationDate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityProperty;
@@ -112,7 +115,71 @@ public class ResourceListParser
         return create(new DefaultNameTranslator(), dataStoreCode);
     }
 
-    public ResourceListParserData parseResourceListDocument(Document doc) throws XPathExpressionException
+    public ResourceListParserData parseResourceListDocument(Document doc, Monitor monitor) throws XPathExpressionException
+    {
+        XPath xpath = createXPath();
+        Date resourceListTimestamp = getResourceListTimestamp(doc, xpath);
+        data.setResourceListTimestamp(resourceListTimestamp);
+
+        monitor.log();
+        NodeList nodes = doc.getDocumentElement().getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++)
+        {
+            Node node = nodes.item(i);
+            Map<String, List<Node>> childrenByType = getChildrenByType(node);
+            List<Node> locNodes = childrenByType.get("loc");
+            if (locNodes == null)
+            {
+                continue;
+            }
+            String uri = locNodes.get(0).getTextContent();
+            if (uri.endsWith("MASTER_DATA/MASTER_DATA/M"))
+            {
+                parseMasterData(doc, xpath, uri);
+            }
+        }
+        for (int i = 0, n = nodes.getLength(); i < n; i++)
+        {
+            Node node = nodes.item(i);
+            Map<String, List<Node>> childrenByType = getChildrenByType(node);
+            List<Node> locNodes = childrenByType.get("loc");
+            if (locNodes == null)
+            {
+                continue;
+            }
+            String uri = locNodes.get(0).getTextContent();
+            if (uri.endsWith("MASTER_DATA/MASTER_DATA/M") == false && uri.endsWith("/M"))
+            {
+                List<Node> lastmodNodes = childrenByType.get("lastmod");
+                if (lastmodNodes == null)
+                {
+                    continue;
+                }
+                String lastModDataStr = lastmodNodes.get(0).getTextContent().trim();
+                try
+                {
+                    Date lastModificationDate = convertFromW3CDate(lastModDataStr);
+                    List<Node> xdNodes = childrenByType.get("x:xd");
+                    if (xdNodes == null)
+                    {
+                        continue;
+                    }
+                    if ((i + 1) % 10000 == 0)
+                    {
+                        monitor.log(String.format("%7d/%d uri: %s", i + 1, n, uri));
+                    }
+                    parseMetaData(uri, lastModificationDate, xdNodes.get(0));
+                } catch (ParseException e)
+                {
+                    throw new XPathExpressionException("Last modification date cannot be parsed:" + lastModDataStr);
+                }
+            }
+        }
+
+        return data;
+    }
+
+    private XPath createXPath()
     {
         XPath xpath = XPathFactory.newInstance().newXPath();
         xpath.setNamespaceContext(new NamespaceContext()
@@ -144,16 +211,7 @@ public class ResourceListParser
                     throw new UnsupportedOperationException("Not implemented!!!");
                 }
             });
-        Date resourceListTimestamp = getResourceListTimestamp(doc, xpath);
-        data.setResourceListTimestamp(resourceListTimestamp);
-
-        List<String> uris = getResourceLocations(doc, xpath);
-        for (String uri : uris)
-        {
-            parseUriMetaData(doc, xpath, uri);
-        }
-
-        return data;
+        return xpath;
     }
 
     private Date getResourceListTimestamp(Document doc, XPath xpath) throws XPathExpressionException
@@ -168,27 +226,6 @@ public class ResourceListParser
         {
             throw new XPathExpressionException("Last modification date cannot be parsed:" + timestamp);
         }
-    }
-
-    private List<String> getResourceLocations(Document doc, XPath xpath) throws XPathExpressionException
-    {
-        XPathExpression expr = xpath.compile("/s:urlset/s:url/s:loc");// "//*[local-name()='loc']/text()"); //"//s:loc/text()"
-
-        Object result = expr.evaluate(doc, XPathConstants.NODESET);
-        NodeList nodes = (NodeList) result;
-        List<String> list = new ArrayList<String>();
-        for (int i = 0; i < nodes.getLength(); i++)
-        {
-            String uri = nodes.item(i).getTextContent();
-            if (uri.endsWith("MASTER_DATA/MASTER_DATA/M"))
-            {
-                parseMasterData(doc, xpath, uri);
-            } else if (uri.endsWith("/M"))
-            {
-                list.add(uri);
-            }
-        }
-        return list;
     }
 
     private void parseMasterData(Document doc, XPath xpath, String uri) throws XPathExpressionException
@@ -207,48 +244,48 @@ public class ResourceListParser
         masterData.setPropertyAssignmentsToProcess(mdParser.getEntityPropertyAssignments());
     }
 
-    private void parseUriMetaData(Document doc, XPath xpath, String uri) throws XPathExpressionException
+    private void parseMetaData(String uri, Date lastModificationDate, Node xdNode) throws XPathExpressionException
     {
-        Date lastModificationDate = extractLastModificationDate(doc, xpath, uri);
-
-        Node xdNode = extractXdNode(doc, xpath, uri);
         String entityKind = xdNode.getAttributes().getNamedItem("kind").getTextContent();
 
         if (SyncEntityKind.PROJECT.getLabel().equals(entityKind))
         {
-            parseProjectMetaData(xpath, extractPermIdFromURI(uri), xdNode, lastModificationDate);
+            parseProjectMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
         } else if (SyncEntityKind.EXPERIMENT.getLabel().equals(entityKind))
         {
-            parseExperimentMetaData(xpath, extractPermIdFromURI(uri), xdNode, lastModificationDate);
+            parseExperimentMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
         } else if (SyncEntityKind.SAMPLE.getLabel().equals(entityKind))
         {
-            parseSampleMetaData(xpath, extractPermIdFromURI(uri), xdNode, lastModificationDate);
+            parseSampleMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
         } else if (SyncEntityKind.DATA_SET.getLabel().equals(entityKind))
         {
-            parseDataSetMetaData(xpath, extractDataSetCodeFromURI(uri), xdNode, lastModificationDate);
+            parseDataSetMetaData(extractDataSetCodeFromURI(uri), xdNode, lastModificationDate);
         } else if (SyncEntityKind.MATERIAL.getLabel().equals(entityKind))
         {
-            parseMaterialMetaData(xpath, extractMaterialCodeFromURI(uri), xdNode, lastModificationDate);
+            parseMaterialMetaData(extractMaterialCodeFromURI(uri), xdNode, lastModificationDate);
         }
     }
 
-    private Date extractLastModificationDate(Document doc, XPath xpath, String uri) throws XPathExpressionException
+    private Map<String, List<Node>> getChildrenByType(Node node)
     {
-        XPathExpression expr = xpath.compile("//s:url/s:loc[normalize-space(.)='" + uri + "']//following-sibling::s:lastmod[1]");
-        Node lastModNode = (Node) expr.evaluate(doc, XPathConstants.NODE);
-        if (lastModNode == null)
+        Map<String, List<Node>> result = new TreeMap<>();
+        if (node.hasChildNodes())
         {
-            throw new XPathExpressionException("The resource list should contain 1 lastmod element per resource");
+            NodeList childNodes = node.getChildNodes();
+            for (int i = 0, n = childNodes.getLength(); i < n; i++)
+            {
+                Node childNode = childNodes.item(i);
+                String nodeName = childNode.getNodeName().toLowerCase();
+                List<Node> list = result.get(nodeName);
+                if (list == null)
+                {
+                    list = new ArrayList<>();
+                    result.put(nodeName, list);
+                }
+                list.add(childNode);
+            }
         }
-
-        String lastModDataStr = lastModNode.getTextContent().trim();
-        try
-        {
-            return convertFromW3CDate(lastModDataStr);
-        } catch (ParseException e)
-        {
-            throw new XPathExpressionException("Last modification date cannot be parsed:" + lastModDataStr);
-        }
+        return result;
     }
 
     private Date convertFromW3CDate(String lastModDataStr) throws ParseException
@@ -258,19 +295,7 @@ public class ResourceListParser
         return df1.parse(lastModDataStr);
     }
 
-    private Node extractXdNode(Document doc, XPath xpath, String uri) throws XPathExpressionException
-    {
-        // alternative expression: //s:url/s:loc[normalize-space(.)='" + uri + "']/../x:xd");
-        XPathExpression expr = xpath.compile("//s:url/s:loc[normalize-space(.)='" + uri + "']//following-sibling::x:xd[1]");
-        Node xdNode = (Node) expr.evaluate(doc, XPathConstants.NODE);
-        if (xdNode == null)
-        {
-            throw new XPathExpressionException("The resource list should contain 1 xd element per resource");
-        }
-        return xdNode;
-    }
-
-    private void parseDataSetMetaData(XPath xpath, String permId, Node xdNode, Date lastModificationDate)
+    private void parseDataSetMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
         String code = extractCode(xdNode);
         String sampleIdentifier = extractAttribute(xdNode, "sample", true);
@@ -299,8 +324,8 @@ public class ResourceListParser
 
         IncomingDataSet incomingDataSet = new IncomingDataSet(ds, lastModificationDate);
         data.getDataSetsToProcess().put(permId, incomingDataSet);
-        incomingDataSet.setConnections(parseConnections(xpath, xdNode));
-        ds.setDataSetProperties(parseDataSetProperties(xpath, xdNode));
+        incomingDataSet.setConnections(parseConnections(xdNode));
+        ds.setDataSetProperties(parseDataSetProperties(xdNode));
     }
 
     private String extractAttribute(Node xdNode, String attrName, boolean nullAllowed)
@@ -366,7 +391,7 @@ public class ResourceListParser
                 expCode);
     }
 
-    private void parseProjectMetaData(XPath xpath, String permId, Node xdNode, Date lastModificationDate)
+    private void parseProjectMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
 
         String code = extractCode(xdNode);
@@ -377,8 +402,8 @@ public class ResourceListParser
         newProject.setPermID(permId);
         IncomingProject incomingProject = new IncomingProject(newProject, lastModificationDate);
         data.getProjectsToProcess().put(permId, incomingProject);
-        incomingProject.setConnections(parseConnections(xpath, xdNode));
-        incomingProject.setHasAttachments(hasAttachments(xpath, xdNode));
+        incomingProject.setConnections(parseConnections(xdNode));
+        incomingProject.setHasAttachments(hasAttachments(xdNode));
     }
 
     private ExperimentIdentifier createExperimentIdentifier(String spaceId, String prjCode, String expCode)
@@ -415,7 +440,7 @@ public class ResourceListParser
         return new SpaceIdentifier(translatedSpaceId);
     }
 
-    private void parseMaterialMetaData(XPath xpath, String permId, Node xdNode, Date lastModificationDate)
+    private void parseMaterialMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
         String code = nameTranslator.translate(extractCode(xdNode));
         String type = extractType(xdNode);
@@ -423,10 +448,10 @@ public class ResourceListParser
         MaterialWithLastModificationDate materialWithLastModDate =
                 new MaterialWithLastModificationDate(newMaterial, lastModificationDate);
         data.getMaterialsToProcess().put(code, type, materialWithLastModDate);
-        newMaterial.setProperties(parseProperties(xpath, xdNode));
+        newMaterial.setProperties(parseProperties(xdNode));
     }
 
-    private List<Connection> parseConnections(XPath xpath, Node xdNode)
+    private List<Connection> parseConnections(Node xdNode)
     {
         List<Connection> conns = new ArrayList<Connection>();
         Element docElement = (Element) xdNode;
@@ -445,21 +470,17 @@ public class ResourceListParser
         return conns;
     }
 
-    private boolean hasAttachments(XPath xpath, Node xdNode)
+    private boolean hasAttachments(Node xdNode)
     {
         Element docElement = (Element) xdNode;
         NodeList connsNode = docElement.getElementsByTagName("x:binaryData");
         // if a sample/experiment/project node has binaryData element, it can only be because of attachments
-        if (connsNode.getLength() == 1)
-        {
-            return true;
-        }
-        return false;
+        return connsNode.getLength() == 1;
     }
 
-    private List<NewProperty> parseDataSetProperties(XPath xpath, Node xdNode)
+    private List<NewProperty> parseDataSetProperties(Node xdNode)
     {
-        EntityProperty[] entityProperties = parseProperties(xpath, xdNode);
+        EntityProperty[] entityProperties = parseProperties(xdNode);
         List<NewProperty> dsProperties = new ArrayList<NewProperty>();
         for (EntityProperty entityProperty : entityProperties)
         {
@@ -468,7 +489,7 @@ public class ResourceListParser
         return dsProperties;
     }
 
-    private EntityProperty[] parseProperties(XPath xpath, Node xdNode)
+    private EntityProperty[] parseProperties(Node xdNode)
     {
 
         List<EntityProperty> entityProperties = new ArrayList<EntityProperty>();
@@ -533,7 +554,7 @@ public class ResourceListParser
         return new MaterialIdentifier(code, typeCode).toString();
     }
 
-    private void parseExperimentMetaData(XPath xpath, String permId, Node xdNode, Date lastModificationDate)
+    private void parseExperimentMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
         String code = extractCode(xdNode);
         String type = extractType(xdNode);
@@ -544,12 +565,12 @@ public class ResourceListParser
         newExp.setPermID(permId);
         IncomingExperiment incomingExperiment = new IncomingExperiment(newExp, lastModificationDate);
         data.getExperimentsToProcess().put(permId, incomingExperiment);
-        incomingExperiment.setConnections(parseConnections(xpath, xdNode));
-        incomingExperiment.setHasAttachments(hasAttachments(xpath, xdNode));
-        newExp.setProperties(parseProperties(xpath, xdNode));
+        incomingExperiment.setConnections(parseConnections(xdNode));
+        incomingExperiment.setHasAttachments(hasAttachments(xdNode));
+        newExp.setProperties(parseProperties(xdNode));
     }
 
-    private void parseSampleMetaData(XPath xpath, String permId, Node xdNode, Date lastModificationDate)
+    private void parseSampleMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
         String code = extractCode(xdNode);
         String type = extractType(xdNode);
@@ -585,9 +606,9 @@ public class ResourceListParser
         }
         IncomingSample incomingSample = new IncomingSample(newSample, lastModificationDate);
         data.getSamplesToProcess().put(permId, incomingSample);
-        incomingSample.setHasAttachments(hasAttachments(xpath, xdNode));
-        incomingSample.setConnections(parseConnections(xpath, xdNode));
-        newSample.setProperties(parseProperties(xpath, xdNode));
+        incomingSample.setHasAttachments(hasAttachments(xdNode));
+        incomingSample.setConnections(parseConnections(xdNode));
+        newSample.setProperties(parseProperties(xdNode));
     }
 
     private String extractType(Node xdNode)

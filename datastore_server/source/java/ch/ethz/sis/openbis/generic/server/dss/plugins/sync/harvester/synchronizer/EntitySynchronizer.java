@@ -39,6 +39,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -84,6 +85,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.PrefixBasedNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Utils;
 import ch.systemsx.cisd.cifex.shared.basic.UserFailureException;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
@@ -198,6 +200,7 @@ public class EntitySynchronizer
 
     private void registerDataSets(ResourceListParserData data, List<String> notSyncedAttachmentsHolders) throws IOException
     {
+        Monitor monitor = new Monitor("Register data sets", operationLog);
         // register physical data sets without any hierarchy
         // Note that container/component and parent/child relationships are established post-reg.
         // setParentDataSetsOnTheChildren(data);
@@ -237,10 +240,12 @@ public class EntitySynchronizer
         skippedDataSets.addAll(notRegisteredDataSetCodes);
         skippedDataSets.addAll(blackListedDataSetCodes);
         establishDataSetRelationships(data.getDataSetsToProcess(), skippedDataSets, physicalDSMap);
+        monitor.log();
     }
 
     private List<String> registerAttachments(ResourceListParserData data, MultiKeyMap<String, String> newEntities)
     {
+        Monitor monitor = new Monitor("Register attachments", operationLog);
         operationLog.info("Processing attachments...");
         List<IncomingEntity<?>> attachmentHoldersToProcess =
                 data.filterAttachmentHoldersByLastModificationDate(lastSyncTimestamp, attachmentHolderCodesToRetry);
@@ -262,12 +267,14 @@ public class EntitySynchronizer
                             : "synchronization of attachments for "
                                     + notSyncedAttachmentsHolders.size() + " entitities FAILED."));
         }
+        monitor.log();
         return notSyncedAttachmentsHolders;
     }
 
     private MultiKeyMap<String, String> registerEntities(ResourceListParserData data)
     {
-        AtomicEntityOperationDetails entityOperationDetails = createEntityOperationDetails(data);
+        Monitor monitor = new Monitor("Register entities", operationLog);
+        AtomicEntityOperationDetails entityOperationDetails = createEntityOperationDetails(data, monitor);
 
         MultiKeyMap<String, String> newEntities = new MultiKeyMap<String, String>();
         if (config.isDryRun() == false)
@@ -276,17 +283,18 @@ public class EntitySynchronizer
             newEntities = getNewEntities(entityOperationDetails);
             operationLog.info("Entity operation result: " + operationResult);
         }
+        monitor.log();
         return newEntities;
     }
 
-    private AtomicEntityOperationDetails createEntityOperationDetails(ResourceListParserData data)
+    private AtomicEntityOperationDetails createEntityOperationDetails(ResourceListParserData data, Monitor monitor)
     {
         AtomicEntityOperationDetailsBuilder builder = new AtomicEntityOperationDetailsBuilder();
 
         processSpaces(data, builder);
         processProjects(data, builder);
         processExperiments(data, builder);
-        processSamples(data, builder);
+        processSamples(data, builder, monitor);
         processMaterials(data, builder);
 
         AtomicEntityOperationDetails entityOperationDetails = builder.getDetails();
@@ -311,24 +319,26 @@ public class EntitySynchronizer
 
     private ResourceListParserData parseResourceList(Document doc) throws XPathExpressionException
     {
+        Monitor monitor = new Monitor("Parsing resource list", operationLog);
         // Parse the resource list: This sends back all projects,
         // experiments, samples and data sets contained in the XML together with their last modification date to be used for filtering
         operationLog.info("Parsing the resource list xml document...");
         INameTranslator nameTranslator = new PrefixBasedNameTranslator(config.getDataSourceAlias());
 
         ResourceListParser parser = ResourceListParser.create(nameTranslator, dataStoreCode);
-        ResourceListParserData data = parser.parseResourceListDocument(doc);
+        ResourceListParserData data = parser.parseResourceListDocument(doc, monitor);
+        monitor.log();
         return data;
     }
 
     private Document getResourceList() throws Exception
     {
-        
+        Monitor monitor = new Monitor("Retrieving resoure list", operationLog);
         DataSourceConnector dataSourceConnector =
                 new DataSourceConnector(config.getDataSourceURI(), config.getAuthenticationCredentials(), operationLog);
-        operationLog.info("\nRetrieving the resource list...");
+        operationLog.info("Retrieving the resource list...");
         Document doc = dataSourceConnector.getResourceListAsXMLDoc(Arrays.asList(ArrayUtils.EMPTY_STRING_ARRAY));
-        
+        monitor.log();
         return doc;
     }
 
@@ -736,6 +746,7 @@ public class EntitySynchronizer
 
     private void registerMasterData(MasterData masterData)
     {
+        Monitor monitor = new Monitor("Register master data", operationLog);
         operationLog.info("Registering master data...");
         if (config.isVerbose() == true)
         {
@@ -753,6 +764,7 @@ public class EntitySynchronizer
         MasterDataSynchronizer masterDataSyncronizer =
                 new MasterDataSynchronizer(config.getHarvesterUser(), config.getHarvesterPass(), config.isDryRun(), config.isVerbose(), operationLog);
         masterDataSyncronizer.synchronizeMasterData(masterData);
+        monitor.log();
     }
 
     private void verboseLogMasterData(Set<String> types, String typeName)
@@ -769,6 +781,7 @@ public class EntitySynchronizer
 
     private void processDeletions(ResourceListParserData data) throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
+        Monitor monitor = new Monitor("Delete entities", operationLog);
         String sessionToken = ServiceProvider.getOpenBISService().getSessionToken();
         IEntityRetriever entityRetriever =
                 SkinnyEntityRetriever.createWithSessionToken(ServiceProvider.getV3ApplicationService(), sessionToken);
@@ -899,6 +912,7 @@ public class EntitySynchronizer
 
         if (config.isDryRun() == true)
         {
+            monitor.log();
             return;
         }
 
@@ -980,6 +994,7 @@ public class EntitySynchronizer
                     getDirectoryProvider().getDataSetDirectory(physicalDS);
             SegmentedStoreUtils.deleteDataSetInstantly(physicalDS.getCode(), datasetDir, new Log4jSimpleLogger(operationLog));
         }
+        monitor.log();
     }
 
     private void verboseLogDeletions(Collection<String> identifiers, String entityKind)
@@ -1170,14 +1185,20 @@ public class EntitySynchronizer
         return prjUpdate;
     }
 
-    private void processSamples(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
+    private void processSamples(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder, Monitor monitor)
     {
         // process samples
         Map<String, IncomingSample> samplesToProcess = data.getSamplesToProcess();
         Map<SampleIdentifier, NewSample> samplesToUpdate = new HashMap<SampleIdentifier, NewSample>();
         Set<String> sampleWithUpdatedParents = new HashSet<String>();
+        int count = 0;
+        int n = samplesToProcess.size();
         for (IncomingSample sample : samplesToProcess.values())
         {
+            if (++count % 100 == 0)
+            {
+                monitor.log(String.format("%7d/%d sample: %s", count, n, sample.getIdentifer()));
+            }
             NewSample incomingSample = sample.getSample();
             if (sample.getLastModificationDate().after(lastSyncTimestamp))
             {
