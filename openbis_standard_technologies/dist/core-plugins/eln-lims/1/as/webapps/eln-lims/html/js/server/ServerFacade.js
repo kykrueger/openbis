@@ -1020,6 +1020,12 @@ function ServerFacade(openbisServer) {
 							childrenFetchOptions.withType();
 						}
 					}
+					if(advancedFetchOptions.withChildren) {
+						var childrenFetchOptions = fetchOptions.withChildren();
+						if(advancedFetchOptions.withChildrenProperties) {
+							childrenFetchOptions.withProperties();
+						}
+					}
 					if(advancedFetchOptions.withAncestors) {
 						var ancestorsFetchOptions = fetchOptions.withParents();
 						if(advancedFetchOptions.withAncestorsProperties) {
