@@ -6,12 +6,12 @@ if sys.version_info < (3,3):
 
 from setuptools import setup, find_packages
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name='PyBIS',
-    version= '1.7.3',
+    version= '1.7.4',
     author='Swen Vermeul |  ID SIS | ETH Zürich',
     author_email='swen@ethz.ch',
     description='openBIS connection and interaction, optimized for using with Jupyter',
