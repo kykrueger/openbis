@@ -529,7 +529,6 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         return entity;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void updateDataSetStatuses(final List<String> dataSetCodes,
             final DataSetArchivingStatus status)
@@ -558,55 +557,14 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             {
                 final int startIndexFinal = startIndex;
                 final int endIndexFinal = endIndex;
-                updatedRows += (Integer) hibernateTemplate.execute(new HibernateCallback()
-                    {
-
-                        //
-                        // HibernateCallback
-                        //
-
-                        @Override
-                        public final Object doInHibernate(final Session session)
-                                throws HibernateException
-                        {
-                            // NOTE: 'VERSIONED' makes modification time modified too
-                            return session
-                                    .createQuery(
-                                            "UPDATE VERSIONED "
-                                                    + EXTERNAL_DATA_TABLE_NAME
-                                                    + " SET status = :status WHERE code IN (:codes) ")
-                                    .setParameter("status", status)
-                                    .setParameterList("codes",
-                                            dataSetCodes.subList(startIndexFinal, endIndexFinal))
-                                    .executeUpdate();
-                        }
-                    });
+                List<String> codes = dataSetCodes.subList(startIndexFinal, endIndexFinal);
+                updatedRows += updateStatus(hibernateTemplate, status, codes);
                 startIndex = endIndex;
                 endIndex = Math.min(endIndex + MAX_BATCH_SIZE, len);
             }
         } else
         {
-            updatedRows = (Integer) hibernateTemplate.execute(new HibernateCallback()
-                {
-
-                    //
-                    // HibernateCallback
-                    //
-
-                    @Override
-                    public final Object doInHibernate(final Session session)
-                            throws HibernateException
-                    {
-                        // NOTE: 'VERSIONED' makes modification time modified too
-                        return session
-                                .createQuery(
-                                        "UPDATE VERSIONED " + EXTERNAL_DATA_TABLE_NAME
-                                                + " SET status = :status WHERE code IN (:codes) ")
-                                .setParameter("status", status)
-                                .setParameterList("codes", dataSetCodes).executeUpdate();
-                    }
-
-                });
+            updatedRows = updateStatus(hibernateTemplate, status, dataSetCodes);
         }
         scheduleDynamicPropertiesEvaluationForDataSets(dataSetCodes);
         hibernateTemplate.flush();
@@ -617,6 +575,45 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
         {
             operationLog.info(String.format("UPDATED: %s data set statuses to '%s'.", dataSetCodes.size(), status));
         }
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private Integer updateStatus(final HibernateTemplate hibernateTemplate, final DataSetArchivingStatus status, List<String> codes)
+    {
+        return (Integer) hibernateTemplate.execute(new HibernateCallback()
+            {
+                @Override
+                public final Object doInHibernate(final Session session)
+                        throws HibernateException
+                {
+                    int result = session.createQuery(
+                            "UPDATE " + EXTERNAL_DATA_TABLE_NAME + " SET status = :status WHERE code IN (:codes) ")
+                            .setParameter("status", status)
+                            .setParameterList("codes", codes)
+                            .executeUpdate();
+                    updateVersion(session, codes);
+                    return result;
+                    /*
+                    // NOTE: 'VERSIONED' makes modification time modified too
+                    return session
+                            .createQuery(
+                                    "UPDATE VERSIONED "
+                                            + EXTERNAL_DATA_TABLE_NAME
+                                            + " SET status = :status WHERE code IN (:codes) ")
+                            .setParameter("status", status)
+                            .setParameterList("codes", codes)
+                            .executeUpdate();
+                     */
+                }
+            });
+    }
+
+    private static int updateVersion(final Session session, List<String> codes)
+    {
+        return session.createQuery(
+                "UPDATE " + TABLE_NAME + " SET version = version + 1 WHERE code IN (:codes) ")
+                .setParameterList("codes", codes)
+                .executeUpdate();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -828,7 +825,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             {
                 query = session
                         .createQuery(
-                                "UPDATE VERSIONED "
+                                "UPDATE "
                                         + EXTERNAL_DATA_TABLE_NAME
                                         + " SET status = :status, presentInArchive = :presentInArchive, "
                                         + "     archivingRequested = 'f'"
@@ -837,17 +834,20 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
             {
                 query = session
                         .createQuery(
-                                "UPDATE VERSIONED "
+                                "UPDATE "
                                         + EXTERNAL_DATA_TABLE_NAME
                                         + " SET status = :status, presentInArchive = :presentInArchive"
                                         + " WHERE code IN (:codes) ");
 
             }
-            return query
+            int result = query
                     .setParameter("status", status)
                     .setParameter("presentInArchive", presentInArchive)
                     .setParameterList("codes", codes)
                     .executeUpdate();
+            System.err.println(result+" UPDATED "+codes);
+            updateVersion(session, codes);
+            return result;
         }
     }
 

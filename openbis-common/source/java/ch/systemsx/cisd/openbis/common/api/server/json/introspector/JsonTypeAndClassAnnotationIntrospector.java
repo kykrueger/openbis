@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.introspect.ObjectIdInfo;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 
@@ -59,7 +60,7 @@ public class JsonTypeAndClassAnnotationIntrospector extends JacksonAnnotationInt
         {
             return null;
         }
-        JsonObject tn = ac.getAnnotation(JsonObject.class);
+        JsonObject tn = _findAnnotation(ac, JsonObject.class);
         return (tn == null) ? null : tn.value();
     }
 
@@ -87,8 +88,7 @@ public class JsonTypeAndClassAnnotationIntrospector extends JacksonAnnotationInt
     private boolean useCustomResolver(JavaType type)
     {
         return type.getRawClass().equals(Object.class)
-                || (type.getRawClass().isAnnotationPresent(JsonObject.class) && !type.getRawClass()
-                        .isEnum());
+                || (type.getRawClass().isAnnotationPresent(JsonObject.class) && false == type.getRawClass().isEnum());
     }
 
 }

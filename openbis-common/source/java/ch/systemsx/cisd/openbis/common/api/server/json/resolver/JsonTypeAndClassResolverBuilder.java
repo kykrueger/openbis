@@ -22,12 +22,16 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 
+import ch.systemsx.cisd.openbis.common.api.server.json.common.JsonConstants;
 import ch.systemsx.cisd.openbis.common.api.server.json.deserializer.JsonTypeAndClassDeserializer;
+import ch.systemsx.cisd.openbis.common.api.server.json.deserializer.JsonTypeAndClassSerializer;
 import ch.systemsx.cisd.openbis.common.api.server.json.mapping.IJsonClassValueToClassObjectsMapping;
 
 /**
@@ -56,6 +60,13 @@ public class JsonTypeAndClassResolverBuilder extends StdTypeResolverBuilder
                         _typeIdVisible);
         deserializer.setClassValueToClassObjectsMapping(classValueToClassObjectsMapping);
         return deserializer;
+    }
+
+    @Override
+    public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType, Collection<NamedType> subtypes)
+    {
+        TypeIdResolver resolver = idResolver(config, baseType, subtypes, true, false);
+        return new JsonTypeAndClassSerializer(resolver, null, JsonConstants.getTypeField());
     }
 
 }

@@ -24,6 +24,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.core.Constants;
+import org.springframework.util.PropertyPlaceholderHelper;
+import org.springframework.util.PropertyPlaceholderHelper.PlaceholderResolver;
 import org.springframework.util.StringUtils;
 
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
@@ -111,6 +113,16 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
 
     private String getResolvedProperty(final Properties props, final String key)
     {
-        return resolvePlaceholder(key, props, systemPropertiesMode);
+        PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper(
+                placeholderPrefix, placeholderSuffix, valueSeparator, ignoreUnresolvablePlaceholders);
+        String resolvedPlaceholder = resolvePlaceholder(key, props, systemPropertiesMode);
+        return helper.replacePlaceholders(resolvedPlaceholder, new PlaceholderResolver()
+            {
+                @Override
+                public String resolvePlaceholder(String placeholderName)
+                {
+                    return ExposablePropertyPlaceholderConfigurer.this.resolvePlaceholder(placeholderName, props, systemPropertiesMode);
+                }
+            });        
     }
 }
