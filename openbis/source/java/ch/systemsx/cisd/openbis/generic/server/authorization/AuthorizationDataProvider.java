@@ -9,6 +9,10 @@ import java.util.Set;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.TypedValue;
+import org.hibernate.query.internal.NativeQueryImpl;
+import org.hibernate.query.internal.QueryParameterBindingsImpl;
 
 import ch.systemsx.cisd.common.action.IMapper;
 import ch.systemsx.cisd.openbis.generic.server.batch.BatchOperationExecutor;
@@ -306,8 +310,6 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
             IMapper<List<V>, List<?>> valuesMapperOrNull, IMapper<List<R>, List<R>> resultMapperOrNull)
     {
         Session session = daoFactory.getSessionFactory().getCurrentSession();
-        final Query query = session.getNamedQuery(queryName);
-        query.setReadOnly(true);
 
         final Set<R> fullResults = new HashSet<R>();
 
@@ -324,6 +326,8 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
                 {
                     List<?> mappedValues = valuesMapperOrNull != null ? valuesMapperOrNull.map(entities) : entities;
                     assertNoNullElements(mappedValues);
+                    Query query = session.getNamedQuery(queryName);
+                    query.setReadOnly(true);
                     query.setParameterList(parameterName, mappedValues);
 
                     List<R> singleResults = cast(query.list());
