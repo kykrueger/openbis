@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.time.DateUtils;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -41,6 +43,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.common.ssl.SslCertificateHelper;
+import ch.systemsx.cisd.openbis.dss.generic.server.EncapsulatedOpenBISService;
 
 /**
  * 
@@ -61,11 +64,9 @@ public class V3Utils
 
     private V3Utils (String asUrl, String dssUrl, int timeout)
     {
-        SslCertificateHelper.trustAnyCertificate(asUrl);
-        SslCertificateHelper.trustAnyCertificate(dssUrl);
-
-        this.dss = HttpInvokerUtils.createStreamSupportingServiceStub(IDataStoreServerApi.class, dssUrl + IDataStoreServerApi.SERVICE_URL, timeout);
-        this.as = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, asUrl + IApplicationServerApi.SERVICE_URL, timeout);    
+        String timeoutInMinutes = Long.toString(timeout / DateUtils.MILLIS_PER_MINUTE);
+        this.as = EncapsulatedOpenBISService.createOpenBisV3Service(asUrl, timeoutInMinutes);
+        this.dss = EncapsulatedOpenBISService.createDataStoreV3Service(dssUrl, timeoutInMinutes);
      }
 
     public SearchResult<DataSetFile> searchFiles(String sessionToken, DataSetFileSearchCriteria criteria, DataSetFileFetchOptions dsFileFetchOptions)

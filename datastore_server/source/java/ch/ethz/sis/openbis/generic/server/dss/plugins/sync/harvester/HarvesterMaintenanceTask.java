@@ -45,6 +45,7 @@ import org.apache.log4j.DailyRollingFileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.ConfigReader;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
@@ -93,6 +94,8 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
 
     private IEncapsulatedOpenBISService service;
 
+    private IApplicationServerApi v3Api;
+    
     private DataSetProcessingContext context;
 
     private File harvesterConfigFile;
@@ -119,6 +122,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
     public void setUp(String pluginName, Properties properties)
     {
         service = ServiceProvider.getOpenBISService();
+        v3Api = ServiceProvider.getV3ApplicationService();
         context = new DataSetProcessingContext(null, null, null, null, null, null);
         dataStoreCode = getConfigProvider().getDataStoreCode();
         storeRoot = new File(DssPropertyParametersUtil.loadServiceProperties().getProperty(PluginTaskInfoProvider.STOREROOT_DIR_KEY));
@@ -211,6 +215,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
 
         SynchronizationContext syncContext = new SynchronizationContext();
         syncContext.setService(service);
+        syncContext.setV3Api(v3Api);
         syncContext.setDataStoreCode(dataStoreCode);
         syncContext.setStoreRoot(storeRoot);
         syncContext.setLastSyncTimestamp(cutOffTimestamp);

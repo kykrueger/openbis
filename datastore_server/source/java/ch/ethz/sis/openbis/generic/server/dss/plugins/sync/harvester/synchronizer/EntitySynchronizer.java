@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -39,8 +40,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.time.StopWatch;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
@@ -57,6 +56,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.delete.ProjectDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
@@ -69,14 +70,6 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.IE
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.INode;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.ParallelizedExecutionPreferences;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.Connection;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.IncomingDataSet;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.IncomingEntity;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.IncomingExperiment;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.IncomingProject;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.IncomingSample;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.MasterData;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.MaterialWithLastModificationDate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.datasourceconnector.DataSourceConnector;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentSynchronizationSummary;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentSynchronizationTaskExecutor;
@@ -87,7 +80,6 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Utils;
-import ch.systemsx.cisd.cifex.shared.basic.UserFailureException;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
@@ -150,6 +142,8 @@ public class EntitySynchronizer
 
     private final IEncapsulatedOpenBISService service;
 
+    private final IApplicationServerApi v3Api;
+    
     private final DataSetProcessingContext context;
 
     private final Date lastSyncTimestamp;
@@ -170,17 +164,18 @@ public class EntitySynchronizer
 
     public EntitySynchronizer(SynchronizationContext synContext)
     {
-        this.service = synContext.getService();
-        this.dataStoreCode = synContext.getDataStoreCode();
-        this.storeRoot = synContext.getStoreRoot();
-        this.lastSyncTimestamp = synContext.getLastSyncTimestamp();
-        this.lastIncSyncTimestamp = synContext.getLastIncSyncTimestamp();
-        this.dataSetsCodesToRetry = synContext.getDataSetsCodesToRetry();
-        this.attachmentHolderCodesToRetry = synContext.getAttachmentHolderCodesToRetry();
-        this.blackListedDataSetCodes = synContext.getBlackListedDataSetCodes();
-        this.context = synContext.getContext();
-        this.config = synContext.getConfig();
-        this.operationLog = synContext.getOperationLog();
+        service = synContext.getService();
+        v3Api = synContext.getV3Api();
+        dataStoreCode = synContext.getDataStoreCode();
+        storeRoot = synContext.getStoreRoot();
+        lastSyncTimestamp = synContext.getLastSyncTimestamp();
+        lastIncSyncTimestamp = synContext.getLastIncSyncTimestamp();
+        dataSetsCodesToRetry = synContext.getDataSetsCodesToRetry();
+        attachmentHolderCodesToRetry = synContext.getAttachmentHolderCodesToRetry();
+        blackListedDataSetCodes = synContext.getBlackListedDataSetCodes();
+        context = synContext.getContext();
+        config = synContext.getConfig();
+        operationLog = synContext.getOperationLog();
     }
 
     public Date synchronizeEntities() throws Exception
@@ -188,7 +183,7 @@ public class EntitySynchronizer
         Document doc = getResourceList();
         ResourceListParserData data = parseResourceList(doc);
 
-        processDeletions(data);
+//        processDeletions(data);
         registerMasterData(data.getMasterData());
         MultiKeyMap<String, String> newEntities = registerEntities(data);
         List<String> notSyncedAttachmentsHolders = registerAttachments(data, newEntities);
@@ -249,7 +244,7 @@ public class EntitySynchronizer
         operationLog.info("Processing attachments...");
         List<IncomingEntity<?>> attachmentHoldersToProcess =
                 data.filterAttachmentHoldersByLastModificationDate(lastSyncTimestamp, attachmentHolderCodesToRetry);
-
+        monitor.log(attachmentHoldersToProcess.size() + " to process");
         if (config.isVerbose())
         {
             verboseLogProcessAttachments(attachmentHoldersToProcess, newEntities);
@@ -258,7 +253,7 @@ public class EntitySynchronizer
         List<String> notSyncedAttachmentsHolders = new ArrayList<String>();
         if (config.isDryRun() == false)
         {
-            AttachmentSynchronizationSummary syncSummary = processAttachments(attachmentHoldersToProcess);
+            AttachmentSynchronizationSummary syncSummary = processAttachments(attachmentHoldersToProcess, monitor);
             notSyncedAttachmentsHolders = syncSummary.notRegisteredAttachmentHolderCodes;
             operationLog.info("Attachment synchronization summary:\n" + syncSummary.addedCount + " attachment(s) were added.\n"
                     + syncSummary.updatedCount + " attachment(s) were updated.\n"
@@ -514,15 +509,20 @@ public class EntitySynchronizer
         }
     }
 
-    private AttachmentSynchronizationSummary processAttachments(List<IncomingEntity<?>> attachmentHoldersToProcess)
+    private AttachmentSynchronizationSummary processAttachments(List<IncomingEntity<?>> attachmentHoldersToProcess, 
+            Monitor monitor)
     {
         AttachmentSynchronizationSummary synchronizationSummary = new AttachmentSynchronizationSummary();
 
         ParallelizedExecutionPreferences preferences = config.getParallelizedExecutionPrefs();
-
+        String asUrl = config.getDataSourceOpenbisURL();
+        String dssUrl = config.getDataSourceDSSURL();
+        monitor.log("AS URL: " + asUrl + ", DSS URL: " + dssUrl);
+        V3Utils v3Utils = V3Utils.create(asUrl, dssUrl);
+        monitor.log("Services for accessing data source established");
         ParallelizedExecutor.process(attachmentHoldersToProcess, new AttachmentSynchronizationTaskExecutor(synchronizationSummary,
-                service,
-                lastSyncTimestamp, config),
+                service, v3Utils,
+                lastSyncTimestamp, config, monitor),
                 preferences.getMachineLoad(), preferences.getMaxThreads(), "process attachments", preferences.getRetriesOnFail(),
                 preferences.isStopOnFailure());
 
@@ -644,25 +644,25 @@ public class EntitySynchronizer
             if (sampleIdentifier != null)
             {
                 Sample sampleWithExperiment = service.tryGetSampleWithExperiment(sampleIdentifier);
-                dsBatchUpdatesDTO.setSampleIdentifierOrNull(SampleIdentifierFactory.parse(sampleWithExperiment.getIdentifier()));
-                dsBatchUpdatesDTO.getDetails().setSampleUpdateRequested(true);
+//                dsBatchUpdatesDTO.setSampleIdentifierOrNull(SampleIdentifierFactory.parse(sampleWithExperiment.getIdentifier()));
+                dsBatchUpdatesDTO.setSampleIdentifierOrNull(sampleIdentifier);
             } else
             {
                 dsBatchUpdatesDTO.setSampleIdentifierOrNull(null);
-                dsBatchUpdatesDTO.getDetails().setSampleUpdateRequested(true);
             }
+            dsBatchUpdatesDTO.getDetails().setSampleUpdateRequested(true);
 
             ExperimentIdentifier expIdentifier = dataSet.getExperimentIdentifierOrNull();
             if (expIdentifier != null)
             {
                 Experiment experiment = service.tryGetExperiment(expIdentifier);
-                dsBatchUpdatesDTO.setExperimentIdentifierOrNull(ExperimentIdentifierFactory.parse(experiment.getIdentifier()));
-                dsBatchUpdatesDTO.getDetails().setExperimentUpdateRequested(true);
+//                dsBatchUpdatesDTO.setExperimentIdentifierOrNull(ExperimentIdentifierFactory.parse(experiment.getIdentifier()));
+                dsBatchUpdatesDTO.setExperimentIdentifierOrNull(expIdentifier);
             } else
             {
                 dsBatchUpdatesDTO.setExperimentIdentifierOrNull(null);
-                dsBatchUpdatesDTO.getDetails().setExperimentUpdateRequested(true);
             }
+            dsBatchUpdatesDTO.getDetails().setExperimentUpdateRequested(true);
             builder.dataSetUpdate(dsBatchUpdatesDTO);
         }
 
@@ -763,7 +763,7 @@ public class EntitySynchronizer
         }
         MasterDataSynchronizer masterDataSyncronizer =
                 new MasterDataSynchronizer(config.getHarvesterUser(), config.getHarvesterPass(), config.isDryRun(), config.isVerbose(), operationLog);
-        masterDataSyncronizer.synchronizeMasterData(masterData);
+        masterDataSyncronizer.synchronizeMasterData(masterData, monitor);
         monitor.log();
     }
 
@@ -779,12 +779,12 @@ public class EntitySynchronizer
         }
     }
 
-    private void processDeletions(ResourceListParserData data) throws NoSuchAlgorithmException, UnsupportedEncodingException
+    private void processDeletions(ResourceListParserData data) throws Exception
     {
         Monitor monitor = new Monitor("Delete entities", operationLog);
-        String sessionToken = ServiceProvider.getOpenBISService().getSessionToken();
+        String sessionToken = service.getSessionToken();
         IEntityRetriever entityRetriever =
-                SkinnyEntityRetriever.createWithSessionToken(ServiceProvider.getV3ApplicationService(), sessionToken);
+                SkinnyEntityRetriever.createWithSessionToken(v3Api, sessionToken);
 
         Set<String> incomingProjectPermIds = data.getProjectsToProcess().keySet();
         Set<String> incomingExperimentPermIds = data.getExperimentsToProcess().keySet();
@@ -916,7 +916,6 @@ public class EntitySynchronizer
             return;
         }
 
-        IApplicationServerApi v3Api = ServiceProvider.getV3ApplicationService();
         // delete data sets
         DataSetDeletionOptions dsDeletionOpts = new DataSetDeletionOptions();
         String reasonDetail = " from data source : " + config.getDataSourceAlias();
@@ -1184,18 +1183,19 @@ public class EntitySynchronizer
         prjUpdate.setSpaceCode(projectIdentifier.getSpaceCode());
         return prjUpdate;
     }
-
+    
     private void processSamples(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder, Monitor monitor)
     {
         // process samples
         Map<String, IncomingSample> samplesToProcess = data.getSamplesToProcess();
+        Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> knownSamples = getKnownSamples(samplesToProcess.keySet());
         Map<SampleIdentifier, NewSample> samplesToUpdate = new HashMap<SampleIdentifier, NewSample>();
         Set<String> sampleWithUpdatedParents = new HashSet<String>();
         int count = 0;
         int n = samplesToProcess.size();
         for (IncomingSample sample : samplesToProcess.values())
         {
-            if (++count % 100 == 0)
+            if (++count % 1000 == 0)
             {
                 monitor.log(String.format("%7d/%d sample: %s", count, n, sample.getIdentifer()));
             }
@@ -1203,16 +1203,9 @@ public class EntitySynchronizer
             if (sample.getLastModificationDate().after(lastSyncTimestamp))
             {
                 SampleIdentifier sampleIdentifier = SampleIdentifierFactory.parse(incomingSample);
-                Sample sampleWithExperiment = null;
-                try
-                {
-                    sampleWithExperiment = service.tryGetSampleByPermId(incomingSample.getPermID());
-                } catch (Exception e)
-                {
-                    // doing nothing because when the sample with the perm is not found
-                    // an exception will be thrown. See the same issue for projects
-                }
-                if (sampleWithExperiment == null)
+                ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample knownSample = null;
+                knownSample = knownSamples.get(incomingSample.getPermID());
+                if (knownSample == null)
                 {
                     // ADD SAMPLE
                     builder.sample(incomingSample);
@@ -1220,10 +1213,10 @@ public class EntitySynchronizer
                 {
                     // defer creation of sample update objects until all samples have been gone through;
                     samplesToUpdate.put(sampleIdentifier, incomingSample);
-                    List<Sample> childSamples = getChildSamples(sampleWithExperiment);
-                    for (Sample child : childSamples)
+                    ;
+                    for (ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample child : knownSample.getChildren())
                     {
-                        String childSampleIdentifier = child.getIdentifier();// edgeNodePair.getNode().getIdentifier();
+                        String childSampleIdentifier = child.getIdentifier().getIdentifier();// edgeNodePair.getNode().getIdentifier();
                         IncomingSample childSampleWithConns = findChildInSamplesToProcess(childSampleIdentifier, samplesToProcess);
                         if (childSampleWithConns == null)
                         {
@@ -1238,7 +1231,7 @@ public class EntitySynchronizer
                     }
                 }
             }
-            for (ResourceListParserData.Connection conn : sample.getConnections())
+            for (Connection conn : sample.getConnections())
             {
                 if (conn.getType().equals("Component"))
                 {
@@ -1297,6 +1290,21 @@ public class EntitySynchronizer
                             modifiedParentIds);
             builder.sampleUpdate(updates);
         }
+    }
+
+    private Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> getKnownSamples(Collection<String> samplePermIds)
+    {
+        String sessionToken = service.getSessionToken();
+        List<SamplePermId> sampleIds = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withChildren();
+        Map<ISampleId, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> samples = v3Api.getSamples(sessionToken, sampleIds, fetchOptions);
+        HashMap<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> result = new HashMap<>();
+        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample sample : samples.values())
+        {
+            result.put(sample.getPermId().getPermId(), sample);
+        }
+        return result;
     }
 
     /**

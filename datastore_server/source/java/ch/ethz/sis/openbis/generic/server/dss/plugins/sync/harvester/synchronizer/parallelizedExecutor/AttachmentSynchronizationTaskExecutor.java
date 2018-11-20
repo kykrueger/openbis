@@ -32,7 +32,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.IncomingEntity;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.IncomingEntity;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Utils;
 import ch.systemsx.cisd.cifex.shared.basic.UserFailureException;
 import ch.systemsx.cisd.common.concurrent.ITaskExecutor;
@@ -64,21 +65,28 @@ public final class AttachmentSynchronizationTaskExecutor implements ITaskExecuto
 
     private AttachmentSynchronizationSummary syncSummary;
 
+    private V3Utils v3Utils;
+
+    private final Monitor monitor;
+
     /**
      * @param executionSummary will contain ids of attachment holders for which the attachment sync failed during parallel execution + counts of
      *            added, updated and deleted attachments
      * @param service
      * @param lastSyncTimestamp
      * @param config
+     * @param monitor 
      */
     public AttachmentSynchronizationTaskExecutor(AttachmentSynchronizationSummary executionSummary,
-            IEncapsulatedOpenBISService service,
-            Date lastSyncTimestamp, SyncConfig config)
+            IEncapsulatedOpenBISService service, V3Utils v3Utils,
+            Date lastSyncTimestamp, SyncConfig config, Monitor monitor)
     {
         this.syncSummary = executionSummary;
         this.service = service;
+        this.v3Utils = v3Utils;
         this.lastSyncTimestamp = lastSyncTimestamp;
         this.config = config;
+        this.monitor = monitor;
     }
 
     @Override
@@ -89,24 +97,25 @@ public final class AttachmentSynchronizationTaskExecutor implements ITaskExecuto
             TechId techId = null;
             ICommonServer commonServer = ServiceFinderUtils.getCommonServer(ServiceProvider.getConfigProvider().getOpenBisServerUrl());
             String localSessionToken = ServiceFinderUtils.login(commonServer, config.getHarvesterUser(), config.getHarvesterPass());
+            monitor.log("Logged in: " + localSessionToken);
             IAttachmentsOperationsHandler attachmentsOperationsHandler = null;
             if (item.getEntityKind() == SyncEntityKind.EXPERIMENT)
             {
                 Experiment experiment = service.tryGetExperiment(ExperimentIdentifierFactory.parse(item.getEntity().getIdentifier()));
                 techId = new TechId(experiment.getId());
-                attachmentsOperationsHandler = new ExperimentAttachmentsOperationsHandler(config, commonServer, localSessionToken);
+                attachmentsOperationsHandler = new ExperimentAttachmentsOperationsHandler(config, commonServer, v3Utils, localSessionToken);
             }
             else if (item.getEntityKind() == SyncEntityKind.SAMPLE)
             {
                 Sample sample = service.tryGetSampleByPermId(item.getEntity().getPermID());
                 techId = new TechId(sample.getId());
-                attachmentsOperationsHandler = new SampleAttachmentsOperationsHandler(config, commonServer, localSessionToken);
+                attachmentsOperationsHandler = new SampleAttachmentsOperationsHandler(config, commonServer, v3Utils, localSessionToken);
             }
             else if (item.getEntityKind() == SyncEntityKind.PROJECT)
             {
                 Project project = service.tryGetProject(ProjectIdentifierFactory.parse(item.getEntity().getIdentifier()));
                 techId = new TechId(project.getId());
-                attachmentsOperationsHandler = new ProjectAttachmentsOperationsHandler(config, commonServer, localSessionToken);
+                attachmentsOperationsHandler = new ProjectAttachmentsOperationsHandler(config, commonServer, v3Utils, localSessionToken);
             }
             else
             {
@@ -287,9 +296,12 @@ abstract class AbstractEntityAttachmentsOperationsHandler implements IAttachment
 
     final SyncConfig config;
 
-    AbstractEntityAttachmentsOperationsHandler(SyncConfig config, ICommonServer commonServer, String sessionToken)
+    protected V3Utils v3Utils;
+
+    AbstractEntityAttachmentsOperationsHandler(SyncConfig config, ICommonServer commonServer, V3Utils v3Utils, String sessionToken)
     {
         this.commonServer = commonServer;
+        this.v3Utils = v3Utils;
         this.sessionToken = sessionToken;
         this.config = config;
     }
@@ -312,9 +324,9 @@ abstract class AbstractEntityAttachmentsOperationsHandler implements IAttachment
 
 class ExperimentAttachmentsOperationsHandler extends AbstractEntityAttachmentsOperationsHandler
 {
-    ExperimentAttachmentsOperationsHandler(SyncConfig config, ICommonServer commonServer, String sessionToken)
+    ExperimentAttachmentsOperationsHandler(SyncConfig config, ICommonServer commonServer, V3Utils v3Utils, String sessionToken)
     {
-        super(config, commonServer, sessionToken);
+        super(config, commonServer, v3Utils, sessionToken);
     }
 
     @Override
@@ -356,9 +368,9 @@ class ExperimentAttachmentsOperationsHandler extends AbstractEntityAttachmentsOp
 
 class SampleAttachmentsOperationsHandler extends AbstractEntityAttachmentsOperationsHandler
 {
-    SampleAttachmentsOperationsHandler(SyncConfig config, ICommonServer commonServer, String sessionToken)
+    SampleAttachmentsOperationsHandler(SyncConfig config, ICommonServer commonServer, V3Utils v3Utils, String sessionToken)
     {
-        super(config, commonServer, sessionToken);
+        super(config, commonServer, v3Utils, sessionToken);
     }
 
     @Override
@@ -400,17 +412,16 @@ class SampleAttachmentsOperationsHandler extends AbstractEntityAttachmentsOperat
 
 class ProjectAttachmentsOperationsHandler extends AbstractEntityAttachmentsOperationsHandler
 {
-    ProjectAttachmentsOperationsHandler(SyncConfig config, ICommonServer commonServer, String sessionToken)
+    ProjectAttachmentsOperationsHandler(SyncConfig config, ICommonServer commonServer, V3Utils v3Utils, String sessionToken)
     {
-        super(config, commonServer, sessionToken);
+        super(config, commonServer, v3Utils, sessionToken);
     }
 
     @Override
     public List<Attachment> listDataSourceAttachments(SyncConfig config, String permId)
     {
-        V3Utils dssFileUtils = V3Utils.create(config.getDataSourceOpenbisURL(), config.getDataSourceDSSURL());
-        String sessionToken = dssFileUtils.login(config.getUser(), config.getPassword());
-        return dssFileUtils.getProjectAttachments(sessionToken, new ProjectPermId(permId));
+        String sessionToken = v3Utils.login(config.getUser(), config.getPassword());
+        return v3Utils.getProjectAttachments(sessionToken, new ProjectPermId(permId));
     }
 
     @Override
