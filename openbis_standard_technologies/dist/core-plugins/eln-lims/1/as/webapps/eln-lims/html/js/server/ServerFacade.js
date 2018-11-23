@@ -2401,7 +2401,8 @@ function ServerFacade(openbisServer) {
 			});
 	}
 
-	this.searchRoleAssignments = function(criteriaParams, callbackFunction) {
+	// errorHandler: optional. if present, it is called instead of showing the error and the callbackFunction is not called
+	this.searchRoleAssignments = function(criteriaParams, callbackFunction, errorHandler) {
 		require(["as/dto/roleassignment/search/RoleAssignmentSearchCriteria", "as/dto/roleassignment/fetchoptions/RoleAssignmentFetchOptions"], 
 			function(RoleAssignmentSearchCriteria, RoleAssignmentFetchOptions) {
 				var criteria = new RoleAssignmentSearchCriteria();
@@ -2424,8 +2425,12 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.searchRoleAssignments(criteria, fetchOptions).done(function(result) {
 					callbackFunction(result.objects);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
-					callbackFunction(false);
+					if (errorHandler) {
+						errorHandler(result);
+					} else {
+						Util.showError("Call failed to server: " + JSON.stringify(result));
+						callbackFunction(false);
+					}
 				});
 			});
 	}
