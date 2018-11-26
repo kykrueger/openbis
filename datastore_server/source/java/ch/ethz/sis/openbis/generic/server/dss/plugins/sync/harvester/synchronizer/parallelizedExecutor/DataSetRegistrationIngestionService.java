@@ -42,6 +42,8 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Utils;
 import ch.systemsx.cisd.common.io.IOUtilities;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSet;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetRegistrationTransactionV2;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetUpdatable;
@@ -59,6 +61,9 @@ import ch.systemsx.cisd.openbis.generic.shared.util.SimpleTableModelBuilder;
 class DataSetRegistrationIngestionService extends IngestionService<DataSetInformation>
 {
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger operationLog =
+            LogFactory.getLogger(LogCategory.OPERATION, DataSetRegistrationIngestionService.class);
  
     private final NewExternalData dataSet;
 
@@ -158,6 +163,13 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
         }
     }
 
+    @Override
+    protected TableModel errorTableModel(Map<String, Object> parameters, Throwable e)
+    {
+        operationLog.error("Error occurred while registering data set " + dataSet.getCode(), e);
+        return super.errorTableModel(parameters, e);
+    }
+
     private TableModel summaryTableModel(Map<String, Object> parameters, String summary)
     {
         SimpleTableModelBuilder builder = new SimpleTableModelBuilder(true);
@@ -230,10 +242,6 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
             {
                 DataSetFilePermId filePermId = orgFile.getPermId();
                 FileDetails fileDetails = fileDetailsMap.get(filePermId);
-
-                // System.out.println("Downloaded " + orgFile.getPath() + " "
-                // + MemorySizeFormatter.format(orgFile.getFileLength()));
-
                 Path path = Paths.get(dir.getAbsolutePath(), filePath);
                 InputStream inputStream = fileDownload.getInputStream();
                 OutputStream outputStream = Files.newOutputStream(path);

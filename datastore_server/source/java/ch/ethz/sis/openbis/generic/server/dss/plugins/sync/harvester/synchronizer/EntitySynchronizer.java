@@ -517,7 +517,6 @@ public class EntitySynchronizer
         ParallelizedExecutionPreferences preferences = config.getParallelizedExecutionPrefs();
         String asUrl = config.getDataSourceOpenbisURL();
         String dssUrl = config.getDataSourceDSSURL();
-        monitor.log("AS URL: " + asUrl + ", DSS URL: " + dssUrl);
         V3Utils v3Utils = V3Utils.create(asUrl, dssUrl);
         monitor.log("Services for accessing data source established");
         ParallelizedExecutor.process(attachmentHoldersToProcess, new AttachmentSynchronizationTaskExecutor(synchronizationSummary,

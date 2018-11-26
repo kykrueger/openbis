@@ -41,8 +41,6 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFil
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
-import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
-import ch.systemsx.cisd.common.ssl.SslCertificateHelper;
 import ch.systemsx.cisd.openbis.dss.generic.server.EncapsulatedOpenBISService;
 
 /**
@@ -52,7 +50,7 @@ import ch.systemsx.cisd.openbis.dss.generic.server.EncapsulatedOpenBISService;
  */
 public class V3Utils
 {
-    public static final int TIMEOUT = 100000;
+    public static final long TIMEOUT = 6 * DateUtils.MILLIS_PER_HOUR;
 
     private final IDataStoreServerApi dss;
     private final IApplicationServerApi as;
@@ -62,7 +60,7 @@ public class V3Utils
         return new V3Utils(asUrl, dssUrl, TIMEOUT);
     }
 
-    private V3Utils (String asUrl, String dssUrl, int timeout)
+    private V3Utils (String asUrl, String dssUrl, long timeout)
     {
         String timeoutInMinutes = Long.toString(timeout / DateUtils.MILLIS_PER_MINUTE);
         this.as = EncapsulatedOpenBISService.createOpenBisV3Service(asUrl, timeoutInMinutes);

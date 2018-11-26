@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -74,7 +73,9 @@ public final class DataSetRegistrationTaskExecutor implements ITaskExecutor<Inco
                 {
                     String message = resultTable.getRows().get(0).getValues().toString();
                     dsRegistrationSummary.notRegisteredDataSetCodes.add(dataSet.getDataSet().getCode());
-                    operationLog.error(message);
+                    operationLog.error("Registration for data set " + dataSet.getDataSet().getCode() + " failed: "
+                            + message + ", exp: " + dataSet.getDataSet().getExperimentIdentifierOrNull()
+                            + ", sample:" + dataSet.getDataSet().getSampleIdentifierOrNull());
                     return Status.createError(message);
                 }
                 else if (header.getTitle().startsWith("Added"))

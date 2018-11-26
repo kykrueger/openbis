@@ -97,7 +97,6 @@ public final class AttachmentSynchronizationTaskExecutor implements ITaskExecuto
             TechId techId = null;
             ICommonServer commonServer = ServiceFinderUtils.getCommonServer(ServiceProvider.getConfigProvider().getOpenBisServerUrl());
             String localSessionToken = ServiceFinderUtils.login(commonServer, config.getHarvesterUser(), config.getHarvesterPass());
-            monitor.log("Logged in: " + localSessionToken);
             IAttachmentsOperationsHandler attachmentsOperationsHandler = null;
             if (item.getEntityKind() == SyncEntityKind.EXPERIMENT)
             {
