@@ -19,13 +19,15 @@ package ch.systemsx.cisd.openbis.generic.shared.util;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 
-import net.lemnik.eodsql.QueryTool;
-
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
+import org.hibernate.engine.transaction.internal.TransactionImpl;
+import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
+import org.hibernate.resource.transaction.spi.TransactionCoordinator.TransactionDriver;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import net.lemnik.eodsql.QueryTool;
 
 /**
  * @author pkupczyk
@@ -38,10 +40,13 @@ public class EodSqlUtils
         // use reflection as there is no other way to get a connection
         try
         {
-            Field jdbcContextField = transaction.getClass().getDeclaredField("managedConnection");
-            jdbcContextField.setAccessible(true);
-            Connection jdbcContext = (Connection) jdbcContextField.get(transaction);
-            QueryTool.setManagedDatabaseConnection(jdbcContext);
+            TransactionDriver transactionDriver = ((TransactionImpl) transaction).internalGetTransactionDriverControl();
+            Class<? extends TransactionDriver> transactionDriverClass = transactionDriver.getClass();
+            Field jdbcResourceTransactionField = transactionDriverClass.getDeclaredField("jdbcResourceTransaction");
+            jdbcResourceTransactionField.setAccessible(true);
+            LogicalConnectionImplementor logicalConnectionImplementor = (LogicalConnectionImplementor) jdbcResourceTransactionField.get(transactionDriver);
+            Connection connection = logicalConnectionImplementor.getPhysicalConnection();
+            QueryTool.setManagedDatabaseConnection(connection);
         } catch (NoSuchFieldException e)
         {
             // We are looking at some other kind of transaction -- log the error, but do not do anything
