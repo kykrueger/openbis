@@ -44,10 +44,11 @@ public class EodSqlUtils
             Class<? extends TransactionDriver> transactionDriverClass = transactionDriver.getClass();
             Field jdbcResourceTransactionField = transactionDriverClass.getDeclaredField("jdbcResourceTransaction");
             jdbcResourceTransactionField.setAccessible(true);
-            LogicalConnectionImplementor logicalConnectionImplementor = (LogicalConnectionImplementor) jdbcResourceTransactionField.get(transactionDriver);
+            LogicalConnectionImplementor logicalConnectionImplementor =
+                    (LogicalConnectionImplementor) jdbcResourceTransactionField.get(transactionDriver);
             Connection connection = logicalConnectionImplementor.getPhysicalConnection();
             QueryTool.setManagedDatabaseConnection(connection);
-        } catch (NoSuchFieldException e)
+        } catch (NoSuchFieldException | ClassCastException e)
         {
             // We are looking at some other kind of transaction -- log the error, but do not do anything
             Logger log = LogFactory.getLogger(LogCategory.TRACKING, EodSqlUtils.class);
