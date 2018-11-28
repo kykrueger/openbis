@@ -41,6 +41,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFil
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.systemsx.cisd.openbis.dss.generic.server.EncapsulatedOpenBISService;
 
 /**
@@ -48,38 +49,40 @@ import ch.systemsx.cisd.openbis.dss.generic.server.EncapsulatedOpenBISService;
  *
  * @author Ganime Betul Akin
  */
-public class V3Utils
+public class V3Facade
 {
     public static final long TIMEOUT = 6 * DateUtils.MILLIS_PER_HOUR;
 
     private final IDataStoreServerApi dss;
+    
     private final IApplicationServerApi as;
 
-    public static V3Utils create(String asUrl, String dssUrl)
-    {
-        return new V3Utils(asUrl, dssUrl, TIMEOUT);
-    }
+    private final String sessionToken;
 
-    private V3Utils (String asUrl, String dssUrl, long timeout)
+    public V3Facade(SyncConfig config)
     {
+        String asUrl = config.getDataSourceOpenbisURL();
+        String dssUrl = config.getDataSourceDSSURL();
+        long timeout = TIMEOUT;
         String timeoutInMinutes = Long.toString(timeout / DateUtils.MILLIS_PER_MINUTE);
-        this.as = EncapsulatedOpenBISService.createOpenBisV3Service(asUrl, timeoutInMinutes);
-        this.dss = EncapsulatedOpenBISService.createDataStoreV3Service(dssUrl, timeoutInMinutes);
+        as = EncapsulatedOpenBISService.createOpenBisV3Service(asUrl, timeoutInMinutes);
+        dss = EncapsulatedOpenBISService.createDataStoreV3Service(dssUrl, timeoutInMinutes);
+        sessionToken = as.login(config.getUser(), config.getPassword());
      }
 
-    public SearchResult<DataSetFile> searchFiles(String sessionToken, DataSetFileSearchCriteria criteria, DataSetFileFetchOptions dsFileFetchOptions)
+    public SearchResult<DataSetFile> searchFiles(DataSetFileSearchCriteria criteria, DataSetFileFetchOptions dsFileFetchOptions)
     {
         return dss.searchFiles(sessionToken, criteria, dsFileFetchOptions);
     }
 
-    public SearchResult<DataSetFile> searchWithDataSetCode(String sessionToken, String dataSetCode, DataSetFileFetchOptions dsFileFetchOptions)
+    public SearchResult<DataSetFile> searchWithDataSetCode(String dataSetCode, DataSetFileFetchOptions dsFileFetchOptions)
     {
         DataSetFileSearchCriteria criteria = new DataSetFileSearchCriteria();
         criteria.withDataSet().withCode().thatEquals(dataSetCode);
-        return searchFiles(sessionToken, criteria, dsFileFetchOptions);
+        return searchFiles(criteria, dsFileFetchOptions);
     }
 
-    public List<Attachment> getExperimentAttachments(String sessionToken, IExperimentId experimentId)
+    public List<Attachment> getExperimentAttachments(IExperimentId experimentId)
     {
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
         fetchOptions.withAttachments().withContent();
@@ -93,7 +96,7 @@ public class V3Utils
         return null;
     }
 
-    public List<Attachment> getSampleAttachments(String sessionToken, ISampleId sampleId)
+    public List<Attachment> getSampleAttachments(ISampleId sampleId)
     {
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withAttachments().withContent();
@@ -108,7 +111,7 @@ public class V3Utils
         return null;
     }
 
-    public List<Attachment> getProjectAttachments(String sessionToken, IProjectId projectId)
+    public List<Attachment> getProjectAttachments(IProjectId projectId)
     {
         ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
         fetchOptions.withAttachments().withContent();
@@ -123,13 +126,9 @@ public class V3Utils
         return null;
     }
 
-    public InputStream downloadFiles(String sessionToken, List<IDataSetFileId> fileIds, DataSetFileDownloadOptions options)
+    public InputStream downloadFiles(List<IDataSetFileId> fileIds, DataSetFileDownloadOptions options)
     {
         return dss.downloadFiles(sessionToken, fileIds, options);
     }
 
-    public String login(String loginUser, String loginPass)
-    {
-        return as.login(loginUser, loginPass);
-    }
 }

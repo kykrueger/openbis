@@ -79,7 +79,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.PrefixBasedNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Utils;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Facade;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
@@ -515,12 +515,10 @@ public class EntitySynchronizer
         AttachmentSynchronizationSummary synchronizationSummary = new AttachmentSynchronizationSummary();
 
         ParallelizedExecutionPreferences preferences = config.getParallelizedExecutionPrefs();
-        String asUrl = config.getDataSourceOpenbisURL();
-        String dssUrl = config.getDataSourceDSSURL();
-        V3Utils v3Utils = V3Utils.create(asUrl, dssUrl);
+        V3Facade v3FacadeToDataSource = new V3Facade(config);
         monitor.log("Services for accessing data source established");
         ParallelizedExecutor.process(attachmentHoldersToProcess, new AttachmentSynchronizationTaskExecutor(synchronizationSummary,
-                service, v3Utils,
+                service, v3FacadeToDataSource,
                 lastSyncTimestamp, config, monitor),
                 preferences.getMachineLoad(), preferences.getMaxThreads(), "process attachments", preferences.getRetriesOnFail(),
                 preferences.isStopOnFailure());
@@ -1396,15 +1394,11 @@ public class EntitySynchronizer
             throws NoSuchAlgorithmException, UnsupportedEncodingException
     {
         // get the file nodes in the incoming DS by querying the data source openbis
-        String asUrl = config.getDataSourceOpenbisURL();
-        String dssUrl = config.getDataSourceDSSURL();
-
-        V3Utils dssFileUtils = V3Utils.create(asUrl, dssUrl);
-        String sessionToken = dssFileUtils.login(config.getUser(), config.getPassword());
+        V3Facade v3FacadeToDataSource = new V3Facade(config);
 
         DataSetFileSearchCriteria criteria = new DataSetFileSearchCriteria();
         criteria.withDataSet().withCode().thatEquals(dataSetCode);
-        SearchResult<DataSetFile> result = dssFileUtils.searchFiles(sessionToken, criteria, new DataSetFileFetchOptions());
+        SearchResult<DataSetFile> result = v3FacadeToDataSource.searchFiles(criteria, new DataSetFileFetchOptions());
 
         // get the file nodes in the harvester openbis
         IDataStoreServerApi dssharvester = (IDataStoreServerApi) ServiceProvider.getDssServiceV3().getService();
