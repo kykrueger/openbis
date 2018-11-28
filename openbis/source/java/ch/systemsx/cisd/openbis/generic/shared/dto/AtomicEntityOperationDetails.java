@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -25,6 +26,7 @@ import java.util.TreeMap;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterial;
@@ -257,24 +259,46 @@ public class AtomicEntityOperationDetails implements Serializable
     public String toString()
     {
         ToStringBuilder sb = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-        sb.append("registrationIdOrNull", registrationIdOrNull);
-        sb.append("userIdOrNull", userIdOrNull);
-        sb.append("spaceRegistrations", spaceRegistrations);
-        sb.append("projectRegistrations", projectRegistrations);
-        sb.append("projectUpdates", projectUpdates);
-        sb.append("experimentUpdates", experimentUpdates);
-        sb.append("experimentRegistrations", experimentRegistrations);
-        sb.append("sampleUpdates", sampleUpdates);
-        sb.append("sampleRegistrations", sampleRegistrations);
-        sb.append("materialRegistrations", materialRegistrations);
-        sb.append("dataSetRegistrations", dataSetRegistrations);
-        sb.append("dataSetUpdates", dataSetUpdates);
-        sb.append("metaprojectRegistrations", metaprojectRegistrations);
-        sb.append("metaprojectUpdates", metaprojectUpdates);
-        sb.append("vocabularyUpdates", vocabularyUpdates);
-        sb.append("spaceRoleAssignments", spaceRoleAssignments);
-        sb.append("spaceRoleRevocations", spaceRoleRevocations);
+        appendTo(sb, "registrationIdOrNull", registrationIdOrNull);
+        appendTo(sb, "userIdOrNull", userIdOrNull);
+        appendTo(sb, "spaceRegistrations", spaceRegistrations);
+        appendTo(sb, "projectRegistrations", projectRegistrations);
+        appendTo(sb, "projectUpdates", projectUpdates);
+        appendTo(sb, "experimentUpdates", experimentUpdates);
+        appendTo(sb, "experimentRegistrations", experimentRegistrations);
+        appendTo(sb, "sampleUpdates", sampleUpdates);
+        appendTo(sb, "sampleRegistrations", sampleRegistrations);
+        appendTo(sb, "materialRegistrations", materialRegistrations);
+        appendTo(sb, "dataSetRegistrations", dataSetRegistrations);
+        appendTo(sb, "dataSetUpdates", dataSetUpdates);
+        appendTo(sb, "metaprojectRegistrations", metaprojectRegistrations);
+        appendTo(sb, "metaprojectUpdates", metaprojectUpdates);
+        appendTo(sb, "vocabularyUpdates", vocabularyUpdates);
+        appendTo(sb, "spaceRoleAssignments", spaceRoleAssignments);
+        appendTo(sb, "spaceRoleRevocations", spaceRoleRevocations);
         return sb.toString();
+    }
+    
+    private void appendTo(ToStringBuilder builder, String name, Object object)
+    {
+        if (object == null)
+        {
+            return;
+        }
+        if (object instanceof Map<?, ?>)
+        {
+            object = ((Map<?, ?>) object).entrySet();
+        }
+        if (object instanceof Collection<?> == false)
+        {
+            builder.append(name, object);
+        }
+        Collection<?> collection = (Collection<?>) object;
+        if (collection.isEmpty())
+        {
+            return;
+        }
+        builder.append(name, CollectionUtils.abbreviate(collection, 100));
     }
 
 }
