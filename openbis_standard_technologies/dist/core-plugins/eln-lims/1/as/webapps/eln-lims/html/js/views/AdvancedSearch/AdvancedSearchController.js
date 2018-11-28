@@ -21,8 +21,15 @@ function AdvancedSearchController(mainController, forceSearch) {
 
 	this.init = function(views) {
 		var _this = this;
-		this._loadSavedSearches(function() {
-			_this._advancedSearchView.repaint(views);
+		_this._searchStoreAvailable(function(searchStoreAvailable) {
+			_this._advancedSearchModel.searchStoreAvailable = searchStoreAvailable;
+			if (searchStoreAvailable) {
+				_this._loadSavedSearches(function() {
+					_this._advancedSearchView.repaint(views);
+				});
+			} else {
+				_this._advancedSearchView.repaint(views);
+			}
 		});
 	}
 
@@ -220,9 +227,43 @@ function AdvancedSearchController(mainController, forceSearch) {
 		}
 	}
 
+	this._getSearchCriteriaV3 = function(callback) {
+		var criteriaToSend = $.extend(true, {}, this._advancedSearchModel.criteria);
+		switch(criteriaToSend.entityKind) {
+			case "ALL":
+				var freeText = "";
+				for(var ruleId in criteriaToSend.rules) {
+					if(criteriaToSend.rules[ruleId].value) {
+						freeText += " " +  criteriaToSend.rules[ruleId].value;
+					}
+				}
+				mainController.serverFacade.getSearchCriteriaAndFetchOptionsForGlobalSearch(freeText, {}, callback);
+				break;
+			case "SAMPLE":
+				mainController.serverFacade.getSearchCriteriaAndFetchOptionsForSamplesSearch(criteriaToSend, {}, callback);
+				break;
+			case "EXPERIMENT":
+				mainController.serverFacade.getSearchCriteriaAndFetchOptionsForExperimentSearch(criteriaToSend, {}, callback);
+				break;
+			case "DATASET":
+				mainController.serverFacade.getSearchCriteriaAndFetchOptionsForDataSetSearch(criteriaToSend, {}, callback);
+				break;
+		}
+	}
+
 	//
 	// query loading / saving
 	//
+
+	this._searchStoreAvailable = function(callback) {
+		this._mainController.serverFacade.searchCustomASServices('search-store', function(result) {
+			if (result != null && result.objects.length > 0) {
+				callback(true);
+			} else {
+				callback(false);
+			}
+		})
+	}
 
 	this.selectSavedSearch = function(selcetedSavedSearchIndex) {
 		var savedSearch = this._advancedSearchModel.savedSearches[selcetedSavedSearchIndex];
@@ -236,22 +277,18 @@ function AdvancedSearchController(mainController, forceSearch) {
 	// params.experiment
 	this.saveNewSample = function(params, callback) {
 		var _this = this;
-		var criteria = _this._getSerializedCriteria();
 
 		this._ensureProjectAndExperiment(params.experiment, function(experiment) {
 			_this._doIfAdmin(experiment, function() {
-				_this._mainController.serverFacade.createSample('SEARCH_QUERY', experiment, {
-					NAME: params.name,
-					CRITERIA: criteria,
-				}, function(result) {
-					var permId = result[0].permId;
-					_this._mainController.serverFacade.getSamples([permId], function(result) {
-						if (result[permId]) {
-							var savedSearch = _this._sampleToSavedSearch(result[permId]);
-							_this._advancedSearchModel.savedSearches.push(savedSearch);
-							_this.selectSavedSearch(_this._advancedSearchModel.savedSearches.length - 1);
-						}
-					callback();
+				_this._getSearchCriteriaV3(function(criteriaV3, fetchOptionsV3) {
+					var criteriaEln = _this._advancedSearchModel.criteria;
+					var space = experiment.project.space;
+					_this._mainController.serverFacade.saveSearch(space, experiment, params.name, criteriaV3, fetchOptionsV3, criteriaEln, function(sample) {
+						Util.showSuccess('Search saved.');
+						var savedSearch = _this._sampleToSavedSearch(sample);
+						_this._advancedSearchModel.savedSearches.unshift(savedSearch);
+						_this.selectSavedSearch(0);
+						callback();
 					});
 				});
 			});
@@ -260,41 +297,39 @@ function AdvancedSearchController(mainController, forceSearch) {
 
 	this.updateSelectedSample = function(callback) {
 		var _this = this;
-		var criteria = _this._getSerializedCriteria();
 		var savedSearch = _this._advancedSearchModel.savedSearches[_this._advancedSearchModel.selcetedSavedSearchIndex];
 		_this._doIfAdmin(savedSearch.sample.experiment, function() {
-			_this._mainController.serverFacade.updateSample({
-				permId: savedSearch.sample.permId.permId,
-				properties: {
-					CRITERIA: criteria,
-				},
-			}, function(success) {
-				if (success) {
-					Util.showSuccess('Search updated.');
-					savedSearch.criteria = _this._clone(_this._advancedSearchModel.criteria);
-				}
-				callback();
+
+			_this._getSearchCriteriaV3(function(criteriaV3, fetchOptionsV3) {
+				var criteriaEln = _this._advancedSearchModel.criteria;
+				var selcetedSavedSearchIndex = _this._advancedSearchModel.selcetedSavedSearchIndex;
+				var permId = _this._advancedSearchModel.savedSearches[selcetedSavedSearchIndex].sample.permId.permId;
+				_this._mainController.serverFacade.updateSearch(permId, criteriaV3, fetchOptionsV3, criteriaEln, function(result){
+					if (result) {
+						Util.showSuccess('Search updated.');
+						savedSearch.criteria = _this._clone(_this._advancedSearchModel.criteria);
+					}
+					callback();
+				});
 			});
 		});
 	}
 
 	this.delete = function(selcetedSavedSearchIndex, callback) {
 		var _this = this;
-		var savedSearch = _this._advancedSearchModel.savedSearches[selcetedSavedSearchIndex];
-		this._mainController.serverFacade.deleteSamples(
-			[savedSearch.sample.permId.permId],
-			'Search query deletion by user',
-			function(deletionId) {
-				if (deletionId) {
-					_this._advancedSearchModel.selcetedSavedSearchIndex = -1;
-					Util.showSuccess('Search deleted.');
-					_this._loadSavedSearches(function() {
-						_this._advancedSearchView.repaintContent();
-					});
-				}
-				callback();
+		var selcetedSavedSearchIndex = _this._advancedSearchModel.selcetedSavedSearchIndex;
+		var permId = _this._advancedSearchModel.savedSearches[selcetedSavedSearchIndex].sample.permId.permId;
+		var reason = 'Search query deletion by user';
+		this._mainController.serverFacade.deleteSearch(permId, reason, function(deletionId) {
+			if (deletionId) {
+				_this._advancedSearchModel.selcetedSavedSearchIndex = -1;
+				Util.showSuccess('Search deleted.');
+				_this._loadSavedSearches(function() {
+					_this._advancedSearchView.repaintContent();
+				});
 			}
-		);
+			callback();
+		});
 	}
 
 	this.clearSelection = function() {
@@ -307,7 +342,7 @@ function AdvancedSearchController(mainController, forceSearch) {
 		this._mainController.serverFacade.searchSamplesV3('SEARCH_QUERY', function(result) {
 			_this._advancedSearchModel.savedSearches = [];
 			if(result != null && result.objects != null) {
-				var samples = _this._sortSavedSearchSamples(result.objects);
+				var samples = _this._sortSearchSamples(result.objects);
 				for (var i=0; i<samples.length; i++) {
 					_this._advancedSearchModel.savedSearches.push(_this._sampleToSavedSearch(samples[i]));
 				}
@@ -318,7 +353,7 @@ function AdvancedSearchController(mainController, forceSearch) {
 
 	// puts own samples on top
 	// samples are assumed to already be sorted by date
-	this._sortSavedSearchSamples = function(samples) {
+	this._sortSearchSamples = function(samples) {
 		var ownSamples = [];
 		var otherSamples = [];
 		for (var i=0; i<samples.length; i++) {
@@ -329,6 +364,21 @@ function AdvancedSearchController(mainController, forceSearch) {
 			}
 		}
 		return ownSamples.concat(otherSamples);
+	}
+
+	// puts own samples on top
+	// samples are assumed to already be sorted by date
+	this._sortSearches = function(searches) {
+		var ownSearches = [];
+		var otherSearches = [];
+		for (var i=0; i<searches.length; i++) {
+			if (searches[i].sample.registrator.userId == this._mainController.serverFacade.getUserId()) {
+				ownSearches.push(searches[i]);
+			} else {
+				otherSearches.push(searches[i]);
+			}
+		}
+		return ownSearches.concat(otherSearches);
 	}
 
 	this._ensureProjectAndExperiment = function(experiment, callback) {
@@ -383,12 +433,8 @@ function AdvancedSearchController(mainController, forceSearch) {
 		return {
 			sample: sample,
 			name: sample.properties.NAME,
-			criteria: JSON.parse(atob(sample.properties.CRITERIA.replace('<criteria>', '').replace('</criteria>', ''))),
+			criteria: JSON.parse(sample.properties.CUSTOM_DATA.replace('<xml><![CDATA[', '').replace(']]></xml>', ''))['eln-lims-criteria'],
 		};
-	}
-
-	this._getSerializedCriteria = function() {
-		return '<criteria>' + btoa(JSON.stringify(this._advancedSearchModel.criteria)) + '</criteria>';
 	}
 
 	this._doIfAdmin = function(experiment, action) {
@@ -409,4 +455,5 @@ function AdvancedSearchController(mainController, forceSearch) {
 	this._clone = function(object) {
 		return JSON.parse(JSON.stringify(object));
 	}
+
 }

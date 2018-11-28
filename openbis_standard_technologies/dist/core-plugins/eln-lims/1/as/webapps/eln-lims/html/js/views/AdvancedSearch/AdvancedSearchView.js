@@ -161,6 +161,10 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		var _this = this;
 		$container.empty();
 
+		if (this._advancedSearchModel.searchStoreAvailable != true) {
+			return;
+		}
+
 		var savedSearchOptions = [{
 			label: 'load a saved search',
 			value: -1,
