@@ -19,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     url='https://sissource.ethz.ch/sispub/openbis/tree/master/pybis',
     packages=find_packages(),
-    license='BSD',
+    license='Apache Software License Version 2.0',
     install_requires=[
         'pytest',
         'requests',

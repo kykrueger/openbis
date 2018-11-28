@@ -211,9 +211,6 @@ fetch_option = {
     },
     "roleAssignments": {
         "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions",
-        "space": {
-            "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"
-        }
     },
     "properties": {"@type": "as.dto.property.fetchoptions.PropertyFetchOptions"},
     "propertyAssignments": {
@@ -247,6 +244,8 @@ fetch_option = {
         },
     },
     "vocabularyTerm": {"@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"},
+    "deletedObjects": { "@type": "as.dto.deletion.fetchoptions.DeletedObjectFetchOptions" },
+    "deletion": { "@type": "as.dto.deletion.fetchoptions.DeletionFetchOptions" },
 }
 
 def get_fetchoption_for_entity(entity):

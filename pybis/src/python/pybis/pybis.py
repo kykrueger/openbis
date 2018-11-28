@@ -940,7 +940,7 @@ class Openbis:
             else:
                 return Group(self, data=group)
 
-    def get_role_assignments(self, **search_args):
+    def get_role_assignments(self, start_with=None, count=None, **search_args):
         """ Get the assigned roles for a given group, person or space
         """
         search_criteria = get_search_type_for_entity('roleAssignment', 'AND')
@@ -985,8 +985,10 @@ class Openbis:
 
         search_criteria['criteria'] = sub_crit
 
-        fetchopts = {}
-        for option in ['roleAssignments', 'space', 'project', 'user', 'authorizationGroup','registrator']:
+        fetchopts = fetch_option['roleAssignments']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
+        for option in ['space', 'project', 'user', 'authorizationGroup','registrator']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1112,7 +1114,7 @@ class Openbis:
         return
 
 
-    def get_groups(self, **search_args):
+    def get_groups(self, start_with=None, count=None, **search_args):
         """ Get openBIS AuthorizationGroups. Returns a «Things» object.
 
         Usage::
@@ -1139,6 +1141,8 @@ class Openbis:
         search_criteria['operator'] = 'AND'
                 
         fetchopts = fetch_option['authorizationGroup']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['roleAssignments', 'registrator', 'users']:
             fetchopts[option] = fetch_option[option]
         request = {
@@ -1167,12 +1171,14 @@ class Openbis:
         return Things(self, entity='group', df=groups[attrs], identifier_name='permId')
 
 
-    def get_persons(self, **search_args):
+    def get_persons(self, start_with=None, count=None, **search_args):
         """ Get openBIS users
         """
 
         search_criteria = get_search_criteria('person', **search_args)
-        fetchopts = {}
+        fetchopts = fetch_option['person']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['space']:
             fetchopts[option] = fetch_option[option]
         request = {
@@ -1244,13 +1250,15 @@ class Openbis:
     get_user = get_person # Alias
 
 
-    def get_spaces(self, code=None):
+    def get_spaces(self, code=None, start_with=None, count=None):
         """ Get a list of all available spaces (DataFrame object). To create a sample or a
         dataset, you need to specify in which space it should live.
         """
 
         search_criteria = _subcriteria_for_code(code, 'space')
-        fetchopts = {}
+        fetchopts = fetch_option['space']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         request = {
             "method": "searchSpaces",
             "params": [self.token,
@@ -1301,8 +1309,11 @@ class Openbis:
                 return Space(self, data=resp[permid])
 
 
-    def get_samples(self, code=None, permId=None, space=None, project=None, experiment=None, type=None,
-                    withParents=None, withChildren=None, tags=None, props=None, **properties):
+    def get_samples(
+        self, code=None, permId=None, space=None, project=None, experiment=None, type=None,
+        start_with=None, count=None,
+        withParents=None, withChildren=None, tags=None, props=None, **properties
+    ):
         """ Get a list of all samples for a given space/project/experiment (or any combination)
         """
 
@@ -1359,6 +1370,8 @@ class Openbis:
 
         # build the various fetch options
         fetchopts = fetch_option['sample']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         for option in ['tags', 'properties', 'registrator', 'modifier', 'experiment']:
             fetchopts[option] = fetch_option[option]
@@ -1378,7 +1391,11 @@ class Openbis:
     get_objects = get_samples # Alias
 
 
-    def get_experiments(self, code=None, permId=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
+    def get_experiments(
+        self, code=None, permId=None, type=None, space=None, project=None, 
+        start_with=None, count=None,
+        tags=None, is_finished=None, props=None, **properties
+    ):
         """ Searches for all experiment which match the search criteria. Returns a
         «Things» object which can be used in many different situations.
 
@@ -1417,6 +1434,8 @@ class Openbis:
         search_criteria['operator'] = 'AND'
 
         fetchopts = fetch_option['experiment']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['tags', 'properties', 'registrator', 'modifier', 'project']:
             fetchopts[option] = fetch_option[option]
 
@@ -1455,10 +1474,12 @@ class Openbis:
         return Things(self, 'experiment', experiments[attrs], 'identifier')
 
 
-    def get_datasets(self, code=None, type=None, withParents=None, withChildren=None, 
-            status=None, sample=None, experiment=None, project=None, tags=None, props=None, 
-            **properties
-        ):
+    def get_datasets(
+        self, code=None, type=None, withParents=None, withChildren=None, 
+        start_with=None, count=None,
+        status=None, sample=None, experiment=None, project=None,
+        tags=None, props=None, **properties
+    ):
 
         sub_criteria = []
 
@@ -1497,6 +1518,8 @@ class Openbis:
             "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
             "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"}
         }
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         for option in ['tags', 'properties', 'sample', 'experiment', 'physicalData']:
             fetchopts[option] = fetch_option[option]
@@ -1694,17 +1717,20 @@ class Openbis:
         return
 
 
-    def get_deletions(self):
+    def get_deletions(self, start_with=None, count=None):
+        search_criteria = {}
+        fetchopts = fetch_option['deletion']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
+        for option in ['deletedObjects']:
+            fetchopts[option] = fetch_option[option]
+
         request = {
             "method": "searchDeletions",
             "params": [
                 self.token,
                 {},
-                {
-                    "deletedObjects": {
-                        "@type": "as.dto.deletion.fetchoptions.DeletedObjectFetchOptions"
-                    }
-                }
+                fetchopts,
             ]
         }
         resp = self._post_request(self.as_v3, request)
@@ -1759,7 +1785,10 @@ class Openbis:
 
             return Project(self, resp['objects'][0])
 
-    def get_projects(self, space=None, code=None):
+    def get_projects(
+        self, space=None, code=None,
+        start_with=None, count=None,
+    ):
         """ Get a list of all available projects (DataFrame object).
         """
 
@@ -1776,6 +1805,8 @@ class Openbis:
         }
 
         fetchopts = {"@type": "as.dto.project.fetchoptions.ProjectFetchOptions"}
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['registrator', 'modifier', 'leader']:
             fetchopts[option] = fetch_option[option]
 
@@ -1841,7 +1872,7 @@ class Openbis:
         }
         return request
 
-    def get_terms(self, vocabulary=None):
+    def get_terms(self, start_with=None, count=None, vocabulary=None):
         """ Returns information about existing vocabulary terms. 
         If a vocabulary code is provided, it only returns the terms of that vocabulary.
         """
@@ -1857,6 +1888,8 @@ class Openbis:
             })
 
         fetchopts = fetch_option['vocabularyTerm']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         request = {
             "method": "searchVocabularyTerms",
@@ -1954,13 +1987,15 @@ class Openbis:
                     return klass(self, resp[ident])
 
 
-    def get_vocabularies(self):
+    def get_vocabularies(self, start_with=None, count=None):
         """ Returns information about vocabulary
         """
 
         search_request = {}
 
         fetchopts = fetch_option['vocabulary']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['registrator']:
             fetchopts[option] = fetch_option[option]
 
@@ -1997,7 +2032,7 @@ class Openbis:
         return Tag(self, code=code, description=description)
 
 
-    def get_tags(self, code=None):
+    def get_tags(self, code=None, start_with=None, count=None):
         """ Returns a DataFrame of all tags
         """
 
@@ -2005,6 +2040,8 @@ class Openbis:
 
         criteria = []
         fetchopts = fetch_option['tag']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['owner']:
             fetchopts[option] = fetch_option[option]
         if code:
@@ -2204,7 +2241,7 @@ class Openbis:
         else:
             return SemanticAnnotation(self, isNew=False, **object)
 
-    def get_plugins(self):
+    def get_plugins(self, start_with=None, count=None):
 
         criteria = []
         search_criteria = get_search_type_for_entity('plugin', 'AND')
@@ -2297,14 +2334,16 @@ class Openbis:
         return Plugin(self, pluginType=pluginType, pluginKind=pluginKind, **kwargs) 
 
     
-    def get_sample_types(self, type=None):
+    def get_sample_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available sample types
         """
         return self._get_types_of(
             "searchSampleTypes",
             "Sample",
             type,
-            ["generatedCodePrefix"]
+            additional_attributes=["generatedCodePrefix"],
+            start_with=start_with,
+            count=count,
         )
 
     get_object_types = get_sample_types # Alias
@@ -2315,7 +2354,7 @@ class Openbis:
                 "searchSampleTypes",
                 "Sample",
                 type,
-                ["generatedCodePrefix", "validationPluginId"]
+                additional_attributes=["generatedCodePrefix", "validationPluginId"]
             )
             return SampleType(self, property_asignments.data)
         except Exception:
@@ -2323,13 +2362,13 @@ class Openbis:
 
     get_object_type = get_sample_type # Alias
 
-    def get_experiment_types(self, type=None):
+    def get_experiment_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available experiment types
         """
         return self._get_types_of(
-            "searchExperimentTypes",
-            "Experiment",
-            type
+            "searchExperimentTypes", "Experiment", type,
+            start_with=start_with,
+            count=count,
         )
 
     get_collection_types = get_experiment_types  # Alias
@@ -2339,17 +2378,21 @@ class Openbis:
             return self._get_types_of(
                 "searchExperimentTypes",
                 "Experiment",
-                type
+                type,
             )
         except Exception:
            raise ValueError("No such experiment type: {}".format(type))
 
     get_collection_type = get_experiment_type  # Alias
 
-    def get_material_types(self, type=None):
+    def get_material_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available material types
         """
-        return self._get_types_of("searchMaterialTypes", "Material", type)
+        return self._get_types_of(
+            "searchMaterialTypes", "Material", type,
+            start_with=start_with,
+            count=count,
+        )
 
     def get_material_type(self, type):
         try:
@@ -2357,10 +2400,15 @@ class Openbis:
         except Exception:
             raise ValueError("No such material type: {}".format(type))
 
-    def get_dataset_types(self, type=None):
+    def get_dataset_types(self, type=None, start_with=None, count=None):
         """ Returns a list (DataFrame object) of all currently available dataset types
         """
-        return self._get_types_of("searchDataSetTypes", "DataSet", type, optional_attributes=['kind'])
+        return self._get_types_of(
+            "searchDataSetTypes", "DataSet", type, 
+            optional_attributes=['kind'],
+            start_with=start_with,
+            count=count,
+        )
 
     def get_dataset_type(self, type):
         try:
@@ -2368,17 +2416,28 @@ class Openbis:
         except Exception:
             raise ValueError("No such dataSet type: {}".format(type))
 
-    def _get_types_of(self, method_name, entity, type_name=None, additional_attributes=[], optional_attributes=[]):
+    def _get_types_of(
+        self, method_name, entity, type_name=None, 
+        start_with=None, count=None,
+        additional_attributes=None, optional_attributes=None
+    ):
         """ Returns a list of all available types of an entity.
         If the name of the entity-type is given, it returns a PropertyAssignments object
         """
+        if additional_attributes is None:
+            additional_attributes = []
+
+        if optional_attributes is None:
+            optional_attributes = []
 
         search_request = {}
-        fetch_options = {
+        fetchopts = {
             "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions".format(
                 entity.lower(), entity
             )
         }
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         if type_name is not None:
             search_request = _gen_search_criteria({
@@ -2386,13 +2445,13 @@ class Openbis:
                 "operator": "AND",
                 "code": type_name
             })
-            fetch_options['propertyAssignments'] = fetch_option['propertyAssignments']
+            fetchopts['propertyAssignments'] = fetch_option['propertyAssignments']
             if self.server_information.api_version > '3.3':
-                fetch_options['validationPlugin'] = fetch_option['plugin']
+                fetchopts['validationPlugin'] = fetch_option['plugin']
 
         request = {
             "method": method_name,
-            "params": [self.token, search_request, fetch_options],
+            "params": [self.token, search_request, fetchopts],
         }
         resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
