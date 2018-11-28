@@ -289,16 +289,18 @@ public class AtomicEntityOperationDetails implements Serializable
         {
             object = ((Map<?, ?>) object).entrySet();
         }
-        if (object instanceof Collection<?> == false)
+        if (object instanceof Collection<?>)
+        {
+            Collection<?> collection = (Collection<?>) object;
+            if (collection.isEmpty())
+            {
+                return;
+            }
+            builder.append(name, CollectionUtils.abbreviate(collection, 100));
+        } else
         {
             builder.append(name, object);
         }
-        Collection<?> collection = (Collection<?>) object;
-        if (collection.isEmpty())
-        {
-            return;
-        }
-        builder.append(name, CollectionUtils.abbreviate(collection, 100));
     }
 
 }
