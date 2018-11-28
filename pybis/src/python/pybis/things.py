@@ -2,7 +2,22 @@ from tabulate import tabulate
 
 class Things():
     """An object that contains a DataFrame object about an entity  available in openBIS.
-       
+    Use .df to work with the DataFrame instead.
+    Can be used in a for-loop:
+
+    for sample in openbis.get_samples():
+        ...
+
+    You can access an element directly by providing the index number:
+        openbis.get_samples()[7]
+
+    Because the order of the elements cannot be ensured, you should choose the identifier instead:
+        openbis.get_samples()['/SOME_SPACE/SAMPLE_CODE']
+
+    Of course, if you know the identifier already, you would rather do: 
+        openbis.get_sample('/SOME_SPACE/SAMPLE_CODE')
+    
+    
     """
 
     def __init__(self, openbis_obj, entity, df, 
