@@ -2185,6 +2185,19 @@ function ServerFacade(openbisServer) {
 	// V3 Functions
 	//
 
+	this.getSpace = function(spaceIdentifier, callbackFunction) {
+		require(["as/dto/space/id/SpacePermId", "as/dto/space/fetchoptions/SpaceFetchOptions"], 
+			function(SpacePermId, SpaceFetchOptions) {
+				mainController.openbisV3.getSpaces([new SpacePermId(spaceIdentifier)], new SpaceFetchOptions()).done(function(result) {
+					callbackFunction(result);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
+
 	this.getProject = function(projectIdentifier, callbackFunction) {
 		require(["as/dto/project/id/ProjectIdentifier", "as/dto/project/fetchoptions/ProjectFetchOptions"],
 		  function(ProjectIdentifier, ProjectFetchOptions) {

@@ -268,7 +268,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    
     	    var showLabNotebooks = function(dfd, showEnabled, showDisabled) {
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		profile.getHomeSpace(true, function(HOME_SPACE) {
+    	    		profile.getHomeSpace(function(HOME_SPACE) {
     	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
     	    			var results = [];
     	    			var spaces = searchResult.objects;
@@ -313,7 +313,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    switch(type) {
     	    	case "LAB_NOTEBOOK":
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		profile.getHomeSpace(true, function(HOME_SPACE) {
+    	    		profile.getHomeSpace(function(HOME_SPACE) {
     	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
     	    			var results = [];
     	    			var spaces = searchResult.objects;
