@@ -27,28 +27,32 @@ PROPERTY_TYPES = [
             'dataType': DataType.VARCHAR,
             'label': 'Name',
             'mandatory': True,
-            'description': 'Human readable name'
+            'description': 'Human readable name',
+            'shownEdit': True
         },
         {
             'code': 'SEARCH_CRITERIA',
             'dataType': DataType.XML,
             'label': 'Search criteria',
             'mandatory': True,
-            'description': 'V3 API search criteria'
+            'description': 'V3 API search criteria',
+            'shownEdit': False
         },
         {
             'code': "FETCH_OPTIONS",
             'dataType': DataType.XML,
             'label': 'Fetch options',
             'mandatory': False,
-            'description': 'V3 API fetch options'
+            'description': 'V3 API fetch options',
+            'shownEdit': False
         },
         {
             'code': "CUSTOM_DATA",
             'dataType': DataType.XML,
             'label': 'Custom data',
             'mandatory': False,
-            'description': 'Additional data in custom format'
+            'description': 'Additional data in custom format',
+            'shownEdit': False
         }
     ]
 
@@ -64,4 +68,4 @@ for propert_type_def in PROPERTY_TYPES:
     property_type.setDescription(propert_type_def['description'])
     assignment = tr.assignPropertyType(sample_type, property_type)
     assignment.setMandatory(propert_type_def['mandatory'])
-    assignment.setShownEdit(True)
+    assignment.setShownEdit(propert_type_def['shownEdit'])
