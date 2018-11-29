@@ -334,6 +334,7 @@ function AdvancedSearchController(mainController, forceSearch) {
 
 	this.clearSelection = function() {
 		this._advancedSearchModel.selcetedSavedSearchIndex = -1;
+		this._advancedSearchModel.forceLoadCriteria = true;
 		this._advancedSearchView.repaintContent();
 	}
 
