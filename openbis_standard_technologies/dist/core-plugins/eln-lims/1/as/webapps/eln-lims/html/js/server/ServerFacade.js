@@ -948,11 +948,15 @@ function ServerFacade(openbisServer) {
 					if(fetchOptions.withPhysicalData) {
 						fetchOptions.withPhysicalData();
 					}
+					var parentfetchOptions = jQuery.extend(true, {}, fetchOptions);
+					var childrenfetchOptions = jQuery.extend(true, {}, fetchOptions);
 					if(fetchOptions.withParents) {
-						fetchOptions.withParentsUsing(fetchOptions);
+						parentfetchOptions.withParentsUsing(parentfetchOptions);
+						fetchOptions.withParentsUsing(parentfetchOptions);
 					}
 					if(fetchOptions.withChildren) {
-						fetchOptions.withChildrenUsing(fetchOptions);
+						childrenfetchOptions.withChildrenUsing(childrenfetchOptions);
+						fetchOptions.withChildrenUsing(childrenfetchOptions);
 					}
 				} else if(advancedFetchOptions.minTableInfo) {
 					if(fetchOptions.withType) {
