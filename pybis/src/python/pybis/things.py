@@ -1,4 +1,6 @@
 from tabulate import tabulate
+from pandas import DataFrame, Series
+import pandas as pd
 
 class Things():
     """An object that contains a DataFrame object about an entity  available in openBIS.
