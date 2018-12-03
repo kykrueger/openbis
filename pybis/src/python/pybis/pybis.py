@@ -121,6 +121,7 @@ def get_attrs_for_entity(entity):
 
 
 def _type_for_id(ident, entity):
+    ident = ident.strip()
     """Returns the data type for a given identifier/permId for use with the API call, e.g.
     {
         "identifier": "/DEFAULT/SAMPLE_NAME",
@@ -161,6 +162,9 @@ def _type_for_id(ident, entity):
         entity_capitalize = entity.capitalize()
 
     if is_identifier(ident):
+        # people tend to omit the / prefix of an identifier...
+        if not ident.startswith('/'):
+            ident = '/'+ident
         search_request = {
             "identifier": ident.upper(),
             "@type": "as.dto.{}.id.{}Identifier".format(entity.lower(), entity_capitalize)
@@ -1310,7 +1314,7 @@ class Openbis:
 
 
     def get_samples(
-        self, code=None, permId=None, space=None, project=None, experiment=None, type=None,
+        self, identifier=None, code=None, permId=None, space=None, project=None, experiment=None, type=None,
         start_with=None, count=None,
         withParents=None, withChildren=None, tags=None, props=None, **properties
     ):
@@ -1318,13 +1322,24 @@ class Openbis:
         """
 
         sub_criteria = []
+
+        # v3 API does not offer a search for identifiers. We need to do a combined search instead:
+        # space && code or
+        # space && project && code
+        if identifier:
+            identifier = identifier.lstrip('/')
+            elements = identifier.split('/')
+            if len(elements) == 2:
+                space = elements[0]
+                code  = elements[1]
+            elif len(elements) == 3:
+                space = elements[0]
+                code  = elements[2]
+            else:
+                raise ValueError("{} is not a valid sample identifier.".format(identifier))
+
         if space:
-            sub_criteria.append(_gen_search_criteria({
-                "space": "Space",
-                "operator": "AND",
-                "code": space
-            })
-            )
+            sub_criteria.append(_subcriteria_for_code(space, 'space'))
         if project:
             proj_crit = _subcriteria_for_code(project, 'project')
             sub_criteria.append(proj_crit)
