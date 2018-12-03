@@ -10,6 +10,7 @@ import systemtest.util as util
 import urllib, urllib2
 import ssl, base64
 import json
+from random import randint
 
 from urllib2 import Request
 
@@ -41,10 +42,11 @@ HARVESTER_DSS_PORT = '9003'
 
 
 class TestCase(systemtest.testcase.TestCase):
+
     def execute(self):
         openbis_data_source = self._setupOpenbisDataSource()
         openbis_data_source.allUp()
-        util.copyFromTo()
+        self._drop_test_examples(openbis_data_source)
 
         openbis_harvester = self._setupOpenbisHarvester()
         openbis_harvester.allUp()
@@ -55,38 +57,97 @@ class TestCase(systemtest.testcase.TestCase):
 
     def executeInDevMode(self):
         openbis_data_source = self.createOpenbisController('data_source', port=DATA_SOURCE_AS_PORT, dropDatabases=False)
+#        self._drop_test_examples(openbis_data_source)
         openbis_harvester = self.createOpenbisController('harvester', port=HARVESTER_AS_PORT, dropDatabases=False)
         self._checkData(openbis_data_source, openbis_harvester)
         
+
+    def _drop_test_examples(self, openbis):
+        incoming = "%s/data/incoming-test" % openbis.installPath
+        example_files = []
+        example_files.append(self._drop_big_file(incoming))
+        example_files.append(self._drop_big_folder_with_many_files(incoming))
+        for example_file in example_files:
+            with open("%s/.MARKER_is_finished_%s" % (incoming, example_file), 'w') as f:
+                pass
+        openbis.waitUntilDataSetRegistrationFinished(2)
+        
+    def _drop_big_file(self, incoming):
         big_file = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'openBIS-installation')
         big_file_folder, big_file_name = os.path.split(big_file)
-        incoming_stage = "%s/data/incoming_stage" % openbis_data_source.installPath
-        shutil.rmtree(incoming_stage)
-        os.makedirs(incoming_stage)
-        util.copyFromTo(big_file_folder, incoming_stage, big_file_name)
-        os.rename("%s/%s" % (incoming_stage, big_file_name), 
-                  "%s/data/incoming-default/%s" % (openbis_data_source.installPath, big_file_name))
-#        openbis_data_source.waitUntilDataSetRegistrationFinished(1)
+        util.copyFromTo(big_file_folder, incoming, big_file_name)
+        return big_file_name
 
+    def _drop_big_folder_with_many_files(self, incoming):
+        next_words = self._get_next_words_dictionary('Pride_and_Prejudice.txt')
+        number_of_text_files = 20000
+        minimum_size = 50000
+        texts_folder = "%s/%s" % (incoming, "texts")
+        os.makedirs(texts_folder)
+        for i in range(number_of_text_files):
+            with open("%s/text-%05d" % (texts_folder, i + 1), 'w') as f:
+                f.write(self._create_random_text(next_words, minimum_size))
+        util.printAndFlush("%s text files (minimum size %s each) created in %s" % (number_of_text_files, minimum_size, texts_folder))
+        return "texts"
+
+    def _create_random_text(self, next_words, minimum_size):
+        text = ''
+        word = self._choose_random_word(next_words)
+        line = word
+        while len(text) < minimum_size:
+            word = self._choose_next_word(next_words, word)
+            if len(line) > 60:
+                text += '\n' + line
+                line = word
+            else:
+                line += ' ' + word
+        return text + '\n'
+
+    def _choose_random_word(self, next_words):
+        keys = next_words.keys()
+        return keys[randint(0, len(keys) - 1)]
+
+    def _choose_next_word(self, next_words, word):
+        if word in next_words:
+            words = next_words[word]
+            return words[randint(0, len(words) - 1)]
+        return word
+
+    def _get_next_words_dictionary(self, text_file):
+        next_words = {}
+        previous_word = None
+        with open("%s/%s" % (self.getTemplatesFolder(), text_file), 'r') as f:
+            for line in f:
+                for word in line.split():
+                    if previous_word is not None:
+                        words = []
+                        if previous_word not in next_words:
+                            next_words[previous_word] = words
+                        else:
+                            words = next_words[previous_word]
+                        words.append(word)
+                    previous_word = word
+        return next_words
+    
     def _checkData(self, openbis_data_source, openbis_harvester):
         material_types = openbis_data_source.queryDatabase('openbis', 'select code, description from material_types order by code')
-        self.assertEquals("Material types on data source", 
-                          [['COMPOUND', 'Compound'], ['CONTROL', 'Control of a control layout'], 
-                           ['GEN-RELATION', 'links to genes'], ['GENE', 'Gene'], ['SIRNA', 'Oligo nucleotide']], 
+        self.assertEquals("Material types on data source",
+                          [['COMPOUND', 'Compound'], ['CONTROL', 'Control of a control layout'],
+                           ['GEN-RELATION', 'links to genes'], ['GENE', 'Gene'], ['SIRNA', 'Oligo nucleotide']],
                           material_types)
-        material_types = openbis_harvester.queryDatabase('openbis', 
+        material_types = openbis_harvester.queryDatabase('openbis',
                 "select code, description from material_types where code like 'DS1_%' order by code")
-        self.assertEquals("Synched material types on harvester", 
-                          [['DS1_COMPOUND', 'Compound'], ['DS1_CONTROL', 'Control of a control layout'], 
-                           ['DS1_GEN-RELATION', 'links to genes'], ['DS1_GENE', 'Gene'], ['DS1_SIRNA', 'Oligo nucleotide']], 
+        self.assertEquals("Synched material types on harvester",
+                          [['DS1_COMPOUND', 'Compound'], ['DS1_CONTROL', 'Control of a control layout'],
+                           ['DS1_GEN-RELATION', 'links to genes'], ['DS1_GENE', 'Gene'], ['DS1_SIRNA', 'Oligo nucleotide']],
                           material_types)
-        self._compareDataBases("Attachments", openbis_data_source, openbis_harvester, "openbis", 
+        self._compareDataBases("Attachments", openbis_data_source, openbis_harvester, "openbis",
                                "select e.code as experiment, p.code as project, s.code as sample, "
-                               + "a.file_name, a.version, a.title, a.description, length(value), md5(value) "
-                               + "from attachments a join attachment_contents c on a.exac_id = c.id "
-                               + "left join experiments e on a.expe_id = e.id "
-                               + "left join projects p on a.proj_id = p.id "
-                               + "left join samples s on a.samp_id=s.id order by a.file_name, a.version")
+                               +"a.file_name, a.version, a.title, a.description, length(value), md5(value) "
+                               +"from attachments a join attachment_contents c on a.exac_id = c.id "
+                               +"left join experiments e on a.expe_id = e.id "
+                               +"left join projects p on a.proj_id = p.id "
+                               +"left join samples s on a.samp_id=s.id order by a.file_name, a.version")
 
     def _compareDataBases(self, name, openbis_data_source, openbis_harvester, databaseType, sql):
         expectedContent = openbis_data_source.queryDatabase(databaseType, sql)
