@@ -42,6 +42,10 @@ public final class MockLogger implements ISimpleLogger
     {
         builder.append(level).append(": ").append(message).append('\n');
         messageChannel.send(message);
+        if (throwableOrNull != null)
+        {
+            throwableOrNull.printStackTrace(System.out);
+        }
     }
 
     public void assertNextLogMessage(String expectedMessage)

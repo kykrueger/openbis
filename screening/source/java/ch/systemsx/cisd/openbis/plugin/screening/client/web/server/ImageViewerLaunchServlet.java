@@ -45,7 +45,6 @@ import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.ParameterName
  * @author Franz-Josef Elmer
  */
 @Controller
-@RequestMapping({ "/" + IMAGE_VIEWER_LAUNCH_URL, "/openbis/" + IMAGE_VIEWER_LAUNCH_URL })
 public class ImageViewerLaunchServlet extends AbstractServlet
 {
     public static final Template JNLP_TEMPLATE = new Template(
@@ -98,6 +97,7 @@ public class ImageViewerLaunchServlet extends AbstractServlet
     }
 
     @Override
+    @RequestMapping({ "/" + IMAGE_VIEWER_LAUNCH_URL, "/openbis/" + IMAGE_VIEWER_LAUNCH_URL })
     protected void respondToRequest(HttpServletRequest request, HttpServletResponse response)
             throws Exception, IOException
     {

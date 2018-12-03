@@ -39,9 +39,12 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFil
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Utils;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Facade;
 import ch.systemsx.cisd.common.io.IOUtilities;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSet;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetRegistrationTransactionV2;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetUpdatable;
@@ -59,6 +62,9 @@ import ch.systemsx.cisd.openbis.generic.shared.util.SimpleTableModelBuilder;
 class DataSetRegistrationIngestionService extends IngestionService<DataSetInformation>
 {
     private static final long serialVersionUID = 1L;
+    
+    private static final Logger operationLog =
+            LogFactory.getLogger(LogCategory.OPERATION, DataSetRegistrationIngestionService.class);
  
     private final NewExternalData dataSet;
 
@@ -66,22 +72,19 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
 
     private final String loginPass;
 
-    private final String asUrl;
-
-    private final String dssUrl;
-
     private final String harvesterTempDir;
 
-    public DataSetRegistrationIngestionService(Properties properties, File storeRoot, NewExternalData ds,
+    private SyncConfig config;
+
+    public DataSetRegistrationIngestionService(SyncConfig config, File storeRoot, NewExternalData ds,
             Logger operationLog)
     {
-        super(properties, storeRoot);
+        super(new Properties(), storeRoot);
+        this.config = config;
         this.dataSet = ds;
-        this.loginUser = properties.getProperty("user");
-        this.loginPass = properties.getProperty("pass");
-        this.asUrl = properties.getProperty("as-url");
-        this.dssUrl = properties.getProperty("dss-url");
-        this.harvesterTempDir = properties.getProperty("harvester-temp-dir");
+        this.loginUser = config.getUser();
+        this.loginPass = config.getPassword();
+        this.harvesterTempDir = config.getHarvesterTempDir();
     }
 
     @Override
@@ -158,6 +161,13 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
         }
     }
 
+    @Override
+    protected TableModel errorTableModel(Map<String, Object> parameters, Throwable e)
+    {
+        operationLog.error("Error occurred while registering data set " + dataSet.getCode(), e);
+        return super.errorTableModel(parameters, e);
+    }
+
     private TableModel summaryTableModel(Map<String, Object> parameters, String summary)
     {
         SimpleTableModelBuilder builder = new SimpleTableModelBuilder(true);
@@ -194,10 +204,9 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
 
     private void downloadDataSetFiles(File dir, String dataSetCode) throws Exception
     {
-        V3Utils dssFileUtils = V3Utils.create(asUrl, dssUrl);
-        String sessionToken = dssFileUtils.login(loginUser, loginPass);
+        V3Facade v3FacadeToDataSource = new V3Facade(config);
         DataSetFileFetchOptions dsFileFetchOptions = new DataSetFileFetchOptions();
-        SearchResult<DataSetFile> result = dssFileUtils.searchWithDataSetCode(sessionToken, dataSetCode, dsFileFetchOptions);
+        SearchResult<DataSetFile> result = v3FacadeToDataSource.searchWithDataSetCode(dataSetCode, dsFileFetchOptions);
         List<DataSetFile> files = result.getObjects();
 
         List<IDataSetFileId> fileIds = new LinkedList<IDataSetFileId>();
@@ -210,7 +219,7 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
         // Download the files & print the contents
         DataSetFileDownloadOptions options = new DataSetFileDownloadOptions();
         options.setRecursive(false);
-        InputStream stream = dssFileUtils.downloadFiles(sessionToken, fileIds, options);
+        InputStream stream = v3FacadeToDataSource.downloadFiles(fileIds, options);
         DataSetFileDownloadReader reader = new DataSetFileDownloadReader(stream);
         DataSetFileDownload fileDownload = null;
         while ((fileDownload = reader.read()) != null)
@@ -230,10 +239,6 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
             {
                 DataSetFilePermId filePermId = orgFile.getPermId();
                 FileDetails fileDetails = fileDetailsMap.get(filePermId);
-
-                // System.out.println("Downloaded " + orgFile.getPath() + " "
-                // + MemorySizeFormatter.format(orgFile.getFileLength()));
-
                 Path path = Paths.get(dir.getAbsolutePath(), filePath);
                 InputStream inputStream = fileDownload.getInputStream();
                 OutputStream outputStream = Files.newOutputStream(path);

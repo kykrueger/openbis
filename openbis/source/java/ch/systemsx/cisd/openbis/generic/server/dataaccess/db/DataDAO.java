@@ -845,8 +845,8 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
                     .setParameter("presentInArchive", presentInArchive)
                     .setParameterList("codes", codes)
                     .executeUpdate();
-            System.err.println(result+" UPDATED "+codes);
-            updateVersion(session, codes);
+            System.err.println(result+" updated");
+            System.err.println(updateVersion(session, codes)+" updated version");
             return result;
         }
     }

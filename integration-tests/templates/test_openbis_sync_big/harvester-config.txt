@@ -1,0 +1,21 @@
+[DataSource1]
+
+resource-list-url = https://localhost:9001/datastore_server/re-sync
+data-source-openbis-url = https://localhost:9000/openbis/openbis
+data-source-dss-url = https://localhost:9001/datastore_server
+data-source-alias = DS1
+data-source-auth-realm = OAI-PMH
+data-source-auth-user = admin
+data-source-auth-pass = admin
+
+#replace the following with proper user on openbis2
+#after switching on master data synchronization
+harvester-user = admin
+harvester-pass = admin
+translate-using-data-source-alias = true
+
+email-addresses = openbis@id.ethz.ch
+harvester-tmp-dir = harvester-tmp
+last-sync-timestamp-file = ../../last-sync-timestamp-file_HRVSTR.txt
+log-file = ../../synchronization.log
+

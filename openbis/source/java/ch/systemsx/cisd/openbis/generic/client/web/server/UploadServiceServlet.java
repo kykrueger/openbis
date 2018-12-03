@@ -67,7 +67,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
  * @author Christian Ribeaud
  */
 @Controller
-@RequestMapping({ "/upload", "/openbis/upload" })
 public final class UploadServiceServlet extends AbstractController
 {
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
@@ -125,6 +124,7 @@ public final class UploadServiceServlet extends AbstractController
     //
 
     @Override
+    @RequestMapping({ "/upload", "/openbis/upload" })
     protected ModelAndView handleRequestInternal(final HttpServletRequest request,
             final HttpServletResponse response) throws Exception
     {

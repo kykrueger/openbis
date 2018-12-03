@@ -701,28 +701,12 @@ function ServerFacade(openbisServer) {
  			callbackFunction(error, result);
  		});
 	}
- 	
- 	this.customELNASAPI = function(parameters, callackFunction) {
- 		require([ "as/dto/service/id/CustomASServiceCode", "as/dto/service/CustomASServiceExecutionOptions" ],
-    	        function(CustomASServiceCode, CustomASServiceExecutionOptions) {
-    	            var id = new CustomASServiceCode("as-eln-lims-api");
-    	            var options = new CustomASServiceExecutionOptions();
-    	            
-    	            if(parameters) {
-    	            	for(key in parameters) {
-        	            	options.withParameter(key, parameters[key]);
-        	            }
-    	            }
-    	            
-    	            mainController.openbisV3.executeCustomASService(id, options).done(function(result) {
-    	                callackFunction(result);
-    	            }).fail(function(result) {
-    	            	alert("Call failed to server: " + JSON.stringify(result));
-    	            });
-    	 });
- 	}
- 	
- 	this.createReportFromAggregationService = function(dataStoreCode, parameters, callbackFunction, service) {
+
+	this.customELNASAPI = function(parameters, callbackFunction) {
+		this.customASService(parameters, callbackFunction, "as-eln-lims-api");
+	}
+
+	this.createReportFromAggregationService = function(dataStoreCode, parameters, callbackFunction, service) {
  		if(!service) {
  			service = "eln-lims-api";
  		}
@@ -846,21 +830,39 @@ function ServerFacade(openbisServer) {
 	//
 	// New Advanced Search
 	//
-	
+
+	this.getSearchCriteriaAndFetchOptionsForDataSetSearch = function(advancedSearchCriteria, advancedFetchOptions, callback) {
+		var criteriaClass = 'as/dto/dataset/search/DataSetSearchCriteria';
+		var fetchOptionsClass = 'as/dto/dataset/fetchoptions/DataSetFetchOptions';
+		this.getSearchCriteriaAndFetchOptionsForEntitySearch(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass);
+	}
+
 	this.searchForDataSetsAdvanced = function(advancedSearchCriteria, advancedFetchOptions, callback) {
 		var criteriaClass = 'as/dto/dataset/search/DataSetSearchCriteria';
 		var fetchOptionsClass = 'as/dto/dataset/fetchoptions/DataSetFetchOptions';
 		var searchMethodName = 'searchDataSets';
 		this.searchForEntityAdvanced(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass, searchMethodName);
 	}
-	
+
+	this.getSearchCriteriaAndFetchOptionsForExperimentSearch = function(advancedSearchCriteria, advancedFetchOptions, callback) {
+		var criteriaClass = 'as/dto/experiment/search/ExperimentSearchCriteria';
+		var fetchOptionsClass = 'as/dto/experiment/fetchoptions/ExperimentFetchOptions';
+		this.getSearchCriteriaAndFetchOptionsForEntitySearch(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass);
+	}
+
 	this.searchForExperimentsAdvanced = function(advancedSearchCriteria, advancedFetchOptions, callback) {
 		var criteriaClass = 'as/dto/experiment/search/ExperimentSearchCriteria';
 		var fetchOptionsClass = 'as/dto/experiment/fetchoptions/ExperimentFetchOptions';
 		var searchMethodName = 'searchExperiments';
 		this.searchForEntityAdvanced(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass, searchMethodName);
 	}
-	
+
+	this.getSearchCriteriaAndFetchOptionsForSamplesSearch = function(advancedSearchCriteria, advancedFetchOptions, callback) {
+		var criteriaClass = 'as/dto/sample/search/SampleSearchCriteria';
+		var fetchOptionsClass = 'as/dto/sample/fetchoptions/SampleFetchOptions';
+		this.getSearchCriteriaAndFetchOptionsForEntitySearch(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass);
+	}
+
 	this.searchForSamplesAdvanced = function(advancedSearchCriteria, advancedFetchOptions, callback) {
 		var criteriaClass = 'as/dto/sample/search/SampleSearchCriteria';
 		var fetchOptionsClass = 'as/dto/sample/fetchoptions/SampleFetchOptions';
@@ -881,8 +883,8 @@ function ServerFacade(openbisServer) {
 		var searchMethodName = 'searchProjects';
 		this.searchForEntityAdvanced(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass, searchMethodName);
 	}
-	
-	this.searchForEntityAdvanced = function(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass, searchMethodName) {
+
+	this.getSearchCriteriaAndFetchOptionsForEntitySearch = function(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass) {
 		require([criteriaClass,
 		         fetchOptionsClass,
 		         'as/dto/common/search/DateObjectEqualToValue',
@@ -946,11 +948,15 @@ function ServerFacade(openbisServer) {
 					if(fetchOptions.withPhysicalData) {
 						fetchOptions.withPhysicalData();
 					}
+					var parentfetchOptions = jQuery.extend(true, {}, fetchOptions);
+					var childrenfetchOptions = jQuery.extend(true, {}, fetchOptions);
 					if(fetchOptions.withParents) {
-						fetchOptions.withParentsUsing(fetchOptions);
+						parentfetchOptions.withParentsUsing(parentfetchOptions);
+						fetchOptions.withParentsUsing(parentfetchOptions);
 					}
 					if(fetchOptions.withChildren) {
-						fetchOptions.withChildrenUsing(fetchOptions);
+						childrenfetchOptions.withChildrenUsing(childrenfetchOptions);
+						fetchOptions.withChildrenUsing(childrenfetchOptions);
 					}
 				} else if(advancedFetchOptions.minTableInfo) {
 					if(fetchOptions.withType) {
@@ -1018,6 +1024,12 @@ function ServerFacade(openbisServer) {
 						var childrenFetchOptions = fetchOptions.withChildren();
 						if(advancedFetchOptions.withChildrenType) {
 							childrenFetchOptions.withType();
+						}
+					}
+					if(advancedFetchOptions.withChildren) {
+						var childrenFetchOptions = fetchOptions.withChildren();
+						if(advancedFetchOptions.withChildrenProperties) {
+							childrenFetchOptions.withProperties();
 						}
 					}
 					if(advancedFetchOptions.withAncestors) {
@@ -1335,43 +1347,51 @@ function ServerFacade(openbisServer) {
 				//
 				// Fix For broken equals PART 1 - END
 				//
-				
-				mainController.openbisV3[searchMethodName](searchCriteria, fetchOptions)
-				.done(function(apiResults) {
-					//
-					// Fix For broken equals PART 2
-					//
-					var results = apiResults.objects;
-					var filteredResults = [];
-					if(hackFixForBrokenEquals.length > 0 && results) {
-						for(var rIdx = 0; rIdx < results.length; rIdx++) {
-							var result = results[rIdx];
-							for(var fIdx = 0; fIdx < hackFixForBrokenEquals.length; fIdx++) {
-								if(	result && 
-									result.properties && 
-									result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value) {
-									filteredResults.push(result);
-								}
-							}
-						}
-					} else {
-						filteredResults = results;
-					}
-					apiResults.objects = filteredResults;
-					//
-					// Fix For broken equals PART 2 - END
-					//
-					callback(apiResults);
-				})
-				.fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
-				});
+				callback(searchCriteria, fetchOptions, hackFixForBrokenEquals);
+
 			} catch(exception) {
 				Util.showError(exception.name + ": " + exception.message);
 			}
 		});
 	}
-	
+
+	this.searchForEntityAdvanced = function(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass, searchMethodName) {
+		var searchFunction = function(searchCriteria, fetchOptions, hackFixForBrokenEquals) {
+			mainController.openbisV3[searchMethodName](searchCriteria, fetchOptions)
+			.done(function(apiResults) {
+				//
+				// Fix For broken equals PART 2
+				//
+				var results = apiResults.objects;
+				var filteredResults = [];
+				if(hackFixForBrokenEquals.length > 0 && results) {
+					for(var rIdx = 0; rIdx < results.length; rIdx++) {
+						var result = results[rIdx];
+						for(var fIdx = 0; fIdx < hackFixForBrokenEquals.length; fIdx++) {
+							if(	result && 
+								result.properties && 
+								result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value) {
+								filteredResults.push(result);
+							}
+						}
+					}
+				} else {
+					filteredResults = results;
+				}
+				apiResults.objects = filteredResults;
+				//
+				// Fix For broken equals PART 2 - END
+				//
+				callback(apiResults);
+			})
+			.fail(function(result) {
+				Util.showError("Call failed to server: " + JSON.stringify(result));
+			});
+		}
+
+		this.getSearchCriteriaAndFetchOptionsForEntitySearch(advancedSearchCriteria, advancedFetchOptions, searchFunction, criteriaClass, fetchOptionsClass);
+	}
+
 	//
 	// Search Samples
 	//
@@ -2007,16 +2027,15 @@ function ServerFacade(openbisServer) {
 	//
 	// Global Search
 	//
-	this.searchGlobally = function(freeText, advancedFetchOptions, callbackFunction)
-	{
-		var _this = this;
+
+	this.getSearchCriteriaAndFetchOptionsForGlobalSearch = function(freeText, advancedFetchOptions, callbackFunction) {
 		require(['as/dto/global/search/GlobalSearchCriteria', 
 		         'as/dto/global/fetchoptions/GlobalSearchObjectFetchOptions'], 
 		         function(GlobalSearchCriteria, GlobalSearchObjectFetchOptions){
 			var searchCriteria = new GlobalSearchCriteria();
 			searchCriteria.withText().thatContains(freeText.toLowerCase().trim());
 			searchCriteria.withOperator("AND");
-			
+
 			var fetchOptions = new GlobalSearchObjectFetchOptions();
 			var sampleFetchOptions = fetchOptions.withSample();
 			sampleFetchOptions.withSpace();
@@ -2050,7 +2069,15 @@ function ServerFacade(openbisServer) {
 				fetchOptions.from(advancedFetchOptions.from);
 				fetchOptions.count(advancedFetchOptions.count);
 			}
-			
+
+			callbackFunction(searchCriteria, fetchOptions);
+		});
+	}
+
+	this.searchGlobally = function(freeText, advancedFetchOptions, callbackFunction)
+	{
+		this.getSearchCriteriaAndFetchOptionsForGlobalSearch(freeText, advancedFetchOptions, function(searchCriteria, fetchOptions)
+		{
 			mainController.openbisV3.searchGlobally(searchCriteria, fetchOptions).done(function(results) {
 				callbackFunction(results);
 			}).fail(function(error) {
@@ -2161,6 +2188,19 @@ function ServerFacade(openbisServer) {
 	//
 	// V3 Functions
 	//
+
+	this.getSpace = function(spaceIdentifier, callbackFunction) {
+		require(["as/dto/space/id/SpacePermId", "as/dto/space/fetchoptions/SpaceFetchOptions"], 
+			function(SpacePermId, SpaceFetchOptions) {
+				mainController.openbisV3.getSpaces([new SpacePermId(spaceIdentifier)], new SpaceFetchOptions()).done(function(result) {
+					callbackFunction(result);
+				}).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
 
 	this.getProject = function(projectIdentifier, callbackFunction) {
 		require(["as/dto/project/id/ProjectIdentifier", "as/dto/project/fetchoptions/ProjectFetchOptions"],
@@ -2395,7 +2435,8 @@ function ServerFacade(openbisServer) {
 			});
 	}
 
-	this.searchRoleAssignments = function(criteriaParams, callbackFunction) {
+	// errorHandler: optional. if present, it is called instead of showing the error and the callbackFunction is not called
+	this.searchRoleAssignments = function(criteriaParams, callbackFunction, errorHandler) {
 		require(["as/dto/roleassignment/search/RoleAssignmentSearchCriteria", "as/dto/roleassignment/fetchoptions/RoleAssignmentFetchOptions"], 
 			function(RoleAssignmentSearchCriteria, RoleAssignmentFetchOptions) {
 				var criteria = new RoleAssignmentSearchCriteria();
@@ -2418,8 +2459,12 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.searchRoleAssignments(criteria, fetchOptions).done(function(result) {
 					callbackFunction(result.objects);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
-					callbackFunction(false);
+					if (errorHandler) {
+						errorHandler(result);
+					} else {
+						Util.showError("Call failed to server: " + JSON.stringify(result));
+						callbackFunction(false);
+					}
 				});
 			});
 	}
@@ -2495,4 +2540,97 @@ function ServerFacade(openbisServer) {
 				callbackFunction(false);
 		});
 	}
+
+	this.searchCustomASServices = function(code, callbackFunction) {
+		require(['as/dto/service/search/CustomASServiceSearchCriteria', 'as/dto/service/fetchoptions/CustomASServiceFetchOptions'],
+			function(CustomASServiceSearchCriteria, CustomASServiceFetchOptions) {
+				var searchCriteria = new CustomASServiceSearchCriteria();
+				var fetchOptions = new CustomASServiceFetchOptions();
+				searchCriteria.withCode().thatEquals(code);
+				mainController.openbisV3.searchCustomASServices(searchCriteria, fetchOptions).done(function(result) {
+					callbackFunction(result);
+		        }).fail(function(result) {
+					Util.showError("Call failed to server: " + JSON.stringify(result));
+					callbackFunction(false);
+				});
+			}
+		);
+	}
+
+	// errorHandler: optional. if present, it is called instead of showing the error and the callbackFunction is not called
+	this.customASService = function(parameters, callbackFunction, serviceCode, errorHandler) {
+		require([ "as/dto/service/id/CustomASServiceCode", "as/dto/service/CustomASServiceExecutionOptions" ],
+			   function(CustomASServiceCode, CustomASServiceExecutionOptions) {
+				   var id = new CustomASServiceCode(serviceCode);
+				   var options = new CustomASServiceExecutionOptions();
+				   
+				   if(parameters) {
+					   for(key in parameters) {
+						   options.withParameter(key, parameters[key]);
+					   }
+				   }
+				   
+				   mainController.openbisV3.executeCustomASService(id, options).done(function(result) {
+					   callbackFunction(result);
+				   }).fail(function(result) {
+					    if (errorHandler) {
+							errorHandler(result);
+					    } else {
+							alert("Call failed to server: " + JSON.stringify(result));
+						}
+				   });
+		});
+	}
+
+	//
+	// search-store Functions
+	//
+
+	this.callSearchStoreService = function(parameters, callbackFunction) {
+		this.customASService(parameters, callbackFunction, 'search-store', function(errorResult) {
+			Util.showError("Call failed to server: " + JSON.stringify(errorResult));
+			callbackFunction(false);
+		});
+	}
+
+	this.saveSearch = function(space, experiment, name, criteriaV3, fetchOptionsV3, criteriaEln, callbackFunction) {
+		var parameters = {
+			method: 'SAVE',
+			name: name,
+			searchCriteria: criteriaV3,
+			fetchOptions: fetchOptionsV3,
+			customData: { 'eln-lims-criteria': criteriaEln },
+			spacePermId: space.permId.permId,
+			experimentPermId: experiment.permId.permId,
+		}
+		this.callSearchStoreService(parameters, callbackFunction);
+	}
+
+	this.updateSearch = function(permId, criteriaV3, fetchOptionsV3, criteriaEln, callbackFunction) {
+		var parameters = {
+			method: 'UPDATE',
+			permId: permId,
+			searchCriteria: criteriaV3,
+			fetchOptions: fetchOptionsV3,
+			customData: { 'eln-lims-criteria': criteriaEln },
+		}
+		this.callSearchStoreService(parameters, callbackFunction);
+	}
+
+	this.loadSearches = function(callbackFunction) {
+		var parameters = {
+			method: 'LOAD',
+		}
+		this.callSearchStoreService(parameters, callbackFunction);
+	}
+
+	this.deleteSearch = function(permId, reason, callbackFunction) {
+		parameters = {
+			method: 'DELETE',
+			permId: permId,
+			reason: reason,
+		}
+		this.callSearchStoreService(parameters, callbackFunction);
+	}
+
 }

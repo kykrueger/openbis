@@ -16,8 +16,11 @@
 
 package ch.systemsx.cisd.openbis.generic.client.web.server;
 
+import java.io.IOException;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
@@ -34,12 +37,17 @@ import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
  * @author Tomasz Pylak
  */
 @Controller
-@RequestMapping(
-{ "/export-file-downloader", "/openbis/export-file-downloader" })
 public class FileExportServiceServlet extends AbstractFileDownloadServlet
 {
     @Resource(name = ResourceNames.COMMON_SERVICE)
     private ICommonClientService service;
+
+    @Override
+    @RequestMapping({ "/export-file-downloader", "/openbis/export-file-downloader" })
+    protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
+    {
+        super.respondToRequest(request, response);
+    }
 
     @Override
     protected FileContent getFileContent(final HttpServletRequest request) throws Exception

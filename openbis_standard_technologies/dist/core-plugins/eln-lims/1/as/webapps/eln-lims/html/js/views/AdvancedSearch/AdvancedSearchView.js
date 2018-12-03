@@ -96,7 +96,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 
 	this._save = function() {
 		var _this = this;
-		profile.getHomeSpace(false, function(HOME_SPACE) {
+		profile.getHomeSpace(function(HOME_SPACE) {
 
 	    var $nameField = FormUtil.getTextInputField('Name', 'Name', true);
 
@@ -160,6 +160,10 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	this._paintSaveLoadPanel = function($container) {
 		var _this = this;
 		$container.empty();
+
+		if (this._advancedSearchModel.searchStoreAvailable != true) {
+			return;
+		}
 
 		var savedSearchOptions = [{
 			label: 'load a saved search',

@@ -8,13 +8,23 @@
 
 3. vagrant plugin install vagrant-vbguest vagrant-notify-forwarder vagrant-disksize
  
-4. cd env/dev
+4. Relative to the current folder: cd env/dev
 
 5. vagrant up
 
 6. Start openBIS in your Eclipse - it should be running at http://localhost:8888/openbis-test. Make sure you can log in with credentials 'admin / password'.
 
 7. openBIS next generation UI is now running at http://localhost:8124
+
+## Setting up IntelliJ Idea
+
+1. Under "IntelliJ IDEA" -> "Preferences" -> "Languages and Frameworks" -> Javascript, set the language version to ECMAScript 6.
+
+## Login into Vagrant to see the dev server output
+
+1. vagrant ssh
+
+2. screen -r
 
 ## Additional info for Linux users
 

@@ -16,8 +16,14 @@
 
 package ch.systemsx.cisd.openbis.common.api.server;
 
+import java.lang.reflect.Method;
+import java.util.List;
+
 import javax.annotation.Resource;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.googlecode.jsonrpc4j.ErrorData;
+import com.googlecode.jsonrpc4j.ErrorResolver;
 import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
 
 import ch.systemsx.cisd.common.api.IRpcService;
@@ -44,13 +50,20 @@ public abstract class AbstractApiJsonServiceExporter extends JsonServiceExporter
     {
         setServiceInterface(serviceInterface);
         setService(service);
-        setInterceptors(new Object[]
-        { new ServiceExceptionTranslator() });
+        setInterceptors(new Object[] { new ServiceExceptionTranslator() });
         int majorVersion = service.getMajorVersion();
         int minorVersion = service.getMinorVersion();
         RpcServiceInterfaceVersionDTO ifaceVersion =
                 new RpcServiceInterfaceVersionDTO(serviceName, serviceURL, majorVersion,
                         minorVersion);
         nameServer.addSupportedInterfaceVersion(ifaceVersion);
+        setErrorResolver(new ErrorResolver()
+            {
+                @Override
+                public JsonError resolveError(Throwable t, Method method, List<JsonNode> arguments)
+                {
+                    return new JsonError(0, t.getMessage(), new ErrorData(t.getClass().getName(), t.getMessage()));
+                }
+            });
     }
 }

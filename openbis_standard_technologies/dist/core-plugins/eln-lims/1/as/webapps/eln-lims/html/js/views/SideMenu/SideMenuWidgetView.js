@@ -149,10 +149,14 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     }
     
     this.repaintTreeMenuDinamic = function() {
-    	var _this = this;
+    		var _this = this;
         this._sideMenuWidgetModel.menuDOMBody.empty();
         var $tree = $("<div>", { "id" : "tree" });
         
+        var sortByDisplayName = function(resultA, resultB) {
+    			return naturalSort(resultA.displayName, resultB.displayName);
+    		}
+    		
         //
         // Body
         //
@@ -161,17 +165,17 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         
         if(profile.mainMenu.showLabNotebook) {
         	var labNotebookLink = _this.getLinkForNode("Lab Notebook", "LAB_NOTEBOOK", "showLabNotebookPage", null);
-        	treeModel.push({ title : labNotebookLink, entityType: "LAB_NOTEBOOK", key : "LAB_NOTEBOOK", folder : true, lazy : true, view : "showLabNotebookPage", icon : "glyphicon glyphicon-book" });
+        	treeModel.push({ displayName: "Lab Notebook", title : labNotebookLink, entityType: "LAB_NOTEBOOK", key : "LAB_NOTEBOOK", folder : true, lazy : true, view : "showLabNotebookPage", icon : "glyphicon glyphicon-book" });
         }
         
         if(profile.mainMenu.showInventory) {
         	var inventoryLink = _this.getLinkForNode("Inventory", "INVENTORY", "showInventoryPage", null);
-        	treeModel.push({ title : inventoryLink, entityType: "INVENTORY", key : "INVENTORY", folder : true, lazy : true, view : "showInventoryPage" });
+        	treeModel.push({ displayName: "Inventory", title : inventoryLink, entityType: "INVENTORY", key : "INVENTORY", folder : true, lazy : true, view : "showInventoryPage" });
         }
         
         if(profile.mainMenu.showStock) {
         	var inventoryLink = _this.getLinkForNode("Stock", "STOCK", "showStockPage", null);
-        	treeModel.push({ title : inventoryLink, entityType: "STOCK", key : "STOCK", folder : true, lazy : true, view : "showStockPage", icon: "fa fa-shopping-cart" });
+        	treeModel.push({ displayName: "Stock", title : inventoryLink, entityType: "STOCK", key : "STOCK", folder : true, lazy : true, view : "showStockPage", icon: "fa fa-shopping-cart" });
         }
         
         var treeModelUtils = [];
@@ -191,51 +195,51 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         if(profile.mainMenu.showDrawingBoard) {
         	var drawingBoardLink = _this.getLinkForNode("Drawing Board", "DRAWING_BOARD", "showDrawingBoard", null);
-        	treeModelUtils.push({ title : drawingBoardLink, entityType: "DRAWING_BOARD", key : "DRAWING_BOARD", folder : false, lazy : false, view : "showDrawingBoard" });
+        	treeModelUtils.push({ displayName: "Drawing Board", title : drawingBoardLink, entityType: "DRAWING_BOARD", key : "DRAWING_BOARD", folder : false, lazy : false, view : "showDrawingBoard" });
         }
         
         if(profile.mainMenu.showObjectBrowser) {
         	var sampleBrowserLink = _this.getLinkForNode("" + ELNDictionary.Sample + " Browser", "SAMPLE_BROWSER", "showSamplesPage", null);
-        	treeModelUtils.push({ title : sampleBrowserLink, entityType: "SAMPLE_BROWSER", key : "SAMPLE_BROWSER", folder : false, lazy : false, view : "showSamplesPage", icon : "glyphicon glyphicon-list-alt" });
+        	treeModelUtils.push({ displayName: "" + ELNDictionary.Sample + " Browser", title : sampleBrowserLink, entityType: "SAMPLE_BROWSER", key : "SAMPLE_BROWSER", folder : false, lazy : false, view : "showSamplesPage", icon : "glyphicon glyphicon-list-alt" });
         }
         
         if(profile.mainMenu.showVocabularyViewer) {
         	var vocabularyBrowserLink = _this.getLinkForNode("Vocabulary Browser", "VOCABULARY_BROWSER", "showVocabularyManagerPage", null);
-        	treeModelUtils.push({ title : vocabularyBrowserLink, entityType: "VOCABULARY_BROWSER", key : "VOCABULARY_BROWSER", folder : false, lazy : false, view : "showVocabularyManagerPage", icon : "glyphicon glyphicon-list-alt" });
+        	treeModelUtils.push({ displayName: "Vocabulary Browser", title : vocabularyBrowserLink, entityType: "VOCABULARY_BROWSER", key : "VOCABULARY_BROWSER", folder : false, lazy : false, view : "showVocabularyManagerPage", icon : "glyphicon glyphicon-list-alt" });
         }
         
         if(profile.mainMenu.showAdvancedSearch) {
         	var advancedSearchLink = _this.getLinkForNode("Advanced Search", "ADVANCED_SEARCH", "showAdvancedSearchPage", null);
-        	treeModelUtils.push({ title : advancedSearchLink, entityType: "ADVANCED_SEARCH", key : "ADVANCED_SEARCH", folder : false, lazy : false, view : "showAdvancedSearchPage", icon : "glyphicon glyphicon-search" });
+        	treeModelUtils.push({ displayName: "Advanced Search", title : advancedSearchLink, entityType: "ADVANCED_SEARCH", key : "ADVANCED_SEARCH", folder : false, lazy : false, view : "showAdvancedSearchPage", icon : "glyphicon glyphicon-search" });
         }
         
         if(profile.mainMenu.showExports) {
         	var exportBuilderLink = _this.getLinkForNode("Export Builder", "EXPORT_BUILDER", "showExportTreePage", null);
-        	treeModelUtils.push({ title : exportBuilderLink, entityType: "EXPORT_BUILDER", key : "EXPORT_BUILDER", folder : false, lazy : false, view : "showExportTreePage", icon : "glyphicon glyphicon-export" });
+        	treeModelUtils.push({ displayName: "Export Builder", title : exportBuilderLink, entityType: "EXPORT_BUILDER", key : "EXPORT_BUILDER", folder : false, lazy : false, view : "showExportTreePage", icon : "glyphicon glyphicon-export" });
         }
         
         if(profile.mainMenu.showStorageManager) {
         	var storageManagerLink = _this.getLinkForNode("Storage Manager", "STORAGE_MANAGER", "showStorageManager", null);
-        	treeModelUtils.push({ title : storageManagerLink, entityType: "STORAGE_MANAGER", key : "STORAGE_MANAGER", folder : false, lazy : false, view : "showStorageManager" });
+        	treeModelUtils.push({ displayName: "Storage Manager", title : storageManagerLink, entityType: "STORAGE_MANAGER", key : "STORAGE_MANAGER", folder : false, lazy : false, view : "showStorageManager" });
         }
         
         if(profile.mainMenu.showUserManager && profile.isAdmin) {
         	var userManagerLink = _this.getLinkForNode("User Manager", "USER_MANAGER", "showUserManagerPage", null);
-        	treeModelUtils.push({ title : userManagerLink, entityType: "USER_MANAGER", key : "USER_MANAGER", folder : false, lazy : false, view : "showUserManagerPage", icon : "fa fa-users" });
+        	treeModelUtils.push({ displayName: "User Manager", title : userManagerLink, entityType: "USER_MANAGER", key : "USER_MANAGER", folder : false, lazy : false, view : "showUserManagerPage", icon : "fa fa-users" });
         }
         
         if(profile.mainMenu.showTrashcan) {
         	var trashCanLink = _this.getLinkForNode("Trashcan", "TRASHCAN", "showTrashcanPage", null);
-        	treeModelUtils.push({ title : trashCanLink, entityType: "TRASHCAN", key : "TRASHCAN", folder : false, lazy : false, view : "showTrashcanPage", icon : "glyphicon glyphicon-trash" });
+        	treeModelUtils.push({ displayName: "Trashcan", title : trashCanLink, entityType: "TRASHCAN", key : "TRASHCAN", folder : false, lazy : false, view : "showTrashcanPage", icon : "glyphicon glyphicon-trash" });
         }
         
         if(profile.mainMenu.showSettings) {
         	var settingsLink = _this.getLinkForNode("Settings", "SETTINGS", "showSettingsPage", null);
-        	treeModelUtils.push({ title : settingsLink, entityType: "SETTINGS", key : "SETTINGS", folder : false, lazy : false, view : "showSettingsPage", icon : "glyphicon glyphicon-cog" });
+        	treeModelUtils.push({ displayName: "Settings", title : settingsLink, entityType: "SETTINGS", key : "SETTINGS", folder : false, lazy : false, view : "showSettingsPage", icon : "glyphicon glyphicon-cog" });
         }
 
-        treeModel.push({ title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, icon : "glyphicon glyphicon-wrench" });
-        treeModel.push({ title : "About", entityType: "ABOUT", key : "ABOUT", folder : false, lazy : false, view : "showAbout", icon : "glyphicon glyphicon-info-sign" });
+        treeModel.push({ displayName: "Utilities", title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, icon : "glyphicon glyphicon-wrench" });
+        treeModel.push({ displayName: "About", title : "About", entityType: "ABOUT", key : "ABOUT", folder : false, lazy : false, view : "showAbout", icon : "glyphicon glyphicon-info-sign" });
         
 		var glyph_opts = {
         	    map: {
@@ -264,7 +268,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    
     	    var showLabNotebooks = function(dfd, showEnabled, showDisabled) {
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		profile.getHomeSpace(true, function(HOME_SPACE) {
+    	    		profile.getHomeSpace(function(HOME_SPACE) {
     	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
     	    			var results = [];
     	    			var spaces = searchResult.objects;
@@ -296,9 +300,10 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                			
     	                			var normalizedSpaceTitle = Util.getDisplayNameFromCode(spaceCode);
         	                		var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, spaceCode, "showSpacePage", spaceCode);
-        	              		var spaceNode = { title : spaceLink, entityType: "SPACE", key : spaceCode, folder : true, lazy : true, view : "showSpacePage", viewData: spaceCode };
+        	              		var spaceNode = { displayName: normalizedSpaceTitle, title : spaceLink, entityType: "SPACE", key : spaceCode, folder : true, lazy : true, view : "showSpacePage", viewData: spaceCode };
         	               		results.push(spaceNode);
     	                		}
+    	                		results.sort(sortByDisplayName);
     	                		dfd.resolve(results);
     	                });
     	    			});
@@ -308,7 +313,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    switch(type) {
     	    	case "LAB_NOTEBOOK":
     	    		var spaceRules = { entityKind : "SPACE", logicalOperator : "AND", rules : { } };
-    	    		profile.getHomeSpace(true, function(HOME_SPACE) {
+    	    		profile.getHomeSpace(function(HOME_SPACE) {
     	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
     	    			var results = [];
     	    			var spaces = searchResult.objects;
@@ -319,13 +324,14 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	                if(!isInventorySpace && (space.code === HOME_SPACE) && !isHiddenSpace) {
         	                	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	var spaceLink = _this.getLinkForNode("My Space (" + normalizedSpaceTitle + ")", space.getCode(), "showSpacePage", space.getCode());
-        	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
+        	                    var spaceNode = { displayName: "My Space (" + normalizedSpaceTitle + ")", title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
         	                    results.push(spaceNode);
         	                }
     	                }
     	                
-	               	results.push({ title : "Others", entityType: "LAB_NOTEBOOK_OTHERS", key : "LAB_NOTEBOOK_OTHERS", folder : true, lazy : true, view : "showLabNotebookPage" });
-	               	results.push({ title : "Others (disabled)", entityType: "LAB_NOTEBOOK_OTHERS_DISABLED", key : "LAB_NOTEBOOK_OTHERS_DISABLED", folder : true, lazy : true, view : "showLabNotebookPage" });
+	               	results.push({ displayName: "Others", title : "Others", entityType: "LAB_NOTEBOOK_OTHERS", key : "LAB_NOTEBOOK_OTHERS", folder : true, lazy : true, view : "showLabNotebookPage" });
+	               	results.push({ displayName: "Others (disabled)", title : "Others (disabled)", entityType: "LAB_NOTEBOOK_OTHERS_DISABLED", key : "LAB_NOTEBOOK_OTHERS_DISABLED", folder : true, lazy : true, view : "showLabNotebookPage" });
+    	                results.sort(sortByDisplayName);
     	                dfd.resolve(results);
     	    			});
     	    		});
@@ -349,12 +355,13 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	                	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	
         	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
-        	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
+        	                    var spaceNode = { displayName: normalizedSpaceTitle, title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
         	                    if(!space.getCode().endsWith("STOCK_CATALOG") && !space.getCode().endsWith("STOCK_ORDERS")) {
         	                    		results.push(spaceNode);
         	                    }
         	                }
     	                }
+    	                results.sort(sortByDisplayName);
     	                dfd.resolve(results);
     	    		});
     	    		break;
@@ -368,11 +375,12 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                    if(space.getCode().endsWith("STOCK_CATALOG") || space.getCode().endsWith("STOCK_ORDERS")) {
     	                    	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
-        	                    var spaceNode = { title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
+        	                    var spaceNode = { displayName: normalizedSpaceTitle, title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
         	                    spaceNode.icon = "fa fa-shopping-cart";
         	                    results.push(spaceNode);
     	                    }
     	                }
+    	                results.sort(sortByDisplayName);
     	                dfd.resolve(results);
     	    		});
     	    		break;
@@ -389,9 +397,10 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                           }
                           var normalizedProjectTitle = Util.getDisplayNameFromCode(project.code);
                           var projectLink = _this.getLinkForNode(normalizedProjectTitle, project.getPermId().getPermId(), "showProjectPageFromPermId", project.getPermId().getPermId());
-                          results.push({ title : projectLink, entityType: "PROJECT", key : project.getPermId().getPermId(), folder : true, lazy : true, view : "showProjectPageFromPermId", viewData: project.getPermId().getPermId() });
+                          results.push({ displayName: normalizedProjectTitle, title : projectLink, entityType: "PROJECT", key : project.getPermId().getPermId(), folder : true, lazy : true, view : "showProjectPageFromPermId", viewData: project.getPermId().getPermId() });
                           
                       }
+                      results.sort(sortByDisplayName);
                       dfd.resolve(results);
     	    		});
     	    		break;
@@ -418,8 +427,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                    }
     	                    
     	                    var experimentLink = _this.getLinkForNode(experimentDisplayName, experiment.getPermId().getPermId(), viewToUse, experiment.getIdentifier().getIdentifier());
-    	                    results.push({ title : experimentLink, entityType: "EXPERIMENT", key : experiment.getPermId().getPermId(), folder : true, lazy : loadSamples, view : viewToUse, viewData: experiment.getIdentifier().getIdentifier() });
+    	                    results.push({ displayName: experimentDisplayName, title : experimentLink, entityType: "EXPERIMENT", key : experiment.getPermId().getPermId(), folder : true, lazy : loadSamples, view : viewToUse, viewData: experiment.getIdentifier().getIdentifier() });
     	                }
+    	                results.sort(sortByDisplayName);
     	                dfd.resolve(results);
     	    		});
     	    		break;
@@ -462,7 +472,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 	        	                    }
 	        	                    
 	        	                    var sampleLink = _this.getLinkForNode(sampleDisplayName, sample.getPermId().getPermId(), "showViewSamplePageFromPermId", sample.getPermId().getPermId());
-	        	                    var sampleNode = { title : sampleLink, entityType: "SAMPLE", key : sample.getPermId().getPermId(), folder : true, lazy : true, view : "showViewSamplePageFromPermId", viewData: sample.getPermId().getPermId(), icon : "fa fa-flask" };
+	        	                    var sampleNode = { displayName: sampleDisplayName, title : sampleLink, entityType: "SAMPLE", key : sample.getPermId().getPermId(), folder : true, lazy : true, view : "showViewSamplePageFromPermId", viewData: sample.getPermId().getPermId(), icon : "fa fa-flask" };
 	        	                    results.push(sampleNode);
         	                	}
         	                	
@@ -489,10 +499,11 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                     	                    }
                     	                    
                     	                    var datasetLink = _this.getLinkForNode(datasetDisplayName, dataset.getPermId().getPermId(), "showViewDataSetPageFromPermId", dataset.getPermId().getPermId());
-                    	                    results.push({ title : datasetLink, entityType: "DATASET", key : dataset.getPermId().getPermId(), folder : true, lazy : false, view : "showViewDataSetPageFromPermId", viewData: dataset.getPermId().getPermId(), icon : "fa fa-database" });
+                    	                    results.push({ displayName: datasetDisplayName, title : datasetLink, entityType: "DATASET", key : dataset.getPermId().getPermId(), folder : true, lazy : false, view : "showViewDataSetPageFromPermId", viewData: dataset.getPermId().getPermId(), icon : "fa fa-database" });
                     	                }
                 	                }
-                	                
+                	            
+                	            results.sort(sortByDisplayName);
                 	    			dfd.resolve(results);
             	                	Util.unblockUI();
                 	    		});
@@ -522,7 +533,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    	case "SAMPLE":
     	    		var sampleRules = { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : permId } };
     	    		mainController.serverFacade.searchForSamplesAdvanced({ entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules }, 
-    	    		{ only : true, withProperties : true, withType : true, withExperiment : true, withParents : true, withChildren : true, withParentsType : true, withChildrenType : true}
+    	    		{ only : true, withProperties : true, withType : true, withExperiment : true, withParents : true, withChildren : true, withChildrenProperties : true, withParentsType : true, withChildrenType : true}
     	    		, function(searchResult) {
     	    			var results = [];
     	    			var samples = searchResult.objects;
@@ -534,13 +545,12 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	    					var sample = samples[0].children[cIdx];
         	    					if(sample.type.code.indexOf("EXPERIMENT") > -1) {
         	    						var sampleDisplayName = sample.code;
-                	                    if(sample.properties && sample.properties[profile.propertyReplacingCode]) {
+                	                if(sample.properties && sample.properties[profile.propertyReplacingCode]) {
                 	                    	sampleDisplayName = sample.properties[profile.propertyReplacingCode];
-                	                    }
-                	                    
+                	                }
             	    					var sampleLink = _this.getLinkForNode(sampleDisplayName, sample.getPermId().getPermId(), "showViewSamplePageFromPermId", sample.getPermId().getPermId());
-                	                    var sampleNode = { title : sampleLink, entityType: "SAMPLE", key : sample.getPermId().getPermId(), folder : true, lazy : true, view : "showViewSamplePageFromPermId", viewData: sample.getPermId().getPermId(), icon : "fa fa-flask" };
-                	                    results.push(sampleNode);
+                	                var sampleNode = { displayName: sampleDisplayName, title : sampleLink, entityType: "SAMPLE", key : sample.getPermId().getPermId(), folder : true, lazy : true, view : "showViewSamplePageFromPermId", viewData: sample.getPermId().getPermId(), icon : "fa fa-flask" };
+                	                results.push(sampleNode);
         	    					}
         	    				}
         	                }
@@ -561,11 +571,11 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             	                    }
             	                    
             	                    var datasetLink = _this.getLinkForNode(datasetDisplayName, dataset.getPermId().getPermId(), "showViewDataSetPageFromPermId", dataset.getPermId().getPermId());
-            	                    results.push({ title : datasetLink, entityType: "DATASET", key : dataset.getPermId().getPermId(), folder : true, lazy : false, view : "showViewDataSetPageFromPermId", viewData: dataset.getPermId().getPermId(), icon : "fa fa-database" });
+            	                    results.push({ displayName: datasetDisplayName, title : datasetLink, entityType: "DATASET", key : dataset.getPermId().getPermId(), folder : true, lazy : false, view : "showViewDataSetPageFromPermId", viewData: dataset.getPermId().getPermId(), icon : "fa fa-database" });
             	                }
         	                }
         	                
-        	                
+        	                results.sort(sortByDisplayName);
         	                dfd.resolve(results);
         	    		});
     	    		});

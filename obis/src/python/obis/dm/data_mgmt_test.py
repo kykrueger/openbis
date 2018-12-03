@@ -283,9 +283,10 @@ def prepare_new_data_set_expectations(dm, properties={}):
     perm_id = generate_perm_id()
     dm.openbis.create_perm_id = MagicMock(return_value=perm_id)
     data_set = DataSet(dm.openbis, None,
-                       {'code': perm_id, 'properties': properties,
-                        "parents": [], "children": [], "samples": [], 'tags': [],
-                        'physicalData': None, 'linkedData': { 'contentCopies': []}})
+                       {'code': perm_id, 'properties': properties, 'components': [],
+                        "parents": [], "children": [], "samples": [], 'tags': [], 'containers': [],
+                        'physicalData': None, 'linkedData': { 'contentCopies': []}},
+                        kind='LINK')
     dm.openbis.new_git_data_set = MagicMock(return_value=data_set)
     dm.openbis.get_dataset = MagicMock(return_value=data_set)
 
