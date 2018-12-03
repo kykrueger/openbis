@@ -15,6 +15,9 @@ from pybis import Openbis
 from subprocess import PIPE
 
 
+OPENBIS_URL = 'https://sprint-openbis.ethz.ch:8446/openbis'
+
+
 output_buffer = ''
 
 
@@ -33,10 +36,10 @@ def init_global_settings():
     output_buffer = '=================== 1. Global settings ===================\n'
     cmd('obis config -g clear')
     cmd('obis data_set -g clear')
-    cmd('obis config -g set openbis_url=https://obisserver:8443, user=admin, verify_certificates=false, hostname=' + socket.gethostname())
+    cmd('obis config -g set openbis_url=' + OPENBIS_URL + ', user=admin, verify_certificates=false, hostname=' + socket.gethostname())
     cmd('obis data_set -g set type=UNKNOWN')
     settings = get_settings_global()
-    assert settings['config']['openbis_url'] == 'https://obisserver:8443'
+    assert settings['config']['openbis_url'] == OPENBIS_URL
     assert settings['config']['user'] == 'admin'
     assert settings['config']['verify_certificates'] == False
     assert settings['config']['hostname'] == socket.gethostname()
@@ -160,7 +163,7 @@ def run(tmpdir, o, skip=[]):
         cmd('obis init data5')
         with cd('data5'):
             cmd('touch file')
-            cmd('obis collection set id=/DEFAULT/DEFAULT/DEFAULT')
+            cmd('obis collection set id=/PUBLICATIONS/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
@@ -241,7 +244,8 @@ def run(tmpdir, o, skip=[]):
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data7')
-            cmd('obis collection set id=/DEFAULT/DEFAULT/DEFAULT')
+            cmd('obis object clear id')
+            cmd('obis collection set id=/PUBLICATIONS/DEFAULT/DEFAULT')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
@@ -475,13 +479,20 @@ def commit_new_change(tmpdir, o, repo_name):
 
 
 def get_openbis():
-    o = Openbis('https://obisserver:8443', verify_certificates=False)
+    o = Openbis(OPENBIS_URL, verify_certificates=False)
     o.login('admin', 'admin', save_token=True)
     return o
 
 
 def setup_masterdata(o):
-    if 'BIGDATA' not in o.get_spaces().df.code.values:
+    spaces = o.get_spaces().df.code.values
+    if 'DEFAULT' not in spaces:
+        o.new_space(code='DEFAULT').save()
+    if 'BIGDATA' not in spaces:
         o.new_space(code='BIGDATA').save()
-    if '/DEFAULT/BIGDATA2' not in o.get_samples().df.identifier.values:
-        o.new_sample(type="UNKNOWN", code='BIGDATA2', space='DEFAULT').save()
+    if '/DEFAULT/BIGDATA2' not in o.get_samples(code='BIGDATA2').df.identifier.values:
+        o.new_sample(type='SYSTEM_EXPERIMENT', code='BIGDATA2', space='DEFAULT').save()
+    if '/DEFAULT/DEFAULT' not in o.get_samples(code='DEFAULT').df.identifier.values:
+        o.new_sample(type='SYSTEM_EXPERIMENT', code='DEFAULT', space='DEFAULT').save()
+    if '/PUBLICATIONS/DEFAULT/DEFAULT' not in o.get_experiments(code='DEFAULT').df.identifier.values:
+        o.new_experiment(type='SYSTEM_EXPERIMENT', code='DEFAULT', project='DEFAULT').save()
