@@ -301,7 +301,8 @@ class AttrHolder():
 
         name_map = {
             'group': 'authorizationGroup',
-            'roles': 'roleAssignments'
+            'roles': 'roleAssignments',
+            'permid' : 'permId',
         }
         if name in name_map:
             name = name_map[name]
