@@ -81,7 +81,7 @@ def run(tmpdir, o, skip=[]):
             cmd('touch file')
             result = cmd('obis status')
             assert '? file' in result
-            cmd('obis object set id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
@@ -112,7 +112,7 @@ def run(tmpdir, o, skip=[]):
         output_buffer = '=================== 4. Second repository ===================\n'
         cmd('obis init data2')
         with cd('data2'):
-            cmd('obis object set id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
             with cd('../data1'): settings_data1 = get_settings()
@@ -130,7 +130,7 @@ def run(tmpdir, o, skip=[]):
     with cd(tmpdir + '/obis_data_b'):
         cmd('obis init data3')
         with cd('data3'):
-            cmd('obis object set id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
             with cd('../../obis_data/data1'): settings_data1 = get_settings()
@@ -152,7 +152,7 @@ def run(tmpdir, o, skip=[]):
             assert 'Missing configuration settings for [\'object id or collection id\'].' in result
             result = cmd('obis status')
             assert '? file' in result
-            cmd('obis object set id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
@@ -163,7 +163,7 @@ def run(tmpdir, o, skip=[]):
         cmd('obis init data5')
         with cd('data5'):
             cmd('touch file')
-            cmd('obis collection set id=/PUBLICATIONS/DEFAULT/DEFAULT')
+            cmd('obis collection set id=/OBIS_TEST_1/PROJECT_1/COLLECTION_1')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert settings['repository']['external_dms_id'].startswith('ADMIN-' + socket.gethostname().upper())
@@ -204,7 +204,7 @@ def run(tmpdir, o, skip=[]):
         output_buffer = '=================== 11. Init analysis ===================\n'
         cmd('obis init_analysis -p data1 analysis1')
         with cd('analysis1'):
-            cmd('obis object set id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
         with cd('data1'): settings_data1 = get_settings()
@@ -220,7 +220,7 @@ def run(tmpdir, o, skip=[]):
         with cd('data1'):
             cmd('obis init_analysis analysis2')
             with cd('analysis2'):
-                cmd('obis object set id=/DEFAULT/DEFAULT')
+                cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
                 cmd('touch file')
                 result = cmd('obis commit -m \'commit-message\'')
                 settings_analysis2 = get_settings()
@@ -237,7 +237,7 @@ def run(tmpdir, o, skip=[]):
         output_buffer = '=================== 12. Metadata only commit ===================\n'
         cmd('obis init data7')
         with cd('data7'):
-            cmd('obis object set id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
             cmd('touch file')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
@@ -245,7 +245,7 @@ def run(tmpdir, o, skip=[]):
             data_set = o.get_dataset(settings['repository']['data_set_id']).data
             assert_matching(settings, data_set, tmpdir, 'obis_data/data7')
             cmd('obis object clear id')
-            cmd('obis collection set id=/PUBLICATIONS/DEFAULT/DEFAULT')
+            cmd('obis collection set id=/OBIS_TEST_1/PROJECT_1/COLLECTION_1')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
@@ -301,7 +301,7 @@ def run(tmpdir, o, skip=[]):
         cmd('obis init data10')
         with cd('data10'):
             cmd('dd if=/dev/zero of=big_file bs=1000000 count=1')
-            cmd('obis object set id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
             # use SHA256 form git annex by default
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
@@ -335,22 +335,22 @@ def run(tmpdir, o, skip=[]):
             assert get_settings()['repository'] == {'id': None, 'external_dms_id': None, 'data_set_id': None}
 
         output_buffer = '=================== 22. changing identifier ===================\n'
-        settings = create_repository_and_commit(tmpdir, o, 'data14', '/DEFAULT/BIGDATA2')
-        move_sample(o, settings['object']['permId'], 'BIGDATA')
+        settings = create_repository_and_commit(tmpdir, o, 'data14', '/OBIS_TEST_1/SAMPLE_2')
+        move_sample(o, settings['object']['permId'], 'OBIS_TEST_2')
         try:
             settings = commit_new_change(tmpdir, o, 'data14')
-            assert settings['object']['id'] == '/BIGDATA/BIGDATA2'
+            assert settings['object']['id'] == '/OBIS_TEST_2/SAMPLE_2'
         finally:
-            move_sample(o, settings['object']['permId'], 'DEFAULT')
+            move_sample(o, settings['object']['permId'], 'OBIS_TEST_1')
         with cd('data14'): assert get_settings()['object']['permId'] is not None
-        cmd('obis object set id=/DEFAULT/DEFAULT')
+        cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
         with cd('data14'): assert get_settings()['object']['permId'] is not None
 
         output_buffer = '=================== 16. User switch ===================\n'
         cmd('obis init data9')
         with cd('data9'):
             cmd('touch file')
-            cmd('obis object set id=/DEFAULT/DEFAULT')
+            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
             result = cmd('obis commit -m \'commit-message\'')
             settings = get_settings()
             assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
@@ -486,13 +486,20 @@ def get_openbis():
 
 def setup_masterdata(o):
     spaces = o.get_spaces().df.code.values
-    if 'DEFAULT' not in spaces:
-        o.new_space(code='DEFAULT').save()
-    if 'BIGDATA' not in spaces:
-        o.new_space(code='BIGDATA').save()
-    if '/DEFAULT/BIGDATA2' not in o.get_samples(code='BIGDATA2').df.identifier.values:
-        o.new_sample(type='SYSTEM_EXPERIMENT', code='BIGDATA2', space='DEFAULT').save()
-    if '/DEFAULT/DEFAULT' not in o.get_samples(code='DEFAULT').df.identifier.values:
-        o.new_sample(type='SYSTEM_EXPERIMENT', code='DEFAULT', space='DEFAULT').save()
-    if '/PUBLICATIONS/DEFAULT/DEFAULT' not in o.get_experiments(code='DEFAULT').df.identifier.values:
-        o.new_experiment(type='SYSTEM_EXPERIMENT', code='DEFAULT', project='DEFAULT').save()
+    if 'OBIS_TEST_1' not in spaces:
+        o.new_space(code='OBIS_TEST_1').save()
+    if 'OBIS_TEST_2' not in spaces:
+        o.new_space(code='OBIS_TEST_2').save()
+    if '/OBIS_TEST_1/SAMPLE_1' not in o.get_samples(code='SAMPLE_1').df.identifier.values:
+        o.new_sample(type='SYSTEM_EXPERIMENT', code='SAMPLE_1', space='OBIS_TEST_1').save()
+    if '/OBIS_TEST_1/SAMPLE_2' not in o.get_samples(code='SAMPLE_2').df.identifier.values:
+        o.new_sample(type='SYSTEM_EXPERIMENT', code='SAMPLE_2', space='OBIS_TEST_1').save()
+    if '/OBIS_TEST_1/PROJECT_1' not in o.get_projects().df.identifier.values:
+        o.new_project(space='OBIS_TEST_1', code='PROJECT_1').save()
+    if '/OBIS_TEST_1/PROJECT_1/COLLECTION_1' not in o.get_experiments(code='COLLECTION_1').df.identifier.values:
+        o.new_experiment(type='SYSTEM_EXPERIMENT', code='COLLECTION_1', project='PROJECT_1').save()
+
+# space DEFAULT -> OBIS_TEST
+# sample /DEFAULT/DEFAULT -> /OBIS_TEST_1/SAMPLE_1
+# sample /DEFAULT/BIGDATA2 -> /OBIS_TEST_2/SAMPLE_2
+# experiment /PUBLICATIONS/DEFAULT/DEFAULT -> /OBIS_TEST_1/OBIS_TEST_1/COLLECTION_1
