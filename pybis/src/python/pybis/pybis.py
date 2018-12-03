@@ -1018,12 +1018,14 @@ class Openbis:
             roles['space'] = roles['space'].map(extract_code)
             roles['project'] = roles['project'].map(extract_code)
 
-        p = Things(
-            self, entity='role_assignment', 
+        return Things(
+            openbis_obj = self,
+            entity='role_assignment',
             df=roles[attrs],
-            identifier_name='techId'
+            identifier_name='techId',
+            start_with = start_with,
+            count = count,
         )
-        return p
 
     def get_role_assignment(self, techId, only_data=False):
         """ Fetches one assigned role by its techId.
@@ -1101,7 +1103,7 @@ class Openbis:
         request = {
             "method": "createRoleAssignments",
             "params": [
-                self.token, 
+                self.token,
                 [
 	            {
                         "role": role,
@@ -1172,7 +1174,14 @@ class Openbis:
             groups['users'] = groups['users'].map(extract_userId)
             groups['registrationDate'] = groups['registrationDate'].map(format_timestamp)
             groups['modificationDate'] = groups['modificationDate'].map(format_timestamp)
-        return Things(self, entity='group', df=groups[attrs], identifier_name='permId')
+        return Things(
+            openbis_obj = self,
+            entity='group',
+            df=groups[attrs],
+            identifier_name='permId',
+            start_with = start_with,
+            count = count,
+        )
 
 
     def get_persons(self, start_with=None, count=None, **search_args):
@@ -1208,7 +1217,12 @@ class Openbis:
             persons['space'] = persons['space'].map(extract_nested_permid)
 
         return Things(
-            self, entity='person', df=persons[attrs], identifier_name='permId'
+            openbis_obj = self,
+            entity='person',
+            df=persons[attrs],
+            identifier_name='permId',
+            start_with = start_with,
+            count = count,
         )
 
 
@@ -1279,7 +1293,13 @@ class Openbis:
             spaces = DataFrame(resp['objects'])
             spaces['registrationDate'] = spaces['registrationDate'].map(format_timestamp)
             spaces['modificationDate'] = spaces['modificationDate'].map(format_timestamp)
-        return Things(self, 'space', spaces[attrs])
+        return Things(
+            openbis_obj = self,
+            entity = 'space',
+            df = spaces[attrs],
+            start_with = start_with,
+            count = count,
+        )
 
 
     def get_space(self, code, only_data=False):
@@ -1314,7 +1334,8 @@ class Openbis:
 
 
     def get_samples(
-        self, identifier=None, code=None, permId=None, space=None, project=None, experiment=None, type=None,
+        self, identifier=None, code=None, permId=None,
+        space=None, project=None, experiment=None, type=None,
         start_with=None, count=None,
         withParents=None, withChildren=None, tags=None, props=None, **properties
     ):
@@ -1400,14 +1421,19 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        return self._sample_list_for_response(response=resp['objects'], props=props)
+        return self._sample_list_for_response(
+            response=resp['objects'],
+            props=props,
+            start_with=start_with,
+            count=count,
+        )
 
 
     get_objects = get_samples # Alias
 
 
     def get_experiments(
-        self, code=None, permId=None, type=None, space=None, project=None, 
+        self, code=None, permId=None, type=None, space=None, project=None,
         start_with=None, count=None,
         tags=None, is_finished=None, props=None, **properties
     ):
@@ -1486,11 +1512,18 @@ class Openbis:
                 experiments[prop.upper()] = experiments['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        return Things(self, 'experiment', experiments[attrs], 'identifier')
+        return Things(
+            openbis_obj = self,
+            entity = 'experiment',
+            df = experiments[attrs],
+            identifier_name ='identifier',
+            start_with = start_with,
+            count = count,
+        )
 
 
     def get_datasets(
-        self, code=None, type=None, withParents=None, withChildren=None, 
+        self, code=None, type=None, withParents=None, withChildren=None,
         start_with=None, count=None,
         status=None, sample=None, experiment=None, project=None,
         tags=None, props=None, **properties
@@ -1548,7 +1581,12 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        return self._dataset_list_for_response(response=resp['objects'], props=props)
+        return self._dataset_list_for_response(
+            response=resp['objects'],
+            props=props,
+            start_with=start_with,
+            count=count,
+        )
 
 
     def get_experiment(self, expId, withAttachments=False, only_data=False):
@@ -1595,12 +1633,12 @@ class Openbis:
         """ Creates a new experiment of a given experiment type.
         """
         return Experiment(
-            openbis_obj = self, 
-            type = self.get_experiment_type(type), 
+            openbis_obj = self,
+            type = self.get_experiment_type(type),
             project = project,
             data = None,
             props = props,
-            code = code, 
+            code = code,
             **kwargs
         )
 
@@ -1692,7 +1730,7 @@ class Openbis:
         """
 
         entity_type = "as.dto.{}.id.{}{}{}".format(
-            entity.lower(), entity, 
+            entity.lower(), entity,
             id_name[0].upper(), id_name[1:]
         )
         request = {
@@ -1851,7 +1889,14 @@ class Openbis:
             projects['permId'] = projects['permId'].map(extract_permid)
             projects['identifier'] = projects['identifier'].map(extract_identifier)
 
-        return Things(self, 'project', projects[attrs], 'identifier')
+        return Things(
+            openbis_obj = self,
+            entity = 'project',
+            df = projects[attrs],
+            identifier_name = 'identifier',
+            start_with = start_with,
+            count = count,
+        )
 
 
     def _create_get_request(self, method_name, entity, permids, options):
@@ -1924,14 +1969,21 @@ class Openbis:
             terms['registrationDate'] = terms['registrationDate'].map(format_timestamp)
             terms['modificationDate'] = terms['modificationDate'].map(format_timestamp)
 
-        return Things(self, 'term', terms[attrs], 
-            identifier_name='code', additional_identifier='vocabularyCode')
+        return Things(
+            openbis_obj = self,
+            entity = 'term',
+            df = terms[attrs],
+            identifier_name='code',
+            additional_identifier='vocabularyCode',
+            start_with = start_with,
+            count = count,
+        )
         
 
     def new_term(self, code, vocabularyCode, label=None, description=None):
         return VocabularyTerm(
-            self, data=None, 
-            code=code, vocabularyCode=vocabularyCode, 
+            self, data=None,
+            code=code, vocabularyCode=vocabularyCode,
             label=label, description=description
         )
 
@@ -2032,7 +2084,14 @@ class Openbis:
             vocs['modificationDate'] = vocs['modificationDate'].map(format_timestamp)
             vocs['registrator']      = vocs['registrator'].map(extract_person)
 
-        return Things(self, 'vocabulary', vocs[attrs], 'code')
+        return Things(
+            openbis_obj = self,
+            entity = 'vocabulary',
+            df = vocs[attrs],
+            identifier_name = 'code',
+            start_with = start_with,
+            count = count,
+            )
 
 
     def get_vocabulary(self, code, only_data=False):
@@ -2128,7 +2187,12 @@ class Openbis:
             tags['description']      = tags['description'].map(lambda x: '' if x is None else x)
             tags['owner']            = tags['owner'].map(extract_person)
 
-        return Things(self, 'tag', tags[attrs], 'permId')
+        return Things(
+            openbis_obj = self,
+            entity = 'tag',
+            df = tags[attrs],
+            identifier_name ='permId',
+        )
 
 
     def search_semantic_annotations(self, permId=None, entityType=None, propertyType=None, only_data = False):
@@ -2189,7 +2253,14 @@ class Openbis:
         else:
             annotations = DataFrame(objects)
 
-        return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+        return Things(
+            openbis_obj = self,
+            entity = 'semantic_annotation',
+            df = annotations[attrs],
+            identifier_name = 'permId',
+            start_with = start_with,
+            count = count,
+        )
 
     def _search_semantic_annotations(self, criteria):
 
@@ -2244,7 +2315,14 @@ class Openbis:
             annotations = DataFrame(columns=attrs)
         else:
             annotations = DataFrame(objects)
-        return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+        return Things(
+            openbis_obj = self,
+            entity = 'semantic_annotation',
+            df = annotations[attrs],
+            identifier_name = 'permId',
+            start_with = start_with,
+            count = count,
+        )
 
     def get_semantic_annotation(self, permId, only_data = False):
         objects = self.search_semantic_annotations(permId=permId, only_data=True)
@@ -2291,7 +2369,14 @@ class Openbis:
             plugins['description'] = plugins['description'].map(lambda x: '' if x is None else x)
             plugins['entityKinds'] = plugins['entityKinds'].map(lambda x: '' if x is None else x)
 
-        return Things(self, 'plugin', plugins[attrs], 'name')
+        return Things(
+            openbis_obj = self,
+            entity = 'plugin',
+            df = plugins[attrs],
+            identifier_name = 'name',
+            start_with = start_with,
+            count = count,
+        )
 
 
     def get_plugin(self, permId, only_data=False, with_script=True):
@@ -2419,7 +2504,7 @@ class Openbis:
         """ Returns a list (DataFrame object) of all currently available dataset types
         """
         return self._get_types_of(
-            "searchDataSetTypes", "DataSet", type, 
+            "searchDataSetTypes", "DataSet", type,
             optional_attributes=['kind'],
             start_with=start_with,
             count=count,
@@ -2432,7 +2517,7 @@ class Openbis:
             raise ValueError("No such dataSet type: {}".format(type))
 
     def _get_types_of(
-        self, method_name, entity, type_name=None, 
+        self, method_name, entity, type_name=None,
         start_with=None, count=None,
         additional_attributes=None, optional_attributes=None
     ):
@@ -2486,7 +2571,13 @@ class Openbis:
             parse_jackson(objects)
             types = DataFrame(objects)
             types['modificationDate'] = types['modificationDate'].map(format_timestamp)
-        return Things(self, entity.lower() + '_type', types[attrs])
+        return Things(
+            openbis_obj = self,
+            entity = entity.lower() + '_type',
+            df = types[attrs],
+            start_with = start_with,
+            count = count,
+        )
 
 
     def _get_attributes(self, type_name, types, additional_attributes, optional_attributes):
@@ -2579,7 +2670,7 @@ class Openbis:
                     return resp[permId]
                 else:
                     return DataSet(
-                        openbis_obj = self, 
+                        openbis_obj = self,
                         type = self.get_dataset_type(resp[permId]["type"]["code"]),
                         data = resp[permId]
                     )
@@ -2587,12 +2678,12 @@ class Openbis:
             return self._dataset_list_for_response(response=list(resp.values()), props=props)
 
 
-    def _dataset_list_for_response(self, response, props=None):
+    def _dataset_list_for_response(self, response, props=None, start_with=None, count=None):
         """returns a Things object, containing a DataFrame plus some additional information
         """
 
         parse_jackson(response)
-        attrs = ['permId', 'type', 'experiment', 'sample', 
+        attrs = ['permId', 'type', 'experiment', 'sample',
                  'registrationDate', 'modificationDate',
                  'location', 'status', 'presentInArchive', 'size',
                  'properties'
@@ -2619,7 +2710,14 @@ class Openbis:
                 datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        return Things(self, 'dataset', datasets[attrs], 'permId')
+        return Things(
+            openbis_obj = self,
+            entity = 'dataset',
+            df = datasets[attrs],
+            identifier_name = 'permId',
+            start_with=start_with,
+            count=count,
+        )
 
 
     def get_sample(self, sample_ident, only_data=False, withAttachments=False, props=None):
@@ -2682,9 +2780,12 @@ class Openbis:
                         data = resp[sample_ident]
                     )
         else:
-            return self._sample_list_for_response(response=list(resp.values()), props=props)
+            return self._sample_list_for_response(
+                response=list(resp.values()),
+                props=props,
+            )
 
-    def _sample_list_for_response(self, response, props=None):
+    def _sample_list_for_response(self, response, props=None, start_with=None, count=None):
         """returns a Things object, containing a DataFrame plus some additional information
         """
 
@@ -2711,7 +2812,14 @@ class Openbis:
                 samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        return Things(self, 'sample', samples[attrs], 'identifier')
+        return Things(
+            openbis_obj = self,
+            entity = 'sample',
+            df = samples[attrs],
+            identifier_name = 'identifier',
+            start_with=start_with,
+            count=count,
+        )
 
 
     get_object = get_sample # Alias
@@ -2872,7 +2980,7 @@ class Openbis:
     def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):
         """ Note: not functional yet. """
         return SemanticAnnotation(
-            openbis_obj=self, isNew=True, 
+            openbis_obj=self, isNew=True,
             entityType=entityType, propertyType=propertyType, **kwargs
         )    
 
@@ -2954,7 +3062,7 @@ class ServerInformation():
     def __init__(self, info):
         self._info = info
         self.attrs = [
-            'api_version', 'archiving_configured', 'authentication_service', 
+            'api_version', 'archiving_configured', 'authentication_service',
             'enabled_technologies', 'project_samples_enabled'
         ]
 
