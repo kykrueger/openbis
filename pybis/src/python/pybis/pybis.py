@@ -2613,6 +2613,8 @@ class Openbis:
             datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
 
         if props is not None:
+            if isinstance(props, str):
+                props = [props]
             for prop in props:
                 datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
@@ -2703,6 +2705,8 @@ class Openbis:
             samples['sample_type'] = samples['type'].map(extract_nested_permid)
 
         if props is not None:
+            if isinstance(props, str):
+                props = [props]
             for prop in props:
                 samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
