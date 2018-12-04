@@ -96,6 +96,7 @@ def openbis_definitions(entity):
             "attrs": "code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyId",
+            "search": { "@type": "as.dto.vocabulary.search.VocabularySearchCriteria" },
             "create": { "@type": "as.dto.vocabulary.create.VocabularyCreation"}, 
             "update": { "@type": "as.dto.vocabulary.upate.VocabularyUpdate"},
             "delete": { "@type": "as.dto.vocabulary.delete.VocabularyDeletionOptions"},
@@ -211,9 +212,6 @@ fetch_option = {
     },
     "roleAssignments": {
         "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions",
-        "space": {
-            "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"
-        }
     },
     "properties": {"@type": "as.dto.property.fetchoptions.PropertyFetchOptions"},
     "propertyAssignments": {
@@ -247,6 +245,8 @@ fetch_option = {
         },
     },
     "vocabularyTerm": {"@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"},
+    "deletedObjects": { "@type": "as.dto.deletion.fetchoptions.DeletedObjectFetchOptions" },
+    "deletion": { "@type": "as.dto.deletion.fetchoptions.DeletionFetchOptions" },
 }
 
 def get_fetchoption_for_entity(entity):

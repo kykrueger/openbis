@@ -121,6 +121,7 @@ def get_attrs_for_entity(entity):
 
 
 def _type_for_id(ident, entity):
+    ident = ident.strip()
     """Returns the data type for a given identifier/permId for use with the API call, e.g.
     {
         "identifier": "/DEFAULT/SAMPLE_NAME",
@@ -135,6 +136,8 @@ def _type_for_id(ident, entity):
     # Tags have strange permIds...
     if entity.lower() == 'tag':
         if '/' in ident:
+            if not ident.startswith('/'):
+                ident = '/'+ident
             return {
                 "permId": ident,
                 "@type" : "as.dto.tag.id.TagPermId"
@@ -161,6 +164,9 @@ def _type_for_id(ident, entity):
         entity_capitalize = entity.capitalize()
 
     if is_identifier(ident):
+        # people tend to omit the / prefix of an identifier...
+        if not ident.startswith('/'):
+            ident = '/'+ident
         search_request = {
             "identifier": ident.upper(),
             "@type": "as.dto.{}.id.{}Identifier".format(entity.lower(), entity_capitalize)
@@ -940,7 +946,7 @@ class Openbis:
             else:
                 return Group(self, data=group)
 
-    def get_role_assignments(self, **search_args):
+    def get_role_assignments(self, start_with=None, count=None, **search_args):
         """ Get the assigned roles for a given group, person or space
         """
         search_criteria = get_search_type_for_entity('roleAssignment', 'AND')
@@ -985,8 +991,10 @@ class Openbis:
 
         search_criteria['criteria'] = sub_crit
 
-        fetchopts = {}
-        for option in ['roleAssignments', 'space', 'project', 'user', 'authorizationGroup','registrator']:
+        fetchopts = fetch_option['roleAssignments']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
+        for option in ['space', 'project', 'user', 'authorizationGroup','registrator']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1012,12 +1020,14 @@ class Openbis:
             roles['space'] = roles['space'].map(extract_code)
             roles['project'] = roles['project'].map(extract_code)
 
-        p = Things(
-            self, entity='role_assignment', 
+        return Things(
+            openbis_obj = self,
+            entity='role_assignment',
             df=roles[attrs],
-            identifier_name='techId'
+            identifier_name='techId',
+            start_with = start_with,
+            count = count,
         )
-        return p
 
     def get_role_assignment(self, techId, only_data=False):
         """ Fetches one assigned role by its techId.
@@ -1095,7 +1105,7 @@ class Openbis:
         request = {
             "method": "createRoleAssignments",
             "params": [
-                self.token, 
+                self.token,
                 [
 	            {
                         "role": role,
@@ -1112,7 +1122,7 @@ class Openbis:
         return
 
 
-    def get_groups(self, **search_args):
+    def get_groups(self, start_with=None, count=None, **search_args):
         """ Get openBIS AuthorizationGroups. Returns a «Things» object.
 
         Usage::
@@ -1139,6 +1149,8 @@ class Openbis:
         search_criteria['operator'] = 'AND'
                 
         fetchopts = fetch_option['authorizationGroup']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['roleAssignments', 'registrator', 'users']:
             fetchopts[option] = fetch_option[option]
         request = {
@@ -1164,15 +1176,24 @@ class Openbis:
             groups['users'] = groups['users'].map(extract_userId)
             groups['registrationDate'] = groups['registrationDate'].map(format_timestamp)
             groups['modificationDate'] = groups['modificationDate'].map(format_timestamp)
-        return Things(self, entity='group', df=groups[attrs], identifier_name='permId')
+        return Things(
+            openbis_obj = self,
+            entity='group',
+            df=groups[attrs],
+            identifier_name='permId',
+            start_with = start_with,
+            count = count,
+        )
 
 
-    def get_persons(self, **search_args):
+    def get_persons(self, start_with=None, count=None, **search_args):
         """ Get openBIS users
         """
 
         search_criteria = get_search_criteria('person', **search_args)
-        fetchopts = {}
+        fetchopts = fetch_option['person']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['space']:
             fetchopts[option] = fetch_option[option]
         request = {
@@ -1198,7 +1219,12 @@ class Openbis:
             persons['space'] = persons['space'].map(extract_nested_permid)
 
         return Things(
-            self, entity='person', df=persons[attrs], identifier_name='permId'
+            openbis_obj = self,
+            entity='person',
+            df=persons[attrs],
+            identifier_name='permId',
+            start_with = start_with,
+            count = count,
         )
 
 
@@ -1244,13 +1270,15 @@ class Openbis:
     get_user = get_person # Alias
 
 
-    def get_spaces(self, code=None):
+    def get_spaces(self, code=None, start_with=None, count=None):
         """ Get a list of all available spaces (DataFrame object). To create a sample or a
         dataset, you need to specify in which space it should live.
         """
 
         search_criteria = _subcriteria_for_code(code, 'space')
-        fetchopts = {}
+        fetchopts = fetch_option['space']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         request = {
             "method": "searchSpaces",
             "params": [self.token,
@@ -1267,7 +1295,13 @@ class Openbis:
             spaces = DataFrame(resp['objects'])
             spaces['registrationDate'] = spaces['registrationDate'].map(format_timestamp)
             spaces['modificationDate'] = spaces['modificationDate'].map(format_timestamp)
-        return Things(self, 'space', spaces[attrs])
+        return Things(
+            openbis_obj = self,
+            entity = 'space',
+            df = spaces[attrs],
+            start_with = start_with,
+            count = count,
+        )
 
 
     def get_space(self, code, only_data=False):
@@ -1301,19 +1335,34 @@ class Openbis:
                 return Space(self, data=resp[permid])
 
 
-    def get_samples(self, code=None, permId=None, space=None, project=None, experiment=None, type=None,
-                    withParents=None, withChildren=None, tags=None, props=None, **properties):
+    def get_samples(
+        self, identifier=None, code=None, permId=None,
+        space=None, project=None, experiment=None, type=None,
+        start_with=None, count=None,
+        withParents=None, withChildren=None, tags=None, props=None, **properties
+    ):
         """ Get a list of all samples for a given space/project/experiment (or any combination)
         """
 
         sub_criteria = []
+
+        # v3 API does not offer a search for identifiers. We need to do a combined search instead:
+        # space && code or
+        # space && project && code
+        if identifier:
+            identifier = identifier.lstrip('/')
+            elements = identifier.split('/')
+            if len(elements) == 2:
+                space = elements[0]
+                code  = elements[1]
+            elif len(elements) == 3:
+                space = elements[0]
+                code  = elements[2]
+            else:
+                raise ValueError("{} is not a valid sample identifier.".format(identifier))
+
         if space:
-            sub_criteria.append(_gen_search_criteria({
-                "space": "Space",
-                "operator": "AND",
-                "code": space
-            })
-            )
+            sub_criteria.append(_subcriteria_for_code(space, 'space'))
         if project:
             proj_crit = _subcriteria_for_code(project, 'project')
             sub_criteria.append(proj_crit)
@@ -1359,6 +1408,8 @@ class Openbis:
 
         # build the various fetch options
         fetchopts = fetch_option['sample']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         for option in ['tags', 'properties', 'registrator', 'modifier', 'experiment']:
             fetchopts[option] = fetch_option[option]
@@ -1372,13 +1423,22 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        return self._sample_list_for_response(response=resp['objects'], props=props)
+        return self._sample_list_for_response(
+            response=resp['objects'],
+            props=props,
+            start_with=start_with,
+            count=count,
+        )
 
 
     get_objects = get_samples # Alias
 
 
-    def get_experiments(self, code=None, permId=None, type=None, space=None, project=None, tags=None, is_finished=None, props=None, **properties):
+    def get_experiments(
+        self, code=None, permId=None, type=None, space=None, project=None,
+        start_with=None, count=None,
+        tags=None, is_finished=None, props=None, **properties
+    ):
         """ Searches for all experiment which match the search criteria. Returns a
         «Things» object which can be used in many different situations.
 
@@ -1417,6 +1477,8 @@ class Openbis:
         search_criteria['operator'] = 'AND'
 
         fetchopts = fetch_option['experiment']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['tags', 'properties', 'registrator', 'modifier', 'project']:
             fetchopts[option] = fetch_option[option]
 
@@ -1452,13 +1514,22 @@ class Openbis:
                 experiments[prop.upper()] = experiments['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        return Things(self, 'experiment', experiments[attrs], 'identifier')
+        return Things(
+            openbis_obj = self,
+            entity = 'experiment',
+            df = experiments[attrs],
+            identifier_name ='identifier',
+            start_with = start_with,
+            count = count,
+        )
 
 
-    def get_datasets(self, code=None, type=None, withParents=None, withChildren=None, 
-            status=None, sample=None, experiment=None, project=None, tags=None, props=None, 
-            **properties
-        ):
+    def get_datasets(
+        self, code=None, type=None, withParents=None, withChildren=None,
+        start_with=None, count=None,
+        status=None, sample=None, experiment=None, project=None,
+        tags=None, props=None, **properties
+    ):
 
         sub_criteria = []
 
@@ -1497,6 +1568,8 @@ class Openbis:
             "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
             "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"}
         }
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         for option in ['tags', 'properties', 'sample', 'experiment', 'physicalData']:
             fetchopts[option] = fetch_option[option]
@@ -1510,7 +1583,12 @@ class Openbis:
         }
         resp = self._post_request(self.as_v3, request)
 
-        return self._dataset_list_for_response(response=resp['objects'], props=props)
+        return self._dataset_list_for_response(
+            response=resp['objects'],
+            props=props,
+            start_with=start_with,
+            count=count,
+        )
 
 
     def get_experiment(self, expId, withAttachments=False, only_data=False):
@@ -1557,12 +1635,12 @@ class Openbis:
         """ Creates a new experiment of a given experiment type.
         """
         return Experiment(
-            openbis_obj = self, 
-            type = self.get_experiment_type(type), 
+            openbis_obj = self,
+            type = self.get_experiment_type(type),
             project = project,
             data = None,
             props = props,
-            code = code, 
+            code = code,
             **kwargs
         )
 
@@ -1654,7 +1732,7 @@ class Openbis:
         """
 
         entity_type = "as.dto.{}.id.{}{}{}".format(
-            entity.lower(), entity, 
+            entity.lower(), entity,
             id_name[0].upper(), id_name[1:]
         )
         request = {
@@ -1694,17 +1772,20 @@ class Openbis:
         return
 
 
-    def get_deletions(self):
+    def get_deletions(self, start_with=None, count=None):
+        search_criteria = {}
+        fetchopts = fetch_option['deletion']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
+        for option in ['deletedObjects']:
+            fetchopts[option] = fetch_option[option]
+
         request = {
             "method": "searchDeletions",
             "params": [
                 self.token,
                 {},
-                {
-                    "deletedObjects": {
-                        "@type": "as.dto.deletion.fetchoptions.DeletedObjectFetchOptions"
-                    }
-                }
+                fetchopts,
             ]
         }
         resp = self._post_request(self.as_v3, request)
@@ -1759,7 +1840,10 @@ class Openbis:
 
             return Project(self, resp['objects'][0])
 
-    def get_projects(self, space=None, code=None):
+    def get_projects(
+        self, space=None, code=None,
+        start_with=None, count=None,
+    ):
         """ Get a list of all available projects (DataFrame object).
         """
 
@@ -1776,6 +1860,8 @@ class Openbis:
         }
 
         fetchopts = {"@type": "as.dto.project.fetchoptions.ProjectFetchOptions"}
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['registrator', 'modifier', 'leader']:
             fetchopts[option] = fetch_option[option]
 
@@ -1805,7 +1891,14 @@ class Openbis:
             projects['permId'] = projects['permId'].map(extract_permid)
             projects['identifier'] = projects['identifier'].map(extract_identifier)
 
-        return Things(self, 'project', projects[attrs], 'identifier')
+        return Things(
+            openbis_obj = self,
+            entity = 'project',
+            df = projects[attrs],
+            identifier_name = 'identifier',
+            start_with = start_with,
+            count = count,
+        )
 
 
     def _create_get_request(self, method_name, entity, permids, options):
@@ -1841,7 +1934,7 @@ class Openbis:
         }
         return request
 
-    def get_terms(self, vocabulary=None):
+    def get_terms(self, vocabulary=None, start_with=None, count=None):
         """ Returns information about existing vocabulary terms. 
         If a vocabulary code is provided, it only returns the terms of that vocabulary.
         """
@@ -1857,6 +1950,8 @@ class Openbis:
             })
 
         fetchopts = fetch_option['vocabularyTerm']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         request = {
             "method": "searchVocabularyTerms",
@@ -1876,14 +1971,21 @@ class Openbis:
             terms['registrationDate'] = terms['registrationDate'].map(format_timestamp)
             terms['modificationDate'] = terms['modificationDate'].map(format_timestamp)
 
-        return Things(self, 'term', terms[attrs], 
-            identifier_name='code', additional_identifier='vocabularyCode')
+        return Things(
+            openbis_obj = self,
+            entity = 'term',
+            df = terms[attrs],
+            identifier_name='code',
+            additional_identifier='vocabularyCode',
+            start_with = start_with,
+            count = count,
+        )
         
 
     def new_term(self, code, vocabularyCode, label=None, description=None):
         return VocabularyTerm(
-            self, data=None, 
-            code=code, vocabularyCode=vocabularyCode, 
+            self, data=None,
+            code=code, vocabularyCode=vocabularyCode,
             label=label, description=description
         )
 
@@ -1954,19 +2056,28 @@ class Openbis:
                     return klass(self, resp[ident])
 
 
-    def get_vocabularies(self):
+    def get_vocabularies(self, code=None, start_with=None, count=None):
         """ Returns information about vocabulary
         """
 
-        search_request = {}
+        sub_criteria = []
+        if code:
+            sub_criteria.append(_criteria_for_code(code))
+        criteria = {
+            "criteria": sub_criteria,
+            "@type": "as.dto.vocabulary.search.VocabularySearchCriteria",
+            "operator": "AND"
+        }
 
         fetchopts = fetch_option['vocabulary']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['registrator']:
             fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchVocabularies",
-            "params": [self.token, search_request, fetchopts]
+            "params": [self.token, criteria, fetchopts]
         }
         resp = self._post_request(self.as_v3, request)
 
@@ -1982,7 +2093,14 @@ class Openbis:
             vocs['modificationDate'] = vocs['modificationDate'].map(format_timestamp)
             vocs['registrator']      = vocs['registrator'].map(extract_person)
 
-        return Things(self, 'vocabulary', vocs[attrs], 'code')
+        return Things(
+            openbis_obj = self,
+            entity = 'vocabulary',
+            df = vocs[attrs],
+            identifier_name = 'code',
+            start_with = start_with,
+            count = count,
+            )
 
 
     def get_vocabulary(self, code, only_data=False):
@@ -1997,7 +2115,7 @@ class Openbis:
         return Tag(self, code=code, description=description)
 
 
-    def get_tags(self, code=None):
+    def get_tags(self, code=None, start_with=None, count=None):
         """ Returns a DataFrame of all tags
         """
 
@@ -2005,6 +2123,8 @@ class Openbis:
 
         criteria = []
         fetchopts = fetch_option['tag']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
         for option in ['owner']:
             fetchopts[option] = fetch_option[option]
         if code:
@@ -2076,7 +2196,12 @@ class Openbis:
             tags['description']      = tags['description'].map(lambda x: '' if x is None else x)
             tags['owner']            = tags['owner'].map(extract_person)
 
-        return Things(self, 'tag', tags[attrs], 'permId')
+        return Things(
+            openbis_obj = self,
+            entity = 'tag',
+            df = tags[attrs],
+            identifier_name ='permId',
+        )
 
 
     def search_semantic_annotations(self, permId=None, entityType=None, propertyType=None, only_data = False):
@@ -2137,7 +2262,14 @@ class Openbis:
         else:
             annotations = DataFrame(objects)
 
-        return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+        return Things(
+            openbis_obj = self,
+            entity = 'semantic_annotation',
+            df = annotations[attrs],
+            identifier_name = 'permId',
+            start_with = start_with,
+            count = count,
+        )
 
     def _search_semantic_annotations(self, criteria):
 
@@ -2192,7 +2324,14 @@ class Openbis:
             annotations = DataFrame(columns=attrs)
         else:
             annotations = DataFrame(objects)
-        return Things(self, 'semantic_annotation', annotations[attrs], 'permId')
+        return Things(
+            openbis_obj = self,
+            entity = 'semantic_annotation',
+            df = annotations[attrs],
+            identifier_name = 'permId',
+            start_with = start_with,
+            count = count,
+        )
 
     def get_semantic_annotation(self, permId, only_data = False):
         objects = self.search_semantic_annotations(permId=permId, only_data=True)
@@ -2204,7 +2343,7 @@ class Openbis:
         else:
             return SemanticAnnotation(self, isNew=False, **object)
 
-    def get_plugins(self):
+    def get_plugins(self, start_with=None, count=None):
 
         criteria = []
         search_criteria = get_search_type_for_entity('plugin', 'AND')
@@ -2239,7 +2378,14 @@ class Openbis:
             plugins['description'] = plugins['description'].map(lambda x: '' if x is None else x)
             plugins['entityKinds'] = plugins['entityKinds'].map(lambda x: '' if x is None else x)
 
-        return Things(self, 'plugin', plugins[attrs], 'name')
+        return Things(
+            openbis_obj = self,
+            entity = 'plugin',
+            df = plugins[attrs],
+            identifier_name = 'name',
+            start_with = start_with,
+            count = count,
+        )
 
 
     def get_plugin(self, permId, only_data=False, with_script=True):
@@ -2297,14 +2443,16 @@ class Openbis:
         return Plugin(self, pluginType=pluginType, pluginKind=pluginKind, **kwargs) 
 
     
-    def get_sample_types(self, type=None):
+    def get_sample_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available sample types
         """
         return self._get_types_of(
             "searchSampleTypes",
             "Sample",
             type,
-            ["generatedCodePrefix"]
+            additional_attributes=["generatedCodePrefix"],
+            start_with=start_with,
+            count=count,
         )
 
     get_object_types = get_sample_types # Alias
@@ -2315,7 +2463,7 @@ class Openbis:
                 "searchSampleTypes",
                 "Sample",
                 type,
-                ["generatedCodePrefix", "validationPluginId"]
+                additional_attributes=["generatedCodePrefix", "validationPluginId"]
             )
             return SampleType(self, property_asignments.data)
         except Exception:
@@ -2323,13 +2471,13 @@ class Openbis:
 
     get_object_type = get_sample_type # Alias
 
-    def get_experiment_types(self, type=None):
+    def get_experiment_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available experiment types
         """
         return self._get_types_of(
-            "searchExperimentTypes",
-            "Experiment",
-            type
+            "searchExperimentTypes", "Experiment", type,
+            start_with=start_with,
+            count=count,
         )
 
     get_collection_types = get_experiment_types  # Alias
@@ -2339,17 +2487,21 @@ class Openbis:
             return self._get_types_of(
                 "searchExperimentTypes",
                 "Experiment",
-                type
+                type,
             )
         except Exception:
            raise ValueError("No such experiment type: {}".format(type))
 
     get_collection_type = get_experiment_type  # Alias
 
-    def get_material_types(self, type=None):
+    def get_material_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available material types
         """
-        return self._get_types_of("searchMaterialTypes", "Material", type)
+        return self._get_types_of(
+            "searchMaterialTypes", "Material", type,
+            start_with=start_with,
+            count=count,
+        )
 
     def get_material_type(self, type):
         try:
@@ -2357,10 +2509,15 @@ class Openbis:
         except Exception:
             raise ValueError("No such material type: {}".format(type))
 
-    def get_dataset_types(self, type=None):
+    def get_dataset_types(self, type=None, start_with=None, count=None):
         """ Returns a list (DataFrame object) of all currently available dataset types
         """
-        return self._get_types_of("searchDataSetTypes", "DataSet", type, optional_attributes=['kind'])
+        return self._get_types_of(
+            "searchDataSetTypes", "DataSet", type,
+            optional_attributes=['kind'],
+            start_with=start_with,
+            count=count,
+        )
 
     def get_dataset_type(self, type):
         try:
@@ -2368,17 +2525,28 @@ class Openbis:
         except Exception:
             raise ValueError("No such dataSet type: {}".format(type))
 
-    def _get_types_of(self, method_name, entity, type_name=None, additional_attributes=[], optional_attributes=[]):
+    def _get_types_of(
+        self, method_name, entity, type_name=None,
+        start_with=None, count=None,
+        additional_attributes=None, optional_attributes=None
+    ):
         """ Returns a list of all available types of an entity.
         If the name of the entity-type is given, it returns a PropertyAssignments object
         """
+        if additional_attributes is None:
+            additional_attributes = []
+
+        if optional_attributes is None:
+            optional_attributes = []
 
         search_request = {}
-        fetch_options = {
+        fetchopts = {
             "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions".format(
                 entity.lower(), entity
             )
         }
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         if type_name is not None:
             search_request = _gen_search_criteria({
@@ -2386,13 +2554,13 @@ class Openbis:
                 "operator": "AND",
                 "code": type_name
             })
-            fetch_options['propertyAssignments'] = fetch_option['propertyAssignments']
+            fetchopts['propertyAssignments'] = fetch_option['propertyAssignments']
             if self.server_information.api_version > '3.3':
-                fetch_options['validationPlugin'] = fetch_option['plugin']
+                fetchopts['validationPlugin'] = fetch_option['plugin']
 
         request = {
             "method": method_name,
-            "params": [self.token, search_request, fetch_options],
+            "params": [self.token, search_request, fetchopts],
         }
         resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
@@ -2412,7 +2580,13 @@ class Openbis:
             parse_jackson(objects)
             types = DataFrame(objects)
             types['modificationDate'] = types['modificationDate'].map(format_timestamp)
-        return Things(self, entity.lower() + '_type', types[attrs])
+        return Things(
+            openbis_obj = self,
+            entity = entity.lower() + '_type',
+            df = types[attrs],
+            start_with = start_with,
+            count = count,
+        )
 
 
     def _get_attributes(self, type_name, types, additional_attributes, optional_attributes):
@@ -2505,7 +2679,7 @@ class Openbis:
                     return resp[permId]
                 else:
                     return DataSet(
-                        openbis_obj = self, 
+                        openbis_obj = self,
                         type = self.get_dataset_type(resp[permId]["type"]["code"]),
                         data = resp[permId]
                     )
@@ -2513,12 +2687,12 @@ class Openbis:
             return self._dataset_list_for_response(response=list(resp.values()), props=props)
 
 
-    def _dataset_list_for_response(self, response, props=None):
+    def _dataset_list_for_response(self, response, props=None, start_with=None, count=None):
         """returns a Things object, containing a DataFrame plus some additional information
         """
 
         parse_jackson(response)
-        attrs = ['permId', 'type', 'experiment', 'sample', 
+        attrs = ['permId', 'type', 'experiment', 'sample',
                  'registrationDate', 'modificationDate',
                  'location', 'status', 'presentInArchive', 'size',
                  'properties'
@@ -2539,11 +2713,20 @@ class Openbis:
             datasets['location'] = datasets['physicalData'].map(lambda x: x.get('location') if x else '')
 
         if props is not None:
+            if isinstance(props, str):
+                props = [props]
             for prop in props:
                 datasets[prop.upper()] = datasets['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        return Things(self, 'dataset', datasets[attrs], 'permId')
+        return Things(
+            openbis_obj = self,
+            entity = 'dataset',
+            df = datasets[attrs],
+            identifier_name = 'permId',
+            start_with=start_with,
+            count=count,
+        )
 
 
     def get_sample(self, sample_ident, only_data=False, withAttachments=False, props=None):
@@ -2606,9 +2789,12 @@ class Openbis:
                         data = resp[sample_ident]
                     )
         else:
-            return self._sample_list_for_response(response=list(resp.values()), props=props)
+            return self._sample_list_for_response(
+                response=list(resp.values()),
+                props=props,
+            )
 
-    def _sample_list_for_response(self, response, props=None):
+    def _sample_list_for_response(self, response, props=None, start_with=None, count=None):
         """returns a Things object, containing a DataFrame plus some additional information
         """
 
@@ -2629,11 +2815,20 @@ class Openbis:
             samples['sample_type'] = samples['type'].map(extract_nested_permid)
 
         if props is not None:
+            if isinstance(props, str):
+                props = [props]
             for prop in props:
                 samples[prop.upper()] = samples['properties'].map(lambda x: x.get(prop.upper(), ''))
                 attrs.append(prop.upper())
 
-        return Things(self, 'sample', samples[attrs], 'identifier')
+        return Things(
+            openbis_obj = self,
+            entity = 'sample',
+            df = samples[attrs],
+            identifier_name = 'identifier',
+            start_with=start_with,
+            count=count,
+        )
 
 
     get_object = get_sample # Alias
@@ -2794,7 +2989,7 @@ class Openbis:
     def new_semantic_annotation(self, entityType=None, propertyType=None, **kwargs):
         """ Note: not functional yet. """
         return SemanticAnnotation(
-            openbis_obj=self, isNew=True, 
+            openbis_obj=self, isNew=True,
             entityType=entityType, propertyType=propertyType, **kwargs
         )    
 
@@ -2876,7 +3071,7 @@ class ServerInformation():
     def __init__(self, info):
         self._info = info
         self.attrs = [
-            'api_version', 'archiving_configured', 'authentication_service', 
+            'api_version', 'archiving_configured', 'authentication_service',
             'enabled_technologies', 'project_samples_enabled'
         ]
 

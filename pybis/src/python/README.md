@@ -25,8 +25,9 @@ o.get_material_types()
 o.get_dataset_types()
 o.get_dataset_types()[0]
 o.get_dataset_type('RAW_DATA')
-o.get_terms()
-o.get_terms('MATING_TYPE')
+o.get_vocabularies()
+o.get_vocabulary('BACTERIAL_ANTIBIOTIC_RESISTANCE')
+o.get_terms(vocabulary='STORAGE')
 o.get_tags()
 ```
 

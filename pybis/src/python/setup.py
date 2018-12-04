@@ -11,7 +11,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='PyBIS',
-    version= '1.7.4',
+    version= '1.7.5',
     author='Swen Vermeul |  ID SIS | ETH Zürich',
     author_email='swen@ethz.ch',
     description='openBIS connection and interaction, optimized for using with Jupyter',
@@ -19,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     url='https://sissource.ethz.ch/sispub/openbis/tree/master/pybis',
     packages=find_packages(),
-    license='BSD',
+    license='Apache Software License Version 2.0',
     install_requires=[
         'pytest',
         'requests',
