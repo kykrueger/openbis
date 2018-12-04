@@ -96,6 +96,7 @@ def openbis_definitions(entity):
             "attrs": "code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyId",
+            "search": { "@type": "as.dto.vocabulary.search.VocabularySearchCriteria" },
             "create": { "@type": "as.dto.vocabulary.create.VocabularyCreation"}, 
             "update": { "@type": "as.dto.vocabulary.upate.VocabularyUpdate"},
             "delete": { "@type": "as.dto.vocabulary.delete.VocabularyDeletionOptions"},
