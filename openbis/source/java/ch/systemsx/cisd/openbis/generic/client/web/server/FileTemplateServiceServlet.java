@@ -16,8 +16,11 @@
 
 package ch.systemsx.cisd.openbis.generic.client.web.server;
 
+import java.io.IOException;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
@@ -25,10 +28,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.HttpSessionRequiredException;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericConstants;
-import ch.systemsx.cisd.openbis.generic.client.web.server.UploadServiceServlet.ISessionFilesSetter;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.SessionConstants;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
@@ -43,8 +44,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
  * @author Izabela Adamczyk
  */
 @Controller
-@RequestMapping(
-{ "/template-download", "/openbis/template-download" })
 public class FileTemplateServiceServlet extends AbstractFileDownloadServlet
 {
 
@@ -59,6 +58,13 @@ public class FileTemplateServiceServlet extends AbstractFileDownloadServlet
         setSynchronizeOnSession(true);
         setRequireSession(false); // To allow upload a file for usage from an API given a session token we will manage an alternative session
                                   // validation programatically.
+    }
+
+    @Override
+    @RequestMapping({ "/template-download", "/openbis/template-download" })
+    protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
+    {
+        super.respondToRequest(request, response);
     }
 
     protected Session getSession(final String sessionToken)

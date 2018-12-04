@@ -54,9 +54,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.GenericSharedConstants;
  * @author Franz-Josef Elmer
  */
 @Controller
-@RequestMapping({ "/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING,
-        "/openbis/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING,
-        "/openbis/openbis/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING})
 public class FileServiceServlet extends AbstractServlet
 {
     public static final String FILE_SERVICE_PATH = "file-service";
@@ -86,6 +83,9 @@ public class FileServiceServlet extends AbstractServlet
     private IApplicationServerApi service;
 
     @Override
+    @RequestMapping({ "/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING,
+        "/openbis/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING,
+        "/openbis/openbis/" + FileServiceServlet.FILE_SERVICE_PATH_MAPPING})
     protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) 
             throws Exception, IOException
     {

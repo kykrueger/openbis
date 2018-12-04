@@ -860,13 +860,6 @@ FLY = [FIRST_TIME_VERSIONED, True, True, "FLY", "", [
         [FIRST_TIME_VERSIONED, "ANNOTATIONS_STATE",                "Comments",                "Annotations State",                    DataType.XML,                    None,                                "Annotations State", "ANNOTATIONS_FLY", None]
     ]];
 
-SEARCH_QUERY = [MANDATORY_ITEM_VERSION, True, True, "SEARCH_QUERY", "Used to store saved search queries", [
-        [MANDATORY_ITEM_VERSION, "NAME",               "General",   "Name",                     DataType.VARCHAR,  None,  "Name", None, None],
-        [MANDATORY_ITEM_VERSION, "CRITERIA",              "General",   "Criteria",                 DataType.XML,      None,  "Criteria", None, None],
-        [MANDATORY_ITEM_VERSION, "XMLCOMMENTS",        "Comments",  "Comments List",            DataType.XML,      None,  "Several comments can be added by different users", "COMMENTS_SAMPLE", None],
-        [MANDATORY_ITEM_VERSION, "ANNOTATIONS_STATE",  "Comments",  "Annotations State",        DataType.XML,      None,  "Annotations State", "ANNOTATIONS_CHEMICAL", None]
-    ]];
-
 ##
 ## Sample Types - Non Materials
 ##

@@ -230,16 +230,25 @@ $.extend(DefaultProfile.prototype, {
     	    		});
 		}
 
-		this.getHomeSpace = function(defaultToUsername, callback) {
+		this.getHomeSpace = function(callback) {
 			mainController.serverFacade.getPersons([mainController.serverFacade.getUserId()], function(persons) {
+				// check if home space is assigned
 				var HOME_SPACE = null;
 				if(persons !== null) {
 					HOME_SPACE = (persons[0].getSpace()?persons[0].getSpace().getCode():null);
 				}
-				if(HOME_SPACE === null && defaultToUsername) {
-					HOME_SPACE = mainController.serverFacade.getUserId().toUpperCase();
+				// fallback to space with the same name as the user, if existing
+				if(HOME_SPACE === null) {
+					var username = mainController.serverFacade.getUserId().toUpperCase();
+					mainController.serverFacade.getSpace(username, function(result) {
+						if (result && result.hasOwnProperty(username)) {
+							HOME_SPACE = username;
+						}
+						callback(HOME_SPACE);
+					})
+				} else {
+					callback(HOME_SPACE);
 				}
-				callback(HOME_SPACE);
 			});
 		}
 

@@ -37,8 +37,6 @@ import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
  * @author Piotr Buczek
  */
 @Controller
-@RequestMapping(
-{ "/help", "/openbis/help" })
 public class HelpRedirectServlet extends AbstractController
 {
 
@@ -65,6 +63,7 @@ public class HelpRedirectServlet extends AbstractController
      * Write an HTTP redirect to the help page identified by the request parameters into the response.
      */
     @Override
+    @RequestMapping({ "/help", "/openbis/help" })
     protected ModelAndView handleRequestInternal(HttpServletRequest request,
             HttpServletResponse response) throws Exception
     {

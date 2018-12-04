@@ -77,6 +77,32 @@ import junit.framework.Assert;
  */
 public class GetSampleTest extends AbstractSampleTest
 {
+    @Test
+    public void testGetMoreThanThousandSamples()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        List<SampleCreation> newSamples = new ArrayList<>();
+        for (int i = 0; i < 1024; i++) // size should be larger than BatchOperationExecutor.DEFAULT_BATCH_SIZE
+        {
+            SampleCreation creation = new SampleCreation();
+            creation.setCode("TEST_SAMPLE_" + (i + 1));
+            creation.setTypeId(new EntityTypePermId("CELL_PLATE"));
+            creation.setSpaceId(new SpacePermId("TEST-SPACE"));
+            newSamples.add(creation);
+        }
+        List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, newSamples);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withType();
+        fetchOptions.withSpace();
+
+        // When
+        Map<ISampleId, Sample> samples = v3api.getSamples(sessionToken, sampleIds, fetchOptions);
+
+        // Then
+        assertEquals(samples.size(), newSamples.size());
+    }
+
 
     @Test
     public void testGetByPermId()

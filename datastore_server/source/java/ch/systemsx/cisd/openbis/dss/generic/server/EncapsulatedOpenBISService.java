@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.FactoryBean;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.systemsx.cisd.common.api.retry.RetryCaller;
 import ch.systemsx.cisd.common.api.retry.config.RetryConfiguration;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -35,6 +36,7 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.common.api.client.ServiceFinder;
+import ch.systemsx.cisd.openbis.dss.generic.shared.DataStoreServerV3Factory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedBasicOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
@@ -201,6 +203,11 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
     public static IApplicationServerApi createOpenBisV3Service(String openBISURL, String timeout)
     {
         return getGenericRetryingOpenBisV3Creator(openBISURL, timeout).callWithRetry();
+    }
+    
+    public static IDataStoreServerApi createDataStoreV3Service(String dataStoreServerUrl, String timeout)
+    {
+        return new RetryingOpenBisCreator<>(dataStoreServerUrl, timeout, new DataStoreServerV3Factory(dataStoreServerUrl)).callWithRetry();
     }
 
     /**

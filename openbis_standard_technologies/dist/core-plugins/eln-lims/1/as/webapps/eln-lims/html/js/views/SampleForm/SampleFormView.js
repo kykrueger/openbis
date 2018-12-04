@@ -266,6 +266,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				var nameElements = [
 					"O",
 					_this._sampleFormModel.sample.spaceCode,
+					IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
 					_this._sampleFormModel.sample.code,
 				];
 				FormUtil.showDropboxFolderNameDialog(nameElements);

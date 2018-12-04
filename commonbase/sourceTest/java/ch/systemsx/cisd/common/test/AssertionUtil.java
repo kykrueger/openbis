@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.common.test;
 
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
@@ -64,6 +65,15 @@ public class AssertionUtil
         assertTrue(errorMsg, text.contains(expectedSubstring));
     }
 
+    /** asserts that given text does not contain unExpectedSubstring */
+    public static void assertContainsNot(String unExpectedSubstring, String text)
+    {
+        String errorMsg =
+                String.format("String \n'%s'\nwas expected to be NOT a substring of \n'%s'.",
+                        unExpectedSubstring, text);
+        assertFalse(errorMsg, text.contains(unExpectedSubstring));
+    }
+    
     /** asserts that given text contains expectedSubstring */
     public static void assertSize(Collection<?> collection, int size)
     {

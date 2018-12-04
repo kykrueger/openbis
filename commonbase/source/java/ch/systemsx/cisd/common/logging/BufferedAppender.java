@@ -18,6 +18,7 @@ package ch.systemsx.cisd.common.logging;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -42,6 +43,8 @@ import org.apache.log4j.spi.LoggingEvent;
 public final class BufferedAppender extends WriterAppender
 {
     private final ByteArrayOutputStream logRecorder;
+
+    private final List<Pattern> patternOfSuppressedLogEvents = new LinkedList<Pattern>();
 
     /**
      * Constructor with default pattern layout (which is {@link PatternLayout#DEFAULT_CONVERSION_PATTERN}) and {@link Level#DEBUG} as log level.
@@ -103,6 +106,7 @@ public final class BufferedAppender extends WriterAppender
                     return pattern.matcher(loggerName).matches() ? Filter.DENY : Filter.ACCEPT;
                 }
             });
+        patternOfSuppressedLogEvents.add(Pattern.compile(".*" + loggerNameRegex + ".*"));
 
     }
 
@@ -124,7 +128,29 @@ public final class BufferedAppender extends WriterAppender
      */
     public final String getLogContent()
     {
-        return new String(logRecorder.toByteArray()).trim();
+        String content = new String(logRecorder.toByteArray()).trim();
+        String[] split = content.split("\n");
+        StringBuilder builder = new StringBuilder();
+        for (String line : split)
+        {
+            if (shouldBeSuppressed(line) == false)
+            {
+                builder.append(line).append("\n");
+            }
+        }
+        return builder.toString().trim();
+    }
+
+    private boolean shouldBeSuppressed(String line)
+    {
+        for (Pattern pattern : patternOfSuppressedLogEvents)
+        {
+            if (pattern.matcher(line).matches())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<String> getLogLines()

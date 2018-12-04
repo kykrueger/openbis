@@ -140,12 +140,23 @@ class TestCase(object):
         Asserts that expected == actual. If not the test will be continued but counted as failed.
         Returns False if assertion fails otherwise True.
         """
+        rendered_expected = self._render(expected)
         if expected != actual:
-            self.fail("%s\n  expected: <%s>\n   but was: <%s>" % (itemName, expected, actual))
+            self.fail("%s\n  expected: <%s>\n   but was: <%s>" % (itemName, rendered_expected, self._render(actual)))
             return False
         elif verbose:
-            util.printAndFlush("%s as expected: <%s>" % (itemName, expected))
+            util.printAndFlush("%s as expected: <%s>" % (itemName, rendered_expected))
         return True
+    
+    def _render(self, item):
+        if not isinstance(item, list):
+            return str(item)
+        result = ""
+        for e in item:
+            if len(result) > 0:
+                result += "\n"
+            result += str(e)
+        return result
     
     def fail(self, errorMessage):
         """
@@ -692,11 +703,13 @@ class OpenbisController(_Controller):
         self.testCase.assertEquals("label of feature %s" % featureCode, [[expectedFeatureLabel]], data)
         
     def _applyCorePlugins(self):
-        corePluginsFolder = "%s/servers/core-plugins" % self.installPath
-        destination = "%s/%s" % (corePluginsFolder, self.instanceName)
-        shutil.rmtree(destination, ignore_errors=True)
-        shutil.copytree("%s/core-plugins/%s" % (self.templatesFolder, self.instanceName), destination)
-        self.enableCorePlugin(self.instanceName)
+        source = "%s/core-plugins/%s" % (self.templatesFolder, self.instanceName)
+        if os.path.exists(source):
+            corePluginsFolder = "%s/servers/core-plugins" % self.installPath
+            destination = "%s/%s" % (corePluginsFolder, self.instanceName)
+            shutil.rmtree(destination, ignore_errors=True)
+            shutil.copytree(source, destination)
+            self.enableCorePlugin(self.instanceName)
         
     def enableCorePlugin(self, pluginName):
         corePluginsFolder = "%s/servers/core-plugins" % self.installPath

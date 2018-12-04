@@ -97,7 +97,7 @@ public class EntityGraph<N extends INode>
         if (nodes.containsKey(identifier) == false)
         {
             adjacencyMap.put(node, new ArrayList<EdgeNodePair>());
-            nodes.put(identifier, node);
+            nodes.put(node.getEntityKind() + ":" + identifier, node);
         }
         // this.printGraph();
     }

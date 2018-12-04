@@ -26,6 +26,7 @@ import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ICommonServer;
@@ -73,18 +74,27 @@ public class MasterDataSynchronizer
         vocabularyTermsToBeDeleted = new HashMap<TechId, List<VocabularyTerm>>();
     }
 
-    public void synchronizeMasterData(ResourceListParserData.MasterData masterData)
+    public void synchronizeMasterData(MasterData masterData, Monitor monitor)
     {
         MultiKeyMap<String, List<NewETPTAssignment>> propertyAssignmentsToProcess = masterData.getPropertyAssignmentsToProcess();
+        monitor.log("process file format types");
         processFileFormatTypes(masterData.getFileFormatTypesToProcess());
+        monitor.log("process validation plugins");
         processValidationPlugins(masterData.getValidationPluginsToProcess());
+        monitor.log("process vocabularies");
         processVocabularies(masterData.getVocabulariesToProcess());
         // materials are registered but their property assignments are deferred until after property types are processed
+        monitor.log("process material types");
         processEntityTypes(masterData.getMaterialTypesToProcess(), propertyAssignmentsToProcess);
+        monitor.log("process property types");
         processPropertyTypes(masterData.getPropertyTypesToProcess());
+        monitor.log("process sample types");
         processEntityTypes(masterData.getSampleTypesToProcess(), propertyAssignmentsToProcess);
+        monitor.log("process data set types");
         processEntityTypes(masterData.getDataSetTypesToProcess(), propertyAssignmentsToProcess);
+        monitor.log("process experiment types");
         processEntityTypes(masterData.getExperimentTypesToProcess(), propertyAssignmentsToProcess);
+        monitor.log("process material type property assignments");
         processDeferredMaterialTypePropertyAssignments(propertyAssignmentsToProcess);
 
         synchronizerFacade.printSummary();

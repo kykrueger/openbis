@@ -18,13 +18,12 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.ResourceListParserData.IncomingDataSet;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.IncomingDataSet;
 import ch.systemsx.cisd.common.concurrent.ITaskExecutor;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
@@ -61,10 +60,8 @@ public final class DataSetRegistrationTaskExecutor implements ITaskExecutor<Inco
     @Override
     public Status execute(IncomingDataSet dataSet)
     {
-        Properties props = setProperties();
-
         DataSetRegistrationIngestionService ingestionService =
-                new DataSetRegistrationIngestionService(props, storeRoot, dataSet.getDataSet(), operationLog);
+                new DataSetRegistrationIngestionService(config, storeRoot, dataSet.getDataSet(), operationLog);
         TableModel resultTable = ingestionService.createAggregationReport(new HashMap<String, Object>(), context);
         if (resultTable != null)
         {
@@ -74,7 +71,9 @@ public final class DataSetRegistrationTaskExecutor implements ITaskExecutor<Inco
                 {
                     String message = resultTable.getRows().get(0).getValues().toString();
                     dsRegistrationSummary.notRegisteredDataSetCodes.add(dataSet.getDataSet().getCode());
-                    operationLog.error(message);
+                    operationLog.error("Registration for data set " + dataSet.getDataSet().getCode() + " failed: "
+                            + message + ", exp: " + dataSet.getDataSet().getExperimentIdentifierOrNull()
+                            + ", sample:" + dataSet.getDataSet().getSampleIdentifierOrNull());
                     return Status.createError(message);
                 }
                 else if (header.getTitle().startsWith("Added"))
@@ -90,15 +89,4 @@ public final class DataSetRegistrationTaskExecutor implements ITaskExecutor<Inco
         return Status.OK;
     }
 
-    private Properties setProperties()
-    {
-        Properties props = new Properties();
-        props.setProperty("user", config.getUser());
-        props.setProperty("pass", config.getPassword());
-        props.setProperty("as-url", config.getDataSourceOpenbisURL());
-        props.setProperty("dss-url", config.getDataSourceDSSURL());
-        props.setProperty("harvester-temp-dir", config.getHarvesterTempDir());
-        props.setProperty("do-not-create-original-dir", "true");
-        return props;
-    }
 }
