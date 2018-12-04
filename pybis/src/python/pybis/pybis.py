@@ -1932,7 +1932,7 @@ class Openbis:
         }
         return request
 
-    def get_terms(self, start_with=None, count=None, vocabulary=None):
+    def get_terms(self, vocabulary=None, start_with=None, count=None):
         """ Returns information about existing vocabulary terms. 
         If a vocabulary code is provided, it only returns the terms of that vocabulary.
         """
@@ -2054,11 +2054,18 @@ class Openbis:
                     return klass(self, resp[ident])
 
 
-    def get_vocabularies(self, start_with=None, count=None):
+    def get_vocabularies(self, code=None, start_with=None, count=None):
         """ Returns information about vocabulary
         """
 
-        search_request = {}
+        sub_criteria = []
+        if code:
+            sub_criteria.append(_criteria_for_code(code))
+        criteria = {
+            "criteria": sub_criteria,
+            "@type": "as.dto.vocabulary.search.VocabularySearchCriteria",
+            "operator": "AND"
+        }
 
         fetchopts = fetch_option['vocabulary']
         fetchopts['from'] = start_with
@@ -2068,7 +2075,7 @@ class Openbis:
 
         request = {
             "method": "searchVocabularies",
-            "params": [self.token, search_request, fetchopts]
+            "params": [self.token, criteria, fetchopts]
         }
         resp = self._post_request(self.as_v3, request)
 
