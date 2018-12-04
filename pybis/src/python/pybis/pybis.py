@@ -545,6 +545,7 @@ class Openbis:
         self.verify_certificates = verify_certificates
         self.token = token
 
+        self.server_information = None
         self.dataset_types = None
         self.sample_types = None
         #self.files_in_wsp = []
@@ -563,7 +564,6 @@ class Openbis:
         return [
             'url', 'port', 'hostname',
             'login()', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
-            "server_information",
             "get_server_information()",
             "get_dataset('permId')",
             "get_datasets()",
@@ -785,7 +785,6 @@ class Openbis:
             raise ValueError("login to openBIS failed")
         else:
             self.token = result
-            self.server_information = self.get_server_information()
 
             if save_token:
                 self.save_token()
@@ -798,7 +797,10 @@ class Openbis:
     def get_server_information(self):
         """ Returns a dict containing the following server information:
             api-version, archiving-configured, authentication-service, enabled-technologies, project-samples-enabled
-         """
+        """
+        if self.server_information is not None:
+            return self.server_information
+
         request = {
             "method": "getServerInformation",
             "params": [self.token],
@@ -1250,7 +1252,7 @@ class Openbis:
         """
 
         search_criteria = _subcriteria_for_code(code, 'space')
-        fetchopts = {}
+        fetchopts = {"@type": "as.dto.space.fetchoptions.SpaceFetchOptions"}
         request = {
             "method": "searchSpaces",
             "params": [self.token,
@@ -2373,7 +2375,11 @@ class Openbis:
         If the name of the entity-type is given, it returns a PropertyAssignments object
         """
 
-        search_request = {}
+        search_request = {
+            "@type": "as.dto.{}.search.{}TypeSearchCriteria".format(
+                entity.lower(), entity
+            )
+        }
         fetch_options = {
             "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions".format(
                 entity.lower(), entity
@@ -2387,7 +2393,7 @@ class Openbis:
                 "code": type_name
             })
             fetch_options['propertyAssignments'] = fetch_option['propertyAssignments']
-            if self.server_information.api_version > '3.3':
+            if self.get_server_information().api_version > '3.3':
                 fetch_options['validationPlugin'] = fetch_option['plugin']
 
         request = {
@@ -2569,7 +2575,7 @@ class Openbis:
         fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
 
         options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets']
-        if self.server_information.project_samples_enabled:
+        if self.get_server_information().project_samples_enabled:
             options.append('project')
         for option in options:
             fetchopts[option] = fetch_option[option]
@@ -2653,7 +2659,9 @@ class Openbis:
                     "@type": "as.dto.externaldms.id.ExternalDmsPermId",
                     "permId": permId
                 }],
-                {},
+                {
+                    "@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions",
+                },
             ],
         }
 
