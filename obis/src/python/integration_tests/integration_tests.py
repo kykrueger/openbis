@@ -346,24 +346,6 @@ def run(tmpdir, o, skip=[]):
         cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
         with cd('data14'): assert get_settings()['object']['permId'] is not None
 
-        output_buffer = '=================== 16. User switch ===================\n'
-        cmd('obis init data9')
-        with cd('data9'):
-            cmd('touch file')
-            cmd('obis object set id=/OBIS_TEST_1/SAMPLE_1')
-            result = cmd('obis commit -m \'commit-message\'')
-            settings = get_settings()
-            assert "Created data set {}.".format(settings['repository']['data_set_id']) in result
-            cmd('touch file2')
-            cmd('obis config set user=watney')
-            # expect timeout because obis is asking for the password of the new user
-            try:
-                timeout = False
-                result = cmd('obis commit -m \'commit-message\'', timeout=3)
-            except SubprocessError:
-                timeout = True
-            assert timeout == True
-
 
 def assert_file_paths(files, expected_paths):
     paths = list(map(lambda file: file['path'], files))
