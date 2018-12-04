@@ -136,6 +136,8 @@ def _type_for_id(ident, entity):
     # Tags have strange permIds...
     if entity.lower() == 'tag':
         if '/' in ident:
+            if not ident.startswith('/'):
+                ident = '/'+ident
             return {
                 "permId": ident,
                 "@type" : "as.dto.tag.id.TagPermId"
