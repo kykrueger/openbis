@@ -1,11 +1,12 @@
 import { put, takeEvery, call } from 'redux-saga/effects'
 import openbis from '../services/openbis'
+import actions from './actions'
 
 // TODO split sagas
 
 function* init() {
   const spaces = yield call(openbis.getSpaces)
-  yield put({ type: 'SET-SPACES', spaces: spaces })
+  yield put(actions.setSpaces(spaces))  
 }
 
 export function* watchInit() {
@@ -13,7 +14,7 @@ export function* watchInit() {
 }
 
 function* selectSpace(action) {
-  yield put({ type: 'SELECT-ENTITY', entityPermId: action.spaces[0].permId.permId })
+  yield put(actions.selectEntity(action.spaces[0].permId.permId))
 }
 
 export function* watchSetSpaces() {
@@ -24,7 +25,7 @@ function* saveEntity(action) {
   yield openbis.updateSpace(action.entity.permId, action.entity.description)
   const spaces = yield call(openbis.getSpaces)
   const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
-  yield put({ type: 'SAVED-ENTITY', entity: space })
+  yield put(actions.savedEntity(space))
 }
 
 export function* watchSaveEntity() {
@@ -36,7 +37,7 @@ function* expandNode(action) {
   if (node.loaded === false) {
     if (node.type === 'as.dto.space.Space') {
       const projects = yield openbis.searchProjects(node.id)
-      yield put({ type: 'SET-PROJECTS', projects: projects, spacePermId: node.id })
+      yield put(actions.setProjects(projects, node.id))
     }
   }
 }

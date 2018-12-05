@@ -18,6 +18,11 @@ export default {
     type: 'SET-SPACES',
     spaces: spaces,
   }),
+  setProjects: (projects, spacePermId) => ({
+    type: 'SET-PROJECTS',
+    projects: projects,
+    spacePermId: spacePermId
+  }),
   selectEntity: entityPermId => ({
     type: 'SELECT-ENTITY',
     entityPermId: entityPermId
@@ -45,6 +50,10 @@ export default {
   }),
   saveEntity: (entity) => ({
     type: 'SAVE-ENTITY',
+    entity: entity
+  }),
+  savedEntity: (entity) => ({
+    type: 'SAVED-ENTITY',
     entity: entity
   }),
 }
