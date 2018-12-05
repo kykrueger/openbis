@@ -64,6 +64,7 @@ class TestCase(systemtest.testcase.TestCase):
 
     def _drop_test_examples(self, openbis):
         incoming = "%s/data/incoming-test" % openbis.installPath
+        os.makedirs(incoming)
         example_files = []
         example_files.append(self._drop_big_file(incoming))
         example_files.append(self._drop_big_folder_with_many_files(incoming))
