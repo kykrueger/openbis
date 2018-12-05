@@ -64,7 +64,8 @@ class TestCase(systemtest.testcase.TestCase):
 
     def _drop_test_examples(self, openbis):
         incoming = "%s/data/incoming-test" % openbis.installPath
-        os.makedirs(incoming)
+        if not os.path.exists(incoming):
+            os.makedirs(incoming)
         example_files = []
         example_files.append(self._drop_big_file(incoming))
         example_files.append(self._drop_big_folder_with_many_files(incoming))
@@ -84,9 +85,10 @@ class TestCase(systemtest.testcase.TestCase):
         number_of_text_files = 20000
         minimum_size = 50000
         texts_folder = "%s/%s" % (incoming, "texts")
-        os.makedirs(texts_folder)
+        if not os.path.exists(texts_folder):
+            os.makedirs(texts_folder)
         for i in range(number_of_text_files):
-            with open("%s/text-%05d" % (texts_folder, i + 1), 'w') as f:
+            with open("%s/text-%05d.txt" % (texts_folder, i + 1), 'w') as f:
                 f.write(self._create_random_text(next_words, minimum_size))
         util.printAndFlush("%s text files (minimum size %s each) created in %s" % (number_of_text_files, minimum_size, texts_folder))
         return "texts"
