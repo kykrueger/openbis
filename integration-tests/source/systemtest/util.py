@@ -282,7 +282,7 @@ class LogMonitor():
         """
         self.conditions.append(condition)
         
-    def waitUntilEvent(self, condition, startTime = None):
+    def waitUntilEvent(self, condition, startTime = None, delay = 0):
         """
         Waits until an event matches the specified condition. 
         Returns tuple with zero or more elements of matching log message.
@@ -293,6 +293,8 @@ class LogMonitor():
         self.printer.printMsg("\n>>>>> Start monitoring %s log at %s >>>>>>>>>>>>>>>>>>>>" 
                               % (self.logName, renderedStartTime))
         finalTime = startTime + self.timeOutInMinutes * 60
+        if delay > 0:
+            time.sleep(delay)
         try:
             alreadyPrintedLines = set()
             while True:

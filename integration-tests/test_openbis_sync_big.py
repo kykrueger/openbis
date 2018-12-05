@@ -70,7 +70,7 @@ class TestCase(systemtest.testcase.TestCase):
         for example_file in example_files:
             with open("%s/.MARKER_is_finished_%s" % (incoming, example_file), 'w') as f:
                 pass
-        openbis.waitUntilDataSetRegistrationFinished(2)
+        openbis.waitUntilDataSetRegistrationFinished(2, timeOutInMinutes = 10)
         
     def _drop_big_file(self, incoming):
         big_file = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'openBIS-installation')
@@ -186,7 +186,8 @@ class TestCase(systemtest.testcase.TestCase):
     def _waitUntilSyncIsFinished(self, openbis_harvester):
         monitor = util.LogMonitor("%s synchronization.log" % openbis_harvester.instanceName, "%s/synchronization.log" % openbis_harvester.installPath, timeOutInMinutes=30)
         monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
-        monitor.waitUntilEvent(util.RegexCondition('OPERATION.EntitySynchronizer.DS1 - Saving the timestamp of sync start to file'))
+        monitor.waitUntilEvent(util.RegexCondition('OPERATION.EntitySynchronizer.DS1 - Saving the timestamp of sync start to file'),
+                               delay = 60)
 
 
 TestCase(settings, __file__).runTest()
