@@ -144,13 +144,32 @@ class TestCase(systemtest.testcase.TestCase):
                           [['DS1_COMPOUND', 'Compound'], ['DS1_CONTROL', 'Control of a control layout'],
                            ['DS1_GENE', 'Gene'], ['DS1_GENE-RELATION', 'links to genes'], ['DS1_SIRNA', 'Oligo nucleotide']],
                           material_types)
+        self._compareDataBases("Number of samples per experiment", openbis_data_source, openbis_harvester, "openbis",
+                               "select p.code as project, e.code as experiment, count(*) as number_of_samples "
+                               + "from experiments e join projects p on e.proj_id = p.id "
+                               + "join samples s on s.expe_id = e.id "
+                               + "where s.code != 'DEFAULT' "
+                               + "group by p.code, e.code order by p.code, e.code")
         self._compareDataBases("Attachments", openbis_data_source, openbis_harvester, "openbis",
                                "select e.code as experiment, p.code as project, s.code as sample, "
-                               +"a.file_name, a.version, a.title, a.description, length(value), md5(value) "
-                               +"from attachments a join attachment_contents c on a.exac_id = c.id "
-                               +"left join experiments e on a.expe_id = e.id "
-                               +"left join projects p on a.proj_id = p.id "
-                               +"left join samples s on a.samp_id=s.id order by a.file_name, a.version")
+                               + "a.file_name, a.version, a.title, a.description, length(value), md5(value) "
+                               + "from attachments a join attachment_contents c on a.exac_id = c.id "
+                               + "left join experiments e on a.expe_id = e.id "
+                               + "left join projects p on a.proj_id = p.id "
+                               + "left join samples s on a.samp_id = s.id order by a.file_name, a.version")
+        self._compareDataBases("Data sets", openbis_data_source, openbis_harvester, "openbis",
+                               "select d.code, s.code, e.code " 
+                               + "from data d left join samples s on d.samp_id = s.id "
+                               + "left join experiments e on d.expe_id=e.id order by d.code")
+        self._compareDataBases("Data set sizes", openbis_data_source, openbis_harvester, "pathinfo",
+                               "select d.code, file_name, size_in_bytes "
+                               + "from data_set_files f join data_sets d on f.dase_id=d.id where parent_id is null "
+                               + "order by d.code")
+        self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
+                               "select p.code, c.code, t.code "
+                               + "from data_set_relationships r join data p on r.data_id_parent = p.id "
+                               + "join data c on r.data_id_child = c.id "
+                               + "join relationship_types t on r.relationship_id = t.id order by p.code, c.code")
 
     def _compareDataBases(self, name, openbis_data_source, openbis_harvester, databaseType, sql):
         expectedContent = openbis_data_source.queryDatabase(databaseType, sql)
@@ -191,6 +210,7 @@ class TestCase(systemtest.testcase.TestCase):
         monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
         monitor.waitUntilEvent(util.RegexCondition('OPERATION.EntitySynchronizer.DS1 - Saving the timestamp of sync start to file'),
                                delay = 60)
+        time.sleep(60)
 
 
 TestCase(settings, __file__).runTest()
