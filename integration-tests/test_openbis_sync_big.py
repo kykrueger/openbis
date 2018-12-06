@@ -136,13 +136,13 @@ class TestCase(systemtest.testcase.TestCase):
         material_types = openbis_data_source.queryDatabase('openbis', 'select code, description from material_types order by code')
         self.assertEquals("Material types on data source",
                           [['COMPOUND', 'Compound'], ['CONTROL', 'Control of a control layout'],
-                           ['GEN-RELATION', 'links to genes'], ['GENE', 'Gene'], ['SIRNA', 'Oligo nucleotide']],
+                           ['GENE-RELATION', 'links to genes'], ['GENE', 'Gene'], ['SIRNA', 'Oligo nucleotide']],
                           material_types)
         material_types = openbis_harvester.queryDatabase('openbis',
                 "select code, description from material_types where code like 'DS1_%' order by code")
         self.assertEquals("Synched material types on harvester",
                           [['DS1_COMPOUND', 'Compound'], ['DS1_CONTROL', 'Control of a control layout'],
-                           ['DS1_GEN-RELATION', 'links to genes'], ['DS1_GENE', 'Gene'], ['DS1_SIRNA', 'Oligo nucleotide']],
+                           ['DS1_GENE-RELATION', 'links to genes'], ['DS1_GENE', 'Gene'], ['DS1_SIRNA', 'Oligo nucleotide']],
                           material_types)
         self._compareDataBases("Attachments", openbis_data_source, openbis_harvester, "openbis",
                                "select e.code as experiment, p.code as project, s.code as sample, "
