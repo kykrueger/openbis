@@ -1,5 +1,4 @@
 import React from 'react'
-import Hidden from '@material-ui/core/Hidden'
 import { withStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -7,12 +6,17 @@ import HTML5Backend from 'react-dnd-html5-backend'
 import { DragDropContext } from 'react-dnd'
 import flow from 'lodash/flow'
 
+import Hidden from '@material-ui/core/Hidden'
+
 import Browser from './Browser.jsx'
 import BrowserFilter from './BrowserFilter.jsx'
 import BrowserButtons from './BrowserButtons.jsx'
+import ErrorDialog from './ErrorDialog.jsx'
 import ModeBar from './ModeBar.jsx'
 import TabPanel from './TabPanel.jsx'
 import TopBar from './TopBar.jsx'
+import actions from '../reducer/actions.js'
+
 
 const drawerWidth = 400
 
@@ -52,21 +56,27 @@ const styles = theme => ({
     backgroundColor: '#000000',
     opacity: 0.5,
     textAlign: 'center',
-  },
-
+  }
 })
 
 function mapStateToProps(state) {
   return {
     loading: state.loading,
+    exception: state.exceptions.length > 0 ? state.exceptions[0] : null
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    closeError: () => dispatch(actions.closeError()),
   }
 }
 
 class App extends React.Component {
-  
+
   render() {
     const classes = this.props.classes
-    
+
     return (
       <div>
         {
@@ -75,6 +85,11 @@ class App extends React.Component {
             <CircularProgress className={classes.progress} />
           </div>
         }
+        {
+          this.props.exception &&
+          <ErrorDialog exception={this.props.exception} onClose={this.props.closeError} />
+        }
+
         <Hidden mdUp>
           <TopBar/>
           <div className={classes.topMargin}>
@@ -110,7 +125,7 @@ class App extends React.Component {
 }
 
 export default flow(
-  connect(mapStateToProps),
+  connect(mapStateToProps, mapDispatchToProps),
   withStyles(styles),
   DragDropContext(HTML5Backend)
 )(App)

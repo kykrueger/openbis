@@ -36,6 +36,9 @@ function loading(loading = initialState.loading, action) {
   case 'SAVED-ENTITY': {
     return false
   }
+  case 'ERROR': {
+    return false
+  }
   default: {
     return loading
   }}
@@ -118,6 +121,19 @@ function dirtyEntities(dirtyEntities = initialState.dirtyEntities, action) {
   }}
 }
 
+function exceptions(exceptions = initialState.exceptions, action) {
+  switch (action.type) {
+  case 'ERROR': {
+    return [].concat(exceptions, [action.exception])
+  }
+  case 'CLOSE-ERROR': {
+    return exceptions.slice(1)
+  }
+  default: {
+    return exceptions
+  }}
+}
+
 function reducer(state = initialState, action) {
   return {
     database: database(state.database, action),
@@ -125,6 +141,7 @@ function reducer(state = initialState, action) {
     databaseTreeNodes: databaseTreeNodes(state.databaseTreeNodes, action),
     openEntities: openEntities(state.openEntities, action),
     dirtyEntities: dirtyEntities(state.dirtyEntities, action),
+    exceptions: exceptions(state.exceptions, action),
   }
 }
 

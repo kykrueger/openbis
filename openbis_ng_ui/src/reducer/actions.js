@@ -56,4 +56,11 @@ export default {
     type: 'SAVED-ENTITY',
     entity: entity
   }),
+  error: (exception) => ({
+    type: 'ERROR',
+    exception: exception
+  }),
+  closeError: () => ({
+    type: 'CLOSE-ERROR',
+  }),
 }

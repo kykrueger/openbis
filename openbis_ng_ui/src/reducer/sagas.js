@@ -5,8 +5,12 @@ import actions from './actions'
 // TODO split sagas
 
 function* init() {
-  const spaces = yield call(openbis.getSpaces)
-  yield put(actions.setSpaces(spaces))  
+  try {
+    const result = yield call(openbis.getSpaces)
+    yield put(actions.setSpaces(result.getObjects()))  
+  } catch(exception) {
+    yield put(actions.error(exception))  
+  }
 }
 
 export function* watchInit() {
@@ -22,10 +26,15 @@ export function* watchSetSpaces() {
 }
 
 function* saveEntity(action) {
-  yield openbis.updateSpace(action.entity.permId, action.entity.description)
-  const spaces = yield call(openbis.getSpaces)
-  const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
-  yield put(actions.savedEntity(space))
+  try {
+    yield openbis.updateSpace(action.entity.permId, action.entity.description)
+    const result = yield call(openbis.getSpaces)
+    const spaces = result.getObjects()
+    const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
+    yield put(actions.savedEntity(space))
+  } catch(exception) {
+    yield put(actions.error(exception))  
+  }
 }
 
 export function* watchSaveEntity() {
@@ -33,12 +42,17 @@ export function* watchSaveEntity() {
 }
 
 function* expandNode(action) {
-  const node = action.node
-  if (node.loaded === false) {
-    if (node.type === 'as.dto.space.Space') {
-      const projects = yield openbis.searchProjects(node.id)
-      yield put(actions.setProjects(projects, node.id))
+  try {
+    const node = action.node
+    if (node.loaded === false) {
+      if (node.type === 'as.dto.space.Space') {
+        const result = yield openbis.searchProjects(node.id)
+        const projects = result.getObjects()
+        yield put(actions.setProjects(projects, node.id))
+      }
     }
+  } catch(exception) {
+    yield put(actions.error(exception))  
   }
 }
 

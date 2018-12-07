@@ -13,7 +13,7 @@ function getSpaces() {
     requirejs(
       ['as/dto/space/search/SpaceSearchCriteria', 'as/dto/space/fetchoptions/SpaceFetchOptions' ], 
       (SpaceSearchCriteria, SpaceFetchOptions) => 
-        v3.searchSpaces(new SpaceSearchCriteria(), new SpaceFetchOptions()).done(res => resolve(res.getObjects()))
+        v3.searchSpaces(new SpaceSearchCriteria(), new SpaceFetchOptions()).done(resolve).fail(reject)
     )
   })
 }
@@ -27,7 +27,7 @@ function updateSpace(permId, description) {
         let spaceUpdate = new SpaceUpdate()
         spaceUpdate.setSpaceId(permId)
         spaceUpdate.setDescription(description)
-        v3.updateSpaces([spaceUpdate]).done(res => resolve(res))
+        v3.updateSpaces([spaceUpdate]).done(resolve).fail(reject)
       }
     )
   })
@@ -42,7 +42,7 @@ function searchProjects(spacePermId) {
         let searchCriteria = new ProjectSearchCriteria()
         searchCriteria.withSpace().withPermId().thatEquals(spacePermId)
         let fetchOptions = new ProjectFetchOptions()
-        v3.searchProjects(searchCriteria, fetchOptions).done(res => resolve(res.getObjects()))
+        v3.searchProjects(searchCriteria, fetchOptions).done(resolve).fail(reject)
       }
     )
   })

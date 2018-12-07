@@ -70,4 +70,5 @@ export default {
   loading: true,
   // TODO generic tree
   databaseTreeNodes: [],
+  exceptions: [],
 }
