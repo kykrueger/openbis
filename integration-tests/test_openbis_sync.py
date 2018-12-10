@@ -7,11 +7,13 @@ import time
 import settings
 import systemtest.testcase
 import systemtest.util as util
-import urllib, urllib2
+import urllib
 import ssl, base64
 import json
 
-from urllib2 import Request
+from urllib.request import Request
+from urllib.request import urlopen
+from urllib.parse import urlencode
 
 from functools import wraps
 
@@ -174,7 +176,7 @@ class TestCase(systemtest.testcase.TestCase):
         return graph_lines
 
     def setDryRunToTrue(self, harvester_config_file_path, harvester_config_lines):
-        with open(harvester_config_file_path, 'wb') as output:
+        with open(harvester_config_file_path, 'w') as output:
             for line in harvester_config_lines:
                 if line.startswith("dry-run") == True:
                     output.write("dry-run = true")
@@ -233,7 +235,7 @@ class TestCase(systemtest.testcase.TestCase):
         '''compare the two. If the only difference is in space labels then we are good.'''
         diff_array = self.diff(set(content1), set(content2))
         same = True
-        with open(os.path.join(destination, "diff.txt"), 'wb') as output:
+        with open(os.path.join(destination, "diff.txt"), 'w') as output:
             for item in diff_array:
                 output.write("%s\n" % item)
                 if item.startswith("label") == False:
@@ -265,7 +267,7 @@ class TestCase(systemtest.testcase.TestCase):
         return ""
                 
     def readLinesFromFile(self, input_file):
-        with open(input_file, 'rb') as f:
+        with open(input_file, 'r') as f:
             content = f.readlines()
         return content
     
@@ -278,7 +280,7 @@ class TestCase(systemtest.testcase.TestCase):
         return temp
             
     def writeResponseToFile(self, datasource_graph_response, file1):
-        with open(file1, 'wb') as output:
+        with open(file1, 'w') as output:
             output.write(datasource_graph_response.read())
         return output
     
@@ -289,15 +291,14 @@ class TestCase(systemtest.testcase.TestCase):
         
     def getResourceListForComparison(self, dss_port, user, password):
         url = "https://localhost:%s/datastore_server/re-sync?verb=resourcelist.xml" % dss_port
-        request = urllib2.Request(url)
+        request = Request(url)
         request.add_header('Accept', 'application/json')
         request.add_header("Content-type", "application/x-www-form-urlencoded")
-        base64string = base64.encodestring('%s:%s' % (user, password)).replace('\n', '')
-        request.add_header("Authorization", "Basic %s" % base64string)
-        data = urllib.urlencode({'mode' : 'test'})
-#        response = urllib2.urlopen(request, data, context=ssl._create_unverified_context())
-#       TODO if python version > 2.10: replace next line by the line above
-        response = urllib2.urlopen(request, data)
+        credentials = '%s:%s' % (user, password)
+        base64bytes = base64.encodebytes(credentials.encode('utf-8')).replace(b'\n', b'')
+        request.add_header("Authorization", "Basic %s" % str(base64bytes))
+        data = urlencode({'mode' : 'test'}).encode('utf-8')
+        response = urlopen(request, data, context=ssl._create_unverified_context())
         return response
 
     def getHarvesterConfigFolder(self):

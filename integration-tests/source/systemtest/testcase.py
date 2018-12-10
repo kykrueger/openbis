@@ -5,7 +5,7 @@ import shutil
 import time
 import traceback
 
-import util
+import systemtest.util as util
 
 INSTALLER_PROJECT = 'installation'
 OPENBIS_STANDARD_TECHNOLOGIES_PROJECT = 'openbis_standard_technologies'

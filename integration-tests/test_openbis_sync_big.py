@@ -7,12 +7,9 @@ import time
 import settings
 import systemtest.testcase
 import systemtest.util as util
-import urllib, urllib2
 import ssl, base64
 import json
 from random import randint
-
-from urllib2 import Request
 
 from functools import wraps
 
@@ -110,7 +107,7 @@ class TestCase(systemtest.testcase.TestCase):
         return text + '\n'
 
     def _choose_random_word(self, next_words):
-        keys = next_words.keys()
+        keys = list(next_words)
         return keys[randint(0, len(keys) - 1)]
 
     def _choose_next_word(self, next_words, word):
