@@ -58,9 +58,12 @@ class TestCase(systemtest.testcase.TestCase):
     def executeInDevMode(self):
         openbis_data_source = self.createOpenbisController('data_source', port=DATA_SOURCE_AS_PORT, dropDatabases=False)
 #        self._drop_test_examples(openbis_data_source)
-        openbis_harvester = self.createOpenbisController('harvester', port=HARVESTER_AS_PORT, dropDatabases=False)
-        self._checkData(openbis_data_source, openbis_harvester)
+#        openbis_harvester = self.createOpenbisController('harvester', port=HARVESTER_AS_PORT, dropDatabases=False)
+        openbis_harvester = self._setupOpenbisHarvester()
+        openbis_harvester.allUp()
         
+        self._waitUntilSyncIsFinished(openbis_harvester)
+        self._checkData(openbis_data_source, openbis_harvester)
 
     def _drop_test_examples(self, openbis):
         incoming = "%s/data/incoming-test" % openbis.installPath
@@ -165,11 +168,11 @@ class TestCase(systemtest.testcase.TestCase):
                                "select d.code, file_name, size_in_bytes "
                                + "from data_set_files f join data_sets d on f.dase_id=d.id where parent_id is null "
                                + "order by d.code")
-        self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
-                               "select p.code, c.code, t.code "
-                               + "from data_set_relationships r join data p on r.data_id_parent = p.id "
-                               + "join data c on r.data_id_child = c.id "
-                               + "join relationship_types t on r.relationship_id = t.id order by p.code, c.code")
+#         self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
+#                                "select p.code, c.code, t.code "
+#                                + "from data_set_relationships r join data p on r.data_id_parent = p.id "
+#                                + "join data c on r.data_id_child = c.id "
+#                                + "join relationship_types t on r.relationship_id = t.id order by p.code, c.code")
 
     def _compareDataBases(self, name, openbis_data_source, openbis_harvester, databaseType, sql):
         expectedContent = openbis_data_source.queryDatabase(databaseType, sql)
