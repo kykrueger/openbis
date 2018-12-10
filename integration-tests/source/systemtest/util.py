@@ -35,7 +35,7 @@ def printAndFlush(data):
     Prints argument onto the standard console and flushes output.
     This is necessary to get Python output and bash output in sync on CI server.
     """
-    print data
+    print(data)
     sys.stdout.flush()
     
 
