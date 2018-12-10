@@ -418,7 +418,12 @@ public class NewExternalData implements Serializable
         builder.append("kind", getDataSetKind());
         builder.append("fileFormat", getFileFormatType());
         builder.append("properties", getDataSetProperties());
+        appendMore(builder);
         return builder.toString();
+    }
+    
+    protected void appendMore(ToStringBuilder builder)
+    {
     }
 
 }

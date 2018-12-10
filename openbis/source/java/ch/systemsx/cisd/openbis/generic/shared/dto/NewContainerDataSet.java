@@ -19,6 +19,8 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 /**
  * @author Chandrasekhar Ramakrishnan
  */
@@ -36,6 +38,12 @@ public class NewContainerDataSet extends NewExternalData
     public void setContainedDataSetCodes(List<String> containedDataSetCodes)
     {
         this.containedDataSetCodes = containedDataSetCodes;
+    }
+
+    @Override
+    protected void appendMore(ToStringBuilder builder)
+    {
+        builder.append("contained", containedDataSetCodes);
     }
 
 }
