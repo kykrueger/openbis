@@ -248,7 +248,7 @@ class TestCase(systemtest.testcase.TestCase):
             match = re.search("dry-run=\s(.*)", line)
             if match:
                 val = match.group(1)
-                print "val:" + val 
+                print("val:" + val) 
                 if(val.lower() == "true") :
                     return True
                 elif (val.lower() == "false"):

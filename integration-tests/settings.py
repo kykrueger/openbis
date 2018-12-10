@@ -21,11 +21,11 @@ if len(sys.argv) > 1:
     elif firstArgument == '-d':
         devMode = True
     elif firstArgument == '-h':
-        print ("Usage: %s [-h|-r|-d|-rd]\n-h: prints this help\n-r: reuses artifact repository\n"
-            + "-d: developing mode\n-rd: both options") % os.path.basename(cmd)
+        print("Usage: %s [-h|-r|-d|-rd]\n-h: prints this help\n-r: reuses artifact repository\n"
+            + "-d: developing mode\n-rd: both options" % os.path.basename(cmd))
         exit(1)
     else:
-        print "Unknown option: %s. Use option '-h' to see usage." % firstArgument
+        print("Unknown option: %s. Use option '-h' to see usage." % firstArgument)
         exit(1)
 
 dirname = os.path.dirname(os.path.abspath(__file__))
