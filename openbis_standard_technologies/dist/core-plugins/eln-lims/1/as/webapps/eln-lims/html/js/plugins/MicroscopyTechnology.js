@@ -6,6 +6,8 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 	init: function() {
 		
 	},
+	forcedDisableRTF : [],
+	forceMonospaceFont : [],
 	sampleTypeDefinitionsExtension : {
 				"MICROSCOPY_SAMPLE_TYPE" : {
 					"SHOW" : false,

@@ -64,11 +64,11 @@ var FormUtil = new function() {
 	}
 	
 	this.getAnnotationsFromSample = function(sample) {
-		var field = sample.properties["ANNOTATIONS_STATE"];
+		var field = sample.properties["$ANNOTATIONS_STATE"];
 		var stateFieldValue = Util.getEmptyIfNull(field);
 		if(stateFieldValue === "") {
 			stateFieldValue = undefined;
-			sample.properties["ANNOTATIONS_STATE"] = undefined;
+			sample.properties["$ANNOTATIONS_STATE"] = undefined;
 		}
 		return this.getAnnotationsFromField(stateFieldValue);
 	}

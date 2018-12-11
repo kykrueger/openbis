@@ -213,7 +213,7 @@ def process(tr, parameters, tableBuilder):
 	projectSamplesEnabled = v3.getServerInformation(sessionToken)['project-samples-enabled'] == 'true'
 	
 	if method == "init":
-		isOk = init(tr, projectSamplesEnabled, parameters, tableBuilder);
+		isOk = True #init(tr, projectSamplesEnabled, parameters, tableBuilder);
 	if method == "isFileAuthUser":
 		result = isFileAuthUser(tr, parameters, tableBuilder);
 		isOk = True;
@@ -888,10 +888,10 @@ def insertUpdateSample(tr, projectSamplesEnabled, parameters, tableBuilder):
 	if sampleParentsNew != None:
 		for newSampleParent in sampleParentsNew:
 			parent = tr.createNewSample(newSampleParent.get("identifier"), newSampleParent.get("sampleTypeCode")); #Create Sample given his id
-			if newSampleParent.get("annotations") != None and sampleProperties.get("ANNOTATIONS_STATE") != None:
-				sample_ANNOTATIONS_STATE = sampleProperties.get("ANNOTATIONS_STATE");
+			if newSampleParent.get("annotations") != None and sampleProperties.get("$ANNOTATIONS_STATE") != None:
+				sample_ANNOTATIONS_STATE = sampleProperties.get("$ANNOTATIONS_STATE");
 				sample_ANNOTATIONS_STATE = sample_ANNOTATIONS_STATE.replace("PERM_ID_PLACEHOLDER_FOR" + newSampleParent.get("identifier"), parent.getPermId());
-				sampleProperties.put("ANNOTATIONS_STATE", sample_ANNOTATIONS_STATE);
+				sampleProperties.put("$ANNOTATIONS_STATE", sample_ANNOTATIONS_STATE);
 			if newSampleParent.get("experimentIdentifierOrNull") != None:
 				parentExperiment = tr.getExperiment(newSampleParent.get("experimentIdentifierOrNull"));
 				parent.setExperiment(parentExperiment);

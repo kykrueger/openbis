@@ -8,7 +8,7 @@ function SettingsManager(serverFacade) {
 		if (errors.length > 0) {
 			Util.showError(FormUtil._getSanitizedErrorString("Settings validation errors:", errors));
 		} else {
-			settingsSample.properties = { "ELN_SETTINGS" : JSON.stringify(settings) };
+			settingsSample.properties = { "$ELN_SETTINGS" : JSON.stringify(settings) };
 			this._serverFacade.updateSample(settingsSample, function(ok) {
 				if(ok) {
 					_this.applySettingsToProfile(settings, profile);
@@ -44,8 +44,8 @@ function SettingsManager(serverFacade) {
 			if(settingsObjects) {
 				for(var sIdx = 0; sIdx < settingsObjects.length; sIdx++) {
 					var settingsObject = settingsObjects[sIdx];
-					if (settingsObject && settingsObject.properties && settingsObject.properties.ELN_SETTINGS) {
-						var settings = JSON.parse(settingsObject.properties.ELN_SETTINGS);
+					if (settingsObject && settingsObject.properties && settingsObject.properties["$ELN_SETTINGS"]) {
+						var settings = JSON.parse(settingsObject.properties["$ELN_SETTINGS"]);
 						if (settings) {
 							var errors = this._validateSettings(settings);
 							if (errors.length > 0) {

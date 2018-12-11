@@ -224,7 +224,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 					}
 				}
 				if(writeNew) {
-					properties["ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(annotationsStateObj);
+					properties["$ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(annotationsStateObj);
 				}
 			}
 			//
@@ -332,8 +332,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				parameters["notCopyProperties"] = [];
 				parameters["defaultBenchPropertyList"] = [];
 				
-				if(!copyCommentsLogOnCopy && parameters["sampleProperties"]["XMLCOMMENTS"]) {
-					delete parameters["sampleProperties"]["XMLCOMMENTS"];
+				if(!copyCommentsLogOnCopy && parameters["sampleProperties"]["$XMLCOMMENTS"]) {
+					delete parameters["sampleProperties"]["$XMLCOMMENTS"];
 				}
 				
 				parameters["sampleParents"] = sampleParentsFinal;

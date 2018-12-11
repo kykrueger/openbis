@@ -374,7 +374,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				continue;
 			}
 			
-			if(propertyType.code === "XMLCOMMENTS") {
+			if(propertyType.code === "$XMLCOMMENTS") {
 				var $commentsContainer = $("<div>");
 				$fieldset.append($commentsContainer);
 				var isAvailable = this._experimentFormController._addCommentsWidget($commentsContainer);
@@ -382,7 +382,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					continue;
 				}
 			} else {
-				if(propertyType.code === "SHOW_IN_PROJECT_OVERVIEW") {
+				if(propertyType.code === "$SHOW_IN_PROJECT_OVERVIEW") {
 					if(!(profile.inventorySpaces.length > 0 && $.inArray(IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier), profile.inventorySpaces) === -1)) {
 						continue;
 					}
@@ -407,7 +407,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					}
 				} else {
 					var $component = null;
-					if(propertyType.code === "DEFAULT_OBJECT_TYPE") {
+					if(propertyType.code === "$DEFAULT_OBJECT_TYPE") {
 						$component = FormUtil.getSampleTypeDropdown(propertyType.code, true);
 					} else {
 						$component = FormUtil.getFieldForPropertyType(propertyType, value);

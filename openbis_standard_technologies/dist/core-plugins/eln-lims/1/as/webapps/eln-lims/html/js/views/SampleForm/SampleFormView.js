@@ -620,9 +620,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				continue;
 			}
 			
-			if(propertyType.code === "ANNOTATIONS_STATE" || propertyType.code === "FREEFORM_TABLE_STATE" || propertyType.code === "ORDER_STATE" ) {
+			if(propertyType.code === "$ANNOTATIONS_STATE" || propertyType.code === "$FREEFORM_TABLE_STATE" || propertyType.code === "$ORDER.ORDER_STATE" ) {
 				continue;
-			} else if(propertyType.code === "XMLCOMMENTS") {
+			} else if(propertyType.code === "$XMLCOMMENTS") {
 				var $commentsContainer = $("<div>");
 				$fieldset.append($commentsContainer);
 				var isAvailable = this._sampleFormController._addCommentsWidget($commentsContainer);
@@ -630,7 +630,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					continue;
 				}
 			} else {
-				if(propertyType.code === "SHOW_IN_PROJECT_OVERVIEW") {
+				if(propertyType.code === "$SHOW_IN_PROJECT_OVERVIEW") {
 					if(!(profile.inventorySpaces.length > 0 && $.inArray(this._sampleFormModel.sample.spaceCode, profile.inventorySpaces) === -1)) {
 						continue;
 					}
@@ -706,7 +706,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				$fieldset.append($controlGroup);
 			}
 			
-			if(propertyType.code !== "ANNOTATIONS_STATE") {
+			if(propertyType.code !== "$ANNOTATIONS_STATE") {
 				propertyGroupPropertiesOnForm++;
 			}	
 		}
