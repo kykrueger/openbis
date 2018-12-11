@@ -37,7 +37,7 @@ def calculate():
                 parentCode = parent.code()
                 #Add the code
                 annotationMap = getAnnotationsForParent(parent, child)
-                if(annotationMap["PLASMID_RELATIONSHIP"] == "LOT"):
+                if(annotationMap["ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP"] == "LOT"):
                     newLostList.append(parent.entityPE().getPermId())
                 elif parent.entityPE().getPermId() not in lostList:
                      #Check if is the first to add the separator or not
@@ -58,16 +58,16 @@ def calculate():
     return genotypeResult
 
 def getAnnotationString(annotationMap):
-    return annotationMap["PLASMID_RELATIONSHIP"] + " " + annotationMap["PLASMID_ANNOTATION"]
+    return annotationMap["ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP"] + " " + annotationMap["ANNOTATION.SYSTEM.PLASMID_ANNOTATION"]
 
 def getAnnotationsForParent(parent, child):
     permId = parent.entityPE().getPermId()
     annotations = child.propertyValue("ANNOTATIONS_STATE")
     if (annotations is not None) and ('<root' in annotations):
-        relationshipValue = getAnnotationFromPermId(annotations, permId, "PLASMID_RELATIONSHIP")
+        relationshipValue = getAnnotationFromPermId(annotations, permId, "ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP")
         if relationshipValue is None:
             relationshipValue = "None"
-        annotationValue = getAnnotationFromPermId(annotations, permId, "PLASMID_ANNOTATION");
+        annotationValue = getAnnotationFromPermId(annotations, permId, "ANNOTATION.SYSTEM.PLASMID_ANNOTATION");
         if annotationValue is None:
             annotationValue = ""
         annotation = "\"" + str(annotationValue) + "\""

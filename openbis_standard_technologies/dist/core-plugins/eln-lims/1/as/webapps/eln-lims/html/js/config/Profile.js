@@ -133,7 +133,7 @@ $.extend(DefaultProfile.prototype, {
 //				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
 		}
 		
-		this.plugins = [new GenericTechnology(), new BiologyTechnology(), new MicroscopyTechnology()];
+		this.plugins = [new GenericTechnology(), new LifeSciencesTechnology(), new MicroscopyTechnology()];
 		this.sampleFormTop = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {
 				this.plugins[i].sampleFormTop($container, model);

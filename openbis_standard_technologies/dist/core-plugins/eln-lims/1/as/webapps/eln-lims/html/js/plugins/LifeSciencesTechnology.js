@@ -1,8 +1,8 @@
-function BiologyTechnology() {
+function LifeSciencesTechnology() {
 	this.init();
 }
 
-$.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
+$.extend(LifeSciencesTechnology.prototype, ELNLIMSPlugin.prototype, {
 	init: function() {
 				
 	},
@@ -151,7 +151,7 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.PLASMID.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.PLASMID.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																				
 												],
 				},
@@ -169,7 +169,7 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.PLASMID.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.PLASMID.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																					
 												],
 				},
@@ -187,7 +187,7 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.PLASMID.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.PLASMID.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},		
 					                             	{
 														"LABEL" : "Parental fly",
@@ -211,7 +211,7 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.PLASMID.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.PLASMID.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																					
 												],
 				}
