@@ -37,19 +37,19 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Chemical",
 														"TYPE": "CHEMICAL",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Solution/Buffer",
 														"TYPE": "SOLUTION_BUFFER",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Media",
 														"TYPE": "MEDIA",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																								
 												],
 				},
@@ -61,19 +61,19 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Chemical",
 														"TYPE": "CHEMICAL",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Solution/Buffer",
 														"TYPE": "SOLUTION_BUFFER",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Media",
 														"TYPE": "MEDIA",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																								
 												],
 				},
@@ -85,19 +85,19 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Chemical",
 														"TYPE": "CHEMICAL",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Solution/Buffer",
 														"TYPE": "SOLUTION_BUFFER",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Enzyme",
 														"TYPE": "ENZYME",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},																								
 												],
 				},
@@ -109,19 +109,19 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Chemical",
 														"TYPE": "CHEMICAL",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Solution/Buffer",
 														"TYPE": "SOLUTION_BUFFER",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Antibody",
 														"TYPE": "ANTIBODY",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "QUANTITY", "MANDATORY" : false }, {"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.QUANTITY", "MANDATORY" : false }, {"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},																								
 												],
 				},
@@ -133,7 +133,7 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																		
 												],
 				},
@@ -145,13 +145,13 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Bacteria parents",
 														"TYPE": "BACTERIA",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.PLASMID.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.PLASMID.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																				
 												],
 				},
@@ -163,13 +163,13 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Yeast parents",
 														"TYPE": "YEAST",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.PLASMID.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.PLASMID.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																					
 												],
 				},
@@ -181,19 +181,19 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Parental cell line",
 														"TYPE": "CELL_LINE",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.PLASMID.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.PLASMID.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},		
 					                             	{
 														"LABEL" : "Parental fly",
 														"TYPE": "FLY",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																									
 												],
 				},
@@ -205,13 +205,13 @@ $.extend(BiologyTechnology.prototype, ELNLIMSPlugin.prototype, {
 														"LABEL" : "Fly parents",
 														"TYPE": "FLY",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													},
 					                             	{
 														"LABEL" : "Plasmid",
 														"TYPE": "PLASMID",
 														"MIN_COUNT" : 0,
-														"ANNOTATION_PROPERTIES" : [{"TYPE" : "PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "COMMENTS", "MANDATORY" : false }]
+														"ANNOTATION_PROPERTIES" : [{"TYPE" : "ANNOTATION.PLASMID.PLASMID_RELATIONSHIP", "MANDATORY" : false },{"TYPE" : "ANNOTATION.PLASMID.PLASMID_ANNOTATION", "MANDATORY" : false },{"TYPE" : "ANNOTATION.SYSTEM.COMMENTS", "MANDATORY" : false }]
 													}																					
 												],
 				}
