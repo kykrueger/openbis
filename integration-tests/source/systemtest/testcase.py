@@ -242,7 +242,13 @@ class TestCase(object):
         installPath = "%s/screeningAPI" % self.playgroundFolder
         util.unzip(zipFile, installPath)
         return ScreeningTestClient(self, installPath)
-    
+
+    def installPybis(self):
+        zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'pybis-')
+        installPath = "%s/pybis" % self.playgroundFolder
+        util.unzip(zipFile, installPath)
+        util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of pybis failed.")
+
     def getTemplatesFolder(self):
         return "%s/%s" % (TEMPLATES, self.name)
     

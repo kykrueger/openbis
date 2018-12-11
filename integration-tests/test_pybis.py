@@ -7,24 +7,23 @@
 
 import settings
 import systemtest.testcase
-import pybis
 
 class TestCase(systemtest.testcase.TestCase):
 
     def execute(self):
-        self._init_openbis()
+        self.installOpenbis()
+        self.installPybis()
+        openbisController = self.createOpenbisController()
+        openbisController.createTestDatabase("openbis")
+        openbisController.allUp()
+
         openbis = self._get_openbis()
         self._test_login(openbis)
         self._test_server_information(openbis)
         self._test_logout(openbis)
 
-    def _init_openbis(self):
-        self.installOpenbis()
-        openbisController = self.createOpenbisController()
-        openbisController.createTestDatabase("openbis")
-        openbisController.allUp()
-
     def _get_openbis(self):
+        import pybis
         return pybis.Openbis(url="https://localhost:8443", verify_certificates=False)
 
     def _test_login(self, openbis):
