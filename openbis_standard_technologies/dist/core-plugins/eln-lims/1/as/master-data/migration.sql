@@ -58,10 +58,16 @@ UPDATE property_types SET code = 'WELL.COLOR_ENCODED_ANNOTATION', is_internal_na
 -- General Types Annotations
 
 UPDATE property_types SET code = 'ANNOTATION.SYSTEM.COMMENTS', is_internal_namespace = TRUE WHERE code = 'COMMENTS';
+UPDATE sample_properties SET value = replace(value, 'COMMENTS=', 'ANNOTATION.SYSTEM.COMMENTS=') WHERE stpt_id IN (SELECT id FROM sample_type_property_types WHERE prty_id = (SELECT id FROM property_types WHERE code = 'ANNOTATIONS_STATE'));
+
 UPDATE property_types SET code = 'ANNOTATION.REQUEST.QUANTITY_OF_ITEMS', is_internal_namespace = TRUE WHERE code = 'QUANTITY_OF_ITEMS';
+UPDATE sample_properties SET value = replace(value, 'QUANTITY_OF_ITEMS=', 'ANNOTATION.REQUEST.QUANTITY_OF_ITEMS=') WHERE stpt_id IN (SELECT id FROM sample_type_property_types WHERE prty_id = (SELECT id FROM property_types WHERE code = 'ANNOTATIONS_STATE'));
 
 -- Life Sciences Types Annotations
 
 UPDATE property_types SET code = 'ANNOTATION.SYSTEM.QUANTITY', is_internal_namespace = TRUE WHERE code = 'QUANTITY';
+UPDATE sample_properties SET value = replace(value, 'QUANTITY=', 'ANNOTATION.SYSTEM.QUANTITY=') WHERE stpt_id IN (SELECT id FROM sample_type_property_types WHERE prty_id = (SELECT id FROM property_types WHERE code = 'ANNOTATIONS_STATE'));
 UPDATE property_types SET code = 'ANNOTATION.SYSTEM.PLASMID_ANNOTATION', is_internal_namespace = TRUE WHERE code = 'PLASMID_ANNOTATION';
+UPDATE sample_properties SET value = replace(value, 'PLASMID_ANNOTATION=', 'ANNOTATION.SYSTEM.PLASMID_ANNOTATION=') WHERE stpt_id IN (SELECT id FROM sample_type_property_types WHERE prty_id = (SELECT id FROM property_types WHERE code = 'ANNOTATIONS_STATE'));
 UPDATE property_types SET code = 'ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP', is_internal_namespace = TRUE WHERE code = 'PLASMID_RELATIONSHIP';
+UPDATE sample_properties SET value = replace(value, 'PLASMID_RELATIONSHIP=', 'ANNOTATION.SYSTEM.PLASMID_RELATIONSHIP=') WHERE stpt_id IN (SELECT id FROM sample_type_property_types WHERE prty_id = (SELECT id FROM property_types WHERE code = 'ANNOTATIONS_STATE'));
