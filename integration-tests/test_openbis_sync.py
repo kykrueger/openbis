@@ -280,7 +280,7 @@ class TestCase(systemtest.testcase.TestCase):
         return temp
             
     def writeResponseToFile(self, datasource_graph_response, file1):
-        with open(file1, 'w') as output:
+        with open(file1, 'wb') as output:
             output.write(datasource_graph_response.read())
         return output
     
@@ -296,7 +296,7 @@ class TestCase(systemtest.testcase.TestCase):
         request.add_header("Content-type", "application/x-www-form-urlencoded")
         credentials = '%s:%s' % (user, password)
         base64bytes = base64.encodebytes(credentials.encode('utf-8')).replace(b'\n', b'')
-        request.add_header("Authorization", "Basic %s" % str(base64bytes))
+        request.add_header("Authorization", "Basic %s" % base64bytes.decode('utf-8'))
         data = urlencode({'mode' : 'test'}).encode('utf-8')
         response = urlopen(request, data, context=ssl._create_unverified_context())
         return response
