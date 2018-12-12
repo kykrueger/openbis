@@ -31,7 +31,8 @@ def sslwrap(func):
 
 ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 
-ALL_TECHNOLOGIES = ['screening', 'proteomics', 'illumina-ngs', 'eln-lims', 'microscopy', 'flow']
+#ALL_TECHNOLOGIES = ['screening', 'proteomics', 'illumina-ngs', 'eln-lims', 'microscopy', 'flow']
+ALL_TECHNOLOGIES = ['screening', 'proteomics', 'illumina-ngs', 'microscopy', 'flow']
 DATA_SOURCE_AS_PORT = '9000'
 DATA_SOURCE_DSS_PORT = '9001'
 HARVESTER_AS_PORT = '9002'
