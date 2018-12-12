@@ -82,7 +82,7 @@ class TestCase(object):
                 self.executeInDevMode()
             success = self.numberOfFailures == 0
         except:
-            traceback.print_exc()
+            util.printAndFlush(traceback.format_exc())
             success = False
         finally:
             duration = util.renderDuration(time.time() - startTime)
