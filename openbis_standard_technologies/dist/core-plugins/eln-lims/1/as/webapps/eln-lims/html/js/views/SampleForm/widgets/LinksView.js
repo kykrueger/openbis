@@ -412,7 +412,7 @@ function LinksView(linksController, linksModel) {
 		
 		if(sampleTypeCode === "REQUEST") {
 			// This property is missing the $ because the search uses V1 instead of V3
-			advancedSampleSearchCriteria.rules["2"] = { type : "Property", name : "PROP.$REQUEST.ORDER_STATUS", value : "NOT_YET_ORDERED" };
+			advancedSampleSearchCriteria.rules["2"] = { type : "Property", name : "PROP.$ORDERING.ORDER_STATUS", value : "NOT_YET_ORDERED" };
 		}
 		
 		var rowClick = function(e) {

@@ -15,7 +15,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 		
 		this.sampleFormOnSubmit = function(sample, action) {
 			if(sample.sampleTypeCode === "ORDER") {
-				var orderStatus = sample.properties["$ORDER.ORDER_STATUS"];
+				var orderStatus = sample.properties["$ORDERING.ORDER_STATUS"];
 				var samplesToDelete = null;
 				var changesToDo = null;
 				if((orderStatus === "ORDERED" || orderStatus === "DELIVERED" || orderStatus === "PAID") && !sample.properties["$ORDER.ORDER_STATE"]) {
@@ -36,7 +36,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 						var requests = sample.parents;
 						if(requests) {
 							for(var rIdx = 0; rIdx < requests.length; rIdx++) {
-								changesToDo.push({ "permId" : requests[rIdx].permId, "identifier" : requests[rIdx].identifier, "properties" : {"$REQUEST.ORDER_STATUS" : orderStatus } });
+								changesToDo.push({ "permId" : requests[rIdx].permId, "identifier" : requests[rIdx].identifier, "properties" : {"$ORDERING.ORDER_STATUS" : orderStatus } });
 							}
 						}
 						
@@ -154,7 +154,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									page += "\n";
 									page += "- " + languageLabels["ORDER_DATE"] + ": " + Util.getFormatedDate(new Date(registrationDate));
 									page += "\n";
-									page += "- " + languageLabels["ORDER_STATUS"] + ": " + order.properties["$ORDER.ORDER_STATUS"];
+									page += "- " + languageLabels["ORDER_STATUS"] + ": " + order.properties["$ORDERING.ORDER_STATUS"];
 									page += "\n";
 									page += "- " + languageLabels["ORDER_CODE"] + ": " + order.code;
 									page += "\n";

@@ -40,7 +40,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 			"SAMPLE_PARENTS_ANY_TYPE_DISABLED" : true,
 			"SAMPLE_CHILDREN_DISABLED" : true,
 				showParents : function(sample) { 
-				var orderStatus = sample.properties["$ORDER.ORDER_STATUS"];
+				var orderStatus = sample.properties["$ORDERING.ORDER_STATUS"];
 				var orderSummary = sample.properties["$ORDER.ORDER_STATE"];
 				return orderStatus !== "ORDERED" && orderStatus !== "DELIVERED" && orderStatus !== "PAID" && !orderSummary;
 			},
