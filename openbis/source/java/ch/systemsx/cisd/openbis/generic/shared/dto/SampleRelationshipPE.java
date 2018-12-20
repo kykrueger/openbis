@@ -50,8 +50,8 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
  * @author Izabela Adamczyk
  */
 @Entity
-@Table(name = TableNames.SAMPLE_RELATIONSHIPS_VIEW, uniqueConstraints = @UniqueConstraint(columnNames =
-{ ColumnNames.PARENT_SAMPLE_COLUMN, ColumnNames.CHILD_SAMPLE_COLUMN,
+@Table(name = TableNames.SAMPLE_RELATIONSHIPS_VIEW, uniqueConstraints = @UniqueConstraint(columnNames = { ColumnNames.PARENT_SAMPLE_COLUMN,
+        ColumnNames.CHILD_SAMPLE_COLUMN,
         ColumnNames.RELATIONSHIP_COLUMN }))
 @TypeDefs({ @TypeDef(name = "transactiontimestamp", typeClass = DbTimestampType.class) })
 public class SampleRelationshipPE implements Serializable
@@ -62,7 +62,11 @@ public class SampleRelationshipPE implements Serializable
 
     private SamplePE parentSample;
 
+    private boolean parentFrozen;
+
     private SamplePE childSample;
+
+    private boolean childFrozen;
 
     private PersonPE author;
 
@@ -88,8 +92,8 @@ public class SampleRelationshipPE implements Serializable
     public SampleRelationshipPE(SamplePE parentSample, SamplePE childSample,
             RelationshipTypePE relationship, PersonPE author)
     {
-        this.parentSample = parentSample;
-        this.childSample = childSample;
+        setParentSample(parentSample);
+        setChildSample(childSample);
         this.relationship = relationship;
         this.author = author;
         parentSample.addChildRelationship(this);
@@ -107,6 +111,23 @@ public class SampleRelationshipPE implements Serializable
     public void setParentSample(SamplePE parentSample)
     {
         this.parentSample = parentSample;
+        if (parentSample != null)
+        {
+            parentFrozen = parentSample.isFrozen();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.PARENT_FROZEN_COLUMN, nullable = false)
+    public boolean isParentFrozen()
+    {
+//        return parentSample == null ? parentFrozen : parentSample.isFrozen();
+        return parentFrozen;
+    }
+
+    public void setParentFrozen(boolean parentFrozen)
+    {
+        this.parentFrozen = parentFrozen;
     }
 
     @NotNull(message = ValidationMessages.CHILD_NOT_NULL_MESSAGE)
@@ -120,6 +141,23 @@ public class SampleRelationshipPE implements Serializable
     public void setChildSample(SamplePE childSample)
     {
         this.childSample = childSample;
+        if (childSample != null)
+        {
+            childFrozen = childSample.isFrozen();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.CHILD_FROZEN_COLUMN, nullable = false)
+    public boolean isChildFrozen()
+    {
+//        return childSample == null ? childFrozen : childSample.isFrozen();
+        return childFrozen;
+    }
+
+    public void setChildFrozen(boolean childFrozen)
+    {
+        this.childFrozen = childFrozen;
     }
 
     @NotNull(message = ValidationMessages.RELATIONSHIP_NOT_NULL_MESSAGE)

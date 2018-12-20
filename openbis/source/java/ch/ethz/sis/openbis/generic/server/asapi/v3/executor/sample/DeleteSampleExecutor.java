@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.orm.hibernate5.HibernateJdbcException;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
@@ -31,6 +33,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOpti
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractDeleteEntityExecutor;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ITrashBO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DeletionPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
@@ -108,11 +111,18 @@ public class DeleteSampleExecutor extends AbstractDeleteEntityExecutor<IDeletion
     @Override
     protected IDeletionId delete(IOperationContext context, Collection<SamplePE> entities, SampleDeletionOptions deletionOptions)
     {
-        ITrashBO trashBO = businessObjectFactory.createTrashBO(context.getSession());
-        trashBO.createDeletion(deletionOptions.getReason());
-        trashBO.trashSamples(asTechIds(entities));
-        DeletionPE deletion = trashBO.getDeletion();
-        return new DeletionTechId(deletion.getId());
+        try
+        {
+            ITrashBO trashBO = businessObjectFactory.createTrashBO(context.getSession());
+            trashBO.createDeletion(deletionOptions.getReason());
+            trashBO.trashSamples(asTechIds(entities));
+            DeletionPE deletion = trashBO.getDeletion();
+            return new DeletionTechId(deletion.getId());
+        } catch (DataAccessException e)
+        {
+            DataAccessExceptionTranslator.throwException(e, "deletion", null);
+            return null; // never called
+        }
     }
 
 }

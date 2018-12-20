@@ -25,6 +25,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
@@ -82,5 +83,12 @@ public class MaterialPropertyPE extends EntityPropertyPE
     public MaterialPE getEntity()
     {
         return (MaterialPE) entity;
+    }
+
+    @Override
+    @Transient
+    public boolean isEntityFrozen()
+    {
+        return false;
     }
 }

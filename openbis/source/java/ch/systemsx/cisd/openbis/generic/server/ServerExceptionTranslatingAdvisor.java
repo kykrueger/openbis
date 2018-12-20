@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.postgresql.util.PSQLException;
 import org.springframework.aop.ClassFilter;
 import org.springframework.aop.MethodMatcher;
 import org.springframework.aop.Pointcut;
@@ -79,7 +80,17 @@ public class ServerExceptionTranslatingAdvisor extends DefaultPointcutAdvisor
             {
                 if (ex instanceof TransactionSystemException || ex instanceof DataAccessException)
                 {
-                    throw new UserFailureException(ex.getMostSpecificCause().getMessage(), ex);
+                    Throwable cause = ex.getMostSpecificCause();
+                    String message = cause.getMessage();
+                    if (cause instanceof PSQLException)
+                    {
+                        int indexOfWhere = message.indexOf("Where: PL/pgSQL");
+                        if (indexOfWhere > 0)
+                        {
+                            message = message.substring(0, indexOfWhere).trim();
+                        }
+                    }
+                    throw new UserFailureException(message, ex);
                 } else
                 {
                     throw ex; // don't expose query syntax errors etc.

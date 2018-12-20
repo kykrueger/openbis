@@ -69,6 +69,8 @@ public final class SpacePE extends HibernateAbstractRegistrationHolder implement
 
     private String code;
 
+    private boolean frozen;
+
     private String description;
 
     // null if unknown
@@ -121,6 +123,18 @@ public final class SpacePE extends HibernateAbstractRegistrationHolder implement
     public final void setHome(final Boolean home)
     {
         this.home = home;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_COLUMN, nullable = false)
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
     }
 
     @Version

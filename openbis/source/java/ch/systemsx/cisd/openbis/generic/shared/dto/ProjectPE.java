@@ -88,7 +88,11 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
 
     private String permId;
 
+    private boolean frozen;
+
     private SpacePE space;
+
+    private boolean spaceFrozen;
 
     private List<ExperimentPE> experiments = new ArrayList<ExperimentPE>();
 
@@ -163,6 +167,10 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     public final void setSpace(final SpacePE space)
     {
         this.space = space;
+        if (space != null)
+        {
+            spaceFrozen = space.isFrozen();
+        }
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -172,6 +180,18 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     public final SpacePE getSpace()
     {
         return space;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.SPACE_FROZEN_COLUMN, nullable = false)
+    public boolean isSpaceFrozen()
+    {
+        return spaceFrozen;
+    }
+
+    public void setSpaceFrozen(boolean spaceFrozen)
+    {
+        this.spaceFrozen = spaceFrozen;
     }
 
     @OptimisticLock(excluded = true)
@@ -352,6 +372,18 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     public final String getCode()
     {
         return code;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_COLUMN, nullable = false)
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
     }
 
     @Override

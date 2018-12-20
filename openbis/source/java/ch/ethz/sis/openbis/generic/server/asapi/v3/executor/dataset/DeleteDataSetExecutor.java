@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
@@ -31,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractDeleteEntityExecutor;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ITrashBO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetRelationshipPE;
@@ -95,11 +97,18 @@ public class DeleteDataSetExecutor extends AbstractDeleteEntityExecutor<IDeletio
     @Override
     protected IDeletionId delete(IOperationContext context, Collection<DataPE> dataSets, DataSetDeletionOptions deletionOptions)
     {
-        ITrashBO trashBO = businessObjectFactory.createTrashBO(context.getSession());
-        trashBO.createDeletion(deletionOptions.getReason());
-        trashBO.trashDataSets(asTechIds(dataSets));
-        DeletionPE deletion = trashBO.getDeletion();
-        return new DeletionTechId(deletion.getId());
+        try
+        {
+            ITrashBO trashBO = businessObjectFactory.createTrashBO(context.getSession());
+            trashBO.createDeletion(deletionOptions.getReason());
+            trashBO.trashDataSets(asTechIds(dataSets));
+            DeletionPE deletion = trashBO.getDeletion();
+            return new DeletionTechId(deletion.getId());
+        } catch (DataAccessException e)
+        {
+            DataAccessExceptionTranslator.throwException(e, "deletion", null);
+            return null; // never called
+        }
     }
 
 }

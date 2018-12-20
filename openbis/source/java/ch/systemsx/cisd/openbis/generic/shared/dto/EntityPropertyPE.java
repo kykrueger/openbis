@@ -115,6 +115,8 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
 
     private Date modificationDate;
 
+    protected boolean entityFrozen;
+
     /**
      * This bridge allows to save in the search index not only the value of property, but also the corresponding property code.
      */
@@ -250,6 +252,11 @@ public abstract class EntityPropertyPE extends HibernateAbstractRegistrationHold
     public void setId(final Long id)
     {
         this.id = id;
+    }
+    
+    public void setEntityFrozen(boolean frozen)
+    {
+        this.entityFrozen = frozen;
     }
 
     public void setValue(final String value)

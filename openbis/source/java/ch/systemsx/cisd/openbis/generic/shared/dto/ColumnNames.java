@@ -288,6 +288,24 @@ public final class ColumnNames
 
     public static final String PERM_ID_COLUMN = "perm_id";
 
+    public static final String FROZEN_COLUMN = "frozen";
+
+    public static final String PARENT_FROZEN_COLUMN = "parent_frozen";
+
+    public static final String CHILD_FROZEN_COLUMN = "child_frozen";
+
+    public static final String DATA_SET_FROZEN_COLUMN = "dase_frozen";
+
+    public static final String EXPERIMENT_FROZEN_COLUMN = "expe_frozen";
+
+    public static final String SAMPLE_FROZEN_COLUMN = "samp_frozen";
+
+    public static final String CONTAINER_FROZEN_COLUMN = "cont_frozen";
+
+    public static final String PROJECT_FROZEN_COLUMN = "proj_frozen";
+
+    public static final String SPACE_FROZEN_COLUMN = "space_frozen";
+
     public static final String IS_CHOSEN_FROM_LIST = "is_chosen_from_list";
 
     public static final String AUTHORIZATION_GROUP_ID_COLUMN = "ag_id";

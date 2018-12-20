@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Level;
@@ -691,6 +692,18 @@ public class AbstractTest extends SystemTestCase
         }
     }
 
+    protected void assertUserFailureException(Consumer<Void> action, String expectedMessage)
+    {
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    action.accept(null);
+                }
+            }, expectedMessage);
+    }
+    
     protected void assertUserFailureException(IDelegatedAction action, String expectedMessage)
     {
         assertUserFailureException(action, expectedMessage, null);

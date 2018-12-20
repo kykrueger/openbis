@@ -102,8 +102,12 @@ public class ExperimentPE extends AttachmentHolderPE implements
     private transient Long id;
 
     private String code;
+    
+    private boolean frozen;
 
     private ProjectPE project;
+    
+    private boolean projectFrozen;
 
     private ExperimentTypePE experimentType;
 
@@ -235,6 +239,18 @@ public class ExperimentPE extends AttachmentHolderPE implements
         this.code = code;
     }
 
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_COLUMN, nullable = false)
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull(message = ValidationMessages.PROJECT_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.PROJECT_COLUMN, updatable = true)
@@ -248,6 +264,10 @@ public class ExperimentPE extends AttachmentHolderPE implements
     void setProjectInternal(final ProjectPE project)
     {
         this.project = project;
+        if (project != null)
+        {
+            projectFrozen = project.isFrozen();
+        }
         this.experimentIdentifier = null;
     }
 
@@ -260,6 +280,18 @@ public class ExperimentPE extends AttachmentHolderPE implements
     public void setProject(final ProjectPE project)
     {
         project.addExperiment(this);
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.PROJECT_FROZEN_COLUMN, nullable = false)
+    public boolean isProjectFrozen()
+    {
+        return projectFrozen;
+    }
+
+    public void setProjectFrozen(boolean projectFrozen)
+    {
+        this.projectFrozen = projectFrozen;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -343,6 +375,7 @@ public class ExperimentPE extends AttachmentHolderPE implements
     public void addProperty(final EntityPropertyPE property)
     {
         property.setEntity(this);
+        property.setEntityFrozen(isFrozen());
         getExperimentProperties().add((ExperimentPropertyPE) property);
     }
 

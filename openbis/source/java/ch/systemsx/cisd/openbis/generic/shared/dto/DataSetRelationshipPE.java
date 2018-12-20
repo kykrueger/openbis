@@ -55,8 +55,12 @@ public class DataSetRelationshipPE implements Serializable
     private static final long serialVersionUID = IServer.VERSION;
 
     private DataPE parentDataSet;
+    
+    private boolean parentFrozen;
 
     private DataPE childDataSet;
+    
+    private boolean childFrozen;
 
     private PersonPE author;
 
@@ -84,8 +88,8 @@ public class DataSetRelationshipPE implements Serializable
     public DataSetRelationshipPE(DataPE parentDataSet, DataPE childDataSet, RelationshipTypePE relationshipType,
             Integer ordinal, PersonPE author)
     {
-        this.parentDataSet = parentDataSet;
-        this.childDataSet = childDataSet;
+        setParentDataSet(parentDataSet);
+        setChildDataSet(childDataSet);
         this.relationshipType = relationshipType;
         this.ordinal = ordinal;
         this.author = author;
@@ -103,6 +107,22 @@ public class DataSetRelationshipPE implements Serializable
     public void setParentDataSet(DataPE parentDataSet)
     {
         this.parentDataSet = parentDataSet;
+        if (parentDataSet != null)
+        {
+            parentFrozen = parentDataSet.isFrozen();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.PARENT_FROZEN_COLUMN, nullable = false)
+    public boolean isParentFrozen()
+    {
+        return parentFrozen;
+    }
+
+    public void setParentFrozen(boolean parentFrozen)
+    {
+        this.parentFrozen = parentFrozen;
     }
 
     @NotNull(message = ValidationMessages.CHILD_NOT_NULL_MESSAGE)
@@ -117,6 +137,22 @@ public class DataSetRelationshipPE implements Serializable
     public void setChildDataSet(DataPE childDataSet)
     {
         this.childDataSet = childDataSet;
+        if (childDataSet != null)
+        {
+            childFrozen = childDataSet.isFrozen();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.CHILD_FROZEN_COLUMN, nullable = false)
+    public boolean isChildFrozen()
+    {
+        return childFrozen;
+    }
+
+    public void setChildFrozen(boolean childFrozen)
+    {
+        this.childFrozen = childFrozen;
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
