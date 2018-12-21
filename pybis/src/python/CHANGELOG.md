@@ -2,6 +2,7 @@
 
 * bugfix dataset upload for relative files (e.g. ../../file or /User/username/file)
 * always only the filename is added to the dataset, not the folder containing it
+* corrected License file
 
 ## Changes with pybis-1.7.5
 
