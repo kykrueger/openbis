@@ -1,3 +1,8 @@
+## Changes with pybis-1.7.6
+
+* bugfix dataset upload for relative files (e.g. ../../file or /User/username/file)
+* always only the filename is added to the dataset, not the folder containing it
+
 ## Changes with pybis-1.7.5
 
 * added paging support for all search functions by providing start_with and count arguments

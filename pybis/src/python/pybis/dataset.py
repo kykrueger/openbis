@@ -410,7 +410,7 @@ class DataSet(OpenBisObject):
                     "experimentIdentifier" : experiment_identifier,
                     "dataSetType" : dataset_type,
                     "folderName" : self.folder,
-                    "fileNames" : self.files,
+                    "fileNames" : self.files_in_wsp,
                     "isZipDirectoryUpload" : False,
                     "properties" : properties,
                     "parentIdentifiers": parentIds
@@ -519,11 +519,13 @@ class DataSet(OpenBisObject):
 
         # compose the upload-URL and put URL and filename in the upload queue 
         for filename in real_files:
-            file_in_wsp = os.path.join(folder, filename)
+            file_in_wsp = os.path.join(folder, os.path.basename(filename))
+            url_filename = os.path.join(folder, urllib.parse.quote(os.path.basename(filename)))
             self.files_in_wsp.append(file_in_wsp)
+
             upload_url = (
                 datastore_url + '/session_workspace_file_upload'
-                + '?filename=' + os.path.join(folder, urllib.parse.quote(filename))
+                + '?filename=' + url_filename
                 + '&id=1'
                 + '&startByte=0&endByte=0'
                 + '&sessionID=' + self.openbis.token
