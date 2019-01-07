@@ -75,27 +75,14 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
     public boolean equals(Object obj)
     {
         if (this == obj)
+        {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Node<?> other = (Node<?>) obj;
-        if (entity == null)
-        {
-            if (other.entity != null)
-            {
-                return false;
-            }
-        } else if (this.getIdentifier().equals(other.getIdentifier()) == false)
+        }
+        if (obj instanceof Node == false)
         {
             return false;
         }
-        else if (getEntityKind().equals(other.getEntityKind()) == false)
-        {
-            return false;
-        }
-        return true;
+        return this.getIdentifier().equals(((Node<?>) obj).getIdentifier());
     }
 
     @Override

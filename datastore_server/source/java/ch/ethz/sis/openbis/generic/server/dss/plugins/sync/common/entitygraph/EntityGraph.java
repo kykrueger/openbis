@@ -118,7 +118,7 @@ public class EntityGraph<N extends INode>
         for (INode node : getNodes())
         {
             List<EdgeNodePair> list = adjacencyMap.get(node);
-            if (list.isEmpty() && node.getEntityKind().equals("DATA_SET") == false)
+            if (list.isEmpty() && node.getEntityKind().equals(SyncEntityKind.DATA_SET) == false)
             {
                 sb.append(getRightHandNodeRep(node, forTest));
                 // if(node.getEntityKind().equals("PROJECT")) {
