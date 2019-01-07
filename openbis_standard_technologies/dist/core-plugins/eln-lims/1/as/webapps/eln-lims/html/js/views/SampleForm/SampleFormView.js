@@ -359,7 +359,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		//
 		for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
 			var propertyTypeGroup = sampleType.propertyTypeGroups[i];
-			if(propertyTypeGroup.name === "General") {
+			if(propertyTypeGroup.name === "General" || propertyTypeGroup.name === "General info") {
 				this._paintPropertiesForSection($formColumn, propertyTypeGroup, i, loadFromTemplate);
 			}
 		}
