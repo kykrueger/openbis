@@ -166,11 +166,11 @@ class TestCase(systemtest.testcase.TestCase):
                                "select d.code, file_name, size_in_bytes "
                                + "from data_set_files f join data_sets d on f.dase_id=d.id where parent_id is null "
                                + "order by d.code")
-#         self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
-#                                "select p.code, c.code, t.code "
-#                                + "from data_set_relationships r join data p on r.data_id_parent = p.id "
-#                                + "join data c on r.data_id_child = c.id "
-#                                + "join relationship_types t on r.relationship_id = t.id order by p.code, c.code")
+        self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
+                                "select p.code, c.code, t.code "
+                                + "from data_set_relationships r join data p on r.data_id_parent = p.id "
+                                + "join data c on r.data_id_child = c.id "
+                                + "join relationship_types t on r.relationship_id = t.id order by p.code, c.code")
 
     def _compareDataBases(self, name, openbis_data_source, openbis_harvester, databaseType, sql):
         expectedContent = openbis_data_source.queryDatabase(databaseType, sql)
