@@ -368,7 +368,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			var propertyType = propertyTypeGroup.propertyTypes[j];
 			FormUtil.fixStringPropertiesForForm(propertyType, this._experimentFormModel.experiment);
 			
-			if(!propertyType.showInEditViews && this._experimentFormController.mode === FormMode.EDIT) { //Skip
+			if(!propertyType.showInEditViews && this._experimentFormController.mode === FormMode.EDIT) && propertyType.code !== "$XMLCOMMENTS") { //Skip
 				continue;
 			} else if(propertyType.dinamic && this._experimentFormController.mode === FormMode.CREATE) { //Skip
 				continue;
