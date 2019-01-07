@@ -526,9 +526,13 @@ $.extend(DefaultProfile.prototype, {
 			// !!! IMPORTANT
 			// This properties start with $, they are here without it because the V1 API omits the $.
 			//
+			var propertyReplacingCodeNoDolar = profile.propertyReplacingCode;
+			if(propertyReplacingCodeNoDolar.charAt(0) === "$") {
+				propertyReplacingCodeNoDolar = propertyReplacingCodeNoDolar.substring(1);
+			}
 			return {
 				code : sample.code,
-				label : sample.properties[profile.propertyReplacingCode],
+				label : sample.properties[propertyReplacingCodeNoDolar],
 				validationLevel : ValidationLevel[sample.properties["STORAGE.STORAGE_VALIDATION_LEVEL"]],
 				lowRackSpaceWarning : sample.properties["STORAGE.STORAGE_SPACE_WARNING"],
 				lowBoxSpaceWarning : sample.properties["STORAGE.BOX_SPACE_WARNING"],
