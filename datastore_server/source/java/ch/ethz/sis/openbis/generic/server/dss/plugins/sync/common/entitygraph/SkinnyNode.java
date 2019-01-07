@@ -16,9 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph;
 
+import java.util.List;
 import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 
 /**
  * @author Ganime Betul Akin
@@ -27,9 +29,7 @@ public class SkinnyNode implements INode
 {
     private final String permId;
 
-    private final String entityKind;
-
-    private final String identifier;
+    private final NodeIdentifier identifier;
 
     private final String typeCodeOrNull;
 
@@ -42,10 +42,9 @@ public class SkinnyNode implements INode
         return space;
     }
 
-    public SkinnyNode(String permId, String entityKind, String identifier, String typeCodeOrNull, Space space, String code)
+    public SkinnyNode(String permId, NodeIdentifier identifier, String typeCodeOrNull, Space space, String code)
     {
         this.permId = permId;
-        this.entityKind = entityKind;
         this.identifier = identifier;
         this.typeCodeOrNull = typeCodeOrNull;
         this.space = space;
@@ -58,13 +57,13 @@ public class SkinnyNode implements INode
     }
 
     @Override
-    public String getEntityKind()
+    public SyncEntityKind getEntityKind()
     {
-        return entityKind;
+        return identifier.getEntityKind();
     }
 
     @Override
-    public String getIdentifier()
+    public NodeIdentifier getIdentifier()
     {
         return identifier;
     }
@@ -93,6 +92,12 @@ public class SkinnyNode implements INode
     {
         //do nothing
         //throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<EdgeNodePair> getConnections()
+    {
+        return null;
     }
 
 }

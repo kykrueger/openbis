@@ -16,9 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph;
 
+import java.util.List;
 import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 
 /**
  * 
@@ -29,9 +31,9 @@ public interface INode
 {
     public String getPermId();
 
-    public String getEntityKind();
+    public SyncEntityKind getEntityKind();
 
-    public String getIdentifier();
+    public NodeIdentifier getIdentifier();
 
     public String getCode();
 
@@ -41,5 +43,7 @@ public interface INode
 
     public Map<String, String> getPropertiesOrNull();
 
+    public List<EdgeNodePair> getConnections();
+    
     public void addConnection(EdgeNodePair enPair);
 }

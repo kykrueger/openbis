@@ -56,6 +56,10 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
 
     public Node(T entity)
     {
+        if (entity == null)
+        {
+            throw new IllegalArgumentException("Unspecified entity");
+        }
         this.entity = entity;
         this.connections = new ArrayList<EdgeNodePair>();
         this.attachments = new ArrayList<Attachment>();
@@ -225,26 +229,25 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
     }
 
     @Override
-    public String getIdentifier()
+    public NodeIdentifier getIdentifier()
     {
         if (entity instanceof Project)
         {
-            return ((Project) entity).getIdentifier().getIdentifier();
+            return new NodeIdentifier(SyncEntityKind.PROJECT, ((Project) entity).getIdentifier().getIdentifier());
         }
         if (entity instanceof Experiment)
         {
-            return ((Experiment) entity).getIdentifier().getIdentifier();
+            return new NodeIdentifier(SyncEntityKind.EXPERIMENT, ((Experiment) entity).getIdentifier().getIdentifier());
         }
         if (entity instanceof Sample)
         {
-            return ((Sample) entity).getIdentifier().getIdentifier();
+            return new NodeIdentifier(SyncEntityKind.SAMPLE, ((Sample) entity).getIdentifier().getIdentifier());
         }
         else if (entity instanceof DataSet)
         {
-            return ((DataSet) entity).getPermId().toString();
+            return new NodeIdentifier(SyncEntityKind.DATA_SET, ((DataSet) entity).getPermId().toString());
         }
-        // TODO exception
-        return null;
+        throw new IllegalStateException("Entity " + entity + " is of invalid kind");
     }
 
     @Override
@@ -259,25 +262,24 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
     }
 
     @Override
-    public String getEntityKind()
+    public SyncEntityKind getEntityKind()
     {
         if (entity instanceof Project)
         {
-            return SyncEntityKind.PROJECT.getLabel();
+            return SyncEntityKind.PROJECT;
         }
         else if (entity instanceof Experiment)
         {
-            return SyncEntityKind.EXPERIMENT.getLabel();
+            return SyncEntityKind.EXPERIMENT;
         }
         else if (entity instanceof Sample)
         {
-            return SyncEntityKind.SAMPLE.getLabel();
+            return SyncEntityKind.SAMPLE;
         }
         else if (entity instanceof DataSet)
         {
-            return SyncEntityKind.DATA_SET.getLabel();
+            return SyncEntityKind.DATA_SET;
         }
-        // TODO exception
         return null;
     }
 
@@ -292,11 +294,6 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
         {
             return null;
         }
-        Space space = ((ISpaceHolder) entity).getSpace();
-        if (space == null)
-        {
-            return null;
-        }
-        return space;
+        return ((ISpaceHolder) entity).getSpace();
     }
 }

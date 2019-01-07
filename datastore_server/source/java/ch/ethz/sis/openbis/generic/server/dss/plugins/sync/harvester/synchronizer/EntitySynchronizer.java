@@ -343,17 +343,17 @@ public class EntitySynchronizer
         List<NewSample> sampleRegistrations = details.getSampleRegistrations();
         for (NewSample newSample : sampleRegistrations)
         {
-            newEntities.put(SyncEntityKind.SAMPLE.getLabel(), newSample.getPermID(), newSample.getIdentifier());
+            newEntities.put(SyncEntityKind.SAMPLE.toString(), newSample.getPermID(), newSample.getIdentifier());
         }
         List<NewExperiment> experimentRegistrations = details.getExperimentRegistrations();
         for (NewExperiment newExperiment : experimentRegistrations)
         {
-            newEntities.put(SyncEntityKind.EXPERIMENT.getLabel(), newExperiment.getPermID(), newExperiment.getIdentifier());
+            newEntities.put(SyncEntityKind.EXPERIMENT.toString(), newExperiment.getPermID(), newExperiment.getIdentifier());
         }
         List<NewProject> projectRegistrations = details.getProjectRegistrations();
         for (NewProject newProject : projectRegistrations)
         {
-            newEntities.put(SyncEntityKind.PROJECT.getLabel(), newProject.getPermID(), newProject.getIdentifier());
+            newEntities.put(SyncEntityKind.PROJECT.toString(), newProject.getPermID(), newProject.getIdentifier());
         }
         return newEntities;
     }
@@ -379,7 +379,7 @@ public class EntitySynchronizer
             {
                 // the following is done to not list holders in the log when they are just being created and have no attachments
                 // updated ones will logged because the attachments might have been deleted.
-                if (newEntities.containsKey(holder.getEntityKind().getLabel(), holder.getPermID()) == true)
+                if (newEntities.containsKey(holder.getEntityKind().toString(), holder.getPermID()) == true)
                 {
                     if (holder.hasAttachments() == false)
                     {
@@ -490,16 +490,16 @@ public class EntitySynchronizer
         if (entityRegistrations.isEmpty() == false)
         {
             Identifier<?> identifier = entityRegistrations.get(0);
-            String entityKind = "";
+            SyncEntityKind entityKind = null;
             if (identifier instanceof NewSample)
             {
-                entityKind = SyncEntityKind.SAMPLE.getLabel();
+                entityKind = SyncEntityKind.SAMPLE;
             } else if (identifier instanceof NewExperiment)
             {
-                entityKind = SyncEntityKind.EXPERIMENT.getLabel();
+                entityKind = SyncEntityKind.EXPERIMENT;
             } else if (identifier instanceof NewExperiment)
             {
-                entityKind = SyncEntityKind.PROJECT.getLabel();
+                entityKind = SyncEntityKind.PROJECT;
             }
             operationLog.info("-------The following " + entityKind + "(s) will be created-------");
             for (Identifier<?> entity : entityRegistrations)
@@ -549,27 +549,31 @@ public class EntitySynchronizer
         Map<String, Set<String>> dsToContained = new HashMap<String, Set<String>>();
         for (IncomingDataSet dsWithConn : dataSetsToProcess.values())
         {
+            NewExternalData dataSet = dsWithConn.getDataSet();
             for (Connection conn : dsWithConn.getConnections())
             {
-                NewExternalData dataSet = dsWithConn.getDataSet();
-                if (dataSetsToProcess.containsKey(conn.getToPermId()) && conn.getType().equals("Child"))
+                IncomingDataSet dataSet2 = dataSetsToProcess.get(conn.getToPermId());
+                if (dataSet2 != null)
                 {
-                    if (skippedDataSets.contains(dataSet.getCode()) == false)
+                    if (conn.getType().equals("Child"))
                     {
-                        NewExternalData childDataSet = dataSetsToProcess.get(conn.getToPermId()).getDataSet();
-                        List<String> parentDataSetCodes = childDataSet.getParentDataSetCodes();
-                        parentDataSetCodes.add(dataSet.getCode());
-                        dsToParents.put(childDataSet.getCode(), new HashSet<String>(parentDataSetCodes));
-                    }
-                } else if (dataSetsToProcess.containsKey(conn.getToPermId()) && conn.getType().equals("Component"))
-                {
-                    NewExternalData componentDataSet = dataSetsToProcess.get(conn.getToPermId()).getDataSet();
-                    if (skippedDataSets.contains(componentDataSet.getCode()) == false)
+                        if (skippedDataSets.contains(dataSet.getCode()) == false)
+                        {
+                            NewExternalData childDataSet = dataSet2.getDataSet();
+                            List<String> parentDataSetCodes = childDataSet.getParentDataSetCodes();
+                            parentDataSetCodes.add(dataSet.getCode());
+                            dsToParents.put(childDataSet.getCode(), new HashSet<String>(parentDataSetCodes));
+                        }
+                    } else if (conn.getType().equals("Component"))
                     {
-                        NewContainerDataSet containerDataSet = (NewContainerDataSet) dataSet;
-                        List<String> containedDataSetCodes = containerDataSet.getContainedDataSetCodes();
-                        containedDataSetCodes.add(componentDataSet.getCode());
-                        dsToContained.put(dataSet.getCode(), new HashSet<String>(containedDataSetCodes));
+                        NewExternalData componentDataSet = dataSet2.getDataSet();
+                        if (skippedDataSets.contains(componentDataSet.getCode()) == false)
+                        {
+                            NewContainerDataSet containerDataSet = (NewContainerDataSet) dataSet;
+                            List<String> containedDataSetCodes = containerDataSet.getContainedDataSetCodes();
+                            containedDataSetCodes.add(componentDataSet.getCode());
+                            dsToContained.put(dataSet.getCode(), new HashSet<String>(containedDataSetCodes));
+                        }
                     }
                 }
             }
@@ -577,7 +581,7 @@ public class EntitySynchronizer
         // go through all the data sets, decide what needs to be updated
         for (IncomingDataSet dsWithConn : dataSetsToProcess.values())
         {
-            NewExternalData dataSet = (NewExternalData) dsWithConn.getDataSet();
+            NewExternalData dataSet = dsWithConn.getDataSet();
 
             if (dsWithConn.getLastModificationDate().after(lastSyncTimestamp)
                     || dataSetsCodesToRetry.contains(dataSet.getCode()) == true
@@ -720,7 +724,7 @@ public class EntitySynchronizer
         // first write the data set codes to be retried next time we sync
         for (String dsCode : notRegisteredDataSetCodes)
         {
-            FileUtilities.appendToFile(notSyncedEntitiesFile, SyncEntityKind.DATA_SET.getLabel() + "-" + dsCode, true);
+            FileUtilities.appendToFile(notSyncedEntitiesFile, SyncEntityKind.DATA_SET + "-" + dsCode, true);
         }
         // append the ids of holder entities for the failed attachment synchronizations
         for (String holderCode : notSyncedAttachmentsHolders)
@@ -730,7 +734,7 @@ public class EntitySynchronizer
         // append the blacklisted codes to the end of the file
         for (String dsCode : blackListedDataSetCodes)
         {
-            FileUtilities.appendToFile(notSyncedEntitiesFile, ("#" + SyncEntityKind.DATA_SET.getLabel() + "-" + dsCode), true);
+            FileUtilities.appendToFile(notSyncedEntitiesFile, ("#" + SyncEntityKind.DATA_SET + "-" + dsCode), true);
         }
     }
 
@@ -806,16 +810,16 @@ public class EntitySynchronizer
             for (INode entity : entities)
             {
                 String permId = entity.getPermId();
-                String identifier = entity.getIdentifier();
+                String identifier = entity.getIdentifier().getEntityIdentifier();
                 String typeCodeOrNull = entity.getTypeCodeOrNull();
-                if (entity.getEntityKind().equals(SyncEntityKind.PROJECT.getLabel()))
+                if (entity.getEntityKind().equals(SyncEntityKind.PROJECT))
                 {
                     if (incomingProjectPermIds.contains(permId) == false)
                     {
                         ProjectPermId projectPermId = new ProjectPermId(permId);
                         projectsToDelete.put(projectPermId, identifier);
                     }
-                } else if (entity.getEntityKind().equals(SyncEntityKind.EXPERIMENT.getLabel()))
+                } else if (entity.getEntityKind().equals(SyncEntityKind.EXPERIMENT))
                 {
                     ExperimentPermId experimentPermId = new ExperimentPermId(permId);
                     if (incomingExperimentPermIds.contains(permId) == false)
@@ -829,7 +833,7 @@ public class EntitySynchronizer
                             experimentsToDelete.put(experimentPermId, identifier);
                         }
                     }
-                } else if (entity.getEntityKind().equals(SyncEntityKind.SAMPLE.getLabel()))
+                } else if (entity.getEntityKind().equals(SyncEntityKind.SAMPLE))
                 {
                     SamplePermId samplePermId = new SamplePermId(permId);
                     if (incomingSamplePermIds.contains(permId) == false)
@@ -843,7 +847,7 @@ public class EntitySynchronizer
                             samplesToDelete.put(samplePermId, identifier);
                         }
                     }
-                } else if (entity.getEntityKind().equals(SyncEntityKind.DATA_SET.getLabel()))
+                } else if (entity.getEntityKind().equals(SyncEntityKind.DATA_SET))
                 {
                     DataSetPermId dataSetPermId = new DataSetPermId(permId);
                     if (incomingDataSetCodes.contains(permId) == false)
@@ -1192,7 +1196,7 @@ public class EntitySynchronizer
         int n = samplesToProcess.size();
         for (IncomingSample sample : samplesToProcess.values())
         {
-            if (++count % 1000 == 0)
+            if (++count % 10000 == 0)
             {
                 monitor.log(String.format("%7d/%d sample: %s", count, n, sample.getIdentifer()));
             }

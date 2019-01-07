@@ -155,7 +155,7 @@ public class ResourceListParserData
     {
         Identifier<?> entity = incomingEntity.getEntity();
         if (incomingEntity.getLastModificationDate().after(lastSyncTimestamp)
-                || attachmentHoldersToRetry.contains(incomingEntity.getEntityKind().getLabel() + "-" + entity.getPermID()))
+                || attachmentHoldersToRetry.contains(incomingEntity.getEntityKind().toString() + "-" + entity.getPermID()))
         {
             return true;
         }

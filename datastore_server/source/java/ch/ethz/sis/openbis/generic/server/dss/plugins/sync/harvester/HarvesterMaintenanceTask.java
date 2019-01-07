@@ -370,9 +370,9 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
                     assert line != null : "Unspecified line";
                     final String trimmed = line.getText().trim();
                     return trimmed.length() > 0 && trimmed.startsWith("#") == false &&
-                            (trimmed.startsWith(SyncEntityKind.SAMPLE.getLabel()) == true
-                                    || trimmed.startsWith(SyncEntityKind.EXPERIMENT.getLabel()) == true
-                                    || trimmed.startsWith(SyncEntityKind.PROJECT.getLabel()) == true);
+                            (trimmed.startsWith(SyncEntityKind.SAMPLE.toString()) == true
+                                    || trimmed.startsWith(SyncEntityKind.EXPERIMENT.toString()) == true
+                                    || trimmed.startsWith(SyncEntityKind.PROJECT.toString()) == true);
                 }
             });
     }
