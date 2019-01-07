@@ -198,7 +198,7 @@ def getRegistrationTimestamp(entity):
 def createProjectMetaData(entity, url_elm):
     desc = entity.getEntity().getDescription()
 
-    attrs = {"kind": entity.getEntityKind(), 
+    attrs = {"kind": entity.getEntityKind().toString(), 
         "code": entity.getCode(), 
         "registration-timestamp": getRegistrationTimestamp(entity),
         "registrator": getRegistratorId(entity),
@@ -208,7 +208,7 @@ def createProjectMetaData(entity, url_elm):
     return ET.SubElement(url_elm, "x:xd", attrib = attrs)
 
 def createSampleMetaData(entity, url_elm):
-    attrs = {"kind": entity.getEntityKind(), 
+    attrs = {"kind": entity.getEntityKind().toString(), 
         "code": entity.getCode(), 
         "type": getTypeCode(entity), 
         "registration-timestamp": getRegistrationTimestamp(entity),
@@ -220,7 +220,7 @@ def createSampleMetaData(entity, url_elm):
     return ET.SubElement(url_elm, "x:xd", attrib = attrs)
 
 def createExperimentMetaData(entity, url_elm):
-    attrs = {"kind": entity.getEntityKind(), 
+    attrs = {"kind": entity.getEntityKind().toString(), 
         "code": entity.getCode(), 
         "type": getTypeCode(entity), 
         "registration-timestamp": getRegistrationTimestamp(entity),
@@ -233,7 +233,7 @@ def createExperimentMetaData(entity, url_elm):
 def createDataSetMetaData(entity, url_elm):
     dsKind = entity.getEntity().getKind().toString() 
     #TO-DO , 
-    attrs = {"kind": entity.getEntityKind(), 
+    attrs = {"kind": entity.getEntityKind().toString(), 
         "code": entity.getCode(), 
         "dsKind": dsKind, 
         "type": getTypeCode(entity), 
@@ -286,7 +286,7 @@ def attachConnections(entity, xd_elm):
             #===================================================================
 
 def attachBinaryData(entity, xd_elm):
-    entityKind = entity.getEntityKind()
+    entityKind = entity.getEntityKind().toString()
     if entityKind == "DATA_SET":
         ''' Do not attach binary data if it is not a physical DS'''
         '''TO-DO How about link DSs?'''
@@ -320,7 +320,7 @@ def createEntityMetaData(entity, url_elm, entityKind):
 
 
 def injectEntityMetaData(entity, url_elm):
-    entityKind = entity.getEntityKind()
+    entityKind = entity.getEntityKind().toString()
     xd_elm = createEntityMetaData(entity, url_elm, entityKind)
     if entityKind in ["SAMPLE", "EXPERIMENT", "DATA_SET"]:
         '''properties'''
@@ -369,7 +369,7 @@ def injectMetaDataXML(materials, entities, xml_in):
     dsMap = {}
 
     for entity in entities:
-        entityKind = entity.getEntityKind()
+        entityKind = entity.getEntityKind().toString()
         if entityKind == "PROJECT":
             projectMap[str(entity.getPermId())] = entity
         elif entityKind == "SAMPLE":
@@ -555,7 +555,7 @@ def deliverResourceList(rl, params, writer):
         
         if mode == "test":
             for entity in all_entities:
-                if entity.getEntityKind() == "DATA_SET":
+                if entity.getEntityKind().toString() == "DATA_SET":
                     fileNodes = getFilesInDataSet(entity.getCode())
                     for path, crc32_checksum, file_length in fileNodes :
                         DATA_SET_LINES.append(entity.getCode() + ":" + path)
@@ -615,9 +615,9 @@ def getEdges(graph, forTest):
 
     
 def getResourceUrl(entity):
-    entityKind = entity.getEntityKind()
+    entityKind = entity.getEntityKind().toString()
     if entityKind in ["SAMPLE", "EXPERIMENT", "DATA_SET"]:
-        return getServerUrl() + "?viewMode=SIMPLE&anonymous=true#entity=" + entity.getEntityKind() + "&permId=" + str(entity.getPermId())
+        return getServerUrl() + "?viewMode=SIMPLE&anonymous=true#entity=" + entityKind + "&permId=" + str(entity.getPermId())
     elif entityKind == "PROJECT":
         return getServerUrl() + "?viewMode=SIMPLE&anonymous=true#entity=PROJECT&code=" + str(entity.getCode()) + "&space=" + str(entity.getSpaceOrNull())
 
@@ -625,7 +625,7 @@ def getMaterialResourceURL(material):
         return getServerUrl() + "#action=VIEW&entity=MATERIAL&code=" + material.getCode() + "&type=" + material.getType().getCode()
 
 def getMedataDataURI(entity):
-    return getServerUrl() + "/" + entity.getEntityKind() + "/" + entity.getPermId() + "/M"
+    return getServerUrl() + "/" + entity.getEntityKind().toString() + "/" + entity.getPermId() + "/M"
 
 def getMedataDataURIForMaterial(material):
     return getServerUrl() + "/" + "MATERIAL" + "/" + material.getType().getCode() + "/" + material.getPermId().getCode() + "/M"    
