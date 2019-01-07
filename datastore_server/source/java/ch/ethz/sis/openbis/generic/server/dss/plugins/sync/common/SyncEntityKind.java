@@ -23,18 +23,18 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common;
  */
 public enum SyncEntityKind
 {
-    PROJECT("PROJECT"), EXPERIMENT("EXPERIMENT"), SAMPLE("SAMPLE"), DATA_SET("DATA_SET"), MATERIAL("MATERIAL");
+    PROJECT("P"), EXPERIMENT("E"), SAMPLE("S"), DATA_SET("D"), MATERIAL("M");
 
-    private final String entityLabel;
+    private final String abbreviation;
 
-    private SyncEntityKind(String label)
+    private SyncEntityKind(String abbreviation)
     {
-        this.entityLabel = label;
+        this.abbreviation = abbreviation;
 
     }
 
-    public final String getLabel()
+    public final String getAbbreviation()
     {
-        return entityLabel;
+        return abbreviation;
     }
 }

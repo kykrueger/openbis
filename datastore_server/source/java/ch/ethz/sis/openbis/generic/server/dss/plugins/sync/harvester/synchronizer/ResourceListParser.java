@@ -241,19 +241,19 @@ public class ResourceListParser
     {
         String entityKind = xdNode.getAttributes().getNamedItem("kind").getTextContent();
 
-        if (SyncEntityKind.PROJECT.getLabel().equals(entityKind))
+        if (SyncEntityKind.PROJECT.toString().equals(entityKind))
         {
             parseProjectMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
-        } else if (SyncEntityKind.EXPERIMENT.getLabel().equals(entityKind))
+        } else if (SyncEntityKind.EXPERIMENT.toString().equals(entityKind))
         {
             parseExperimentMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
-        } else if (SyncEntityKind.SAMPLE.getLabel().equals(entityKind))
+        } else if (SyncEntityKind.SAMPLE.toString().equals(entityKind))
         {
             parseSampleMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
-        } else if (SyncEntityKind.DATA_SET.getLabel().equals(entityKind))
+        } else if (SyncEntityKind.DATA_SET.toString().equals(entityKind))
         {
             parseDataSetMetaData(extractDataSetCodeFromURI(uri), xdNode, lastModificationDate);
-        } else if (SyncEntityKind.MATERIAL.getLabel().equals(entityKind))
+        } else if (SyncEntityKind.MATERIAL.toString().equals(entityKind))
         {
             parseMaterialMetaData(extractMaterialCodeFromURI(uri), xdNode, lastModificationDate);
         }

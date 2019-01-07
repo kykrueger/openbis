@@ -59,6 +59,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.Ed
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.EntityGraph;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.IEntityRetriever;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.INode;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.NodeIdentifier;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.SkinnyNode;
 //import ch.ethz.sis.openbis.generic.shared.entitygraph.Edge;
 //import ch.ethz.sis.openbis.generic.shared.entitygraph.EntityGraph;
@@ -141,9 +142,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (Project project : projects)
         {
             SkinnyNode prjNode = new SkinnyNode(project.getPermId().toString(), 
-                    SyncEntityKind.PROJECT.getLabel(), 
-                    project.getIdentifier().toString(), 
-                    null,
+                    NodeIdentifier.asNodeIdentifier(project), null,
                     project.getSpace(),
                     project.getCode());
             graph.addNode(prjNode);
@@ -171,9 +170,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
             if (sample.getSpace() == null)
             {
                 INode sampleNode = new SkinnyNode(sample.getPermId().toString(),
-                        SyncEntityKind.SAMPLE.getLabel(),
-                        sample.getIdentifier().toString(),
-                        sample.getType().getCode(),
+                        NodeIdentifier.asNodeIdentifier(sample), sample.getType().getCode(),
                         null,
                         sample.getCode());
                 graph.addNode(sampleNode);
@@ -196,9 +193,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (Experiment exp : experiments)
         {
             INode expNode = new SkinnyNode(exp.getPermId().toString(),
-                    SyncEntityKind.EXPERIMENT.getLabel(),
-                    exp.getIdentifier().toString(),
-                    exp.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(exp), exp.getType().getCode(),
                     exp.getProject().getSpace(),
                     exp.getCode());
             graph.addEdge(prjNode, expNode, new Edge(CONNECTION));
@@ -222,9 +217,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (Sample sample : samples)
         {
             INode sampleNode = new SkinnyNode(sample.getPermId().toString(),
-                    SyncEntityKind.SAMPLE.getLabel(),
-                    sample.getIdentifier().toString(),
-                    sample.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(sample), sample.getType().getCode(),
                     sample.getSpace(),
                     sample.getCode());
             graph.addNode(sampleNode);
@@ -248,9 +241,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (Sample sample : samples)
         {
             INode sampleNode = new SkinnyNode(sample.getPermId().toString(),
-                    SyncEntityKind.SAMPLE.getLabel(),
-                    sample.getIdentifier().toString(),
-                    sample.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(sample), sample.getType().getCode(),
                     sample.getSpace(),
                     sample.getCode());
             graph.addEdge(expNode, sampleNode, new Edge(CONNECTION));
@@ -263,7 +254,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
     private void findAndAttachDataSetsForExperiment(INode expNode)
     {
         DataSetSearchCriteria dsCriteria = new DataSetSearchCriteria();
-        dsCriteria.withExperiment().withId().thatEquals(new ExperimentIdentifier(expNode.getIdentifier()));
+        dsCriteria.withExperiment().withId().thatEquals(new ExperimentIdentifier(expNode.getIdentifier().getEntityIdentifier()));
 
         DataSetFetchOptions dsFetchOptions = new DataSetFetchOptions();
         dsFetchOptions.withType();
@@ -275,9 +266,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (DataSet dataSet : dataSets)
         {
             INode dataSetNode = new SkinnyNode(dataSet.getPermId().toString(),
-                    SyncEntityKind.DATA_SET.getLabel(),
-                    dataSet.getCode().toString(),
-                    dataSet.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(dataSet), dataSet.getType().getCode(),
                     null,
                     dataSet.getCode());
             graph.addEdge(expNode, dataSetNode, new Edge(CONNECTION));
@@ -288,7 +277,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
     private void findAndAttachDataSets(INode sampleNode)
     {
         DataSetSearchCriteria dsCriteria = new DataSetSearchCriteria();
-        dsCriteria.withSample().withId().thatEquals(new SampleIdentifier(sampleNode.getIdentifier()));
+        dsCriteria.withSample().withId().thatEquals(new SampleIdentifier(sampleNode.getIdentifier().getEntityIdentifier()));
 
         DataSetFetchOptions dsFetchOptions = new DataSetFetchOptions();
         dsFetchOptions.withType();
@@ -299,9 +288,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (DataSet dataSet : dataSets)
         {
             INode dataSetNode = new SkinnyNode(dataSet.getPermId().toString(),
-                    SyncEntityKind.DATA_SET.getLabel(),
-                    dataSet.getCode().toString(),
-                    dataSet.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(dataSet), dataSet.getType().getCode(),
                     null,
                     dataSet.getCode());
             graph.addEdge(sampleNode, dataSetNode, new Edge(CONNECTION));
@@ -340,9 +327,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (Sample sample : components)
         {
             INode subSampleNode = new SkinnyNode(sample.getPermId().toString(),
-                    SyncEntityKind.SAMPLE.getLabel(),
-                    sample.getIdentifier().toString(),
-                    sample.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(sample), sample.getType().getCode(),
                     sample.getSpace(),
                     sample.getCode());
             graph.addEdge(sampleNode, subSampleNode, new Edge(COMPONENT));
@@ -360,9 +345,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (Sample sample : children)
         {
             INode subSampleNode = new SkinnyNode(sample.getPermId().toString(),
-                    SyncEntityKind.SAMPLE.getLabel(),
-                    sample.getIdentifier().toString(),
-                    sample.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(sample), sample.getType().getCode(),
                     sample.getSpace(),
                     sample.getCode());
             graph.addEdge(sampleNode, subSampleNode, new Edge(CHILD));
@@ -402,9 +385,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (DataSet ds : components)
         {
             INode containedDsNode = new SkinnyNode(ds.getPermId().toString(),
-                    SyncEntityKind.DATA_SET.getLabel(),
-                    ds.getCode().toString(),
-                    ds.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(ds), ds.getType().getCode(),
                     null,
                     ds.getCode());
             graph.addEdge(dsNode, containedDsNode, new Edge(COMPONENT));
@@ -420,9 +401,7 @@ public class SkinnyEntityRetriever implements IEntityRetriever
         for (DataSet ds : children)
         {
             INode childDsNode = new SkinnyNode(ds.getPermId().toString(),
-                    SyncEntityKind.DATA_SET.getLabel(),
-                    ds.getCode().toString(),
-                    ds.getType().getCode(),
+                    NodeIdentifier.asNodeIdentifier(ds), ds.getType().getCode(),
                     null,
                     ds.getCode());
             graph.addEdge(dsNode, childDsNode, new Edge(CHILD));

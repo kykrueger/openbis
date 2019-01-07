@@ -217,7 +217,7 @@ public final class AttachmentSynchronizationTaskExecutor implements ITaskExecuto
 
     private void addToNotSyncedList(IncomingEntity<?> item) throws UserFailureException
     {
-        syncSummary.notRegisteredAttachmentHolderCodes.add(item.getEntityKind().getLabel() + "-" + item.getPermID());
+        syncSummary.notRegisteredAttachmentHolderCodes.add(item.getEntityKind() + "-" + item.getPermID());
     }
 
     private boolean equalsNullable(String s1OrNull, String s2OrNull)

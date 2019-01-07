@@ -56,6 +56,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.En
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.IEntityRetriever;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.INode;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.Node;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.NodeIdentifier;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 //import ch.ethz.sis.openbis.generic.shared.entitygraph.Edge;
@@ -320,17 +321,18 @@ public class EntityRetriever implements IEntityRetriever
 
     private void addChildAndComponentSamples(Node<Sample> sampleNode)
     {
+        NodeIdentifier identifier = sampleNode.getIdentifier();
         // first add the children
-        if (graph.isVisitedAsParent(sampleNode.getIdentifier()) == false)
+        if (graph.isVisitedAsParent(identifier) == false)
         {
-            graph.markAsVisitedAsParent(sampleNode.getIdentifier());
+            graph.markAsVisitedAsParent(identifier);
             addChildSamples(sampleNode);
         }
 
         // then add contained samples
-        if (graph.isVisitedAsContainer(sampleNode.getIdentifier()) == false)
+        if (graph.isVisitedAsContainer(identifier) == false)
         {
-            graph.markAsVisitedAsContainer(sampleNode.getIdentifier());
+            graph.markAsVisitedAsContainer(identifier);
             addComponentSamples(sampleNode);
         }
     }
@@ -361,17 +363,18 @@ public class EntityRetriever implements IEntityRetriever
 
     private void addChildAndContainedDataSets(Node<DataSet> dsNode)
     {
+        NodeIdentifier identifier = dsNode.getIdentifier();
         // first add the children
-        if (graph.isVisitedAsParent(dsNode.getIdentifier()) == false)
+        if (graph.isVisitedAsParent(identifier) == false)
         {
-            graph.markAsVisitedAsParent(dsNode.getIdentifier());
+            graph.markAsVisitedAsParent(identifier);
             addChildDataSets(dsNode);
         }
 
         // then add contained data sets
-        if (graph.isVisitedAsContainer(dsNode.getIdentifier()) == false)
+        if (graph.isVisitedAsContainer(identifier) == false)
         {
-            graph.markAsVisitedAsContainer(dsNode.getIdentifier());
+            graph.markAsVisitedAsContainer(identifier);
             addComponentDataSets(dsNode);
         }
     }

@@ -15,10 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,9 +32,9 @@ public class EntityGraph<N extends INode>
 
     // the following flags make sure then we don't end up in a cycle when a sample is the component of a its child sample
     // or when a data set is the component of its child data set
-    private final Set<String> visitedParents = new HashSet<String>();
+    private final Set<NodeIdentifier> visitedParents = new HashSet<>();
 
-    private final Set<String> visitedContainers = new HashSet<String>();
+    private final Set<NodeIdentifier> visitedContainers = new HashSet<>();
 
     public EntityGraph()
     {
@@ -45,22 +42,22 @@ public class EntityGraph<N extends INode>
         this.adjacencyMap = new HashMap<INode, List<EdgeNodePair>>();
     }
 
-    public boolean isVisitedAsParent(String identifier)
+    public boolean isVisitedAsParent(NodeIdentifier identifier)
     {
         return visitedParents.contains(identifier);
     }
 
-    public boolean isVisitedAsContainer(String identifier)
+    public boolean isVisitedAsContainer(NodeIdentifier identifier)
     {
         return visitedContainers.contains(identifier);
     }
 
-    public void markAsVisitedAsParent(String identifier)
+    public void markAsVisitedAsParent(NodeIdentifier identifier)
     {
         visitedParents.add(identifier);
     }
 
-    public void markAsVisitedAsContainer(String identifier)
+    public void markAsVisitedAsContainer(NodeIdentifier identifier)
     {
         visitedContainers.add(identifier);
     }
@@ -72,8 +69,7 @@ public class EntityGraph<N extends INode>
         {
             adjacencyList = new ArrayList<EdgeNodePair>();
             adjacencyMap.put(startNode, adjacencyList);
-        }
-        else
+        } else
         {
             // do not add the edge-node pair if it has already been added
             // happens when for a sub sample of a sample with multiple parent
@@ -93,15 +89,13 @@ public class EntityGraph<N extends INode>
 
     public void addNode(INode node)
     {
-        String identifier = node.getIdentifier();
+        String identifier = node.getIdentifier().toString();
         if (nodes.containsKey(identifier) == false)
         {
             adjacencyMap.put(node, new ArrayList<EdgeNodePair>());
-            nodes.put(node.getEntityKind() + ":" + identifier, node);
+            nodes.put(identifier, node);
         }
-        // this.printGraph();
     }
-
 
     public List<INode> getNodes()
     {
@@ -142,8 +136,7 @@ public class EntityGraph<N extends INode>
                 if (edgeNodePair.getEdge().getType().equals(Edge.COMPONENT))
                 {
                     sb.append(" [style=dotted, color=red]");
-                }
-                else if (edgeNodePair.getEdge().getType().equals(Edge.CHILD))
+                } else if (edgeNodePair.getEdge().getType().equals(Edge.CHILD))
                 {
                     sb.append(" [style=dashed, color= blue]");
                 }
@@ -167,20 +160,20 @@ public class EntityGraph<N extends INode>
             // in order
             // to differentiate between experiments/projects in the same space but under different
             // projects/spaces
-            if (node.getEntityKind().equals(SyncEntityKind.EXPERIMENT.getLabel()) || node.getEntityKind().equals(SyncEntityKind.PROJECT.getLabel()))
+            if (node.getEntityKind().equals(SyncEntityKind.EXPERIMENT) || node.getEntityKind().equals(SyncEntityKind.PROJECT))
             {
-                differentiatorStr = node.getIdentifier();
+                differentiatorStr = node.getIdentifier().getEntityIdentifier();
                 ;
-            }
-            else
+            } else
             {
-                differentiatorStr = "" + node.getEntityKind().charAt(0);
+                differentiatorStr = node.getEntityKind().getAbbreviation();
             }
             return differentiatorStr;
         }
         Map<String, String> propertiesOrNull = node.getPropertiesOrNull();
         String s = "props =";
-        if (propertiesOrNull != null) {
+        if (propertiesOrNull != null)
+        {
             StringBuffer sb = new StringBuffer();
             sb.append("props = ");
             for (String property : propertiesOrNull.keySet())
@@ -193,145 +186,5 @@ public class EntityGraph<N extends INode>
             s = new String(sb);
         }
         return s;
-    }
-    
-    private void printGraphInDOT(String spaceId)
-    {
-        PrintWriter writer;
-        try
-        {
-            writer = new PrintWriter("/Users/gakin/Documents/Entity_DAG_" + spaceId + ".dot");
-            writer.println("digraph DAG");
-            writer.println("{");
-            writer.println(getEdgesForDOTRepresentation());
-            writer.println("}");
-            writer.close();
-        } catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    
-    public void printGraph(String space)
-    {
-        // for (INode node : nodes.values())
-        // {
-        // printNeighboursForNode(node);
-        // }
-        printGraphInDOT(space);
-    }
-
-    public void printNeighboursForNode(Node<?> node)
-    {
-        List<EdgeNodePair> list = getNeighboursForEntity(node, null);
-        if (list.isEmpty())
-        {
-            System.out.println(node.getCode()); // " has no connections"
-        }
-        for (EdgeNodePair pair : list)
-        {
-            System.out.println(node.getCode() + " : " + pair.getNode().getCode() + " : " + pair.getEdge().getType());
-        }
-    }
-
-    public boolean containsEntity(String identifier)
-    {
-        return nodes.containsKey(identifier);
-    }
-    public boolean edgeExists(String nodeIdentifierFrom, String nodeIdentifierTo, String connType)
-    {
-        List<EdgeNodePair> neighboursForEntityWithIdentifier = getNeighboursForEntityWithIdentifier(nodeIdentifierFrom, null);
-        for (EdgeNodePair edgeNodePair : neighboursForEntityWithIdentifier)
-        {
-            INode connectedNode = edgeNodePair.getNode();
-            String connectionType = edgeNodePair.getEdge().getType();
-            if (connectedNode.getIdentifier().equals(nodeIdentifierTo)
-                    && connType.equals(connectionType))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<EdgeNodePair> getChildrenForEntityWithIdentifier(String identifier)
-    {
-        return getNeighboursForEntityWithIdentifier(identifier, "Child");
-    }
-
-    public List<EdgeNodePair> getComponentsForEntityWithIdentifier(String identifier)
-    {
-        return getNeighboursForEntityWithIdentifier(identifier, "Component");
-    }
-
-    public List<EdgeNodePair> getNeighboursForEntityWithIdentifier(String identifier, String connType)
-    {
-        INode node = getNodeForIdentifier(identifier);
-        return getNeighboursForEntity(node, connType);
-    }
-
-    public List<EdgeNodePair> getNeighboursForEntity(String permId, String connType)
-    {
-        INode node = getNodeWithPermId(permId);
-        // TODO throw an exception if node not found
-        if (node == null)
-        {
-            return Collections.<EdgeNodePair> emptyList();
-        }
-        return getNeighboursForEntity(node, connType);
-    }
-
-    private List<EdgeNodePair> getNeighboursForEntity(INode node, String connType)
-    {
-        if (adjacencyMap.containsKey(node) == false)
-        {
-            // TODO throw an exception if node not found
-            System.out.println("Node " + node.getCode() + " not in the entity graph");
-            return Collections.<EdgeNodePair> emptyList();
-        }
-        List<EdgeNodePair> list = new ArrayList<EdgeNodePair>();
-        for (EdgeNodePair enp : adjacencyMap.get(node))
-        {
-            if (connType == null || enp.getEdge().getType().equals(connType))
-            {
-                list.add(enp);
-            }
-        }
-        return list;
-    }
-
-    public INode getNodeWithPermId(String permId)
-    {
-        // TODO make this more efficient by mapping nodes by permId as well
-        for (INode node : nodes.values())
-        {
-            if (node.getPermId().equals(permId))
-            {
-                return node;
-            }
-        }
-        return null;
-    }
-
-    public INode getNodeForIdentifier(String identifier)
-    {
-        return nodes.get(identifier);
-        // for (Node<?> node : nodes.values())
-        // {
-        // // TODO for data sets we can just use getNodeWithPermId(identifier) since permId and identifier are the same
-        // if (node.getIdentifier().equals(identifier))
-        // {
-        // return node;
-        // }
-        // }
-        // return null;
-    }
-
-    public void clear()
-    {
-        nodes.clear();
-        adjacencyMap.clear();
-        visitedContainers.clear();
-        visitedParents.clear();
     }
 }
