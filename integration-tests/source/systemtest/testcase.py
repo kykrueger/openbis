@@ -1,3 +1,4 @@
+import difflib
 import re
 import os
 import os.path
@@ -142,7 +143,9 @@ class TestCase(object):
         """
         rendered_expected = self._render(expected)
         if expected != actual:
-            self.fail("%s\n  expected: <%s>\n   but was: <%s>" % (itemName, rendered_expected, self._render(actual)))
+            rendered_actual = self._render(actual)
+            diff = difflib.ndiff(rendered_expected.splitlines(), rendered_actual.splitlines())
+            self.fail("%s\n  Differences:\n%s" % (itemName, '\n'.join(diff)))
             return False
         elif verbose:
             util.printAndFlush("%s as expected: <%s>" % (itemName, rendered_expected))

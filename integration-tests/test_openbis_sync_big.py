@@ -37,6 +37,7 @@ DATA_SOURCE_AS_PORT = '9000'
 DATA_SOURCE_DSS_PORT = '9001'
 HARVESTER_AS_PORT = '9002'
 HARVESTER_DSS_PORT = '9003'
+TYPE_PREFIX = 'DS1_'
 
 
 class TestCase(systemtest.testcase.TestCase):
@@ -56,11 +57,11 @@ class TestCase(systemtest.testcase.TestCase):
     def executeInDevMode(self):
         openbis_data_source = self.createOpenbisController('data_source', port=DATA_SOURCE_AS_PORT, dropDatabases=False)
 #        self._drop_test_examples(openbis_data_source)
-#        openbis_harvester = self.createOpenbisController('harvester', port=HARVESTER_AS_PORT, dropDatabases=False)
-        openbis_harvester = self._setupOpenbisHarvester()
-        openbis_harvester.allUp()
+        openbis_harvester = self.createOpenbisController('harvester', port=HARVESTER_AS_PORT, dropDatabases=False)
+#        openbis_harvester = self._setupOpenbisHarvester()
+#        openbis_harvester.allUp()
         
-        self._waitUntilSyncIsFinished(openbis_harvester)
+#        self._waitUntilSyncIsFinished(openbis_harvester)
         self._checkData(openbis_data_source, openbis_harvester)
 
     def _drop_test_examples(self, openbis):
@@ -134,17 +135,61 @@ class TestCase(systemtest.testcase.TestCase):
         return next_words
     
     def _checkData(self, openbis_data_source, openbis_harvester):
-        material_types = openbis_data_source.queryDatabase('openbis', 'select code, description from material_types order by code')
-        self.assertEquals("Material types on data source",
-                          [['COMPOUND', 'Compound'], ['CONTROL', 'Control of a control layout'],
-                           ['GENE', 'Gene'], ['GENE-RELATION', 'links to genes'], ['SIRNA', 'Oligo nucleotide']],
-                          material_types)
-        material_types = openbis_harvester.queryDatabase('openbis',
-                "select code, description from material_types where code like 'DS1_%' order by code")
-        self.assertEquals("Synched material types on harvester",
-                          [['DS1_COMPOUND', 'Compound'], ['DS1_CONTROL', 'Control of a control layout'],
-                           ['DS1_GENE', 'Gene'], ['DS1_GENE-RELATION', 'links to genes'], ['DS1_SIRNA', 'Oligo nucleotide']],
-                          material_types)
+        self._compareDataBases("Vocabularies", openbis_data_source, openbis_harvester, "openbis",
+                               "select '{0}' || code as code, description, source_uri, is_managed_internally, "
+                               + "  is_internal_namespace, is_chosen_from_list "
+                               + "from controlled_vocabularies where code like '{1}%' order by code")
+        self._compareDataBases("Property types", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || t.code as code,dt.code as data_type, '{0}' || v.code as vocabulary, "
+                               + "  '{0}' || mt.code as material, t.label, t.description, "
+                               + "  t.is_managed_internally, t.is_internal_namespace, t.schema, t.transformation "
+                               + "from property_types t join data_types dt on t.daty_id = dt.id "
+                               + "left join controlled_vocabularies v on t.covo_id = v.id "
+                               + "left join material_types mt on t.maty_prop_id = mt.id "
+                               + "where t.code like '{1}%' order by t.code")
+        self._compareDataBases("Material types", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || t.code as code, t.description, s.name as validation_script "
+                               + "from material_types t left join scripts s on t.validation_script_id = s.id "
+                               + "where t.code like '{1}%' order by t.code")
+        self._compareDataBases("Experiment types", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || t.code as code, t.description, s.name as validation_script "
+                               + "from experiment_types t left join scripts s on t.validation_script_id = s.id "
+                               + "where t.code like '{1}%' order by t.code")
+        self._compareDataBases("Sample types", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || code as code, t.description, is_listable, generated_from_depth, part_of_depth "
+                               + "  is_auto_generated_code, generated_code_prefix, is_subcode_unique, inherit_properties, "
+                               + "  show_parent_metadata, s.name as validation_script "
+                               + "from sample_types t left join scripts s on t.validation_script_id = s.id "
+                               + "where code like '{1}%' order by code")
+        self._compareDataBases("Data set types", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || code as code, t.description, main_ds_pattern, main_ds_path, "
+                               + "  deletion_disallow, s.name as validation_script "
+                               + "from data_set_types t left join scripts s on t.validation_script_id = s.id "
+                               + "where code like '{1}%' order by code")
+        self._compareDataBases("Plugins", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || name as name, description, script_type, plugin_type, entity_kind, is_available, "
+                               + "  length(script) as script_length, md5(script) as script_hash "
+                               + "from scripts where name like '{1}%' order by name")
+        self._compareDataBases("Material properties", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || m.code as material, '{0}' || t.code as type, '{0}' || pt.code as property, "
+                               + "  concat(mp.value, cvt.code, '{0}' || m2.code) as value "
+                               + "from materials m join material_properties mp on mp.mate_id = m.id "
+                               + "left join controlled_vocabulary_terms cvt on mp.cvte_id = cvt.id "
+                               + "left join materials m2 on mp.mate_prop_id = m2.id "
+                               + "join material_type_property_types etpt on mp.mtpt_id = etpt.id "
+                               + "join material_types t on etpt.maty_id = t.id "
+                               + "join property_types pt on etpt.prty_id = pt.id "
+                               + "order by m.code, pt.code")
+        self._compareDataBases("Experiment properties", openbis_data_source, openbis_harvester, "openbis", 
+                               "select e.code as experiment, '{0}' || t.code as type, '{0}' || pt.code as property, "
+                               + "  concat(ep.value, cvt.code, m.code) as value "
+                               + "from experiments e join experiment_properties ep on ep.expe_id = e.id "
+                               + "left join controlled_vocabulary_terms cvt on ep.cvte_id = cvt.id "
+                               + "left join materials m on ep.mate_prop_id = m.id "
+                               + "join experiment_type_property_types etpt on ep.etpt_id = etpt.id "
+                               + "join experiment_types t on etpt.exty_id = t.id "
+                               + "join property_types pt on etpt.prty_id = pt.id "
+                               + "order by e.code, pt.code")
         self._compareDataBases("Number of samples per experiment", openbis_data_source, openbis_harvester, "openbis",
                                "select p.code as project, e.code as experiment, count(*) as number_of_samples "
                                + "from experiments e join projects p on e.proj_id = p.id "
@@ -153,28 +198,50 @@ class TestCase(systemtest.testcase.TestCase):
                                + "group by p.code, e.code order by p.code, e.code")
         self._compareDataBases("Attachments", openbis_data_source, openbis_harvester, "openbis",
                                "select e.code as experiment, p.code as project, s.code as sample, "
-                               + "a.file_name, a.version, a.title, a.description, length(value), md5(value) "
+                               + "  a.file_name, a.version, a.title, a.description, length(value) as attachment_length, "
+                               + "  md5(value) as attachment_hash "
                                + "from attachments a join attachment_contents c on a.exac_id = c.id "
                                + "left join experiments e on a.expe_id = e.id "
                                + "left join projects p on a.proj_id = p.id "
                                + "left join samples s on a.samp_id = s.id order by a.file_name, a.version")
+        self._compareDataBases("Sample properties", openbis_data_source, openbis_harvester, "openbis",
+                               "select s.code as sample, '{0}' || t.code as type, '{0}' || pt.code as property, "
+                               + "  concat(sp.value, cvt.code, m.code) as value "
+                               + "from samples s join sample_properties sp on sp.samp_id = s.id "
+                               + "left join controlled_vocabulary_terms cvt on sp.cvte_id = cvt.id "
+                               + "left join materials m on sp.mate_prop_id = m.id "
+                               + "join sample_type_property_types stpt on sp.stpt_id = stpt.id "
+                               + "join sample_types t on stpt.saty_id = t.id "
+                               + "join property_types pt on stpt.prty_id = pt.id "
+                               + "where expe_id in (select id from experiments where code = 'TEST-EXPERIMENT') "
+                               + "order by s.code, pt.code")
         self._compareDataBases("Data sets", openbis_data_source, openbis_harvester, "openbis",
-                               "select d.code, s.code, e.code " 
+                               "select d.code as data_set, s.code as sample, e.code as experiment " 
                                + "from data d left join samples s on d.samp_id = s.id "
                                + "left join experiments e on d.expe_id=e.id order by d.code")
+        self._compareDataBases("Data set properties", openbis_data_source, openbis_harvester, "openbis", 
+                               "select d.code as data_set, '{0}' || t.code as type, '{0}' || pt.code as property, "
+                               + "  concat(dp.value, cvt.code, m.code) as value "
+                               + "from data d join data_set_properties dp on dp.ds_id = d.id "
+                               + "left join controlled_vocabulary_terms cvt on dp.cvte_id = cvt.id "
+                               + "left join materials m on dp.mate_prop_id = m.id "
+                               + "join data_set_type_property_types dtpt on dp.dstpt_id = dtpt.id "
+                               + "join data_set_types t on dtpt.dsty_id = t.id "
+                               + "join property_types pt on dtpt.prty_id = pt.id "
+                               + "order by d.code, pt.code")
         self._compareDataBases("Data set sizes", openbis_data_source, openbis_harvester, "pathinfo",
-                               "select d.code, file_name, size_in_bytes "
+                               "select d.code as data_set, file_name, size_in_bytes "
                                + "from data_set_files f join data_sets d on f.dase_id=d.id where parent_id is null "
                                + "order by d.code")
         self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
-                                "select p.code, c.code, t.code "
+                                "select p.code as parent, c.code as child, t.code as relationship_type "
                                 + "from data_set_relationships r join data p on r.data_id_parent = p.id "
                                 + "join data c on r.data_id_child = c.id "
                                 + "join relationship_types t on r.relationship_id = t.id order by p.code, c.code")
 
     def _compareDataBases(self, name, openbis_data_source, openbis_harvester, databaseType, sql):
-        expectedContent = openbis_data_source.queryDatabase(databaseType, sql)
-        synchedContent = openbis_harvester.queryDatabase(databaseType, sql)
+        expectedContent = openbis_data_source.queryDatabase(databaseType, sql.format(TYPE_PREFIX, ""), showHeaders = True)
+        synchedContent = openbis_harvester.queryDatabase(databaseType, sql.format("", TYPE_PREFIX), showHeaders = True)
         self.assertEquals(name, expectedContent, synchedContent)
 
     def _setupOpenbisDataSource(self):
