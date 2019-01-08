@@ -274,11 +274,7 @@ public class MasterDataParser
     private String getAttribute(Element termElement, String attr)
     {
         Node node = termElement.getAttributes().getNamedItem(attr);
-        if (node != null)
-        {
-            return node.getTextContent().trim();
-        }
-        return null;
+        return node != null ? node.getTextContent() : null;
     }
 
     private void parseMaterialTypes(NodeList matTypesNode) throws XPathExpressionException
