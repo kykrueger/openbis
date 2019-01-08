@@ -333,10 +333,8 @@ public class ResourceListParser
             {
                 return null;
             }
-        } else
-        {
-            return val.trim();
-        }
+        } 
+        return val;
     }
 
     private String extractAttribute(Node xdNode, String attrName) throws IllegalArgumentException
