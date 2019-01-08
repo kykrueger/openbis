@@ -41,8 +41,12 @@ def get_all_scripts():
     return scripts
 
 
+class ListForBinaries(ArrayList):
+    def toString(self):
+        return "%s blobs" % self.size()
+
 def list_xls_byte_arrays():
-    xls = ArrayList()
+    xls = ListForBinaries()
     for f in os.listdir(TYPES_FOLDER):
         if f.endswith('.xls') or f.endswith('.xlsx'):
             excel_file = open(os.path.join(TYPES_FOLDER, f))
