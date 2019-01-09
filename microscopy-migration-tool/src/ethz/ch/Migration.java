@@ -13,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
@@ -323,19 +324,20 @@ public class Migration
         if(COMMIT_CHANGES_TO_OPENBIS) {
             ExperimentDeletionOptions deleteOptions = new ExperimentDeletionOptions();
             deleteOptions.setReason("Microscopy Migration");
-            v3.deleteExperiments(sessionToken, experimentsToDelete, deleteOptions);
+            IDeletionId deletionId = v3.deleteExperiments(sessionToken, experimentsToDelete, deleteOptions);
+            v3.confirmDeletions(sessionToken, Arrays.asList(deletionId));
         }
         System.out.println("Deleted " + experimentsToDelete.size() + " MICROSCOPY_EXPERIMENT Experiments.");
         
         // Deleting Type MICROSCOPY_EXPERIMENT Experiment
         // This will not work until trashcan is emptied
-//        System.out.println("Deleting Type MICROSCOPY_EXPERIMENT Experiment.");
-//        if(COMMIT_CHANGES_TO_OPENBIS) {
-//            ExperimentTypeDeletionOptions deleteOptions = new ExperimentTypeDeletionOptions();
-//            deleteOptions.setReason("Microscopy Migration");
-//            v3.deleteExperimentTypes(sessionToken, Arrays.asList(new EntityTypePermId("MICROSCOPY_EXPERIMENT")), deleteOptions);
-//        }
-//        System.out.println("Deleted Type MICROSCOPY_EXPERIMENT Experiment.");
+        System.out.println("Deleting Type MICROSCOPY_EXPERIMENT Experiment.");
+        if(COMMIT_CHANGES_TO_OPENBIS) {
+            ExperimentTypeDeletionOptions deleteOptions = new ExperimentTypeDeletionOptions();
+            deleteOptions.setReason("Microscopy Migration");
+            v3.deleteExperimentTypes(sessionToken, Arrays.asList(new EntityTypePermId("MICROSCOPY_EXPERIMENT")), deleteOptions);
+        }
+        System.out.println("Deleted Type MICROSCOPY_EXPERIMENT Experiment.");
     }
     
     //
