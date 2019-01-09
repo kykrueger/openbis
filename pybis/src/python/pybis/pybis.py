@@ -551,6 +551,7 @@ class Openbis:
         self.verify_certificates = verify_certificates
         self.token = token
 
+        self.server_information = None
         self.dataset_types = None
         self.sample_types = None
         #self.files_in_wsp = []
@@ -569,7 +570,6 @@ class Openbis:
         return [
             'url', 'port', 'hostname',
             'login()', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
-            "server_information",
             "get_server_information()",
             "get_dataset('permId')",
             "get_datasets()",
@@ -791,7 +791,6 @@ class Openbis:
             raise ValueError("login to openBIS failed")
         else:
             self.token = result
-            self.server_information = self.get_server_information()
 
             if save_token:
                 self.save_token()
@@ -804,7 +803,10 @@ class Openbis:
     def get_server_information(self):
         """ Returns a dict containing the following server information:
             api-version, archiving-configured, authentication-service, enabled-technologies, project-samples-enabled
-         """
+        """
+        if self.server_information is not None:
+            return self.server_information
+
         request = {
             "method": "getServerInformation",
             "params": [self.token],
@@ -919,7 +921,9 @@ class Openbis:
             "permId": code
         }]
 
-        fetchopts = {}
+        fetchopts = {
+            "@type": "as.dto.authorizationgroup.fetchoptions.AuthorizationGroupFetchOptions"
+        }
         for option in ['roleAssignments', 'users', 'registrator']:
             fetchopts[option] = fetch_option[option]
 
@@ -1033,7 +1037,9 @@ class Openbis:
         """ Fetches one assigned role by its techId.
         """
 
-        fetchopts = {}
+        fetchopts = {
+            "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions"
+        }
         for option in ['roleAssignments', 'space', 'project', 'user', 'authorizationGroup','registrator']:
             fetchopts[option] = fetch_option[option]
 
@@ -1240,7 +1246,9 @@ class Openbis:
             "permId": userId
         }]
 
-        fetchopts = {}
+        fetchopts = {
+            "@type": "as.dto.person.fetchoptions.PersonFetchOptions"
+        }
         for option in ['space', 'project']:
             fetchopts[option] = fetch_option[option]
 
@@ -1773,18 +1781,18 @@ class Openbis:
 
 
     def get_deletions(self, start_with=None, count=None):
-        search_criteria = {}
-        fetchopts = fetch_option['deletion']
+        search_criteria = {
+            "@type": "as.dto.deletion.search.DeletionSearchCriteria"
+        }
+        fetchopts = fetch_option['deletedObjects']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
-        for option in ['deletedObjects']:
-            fetchopts[option] = fetch_option[option]
 
         request = {
             "method": "searchDeletions",
             "params": [
                 self.token,
-                {},
+                search_criteria,
                 fetchopts,
             ]
         }
@@ -1803,8 +1811,10 @@ class Openbis:
     def new_project(self, space, code, description=None, **kwargs):
         return Project(self, None, space=space, code=code, description=description, **kwargs)
 
-    def _gen_fetchoptions(self, options):
-        fo = {}
+    def _gen_fetchoptions(self, options, foType):
+        fo = {
+            "@type": foType
+        }
         for option in options:
             fo[option] = fetch_option[option]
         return fo
@@ -1813,7 +1823,8 @@ class Openbis:
         options = ['space', 'registrator', 'modifier', 'attachments']
         if is_identifier(projectId) or is_permid(projectId):
             request = self._create_get_request(
-                'getProjects', 'project', projectId, options
+                'getProjects', 'project', projectId, options,
+                "as.dto.project.fetchoptions.ProjectFetchOptions"
             )
             resp = self._post_request(self.as_v3, request)
             if only_data:
@@ -1827,7 +1838,7 @@ class Openbis:
                 'operator': 'AND',
                 'code': projectId
             })
-            fo = self._gen_fetchoptions(options)
+            fo = self._gen_fetchoptions(options, foType="as.dto.project.fetchoptions.ProjectFetchOptions")
             request = {
                 "method": "searchProjects",
                 "params": [self.token, search_criteria, fo]
@@ -1901,7 +1912,7 @@ class Openbis:
         )
 
 
-    def _create_get_request(self, method_name, entity, permids, options):
+    def _create_get_request(self, method_name, entity, permids, options, foType):
 
         if not isinstance(permids, list):
             permids = [permids]
@@ -1920,7 +1931,9 @@ class Openbis:
                     {"permId": permid, "@type": type + 'PermId'}
                 )
 
-        fo = {}
+        fo = {
+            "@type": foType
+        }
         for option in options:
             fo[option] = fetch_option[option]
 
@@ -1948,6 +1961,7 @@ class Openbis:
                     "code": vocabulary
                 }]
             })
+        search_request["@type"] = "as.dto.vocabulary.search.VocabularyTermSearchCriteria"
 
         fetchopts = fetch_option['vocabularyTerm']
         fetchopts['from'] = start_with
@@ -2318,7 +2332,9 @@ class Openbis:
         """ Get a list of all available semantic annotations (DataFrame object).
         """
 
-        objects = self._search_semantic_annotations({})
+        objects = self._search_semantic_annotations({
+            "@type": "as.dto.semanticannotation.search.SemanticAnnotationSearchCriteria"
+        })
         attrs = ['permId', 'entityType', 'propertyType', 'predicateOntologyId', 'predicateOntologyVersion', 'predicateAccessionId', 'descriptorOntologyId', 'descriptorOntologyVersion', 'descriptorAccessionId', 'creationDate']
         if len(objects) == 0:
             annotations = DataFrame(columns=attrs)
@@ -2539,7 +2555,11 @@ class Openbis:
         if optional_attributes is None:
             optional_attributes = []
 
-        search_request = {}
+        search_request = {
+            "@type": "as.dto.{}.search.{}TypeSearchCriteria".format(
+                entity.lower(), entity
+            )
+        }
         fetchopts = {
             "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions".format(
                 entity.lower(), entity
@@ -2752,7 +2772,7 @@ class Openbis:
         fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
 
         options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets']
-        if self.server_information.project_samples_enabled:
+        if self.get_server_information().project_samples_enabled:
             options.append('project')
         for option in options:
             fetchopts[option] = fetch_option[option]
@@ -2848,7 +2868,9 @@ class Openbis:
                     "@type": "as.dto.externaldms.id.ExternalDmsPermId",
                     "permId": permId
                 }],
-                {},
+                {
+                    "@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions",
+                },
             ],
         }
 
