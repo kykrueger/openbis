@@ -148,22 +148,22 @@ class TestCase(systemtest.testcase.TestCase):
                                + "left join material_types mt on t.maty_prop_id = mt.id "
                                + "where t.code like '{1}%' order by t.code")
         self._compareDataBases("Material types", openbis_data_source, openbis_harvester, "openbis", 
-                               "select '{0}' || t.code as code, t.description, s.name as validation_script "
+                               "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
                                + "from material_types t left join scripts s on t.validation_script_id = s.id "
                                + "where t.code like '{1}%' order by t.code")
         self._compareDataBases("Experiment types", openbis_data_source, openbis_harvester, "openbis", 
-                               "select '{0}' || t.code as code, t.description, s.name as validation_script "
+                               "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
                                + "from experiment_types t left join scripts s on t.validation_script_id = s.id "
                                + "where t.code like '{1}%' order by t.code")
         self._compareDataBases("Sample types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || code as code, t.description, is_listable, generated_from_depth, part_of_depth "
                                + "  is_auto_generated_code, generated_code_prefix, is_subcode_unique, inherit_properties, "
-                               + "  show_parent_metadata, s.name as validation_script "
+                               + "  show_parent_metadata, '{0}' || s.name as validation_script "
                                + "from sample_types t left join scripts s on t.validation_script_id = s.id "
                                + "where code like '{1}%' order by code")
         self._compareDataBases("Data set types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || code as code, t.description, main_ds_pattern, main_ds_path, "
-                               + "  deletion_disallow, s.name as validation_script "
+                               + "  deletion_disallow, '{0}' || s.name as validation_script "
                                + "from data_set_types t left join scripts s on t.validation_script_id = s.id "
                                + "where code like '{1}%' order by code")
         self._compareDataBases("Plugins", openbis_data_source, openbis_harvester, "openbis", 
@@ -204,6 +204,15 @@ class TestCase(systemtest.testcase.TestCase):
                                + "left join experiments e on a.expe_id = e.id "
                                + "left join projects p on a.proj_id = p.id "
                                + "left join samples s on a.samp_id = s.id order by a.file_name, a.version")
+        self._compareDataBases("Samples which are not of type BENCHMARK_OBJECT", openbis_data_source, openbis_harvester, "openbis",
+                               "select s.code, '{0}' || t.code as type, s.perm_id, '{0}' || sp.code as space, "
+                               + "  p.code as project, e.code as experiment, sc.code as container "
+                               + "from samples s join sample_types t on s.saty_id = t.id "
+                               + "left join spaces sp on s.space_id = sp.id "
+                               + "left join projects p on s.proj_id = p.id "
+                               + "left join experiments e on s.expe_id = e.id "
+                               + "left join samples sc on s.samp_id_part_of = sc.id "
+                               + "where t.code <> '{1}BENCHMARK_OBJECT' and s.code != 'DEFAULT' order by s.code, s.perm_id")
         self._compareDataBases("Sample properties", openbis_data_source, openbis_harvester, "openbis",
                                "select s.code as sample, '{0}' || t.code as type, '{0}' || pt.code as property, "
                                + "  concat(sp.value, cvt.code, m.code) as value "
@@ -215,6 +224,11 @@ class TestCase(systemtest.testcase.TestCase):
                                + "join property_types pt on stpt.prty_id = pt.id "
                                + "where expe_id in (select id from experiments where code = 'TEST-EXPERIMENT') "
                                + "order by s.code, pt.code")
+        self._compareDataBases("Sample relationships", openbis_data_source, openbis_harvester, "openbis",
+                               "select p.code as parent, c.code as child, t.code as relationship "
+                               + "from sample_relationships r join relationship_types t on r.relationship_id = t.id "
+                               + "join samples p on r.sample_id_parent = p.id "
+                               + "join samples c on r.sample_id_child = c.id order by p.code, c.code")
         self._compareDataBases("Data sets", openbis_data_source, openbis_harvester, "openbis",
                                "select d.code as data_set, s.code as sample, e.code as experiment " 
                                + "from data d left join samples s on d.samp_id = s.id "
