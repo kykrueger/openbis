@@ -465,6 +465,7 @@ class OpenbisController(_Controller):
         self.dssProperties['imaging-database.kind'] = self.databaseKind
         self.dssProperties['proteomics-database-kind'] = self.databaseKind
         self.dssPropertiesModified = True
+        self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
         if port != '8443':
             self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
             if os.path.exists(self.sslIniFile):
@@ -706,11 +707,11 @@ class OpenbisController(_Controller):
     def createLogMonior(self, timeOutInMinutes = DEFAULT_TIME_OUT_IN_MINUTES):
         logFilePath = "%s/servers/datastore_server/log/datastore_server_log.txt" % self.installPath
         return util.LogMonitor("%s.DSS" % self.instanceName, logFilePath, timeOutInMinutes)
-        
+
     def assertFeatureVectorLabel(self, featureCode, expectedFeatureLabel):
-        data = self.queryDatabase('imaging',  "select distinct label from feature_defs where code = '%s'" % featureCode);
+        data = self.queryDatabase('imaging',  "select distinct label from feature_defs where code = '%s'" % featureCode)
         self.testCase.assertEquals("label of feature %s" % featureCode, [[expectedFeatureLabel]], data)
-        
+
     def _applyCorePlugins(self):
         source = "%s/core-plugins/%s" % (self.templatesFolder, self.instanceName)
         if os.path.exists(source):
@@ -728,8 +729,11 @@ class OpenbisController(_Controller):
         enabledModules = "%s, %s" % (enabledModules, pluginName) if len(enabledModules) > 0 else pluginName
         corePluginsProperties['enabled-modules'] = enabledModules
         util.writeProperties(corePluginsPropertiesFile, corePluginsProperties)
-        
-        
+
+    def addUser(self, name, password):
+        util.executeCommand([self.passwdScript, 'add', name, '-p', password], 
+            "Could not add user '%s' to instance '%s'." % (name, self.instanceName))
+
     def _setUpStore(self):
         templateStore = "%s/stores/%s" % (self.templatesFolder, self.instanceName)
         if os.path.isdir(templateStore):
