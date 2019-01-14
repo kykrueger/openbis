@@ -483,8 +483,46 @@ Space Project Created: /TAY_GROUP/COMMON_ORGANIZATION_UNITS
 Space Experiment Created: /TAY_GROUP/COMMON_ORGANIZATION_UNITS/ORGANIZATION_UNITS_COLLECTION
 3. Preparing copy of experiment of type MICROSCOPY_EXPERIMENT to samples of type MICROSCOPY_EXPERIMENT
 Found 253 MICROSCOPY_EXPERIMENT to migrate 
-4. Copy of experiment of type MICROSCOPY_EXPERIMENT to samples of type MICROSCOPY_EXPERIMENT
+4. Copy of experiments of type MICROSCOPY_EXPERIMENT to samples of type MICROSCOPY_EXPERIMENT
+Tags readed - 703 tags for 258 entities.
+Tags Found: 2 Tags Missing: 2 Tags Created: 2
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 2 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 2 Tags Missing: 2 Tags Created: 2
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 2 Tags Missing: 2 Tags Created: 2
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 5 Tags Missing: 4 Tags Created: 4
+Tags Found: 2 Tags Missing: 2 Tags Created: 2
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 2 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 2 Tags Missing: 1 Tags Created: 1
+Tags Found: 2 Tags Missing: 1 Tags Created: 1
+Tags Found: 3 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 1 Tags Missing: 1 Tags Created: 1
+Tags Found: 2 Tags Missing: 2 Tags Created: 2
 Created 253 MICROSCOPY_EXPERIMENT Samples.
+4.2 Write SQL Audit Update
+Writing openbis_audit_data_update.sql
+openbis_audit_data_update.sql writen.
 5. Moving Samples out from MICROSCOPY_EXPERIMENT Experiments to MICROSCOPY_EXPERIMENT Samples
 Moving 15571 Samples from Experiment MICROSCOPY_EXPERIMENT to COLLECTION.
 Updated 1000/15571

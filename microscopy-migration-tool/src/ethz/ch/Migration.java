@@ -180,7 +180,7 @@ public class Migration
         experimentFetchOptions.withModifier();
         
         SearchResult<Experiment> experiments = v3.searchExperiments(sessionToken, experimentSearchCriteria, experimentFetchOptions);
-        
+        Map<SampleCreation, Experiment> experimentsToMigrateBySampleCreation = new HashMap<>();
         
         System.out.println("Found " + experiments.getTotalCount() + " MICROSCOPY_EXPERIMENT to migrate ");
         List<SampleCreation> sampleCreationsToMigrateExperiments = new ArrayList<SampleCreation>(experiments.getTotalCount());
@@ -193,6 +193,7 @@ public class Migration
             // Create new sample
             SampleCreation sampleCreation = new SampleCreation();
             sampleCreationsToMigrateExperiments.add(sampleCreation);
+            experimentsToMigrateBySampleCreation.put(sampleCreation, experiment);
             sampleCreation.setCode(experiment.getCode());
             sampleCreation.setSpaceId(new SpacePermId(experiment.getIdentifier().getIdentifier().split("/")[1]));
             sampleCreation.setTypeId(new EntityTypePermId("MICROSCOPY_EXPERIMENT"));
@@ -237,6 +238,14 @@ public class Migration
         
         Map<ISampleId, Sample> newMicroscopyExperimentSamplesByIdentifier = new HashMap<>();
         if(COMMIT_CHANGES_TO_OPENBIS) {
+            for(SampleCreation sampleCreation:sampleCreationsToMigrateExperiments) {
+                Experiment experiment = experimentsToMigrateBySampleCreation.get(sampleCreation);
+                List<SamplePermId> tagsAsParentOU = TagsHelper.getOrganizationUnits(sessionToken, v3, COMMIT_CHANGES_TO_OPENBIS, experiment);
+                if(tagsAsParentOU != null) {
+                    sampleCreation.setParentIds(tagsAsParentOU);
+                }
+            }
+            
             List<SamplePermId> createdSamplesPermIds = v3.createSamples(sessionToken, sampleCreationsToMigrateExperiments);
             Map<ISampleId, Sample> microscopyExperimentSamplesByPermId = v3.getSamples(sessionToken, createdSamplesPermIds, new SampleFetchOptions());
             for(Sample sample:microscopyExperimentSamplesByPermId.values()) {

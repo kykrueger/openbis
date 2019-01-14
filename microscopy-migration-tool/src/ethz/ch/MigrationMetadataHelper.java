@@ -8,8 +8,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 
@@ -41,6 +44,15 @@ public class MigrationMetadataHelper
         experimentCreation.setCode(experimentCode);
         experimentCreation.setProjectId(projectIdentifier);
         return experimentCreation;
+    }
+    
+    public static SampleCreation getOrganizationUnitCreation(ExperimentIdentifier experimentId, String name) {
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId("ORGANIZATION_UNIT"));
+        sampleCreation.setProperty("$NAME", name);
+        sampleCreation.setSpaceId(new SpacePermId(experimentId.getIdentifier().split("/")[1]));
+        sampleCreation.setExperimentId(experimentId);
+        return sampleCreation;
     }
     
     private static int SAMPLE_BATCH_SIZE = 1000;
