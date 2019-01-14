@@ -104,6 +104,14 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     private boolean frozen;
 
+    private boolean frozenForChildren;
+
+    private boolean frozenForParents;
+
+    private boolean frozenForComponents;
+
+    private boolean frozenForContainers;
+
     private boolean isDerived;
 
     private PersonPE registrator;
@@ -416,6 +424,54 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         this.frozen = frozen;
     }
 
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_CHILDREN_COLUMN, nullable = false)
+    public boolean isFrozenForChildren()
+    {
+        return frozenForChildren;
+    }
+
+    public void setFrozenForChildren(boolean frozenForChildren)
+    {
+        this.frozenForChildren = frozenForChildren;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_PARENTS_COLUMN, nullable = false)
+    public boolean isFrozenForParents()
+    {
+        return frozenForParents;
+    }
+
+    public void setFrozenForParents(boolean frozenForParents)
+    {
+        this.frozenForParents = frozenForParents;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_COMPONENTS_COLUMN, nullable = false)
+    public boolean isFrozenForComponents()
+    {
+        return frozenForComponents;
+    }
+
+    public void setFrozenForComponents(boolean frozenForComponents)
+    {
+        this.frozenForComponents = frozenForComponents;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_CONTAINERS_COLUMN, nullable = false)
+    public boolean isFrozenForContainers()
+    {
+        return frozenForContainers;
+    }
+
+    public void setFrozenForContainers(boolean frozenForContainers)
+    {
+        this.frozenForContainers = frozenForContainers;
+    }
+
     /**
      * Returns <code>true</code> if this data set is data set is derived from a sample (otherwise it is measured from a sample).
      */
@@ -493,7 +549,7 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         this.sample = sample;
         if (sample != null)
         {
-            sampleFrozen = sample.isFrozen();
+            sampleFrozen = sample.isFrozen() && sample.isFrozenForDataSet();
         }
     }
 
@@ -703,7 +759,7 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         this.experiment = experiment;
         if (experiment != null)
         {
-            experimentFrozen = experiment.isFrozen();
+            experimentFrozen = experiment.isFrozen() && experiment.isFrozenForDataSet();
         }
     }
 

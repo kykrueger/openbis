@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
@@ -95,11 +96,12 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
         experimentSample = samples.get(2);
     }
 
-    @Test
-    public void testAddLiquidSharedSampleToFrozenSpace()
+    @Test(dataProvider = "liquidSampleSpaceRelations")
+    public void testValidAddSharedSampleToSpace(FrozenFlags frozenFlagsOfSharedSample, FrozenFlags frozenFlagsOfSpace)
     {
         // Given
-        setFrozenFlagForSpaces(true, space1);
+        setFrozenFlagsForSamples(frozenFlagsOfSharedSample, sharedSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfSpace, space1);
         assertEquals(getSample(sharedSample).getSpace(), null);
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(sharedSample);
@@ -112,11 +114,87 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
         assertEquals(getSample(sharedSample).getSpace().getCode(), SPACE_1);
     }
 
-    @Test
-    public void testAddFrozenSharedSampleToLiquidSpace()
+    @Test(dataProvider = "liquidSampleSpaceRelations")
+    public void testValidRemoveSampleFromSpace(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfSpace)
     {
         // Given
-        setFrozenFlagForSamples(true, sharedSample);
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfSpace, spaceOfSample);
+        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(spaceSample);
+        sampleUpdate.setSpaceId(null);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(spaceSample).getSpace(), null);
+    }
+
+    @DataProvider(name = "liquidSampleSpaceRelations")
+    public static Object[][] liquidSampleSpaceRelations()
+    {
+        List<FrozenFlags> combinationsForSample = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsForSpace = new FrozenFlags(true).freezeForProject().createAllCombinations();
+        combinationsForSpace.add(new FrozenFlags(false).freezeForSample());
+        return asCartesianProduct(combinationsForSample, combinationsForSpace);
+    }
+
+    @Test(dataProvider = "liquidSampleSpaceSpaceRelations")
+    public void testValidMoveSpaceSampleToSpace(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfOldSpace,
+            FrozenFlags frozenFlagsOfNewSpace)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfOldSpace, spaceOfSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfNewSpace, space1);
+        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(spaceSample);
+        sampleUpdate.setSpaceId(space1);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
+    }
+
+    @DataProvider(name = "liquidSampleSpaceSpaceRelations")
+    public static Object[][] liquidSampleSpaceSpaceRelations()
+    {
+        List<FrozenFlags> combinationsForSample = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsForSpace = new FrozenFlags(true).freezeForProject().createAllCombinations();
+        combinationsForSpace.add(new FrozenFlags(false).freezeForSample());
+        return asCartesianProduct(combinationsForSample, combinationsForSpace, combinationsForSpace);
+    }
+
+    @Test(dataProvider = "frozenSampleSpaceRelations")
+    public void testInvalidAddSharedSampleToSpace(FrozenFlags frozenFlagsOfSharedSample, FrozenFlags frozenFlagsOfSpace)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSharedSample, sharedSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfSpace, space1);
+        assertEquals(getSample(sharedSample).getSpace(), null);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sharedSample);
+        sampleUpdate.setSpaceId(space1);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
+                // Then
+                "ERROR: Operation SET SPACE is not allowed because space " + SPACE_1 + " is frozen for sample "
+                        + SHARED_SAMPLE + ".");
+    }
+
+    @Test(dataProvider = "frozenSampleSpaceRelations")
+    public void testInvalidAddSharedSampleToSpaceAfterMelting(FrozenFlags frozenFlagsOfSharedSample, FrozenFlags frozenFlagsOfSpace)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSharedSample, sharedSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfSpace, space1);
+        setFrozenFlagsForSpaces(frozenFlagsOfSpace.clone().melt(), space1);
         assertEquals(getSample(sharedSample).getSpace(), null);
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(sharedSample);
@@ -129,48 +207,114 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
         assertEquals(getSample(sharedSample).getSpace().getCode(), SPACE_1);
     }
 
-    @Test
-    public void testAddFrozenSharedSampleToFrozenSpace()
+    @Test(dataProvider = "frozenSampleSpaceRelations")
+    public void testInvalidRemoveSampleFromSpace(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfSpace)
     {
         // Given
-        setFrozenFlagForSpaces(true, space1);
-        setFrozenFlagForSamples(true, sharedSample);
-        assertEquals(getSample(sharedSample).getSpace(), null);
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfSpace, spaceOfSample);
+        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
         SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sharedSample);
-        sampleUpdate.setSpaceId(space1);
+        sampleUpdate.setSampleId(spaceSample);
+        sampleUpdate.setSpaceId(null);
 
         // When
         assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
                 // Then
-                "ERROR: Operation SET SPACE is not allowed because sample " + SHARED_SAMPLE + " and space " + SPACE_1 + " are frozen.");
+                "ERROR: Operation REMOVE SPACE is not allowed because space " + SPACE_OF_SAMPLE + " is frozen for sample "
+                        + SPACE_SAMPLE + ".");
     }
 
-    @Test
-    public void testAddMoltenSharedSampleToMoltenSpace()
+    @Test(dataProvider = "frozenSampleSpaceRelations")
+    public void testInvalidRemoveSampleFromSpaceAfterMelting(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfSpace)
     {
         // Given
-        setFrozenFlagForSpaces(true, space1);
-        setFrozenFlagForSamples(true, sharedSample);
-        assertEquals(getSample(sharedSample).getSpace(), null);
-        setFrozenFlagForSpaces(false, space1);
-        setFrozenFlagForSamples(false, sharedSample);
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfSpace, spaceOfSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfSpace.clone().melt(), spaceOfSample);
+        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
         SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sharedSample);
+        sampleUpdate.setSampleId(spaceSample);
+        sampleUpdate.setSpaceId(null);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(spaceSample).getSpace(), null);
+    }
+
+    @DataProvider(name = "frozenSampleSpaceRelations")
+    public static Object[][] frozenSampleSpaceRelations()
+    {
+        List<FrozenFlags> combinationsForSample = new FrozenFlags(true).createAllCombinations();
+        return asCartesianProduct(combinationsForSample, Arrays.asList(new FrozenFlags(true).freezeForSample()));
+    }
+
+    @Test(dataProvider = "frozenSampleSpaceSpaceRelations")
+    public void testInvalidMoveSpaceSampleToSpace(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfOldSpace,
+            FrozenFlags frozenFlagsOfNewSpace)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfOldSpace, spaceOfSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfNewSpace, space1);
+        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(spaceSample);
+        sampleUpdate.setSpaceId(space1);
+        boolean frozen = frozenFlagsOfNewSpace.isFrozen() && frozenFlagsOfNewSpace.isFrozenForSample();
+        String type = frozen ? "SET" : "REMOVE";
+        String space = frozen ? SPACE_1 : SPACE_OF_SAMPLE;
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
+                // Then
+                "ERROR: Operation " + type + " SPACE is not allowed because space " + space + " is frozen for sample "
+                        + SPACE_SAMPLE + ".");
+    }
+
+    @Test(dataProvider = "frozenSampleSpaceSpaceRelations")
+    public void testInvalidMoveSpaceSampleToSpaceAfterMelting(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfOldSpace,
+            FrozenFlags frozenFlagsOfNewSpace)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfOldSpace, spaceOfSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfNewSpace, space1);
+        setFrozenFlagsForSpaces(frozenFlagsOfOldSpace.clone().melt(), spaceOfSample);
+        setFrozenFlagsForSpaces(frozenFlagsOfNewSpace.clone().melt(), space1);
+        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(spaceSample);
         sampleUpdate.setSpaceId(space1);
 
         // When
         v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
 
         // Then
-        assertEquals(getSample(sharedSample).getSpace().getCode(), SPACE_1);
+        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
     }
 
-    @Test
-    public void testAddLiquidSpaceSampleToFrozenExperiment()
+    @DataProvider(name = "frozenSampleSpaceSpaceRelations")
+    public static Object[][] frozenSampleSpaceSpaceRelations()
+    {
+        List<FrozenFlags> combinationsForSample = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsForFrozenSpace = Arrays.asList(new FrozenFlags(true).freezeForSample());
+        List<FrozenFlags> combinationsForLiquidSpace = new FrozenFlags(true).freezeForProject().createAllCombinations();
+        combinationsForLiquidSpace.add(new FrozenFlags(false).freezeForSample());
+        return merge(asCartesianProduct(combinationsForSample, combinationsForFrozenSpace, combinationsForLiquidSpace),
+                asCartesianProduct(combinationsForSample, combinationsForLiquidSpace, combinationsForFrozenSpace),
+                asCartesianProduct(combinationsForSample, combinationsForFrozenSpace, combinationsForFrozenSpace));
+    }
+
+    @Test(dataProvider = "liquidSampleExperimentRelations")
+    public void testValidAddSpaceSampleToExperiment(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfExperiment)
     {
         // Given
-        setFrozenFlagForExperiments(true, experiment1);
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagForSpaces(true, spaceOfSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfExperiment, experiment1);
         assertEquals(getSample(spaceSample).getExperiment(), null);
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(spaceSample);
@@ -183,11 +327,89 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
         assertEquals(getSample(spaceSample).getExperiment().getCode(), EXPERIMENT_1);
     }
 
-    @Test
-    public void testAddFrozenSpaceSampleToLiquidExperiment()
+    @Test(dataProvider = "liquidSampleExperimentRelations")
+    public void testValidRemoveSampleFromExperiment(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfExperiment)
     {
         // Given
-        setFrozenFlagForSamples(true, spaceSample);
+        setFrozenFlagsForSamples(frozenFlagsOfSample, experimentSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfExperiment, expOfSample);
+        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(experimentSample);
+        sampleUpdate.setExperimentId(null);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(experimentSample).getExperiment(), null);
+    }
+
+    @DataProvider(name = "liquidSampleExperimentRelations")
+    public static Object[][] liquidSampleExperimentRelations()
+    {
+        List<FrozenFlags> combinationsForSample = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsForExperiment = new FrozenFlags(true).freezeForDataSet().createAllCombinations();
+        combinationsForExperiment.add(new FrozenFlags(false).freezeForDataSet());
+        return asCartesianProduct(combinationsForSample, combinationsForExperiment);
+    }
+
+    @Test(dataProvider = "liquidSampleExperimentExperimentRelations")
+    public void testValidMoveExperimentSampleToExperiment(FrozenFlags frozenFlagsOfSample,
+            FrozenFlags frozenFlagsOfOldExperiment, FrozenFlags frozenFlagsOfNewExperiment)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSample, experimentSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfOldExperiment, expOfSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfNewExperiment, experiment1);
+        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(experimentSample);
+        sampleUpdate.setExperimentId(experiment1);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXPERIMENT_1);
+    }
+
+    @DataProvider(name = "liquidSampleExperimentExperimentRelations")
+    public static Object[][] liquidSampleExperimentExperimentRelations()
+    {
+        List<FrozenFlags> combinationsForSample = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsForExperiment = new FrozenFlags(true).freezeForDataSet().createAllCombinations();
+        combinationsForExperiment.add(new FrozenFlags(false).freezeForSample());
+        return asCartesianProduct(combinationsForSample, combinationsForExperiment, combinationsForExperiment);
+    }
+
+    @Test(dataProvider = "frozenSampleExperimentRelations")
+    public void testInvalidAddSharedSampleToExperiment(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfExperiment)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagForSpaces(true, spaceOfSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfExperiment, experiment1);
+        assertEquals(getSample(spaceSample).getExperiment(), null);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(spaceSample);
+        sampleUpdate.setExperimentId(experiment1);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
+                // Then
+                "ERROR: Operation SET EXPERIMENT is not allowed because experiment " + EXPERIMENT_1 + " is frozen for sample "
+                        + SPACE_SAMPLE + ".");
+    }
+
+    @Test(dataProvider = "frozenSampleExperimentRelations")
+    public void testInvalidAddSharedSampleToExperimentAfterMelting(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfExperiment)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSample, spaceSample);
+        setFrozenFlagForSpaces(true, spaceOfSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfExperiment, experiment1);
+        setFrozenFlagsForExperiments(frozenFlagsOfExperiment.clone().melt(), experiment1);
         assertEquals(getSample(spaceSample).getExperiment(), null);
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(spaceSample);
@@ -200,227 +422,83 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
         assertEquals(getSample(spaceSample).getExperiment().getCode(), EXPERIMENT_1);
     }
 
-    @Test
-    public void testAddFrozenSpaceSampleToFrozenExperiment()
+    @Test(dataProvider = "frozenSampleExperimentRelations")
+    public void testInvalidRemoveSampleFromExperiment(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfExperiment)
     {
         // Given
-        setFrozenFlagForExperiments(true, experiment1);
-        setFrozenFlagForSamples(true, spaceSample);
-        assertEquals(getSample(spaceSample).getExperiment(), null);
+        setFrozenFlagsForSamples(frozenFlagsOfSample, experimentSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfExperiment, expOfSample);
+        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
         SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
+        sampleUpdate.setSampleId(experimentSample);
+        sampleUpdate.setExperimentId(null);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
+                // Then
+                "ERROR: Operation REMOVE EXPERIMENT is not allowed because experiment " + EXP_OF_SAMPLE + " is frozen for sample "
+                        + EXPE_SAMPLE + ".");
+    }
+
+    @Test(dataProvider = "frozenSampleExperimentRelations")
+    public void testInvalidRemoveSampleFromExperimentAfterMelting(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfExperiment)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSample, experimentSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfExperiment, expOfSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfExperiment.clone().melt(), expOfSample);
+        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(experimentSample);
+        sampleUpdate.setExperimentId(null);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(experimentSample).getExperiment(), null);
+    }
+
+    @DataProvider(name = "frozenSampleExperimentRelations")
+    public static Object[][] frozenSampleExperimentRelations()
+    {
+        List<FrozenFlags> combinationsForSample = new FrozenFlags(true).createAllCombinations();
+        return asCartesianProduct(combinationsForSample, Arrays.asList(new FrozenFlags(true).freezeForSample()));
+    }
+
+    @Test(dataProvider = "frozenSampleExperimentExperimentRelations")
+    public void testInvalidMoveExperimentSampleToExperiment(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfOldExperiment,
+            FrozenFlags frozenFlagsOfNewExperiment)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfSample, experimentSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfOldExperiment, expOfSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfNewExperiment, experiment1);
+        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(experimentSample);
         sampleUpdate.setExperimentId(experiment1);
+        boolean frozen = frozenFlagsOfNewExperiment.isFrozen() && frozenFlagsOfNewExperiment.isFrozenForSample();
+        String type = frozen ? "SET" : "REMOVE";
+        String space = frozen ? EXPERIMENT_1 : EXP_OF_SAMPLE;
 
         // When
         assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
                 // Then
-                "ERROR: Operation SET EXPERIMENT is not allowed because sample " + SPACE_SAMPLE + " and experiment " + EXPERIMENT_1 + " are frozen.");
+                "ERROR: Operation " + type + " EXPERIMENT is not allowed because experiment " + space + " is frozen for sample "
+                        + EXPE_SAMPLE + ".");
     }
 
-    @Test
-    public void testAddMoltenSpaceSampleToMoltenExperiment()
+    @Test(dataProvider = "frozenSampleExperimentExperimentRelations")
+    public void testInvalidMoveExperimentSampleToExperimentAfterMelting(FrozenFlags frozenFlagsOfSample, FrozenFlags frozenFlagsOfOldExperiment,
+            FrozenFlags frozenFlagsOfNewExperiment)
     {
         // Given
-        setFrozenFlagForExperiments(true, experiment1);
-        setFrozenFlagForSamples(true, spaceSample);
-        assertEquals(getSample(spaceSample).getExperiment(), null);
-        setFrozenFlagForExperiments(false, experiment1);
-        setFrozenFlagForSamples(false, spaceSample);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(spaceSample).getExperiment().getCode(), EXPERIMENT_1);
-    }
-
-    @Test
-    public void testMoveLiquidSampleFromLiquidSpaceToFrozenSpace()
-    {
-        // Given
-        setFrozenFlagForSpaces(true, space1);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
-    }
-
-    @Test
-    public void testMoveLiquidSampleFromFrozenSpaceToLiquidSpace()
-    {
-        // Given
-        setFrozenFlagForSpaces(true, spaceOfSample);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
-    }
-
-    @Test
-    public void testMoveLiquidSampleFromFrozenSpaceToFrozenSpace()
-    {
-        // Given
-        setFrozenFlagForSpaces(true, space1, spaceOfSample);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
-    }
-
-    @Test
-    public void testMoveFrozenSampleFromLiquidSpaceToLiquidSpace()
-    {
-        // Given
-        setFrozenFlagForSamples(true, spaceSample);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
-    }
-
-    @Test
-    public void testMoveFrozenSampleFromLiquidSpaceToFrozenSpace()
-    {
-        // Given
-        setFrozenFlagForSamples(true, spaceSample);
-        setFrozenFlagForSpaces(true, space1);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation SET SPACE is not allowed because sample " + SPACE_SAMPLE + " and space " + SPACE_1 + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenSampleFromLiquidSpaceToMoltenSpace()
-    {
-        // Given
-        setFrozenFlagForSamples(true, spaceSample);
-        setFrozenFlagForSpaces(true, space1);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        setFrozenFlagForSamples(false, spaceSample);
-        setFrozenFlagForSpaces(false, space1);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
-    }
-
-    @Test
-    public void testMoveFrozenSampleFromFrozenSpaceToLiquidSpace()
-    {
-        // Given
-        setFrozenFlagForSamples(true, spaceSample);
-        setFrozenFlagForSpaces(true, spaceOfSample);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation REMOVE SPACE is not allowed because sample " + SPACE_SAMPLE + " and space " + SPACE_OF_SAMPLE + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenSampleFromMoltenSpaceToLiquidSpace()
-    {
-        // Given
-        setFrozenFlagForSamples(true, spaceSample);
-        setFrozenFlagForSpaces(true, spaceOfSample);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        setFrozenFlagForSamples(false, spaceSample);
-        setFrozenFlagForSpaces(false, spaceOfSample);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
-    }
-
-    @Test
-    public void testMoveFrozenSampleFromFrozenSpaceToFrozenSpace()
-    {
-        // Given
-        setFrozenFlagForSamples(true, spaceSample);
-        setFrozenFlagForSpaces(true, space1, spaceOfSample);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation SET SPACE is not allowed because sample " + SPACE_SAMPLE + " and space " + SPACE_1 + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenSampleFromMoltenSpaceToMoltenSpace()
-    {
-        // Given
-        setFrozenFlagForSamples(true, spaceSample);
-        setFrozenFlagForSpaces(true, space1, spaceOfSample);
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_OF_SAMPLE);
-        setFrozenFlagForSamples(false, spaceSample);
-        setFrozenFlagForSpaces(false, space1, spaceOfSample);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(spaceSample);
-        sampleUpdate.setSpaceId(space1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(spaceSample).getSpace().getCode(), SPACE_1);
-    }
-
-    @Test
-    public void testMoveLiquidSampleFromLiquidExperimentToFrozenExperiment()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experiment1);
+        setFrozenFlagsForSamples(frozenFlagsOfSample, experimentSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfOldExperiment, expOfSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfNewExperiment, experiment1);
+        setFrozenFlagsForExperiments(frozenFlagsOfOldExperiment.clone().melt(), expOfSample);
+        setFrozenFlagsForExperiments(frozenFlagsOfNewExperiment.clone().melt(), experiment1);
         assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(experimentSample);
@@ -433,167 +511,16 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
         assertEquals(getSample(experimentSample).getExperiment().getCode(), EXPERIMENT_1);
     }
 
-    @Test
-    public void testMoveLiquidSampleFromFrozenExperimentToLiquidExperiment()
+    @DataProvider(name = "frozenSampleExperimentExperimentRelations")
+    public static Object[][] frozenSampleExperimentExperimentRelations()
     {
-        // Given
-        setFrozenFlagForExperiments(true, expOfSample);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXPERIMENT_1);
-    }
-
-    @Test
-    public void testMoveLiquidSampleFromFrozenExperimentToFrozenExperiment()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experiment1, expOfSample);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXPERIMENT_1);
-    }
-
-    @Test
-    public void testMoveFrozenSampleFromLiquidExperimentToLiquidExperiment()
-    {
-        // Given
-        setFrozenFlagForSamples(true, experimentSample);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXPERIMENT_1);
-    }
-
-    @Test
-    public void testMoveFrozenSampleFromLiquidExperimentToFrozenExperiment()
-    {
-        // Given
-        setFrozenFlagForSamples(true, experimentSample);
-        setFrozenFlagForExperiments(true, experiment1);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation SET EXPERIMENT is not allowed because sample " + EXPE_SAMPLE + " and experiment " + EXPERIMENT_1 + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenSampleFromLiquidExperimentToMoltenExperiment()
-    {
-        // Given
-        setFrozenFlagForSamples(true, experimentSample);
-        setFrozenFlagForExperiments(true, experiment1);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        setFrozenFlagForSamples(false, experimentSample);
-        setFrozenFlagForExperiments(false, experiment1);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXPERIMENT_1);
-    }
-
-    @Test
-    public void testMoveFrozenSampleFromFrozenExperimentToLiquidExperiment()
-    {
-        // Given
-        setFrozenFlagForSamples(true, experimentSample);
-        setFrozenFlagForExperiments(true, expOfSample);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation REMOVE EXPERIMENT is not allowed because sample " + EXPE_SAMPLE + " and experiment " + EXP_OF_SAMPLE
-                        + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenSampleFromMoltenExperimentToLiquidExperiment()
-    {
-        // Given
-        setFrozenFlagForSamples(true, experimentSample);
-        setFrozenFlagForExperiments(true, expOfSample);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        setFrozenFlagForSamples(false, experimentSample);
-        setFrozenFlagForExperiments(false, expOfSample);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXPERIMENT_1);
-    }
-
-    @Test
-    public void testMoveFrozenSampleFromFrozenExperimentToFrozenExperiment()
-    {
-        // Given
-        setFrozenFlagForSamples(true, experimentSample);
-        setFrozenFlagForExperiments(true, experiment1, expOfSample);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation SET EXPERIMENT is not allowed because sample " + EXPE_SAMPLE + " and experiment " + EXPERIMENT_1 + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenSampleFromMoltenExperimentToMoltenExperiment()
-    {
-        // Given
-        setFrozenFlagForSamples(true, experimentSample);
-        setFrozenFlagForExperiments(true, experiment1, expOfSample);
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXP_OF_SAMPLE);
-        setFrozenFlagForSamples(false, experimentSample);
-        setFrozenFlagForExperiments(false, experiment1, expOfSample);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(experimentSample);
-        sampleUpdate.setExperimentId(experiment1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(experimentSample).getExperiment().getCode(), EXPERIMENT_1);
+        List<FrozenFlags> combinationsForSample = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsForFrozenExperiment = Arrays.asList(new FrozenFlags(true).freezeForSample());
+        List<FrozenFlags> combinationsForLiquidExperiment = new FrozenFlags(true).freezeForDataSet().createAllCombinations();
+        combinationsForLiquidExperiment.add(new FrozenFlags(false).freezeForSample());
+        return merge(asCartesianProduct(combinationsForSample, combinationsForFrozenExperiment, combinationsForLiquidExperiment),
+                asCartesianProduct(combinationsForSample, combinationsForLiquidExperiment, combinationsForFrozenExperiment),
+                asCartesianProduct(combinationsForSample, combinationsForFrozenExperiment, combinationsForFrozenExperiment));
     }
 
 }

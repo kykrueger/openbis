@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.freezing;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,7 +55,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.AbstractTest;
@@ -68,6 +71,39 @@ public abstract class FreezingTest extends AbstractTest
 
     static final ProjectIdentifier DEFAULT_PROJECT_ID = new ProjectIdentifier("CISD", "NEMO");
 
+    protected static Object[][] asCartesianProduct(List<?>... lists)
+    {
+        int size = 1;
+        for (List<?> list : lists)
+        {
+            size *= list.size();
+        }
+        List<Object[]> result = new ArrayList<>();
+        for (int i = 0; i < size; i++)
+        {
+            Object[] row = new Object[lists.length];
+            for (int j = 0, ii = i; j < lists.length; j++)
+            {
+                List<?> list = lists[j];
+                int listSize = list.size();
+                row[j] = list.get(ii % listSize);
+                ii /= list.size();
+            }
+            result.add(row);
+        }
+        return result.toArray(new Object[0][]);
+    }
+
+    protected static Object[][] merge(Object[][]... results)
+    {
+        List<Object[]> mergedResults = new ArrayList<>();
+        for (Object[][] result : results)
+        {
+            mergedResults.addAll(Arrays.asList(result));
+        }
+        return mergedResults.toArray(new Object[0][]);
+    }
+
     @Autowired
     protected SessionFactory sessionFactory;
 
@@ -78,9 +114,24 @@ public abstract class FreezingTest extends AbstractTest
 
     protected void setFrozenFlagForSpaces(boolean frozen, List<SpacePermId> spacePermIds)
     {
+        setFrozenFlagsForSpaces(new FrozenFlags(frozen), spacePermIds);
+    }
+
+    protected void setFrozenFlagsForSpaces(FrozenFlags flags, SpacePermId... spacePermIds)
+    {
+        setFrozenFlagsForSpaces(flags, Arrays.asList(spacePermIds));
+    }
+
+    protected void setFrozenFlagsForSpaces(FrozenFlags flags, List<SpacePermId> spacePermIds)
+    {
         Session session = sessionFactory.getCurrentSession();
-        NativeQuery<?> query = session.createNativeQuery("update spaces set frozen = :frozen where code in :permIds")
-                .setParameter("frozen", frozen)
+        NativeQuery<?> query = session.createNativeQuery("update spaces set frozen = :frozen, "
+                + "frozen_for_proj = :frozenForProject, "
+                + "frozen_for_samp = :frozenForSample "
+                + "where code in :permIds")
+                .setParameter("frozen", flags.isFrozen())
+                .setParameter("frozenForProject", flags.isFrozenForProject())
+                .setParameter("frozenForSample", flags.isFrozenForSample())
                 .setParameter("permIds", spacePermIds.stream().map(SpacePermId::getPermId).collect(Collectors.toList()));
         query.executeUpdate();
         session.flush();
@@ -93,6 +144,12 @@ public abstract class FreezingTest extends AbstractTest
         return spaceCreation;
     }
 
+    protected Space getSpace(ISpaceId spaceId)
+    {
+        SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
+        return v3api.getSpaces(systemSessionToken, Arrays.asList(spaceId), fetchOptions).get(spaceId);
+    }
+
     protected void setFrozenFlagForProjects(boolean frozen, ProjectPermId... projectPermIds)
     {
         setFrozenFlagForProjects(frozen, Arrays.asList(projectPermIds));
@@ -100,9 +157,24 @@ public abstract class FreezingTest extends AbstractTest
 
     protected void setFrozenFlagForProjects(boolean frozen, List<ProjectPermId> projectPermIds)
     {
+        setFrozenFlagsForProjects(new FrozenFlags(frozen), projectPermIds);
+    }
+
+    protected void setFrozenFlagsForProjects(FrozenFlags flags, ProjectPermId... projectPermIds)
+    {
+        setFrozenFlagsForProjects(flags, Arrays.asList(projectPermIds));
+    }
+
+    protected void setFrozenFlagsForProjects(FrozenFlags flags, List<ProjectPermId> projectPermIds)
+    {
         Session session = sessionFactory.getCurrentSession();
-        NativeQuery<?> query = session.createNativeQuery("update projects set frozen = :frozen where perm_id in :permIds")
-                .setParameter("frozen", frozen)
+        NativeQuery<?> query = session.createNativeQuery("update projects set frozen = :frozen, "
+                + "frozen_for_exp = :frozenForExperiment, "
+                + "frozen_for_samp = :frozenForSample "
+                + "where perm_id in :permIds")
+                .setParameter("frozen", flags.isFrozen())
+                .setParameter("frozenForExperiment", flags.isFrozenForExperiment())
+                .setParameter("frozenForSample", flags.isFrozenForSample())
                 .setParameter("permIds", projectPermIds.stream().map(ProjectPermId::getPermId).collect(Collectors.toList()));
         query.executeUpdate();
         session.flush();
@@ -115,7 +187,7 @@ public abstract class FreezingTest extends AbstractTest
         projectCreation.setSpaceId(spaceId);
         return projectCreation;
     }
-    
+
     protected Project getProject(IProjectId projectId)
     {
         ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
@@ -132,9 +204,24 @@ public abstract class FreezingTest extends AbstractTest
 
     protected void setFrozenFlagForExperiments(boolean frozen, List<ExperimentPermId> experimentPermIds)
     {
+        setFrozenFlagsForExperiments(new FrozenFlags(frozen), experimentPermIds);
+    }
+
+    protected void setFrozenFlagsForExperiments(FrozenFlags frozenFlags, ExperimentPermId... experimentPermIds)
+    {
+        setFrozenFlagsForExperiments(frozenFlags, Arrays.asList(experimentPermIds));
+    }
+
+    protected void setFrozenFlagsForExperiments(FrozenFlags frozenFlags, List<ExperimentPermId> experimentPermIds)
+    {
         Session session = sessionFactory.getCurrentSession();
-        NativeQuery<?> query = session.createNativeQuery("update experiments_all set frozen = :frozen where perm_id in :permIds")
-                .setParameter("frozen", frozen)
+        NativeQuery<?> query = session.createNativeQuery("update experiments_all set frozen = :frozen, "
+                + "frozen_for_samp = :frozenForSample, "
+                + "frozen_for_data = :frozenForDataSet "
+                + "where perm_id in :permIds")
+                .setParameter("frozen", frozenFlags.isFrozen())
+                .setParameter("frozenForSample", frozenFlags.isFrozenForSample())
+                .setParameter("frozenForDataSet", frozenFlags.isFrozenForDataSet())
                 .setParameter("permIds", experimentPermIds.stream().map(ExperimentPermId::getPermId).collect(Collectors.toList()));
         query.executeUpdate();
         session.flush();
@@ -161,14 +248,33 @@ public abstract class FreezingTest extends AbstractTest
 
     protected void setFrozenFlagForSamples(boolean frozen, SamplePermId... samplePermIds)
     {
-        setFrozenFlagForSamples(frozen, Arrays.asList(samplePermIds));
+        setFrozenFlagsForSamples(frozen, Arrays.asList(samplePermIds));
     }
 
-    protected void setFrozenFlagForSamples(boolean frozen, List<SamplePermId> samplePermIds)
+    protected void setFrozenFlagsForSamples(boolean frozen, List<SamplePermId> samplePermIds)
+    {
+        setFrozenFlagsForSamples(new FrozenFlags(frozen), samplePermIds);
+    }
+
+    protected void setFrozenFlagsForSamples(FrozenFlags frozenFlags, SamplePermId... samplePermIds)
+    {
+        setFrozenFlagsForSamples(frozenFlags, Arrays.asList(samplePermIds));
+    }
+
+    protected void setFrozenFlagsForSamples(FrozenFlags frozenFlags, List<SamplePermId> samplePermIds)
     {
         Session session = sessionFactory.getCurrentSession();
-        NativeQuery<?> query = session.createNativeQuery("update samples_all set frozen = :frozen where perm_id in :permIds")
-                .setParameter("frozen", frozen)
+        NativeQuery<?> query = session.createNativeQuery("update samples_all set frozen = :frozen, "
+                + "frozen_for_children = :frozenForChildren, "
+                + "frozen_for_parents = :frozenForParents, "
+                + "frozen_for_comp = :frozenForComponent, "
+                + "frozen_for_data = :frozenForDataSet "
+                + "where perm_id in :permIds")
+                .setParameter("frozen", frozenFlags.isFrozen())
+                .setParameter("frozenForChildren", frozenFlags.isFrozenForChildren())
+                .setParameter("frozenForParents", frozenFlags.isFrozenForParents())
+                .setParameter("frozenForComponent", frozenFlags.isFrozenForComponent())
+                .setParameter("frozenForDataSet", frozenFlags.isFrozenForDataSet())
                 .setParameter("permIds", samplePermIds.stream().map(SamplePermId::getPermId).collect(Collectors.toList()));
         query.executeUpdate();
         session.flush();
@@ -216,9 +322,28 @@ public abstract class FreezingTest extends AbstractTest
 
     protected void setFrozenFlagForDataSets(boolean frozen, List<DataSetPermId> dataSetPermIds)
     {
+        setFrozenFlagsForDataSets(new FrozenFlags(frozen), dataSetPermIds);
+    }
+
+    protected void setFrozenFlagsForDataSets(FrozenFlags frozenFlags, DataSetPermId... dataSetPermIds)
+    {
+        setFrozenFlagsForDataSets(frozenFlags, Arrays.asList(dataSetPermIds));
+    }
+
+    protected void setFrozenFlagsForDataSets(FrozenFlags frozenFlags, List<DataSetPermId> dataSetPermIds)
+    {
         Session session = sessionFactory.getCurrentSession();
-        NativeQuery<?> query = session.createNativeQuery("update data_all set frozen = :frozen where code in :permIds")
-                .setParameter("frozen", frozen)
+        NativeQuery<?> query = session.createNativeQuery("update data_all set frozen = :frozen, "
+                + "frozen_for_children = :frozenForChildren, "
+                + "frozen_for_parents = :frozenForParents, "
+                + "frozen_for_comps = :frozenForComponents, "
+                + "frozen_for_conts = :frozenForContainers "
+                + "where code in :permIds")
+                .setParameter("frozen", frozenFlags.isFrozen())
+                .setParameter("frozenForChildren", frozenFlags.isFrozenForChildren())
+                .setParameter("frozenForParents", frozenFlags.isFrozenForParents())
+                .setParameter("frozenForComponents", frozenFlags.isFrozenForComponents())
+                .setParameter("frozenForContainers", frozenFlags.isFrozenForContainers())
                 .setParameter("permIds", dataSetPermIds.stream().map(DataSetPermId::getPermId).collect(Collectors.toList()));
         query.executeUpdate();
         session.flush();

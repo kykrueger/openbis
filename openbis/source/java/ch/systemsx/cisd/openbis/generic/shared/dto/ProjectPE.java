@@ -90,6 +90,10 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
 
     private boolean frozen;
 
+    private boolean frozenForExperiment;
+
+    private boolean frozenForSample;
+
     private SpacePE space;
 
     private boolean spaceFrozen;
@@ -169,7 +173,7 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
         this.space = space;
         if (space != null)
         {
-            spaceFrozen = space.isFrozen();
+            spaceFrozen = space.isFrozen() && space.isFrozenForProject();
         }
     }
 
@@ -384,6 +388,30 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     public void setFrozen(boolean frozen)
     {
         this.frozen = frozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_EXPERIMENT_COLUMN, nullable = false)
+    public boolean isFrozenForExperiment()
+    {
+        return frozenForExperiment;
+    }
+
+    public void setFrozenForExperiment(boolean frozenForExperiment)
+    {
+        this.frozenForExperiment = frozenForExperiment;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, nullable = false)
+    public boolean isFrozenForSample()
+    {
+        return frozenForSample;
+    }
+
+    public void setFrozenForSample(boolean frozenForSample)
+    {
+        this.frozenForSample = frozenForSample;
     }
 
     @Override

@@ -112,6 +112,14 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     private boolean frozen;
 
+    private boolean frozenForComponent;
+
+    private boolean frozenForChildren;
+
+    private boolean frozenForParents;
+
+    private boolean frozenForDataSet;
+
     private SpacePE space;
 
     private boolean spaceFrozen;
@@ -366,7 +374,11 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     public void setSpace(final SpacePE space)
     {
         this.space = space;
-        spaceFrozen = space != null ? space.isFrozen() : false;
+        if (space != null)
+        {
+            spaceFrozen = space.isFrozen() && space.isFrozenForSample();
+            
+        }
     }
 
     @NotNull
@@ -417,6 +429,54 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
         this.frozen = frozen;
     }
 
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_COMPONENT_COLUMN, nullable = false)
+    public boolean isFrozenForComponent()
+    {
+        return frozenForComponent;
+    }
+
+    public void setFrozenForComponent(boolean frozenForComponent)
+    {
+        this.frozenForComponent = frozenForComponent;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_CHILDREN_COLUMN, nullable = false)
+    public boolean isFrozenForChildren()
+    {
+        return frozenForChildren;
+    }
+
+    public void setFrozenForChildren(boolean frozenForChildren)
+    {
+        this.frozenForChildren = frozenForChildren;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_PARENTS_COLUMN, nullable = false)
+    public boolean isFrozenForParents()
+    {
+        return frozenForParents;
+    }
+
+    public void setFrozenForParents(boolean frozenForParents)
+    {
+        this.frozenForParents = frozenForParents;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_DATA_SET_COLUMN, nullable = false)
+    public boolean isFrozenForDataSet()
+    {
+        return frozenForDataSet;
+    }
+
+    public void setFrozenForDataSet(boolean frozenForDataSets)
+    {
+        this.frozenForDataSet = frozenForDataSets;
+    }
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "entity", orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @IndexedEmbedded(prefix = SearchFieldConstants.PREFIX_PROPERTIES)
@@ -459,7 +519,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     public void setContainer(final SamplePE container)
     {
         this.container = container;
-        containerFrozen = container != null ? container.isFrozen() : false;
+        if (container != null)
+        {
+            containerFrozen = container.isFrozen() && container.isFrozenForComponent();
+        }
         // identifier should be reevaluated after change of container
         this.sampleIdentifier = null;
     }
@@ -544,7 +607,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
         if (projectSamplesEnabled)
         {
             this.project = project;
-            projectFrozen = project != null ? project.isFrozen() : false;
+            if (project != null)
+            {
+                projectFrozen = project.isFrozen() && project.isFrozenForSample();
+            }
         }
     }
 
@@ -592,7 +658,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     void setExperimentInternal(final ExperimentPE experiment)
     {
         this.experiment = experiment;
-        experimentFrozen = experiment != null ? experiment.isFrozen() : false;
+        if (experiment != null)
+        {
+            experimentFrozen = experiment.isFrozen() && experiment.isFrozenForSample();
+        }
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

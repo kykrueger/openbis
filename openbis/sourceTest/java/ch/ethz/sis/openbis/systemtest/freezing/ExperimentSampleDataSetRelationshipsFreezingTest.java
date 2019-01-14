@@ -22,8 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
@@ -40,6 +42,8 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
 
     private static final String SAMPLE_1 = PREFIX + "S1";
 
+    private static final String EXPERIMENT_1 = PREFIX + "E1";
+
     private static final String EXP_OF_DATA_SET = PREFIX + "EXP-DS";
 
     private static final String SAMP_OF_DATA_SET = PREFIX + "SAMP-DS";
@@ -47,6 +51,8 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     private static final String DATA_SET_EXP = PREFIX + "DS-EXP";
 
     private static final String DATA_SET_SAMP = PREFIX + "DS-SAMP";
+
+    private ExperimentPermId experiment1;
 
     private ExperimentPermId experimentOfDataSet;
 
@@ -61,8 +67,11 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     @BeforeMethod
     public void createExamples()
     {
-        experimentOfDataSet = v3api.createExperiments(systemSessionToken, 
-                Arrays.asList(experiment(DEFAULT_PROJECT_ID, EXP_OF_DATA_SET))).get(0);
+        List<ExperimentPermId> experiments = v3api.createExperiments(systemSessionToken,
+                Arrays.asList(experiment(DEFAULT_PROJECT_ID, EXP_OF_DATA_SET),
+                        experiment(DEFAULT_PROJECT_ID, EXPERIMENT_1)));
+        experimentOfDataSet = experiments.get(0);
+        experiment1 = experiments.get(1);
         SampleCreation s1 = cellPlate(SAMPLE_1);
         SampleCreation s2 = cellPlate(SAMP_OF_DATA_SET);
         List<SamplePermId> samples = v3api.createSamples(systemSessionToken, Arrays.asList(s1, s2));
@@ -78,11 +87,14 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
         dataSetSamp = dataSets.get(1);
     }
 
-    @Test
-    public void testMoveLiquidDataSetFromLiquidSampleToFrozenSample()
+    @Test(dataProvider = "liquidDataSetSampleSampleRelations")
+    public void testValidMoveDataSetFromSampleToSample(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForSampleOfDataSet, FrozenFlags frozenFlagsForNewSample)
     {
         // Given
-        setFrozenFlagForSamples(true, sample1);
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetSamp);
+        setFrozenFlagsForSamples(frozenFlagsForSampleOfDataSet, sampleOfDataSet);
+        setFrozenFlagsForSamples(frozenFlagsForNewSample, sample1);
         assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
         dataSetUpdate.setDataSetId(dataSetSamp);
@@ -95,84 +107,48 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
         assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMPLE_1);
     }
 
-    @Test
-    public void testMoveLiquidDataSetFromFrozenSampleToLiquidSample()
+    @DataProvider(name = "liquidDataSetSampleSampleRelations")
+    public static Object[][] liquidDataSetSampleSampleRelations()
     {
-        // Given
-        setFrozenFlagForSamples(true, sampleOfDataSet);
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetSamp);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMPLE_1);
+        List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsSample =
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+        return asCartesianProduct(combinationsDataSet, combinationsSample, combinationsSample);
     }
 
-    @Test
-    public void testMoveLiquidDataSetFromFrozenSampleToFrozenSample()
+    @Test(dataProvider = "frozenDataSetSampleSampleRelations")
+    public void testInvalidMoveDataSetFromSampleToSample(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForSampleOfDataSet, FrozenFlags frozenFlagsForNewSample)
     {
         // Given
-        setFrozenFlagForSamples(true, sampleOfDataSet, sample1);
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetSamp);
+        setFrozenFlagsForSamples(frozenFlagsForSampleOfDataSet, sampleOfDataSet);
+        setFrozenFlagsForSamples(frozenFlagsForNewSample, sample1);
         assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
         dataSetUpdate.setDataSetId(dataSetSamp);
         dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveFrozenDataSetFromLiquidSampleToLiquidSample()
-    {
-        // Given
-        setFrozenFlagForDataSets(true, dataSetSamp);
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetSamp);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveFrozenDataSetFromLiquidSampleToFrozenSample()
-    {
-        // Given
-        setFrozenFlagForDataSets(true, dataSetSamp);
-        setFrozenFlagForSamples(true, sample1);
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetSamp);
-        dataSetUpdate.setSampleId(sample1);
+        String operation = frozenFlagsForNewSample.isFrozenForDataSet() ? "SET" : "REMOVE";
+        String sampleOfErrorMessage = frozenFlagsForNewSample.isFrozenForDataSet() ? SAMPLE_1 : SAMP_OF_DATA_SET;
 
         // When
         assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
                 // Then
-                "ERROR: Operation SET SAMPLE is not allowed because data set " + DATA_SET_SAMP + " and sample "
-                        + SAMPLE_1 + " are frozen.");
+                "ERROR: Operation " + operation + " SAMPLE is not allowed because sample " + sampleOfErrorMessage
+                        + " is frozen for data set " + DATA_SET_SAMP + ".");
     }
 
-    @Test
-    public void testMoveMoltenDataSetFromLiquidSampleToMoltenSample()
+    @Test(dataProvider = "frozenDataSetSampleSampleRelations")
+    public void testInvalidMoveDataSetFromSampleToSampleAfterMelting(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForSampleOfDataSet, FrozenFlags frozenFlagsForNewSample)
     {
         // Given
-        setFrozenFlagForDataSets(true, dataSetSamp);
-        setFrozenFlagForSamples(true, sample1);
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetSamp);
+        setFrozenFlagsForSamples(frozenFlagsForSampleOfDataSet, sampleOfDataSet);
+        setFrozenFlagsForSamples(frozenFlagsForNewSample, sample1);
+        setFrozenFlagsForSamples(frozenFlagsForSampleOfDataSet.clone().melt(), sampleOfDataSet);
+        setFrozenFlagsForSamples(frozenFlagsForNewSample.clone().melt(), sample1);
         assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
-        setFrozenFlagForDataSets(false, dataSetSamp);
-        setFrozenFlagForSamples(false, sample1);
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
         dataSetUpdate.setDataSetId(dataSetSamp);
         dataSetUpdate.setSampleId(sample1);
@@ -184,276 +160,195 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
         assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMPLE_1);
     }
 
-    @Test
-    public void testMoveFrozenDataSetFromFrozenSampleToLiquidSample()
+    @DataProvider(name = "frozenDataSetSampleSampleRelations")
+    public static Object[][] frozenDataSetSampleSampleRelations()
+    {
+        List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsLiquidSample =
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+        List<FrozenFlags> combinationsFrozenSample = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
+        return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenSample, combinationsLiquidSample),
+                asCartesianProduct(combinationsDataSet, combinationsLiquidSample, combinationsFrozenSample),
+                asCartesianProduct(combinationsDataSet, combinationsFrozenSample, combinationsFrozenSample));
+    }
+
+    @Test(dataProvider = "liquidDataSetExperimentExperimentRelations")
+    public void testValidMoveDataSetFromExperimentToExperiment(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForExperimentOfDataSet, FrozenFlags frozenFlagsForNewExperiment)
     {
         // Given
-        setFrozenFlagForDataSets(true, dataSetSamp);
-        setFrozenFlagForSamples(true, sampleOfDataSet);
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetExp);
+        setFrozenFlagsForExperiments(frozenFlagsForExperimentOfDataSet, experimentOfDataSet);
+        setFrozenFlagsForExperiments(frozenFlagsForNewExperiment, experiment1);
+        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetSamp);
-        dataSetUpdate.setSampleId(sample1);
+        dataSetUpdate.setDataSetId(dataSetExp);
+        dataSetUpdate.setExperimentId(experiment1);
+
+        // When
+        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
+
+        // Then
+        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXPERIMENT_1);
+    }
+
+    @DataProvider(name = "liquidDataSetExperimentExperimentRelations")
+    public static Object[][] liquidDataSetExperimentExperimentRelations()
+    {
+        List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsExperiment = new FrozenFlags(true).freezeForSample().createAllCombinations();
+        return asCartesianProduct(combinationsDataSet, combinationsExperiment, combinationsExperiment);
+    }
+
+    @Test(dataProvider = "frozenDataSetExperimentExperimentRelations")
+    public void testInvalidMoveDataSetFromExperimentToExperiment(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForExperimentOfDataSet, FrozenFlags frozenFlagsForNewExperiment)
+    {
+        // Given
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetExp);
+        setFrozenFlagsForExperiments(frozenFlagsForExperimentOfDataSet, experimentOfDataSet);
+        setFrozenFlagsForExperiments(frozenFlagsForNewExperiment, experiment1);
+        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSetExp);
+        dataSetUpdate.setExperimentId(experiment1);
+        String operation = frozenFlagsForNewExperiment.isFrozenForDataSet() ? "SET" : "REMOVE";
+        String experimentOfErrorMessage = frozenFlagsForNewExperiment.isFrozenForDataSet() ? EXPERIMENT_1 : EXP_OF_DATA_SET;
 
         // When
         assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
                 // Then
-                "ERROR: Operation REMOVE SAMPLE is not allowed because data set " + DATA_SET_SAMP + " and sample "
-                        + SAMP_OF_DATA_SET + " are frozen.");
+                "ERROR: Operation " + operation + " EXPERIMENT is not allowed because experiment " + experimentOfErrorMessage
+                        + " is frozen for data set " + DATA_SET_EXP + ".");
     }
 
-    @Test
-    public void testMoveMoltenDataSetFromMoltenSampleToLiquidSample()
+    @Test(dataProvider = "frozenDataSetExperimentExperimentRelations")
+    public void testInvalidMoveDataSetFromExperimentToExperimentAfterMelting(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForExperimentOfDataSet, FrozenFlags frozenFlagsForNewExperiment)
     {
         // Given
-        setFrozenFlagForDataSets(true, dataSetSamp);
-        setFrozenFlagForSamples(true, sampleOfDataSet);
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
-        setFrozenFlagForDataSets(false, dataSetSamp);
-        setFrozenFlagForSamples(false, sampleOfDataSet);
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetExp);
+        setFrozenFlagsForExperiments(frozenFlagsForExperimentOfDataSet, experimentOfDataSet);
+        setFrozenFlagsForExperiments(frozenFlagsForNewExperiment, experiment1);
+        setFrozenFlagsForExperiments(frozenFlagsForExperimentOfDataSet.clone().melt(), experimentOfDataSet);
+        setFrozenFlagsForExperiments(frozenFlagsForNewExperiment.clone().melt(), experiment1);
+        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetSamp);
+        dataSetUpdate.setDataSetId(dataSetExp);
+        dataSetUpdate.setExperimentId(experiment1);
+
+        // When
+        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
+
+        // Then
+        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXPERIMENT_1);
+    }
+
+    @DataProvider(name = "frozenDataSetExperimentExperimentRelations")
+    public static Object[][] frozenDataSetExperimentExperimentRelations()
+    {
+        List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsLiquidExperiment =
+                new FrozenFlags(true).freezeForSample().freezeForComponent().createAllCombinations();
+        List<FrozenFlags> combinationsFrozenExperiment = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
+        return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsLiquidExperiment),
+                asCartesianProduct(combinationsDataSet, combinationsLiquidExperiment, combinationsFrozenExperiment),
+                asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsFrozenExperiment));
+    }
+
+    @Test(dataProvider = "liquidDataSetExperimentSampleRelations")
+    public void testValidMoveDataSetFromExperimentToSample(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForExperimentOfDataSet, FrozenFlags frozenFlagsForNewSample)
+    {
+        // Given
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetExp);
+        setFrozenFlagsForExperiments(frozenFlagsForExperimentOfDataSet, experimentOfDataSet);
+        setFrozenFlagsForSamples(frozenFlagsForNewSample, sample1);
+        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSetExp);
         dataSetUpdate.setSampleId(sample1);
 
         // When
         v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
 
         // Then
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMPLE_1);
+        DataSet dataSet = getDataSet(dataSetExp);
+        assertEquals(dataSet.getExperiment(), null);
+        assertEquals(dataSet.getSample().getCode(), SAMPLE_1);
     }
 
-    @Test
-    public void testMoveFrozenDataSetFromFrozenSampleToFrozenSample()
+    @DataProvider(name = "liquidDataSetExperimentSampleRelations")
+    public static Object[][] liquidDataSetExperimentSampleRelations()
+    {
+        List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsExperiment = new FrozenFlags(true).freezeForSample().createAllCombinations();
+        List<FrozenFlags> combinationsSample =
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+        return asCartesianProduct(combinationsDataSet, combinationsExperiment, combinationsSample);
+    }
+
+    @Test(dataProvider = "frozenDataSetExperimentSampleRelations")
+    public void testInvalidMoveDataSetFromExperimentToSample(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForExperimentOfDataSet, FrozenFlags frozenFlagsForNewSample)
     {
         // Given
-        setFrozenFlagForDataSets(true, dataSetSamp);
-        setFrozenFlagForSamples(true, sampleOfDataSet, sample1);
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetExp);
+        setFrozenFlagsForExperiments(frozenFlagsForExperimentOfDataSet, experimentOfDataSet);
+        setFrozenFlagsForSamples(frozenFlagsForNewSample, sample1);
+        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetSamp);
+        dataSetUpdate.setDataSetId(dataSetExp);
         dataSetUpdate.setSampleId(sample1);
+        String operation = frozenFlagsForExperimentOfDataSet.isFrozenForDataSet() ? "REMOVE EXPERIMENT" : "SET SAMPLE";
+        String type = frozenFlagsForExperimentOfDataSet.isFrozenForDataSet() ? "experiment" : "sample";
+        String code = frozenFlagsForExperimentOfDataSet.isFrozenForDataSet() ? EXP_OF_DATA_SET : SAMPLE_1;
 
         // When
         assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
                 // Then
-                "ERROR: Operation SET SAMPLE is not allowed because data set " + DATA_SET_SAMP + " and sample "
-                        + SAMPLE_1 + " are frozen.");
+                "ERROR: Operation " + operation + " is not allowed because " + type + " " + code
+                        + " is frozen for data set " + DATA_SET_EXP + ".");
     }
 
-    @Test
-    public void testMoveMoltenDataSetFromMoltenSampleToMoltenSample()
+    @Test(dataProvider = "frozenDataSetExperimentSampleRelations")
+    public void testInvalidMoveDataSetFromExperimentToSampleAfterMelting(FrozenFlags frozenFlagsForDataSet,
+            FrozenFlags frozenFlagsForExperimentOfDataSet, FrozenFlags frozenFlagsForNewSample)
     {
         // Given
-        setFrozenFlagForDataSets(true, dataSetSamp);
-        setFrozenFlagForSamples(true, sampleOfDataSet, sample1);
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMP_OF_DATA_SET);
-        setFrozenFlagForDataSets(false, dataSetSamp);
-        setFrozenFlagForSamples(false, sampleOfDataSet, sample1);
+        setFrozenFlagsForDataSets(frozenFlagsForDataSet, dataSetExp);
+        setFrozenFlagsForExperiments(frozenFlagsForExperimentOfDataSet, experimentOfDataSet);
+        setFrozenFlagsForSamples(frozenFlagsForNewSample, sample1);
+        setFrozenFlagsForExperiments(frozenFlagsForExperimentOfDataSet.clone().melt(), experimentOfDataSet);
+        setFrozenFlagsForSamples(frozenFlagsForNewSample.clone().melt(), sample1);
+        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetSamp);
+        dataSetUpdate.setDataSetId(dataSetExp);
         dataSetUpdate.setSampleId(sample1);
 
         // When
         v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
 
         // Then
-        assertEquals(getDataSet(dataSetSamp).getSample().getCode(), SAMPLE_1);
+        DataSet dataSet = getDataSet(dataSetExp);
+        assertEquals(dataSet.getExperiment(), null);
+        assertEquals(dataSet.getSample().getCode(), SAMPLE_1);
     }
 
-    @Test
-    public void testMoveLiquidDataSetFromLiquidExperimentToFrozenSample()
+    @DataProvider(name = "frozenDataSetExperimentSampleRelations")
+    public static Object[][] frozenDataSetExperimentSampleRelations()
     {
-        // Given
-        setFrozenFlagForSamples(true, sample1);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
+        List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsLiquidExperiment =
+                new FrozenFlags(true).freezeForSample().freezeForComponent().createAllCombinations();
+        List<FrozenFlags> combinationsFrozenExperiment = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
+        List<FrozenFlags> combinationsLiquidSample =
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+        List<FrozenFlags> combinationsFrozenSample = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
 
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetExp).getSample().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveLiquidDataSetFromFrozenExperimentToLiquidSample()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experimentOfDataSet);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetExp).getSample().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveLiquidDataSetFromFrozenExperimentToFrozenSample()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experimentOfDataSet);
-        setFrozenFlagForSamples(true, sample1);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetExp).getSample().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveFrozenDataSetFromLiquidExperimentToLiquidSample()
-    {
-        // Given
-        setFrozenFlagForDataSets(true, dataSetExp);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetExp).getSample().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveFrozenDataSetFromLiquidExperimentToFrozenSample()
-    {
-        // Given
-        setFrozenFlagForDataSets(true, dataSetExp);
-        setFrozenFlagForSamples(true, sample1);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
-                // Then
-                "ERROR: Operation SET SAMPLE is not allowed because data set " + DATA_SET_EXP + " and sample "
-                        + SAMPLE_1 + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenDataSetFromLiquidExperimentToMoltenSample()
-    {
-        // Given
-        setFrozenFlagForDataSets(true, dataSetExp);
-        setFrozenFlagForSamples(true, sample1);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        setFrozenFlagForDataSets(false, dataSetExp);
-        setFrozenFlagForSamples(false, sample1);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetExp).getSample().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveFrozenDataSetFromFrozenExperimentToLiquidSample()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experimentOfDataSet);
-        setFrozenFlagForDataSets(true, dataSetExp);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
-                // Then
-                "ERROR: Operation REMOVE EXPERIMENT is not allowed because data set " + DATA_SET_EXP + " and experiment "
-                        + EXP_OF_DATA_SET + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenDataSetFromMoltenExperimentToLiquidSample()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experimentOfDataSet);
-        setFrozenFlagForDataSets(true, dataSetExp);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        setFrozenFlagForExperiments(false, experimentOfDataSet);
-        setFrozenFlagForDataSets(false, dataSetExp);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetExp).getSample().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveFrozenDataSetFromFrozenExperimentToFrozenSample()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experimentOfDataSet);
-        setFrozenFlagForDataSets(true, dataSetExp);
-        setFrozenFlagForSamples(true, sample1);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
-                // Then
-                "ERROR: Operation REMOVE EXPERIMENT is not allowed because data set " + DATA_SET_EXP + " and experiment "
-                        + EXP_OF_DATA_SET + " are frozen.");
-    }
-
-    @Test
-    public void testMoveMoltenDataSetFromMoltenExperimentToMoltenSample()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experimentOfDataSet);
-        setFrozenFlagForDataSets(true, dataSetExp);
-        setFrozenFlagForSamples(true, sample1);
-        assertEquals(getDataSet(dataSetExp).getExperiment().getCode(), EXP_OF_DATA_SET);
-        setFrozenFlagForExperiments(false, experimentOfDataSet);
-        setFrozenFlagForDataSets(false, dataSetExp);
-        setFrozenFlagForSamples(false, sample1);
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSetExp);
-        dataSetUpdate.setExperimentId(null);
-        dataSetUpdate.setSampleId(sample1);
-
-        // When
-        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
-
-        // Then
-        assertEquals(getDataSet(dataSetExp).getSample().getCode(), SAMPLE_1);
+        return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsLiquidSample),
+                asCartesianProduct(combinationsDataSet, combinationsLiquidExperiment, combinationsFrozenSample),
+                asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsFrozenSample));
     }
 
 }

@@ -384,6 +384,55 @@ BEGIN
    RETURN NEW;
 END;
 $$;
+CREATE FUNCTION melt_data_set_for() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.FROZEN_FOR_CHILDREN = 'f';
+    NEW.FROZEN_FOR_PARENTS = 'f';
+    NEW.FROZEN_FOR_COMPS = 'f';
+    NEW.FROZEN_FOR_CONTS = 'f';
+    return NEW;
+end;
+$$;
+CREATE FUNCTION melt_experiment_for() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.FROZEN_FOR_SAMP = 'f';
+    NEW.FROZEN_FOR_DATA = 'f';
+    return NEW;
+end;
+$$;
+CREATE FUNCTION melt_project_for() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.FROZEN_FOR_EXP = 'f';
+    NEW.FROZEN_FOR_SAMP = 'f';
+    return NEW;
+end;
+$$;
+CREATE FUNCTION melt_sample_for() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.FROZEN_FOR_COMP = 'f';
+    NEW.FROZEN_FOR_CHILDREN = 'f';
+    NEW.FROZEN_FOR_PARENTS = 'f';
+    NEW.FROZEN_FOR_DATA = 'f';
+    return NEW;
+end;
+$$;
+CREATE FUNCTION melt_space_for() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.FROZEN_FOR_PROJ = 'f';
+    NEW.FROZEN_FOR_SAMP = 'f';
+    return NEW;
+end;
+$$;
 CREATE FUNCTION preserve_deletion_consistency_on_data_set_relationships() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -447,19 +496,37 @@ CREATE FUNCTION raise_exception_frozen_data_set_relationship() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 DECLARE
-    parent_id   TECH_ID;
-    child_id    TECH_ID;
+    parent_id           TECH_ID;
+    child_id            TECH_ID;
+    relationship_id     TECH_ID;
+    relationship        CODE;
+    parent_child_frozen BOOLEAN_CHAR;
+    cont_comp_frozen    BOOLEAN_CHAR;
 BEGIN
     IF (TG_OP = 'DELETE') THEN
         parent_id = OLD.data_id_parent;
         child_id = OLD.data_id_child;
+        relationship_id = OLD.relationship_id;
+        parent_child_frozen = OLD.parent_frozen OR OLD.child_frozen;
+        cont_comp_frozen = OLD.cont_frozen OR OLD.comp_frozen;
     ELSEIF (TG_OP = 'INSERT') THEN
         parent_id = NEW.data_id_parent;
         child_id = NEW.data_id_child;
+        relationship_id = NEW.relationship_id;
+        parent_child_frozen = NEW.parent_frozen OR NEW.child_frozen;
+        cont_comp_frozen = NEW.cont_frozen OR NEW.comp_frozen;
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because data sets % and % are frozen.', TG_OP, 
-        (select code from data_all where id = parent_id),
-        (select code from data_all where id = child_id);
+    SELECT code INTO relationship FROM relationship_types WHERE id = relationship_id;
+    IF (relationship = 'PARENT_CHILD' AND parent_child_frozen) OR (relationship = 'CONTAINER_COMPONENT' AND cont_comp_frozen) THEN
+       RAISE EXCEPTION 'Operation % % is not allowed because data set % or % is frozen.', TG_OP, relationship,
+            (select code from data_all where id = parent_id),
+            (select code from data_all where id = child_id);
+    END IF;
+    IF (TG_OP = 'DELETE') THEN
+        RETURN OLD;
+    ELSEIF (TG_OP = 'INSERT') THEN
+        RETURN NEW;
+    END IF;
 END;
 $$;
 CREATE FUNCTION raise_exception_frozen_data_set_sample_relationship() RETURNS trigger
@@ -476,8 +543,8 @@ BEGIN
         sample_id = OLD.samp_id;
         operation = 'REMOVE SAMPLE';
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because data set % and sample % are frozen.', operation, NEW.code,
-        (select code from samples_all where id = sample_id);
+    RAISE EXCEPTION 'Operation % is not allowed because sample % is frozen for data set %.', operation,
+        (select code from samples_all where id = sample_id), NEW.code;
 END;
 $$;
 CREATE FUNCTION raise_exception_frozen_entity_by_code() RETURNS trigger
@@ -516,8 +583,8 @@ BEGIN
         experiment_id = OLD.expe_id;
         operation = 'REMOVE EXPERIMENT';
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because % % and experiment % are frozen.', operation, TG_ARGV[0], NEW.code,
-        (select code from experiments_all where id = experiment_id);
+    RAISE EXCEPTION 'Operation % is not allowed because experiment % is frozen for % %.', operation,
+        (select code from experiments_all where id = experiment_id), TG_ARGV[0], NEW.code;
 END;
 $$;
 CREATE FUNCTION raise_exception_frozen_project() RETURNS trigger
@@ -549,8 +616,8 @@ BEGIN
         project_id = OLD.proj_id;
         operation = 'REMOVE PROJECT';
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because % % and project % are frozen.', operation, TG_ARGV[0], NEW.code,
-        (select code from projects where id = project_id);
+    RAISE EXCEPTION 'Operation % is not allowed because project % is frozen for % %.', operation,
+        (select code from projects where id = project_id), TG_ARGV[0], NEW.code;
 END;
 $$;
 CREATE FUNCTION raise_exception_frozen_sample() RETURNS trigger
@@ -582,8 +649,8 @@ BEGIN
         sample_id = OLD.samp_id_part_of;
         operation = 'REMOVE CONTAINER';
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because samples % and % are frozen.', operation, NEW.code,
-        (select code from samples_all where id = sample_id);
+    RAISE EXCEPTION 'Operation % is not allowed because sample % is frozen for sample %.', operation,
+        (select code from samples_all where id = sample_id), NEW.code;
 END;
 $$;
 CREATE FUNCTION raise_exception_frozen_sample_relationship() RETURNS trigger
@@ -600,7 +667,7 @@ BEGIN
         parent_id = NEW.sample_id_parent;
         child_id = NEW.sample_id_child;
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because samples % and % are frozen.', TG_OP, 
+    RAISE EXCEPTION 'Operation % is not allowed because sample % or % is frozen.', TG_OP, 
         (select code from samples_all where id = parent_id),
         (select code from samples_all where id = child_id);
 END;
@@ -619,8 +686,8 @@ BEGIN
         space_id = OLD.space_id;
         operation = 'REMOVE SPACE';
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because % % and space % are frozen.', operation, TG_ARGV[0], NEW.code,
-        (select code from spaces where id = space_id);
+    RAISE EXCEPTION 'Operation % is not allowed because space % is frozen for % %.', operation,
+        (select code from spaces where id = space_id), TG_ARGV[0], NEW.code;
 END;
 $$;
 CREATE FUNCTION rename_sequence(old_name character varying, new_name character varying) RETURNS integer
@@ -847,6 +914,10 @@ CREATE TABLE data_all (
     frozen boolean_char DEFAULT false NOT NULL,
     expe_frozen boolean_char DEFAULT false NOT NULL,
     samp_frozen boolean_char DEFAULT false NOT NULL,
+    frozen_for_children boolean_char DEFAULT false NOT NULL,
+    frozen_for_parents boolean_char DEFAULT false NOT NULL,
+    frozen_for_comps boolean_char DEFAULT false NOT NULL,
+    frozen_for_conts boolean_char DEFAULT false NOT NULL,
     CONSTRAINT data_ck CHECK (((expe_id IS NOT NULL) OR (samp_id IS NOT NULL)))
 );
 CREATE VIEW data AS
@@ -871,7 +942,11 @@ CREATE VIEW data AS
     data_all.orig_del,
     data_all.version,
     data_all.data_set_kind,
-    data_all.frozen
+    data_all.frozen,
+    data_all.frozen_for_children,
+    data_all.frozen_for_parents,
+    data_all.frozen_for_comps,
+    data_all.frozen_for_conts
    FROM data_all
   WHERE (data_all.del_id IS NULL);
 CREATE VIEW data_deleted AS
@@ -1062,13 +1137,17 @@ CREATE TABLE data_set_relationships_all (
     relationship_id tech_id NOT NULL,
     ordinal integer,
     parent_frozen boolean_char DEFAULT false NOT NULL,
-    child_frozen boolean_char DEFAULT false NOT NULL
+    child_frozen boolean_char DEFAULT false NOT NULL,
+    comp_frozen boolean_char DEFAULT false NOT NULL,
+    cont_frozen boolean_char DEFAULT false NOT NULL
 );
 CREATE VIEW data_set_relationships AS
  SELECT data_set_relationships_all.data_id_parent,
     data_set_relationships_all.parent_frozen,
+    data_set_relationships_all.cont_frozen,
     data_set_relationships_all.data_id_child,
     data_set_relationships_all.child_frozen,
+    data_set_relationships_all.comp_frozen,
     data_set_relationships_all.relationship_id,
     data_set_relationships_all.ordinal,
     data_set_relationships_all.del_id,
@@ -1364,7 +1443,9 @@ CREATE TABLE experiments_all (
     version integer DEFAULT 0,
     orig_del tech_id,
     frozen boolean_char DEFAULT false NOT NULL,
-    proj_frozen boolean_char DEFAULT false NOT NULL
+    proj_frozen boolean_char DEFAULT false NOT NULL,
+    frozen_for_samp boolean_char DEFAULT false NOT NULL,
+    frozen_for_data boolean_char DEFAULT false NOT NULL
 );
 CREATE VIEW experiments AS
  SELECT experiments_all.id,
@@ -1381,7 +1462,9 @@ CREATE VIEW experiments AS
     experiments_all.orig_del,
     experiments_all.is_public,
     experiments_all.version,
-    experiments_all.frozen
+    experiments_all.frozen,
+    experiments_all.frozen_for_samp,
+    experiments_all.frozen_for_data
    FROM experiments_all
   WHERE (experiments_all.del_id IS NULL);
 CREATE VIEW experiments_deleted AS
@@ -1711,6 +1794,8 @@ CREATE TABLE projects (
     pers_id_modifier tech_id,
     version integer DEFAULT 0,
     frozen boolean_char DEFAULT false NOT NULL,
+    frozen_for_exp boolean_char DEFAULT false NOT NULL,
+    frozen_for_samp boolean_char DEFAULT false NOT NULL,
     space_frozen boolean_char DEFAULT false NOT NULL
 );
 CREATE SEQUENCE property_type_id_seq
@@ -1979,7 +2064,11 @@ CREATE TABLE samples_all (
     space_frozen boolean_char DEFAULT false NOT NULL,
     proj_frozen boolean_char DEFAULT false NOT NULL,
     expe_frozen boolean_char DEFAULT false NOT NULL,
-    cont_frozen boolean_char DEFAULT false NOT NULL
+    cont_frozen boolean_char DEFAULT false NOT NULL,
+    frozen_for_comp boolean_char DEFAULT false NOT NULL,
+    frozen_for_children boolean_char DEFAULT false NOT NULL,
+    frozen_for_parents boolean_char DEFAULT false NOT NULL,
+    frozen_for_data boolean_char DEFAULT false NOT NULL
 );
 CREATE VIEW samples AS
  SELECT samples_all.id,
@@ -2001,7 +2090,11 @@ CREATE VIEW samples AS
     samples_all.samp_id_part_of,
     samples_all.cont_frozen,
     samples_all.version,
-    samples_all.frozen
+    samples_all.frozen,
+    samples_all.frozen_for_comp,
+    samples_all.frozen_for_children,
+    samples_all.frozen_for_parents,
+    samples_all.frozen_for_data
    FROM samples_all
   WHERE (samples_all.del_id IS NULL);
 CREATE VIEW samples_deleted AS
@@ -2074,7 +2167,9 @@ CREATE TABLE spaces (
     description description_2000,
     registration_timestamp time_stamp_dfl DEFAULT now() NOT NULL,
     pers_id_registerer tech_id NOT NULL,
-    frozen boolean_char DEFAULT false NOT NULL
+    frozen boolean_char DEFAULT false NOT NULL,
+    frozen_for_proj boolean_char DEFAULT false NOT NULL,
+    frozen_for_samp boolean_char DEFAULT false NOT NULL
 );
 CREATE SEQUENCE stpt_id_seq
     START WITH 1

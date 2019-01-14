@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
@@ -62,11 +63,14 @@ public class ProjectExperimentRelationshipsFreezingTest extends FreezingTest
                 Arrays.asList(experiment(projectOfExperiment, EXP))).get(0);
     }
 
-    @Test
-    public void testMoveLiquidExperimentFromLiquidProjectToFrozenProject()
+    @Test(dataProvider = "liquidExperimentProjectProjectRelations")
+    public void testValidMoveExperimentFromProjectToProject(FrozenFlags frozenFlagsForExperiment,
+            FrozenFlags frozenFlagsForOldProject, FrozenFlags frozenFlagsForNewProject)
     {
         // Given
-        setFrozenFlagForProjects(true, project1);
+        setFrozenFlagsForExperiments(frozenFlagsForExperiment, experiment);
+        setFrozenFlagsForProjects(frozenFlagsForOldProject, projectOfExperiment);
+        setFrozenFlagsForProjects(frozenFlagsForNewProject, project1);
         assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
         ExperimentUpdate experimentUpdate = new ExperimentUpdate();
         experimentUpdate.setExperimentId(experiment);
@@ -79,160 +83,70 @@ public class ProjectExperimentRelationshipsFreezingTest extends FreezingTest
         assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_1);
     }
 
-    @Test
-    public void testMoveLiquidExperimentFromFrozenProjectToLiquidProject()
+    @DataProvider(name = "liquidExperimentProjectProjectRelations")
+    public static Object[][] liquidExperimentProjectProjectRelations()
     {
-        // Given
-        setFrozenFlagForProjects(true, projectOfExperiment);
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
-        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
-        experimentUpdate.setExperimentId(experiment);
-        experimentUpdate.setProjectId(project1);
-
-        // When
-        v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate));
-
-        // Then
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_1);
+        List<FrozenFlags> combinationsForExperiment = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsForProject = new FrozenFlags(true).freezeForSample().createAllCombinations();
+        combinationsForProject.add(new FrozenFlags(false).freezeForExperiment());
+        return asCartesianProduct(combinationsForExperiment, combinationsForProject, combinationsForProject);
     }
 
-    @Test
-    public void testMoveLiquidExperimentFromFrozenProjectToFrozenProject()
+    @Test(dataProvider = "frozenExperimentProjectProjectRelations")
+    public void testInvalidMoveExperimentFromProjectToProject(FrozenFlags frozenFlagsForExperiment,
+            FrozenFlags frozenFlagsForOldProject, FrozenFlags frozenFlagsForNewProject)
     {
         // Given
-        setFrozenFlagForProjects(true, project1, projectOfExperiment);
+        setFrozenFlagsForExperiments(frozenFlagsForExperiment, experiment);
+        setFrozenFlagsForProjects(frozenFlagsForOldProject, projectOfExperiment);
+        setFrozenFlagsForProjects(frozenFlagsForNewProject, project1);
         assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
         ExperimentUpdate experimentUpdate = new ExperimentUpdate();
         experimentUpdate.setExperimentId(experiment);
         experimentUpdate.setProjectId(project1);
+        boolean frozen = frozenFlagsForNewProject.isFrozen() && frozenFlagsForNewProject.isFrozenForExperiment();
+        String type = frozen ? "SET" : "REMOVE";
+        String projectCode = frozen ? PROJECT_1 : PROJECT_OF_EXP;
 
-        // When
-        v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate));
-
-        // Then
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_1);
-    }
-    
-    @Test
-    public void testMoveFrozenExperimentFromLiquidProjectToLiquidProject()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experiment);
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
-        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
-        experimentUpdate.setExperimentId(experiment);
-        experimentUpdate.setProjectId(project1);
-        
-        // When
-        v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate));
-        
-        // Then
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_1);
-    }
-    
-    @Test
-    public void testMoveFrozenExperimentFromLiquidProjectToFrozenProject()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experiment);
-        setFrozenFlagForProjects(true, project1);
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
-        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
-        experimentUpdate.setExperimentId(experiment);
-        experimentUpdate.setProjectId(project1);
-        
         // When
         assertUserFailureException(Void -> v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate)),
                 // Then
-                "ERROR: Operation SET PROJECT is not allowed because experiment " + EXP + " and project " + PROJECT_1 + " are frozen.");
+                "ERROR: Operation " + type + " PROJECT is not allowed because project " + projectCode + " is frozen for experiment "
+                        + EXP + ".");
     }
-    @Test
-    public void testMoveMoltenExperimentFromLiquidProjectToMoltenProject()
+
+    @Test(dataProvider = "frozenExperimentProjectProjectRelations")
+    public void testInvalidMoveExperimentFromProjectToProjectAfterMelting(FrozenFlags frozenFlagsForExperiment,
+            FrozenFlags frozenFlagsForOldProject, FrozenFlags frozenFlagsForNewProject)
     {
         // Given
-        setFrozenFlagForExperiments(true, experiment);
-        setFrozenFlagForProjects(true, project1);
+        setFrozenFlagsForExperiments(frozenFlagsForExperiment, experiment);
+        setFrozenFlagsForProjects(frozenFlagsForOldProject, projectOfExperiment);
+        setFrozenFlagsForProjects(frozenFlagsForNewProject, project1);
+        setFrozenFlagsForProjects(frozenFlagsForOldProject.clone().melt(), projectOfExperiment);
+        setFrozenFlagsForProjects(frozenFlagsForNewProject.clone().melt(), project1);
         assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
-        setFrozenFlagForExperiments(false, experiment);
-        setFrozenFlagForProjects(false, project1);
         ExperimentUpdate experimentUpdate = new ExperimentUpdate();
         experimentUpdate.setExperimentId(experiment);
         experimentUpdate.setProjectId(project1);
-        
+
         // When
         v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate));
-        
+
         // Then
         assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_1);
     }
-    @Test
-    public void testMoveFrozenExperimentFromFrozenProjectToLiquidProject()
+
+    @DataProvider(name = "frozenExperimentProjectProjectRelations")
+    public static Object[][] liquidExperimentProjectRelations()
     {
-        // Given
-        setFrozenFlagForExperiments(true, experiment);
-        setFrozenFlagForProjects(true, projectOfExperiment);
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
-        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
-        experimentUpdate.setExperimentId(experiment);
-        experimentUpdate.setProjectId(project1);
-        
-        // When
-        assertUserFailureException(Void -> v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate)),
-                // Then
-                "ERROR: Operation REMOVE PROJECT is not allowed because experiment " + EXP + " and project " + PROJECT_OF_EXP + " are frozen.");
+        List<FrozenFlags> combinationsForExperiment = new FrozenFlags(true).createAllCombinations();
+        List<FrozenFlags> combinationsForLiquidProject = new FrozenFlags(true).freezeForSample().createAllCombinations();
+        combinationsForLiquidProject.add(new FrozenFlags(false).freezeForExperiment());
+        List<FrozenFlags> combinationsForFrozenProject = Arrays.asList(new FrozenFlags(true).freezeForExperiment());
+        return merge(asCartesianProduct(combinationsForExperiment, combinationsForLiquidProject, combinationsForFrozenProject),
+                asCartesianProduct(combinationsForExperiment, combinationsForFrozenProject, combinationsForLiquidProject),
+                asCartesianProduct(combinationsForExperiment, combinationsForFrozenProject, combinationsForFrozenProject));
     }
-    @Test
-    public void testMoveMoltenExperimentFromMoltenProjectToLiquidProject()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experiment);
-        setFrozenFlagForProjects(true, projectOfExperiment);
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
-        setFrozenFlagForExperiments(false, experiment);
-        setFrozenFlagForProjects(false, projectOfExperiment);
-        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
-        experimentUpdate.setExperimentId(experiment);
-        experimentUpdate.setProjectId(project1);
-        
-        // When
-        v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate));
-        
-        // Then
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_1);
-    }
-    @Test
-    public void testMoveFrozenExperimentFromFrozenProjectToFrozenProject()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experiment);
-        setFrozenFlagForProjects(true, project1, projectOfExperiment);
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
-        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
-        experimentUpdate.setExperimentId(experiment);
-        experimentUpdate.setProjectId(project1);
-        
-        // When
-        assertUserFailureException(Void -> v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate)),
-                // Then
-                "ERROR: Operation SET PROJECT is not allowed because experiment " + EXP + " and project " + PROJECT_1 + " are frozen.");
-    }
-    @Test
-    public void testMoveMoltenExperimentFromMoltenProjectToMoltenProject()
-    {
-        // Given
-        setFrozenFlagForExperiments(true, experiment);
-        setFrozenFlagForProjects(true, project1, projectOfExperiment);
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_OF_EXP);
-        setFrozenFlagForExperiments(false, experiment);
-        setFrozenFlagForProjects(false, project1, projectOfExperiment);
-        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
-        experimentUpdate.setExperimentId(experiment);
-        experimentUpdate.setProjectId(project1);
-        
-        // When
-        v3api.updateExperiments(systemSessionToken, Arrays.asList(experimentUpdate));
-        
-        // Then
-        assertEquals(getExperiment(experiment).getProject().getCode(), PROJECT_1);
-    }
+
 }

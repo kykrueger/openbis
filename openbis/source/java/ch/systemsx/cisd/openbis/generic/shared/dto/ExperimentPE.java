@@ -102,11 +102,15 @@ public class ExperimentPE extends AttachmentHolderPE implements
     private transient Long id;
 
     private String code;
-    
+
     private boolean frozen;
 
+    private boolean frozenForSample;
+
+    private boolean frozenForDataSet;
+
     private ProjectPE project;
-    
+
     private boolean projectFrozen;
 
     private ExperimentTypePE experimentType;
@@ -251,6 +255,30 @@ public class ExperimentPE extends AttachmentHolderPE implements
         this.frozen = frozen;
     }
 
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, nullable = false)
+    public boolean isFrozenForSample()
+    {
+        return frozenForSample;
+    }
+
+    public void setFrozenForSample(boolean frozenForSample)
+    {
+        this.frozenForSample = frozenForSample;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_DATA_SET_COLUMN, nullable = false)
+    public boolean isFrozenForDataSet()
+    {
+        return frozenForDataSet;
+    }
+
+    public void setFrozenForDataSet(boolean frozenForDataSet)
+    {
+        this.frozenForDataSet = frozenForDataSet;
+    }
+
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull(message = ValidationMessages.PROJECT_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.PROJECT_COLUMN, updatable = true)
@@ -266,7 +294,7 @@ public class ExperimentPE extends AttachmentHolderPE implements
         this.project = project;
         if (project != null)
         {
-            projectFrozen = project.isFrozen();
+            projectFrozen = project.isFrozen() && project.isFrozenForExperiment();
         }
         this.experimentIdentifier = null;
     }

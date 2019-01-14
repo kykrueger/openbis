@@ -290,9 +290,29 @@ public final class ColumnNames
 
     public static final String FROZEN_COLUMN = "frozen";
 
+    public static final String FROZEN_FOR_CHILDREN_COLUMN = "frozen_for_children";
+
+    public static final String FROZEN_FOR_PARENTS_COLUMN = "frozen_for_parents";
+
+    public static final String FROZEN_FOR_COMPONENT_COLUMN = "frozen_for_comp";
+
+    public static final String FROZEN_FOR_COMPONENTS_COLUMN = "frozen_for_comps";
+
+    public static final String FROZEN_FOR_CONTAINERS_COLUMN = "frozen_for_conts";
+
+    public static final String FROZEN_FOR_DATA_SET_COLUMN = "frozen_for_data";
+
+    public static final String FROZEN_FOR_SAMPLE_COLUMN = "frozen_for_samp";
+
+    public static final String FROZEN_FOR_EXPERIMENT_COLUMN = "frozen_for_exp";
+
+    public static final String FROZEN_FOR_PROJECT_COLUMN = "frozen_for_proj";
+
     public static final String PARENT_FROZEN_COLUMN = "parent_frozen";
 
     public static final String CHILD_FROZEN_COLUMN = "child_frozen";
+
+    public static final String COMPONENT_FROZEN_COLUMN = "comp_frozen";
 
     public static final String DATA_SET_FROZEN_COLUMN = "dase_frozen";
 

@@ -57,10 +57,14 @@ public class DataSetRelationshipPE implements Serializable
     private DataPE parentDataSet;
     
     private boolean parentFrozen;
+    
+    private boolean containerFrozen;
 
     private DataPE childDataSet;
     
     private boolean childFrozen;
+    
+    private boolean componentFrozen;
 
     private PersonPE author;
 
@@ -109,7 +113,8 @@ public class DataSetRelationshipPE implements Serializable
         this.parentDataSet = parentDataSet;
         if (parentDataSet != null)
         {
-            parentFrozen = parentDataSet.isFrozen();
+            parentFrozen = parentDataSet.isFrozen() && parentDataSet.isFrozenForChildren();
+            containerFrozen = parentDataSet.isFrozen() && parentDataSet.isFrozenForComponents();
         }
     }
 
@@ -123,6 +128,18 @@ public class DataSetRelationshipPE implements Serializable
     public void setParentFrozen(boolean parentFrozen)
     {
         this.parentFrozen = parentFrozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.CONTAINER_FROZEN_COLUMN, nullable = false)
+    public boolean isContainerFrozen()
+    {
+        return containerFrozen;
+    }
+
+    public void setContainerFrozen(boolean containerFrozen)
+    {
+        this.containerFrozen = containerFrozen;
     }
 
     @NotNull(message = ValidationMessages.CHILD_NOT_NULL_MESSAGE)
@@ -139,7 +156,8 @@ public class DataSetRelationshipPE implements Serializable
         this.childDataSet = childDataSet;
         if (childDataSet != null)
         {
-            childFrozen = childDataSet.isFrozen();
+            childFrozen = childDataSet.isFrozen() && childDataSet.isFrozenForParents();
+            componentFrozen = childDataSet.isFrozen() && childDataSet.isFrozenForContainers();
         }
     }
 
@@ -153,6 +171,18 @@ public class DataSetRelationshipPE implements Serializable
     public void setChildFrozen(boolean childFrozen)
     {
         this.childFrozen = childFrozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.COMPONENT_FROZEN_COLUMN, nullable = false)
+    public boolean isComponentFrozen()
+    {
+        return componentFrozen;
+    }
+
+    public void setComponentFrozen(boolean componentFrozen)
+    {
+        this.componentFrozen = componentFrozen;
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

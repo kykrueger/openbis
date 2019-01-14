@@ -47,12 +47,14 @@ public class ProjectFreezingTest extends FreezingTest
     @BeforeMethod
     public void createExamples()
     {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
         ProjectCreation p1 = project(DEFAULT_SPACE_ID, PROJECT_1);
         p1.setAttachments(Arrays.asList(attachment("f1.txt", "T1", "my t1", "abcdefgh")));
         ProjectCreation p2 = project(DEFAULT_SPACE_ID, PROJECT_2);
-        List<ProjectPermId> projects = v3api.createProjects(systemSessionToken, Arrays.asList(p1, p2));
+        List<ProjectPermId> projects = v3api.createProjects(sessionToken, Arrays.asList(p1, p2));
         project1 = projects.get(0);
         project2 = projects.get(1);
+        v3api.logout(sessionToken);
     }
 
     @Test
@@ -86,7 +88,7 @@ public class ProjectFreezingTest extends FreezingTest
     }
 
     @Test
-    public void testChangeDescription()
+    public void testSetDescription()
     {
         // Given
         setFrozenFlagForProjects(true, project1);
@@ -101,6 +103,27 @@ public class ProjectFreezingTest extends FreezingTest
                 "ERROR: Operation UPDATE is not allowed because project " + PROJECT_1 + " is frozen.");
     }
 
+    @Test
+    public void testChangeDescription()
+    {
+        // Given
+        ProjectUpdate projectUpdate = new ProjectUpdate();
+        projectUpdate.setProjectId(project1);
+        projectUpdate.setDescription("hello");
+        v3api.updateProjects(systemSessionToken, Arrays.asList(projectUpdate));
+
+        setFrozenFlagForProjects(true, project1);
+        assertEquals(getProject(project1).getDescription(), "hello");
+        ProjectUpdate projectUpdate2 = new ProjectUpdate();
+        projectUpdate2.setProjectId(project1);
+        projectUpdate2.setDescription("hello2");
+        
+        // When
+        assertUserFailureException(Void -> v3api.updateProjects(systemSessionToken, Arrays.asList(projectUpdate2)),
+                // Then
+                "ERROR: Operation UPDATE is not allowed because project " + PROJECT_1 + " is frozen.");
+    }
+    
     @Test
     public void testChangeDescriptionForMoltenProject()
     {

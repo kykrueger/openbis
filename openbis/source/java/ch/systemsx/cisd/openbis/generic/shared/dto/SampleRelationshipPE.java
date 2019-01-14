@@ -113,7 +113,7 @@ public class SampleRelationshipPE implements Serializable
         this.parentSample = parentSample;
         if (parentSample != null)
         {
-            parentFrozen = parentSample.isFrozen();
+            parentFrozen = parentSample.isFrozen() && parentSample.isFrozenForChildren();
         }
     }
 
@@ -121,7 +121,6 @@ public class SampleRelationshipPE implements Serializable
     @Column(name = ColumnNames.PARENT_FROZEN_COLUMN, nullable = false)
     public boolean isParentFrozen()
     {
-//        return parentSample == null ? parentFrozen : parentSample.isFrozen();
         return parentFrozen;
     }
 
@@ -143,7 +142,7 @@ public class SampleRelationshipPE implements Serializable
         this.childSample = childSample;
         if (childSample != null)
         {
-            childFrozen = childSample.isFrozen();
+            childFrozen = childSample.isFrozen() && childSample.isFrozenForParents();
         }
     }
 
@@ -151,7 +150,6 @@ public class SampleRelationshipPE implements Serializable
     @Column(name = ColumnNames.CHILD_FROZEN_COLUMN, nullable = false)
     public boolean isChildFrozen()
     {
-//        return childSample == null ? childFrozen : childSample.isFrozen();
         return childFrozen;
     }
 

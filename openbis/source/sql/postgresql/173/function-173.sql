@@ -591,6 +591,10 @@ CREATE OR REPLACE RULE sample_insert AS
        INSERT INTO samples_all (
          id,
          frozen,
+         frozen_for_comp, 
+         frozen_for_children, 
+         frozen_for_parents, 
+         frozen_for_data,
          code, 
          del_id,
          orig_del,
@@ -612,6 +616,10 @@ CREATE OR REPLACE RULE sample_insert AS
        ) VALUES (
          NEW.id,
          NEW.frozen,
+         NEW.frozen_for_comp, 
+         NEW.frozen_for_children, 
+         NEW.frozen_for_parents, 
+         NEW.frozen_for_data,
          NEW.code, 
          NEW.del_id,
          NEW.orig_del,
@@ -637,6 +645,10 @@ CREATE OR REPLACE RULE sample_update AS
        UPDATE samples_all
           SET code = NEW.code,
               frozen = NEW.frozen,
+              frozen_for_comp = NEW.frozen_for_comp, 
+              frozen_for_children = NEW.frozen_for_children, 
+              frozen_for_parents = NEW.frozen_for_parents, 
+              frozen_for_data = NEW.frozen_for_data,
               del_id = NEW.del_id,
               orig_del = NEW.orig_del,
               expe_id = NEW.expe_id,
@@ -684,6 +696,8 @@ CREATE OR REPLACE RULE experiment_insert AS
      INSERT INTO experiments_all (
        id,
        frozen,
+       frozen_for_samp,
+       frozen_for_data,
        code, 
        del_id,
        orig_del,
@@ -700,6 +714,8 @@ CREATE OR REPLACE RULE experiment_insert AS
      ) VALUES (
        NEW.id,
        NEW.frozen,
+       NEW.frozen_for_samp,
+       NEW.frozen_for_data,
        NEW.code, 
        NEW.del_id,
        NEW.orig_del,
@@ -720,6 +736,8 @@ CREATE OR REPLACE RULE experiment_update AS
        UPDATE experiments_all
           SET code = NEW.code,
               frozen = NEW.frozen,
+              frozen_for_samp = NEW.frozen_for_samp,
+              frozen_for_data = NEW.frozen_for_data,
               del_id = NEW.del_id,
               orig_del = NEW.orig_del,
               exty_id = NEW.exty_id,
@@ -758,11 +776,16 @@ CREATE OR REPLACE RULE experiments_deleted_delete AS
 -- data --
 ----------
       
+
 CREATE OR REPLACE RULE data_insert AS
   ON INSERT TO data DO INSTEAD 
      INSERT INTO data_all (
        id,
        frozen,
+       frozen_for_children, 
+       frozen_for_parents, 
+       frozen_for_comps, 
+       frozen_for_conts,
        code, 
        del_id,
        orig_del,
@@ -786,6 +809,10 @@ CREATE OR REPLACE RULE data_insert AS
      ) VALUES (
        NEW.id,
        NEW.frozen,
+       NEW.frozen_for_children, 
+       NEW.frozen_for_parents, 
+       NEW.frozen_for_comps, 
+       NEW.frozen_for_conts,
        NEW.code, 
        NEW.del_id, 
        NEW.orig_del,
@@ -813,6 +840,10 @@ CREATE OR REPLACE RULE data_update AS
        UPDATE data_all
           SET code = NEW.code,
               frozen = NEW.frozen,
+              frozen_for_children = NEW.frozen_for_children, 
+              frozen_for_parents = NEW.frozen_for_parents, 
+              frozen_for_comps = NEW.frozen_for_comps, 
+              frozen_for_conts = NEW.frozen_for_conts,
               del_id = NEW.del_id,
               orig_del = NEW.orig_del,
               expe_id = NEW.expe_id,
@@ -833,7 +864,6 @@ CREATE OR REPLACE RULE data_update AS
               version = NEW.version,
               data_set_kind = NEW.data_set_kind
        WHERE id = NEW.id;
-
               
 CREATE OR REPLACE RULE data_all AS
     ON DELETE TO data DO INSTEAD
@@ -853,6 +883,7 @@ CREATE OR REPLACE RULE data_deleted_delete AS
     ON DELETE TO data_deleted DO INSTEAD
        DELETE FROM data_all
               WHERE id = OLD.id;               
+
 
 -- link_data must refer to a data set of kind LINK
 CREATE OR REPLACE FUNCTION check_data_set_kind_link() RETURNS trigger AS $$
@@ -1137,14 +1168,15 @@ CREATE OR REPLACE RULE data_set_properties_delete AS
        );
        
 -- End of rules for properties history
-
 CREATE OR REPLACE RULE data_set_relationships_insert AS
     ON INSERT TO data_set_relationships DO INSTEAD 
        INSERT INTO data_set_relationships_all (
          data_id_parent,
          parent_frozen,
+         cont_frozen,
          data_id_child,
          child_frozen,
+         comp_frozen,
          pers_id_author,
          relationship_id,
          ordinal,
@@ -1153,8 +1185,10 @@ CREATE OR REPLACE RULE data_set_relationships_insert AS
        ) VALUES (
          NEW.data_id_parent,
          NEW.parent_frozen,
+         NEW.cont_frozen,
          NEW.data_id_child,
          NEW.child_frozen,
+         NEW.comp_frozen,   
          NEW.pers_id_author,
          NEW.relationship_id,
          NEW.ordinal,
@@ -1168,8 +1202,10 @@ CREATE OR REPLACE RULE data_set_relationships_update AS
           SET 
             data_id_parent = NEW.data_id_parent,
             parent_frozen = NEW.parent_frozen,
+            cont_frozen = NEW.cont_frozen,
             data_id_child = NEW.data_id_child,
             child_frozen = NEW.child_frozen,
+            comp_frozen = NEW.comp_frozen,
             del_id = NEW.del_id,
             relationship_id = NEW.relationship_id,
             ordinal = NEW.ordinal,
@@ -1178,7 +1214,7 @@ CREATE OR REPLACE RULE data_set_relationships_update AS
             modification_timestamp = NEW.modification_timestamp
           WHERE data_id_parent = NEW.data_id_parent and data_id_child = NEW.data_id_child 
                 and relationship_id = NEW.relationship_id;
-          
+
 CREATE OR REPLACE RULE data_set_relationships_delete AS
     ON DELETE TO data_set_relationships DO INSTEAD
        DELETE FROM data_set_relationships_all
@@ -2416,8 +2452,8 @@ BEGIN
         operation = 'REMOVE SPACE';
     END IF;
 
-    RAISE EXCEPTION 'Operation % is not allowed because % % and space % are frozen.', operation, TG_ARGV[0], NEW.code,
-        (select code from spaces where id = space_id);
+    RAISE EXCEPTION 'Operation % is not allowed because space % is frozen for % %.', operation,
+        (select code from spaces where id = space_id), TG_ARGV[0], NEW.code;
 END;
 $$ LANGUAGE 'plpgsql';
 
@@ -2434,8 +2470,8 @@ BEGIN
         operation = 'REMOVE PROJECT';
     END IF;
 
-    RAISE EXCEPTION 'Operation % is not allowed because % % and project % are frozen.', operation, TG_ARGV[0], NEW.code,
-        (select code from projects where id = project_id);
+    RAISE EXCEPTION 'Operation % is not allowed because project % is frozen for % %.', operation,
+        (select code from projects where id = project_id), TG_ARGV[0], NEW.code;
 END;
 $$ LANGUAGE 'plpgsql';
 
@@ -2452,12 +2488,60 @@ BEGIN
         operation = 'REMOVE EXPERIMENT';
     END IF;
 
-    RAISE EXCEPTION 'Operation % is not allowed because % % and experiment % are frozen.', operation, TG_ARGV[0], NEW.code,
-        (select code from experiments_all where id = experiment_id);
+    RAISE EXCEPTION 'Operation % is not allowed because experiment % is frozen for % %.', operation,
+        (select code from experiments_all where id = experiment_id), TG_ARGV[0], NEW.code;
 END;
 $$ LANGUAGE 'plpgsql';
 
+-- Spaces --------------------
+-- Spaces melting
+
+CREATE OR REPLACE FUNCTION MELT_SPACE_FOR() RETURNS trigger as $$
+BEGIN
+    NEW.FROZEN_FOR_PROJ = 'f';
+    NEW.FROZEN_FOR_SAMP = 'f';
+    return NEW;
+end;
+$$ language plpgsql;
+
+DROP TRIGGER IF EXISTS MELT_SPACE_FOR ON SPACES;
+CREATE TRIGGER MELT_SPACE_FOR BEFORE UPDATE ON SPACES
+    FOR EACH ROW WHEN ((NEW.FROZEN_FOR_PROJ OR NEW.FROZEN_FOR_SAMP) AND NOT NEW.FROZEN)
+    EXECUTE PROCEDURE MELT_SPACE_FOR();
+
+-- Spaces deleting
+
+DROP TRIGGER IF EXISTS SPACE_FROZEN_CHECK_ON_DELETE ON SPACES;
+CREATE TRIGGER SPACE_FROZEN_CHECK_ON_DELETE BEFORE DELETE ON SPACES
+    FOR EACH ROW WHEN (OLD.frozen)
+    EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_ENTITY_BY_CODE('DELETE', 'space');
+
+-- Space update
+
+DROP TRIGGER IF EXISTS SPACE_FROZEN_CHECK_ON_UPDATE ON SPACES;
+CREATE TRIGGER SPACE_FROZEN_CHECK_ON_UPDATE BEFORE UPDATE ON SPACES
+    FOR EACH ROW WHEN (OLD.frozen AND NEW.frozen AND 
+        (OLD.description <> NEW.description 
+         OR (OLD.description IS NULL AND NEW.description IS NOT NULL)
+         OR (OLD.description IS NOT NULL AND NEW.description IS NULL))) 
+    EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_ENTITY_BY_CODE('UPDATE', 'space');
+
 -- Projects --------------------
+-- Projects melting
+
+CREATE OR REPLACE FUNCTION MELT_PROJECT_FOR() RETURNS trigger as $$
+BEGIN
+    NEW.FROZEN_FOR_EXP = 'f';
+    NEW.FROZEN_FOR_SAMP = 'f';
+    return NEW;
+end;
+$$ language plpgsql;
+
+DROP TRIGGER IF EXISTS MELT_PROJECT_FOR ON PROJECTS;
+CREATE TRIGGER MELT_PROJECT_FOR BEFORE UPDATE ON PROJECTS
+    FOR EACH ROW WHEN ((NEW.FROZEN_FOR_EXP OR NEW.FROZEN_FOR_SAMP) AND NOT NEW.FROZEN)
+    EXECUTE PROCEDURE MELT_PROJECT_FOR();
+
 -- Project deleting
 
 DROP TRIGGER IF EXISTS PROJECT_FROZEN_CHECK_ON_DELETE ON PROJECTS;
@@ -2468,7 +2552,10 @@ CREATE TRIGGER PROJECT_FROZEN_CHECK_ON_DELETE BEFORE DELETE ON PROJECTS
 -- Project update
 DROP TRIGGER IF EXISTS PROJECT_FROZEN_CHECK_ON_UPDATE ON PROJECTS;
 CREATE TRIGGER PROJECT_FROZEN_CHECK_ON_UPDATE BEFORE UPDATE ON PROJECTS
-    FOR EACH ROW WHEN (OLD.frozen AND NEW.frozen)
+    FOR EACH ROW WHEN (OLD.frozen AND NEW.frozen AND 
+        (OLD.description <> NEW.description 
+         OR (OLD.description IS NULL AND NEW.description IS NOT NULL)
+         OR (OLD.description IS NOT NULL AND NEW.description IS NULL))) 
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_ENTITY_BY_CODE('UPDATE', 'project');
 
 -- Project attachment inserting, updating and deleting
@@ -2504,10 +2591,25 @@ CREATE TRIGGER PROJECT_FROZEN_CHECK_ON_DELETE_ATTACHMENT BEFORE DELETE ON ATTACH
 -- Project space relationship
 DROP TRIGGER IF EXISTS PROJECT_SPACE_RELATIONSHIP_FROZEN_CHECK ON PROJECTS;
 CREATE TRIGGER PROJECT_SPACE_RELATIONSHIP_FROZEN_CHECK BEFORE UPDATE ON PROJECTS
-    FOR EACH ROW WHEN (NEW.space_id <> OLD.space_id AND (NEW.SPACE_FROZEN OR OLD.SPACE_FROZEN) AND NEW.FROZEN)
+    FOR EACH ROW WHEN (NEW.space_id <> OLD.space_id AND (NEW.SPACE_FROZEN OR OLD.SPACE_FROZEN))
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_SPACE_RELATIONSHIP('project');
 
 -- Experiments --------------------
+-- Experiments melting
+
+CREATE OR REPLACE FUNCTION MELT_EXPERIMENT_FOR() RETURNS trigger as $$
+BEGIN
+    NEW.FROZEN_FOR_SAMP = 'f';
+    NEW.FROZEN_FOR_DATA = 'f';
+    return NEW;
+end;
+$$ language plpgsql;
+
+DROP TRIGGER IF EXISTS MELT_EXPERIMENT_FOR ON EXPERIMENTS_ALL;
+CREATE TRIGGER MELT_EXPERIMENT_FOR BEFORE UPDATE ON EXPERIMENTS_ALL
+    FOR EACH ROW WHEN ((NEW.FROZEN_FOR_SAMP OR NEW.FROZEN_FOR_DATA) AND NOT NEW.FROZEN)
+    EXECUTE PROCEDURE MELT_EXPERIMENT_FOR();
+
 -- Experiment trashing and deleting
 
 DROP TRIGGER IF EXISTS EXPERIMENT_FROZEN_CHECK_ON_TRASH ON EXPERIMENTS_ALL;
@@ -2570,10 +2672,27 @@ CREATE TRIGGER EXPERIMENT_FROZEN_CHECK_ON_DELETE_ATTACHMENT BEFORE DELETE ON ATT
 -- Experiment project relationship
 DROP TRIGGER IF EXISTS EXPERIMENT_PROJECT_RELATIONSHIP_FROZEN_CHECK ON EXPERIMENTS_ALL;
 CREATE TRIGGER EXPERIMENT_PROJECT_RELATIONSHIP_FROZEN_CHECK BEFORE UPDATE ON EXPERIMENTS_ALL
-    FOR EACH ROW WHEN (NEW.proj_id <> OLD.proj_id AND (NEW.PROJ_FROZEN OR OLD.PROJ_FROZEN) AND NEW.FROZEN)
+    FOR EACH ROW WHEN (NEW.proj_id <> OLD.proj_id AND (NEW.PROJ_FROZEN OR OLD.PROJ_FROZEN))
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_PROJECT_RELATIONSHIP('experiment');
 
 -- Samples --------------------
+-- Samples melting
+
+CREATE OR REPLACE FUNCTION MELT_SAMPLE_FOR() RETURNS trigger as $$
+BEGIN
+    NEW.FROZEN_FOR_COMP = 'f';
+    NEW.FROZEN_FOR_CHILDREN = 'f';
+    NEW.FROZEN_FOR_PARENTS = 'f';
+    NEW.FROZEN_FOR_DATA = 'f';
+    return NEW;
+end;
+$$ language plpgsql;
+
+DROP TRIGGER IF EXISTS MELT_SAMPLE_FOR ON SAMPLES_ALL;
+CREATE TRIGGER MELT_SAMPLE_FOR BEFORE UPDATE ON SAMPLES_ALL
+    FOR EACH ROW WHEN ((NEW.FROZEN_FOR_COMP OR NEW.FROZEN_FOR_CHILDREN OR NEW.FROZEN_FOR_PARENTS OR NEW.FROZEN_FOR_DATA) AND NOT NEW.FROZEN)
+    EXECUTE PROCEDURE MELT_SAMPLE_FOR();
+
 -- Sample trashing and deleting
 
 DROP TRIGGER IF EXISTS SAMPLE_FROZEN_CHECK_ON_TRASH ON SAMPLES_ALL;
@@ -2647,8 +2766,8 @@ BEGIN
         operation = 'REMOVE CONTAINER';
     END IF;
 
-    RAISE EXCEPTION 'Operation % is not allowed because samples % and % are frozen.', operation, NEW.code,
-        (select code from samples_all where id = sample_id);
+    RAISE EXCEPTION 'Operation % is not allowed because sample % is frozen for sample %.', operation,
+        (select code from samples_all where id = sample_id), NEW.code;
 END;
 $$ LANGUAGE 'plpgsql';
 
@@ -2658,7 +2777,7 @@ CREATE TRIGGER SAMPLE_FROZEN_CHECK_ON_SET_CONTAINER BEFORE UPDATE ON SAMPLES_ALL
         (NEW.samp_id_part_of <> OLD.samp_id_part_of
          OR (NEW.samp_id_part_of IS NOT NULL AND OLD.samp_id_part_of IS NULL)
          OR (NEW.samp_id_part_of IS NULL AND OLD.samp_id_part_of IS NOT NULL))
-        AND (NEW.CONT_FROZEN OR OLD.CONT_FROZEN) AND NEW.FROZEN)
+        AND (NEW.CONT_FROZEN OR OLD.CONT_FROZEN))
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_SAMPLE_CONTAINER_RELATIONSHIP();
 
 -- Sample parent-child relationship inserting and deleting
@@ -2674,7 +2793,7 @@ BEGIN
         parent_id = NEW.sample_id_parent;
         child_id = NEW.sample_id_child;
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because samples % and % are frozen.', TG_OP, 
+    RAISE EXCEPTION 'Operation % is not allowed because sample % or % is frozen.', TG_OP, 
         (select code from samples_all where id = parent_id),
         (select code from samples_all where id = child_id);
 END;
@@ -2682,12 +2801,12 @@ $$ LANGUAGE 'plpgsql';
 
 DROP TRIGGER IF EXISTS SAMPLE_RELATIONSHIP_FROZEN_CHECK_ON_INSERT ON SAMPLE_RELATIONSHIPS_ALL;
 CREATE TRIGGER SAMPLE_RELATIONSHIP_FROZEN_CHECK_ON_INSERT BEFORE INSERT ON SAMPLE_RELATIONSHIPS_ALL
-    FOR EACH ROW WHEN (NEW.PARENT_FROZEN AND NEW.CHILD_FROZEN)
+    FOR EACH ROW WHEN (NEW.PARENT_FROZEN OR NEW.CHILD_FROZEN)
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_SAMPLE_RELATIONSHIP();
 
 DROP TRIGGER IF EXISTS SAMPLE_RELATIONSHIP_FROZEN_CHECK_ON_DELETE ON SAMPLE_RELATIONSHIPS_ALL;
 CREATE TRIGGER SAMPLE_RELATIONSHIP_FROZEN_CHECK_ON_DELETE BEFORE DELETE ON SAMPLE_RELATIONSHIPS_ALL
-    FOR EACH ROW WHEN (OLD.PARENT_FROZEN AND OLD.CHILD_FROZEN)
+    FOR EACH ROW WHEN (OLD.PARENT_FROZEN OR OLD.CHILD_FROZEN)
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_SAMPLE_RELATIONSHIP();
 
 -- Sample experiment relationship
@@ -2697,7 +2816,7 @@ CREATE TRIGGER SAMPLE_EXPERIMENT_RELATIONSHIP_FROZEN_CHECK BEFORE UPDATE ON SAMP
         (NEW.expe_id <> OLD.expe_id
          OR (NEW.expe_id IS NOT NULL AND OLD.expe_id IS NULL)
          OR (NEW.expe_id IS NULL AND OLD.expe_id IS NOT NULL))
-        AND (NEW.EXPE_FROZEN OR OLD.EXPE_FROZEN) AND NEW.FROZEN)
+        AND (NEW.EXPE_FROZEN OR OLD.EXPE_FROZEN))
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_EXPERIMENT_RELATIONSHIP('sample');
 
 -- Sample project relationship
@@ -2707,7 +2826,7 @@ CREATE TRIGGER SAMPLE_PROJECT_RELATIONSHIP_FROZEN_CHECK BEFORE UPDATE ON SAMPLES
         (NEW.proj_id <> OLD.proj_id
          OR (NEW.proj_id IS NOT NULL AND OLD.proj_id IS NULL)
          OR (NEW.proj_id IS NULL AND OLD.proj_id IS NOT NULL))
-        AND (NEW.PROJ_FROZEN OR OLD.PROJ_FROZEN) AND NEW.FROZEN)
+        AND (NEW.PROJ_FROZEN OR OLD.PROJ_FROZEN))
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_PROJECT_RELATIONSHIP('sample');
 
 -- Sample space relationship
@@ -2717,10 +2836,27 @@ CREATE TRIGGER SAMPLE_SPACE_RELATIONSHIP_FROZEN_CHECK BEFORE UPDATE ON SAMPLES_A
         (NEW.space_id <> OLD.space_id
          OR (NEW.space_id IS NOT NULL AND OLD.space_id IS NULL)
          OR (NEW.space_id IS NULL AND OLD.space_id IS NOT NULL))
-        AND (NEW.SPACE_FROZEN OR OLD.SPACE_FROZEN) AND NEW.FROZEN)
+        AND (NEW.SPACE_FROZEN OR OLD.SPACE_FROZEN))
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_SPACE_RELATIONSHIP('sample');
 
 -- Data Set --------------------
+-- Set melting
+
+CREATE OR REPLACE FUNCTION MELT_DATA_SET_FOR() RETURNS trigger as $$
+BEGIN
+    NEW.FROZEN_FOR_CHILDREN = 'f';
+    NEW.FROZEN_FOR_PARENTS = 'f';
+    NEW.FROZEN_FOR_COMPS = 'f';
+    NEW.FROZEN_FOR_CONTS = 'f';
+    return NEW;
+end;
+$$ language plpgsql;
+
+DROP TRIGGER IF EXISTS MELT_DATA_SET_FOR ON DATA_ALL;
+CREATE TRIGGER MELT_DATA_SET_FOR BEFORE UPDATE ON DATA_ALL
+    FOR EACH ROW WHEN ((NEW.FROZEN_FOR_CHILDREN OR NEW.FROZEN_FOR_PARENTS OR NEW.FROZEN_FOR_COMPS OR NEW.FROZEN_FOR_CONTS) AND NOT NEW.FROZEN)
+    EXECUTE PROCEDURE MELT_DATA_SET_FOR();
+
 -- Data set trashing and deleting
 
 DROP TRIGGER IF EXISTS DATA_SET_FROZEN_CHECK_ON_TRASH ON DATA_ALL;
@@ -2764,33 +2900,51 @@ CREATE TRIGGER DATA_SET_FROZEN_CHECK_ON_DELETE_PROPERTY BEFORE DELETE ON DATA_SE
     FOR EACH ROW WHEN (OLD.DASE_FROZEN)
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_DATA_SET('PROPERTY');
 
--- Data set parent-child relationship inserting and deleting
+-- Data set parent-child/container-component relationship inserting and deleting
 CREATE OR REPLACE FUNCTION RAISE_EXCEPTION_FROZEN_DATA_SET_RELATIONSHIP() RETURNS trigger AS $$
 DECLARE
-    parent_id   TECH_ID;
-    child_id    TECH_ID;
+    parent_id           TECH_ID;
+    child_id            TECH_ID;
+    relationship_id     TECH_ID;
+    relationship        CODE;
+    parent_child_frozen BOOLEAN_CHAR;
+    cont_comp_frozen    BOOLEAN_CHAR;
 BEGIN
     IF (TG_OP = 'DELETE') THEN
         parent_id = OLD.data_id_parent;
         child_id = OLD.data_id_child;
+        relationship_id = OLD.relationship_id;
+        parent_child_frozen = OLD.parent_frozen OR OLD.child_frozen;
+        cont_comp_frozen = OLD.cont_frozen OR OLD.comp_frozen;
     ELSEIF (TG_OP = 'INSERT') THEN
         parent_id = NEW.data_id_parent;
         child_id = NEW.data_id_child;
+        relationship_id = NEW.relationship_id;
+        parent_child_frozen = NEW.parent_frozen OR NEW.child_frozen;
+        cont_comp_frozen = NEW.cont_frozen OR NEW.comp_frozen;
     END IF;
-    RAISE EXCEPTION 'Operation % is not allowed because data sets % and % are frozen.', TG_OP, 
-        (select code from data_all where id = parent_id),
-        (select code from data_all where id = child_id);
+    SELECT code INTO relationship FROM relationship_types WHERE id = relationship_id;
+    IF (relationship = 'PARENT_CHILD' AND parent_child_frozen) OR (relationship = 'CONTAINER_COMPONENT' AND cont_comp_frozen) THEN
+       RAISE EXCEPTION 'Operation % % is not allowed because data set % or % is frozen.', TG_OP, relationship,
+            (select code from data_all where id = parent_id),
+            (select code from data_all where id = child_id);
+    END IF;
+    IF (TG_OP = 'DELETE') THEN
+        RETURN OLD;
+    ELSEIF (TG_OP = 'INSERT') THEN
+        RETURN NEW;
+    END IF;
 END;
 $$ LANGUAGE 'plpgsql';
 
 DROP TRIGGER IF EXISTS DATA_SET_RELATIONSHIP_FROZEN_CHECK_ON_INSERT ON DATA_SET_RELATIONSHIPS_ALL;
 CREATE TRIGGER DATA_SET_RELATIONSHIP_FROZEN_CHECK_ON_INSERT BEFORE INSERT ON DATA_SET_RELATIONSHIPS_ALL
-    FOR EACH ROW WHEN (NEW.PARENT_FROZEN AND NEW.CHILD_FROZEN)
+    FOR EACH ROW WHEN (NEW.PARENT_FROZEN OR NEW.CHILD_FROZEN OR NEW.CONT_FROZEN OR NEW.COMP_FROZEN)
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_DATA_SET_RELATIONSHIP();
 
 DROP TRIGGER IF EXISTS DATA_SET_RELATIONSHIP_FROZEN_CHECK_ON_DELETE ON DATA_SET_RELATIONSHIPS_ALL;
 CREATE TRIGGER DATA_SET_RELATIONSHIP_FROZEN_CHECK_ON_DELETE BEFORE DELETE ON DATA_SET_RELATIONSHIPS_ALL
-    FOR EACH ROW WHEN (OLD.PARENT_FROZEN AND OLD.CHILD_FROZEN)
+    FOR EACH ROW WHEN (OLD.PARENT_FROZEN OR OLD.CHILD_FROZEN OR OLD.CONT_FROZEN OR OLD.COMP_FROZEN)
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_DATA_SET_RELATIONSHIP();
 
 -- Data set experiment relationship
@@ -2800,7 +2954,7 @@ CREATE TRIGGER DATA_SET_EXPERIMENT_RELATIONSHIP_FROZEN_CHECK_ON_UPDATE BEFORE UP
         (NEW.EXPE_ID <> OLD.EXPE_ID
          OR (NEW.EXPE_ID IS NOT NULL AND OLD.EXPE_ID IS NULL)
          OR (NEW.EXPE_ID IS NULL AND OLD.EXPE_ID IS NOT NULL))
-        AND (NEW.EXPE_FROZEN OR OLD.EXPE_FROZEN) AND NEW.FROZEN)
+        AND (NEW.EXPE_FROZEN OR OLD.EXPE_FROZEN))
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_EXPERIMENT_RELATIONSHIP('data set');
 
 -- Data set sample relationship
@@ -2817,8 +2971,8 @@ BEGIN
         operation = 'REMOVE SAMPLE';
     END IF;
 
-    RAISE EXCEPTION 'Operation % is not allowed because data set % and sample % are frozen.', operation, NEW.code,
-        (select code from samples_all where id = sample_id);
+    RAISE EXCEPTION 'Operation % is not allowed because sample % is frozen for data set %.', operation,
+        (select code from samples_all where id = sample_id), NEW.code;
 END;
 $$ LANGUAGE 'plpgsql';
 
@@ -2828,7 +2982,7 @@ CREATE TRIGGER DATA_SET_SAMPLE_RELATIONSHIP_FROZEN_CHECK_ON_UPDATE BEFORE UPDATE
         (NEW.SAMP_ID <> OLD.SAMP_ID
          OR (NEW.SAMP_ID IS NOT NULL AND OLD.SAMP_ID IS NULL)
          OR (NEW.SAMP_ID IS NULL AND OLD.SAMP_ID IS NOT NULL))
-        AND (NEW.SAMP_FROZEN OR OLD.SAMP_FROZEN) AND NEW.FROZEN)
+        AND (NEW.SAMP_FROZEN OR OLD.SAMP_FROZEN))
     EXECUTE PROCEDURE RAISE_EXCEPTION_FROZEN_DATA_SET_SAMPLE_RELATIONSHIP();
 
 -- end of triggers for freezing

@@ -33,6 +33,14 @@ ALTER TABLE ONLY data_stores
 ALTER TABLE ONLY data_all
     ADD CONSTRAINT data_bk_uk UNIQUE (code);
 ALTER TABLE ONLY data_all
+    ADD CONSTRAINT data_idfrz_ch_uk UNIQUE (id, frozen_for_children);
+ALTER TABLE ONLY data_all
+    ADD CONSTRAINT data_idfrz_comp_uk UNIQUE (id, frozen_for_comps);
+ALTER TABLE ONLY data_all
+    ADD CONSTRAINT data_idfrz_cont_uk UNIQUE (id, frozen_for_conts);
+ALTER TABLE ONLY data_all
+    ADD CONSTRAINT data_idfrz_p_uk UNIQUE (id, frozen_for_parents);
+ALTER TABLE ONLY data_all
     ADD CONSTRAINT data_idfrz_uk UNIQUE (id, frozen);
 ALTER TABLE ONLY data_all
     ADD CONSTRAINT data_pk PRIMARY KEY (id);
@@ -90,6 +98,10 @@ ALTER TABLE ONLY external_data
     ADD CONSTRAINT exda_pk PRIMARY KEY (id);
 ALTER TABLE ONLY experiments_all
     ADD CONSTRAINT expe_bk_uk UNIQUE (code, proj_id);
+ALTER TABLE ONLY experiments_all
+    ADD CONSTRAINT expe_idfrz_d_uk UNIQUE (id, frozen_for_data);
+ALTER TABLE ONLY experiments_all
+    ADD CONSTRAINT expe_idfrz_s_uk UNIQUE (id, frozen_for_samp);
 ALTER TABLE ONLY experiments_all
     ADD CONSTRAINT expe_idfrz_uk UNIQUE (id, frozen);
 ALTER TABLE ONLY experiments_all
@@ -169,6 +181,10 @@ ALTER TABLE ONLY post_registration_dataset_queue
 ALTER TABLE ONLY projects
     ADD CONSTRAINT proj_bk_uk UNIQUE (code, space_id);
 ALTER TABLE ONLY projects
+    ADD CONSTRAINT proj_idfrz_e_uk UNIQUE (id, frozen_for_exp);
+ALTER TABLE ONLY projects
+    ADD CONSTRAINT proj_idfrz_s_uk UNIQUE (id, frozen_for_samp);
+ALTER TABLE ONLY projects
     ADD CONSTRAINT proj_idfrz_uk UNIQUE (id, frozen);
 ALTER TABLE ONLY projects
     ADD CONSTRAINT proj_pi_uk UNIQUE (perm_id);
@@ -192,6 +208,14 @@ ALTER TABLE ONLY role_assignments
     ADD CONSTRAINT roas_pk PRIMARY KEY (id);
 ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_code_unique_check_uk UNIQUE (code_unique_check);
+ALTER TABLE ONLY samples_all
+    ADD CONSTRAINT samp_idfrz_c_uk UNIQUE (id, frozen_for_comp);
+ALTER TABLE ONLY samples_all
+    ADD CONSTRAINT samp_idfrz_ch_uk UNIQUE (id, frozen_for_children);
+ALTER TABLE ONLY samples_all
+    ADD CONSTRAINT samp_idfrz_d_uk UNIQUE (id, frozen_for_data);
+ALTER TABLE ONLY samples_all
+    ADD CONSTRAINT samp_idfrz_p_uk UNIQUE (id, frozen_for_parents);
 ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_idfrz_uk UNIQUE (id, frozen);
 ALTER TABLE ONLY samples_all
@@ -227,6 +251,10 @@ ALTER TABLE ONLY semantic_annotations
 ALTER TABLE ONLY spaces
     ADD CONSTRAINT space_bk_uk UNIQUE (code);
 ALTER TABLE ONLY spaces
+    ADD CONSTRAINT space_idfrz_p_uk UNIQUE (id, frozen_for_proj);
+ALTER TABLE ONLY spaces
+    ADD CONSTRAINT space_idfrz_s_uk UNIQUE (id, frozen_for_samp);
+ALTER TABLE ONLY spaces
     ADD CONSTRAINT space_idfrz_uk UNIQUE (id, frozen);
 ALTER TABLE ONLY spaces
     ADD CONSTRAINT space_pk PRIMARY KEY (id);
@@ -245,6 +273,10 @@ CREATE INDEX cvte_pers_fk_i ON controlled_vocabulary_terms USING btree (pers_id_
 CREATE INDEX data_del_fk_i ON data_all USING btree (del_id);
 CREATE INDEX data_dsty_fk_i ON data_all USING btree (dsty_id);
 CREATE INDEX data_expe_fk_i ON data_all USING btree (expe_id);
+CREATE INDEX data_idfrz_ch_pk_i ON data_all USING btree (id, frozen_for_children);
+CREATE INDEX data_idfrz_comp_pk_i ON data_all USING btree (id, frozen_for_comps);
+CREATE INDEX data_idfrz_cont_pk_i ON data_all USING btree (id, frozen_for_conts);
+CREATE INDEX data_idfrz_p_pk_i ON data_all USING btree (id, frozen_for_parents);
 CREATE INDEX data_idfrz_pk_i ON data_all USING btree (id, frozen);
 CREATE INDEX data_samp_fk_i ON data_all USING btree (samp_id);
 CREATE INDEX datarelh_data_fk_i ON data_set_relationships_history USING btree (data_id);
@@ -282,7 +314,9 @@ CREATE INDEX exda_ffty_fk_i ON external_data USING btree (ffty_id);
 CREATE INDEX exda_loty_fk_i ON external_data USING btree (loty_id);
 CREATE INDEX expe_del_fk_i ON experiments_all USING btree (del_id);
 CREATE INDEX expe_exty_fk_i ON experiments_all USING btree (exty_id);
+CREATE INDEX expe_idfrz_d_pk_i ON experiments_all USING btree (id, frozen_for_data);
 CREATE INDEX expe_idfrz_pk_i ON experiments_all USING btree (id, frozen);
+CREATE INDEX expe_idfrz_s_pk_i ON experiments_all USING btree (id, frozen_for_samp);
 CREATE INDEX expe_pers_fk_i ON experiments_all USING btree (pers_id_registerer);
 CREATE INDEX expe_proj_fk_i ON experiments_all USING btree (proj_id);
 CREATE INDEX expr_cvte_fk_i ON experiment_properties USING btree (cvte_id);
@@ -330,7 +364,9 @@ CREATE INDEX operation_executions_owner_i ON operation_executions USING btree (o
 CREATE INDEX operation_executions_summary_availability_i ON operation_executions USING btree (summary_availability);
 CREATE INDEX pers_is_active_i ON persons USING btree (is_active);
 CREATE INDEX pers_space_fk_i ON persons USING btree (space_id);
+CREATE INDEX proj_idfrz_e_pk_i ON projects USING btree (id, frozen_for_exp);
 CREATE INDEX proj_idfrz_pk_i ON projects USING btree (id, frozen);
+CREATE INDEX proj_idfrz_s_pk_i ON projects USING btree (id, frozen_for_samp);
 CREATE INDEX proj_pers_fk_i_leader ON projects USING btree (pers_id_leader);
 CREATE INDEX proj_pers_fk_i_registerer ON projects USING btree (pers_id_registerer);
 CREATE INDEX proj_space_fk_i ON projects USING btree (space_id);
@@ -350,6 +386,10 @@ CREATE INDEX roas_space_fk_i ON role_assignments USING btree (space_id);
 CREATE INDEX samp_code_i ON samples_all USING btree (code);
 CREATE INDEX samp_del_fk_i ON samples_all USING btree (del_id);
 CREATE INDEX samp_expe_fk_i ON samples_all USING btree (expe_id);
+CREATE INDEX samp_idfrz_c_pk_i ON samples_all USING btree (id, frozen_for_comp);
+CREATE INDEX samp_idfrz_ch_pk_i ON samples_all USING btree (id, frozen_for_children);
+CREATE INDEX samp_idfrz_d_pk_i ON samples_all USING btree (id, frozen_for_data);
+CREATE INDEX samp_idfrz_p_pk_i ON samples_all USING btree (id, frozen_for_parents);
 CREATE INDEX samp_idfrz_pk_i ON samples_all USING btree (id, frozen);
 CREATE INDEX samp_pers_fk_i ON samples_all USING btree (pers_id_registerer);
 CREATE INDEX samp_proj_fk_i ON samples_all USING btree (proj_id);
@@ -379,7 +419,9 @@ CREATE INDEX script_pers_fk_i ON scripts USING btree (pers_id_registerer);
 CREATE INDEX semantic_annotations_prty_id_i ON semantic_annotations USING btree (prty_id);
 CREATE INDEX semantic_annotations_saty_id_i ON semantic_annotations USING btree (saty_id);
 CREATE INDEX semantic_annotations_stpt_id_i ON semantic_annotations USING btree (stpt_id);
+CREATE INDEX space_idfrz_p_pk_i ON spaces USING btree (id, frozen_for_proj);
 CREATE INDEX space_idfrz_pk_i ON spaces USING btree (id, frozen);
+CREATE INDEX space_idfrz_s_pk_i ON spaces USING btree (id, frozen_for_samp);
 CREATE INDEX space_pers_registered_by_fk_i ON spaces USING btree (pers_id_registerer);
 CREATE INDEX stpt_pers_fk_i ON sample_type_property_types USING btree (pers_id_registerer);
 CREATE INDEX stpt_prty_fk_i ON sample_type_property_types USING btree (prty_id);
@@ -400,8 +442,8 @@ CREATE RULE data_all AS
     ON DELETE TO data DO INSTEAD  DELETE FROM data_all
   WHERE ((data_all.id)::bigint = (old.id)::bigint);
 CREATE RULE data_insert AS
-    ON INSERT TO data DO INSTEAD  INSERT INTO data_all (id, frozen, code, del_id, orig_del, expe_id, expe_frozen, dast_id, data_producer_code, dsty_id, is_derived, is_valid, modification_timestamp, access_timestamp, pers_id_registerer, pers_id_modifier, production_timestamp, registration_timestamp, samp_id, samp_frozen, version, data_set_kind)
-  VALUES (new.id, new.frozen, new.code, new.del_id, new.orig_del, new.expe_id, new.expe_frozen, new.dast_id, new.data_producer_code, new.dsty_id, new.is_derived, new.is_valid, new.modification_timestamp, new.access_timestamp, new.pers_id_registerer, new.pers_id_modifier, new.production_timestamp, new.registration_timestamp, new.samp_id, new.samp_frozen, new.version, new.data_set_kind);
+    ON INSERT TO data DO INSTEAD  INSERT INTO data_all (id, frozen, frozen_for_children, frozen_for_parents, frozen_for_comps, frozen_for_conts, code, del_id, orig_del, expe_id, expe_frozen, dast_id, data_producer_code, dsty_id, is_derived, is_valid, modification_timestamp, access_timestamp, pers_id_registerer, pers_id_modifier, production_timestamp, registration_timestamp, samp_id, samp_frozen, version, data_set_kind)
+  VALUES (new.id, new.frozen, new.frozen_for_children, new.frozen_for_parents, new.frozen_for_comps, new.frozen_for_conts, new.code, new.del_id, new.orig_del, new.expe_id, new.expe_frozen, new.dast_id, new.data_producer_code, new.dsty_id, new.is_derived, new.is_valid, new.modification_timestamp, new.access_timestamp, new.pers_id_registerer, new.pers_id_modifier, new.production_timestamp, new.registration_timestamp, new.samp_id, new.samp_frozen, new.version, new.data_set_kind);
 CREATE RULE data_relationship_delete AS
     ON DELETE TO data_set_relationships_all
    WHERE (old.del_id IS NULL) DO  UPDATE data_set_relationships_history SET valid_until_timestamp = now()
@@ -495,13 +537,13 @@ CREATE RULE data_set_relationships_delete AS
     ON DELETE TO data_set_relationships DO INSTEAD  DELETE FROM data_set_relationships_all
   WHERE (((data_set_relationships_all.data_id_parent)::bigint = (old.data_id_parent)::bigint) AND ((data_set_relationships_all.data_id_child)::bigint = (old.data_id_child)::bigint) AND ((data_set_relationships_all.relationship_id)::bigint = (old.relationship_id)::bigint));
 CREATE RULE data_set_relationships_insert AS
-    ON INSERT TO data_set_relationships DO INSTEAD  INSERT INTO data_set_relationships_all (data_id_parent, parent_frozen, data_id_child, child_frozen, pers_id_author, relationship_id, ordinal, registration_timestamp, modification_timestamp)
-  VALUES (new.data_id_parent, new.parent_frozen, new.data_id_child, new.child_frozen, new.pers_id_author, new.relationship_id, new.ordinal, new.registration_timestamp, new.modification_timestamp);
+    ON INSERT TO data_set_relationships DO INSTEAD  INSERT INTO data_set_relationships_all (data_id_parent, parent_frozen, cont_frozen, data_id_child, child_frozen, comp_frozen, pers_id_author, relationship_id, ordinal, registration_timestamp, modification_timestamp)
+  VALUES (new.data_id_parent, new.parent_frozen, new.cont_frozen, new.data_id_child, new.child_frozen, new.comp_frozen, new.pers_id_author, new.relationship_id, new.ordinal, new.registration_timestamp, new.modification_timestamp);
 CREATE RULE data_set_relationships_update AS
-    ON UPDATE TO data_set_relationships DO INSTEAD  UPDATE data_set_relationships_all SET data_id_parent = new.data_id_parent, parent_frozen = new.parent_frozen, data_id_child = new.data_id_child, child_frozen = new.child_frozen, del_id = new.del_id, relationship_id = new.relationship_id, ordinal = new.ordinal, pers_id_author = new.pers_id_author, registration_timestamp = new.registration_timestamp, modification_timestamp = new.modification_timestamp
+    ON UPDATE TO data_set_relationships DO INSTEAD  UPDATE data_set_relationships_all SET data_id_parent = new.data_id_parent, parent_frozen = new.parent_frozen, cont_frozen = new.cont_frozen, data_id_child = new.data_id_child, child_frozen = new.child_frozen, comp_frozen = new.comp_frozen, del_id = new.del_id, relationship_id = new.relationship_id, ordinal = new.ordinal, pers_id_author = new.pers_id_author, registration_timestamp = new.registration_timestamp, modification_timestamp = new.modification_timestamp
   WHERE (((data_set_relationships_all.data_id_parent)::bigint = (new.data_id_parent)::bigint) AND ((data_set_relationships_all.data_id_child)::bigint = (new.data_id_child)::bigint) AND ((data_set_relationships_all.relationship_id)::bigint = (new.relationship_id)::bigint));
 CREATE RULE data_update AS
-    ON UPDATE TO data DO INSTEAD  UPDATE data_all SET code = new.code, frozen = new.frozen, del_id = new.del_id, orig_del = new.orig_del, expe_id = new.expe_id, expe_frozen = new.expe_frozen, dast_id = new.dast_id, data_producer_code = new.data_producer_code, dsty_id = new.dsty_id, is_derived = new.is_derived, is_valid = new.is_valid, modification_timestamp = new.modification_timestamp, access_timestamp = new.access_timestamp, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, production_timestamp = new.production_timestamp, registration_timestamp = new.registration_timestamp, samp_id = new.samp_id, samp_frozen = new.samp_frozen, version = new.version, data_set_kind = new.data_set_kind
+    ON UPDATE TO data DO INSTEAD  UPDATE data_all SET code = new.code, frozen = new.frozen, frozen_for_children = new.frozen_for_children, frozen_for_parents = new.frozen_for_parents, frozen_for_comps = new.frozen_for_comps, frozen_for_conts = new.frozen_for_conts, del_id = new.del_id, orig_del = new.orig_del, expe_id = new.expe_id, expe_frozen = new.expe_frozen, dast_id = new.dast_id, data_producer_code = new.data_producer_code, dsty_id = new.dsty_id, is_derived = new.is_derived, is_valid = new.is_valid, modification_timestamp = new.modification_timestamp, access_timestamp = new.access_timestamp, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, production_timestamp = new.production_timestamp, registration_timestamp = new.registration_timestamp, samp_id = new.samp_id, samp_frozen = new.samp_frozen, version = new.version, data_set_kind = new.data_set_kind
   WHERE ((data_all.id)::bigint = (new.id)::bigint);
 CREATE RULE dataset_experiment_delete AS
     ON DELETE TO data_all
@@ -593,8 +635,8 @@ CREATE RULE experiment_delete AS
     ON DELETE TO experiments DO INSTEAD  DELETE FROM experiments_all
   WHERE ((experiments_all.id)::bigint = (old.id)::bigint);
 CREATE RULE experiment_insert AS
-    ON INSERT TO experiments DO INSTEAD  INSERT INTO experiments_all (id, frozen, code, del_id, orig_del, exty_id, is_public, modification_timestamp, perm_id, pers_id_registerer, pers_id_modifier, proj_id, proj_frozen, registration_timestamp, version)
-  VALUES (new.id, new.frozen, new.code, new.del_id, new.orig_del, new.exty_id, new.is_public, new.modification_timestamp, new.perm_id, new.pers_id_registerer, new.pers_id_modifier, new.proj_id, new.proj_frozen, new.registration_timestamp, new.version);
+    ON INSERT TO experiments DO INSTEAD  INSERT INTO experiments_all (id, frozen, frozen_for_samp, frozen_for_data, code, del_id, orig_del, exty_id, is_public, modification_timestamp, perm_id, pers_id_registerer, pers_id_modifier, proj_id, proj_frozen, registration_timestamp, version)
+  VALUES (new.id, new.frozen, new.frozen_for_samp, new.frozen_for_data, new.code, new.del_id, new.orig_del, new.exty_id, new.is_public, new.modification_timestamp, new.perm_id, new.pers_id_registerer, new.pers_id_modifier, new.proj_id, new.proj_frozen, new.registration_timestamp, new.version);
 CREATE RULE experiment_project_delete AS
     ON DELETE TO experiments_all
    WHERE (old.proj_id IS NOT NULL) DO  UPDATE project_relationships_history SET valid_until_timestamp = now()
@@ -649,7 +691,7 @@ CREATE RULE experiment_properties_update AS
              JOIN material_types mt ON (((m.maty_id)::bigint = (mt.id)::bigint)))
           WHERE ((m.id)::bigint = (old.mate_prop_id)::bigint)), old.pers_id_author, old.modification_timestamp, new.modification_timestamp);
 CREATE RULE experiment_update AS
-    ON UPDATE TO experiments DO INSTEAD  UPDATE experiments_all SET code = new.code, frozen = new.frozen, del_id = new.del_id, orig_del = new.orig_del, exty_id = new.exty_id, is_public = new.is_public, modification_timestamp = new.modification_timestamp, perm_id = new.perm_id, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, proj_id = new.proj_id, proj_frozen = new.proj_frozen, registration_timestamp = new.registration_timestamp, version = new.version
+    ON UPDATE TO experiments DO INSTEAD  UPDATE experiments_all SET code = new.code, frozen = new.frozen, frozen_for_samp = new.frozen_for_samp, frozen_for_data = new.frozen_for_data, del_id = new.del_id, orig_del = new.orig_del, exty_id = new.exty_id, is_public = new.is_public, modification_timestamp = new.modification_timestamp, perm_id = new.perm_id, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, proj_id = new.proj_id, proj_frozen = new.proj_frozen, registration_timestamp = new.registration_timestamp, version = new.version
   WHERE ((experiments_all.id)::bigint = (new.id)::bigint);
 CREATE RULE material_properties_delete AS
     ON DELETE TO material_properties
@@ -764,8 +806,8 @@ CREATE RULE sample_experiment_update AS
           WHERE ((experiments_all.id)::bigint = (new.expe_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
 );
 CREATE RULE sample_insert AS
-    ON INSERT TO samples DO INSTEAD  INSERT INTO samples_all (id, frozen, code, del_id, orig_del, expe_id, expe_frozen, proj_id, proj_frozen, modification_timestamp, perm_id, pers_id_registerer, pers_id_modifier, registration_timestamp, samp_id_part_of, cont_frozen, saty_id, space_id, space_frozen, version)
-  VALUES (new.id, new.frozen, new.code, new.del_id, new.orig_del, new.expe_id, new.expe_frozen, new.proj_id, new.proj_frozen, new.modification_timestamp, new.perm_id, new.pers_id_registerer, new.pers_id_modifier, new.registration_timestamp, new.samp_id_part_of, new.cont_frozen, new.saty_id, new.space_id, new.space_frozen, new.version);
+    ON INSERT TO samples DO INSTEAD  INSERT INTO samples_all (id, frozen, frozen_for_comp, frozen_for_children, frozen_for_parents, frozen_for_data, code, del_id, orig_del, expe_id, expe_frozen, proj_id, proj_frozen, modification_timestamp, perm_id, pers_id_registerer, pers_id_modifier, registration_timestamp, samp_id_part_of, cont_frozen, saty_id, space_id, space_frozen, version)
+  VALUES (new.id, new.frozen, new.frozen_for_comp, new.frozen_for_children, new.frozen_for_parents, new.frozen_for_data, new.code, new.del_id, new.orig_del, new.expe_id, new.expe_frozen, new.proj_id, new.proj_frozen, new.modification_timestamp, new.perm_id, new.pers_id_registerer, new.pers_id_modifier, new.registration_timestamp, new.samp_id_part_of, new.cont_frozen, new.saty_id, new.space_id, new.space_frozen, new.version);
 CREATE RULE sample_parent_child_delete AS
     ON DELETE TO sample_relationships_all
    WHERE (old.del_id IS NULL) DO  UPDATE sample_relationships_history SET valid_until_timestamp = now()
@@ -866,7 +908,7 @@ CREATE RULE sample_space_update AS
           WHERE ((spaces.id)::bigint = (new.space_id)::bigint)), new.pers_id_modifier, new.modification_timestamp);
 );
 CREATE RULE sample_update AS
-    ON UPDATE TO samples DO INSTEAD  UPDATE samples_all SET code = new.code, frozen = new.frozen, del_id = new.del_id, orig_del = new.orig_del, expe_id = new.expe_id, expe_frozen = new.expe_frozen, proj_id = new.proj_id, proj_frozen = new.proj_frozen, modification_timestamp = new.modification_timestamp, perm_id = new.perm_id, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, registration_timestamp = new.registration_timestamp, samp_id_part_of = new.samp_id_part_of, cont_frozen = new.cont_frozen, saty_id = new.saty_id, space_id = new.space_id, space_frozen = new.space_frozen, version = new.version
+    ON UPDATE TO samples DO INSTEAD  UPDATE samples_all SET code = new.code, frozen = new.frozen, frozen_for_comp = new.frozen_for_comp, frozen_for_children = new.frozen_for_children, frozen_for_parents = new.frozen_for_parents, frozen_for_data = new.frozen_for_data, del_id = new.del_id, orig_del = new.orig_del, expe_id = new.expe_id, expe_frozen = new.expe_frozen, proj_id = new.proj_id, proj_frozen = new.proj_frozen, modification_timestamp = new.modification_timestamp, perm_id = new.perm_id, pers_id_registerer = new.pers_id_registerer, pers_id_modifier = new.pers_id_modifier, registration_timestamp = new.registration_timestamp, samp_id_part_of = new.samp_id_part_of, cont_frozen = new.cont_frozen, saty_id = new.saty_id, space_id = new.space_id, space_frozen = new.space_frozen, version = new.version
   WHERE ((samples_all.id)::bigint = (new.id)::bigint);
 CREATE CONSTRAINT TRIGGER check_created_or_modified_data_set_owner_is_alive AFTER INSERT OR UPDATE ON data_all DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE check_created_or_modified_data_set_owner_is_alive();
 CREATE CONSTRAINT TRIGGER check_created_or_modified_sample_owner_is_alive AFTER INSERT OR UPDATE ON samples_all DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE check_created_or_modified_sample_owner_is_alive();
@@ -878,16 +920,16 @@ CREATE TRIGGER content_copies_location_type_check BEFORE INSERT OR UPDATE ON con
 CREATE TRIGGER content_copies_uniqueness_check BEFORE INSERT OR UPDATE ON content_copies FOR EACH ROW EXECUTE PROCEDURE content_copies_uniqueness_check();
 CREATE TRIGGER controlled_vocabulary_check BEFORE INSERT OR UPDATE ON property_types FOR EACH ROW EXECUTE PROCEDURE controlled_vocabulary_check();
 CREATE TRIGGER data_exp_or_sample_link_check BEFORE INSERT OR UPDATE ON data_all FOR EACH ROW EXECUTE PROCEDURE data_exp_or_sample_link_check();
-CREATE TRIGGER data_set_experiment_relationship_frozen_check_on_update BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((((new.expe_id)::bigint <> (old.expe_id)::bigint) OR ((new.expe_id IS NOT NULL) AND (old.expe_id IS NULL)) OR ((new.expe_id IS NULL) AND (old.expe_id IS NOT NULL))) AND (new.expe_frozen OR old.expe_frozen) AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_experiment_relationship('data set');
+CREATE TRIGGER data_set_experiment_relationship_frozen_check_on_update BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((((new.expe_id)::bigint <> (old.expe_id)::bigint) OR ((new.expe_id IS NOT NULL) AND (old.expe_id IS NULL)) OR ((new.expe_id IS NULL) AND (old.expe_id IS NOT NULL))) AND (new.expe_frozen OR old.expe_frozen))) EXECUTE PROCEDURE raise_exception_frozen_experiment_relationship('data set');
 CREATE TRIGGER data_set_frozen_check_on_change_property BEFORE UPDATE ON data_set_properties FOR EACH ROW WHEN ((old.dase_frozen AND new.dase_frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set('PROPERTY');
 CREATE TRIGGER data_set_frozen_check_on_delete BEFORE DELETE ON data_all FOR EACH ROW WHEN (old.frozen) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('DELETE', 'data set');
 CREATE TRIGGER data_set_frozen_check_on_delete_property BEFORE DELETE ON data_set_properties FOR EACH ROW WHEN (old.dase_frozen) EXECUTE PROCEDURE raise_exception_frozen_data_set('PROPERTY');
 CREATE TRIGGER data_set_frozen_check_on_insert_property BEFORE INSERT ON data_set_properties FOR EACH ROW WHEN (new.dase_frozen) EXECUTE PROCEDURE raise_exception_frozen_data_set('PROPERTY');
 CREATE TRIGGER data_set_frozen_check_on_trash BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((new.del_id IS NOT NULL) AND (old.del_id IS NULL) AND old.frozen)) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('TRASH', 'data set');
 CREATE TRIGGER data_set_property_with_material_data_type_check BEFORE INSERT OR UPDATE ON data_set_properties FOR EACH ROW EXECUTE PROCEDURE data_set_property_with_material_data_type_check();
-CREATE TRIGGER data_set_relationship_frozen_check_on_delete BEFORE DELETE ON data_set_relationships_all FOR EACH ROW WHEN ((old.parent_frozen AND old.child_frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set_relationship();
-CREATE TRIGGER data_set_relationship_frozen_check_on_insert BEFORE INSERT ON data_set_relationships_all FOR EACH ROW WHEN ((new.parent_frozen AND new.child_frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set_relationship();
-CREATE TRIGGER data_set_sample_relationship_frozen_check_on_update BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((((new.samp_id)::bigint <> (old.samp_id)::bigint) OR ((new.samp_id IS NOT NULL) AND (old.samp_id IS NULL)) OR ((new.samp_id IS NULL) AND (old.samp_id IS NOT NULL))) AND (new.samp_frozen OR old.samp_frozen) AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set_sample_relationship();
+CREATE TRIGGER data_set_relationship_frozen_check_on_delete BEFORE DELETE ON data_set_relationships_all FOR EACH ROW WHEN ((old.parent_frozen OR old.child_frozen OR old.cont_frozen OR old.comp_frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set_relationship();
+CREATE TRIGGER data_set_relationship_frozen_check_on_insert BEFORE INSERT ON data_set_relationships_all FOR EACH ROW WHEN ((new.parent_frozen OR new.child_frozen OR new.cont_frozen OR new.comp_frozen)) EXECUTE PROCEDURE raise_exception_frozen_data_set_relationship();
+CREATE TRIGGER data_set_sample_relationship_frozen_check_on_update BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((((new.samp_id)::bigint <> (old.samp_id)::bigint) OR ((new.samp_id IS NOT NULL) AND (old.samp_id IS NULL)) OR ((new.samp_id IS NULL) AND (old.samp_id IS NOT NULL))) AND (new.samp_frozen OR old.samp_frozen))) EXECUTE PROCEDURE raise_exception_frozen_data_set_sample_relationship();
 CREATE TRIGGER disable_project_level_samples BEFORE INSERT OR UPDATE ON samples_all FOR EACH ROW EXECUTE PROCEDURE disable_project_level_samples();
 CREATE TRIGGER experiment_frozen_check_on_change_property BEFORE UPDATE ON experiment_properties FOR EACH ROW WHEN ((old.expe_frozen AND new.expe_frozen)) EXECUTE PROCEDURE raise_exception_frozen_experiment('PROPERTY');
 CREATE TRIGGER experiment_frozen_check_on_delete BEFORE DELETE ON experiments_all FOR EACH ROW WHEN (old.frozen) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('DELETE', 'experiment');
@@ -897,19 +939,24 @@ CREATE TRIGGER experiment_frozen_check_on_insert_attachment BEFORE INSERT ON att
 CREATE TRIGGER experiment_frozen_check_on_insert_property BEFORE INSERT ON experiment_properties FOR EACH ROW WHEN (new.expe_frozen) EXECUTE PROCEDURE raise_exception_frozen_experiment('PROPERTY');
 CREATE TRIGGER experiment_frozen_check_on_trash BEFORE UPDATE ON experiments_all FOR EACH ROW WHEN (((new.del_id IS NOT NULL) AND (old.del_id IS NULL) AND old.frozen)) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('TRASH', 'experiment');
 CREATE TRIGGER experiment_frozen_check_on_update_attachment BEFORE UPDATE ON attachments FOR EACH ROW WHEN ((old.expe_frozen AND new.expe_frozen)) EXECUTE PROCEDURE raise_exception_frozen_experiment('ATTACHMENT');
-CREATE TRIGGER experiment_project_relationship_frozen_check BEFORE UPDATE ON experiments_all FOR EACH ROW WHEN ((((new.proj_id)::bigint <> (old.proj_id)::bigint) AND (new.proj_frozen OR old.proj_frozen) AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_project_relationship('experiment');
+CREATE TRIGGER experiment_project_relationship_frozen_check BEFORE UPDATE ON experiments_all FOR EACH ROW WHEN ((((new.proj_id)::bigint <> (old.proj_id)::bigint) AND (new.proj_frozen OR old.proj_frozen))) EXECUTE PROCEDURE raise_exception_frozen_project_relationship('experiment');
 CREATE TRIGGER experiment_property_with_material_data_type_check BEFORE INSERT OR UPDATE ON experiment_properties FOR EACH ROW EXECUTE PROCEDURE experiment_property_with_material_data_type_check();
 CREATE TRIGGER external_data_storage_format_check BEFORE INSERT OR UPDATE ON external_data FOR EACH ROW EXECUTE PROCEDURE external_data_storage_format_check();
 CREATE TRIGGER material_property_with_material_data_type_check BEFORE INSERT OR UPDATE ON material_properties FOR EACH ROW EXECUTE PROCEDURE material_property_with_material_data_type_check();
+CREATE TRIGGER melt_data_set_for BEFORE UPDATE ON data_all FOR EACH ROW WHEN (((new.frozen_for_children OR new.frozen_for_parents OR new.frozen_for_comps OR new.frozen_for_conts) AND (NOT new.frozen))) EXECUTE PROCEDURE melt_data_set_for();
+CREATE TRIGGER melt_experiment_for BEFORE UPDATE ON experiments_all FOR EACH ROW WHEN (((new.frozen_for_samp OR new.frozen_for_data) AND (NOT new.frozen))) EXECUTE PROCEDURE melt_experiment_for();
+CREATE TRIGGER melt_project_for BEFORE UPDATE ON projects FOR EACH ROW WHEN (((new.frozen_for_exp OR new.frozen_for_samp) AND (NOT new.frozen))) EXECUTE PROCEDURE melt_project_for();
+CREATE TRIGGER melt_sample_for BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((new.frozen_for_comp OR new.frozen_for_children OR new.frozen_for_parents OR new.frozen_for_data) AND (NOT new.frozen))) EXECUTE PROCEDURE melt_sample_for();
+CREATE TRIGGER melt_space_for BEFORE UPDATE ON spaces FOR EACH ROW WHEN (((new.frozen_for_proj OR new.frozen_for_samp) AND (NOT new.frozen))) EXECUTE PROCEDURE melt_space_for();
 CREATE TRIGGER preserve_deletion_consistency_on_data_set_relationships BEFORE UPDATE ON data_set_relationships_all FOR EACH ROW EXECUTE PROCEDURE preserve_deletion_consistency_on_data_set_relationships();
 CREATE TRIGGER preserve_deletion_consistency_on_sample_relationships BEFORE UPDATE ON sample_relationships_all FOR EACH ROW EXECUTE PROCEDURE preserve_deletion_consistency_on_sample_relationships();
 CREATE TRIGGER project_frozen_check_on_delete BEFORE DELETE ON projects FOR EACH ROW WHEN (old.frozen) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('DELETE', 'project');
 CREATE TRIGGER project_frozen_check_on_delete_attachment BEFORE DELETE ON attachments FOR EACH ROW WHEN (old.proj_frozen) EXECUTE PROCEDURE raise_exception_frozen_project('ATTACHMENT');
 CREATE TRIGGER project_frozen_check_on_insert_attachment BEFORE INSERT ON attachments FOR EACH ROW WHEN (new.proj_frozen) EXECUTE PROCEDURE raise_exception_frozen_project('ATTACHMENT');
-CREATE TRIGGER project_frozen_check_on_update BEFORE UPDATE ON projects FOR EACH ROW WHEN ((old.frozen AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('UPDATE', 'project');
+CREATE TRIGGER project_frozen_check_on_update BEFORE UPDATE ON projects FOR EACH ROW WHEN ((old.frozen AND new.frozen AND (((old.description)::text <> (new.description)::text) OR ((old.description IS NULL) AND (new.description IS NOT NULL)) OR ((old.description IS NOT NULL) AND (new.description IS NULL))))) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('UPDATE', 'project');
 CREATE TRIGGER project_frozen_check_on_update_attachment BEFORE UPDATE ON attachments FOR EACH ROW WHEN ((old.proj_frozen AND new.proj_frozen)) EXECUTE PROCEDURE raise_exception_frozen_project('ATTACHMENT');
-CREATE TRIGGER project_space_relationship_frozen_check BEFORE UPDATE ON projects FOR EACH ROW WHEN ((((new.space_id)::bigint <> (old.space_id)::bigint) AND (new.space_frozen OR old.space_frozen) AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_space_relationship('project');
-CREATE TRIGGER sample_experiment_relationship_frozen_check BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.expe_id)::bigint <> (old.expe_id)::bigint) OR ((new.expe_id IS NOT NULL) AND (old.expe_id IS NULL)) OR ((new.expe_id IS NULL) AND (old.expe_id IS NOT NULL))) AND (new.expe_frozen OR old.expe_frozen) AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_experiment_relationship('sample');
+CREATE TRIGGER project_space_relationship_frozen_check BEFORE UPDATE ON projects FOR EACH ROW WHEN ((((new.space_id)::bigint <> (old.space_id)::bigint) AND (new.space_frozen OR old.space_frozen))) EXECUTE PROCEDURE raise_exception_frozen_space_relationship('project');
+CREATE TRIGGER sample_experiment_relationship_frozen_check BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.expe_id)::bigint <> (old.expe_id)::bigint) OR ((new.expe_id IS NOT NULL) AND (old.expe_id IS NULL)) OR ((new.expe_id IS NULL) AND (old.expe_id IS NOT NULL))) AND (new.expe_frozen OR old.expe_frozen))) EXECUTE PROCEDURE raise_exception_frozen_experiment_relationship('sample');
 CREATE TRIGGER sample_fill_code_unique_check BEFORE INSERT OR UPDATE ON samples_all FOR EACH ROW EXECUTE PROCEDURE sample_fill_code_unique_check();
 CREATE TRIGGER sample_fill_subcode_unique_check BEFORE INSERT OR UPDATE ON samples_all FOR EACH ROW EXECUTE PROCEDURE sample_fill_subcode_unique_check();
 CREATE TRIGGER sample_frozen_check_on_change_property BEFORE UPDATE ON sample_properties FOR EACH ROW WHEN ((old.samp_frozen AND new.samp_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample('PROPERTY');
@@ -918,15 +965,17 @@ CREATE TRIGGER sample_frozen_check_on_delete_attachment BEFORE DELETE ON attachm
 CREATE TRIGGER sample_frozen_check_on_delete_property BEFORE DELETE ON sample_properties FOR EACH ROW WHEN (old.samp_frozen) EXECUTE PROCEDURE raise_exception_frozen_sample('PROPERTY');
 CREATE TRIGGER sample_frozen_check_on_insert_attachment BEFORE INSERT ON attachments FOR EACH ROW WHEN (new.samp_frozen) EXECUTE PROCEDURE raise_exception_frozen_sample('ATTACHMENT');
 CREATE TRIGGER sample_frozen_check_on_insert_property BEFORE INSERT ON sample_properties FOR EACH ROW WHEN (new.samp_frozen) EXECUTE PROCEDURE raise_exception_frozen_sample('PROPERTY');
-CREATE TRIGGER sample_frozen_check_on_set_container BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.samp_id_part_of)::bigint <> (old.samp_id_part_of)::bigint) OR ((new.samp_id_part_of IS NOT NULL) AND (old.samp_id_part_of IS NULL)) OR ((new.samp_id_part_of IS NULL) AND (old.samp_id_part_of IS NOT NULL))) AND (new.cont_frozen OR old.cont_frozen) AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample_container_relationship();
+CREATE TRIGGER sample_frozen_check_on_set_container BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.samp_id_part_of)::bigint <> (old.samp_id_part_of)::bigint) OR ((new.samp_id_part_of IS NOT NULL) AND (old.samp_id_part_of IS NULL)) OR ((new.samp_id_part_of IS NULL) AND (old.samp_id_part_of IS NOT NULL))) AND (new.cont_frozen OR old.cont_frozen))) EXECUTE PROCEDURE raise_exception_frozen_sample_container_relationship();
 CREATE TRIGGER sample_frozen_check_on_trash BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((new.del_id IS NOT NULL) AND (old.del_id IS NULL) AND old.frozen)) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('TRASH', 'sample');
 CREATE TRIGGER sample_frozen_check_on_update_attachment BEFORE UPDATE ON attachments FOR EACH ROW WHEN ((old.samp_frozen AND new.samp_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample('ATTACHMENT');
-CREATE TRIGGER sample_project_relationship_frozen_check BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.proj_id)::bigint <> (old.proj_id)::bigint) OR ((new.proj_id IS NOT NULL) AND (old.proj_id IS NULL)) OR ((new.proj_id IS NULL) AND (old.proj_id IS NOT NULL))) AND (new.proj_frozen OR old.proj_frozen) AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_project_relationship('sample');
+CREATE TRIGGER sample_project_relationship_frozen_check BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.proj_id)::bigint <> (old.proj_id)::bigint) OR ((new.proj_id IS NOT NULL) AND (old.proj_id IS NULL)) OR ((new.proj_id IS NULL) AND (old.proj_id IS NOT NULL))) AND (new.proj_frozen OR old.proj_frozen))) EXECUTE PROCEDURE raise_exception_frozen_project_relationship('sample');
 CREATE TRIGGER sample_property_with_material_data_type_check BEFORE INSERT OR UPDATE ON sample_properties FOR EACH ROW EXECUTE PROCEDURE sample_property_with_material_data_type_check();
-CREATE TRIGGER sample_relationship_frozen_check_on_delete BEFORE DELETE ON sample_relationships_all FOR EACH ROW WHEN ((old.parent_frozen AND old.child_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample_relationship();
-CREATE TRIGGER sample_relationship_frozen_check_on_insert BEFORE INSERT ON sample_relationships_all FOR EACH ROW WHEN ((new.parent_frozen AND new.child_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample_relationship();
-CREATE TRIGGER sample_space_relationship_frozen_check BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.space_id)::bigint <> (old.space_id)::bigint) OR ((new.space_id IS NOT NULL) AND (old.space_id IS NULL)) OR ((new.space_id IS NULL) AND (old.space_id IS NOT NULL))) AND (new.space_frozen OR old.space_frozen) AND new.frozen)) EXECUTE PROCEDURE raise_exception_frozen_space_relationship('sample');
+CREATE TRIGGER sample_relationship_frozen_check_on_delete BEFORE DELETE ON sample_relationships_all FOR EACH ROW WHEN ((old.parent_frozen OR old.child_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample_relationship();
+CREATE TRIGGER sample_relationship_frozen_check_on_insert BEFORE INSERT ON sample_relationships_all FOR EACH ROW WHEN ((new.parent_frozen OR new.child_frozen)) EXECUTE PROCEDURE raise_exception_frozen_sample_relationship();
+CREATE TRIGGER sample_space_relationship_frozen_check BEFORE UPDATE ON samples_all FOR EACH ROW WHEN (((((new.space_id)::bigint <> (old.space_id)::bigint) OR ((new.space_id IS NOT NULL) AND (old.space_id IS NULL)) OR ((new.space_id IS NULL) AND (old.space_id IS NOT NULL))) AND (new.space_frozen OR old.space_frozen))) EXECUTE PROCEDURE raise_exception_frozen_space_relationship('sample');
 CREATE TRIGGER sample_type_fill_subcode_unique_check AFTER UPDATE ON sample_types FOR EACH ROW EXECUTE PROCEDURE sample_type_fill_subcode_unique_check();
+CREATE TRIGGER space_frozen_check_on_delete BEFORE DELETE ON spaces FOR EACH ROW WHEN (old.frozen) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('DELETE', 'space');
+CREATE TRIGGER space_frozen_check_on_update BEFORE UPDATE ON spaces FOR EACH ROW WHEN ((old.frozen AND new.frozen AND (((old.description)::text <> (new.description)::text) OR ((old.description IS NULL) AND (new.description IS NOT NULL)) OR ((old.description IS NOT NULL) AND (new.description IS NULL))))) EXECUTE PROCEDURE raise_exception_frozen_entity_by_code('UPDATE', 'space');
 ALTER TABLE ONLY authorization_groups
     ADD CONSTRAINT ag_pers_fk FOREIGN KEY (pers_id_registerer) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY authorization_group_persons
@@ -960,13 +1009,13 @@ ALTER TABLE ONLY data_all
 ALTER TABLE ONLY data_all
     ADD CONSTRAINT data_dsty_fk FOREIGN KEY (dsty_id) REFERENCES data_set_types(id);
 ALTER TABLE ONLY data_all
-    ADD CONSTRAINT data_expe_fk FOREIGN KEY (expe_id, expe_frozen) REFERENCES experiments_all(id, frozen) ON UPDATE CASCADE;
+    ADD CONSTRAINT data_expe_fk FOREIGN KEY (expe_id, expe_frozen) REFERENCES experiments_all(id, frozen_for_data) ON UPDATE CASCADE;
 ALTER TABLE ONLY data_all
     ADD CONSTRAINT data_pers_fk FOREIGN KEY (pers_id_registerer) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY data_all
     ADD CONSTRAINT data_pers_fk_mod FOREIGN KEY (pers_id_modifier) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY data_all
-    ADD CONSTRAINT data_samp_fk FOREIGN KEY (samp_id, samp_frozen) REFERENCES samples_all(id, frozen) ON UPDATE CASCADE;
+    ADD CONSTRAINT data_samp_fk FOREIGN KEY (samp_id, samp_frozen) REFERENCES samples_all(id, frozen_for_data) ON UPDATE CASCADE;
 ALTER TABLE ONLY data_set_relationships_all
     ADD CONSTRAINT data_set_relationships_pers_fk FOREIGN KEY (pers_id_author) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY data_set_relationships_history
@@ -994,9 +1043,13 @@ ALTER TABLE ONLY data_set_properties_history
 ALTER TABLE ONLY data_set_properties_history
     ADD CONSTRAINT dsprh_dstpt_fk FOREIGN KEY (dstpt_id) REFERENCES data_set_type_property_types(id) ON DELETE CASCADE;
 ALTER TABLE ONLY data_set_relationships_all
-    ADD CONSTRAINT dsre_data_fk_child FOREIGN KEY (data_id_child, child_frozen) REFERENCES data_all(id, frozen) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT dsre_data_fk_child FOREIGN KEY (data_id_child, child_frozen) REFERENCES data_all(id, frozen_for_parents) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY data_set_relationships_all
-    ADD CONSTRAINT dsre_data_fk_parent FOREIGN KEY (data_id_parent, parent_frozen) REFERENCES data_all(id, frozen) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT dsre_data_fk_comp FOREIGN KEY (data_id_child, comp_frozen) REFERENCES data_all(id, frozen_for_conts) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY data_set_relationships_all
+    ADD CONSTRAINT dsre_data_fk_cont FOREIGN KEY (data_id_parent, cont_frozen) REFERENCES data_all(id, frozen_for_comps) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY data_set_relationships_all
+    ADD CONSTRAINT dsre_data_fk_parent FOREIGN KEY (data_id_parent, parent_frozen) REFERENCES data_all(id, frozen_for_children) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY data_set_relationships_all
     ADD CONSTRAINT dsre_data_fk_relationship FOREIGN KEY (relationship_id) REFERENCES relationship_types(id);
 ALTER TABLE ONLY data_set_relationships_all
@@ -1048,7 +1101,7 @@ ALTER TABLE ONLY experiments_all
 ALTER TABLE ONLY experiments_all
     ADD CONSTRAINT expe_pers_fk_mod FOREIGN KEY (pers_id_modifier) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY experiments_all
-    ADD CONSTRAINT expe_proj_fk FOREIGN KEY (proj_id, proj_frozen) REFERENCES projects(id, frozen) ON UPDATE CASCADE;
+    ADD CONSTRAINT expe_proj_fk FOREIGN KEY (proj_id, proj_frozen) REFERENCES projects(id, frozen_for_exp) ON UPDATE CASCADE;
 ALTER TABLE ONLY experiment_properties
     ADD CONSTRAINT expr_cvte_fk FOREIGN KEY (cvte_id) REFERENCES controlled_vocabulary_terms(id);
 ALTER TABLE ONLY experiment_properties
@@ -1136,7 +1189,7 @@ ALTER TABLE ONLY projects
 ALTER TABLE ONLY projects
     ADD CONSTRAINT proj_pers_fk_registerer FOREIGN KEY (pers_id_registerer) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY projects
-    ADD CONSTRAINT proj_space_fk FOREIGN KEY (space_id, space_frozen) REFERENCES spaces(id, frozen) ON UPDATE CASCADE;
+    ADD CONSTRAINT proj_space_fk FOREIGN KEY (space_id, space_frozen) REFERENCES spaces(id, frozen_for_proj) ON UPDATE CASCADE;
 ALTER TABLE ONLY project_relationships_history
     ADD CONSTRAINT prrelh_expe_fk FOREIGN KEY (expe_id) REFERENCES experiments_all(id) ON DELETE SET NULL;
 ALTER TABLE ONLY project_relationships_history
@@ -1166,19 +1219,19 @@ ALTER TABLE ONLY role_assignments
 ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_del_fk FOREIGN KEY (del_id) REFERENCES deletions(id);
 ALTER TABLE ONLY samples_all
-    ADD CONSTRAINT samp_expe_fk FOREIGN KEY (expe_id, expe_frozen) REFERENCES experiments_all(id, frozen) ON UPDATE CASCADE;
+    ADD CONSTRAINT samp_expe_fk FOREIGN KEY (expe_id, expe_frozen) REFERENCES experiments_all(id, frozen_for_samp) ON UPDATE CASCADE;
 ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_pers_fk FOREIGN KEY (pers_id_registerer) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_pers_fk_mod FOREIGN KEY (pers_id_modifier) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY samples_all
-    ADD CONSTRAINT samp_proj_fk FOREIGN KEY (proj_id, proj_frozen) REFERENCES projects(id, frozen) ON UPDATE CASCADE;
+    ADD CONSTRAINT samp_proj_fk FOREIGN KEY (proj_id, proj_frozen) REFERENCES projects(id, frozen_for_samp) ON UPDATE CASCADE;
 ALTER TABLE ONLY samples_all
-    ADD CONSTRAINT samp_samp_fk_part_of FOREIGN KEY (samp_id_part_of, cont_frozen) REFERENCES samples_all(id, frozen) ON UPDATE CASCADE;
+    ADD CONSTRAINT samp_samp_fk_part_of FOREIGN KEY (samp_id_part_of, cont_frozen) REFERENCES samples_all(id, frozen_for_comp) ON UPDATE CASCADE;
 ALTER TABLE ONLY samples_all
     ADD CONSTRAINT samp_saty_fk FOREIGN KEY (saty_id) REFERENCES sample_types(id);
 ALTER TABLE ONLY samples_all
-    ADD CONSTRAINT samp_space_fk FOREIGN KEY (space_id, space_frozen) REFERENCES spaces(id, frozen) ON UPDATE CASCADE;
+    ADD CONSTRAINT samp_space_fk FOREIGN KEY (space_id, space_frozen) REFERENCES spaces(id, frozen_for_samp) ON UPDATE CASCADE;
 ALTER TABLE ONLY sample_relationships_all
     ADD CONSTRAINT sample_relationships_pers_fk FOREIGN KEY (pers_id_author) REFERENCES persons(id) DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE ONLY sample_relationships_history
@@ -1208,9 +1261,9 @@ ALTER TABLE ONLY sample_properties_history
 ALTER TABLE ONLY sample_properties_history
     ADD CONSTRAINT saprh_stpt_fk FOREIGN KEY (stpt_id) REFERENCES sample_type_property_types(id) ON DELETE CASCADE;
 ALTER TABLE ONLY sample_relationships_all
-    ADD CONSTRAINT sare_data_fk_child FOREIGN KEY (sample_id_child, child_frozen) REFERENCES samples_all(id, frozen) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT sare_data_fk_child FOREIGN KEY (sample_id_child, child_frozen) REFERENCES samples_all(id, frozen_for_parents) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY sample_relationships_all
-    ADD CONSTRAINT sare_data_fk_parent FOREIGN KEY (sample_id_parent, parent_frozen) REFERENCES samples_all(id, frozen) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT sare_data_fk_parent FOREIGN KEY (sample_id_parent, parent_frozen) REFERENCES samples_all(id, frozen_for_children) ON UPDATE CASCADE ON DELETE CASCADE;
 ALTER TABLE ONLY sample_relationships_all
     ADD CONSTRAINT sare_data_fk_relationship FOREIGN KEY (relationship_id) REFERENCES relationship_types(id);
 ALTER TABLE ONLY sample_relationships_all
@@ -1236,5 +1289,6 @@ ALTER TABLE ONLY sample_type_property_types
 ALTER TABLE ONLY sample_type_property_types
     ADD CONSTRAINT stpt_script_fk FOREIGN KEY (script_id) REFERENCES scripts(id);
 GRANT SELECT ON TABLE operation_executions TO openbis_readonly;
+
 REVOKE ALL ON SCHEMA public FROM postgres;
 GRANT ALL ON SCHEMA public TO postgres;

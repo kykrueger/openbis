@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.AttachmentFileName;
@@ -323,11 +324,163 @@ public class SampleFreezingTest extends FreezingTest
         assertEquals(getSample(sample1).getAttachments().size(), 0);
     }
 
-    @Test
-    public void testAddLiquidComponentToFrozenContainer()
+    @Test(dataProvider = "LiquidChildParentRelations")
+    public void testValidAddChildToParent(FrozenFlags frozenFlagsOfParent, FrozenFlags frozenFlagsOfChild)
     {
         // Given
-        setFrozenFlagForSamples(true, sampleComp);
+        setFrozenFlagsForSamples(frozenFlagsOfParent, sample1);
+        setFrozenFlagsForSamples(frozenFlagsOfChild, sampleChild);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sample1);
+        sampleUpdate.getChildIds().add(sampleChild);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(sample1).getChildren().get(0).getCode(), SAMPLE_CHILD);
+    }
+
+    @Test(dataProvider = "LiquidChildParentRelations")
+    public void testValidRemoveChildFromParent(FrozenFlags frozenFlagsOfParent, FrozenFlags frozenFlagsOfChild)
+    {
+        // Given
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sampleParentCont);
+        sampleUpdate.getChildIds().add(sampleChild);
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+        assertEquals(getSample(sampleParentCont).getChildren().get(0).getCode(), SAMPLE_CHILD);
+        setFrozenFlagsForSamples(frozenFlagsOfParent, sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfChild, sampleChild);
+        SampleUpdate sampleUpdate2 = new SampleUpdate();
+        sampleUpdate2.setSampleId(sampleParentCont);
+        sampleUpdate2.getChildIds().remove(sampleChild);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate2));
+
+        // Then
+        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[]");
+    }
+
+    @DataProvider(name = "LiquidChildParentRelations")
+    public static Object[][] liquidChildParentRelations()
+    {
+        List<FrozenFlags> combinationsForParent =
+                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForParents().createAllCombinations();
+        combinationsForParent.add(new FrozenFlags(false).freezeForChildren());
+        List<FrozenFlags> combinationsForChild =
+                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().createAllCombinations();
+        combinationsForChild.add(new FrozenFlags(false).freezeForParents());
+        return asCartesianProduct(combinationsForParent, combinationsForChild);
+    }
+
+    @Test(dataProvider = "FrozenChildParentRelations")
+    public void testInvalidAddChildToParent(FrozenFlags frozenFlagsOfParent, FrozenFlags frozenFlagsOfChild)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfParent, sample1);
+        setFrozenFlagsForSamples(frozenFlagsOfChild, sampleChild);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sample1);
+        sampleUpdate.getChildIds().add(sampleChild);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
+                // Then
+                "ERROR: Operation INSERT is not allowed because sample " + SAMPLE_1
+                        + " or " + SAMPLE_CHILD + " is frozen.");
+    }
+
+    @Test(dataProvider = "FrozenChildParentRelations")
+    public void testInvalidAddChildToParentAfterMelting(FrozenFlags frozenFlagsOfParent, FrozenFlags frozenFlagsOfChild)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfParent, sample1);
+        setFrozenFlagsForSamples(frozenFlagsOfChild, sampleChild);
+        setFrozenFlagsForSamples(frozenFlagsOfParent.clone().melt(), sample1);
+        setFrozenFlagsForSamples(frozenFlagsOfChild.clone().melt(), sampleChild);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sample1);
+        sampleUpdate.getChildIds().add(sampleChild);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(sample1).getChildren().get(0).getCode(), SAMPLE_CHILD);
+    }
+
+    @Test(dataProvider = "FrozenChildParentRelations")
+    public void testInvalidRemoveChildFromParent(FrozenFlags frozenFlagsOfParent, FrozenFlags frozenFlagsOfChild)
+    {
+        // Given
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sampleParentCont);
+        sampleUpdate.getChildIds().add(sampleChild);
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+        assertEquals(getSample(sampleParentCont).getChildren().get(0).getCode(), SAMPLE_CHILD);
+        setFrozenFlagsForSamples(frozenFlagsOfParent, sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfChild, sampleChild);
+        SampleUpdate sampleUpdate2 = new SampleUpdate();
+        sampleUpdate2.setSampleId(sampleParentCont);
+        sampleUpdate2.getChildIds().remove(sampleChild);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate2)),
+                // Then Operation % is not allowed because sample % or % is frozen.
+                "ERROR: Operation DELETE is not allowed because sample " + SAMPLE_PARENT_CONT
+                        + " or " + SAMPLE_CHILD + " is frozen.");
+    }
+
+    @Test(dataProvider = "FrozenChildParentRelations")
+    public void testInvalidRemoveChildFromParentAfterMelting(FrozenFlags frozenFlagsOfParent, FrozenFlags frozenFlagsOfChild)
+    {
+        // Given
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sampleParentCont);
+        sampleUpdate.getChildIds().add(sampleChild);
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+        assertEquals(getSample(sampleParentCont).getChildren().get(0).getCode(), SAMPLE_CHILD);
+        setFrozenFlagsForSamples(frozenFlagsOfParent, sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfChild, sampleChild);
+        setFrozenFlagsForSamples(frozenFlagsOfParent.clone().melt(), sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfChild.clone().melt(), sampleChild);
+        SampleUpdate sampleUpdate2 = new SampleUpdate();
+        sampleUpdate2.setSampleId(sampleParentCont);
+        sampleUpdate2.getChildIds().remove(sampleChild);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate2));
+
+        // Then
+        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[]");
+    }
+
+    @DataProvider(name = "FrozenChildParentRelations")
+    public static Object[][] frozenChildParentRelations()
+    {
+        List<FrozenFlags> combinationsForLiquidParent =
+                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForParents().createAllCombinations();
+        FrozenFlags childFrozenForParents = new FrozenFlags(true).freezeForParents();
+        Object[][] combinationForInvalidChild =
+                asCartesianProduct(combinationsForLiquidParent, Arrays.asList(childFrozenForParents));
+        List<FrozenFlags> combinationsForLiquidChild =
+                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().createAllCombinations();
+        FrozenFlags parentFrozenForChildren = new FrozenFlags(true).freezeForChildren();
+        Object[][] combinationForInvalidParent =
+                asCartesianProduct(Arrays.asList(parentFrozenForChildren), combinationsForLiquidChild);
+        return merge(asCartesianProduct(Arrays.asList(parentFrozenForChildren), Arrays.asList(childFrozenForParents)),
+                combinationForInvalidParent, combinationForInvalidChild);
+    }
+
+    @Test(dataProvider = "LiquidComponentContainerRelations")
+    public void testValidAddComponentToContainer(FrozenFlags frozenFlagsOfContainer, FrozenFlags frozenFlagsOfComponent)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfContainer, sampleComp);
+        setFrozenFlagsForSamples(frozenFlagsOfComponent, sample1);
+        assertEquals(getSample(sampleComp).getComponents().toString(), "[]");
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(sampleComp);
         sampleUpdate.getComponentIds().add(sample1);
@@ -339,11 +492,59 @@ public class SampleFreezingTest extends FreezingTest
         assertEquals(getSample(sampleComp).getComponents().get(0).getCode(), SAMPLE_1);
     }
 
-    @Test
-    public void testAddFrozenComponentToLiquidContainer()
+    @Test(dataProvider = "LiquidComponentContainerRelations")
+    public void testValidRemoveComponentFromContainer(FrozenFlags frozenFlagsOfContainer, FrozenFlags frozenFlagsOfComponent)
     {
         // Given
-        setFrozenFlagForSamples(true, sample1);
+        setFrozenFlagsForSamples(frozenFlagsOfContainer, sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfComponent, sampleComp);
+        assertEquals(getSample(sampleParentCont).getComponents().toString(), "[Sample " + sampleComp + "]");
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sampleParentCont);
+        sampleUpdate.getComponentIds().remove(sampleComp);
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
+
+        // Then
+        assertEquals(getSample(sampleParentCont).getComponents().toString(), "[]");
+    }
+
+    @DataProvider(name = "LiquidComponentContainerRelations")
+    public static Object[][] liquidComponentContainerRelations()
+    {
+        List<FrozenFlags> combinationsForLiquidContainer =
+                new FrozenFlags(true).freezeForChildren().freezeForDataSet().freezeForParents().createAllCombinations();
+        combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponent());
+        List<FrozenFlags> combinationsForLiquidComponent =
+                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
+        return asCartesianProduct(combinationsForLiquidContainer, combinationsForLiquidComponent);
+    }
+
+    @Test(dataProvider = "frozenComponentContainerRelations")
+    public void testInvalidAddComponentToContainer(FrozenFlags frozenFlagsOfContainer, FrozenFlags frozenFlagsOfComponent)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfContainer, sampleComp);
+        setFrozenFlagsForSamples(frozenFlagsOfComponent, sample1);
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sampleComp);
+        sampleUpdate.getComponentIds().add(sample1);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
+                // Then
+                "ERROR: Operation SET CONTAINER is not allowed because sample " + SAMPLE_COMP + " is frozen for sample " + SAMPLE_1 + ".");
+    }
+
+    @Test(dataProvider = "frozenComponentContainerRelations")
+    public void testInvalidAddComponentToContainerAfterMelting(FrozenFlags frozenFlagsOfContainer, FrozenFlags frozenFlagsOfComponent)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsOfContainer, sampleComp);
+        setFrozenFlagsForSamples(frozenFlagsOfComponent, sample1);
+        setFrozenFlagsForSamples(frozenFlagsOfContainer.clone().melt(), sampleComp);
+        setFrozenFlagsForSamples(frozenFlagsOfComponent.clone().melt(), sample1);
         SampleUpdate sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(sampleComp);
         sampleUpdate.getComponentIds().add(sample1);
@@ -355,46 +556,34 @@ public class SampleFreezingTest extends FreezingTest
         assertEquals(getSample(sampleComp).getComponents().get(0).getCode(), SAMPLE_1);
     }
 
-    @Test
-    public void testAddFrozenComponentToFrozenContainer()
+    @Test(dataProvider = "frozenComponentContainerRelations")
+    public void testInvalidRemoveComponentFromContainer(FrozenFlags frozenFlagsOfContainer, FrozenFlags frozenFlagsOfComponent)
     {
         // Given
-        setFrozenFlagForSamples(true, sample1, sampleComp);
+        setFrozenFlagsForSamples(frozenFlagsOfContainer, sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfComponent, sampleComp);
+        assertEquals(getSample(sampleParentCont).getComponents().toString(), "[Sample " + sampleComp + "]");
         SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleComp);
-        sampleUpdate.getComponentIds().add(sample1);
+        sampleUpdate.setSampleId(sampleParentCont);
+        sampleUpdate.getComponentIds().remove(sampleComp);
 
         // When
         assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
                 // Then
-                "ERROR: Operation SET CONTAINER is not allowed because samples " + SAMPLE_1 + " and " + SAMPLE_COMP + " are frozen.");
+                "ERROR: Operation REMOVE CONTAINER is not allowed because sample " + SAMPLE_PARENT_CONT + " is frozen for sample " + SAMPLE_COMP
+                        + ".");
     }
 
-    @Test
-    public void testAddMoltenComponentToMoltenContainer()
+    @Test(dataProvider = "frozenComponentContainerRelations")
+    public void testInvalidRemoveComponentFromContainerAfterMelting(FrozenFlags frozenFlagsOfContainer, FrozenFlags frozenFlagsOfComponent)
     {
         // Given
-        setFrozenFlagForSamples(true, sample1, sampleComp);
-        setFrozenFlagForSamples(false, sample1, sampleComp);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleComp);
-        sampleUpdate.getComponentIds().add(sample1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleComp).getComponents().get(0).getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testRemoveLiquidComponentFromFrozenContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfContainer, sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfComponent, sampleComp);
+        setFrozenFlagsForSamples(frozenFlagsOfContainer.clone().melt(), sampleParentCont);
+        setFrozenFlagsForSamples(frozenFlagsOfComponent.clone().melt(), sampleComp);
         assertEquals(getSample(sampleParentCont).getComponents().toString(), "[Sample " + sampleComp + "]");
         SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate = new SampleUpdate();
         sampleUpdate.setSampleId(sampleParentCont);
         sampleUpdate.getComponentIds().remove(sampleComp);
 
@@ -405,292 +594,13 @@ public class SampleFreezingTest extends FreezingTest
         assertEquals(getSample(sampleParentCont).getComponents().toString(), "[]");
     }
 
-    @Test
-    public void testRemoveFrozenComponentFromLiquidContainer()
+    @DataProvider(name = "frozenComponentContainerRelations")
+    public static Object[][] frozenComponentContainerRelations()
     {
-        // Given
-        setFrozenFlagForSamples(true, sampleComp);
-        assertEquals(getSample(sampleParentCont).getComponents().toString(), "[Sample " + sampleComp + "]");
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleParentCont);
-        sampleUpdate.getComponentIds().remove(sampleComp);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleParentCont).getComponents().toString(), "[]");
-    }
-
-    @Test
-    public void testRemoveFrozenComponentFromFrozenContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleComp, sampleParentCont);
-        assertEquals(getSample(sampleParentCont).getComponents().toString(), "[Sample " + sampleComp + "]");
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleParentCont);
-        sampleUpdate.getComponentIds().remove(sampleComp);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation REMOVE CONTAINER is not allowed because samples " + SAMPLE_COMP + " and "
-                        + SAMPLE_PARENT_CONT + " are frozen.");
-    }
-
-    @Test
-    public void testRemoveMoltenComponentFromMoltenContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleComp, sampleParentCont);
-        assertEquals(getSample(sampleParentCont).getComponents().toString(), "[Sample " + sampleComp + "]");
-        setFrozenFlagForSamples(false, sampleComp, sampleParentCont);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleParentCont);
-        sampleUpdate.getComponentIds().remove(sampleComp);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleParentCont).getComponents().toString(), "[]");
-    }
-
-    @Test
-    public void testMoveLiquidComponentFromLiquidContainerToFrozenContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sample1);
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_PARENT_CONT);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleComp);
-        sampleUpdate.setContainerId(sample1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveLiquidComponentFromFrozenContainerToLiquidContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleParentCont);
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_PARENT_CONT);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleComp);
-        sampleUpdate.setContainerId(sample1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveFrozenComponentFromLiquidContainerToLiquidContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleComp);
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_PARENT_CONT);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleComp);
-        sampleUpdate.setContainerId(sample1);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_1);
-    }
-
-    @Test
-    public void testMoveFrozenComponentFromLiquidContainerToFrozenContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleComp, sample1);
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_PARENT_CONT);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleComp);
-        sampleUpdate.setContainerId(sample1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation SET CONTAINER is not allowed because samples " + SAMPLE_COMP + " and "
-                        + SAMPLE_1 + " are frozen.");
-    }
-
-    @Test
-    public void testMoveFrozenComponentFromFrozenContainerToLiquidContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleComp, sampleParentCont);
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_PARENT_CONT);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleComp);
-        sampleUpdate.setContainerId(sample1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation REMOVE CONTAINER is not allowed because samples " + SAMPLE_COMP + " and "
-                        + SAMPLE_PARENT_CONT + " are frozen.");
-    }
-
-    @Test
-    public void testMoveFrozenComponentFromFrozenContainerToFrozenContainer()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleComp, sample1, sampleParentCont);
-        assertEquals(getSample(sampleComp).getContainer().getCode(), SAMPLE_PARENT_CONT);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleComp);
-        sampleUpdate.setContainerId(sample1);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation SET CONTAINER is not allowed because samples " + SAMPLE_COMP + " and "
-                        + SAMPLE_1 + " are frozen.");
-    }
-
-    @Test
-    public void testAddLiquidChildToFrozenParent()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sample1);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sample1);
-        sampleUpdate.getChildIds().add(sampleComp);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sample1).getChildren().get(0).getCode(), SAMPLE_COMP);
-    }
-
-    @Test
-    public void testAddFrozenChildToLiquidParent()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleComp);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sample1);
-        sampleUpdate.getChildIds().add(sampleComp);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sample1).getChildren().get(0).getCode(), SAMPLE_COMP);
-    }
-
-    @Test
-    public void testAddFrozenChildToFrozenParent()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sample1, sampleComp);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sample1);
-        sampleUpdate.getChildIds().add(sampleComp);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation INSERT is not allowed because samples " + SAMPLE_1 + " and " + SAMPLE_COMP + " are frozen.");
-    }
-
-    @Test
-    public void testAddMoltenChildToMoltenParent()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sample1, sampleComp);
-        setFrozenFlagForSamples(false, sample1, sampleComp);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sample1);
-        sampleUpdate.getChildIds().add(sampleComp);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sample1).getChildren().get(0).getCode(), SAMPLE_COMP);
-    }
-
-    @Test
-    public void testRemoveLiquidChildFromFrozenParent()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleParentCont);
-        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[Sample " + sampleChild + "]");
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleParentCont);
-        sampleUpdate.getChildIds().remove(sampleChild);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[]");
-    }
-
-    @Test
-    public void testRemoveFrozenChildFromLiquidParent()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleChild);
-        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[Sample " + sampleChild + "]");
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleParentCont);
-        sampleUpdate.getChildIds().remove(sampleChild);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[]");
-    }
-
-    @Test
-    public void testRemoveFrozenChildFromFrozenParent()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleChild, sampleParentCont);
-        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[Sample " + sampleChild + "]");
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleParentCont);
-        sampleUpdate.getChildIds().remove(sampleChild);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate)),
-                // Then
-                "ERROR: Operation DELETE is not allowed because samples " + SAMPLE_PARENT_CONT + " and " + SAMPLE_CHILD + " are frozen.");
-    }
-
-    @Test
-    public void testRemoveMoltenChildFromMoltenParent()
-    {
-        // Given
-        setFrozenFlagForSamples(true, sampleChild, sampleParentCont);
-        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[Sample " + sampleChild + "]");
-        setFrozenFlagForSamples(false, sampleChild, sampleParentCont);
-        SampleUpdate sampleUpdate = new SampleUpdate();
-        sampleUpdate.setSampleId(sampleParentCont);
-        sampleUpdate.getChildIds().remove(sampleChild);
-
-        // When
-        v3api.updateSamples(systemSessionToken, Arrays.asList(sampleUpdate));
-
-        // Then
-        assertEquals(getSample(sampleParentCont).getChildren().toString(), "[]");
+        List<FrozenFlags> frozenContainer = Arrays.asList(new FrozenFlags(true).freezeForComponent());
+        List<FrozenFlags> combinationsForLiquidComponent =
+                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
+        return asCartesianProduct(frozenContainer, combinationsForLiquidComponent);
     }
 
 }
