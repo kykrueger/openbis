@@ -176,6 +176,8 @@ public class Migration
         experimentFetchOptions.withProperties();
         experimentFetchOptions.withSamples();
         experimentFetchOptions.withDataSets().withSample();
+        experimentFetchOptions.withRegistrator();
+        experimentFetchOptions.withModifier();
         
         SearchResult<Experiment> experiments = v3.searchExperiments(sessionToken, experimentSearchCriteria, experimentFetchOptions);
         
@@ -223,12 +225,15 @@ public class Migration
             
             // Queue all old experiments to delete
             experimentsQueuedToDelete.add(experiment.getPermId());
+            
+            // SQL Audit data update
+            AuditDataHelper.addAuditData(sampleIdentifier, experiment);
         }
         
         //
         // 4. Copy of experiment of type MICROSCOPY_EXPERIMENT to new samples of type MICROSCOPY_EXPERIMENT
         //
-        System.out.println("4. Copy of experiment of type MICROSCOPY_EXPERIMENT to samples of type MICROSCOPY_EXPERIMENT");
+        System.out.println("4. Copy of experiments of type MICROSCOPY_EXPERIMENT to samples of type MICROSCOPY_EXPERIMENT");
         
         Map<ISampleId, Sample> newMicroscopyExperimentSamplesByIdentifier = new HashMap<>();
         if(COMMIT_CHANGES_TO_OPENBIS) {
@@ -236,9 +241,14 @@ public class Migration
             Map<ISampleId, Sample> microscopyExperimentSamplesByPermId = v3.getSamples(sessionToken, createdSamplesPermIds, new SampleFetchOptions());
             for(Sample sample:microscopyExperimentSamplesByPermId.values()) {
                 newMicroscopyExperimentSamplesByIdentifier.put(sample.getIdentifier(), sample);
+                AuditDataHelper.addSamplePermId(sample.getIdentifier().getIdentifier(), sample.getPermId().getPermId());
             }
         }
         System.out.println("Created " + sampleCreationsToMigrateExperiments.size() + " MICROSCOPY_EXPERIMENT Samples.");
+        
+        System.out.println("4.2 Write SQL Audit Update");
+        
+        AuditDataHelper.writeSQLAuditUpdate();
         
         //
         // 5. Moving Samples out from MICROSCOPY_EXPERIMENT Experiments to MICROSCOPY_EXPERIMENT Samples
