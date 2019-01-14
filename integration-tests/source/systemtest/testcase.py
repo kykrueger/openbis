@@ -150,7 +150,40 @@ class TestCase(object):
         elif verbose:
             util.printAndFlush("%s as expected: <%s>" % (itemName, rendered_expected))
         return True
-    
+
+    def assertType(self, variableName, expectedType, variable):
+        self.assertEquals("Type of %s" % variableName, expectedType, type(variable))
+
+    def assertIn(self, itemsName, items, item):
+        if item not in items:
+            self.fail("Item %s not in %s" % (item, itemsName))
+        util.printAndFlush("%s as expected: contains <%s>" % (itemsName, item))
+
+    def assertNone(self, itemName, item):
+        self.assertEquals(itemName, None, item)
+
+    def assertNotNone(self, itemName, item):
+        if item is None:
+            self.fail("Item %s is None" % itemName)
+        util.printAndFlush("%s as expected: not None" % itemName)
+
+    def assertTrue(self, itemName, item):
+        self.assertEquals(itemName, True, item)
+
+    def assertFalse(self, itemName, item):
+        self.assertEquals(itemName, False, item)
+
+    def assertLength(self, itemsName, length, items):
+        self.assertEquals("Length of %s" % itemsName, length, len(items))
+
+    def assertEmpty(self, itemsName, items):
+        self.assertLength(itemsName, 0, items)
+
+    def assertNotEmpty(self, itemsName, items):
+        if len(items) == 0:
+            self.fail("%s is empty" % itemsName)
+        util.printAndFlush("%s as expected: not empty" % itemsName)
+
     def _render(self, item):
         if not isinstance(item, list):
             return str(item)
