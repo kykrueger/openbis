@@ -33,6 +33,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.fetchoptions.AttachmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.AttachmentFileName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.update.AttachmentListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IAttachmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
@@ -63,7 +64,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
     private Map<SyncEntityKind, AbstractHandler> handlersByEntityKind;
 
     public AttachmentsSynchronizer(IApplicationServerApi v3api, String sessionToken,
-            IApplicationServerApi v3apiDataSource, String sessionTokenDataSource, Date lastSyncTimestamp, 
+            IApplicationServerApi v3apiDataSource, String sessionTokenDataSource, Date lastSyncTimestamp,
             AttachmentSynchronizationSummary synchronizationSummary)
     {
         handlersByEntityKind = new HashMap<>();
@@ -127,9 +128,9 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
         protected IApplicationServerApi v3apiDataSource;
 
         protected String sessionTokenDataSource;
-        
+
         protected Date lastSyncTimestamp;
-        
+
         protected AttachmentSynchronizationSummary synchronizationSummary;
 
         public void setV3api(IApplicationServerApi v3api)
@@ -168,15 +169,14 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
             List<IncomingEntity<?>> filteredEntities = entities.stream().filter(e -> e.hasAttachments()).collect(Collectors.toList());
             Map<String, Map<String, Attachment>> attachmentsFromDataSource =
                     retrievAttachments(v3apiDataSource, sessionTokenDataSource, filteredEntities);
-            List<NewAttachment> newAttachments = new ArrayList<>();
-            List<AttachmentReplacement> attachmentReplacements = new ArrayList<>();
+            List<AttachmentChange> attachmentChanges = new ArrayList<>();
             for (Entry<String, Map<String, Attachment>> entry : attachmentsFromDataSource.entrySet())
             {
                 String permId = entry.getKey();
                 Map<String, Attachment> existingAttachmentsByFile = existingAttachments.get(permId);
                 if (existingAttachmentsByFile == null)
                 {
-                    throw new RuntimeException("Severe error: Entity with permId " + permId 
+                    throw new RuntimeException("Severe error: Entity with permId " + permId
                             + " should exist because it has been just registered on the harvester openBIS instance.");
                 }
                 Map<String, Attachment> attachmentsFromDataSourceByFile = entry.getValue();
@@ -188,31 +188,33 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
                     int version = existingAttachment == null ? 0 : existingAttachment.getVersion();
                     if (attachmentFromDataSource.getVersion() < version)
                     {
-                        attachmentReplacements.add(new AttachmentReplacement(attachmentFromDataSource, permId));
+                        attachmentChanges.add(new AttachmentChange(attachmentFromDataSource, permId, true, 0));
+                        synchronizationSummary.updatedCount.getAndIncrement();
                     } else if (attachmentFromDataSource.getVersion() == version)
                     {
-                        if (attachmentFromDataSource.getRegistrationDate().after(lastSyncTimestamp))
-                        {
-                            attachmentReplacements.add(new AttachmentReplacement(attachmentFromDataSource, permId));
-                        } else if (equals(attachmentFromDataSource.getTitle(), existingAttachment.getTitle()) == false
+                        if (attachmentFromDataSource.getRegistrationDate().after(lastSyncTimestamp) ||
+                                equals(attachmentFromDataSource.getTitle(), existingAttachment.getTitle()) == false
                                 || equals(attachmentFromDataSource.getDescription(), existingAttachment.getDescription()) == false)
                         {
-                            // TODO: update attachment
+                            attachmentChanges.add(new AttachmentChange(attachmentFromDataSource, permId, true, 0));
+                            synchronizationSummary.updatedCount.getAndIncrement();
                         }
                     } else
                     {
-                        newAttachments.add(new NewAttachment(attachmentFromDataSource, version, permId));
+                        attachmentChanges.add(new AttachmentChange(attachmentFromDataSource, permId, false, version));
+                        synchronizationSummary.addedCount.getAndIncrement();
                     }
                 }
                 for (Attachment existingAttachment : existingAttachmentsByFile.values())
                 {
                     if (attachmentsFromDataSourceByFile.get(existingAttachment.getFileName()) == null)
                     {
-                        // TODO: delete attachment
+                        attachmentChanges.add(new AttachmentChange(existingAttachment, permId, true, null));
+                        synchronizationSummary.deletedCount.getAndIncrement();
                     }
                 }
             }
-            handleNewAttachments(newAttachments);
+            handleAttachmentChanges(attachmentChanges);
         }
 
         private <AH extends IPermIdHolder & IAttachmentsHolder> Map<String, Map<String, Attachment>> retrievAttachments(
@@ -232,44 +234,55 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
         protected abstract <AH extends IPermIdHolder & IAttachmentsHolder> Collection<AH> getAttachments(
                 IApplicationServerApi v3api, String sessionToken, List<String> permIds);
-        
-        private void handleNewAttachments(List<NewAttachment> newAttachments)
+
+        private void handleAttachmentChanges(List<AttachmentChange> attachmentChanges)
         {
-            Map<String, AttachmentListUpdateValue> attachmentCreationsByPermId = new HashMap<>();
-            List<AttachmentCreation> attachmentCreations = new ArrayList<>();
-            for (NewAttachment newAttachment : newAttachments)
+            Map<String, AttachmentListUpdateValue> attachmentUpdatesByPermId = new HashMap<>();
+            for (AttachmentChange attachmentChange: attachmentChanges)
             {
-                String permId = newAttachment.getPermId();
-                AttachmentListUpdateValue attachmentListUpdate = new AttachmentListUpdateValue();
-                int fromVersion = newAttachment.getVersion();
-                Attachment attachment = newAttachment.getAttachment();
-                for (int i = attachment.getVersion(); i > fromVersion; i--)
+                String permId = attachmentChange.getPermId();
+                AttachmentListUpdateValue attachmentListUpdateValue = attachmentUpdatesByPermId.get(permId);
+                if (attachmentListUpdateValue == null)
                 {
-                    AttachmentCreation attachmentCreation = new AttachmentCreation();
-                    attachmentCreation.setFileName(attachment.getFileName());
-                    attachmentCreation.setTitle(attachment.getTitle());
-                    attachmentCreation.setDescription(attachment.getDescription());
-                    attachmentCreation.setContent(attachment.getContent());
-                    attachmentCreations.add(attachmentCreation);
-                    if (attachment.getFetchOptions().hasPreviousVersion())
-                    {
-                        attachment = attachment.getPreviousVersion();
-                    }
+                    attachmentListUpdateValue = new AttachmentListUpdateValue();
+                    attachmentUpdatesByPermId.put(permId, attachmentListUpdateValue);
                 }
-                attachmentListUpdate.add(attachmentCreations.toArray(new AttachmentCreation[0]));
-                attachmentCreationsByPermId.put(permId, attachmentListUpdate);
+                Attachment attachment = attachmentChange.getAttachment();
+                if (attachmentChange.isRemove())
+                {
+                    attachmentListUpdateValue.remove(new AttachmentFileName(attachment.getFileName()));
+                }
+                Integer version = attachmentChange.getVersion();
+                if (version != null)
+                {
+                    addAttachments(attachmentListUpdateValue, attachment, version);
+                }
             }
-            handleAttachments(attachmentCreationsByPermId);
-            synchronizationSummary.addedCount.addAndGet(attachmentCreationsByPermId.size());
+            handleAttachments(attachmentUpdatesByPermId);
         }
+
         
+        private void addAttachments(AttachmentListUpdateValue attachmentListUpdate, Attachment attachment, int fromVersion)
+        {
+            List<AttachmentCreation> attachmentCreations = new ArrayList<>();
+            for (int i = attachment.getVersion(); i > fromVersion; i--)
+            {
+                AttachmentCreation attachmentCreation = new AttachmentCreation();
+                attachmentCreation.setFileName(attachment.getFileName());
+                attachmentCreation.setTitle(attachment.getTitle());
+                attachmentCreation.setDescription(attachment.getDescription());
+                attachmentCreation.setContent(attachment.getContent());
+                attachmentCreations.add(attachmentCreation);
+                if (attachment.getFetchOptions().hasPreviousVersion())
+                {
+                    attachment = attachment.getPreviousVersion();
+                }
+            }
+            attachmentListUpdate.add(attachmentCreations.toArray(new AttachmentCreation[0]));
+        }
+
         protected abstract void handleAttachments(Map<String, AttachmentListUpdateValue> attachmentsByPermId);
 
-        private void handleAttachmentReplacements(List<AttachmentReplacement> replacements)
-        {
-            
-        }
-        
         protected void specifiyAttachmentFetchOptions(AttachmentFetchOptions attachmentFetchOptions)
         {
             attachmentFetchOptions.withContent();
@@ -285,6 +298,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
     private static final class ProjectsHandler extends AbstractHandler
     {
+        @SuppressWarnings("unchecked")
         @Override
         protected <AH extends IPermIdHolder & IAttachmentsHolder> Collection<AH> getAttachments(
                 IApplicationServerApi v3api, String sessionToken, List<String> permIds)
@@ -312,6 +326,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
     private static final class ExperimentsHandler extends AbstractHandler
     {
+        @SuppressWarnings("unchecked")
         @Override
         protected <AH extends IPermIdHolder & IAttachmentsHolder> Collection<AH> getAttachments(
                 IApplicationServerApi v3api, String sessionToken, List<String> permIds)
@@ -339,6 +354,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
     private static final class SamplesHandler extends AbstractHandler
     {
+        @SuppressWarnings("unchecked")
         @Override
         protected <AH extends IPermIdHolder & IAttachmentsHolder> Collection<AH> getAttachments(
                 IApplicationServerApi v3api, String sessionToken, List<String> permIds)
@@ -363,18 +379,23 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
             v3api.updateSamples(sessionToken, updates);
         }
     }
-    
-    private static final class NewAttachment
+
+    private static final class AttachmentChange
     {
         private Attachment attachment;
-        private int version;
+
         private String permId;
 
-        NewAttachment(Attachment attachment, int version, String permId)
+        private boolean remove;
+
+        private Integer version;
+
+        AttachmentChange(Attachment attachment, String permId, boolean remove, Integer version)
         {
             this.attachment = attachment;
-            this.version = version;
             this.permId = permId;
+            this.remove = remove;
+            this.version = version;
         }
 
         public Attachment getAttachment()
@@ -382,22 +403,20 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
             return attachment;
         }
 
-        public int getVersion()
-        {
-            return version;
-        }
-
         public String getPermId()
         {
             return permId;
         }
-    }
-    
-    private static final class AttachmentReplacement
-    {
-        AttachmentReplacement(Attachment attachment, String permId)
+
+        public boolean isRemove()
         {
-            
+            return remove;
+        }
+
+        public Integer getVersion()
+        {
+            return version;
         }
     }
+
 }
