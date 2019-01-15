@@ -73,6 +73,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.Sync
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.datasourceconnector.DataSourceConnector;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentSynchronizationSummary;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentSynchronizationTaskExecutor;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentsSynchronizer;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetRegistrationTaskExecutor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetSynchronizationSummary;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
@@ -84,6 +85,7 @@ import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.ConversionUtils;
+import ch.systemsx.cisd.openbis.dss.generic.server.EncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
@@ -183,7 +185,7 @@ public class EntitySynchronizer
         Document doc = getResourceList();
         ResourceListParserData data = parseResourceList(doc);
 
-//        processDeletions(data);
+        processDeletions(data);
         registerMasterData(data.getMasterData());
         MultiKeyMap<String, String> newEntities = registerEntities(data);
         List<String> notSyncedAttachmentsHolders = registerAttachments(data, newEntities);
@@ -517,13 +519,37 @@ public class EntitySynchronizer
         ParallelizedExecutionPreferences preferences = config.getParallelizedExecutionPrefs();
         V3Facade v3FacadeToDataSource = new V3Facade(config);
         monitor.log("Services for accessing data source established");
-        ParallelizedExecutor.process(attachmentHoldersToProcess, new AttachmentSynchronizationTaskExecutor(synchronizationSummary,
-                service, v3FacadeToDataSource,
-                lastSyncTimestamp, config, monitor),
+        List<List<IncomingEntity<?>>> attachmentHoldersChunks = chunk(attachmentHoldersToProcess);
+        IApplicationServerApi v3apiDataSource = EncapsulatedOpenBISService.createOpenBisV3Service(config.getDataSourceOpenbisURL(), "60");
+        String sessionTokenDataSource = v3apiDataSource.login(config.getUser(), config.getPassword());
+        ParallelizedExecutor.process(attachmentHoldersChunks, 
+                new AttachmentsSynchronizer(v3Api, service.getSessionToken(), v3apiDataSource, sessionTokenDataSource, 
+                        lastSyncTimestamp, synchronizationSummary), 
                 preferences.getMachineLoad(), preferences.getMaxThreads(), "process attachments", preferences.getRetriesOnFail(),
                 preferences.isStopOnFailure());
+//        ParallelizedExecutor.process(attachmentHoldersToProcess, new AttachmentSynchronizationTaskExecutor(synchronizationSummary,
+//                service, v3FacadeToDataSource,
+//                lastSyncTimestamp, config, monitor),
+//                preferences.getMachineLoad(), preferences.getMaxThreads(), "process attachments", preferences.getRetriesOnFail(),
+//                preferences.isStopOnFailure());
 
         return synchronizationSummary;
+    }
+
+    private List<List<IncomingEntity<?>>> chunk(List<IncomingEntity<?>> entities)
+    {
+        List<List<IncomingEntity<?>>> chunks = new ArrayList<>();
+        List<IncomingEntity<?>> chunk = null;
+        for (IncomingEntity<?> incomingEntity : entities)
+        {
+            if (chunk == null || chunk.size() >= 1000)
+            {
+                chunk = new ArrayList<>();
+                chunks.add(chunk);
+            }
+            chunk.add(incomingEntity);
+        }
+        return chunks;
     }
 
     // private void cleanup()
