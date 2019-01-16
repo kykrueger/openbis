@@ -501,7 +501,12 @@ function ServerFacade(openbisServer) {
 		if(sampleToSend.id !== -1) { //Is V1 Sample
 			listDataSetsForV1Sample(sampleToSend);
 		} else { //Ask for a V1 Sample
-			this.searchWithUniqueId(sampleToSend.permId, function(sampleList) {
+			this.searchSamplesV1({
+				"samplePermId" : sampleToSend.permId,
+				"withProperties" : true,
+				"withParents" : true,
+				"withChildren" : true
+			}, function(sampleList) {
 				listDataSetsForV1Sample(sampleList[0]);
 			});
 		}
@@ -1545,8 +1550,17 @@ function ServerFacade(openbisServer) {
 		}
 		
 		// Attributes
-		if(sampleIdentifier || samplePermId) {
-			throw "Unexpected operation exception : v1 search by sampleIdentifier removed";
+		if(sampleIdentifier) {
+			throw "Unexpected operation exception : v1 search by sampleIdentifier and samplePermId removed";
+		}
+		
+		if(samplePermId) {
+			matchClauses.push({
+				"@type":"AttributeMatchClause",
+				fieldType : "ATTRIBUTE",			
+				attribute : "PERM_ID",
+				desiredValue : samplePermId 
+			});
 		}
 		
 		if(sampleCode) {
