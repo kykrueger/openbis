@@ -49,6 +49,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.IncomingEntity;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
+import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.concurrent.ITaskExecutor;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -66,7 +68,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
     public AttachmentsSynchronizer(IApplicationServerApi v3api, String sessionToken,
             IApplicationServerApi v3apiDataSource, String sessionTokenDataSource, Date lastSyncTimestamp,
-            AttachmentSynchronizationSummary synchronizationSummary)
+            AttachmentSynchronizationSummary synchronizationSummary, Monitor monitor)
     {
         handlersByEntityKind = new HashMap<>();
         handlersByEntityKind.put(SyncEntityKind.PROJECT, new ProjectsHandler());
@@ -81,6 +83,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
             handler.setSessionTokenDataSource(sessionTokenDataSource);
             handler.setLastSyncTimestamp(lastSyncTimestamp);
             handler.setSynchronizationSummary(synchronizationSummary);
+            handler.setMonitor(monitor);
         }
     }
 
@@ -134,6 +137,16 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
         protected AttachmentSynchronizationSummary synchronizationSummary;
 
+        protected Monitor monitor;
+
+        protected SyncEntityKind entityKind;
+
+        AbstractHandler(SyncEntityKind entityKind)
+        {
+
+            this.entityKind = entityKind;
+        }
+
         public void setV3api(IApplicationServerApi v3api)
         {
             this.v3api = v3api;
@@ -164,10 +177,29 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
             this.synchronizationSummary = synchronizationSummary;
         }
 
+        public void setMonitor(Monitor monitor)
+        {
+            this.monitor = monitor;
+        }
+        
+        private void log(List<IncomingEntity<?>> entities, int numberOfEntitiesWithAttachments, String description)
+        {
+            List<String> ids = entities.stream().map(IncomingEntity::getIdentifer).collect(Collectors.toList());
+            String idsAsString = CollectionUtils.abbreviate(ids, 100);
+            monitor.log(String.format("%4d (of %4d) %ss %s. %s", 
+                    numberOfEntitiesWithAttachments, entities.size(), entityKind, description, idsAsString));
+        }
+
         public <AH extends IPermIdHolder & IAttachmentsHolder> void handle(List<IncomingEntity<?>> entities)
         {
-            Map<String, Map<String, Attachment>> existingAttachments = retrievAttachments(v3api, sessionToken, entities);
             List<IncomingEntity<?>> filteredEntities = entities.stream().filter(e -> e.hasAttachments()).collect(Collectors.toList());
+            log(entities, filteredEntities.size(), "with attachments on data source");
+            if (filteredEntities.isEmpty())
+            {
+                return;
+            }
+            Map<String, Map<String, Attachment>> existingAttachments = retrievAttachments(v3api, sessionToken, entities);
+            log(entities, existingAttachments.size(), "on harvester");
             Map<String, Map<String, Attachment>> attachmentsFromDataSource =
                     retrievAttachments(v3apiDataSource, sessionTokenDataSource, filteredEntities);
             List<AttachmentChange> attachmentChanges = new ArrayList<>();
@@ -221,9 +253,9 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
         private <AH extends IPermIdHolder & IAttachmentsHolder> Map<String, Map<String, Attachment>> retrievAttachments(
                 IApplicationServerApi v3api, String sessionToken, List<IncomingEntity<?>> entities)
         {
-            List<String> entitiesWithAttachments = entities.stream().map(IncomingEntity::getPermID).collect(Collectors.toList());
+            List<String> ids = entities.stream().map(IncomingEntity::getPermID).collect(Collectors.toList());
             Map<String, Map<String, Attachment>> attachmentsByPermId = new HashMap<>();
-            Collection<AH> attachmentHolders = getAttachments(v3api, sessionToken, entitiesWithAttachments);
+            Collection<AH> attachmentHolders = getAttachments(v3api, sessionToken, ids);
             for (AH attachmentHolder : attachmentHolders)
             {
                 attachmentsByPermId.put(attachmentHolder.getPermId().toString(),
@@ -239,30 +271,29 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
         private void handleAttachmentChanges(List<AttachmentChange> attachmentChanges)
         {
             Map<String, AttachmentListUpdateValue> attachmentUpdatesByPermId = new HashMap<>();
-            for (AttachmentChange attachmentChange: attachmentChanges)
+            for (AttachmentChange attachmentChange : attachmentChanges)
             {
                 String permId = attachmentChange.getPermId();
-                AttachmentListUpdateValue attachmentListUpdateValue = attachmentUpdatesByPermId.get(permId);
-                if (attachmentListUpdateValue == null)
+                AttachmentListUpdateValue attachmentListUpdate = attachmentUpdatesByPermId.get(permId);
+                if (attachmentListUpdate == null)
                 {
-                    attachmentListUpdateValue = new AttachmentListUpdateValue();
-                    attachmentUpdatesByPermId.put(permId, attachmentListUpdateValue);
+                    attachmentListUpdate = new AttachmentListUpdateValue();
+                    attachmentUpdatesByPermId.put(permId, attachmentListUpdate);
                 }
                 Attachment attachment = attachmentChange.getAttachment();
                 if (attachmentChange.isRemove())
                 {
-                    attachmentListUpdateValue.remove(new AttachmentFileName(attachment.getFileName()));
+                    attachmentListUpdate.remove(new AttachmentFileName(attachment.getFileName()));
                 }
                 Integer version = attachmentChange.getVersion();
                 if (version != null)
                 {
-                    addAttachments(attachmentListUpdateValue, attachment, version);
+                    addAttachments(attachmentListUpdate, attachment, version);
                 }
             }
             handleAttachments(attachmentUpdatesByPermId);
         }
 
-        
         private void addAttachments(AttachmentListUpdateValue attachmentListUpdate, Attachment attachment, int fromVersion)
         {
             List<AttachmentCreation> attachmentCreations = new ArrayList<>();
@@ -300,6 +331,11 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
     private static final class ProjectsHandler extends AbstractHandler
     {
+        public ProjectsHandler()
+        {
+            super(SyncEntityKind.PROJECT);
+        }
+
         @SuppressWarnings("unchecked")
         @Override
         protected <AH extends IPermIdHolder & IAttachmentsHolder> Collection<AH> getAttachments(
@@ -328,6 +364,11 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
     private static final class ExperimentsHandler extends AbstractHandler
     {
+        public ExperimentsHandler()
+        {
+            super(SyncEntityKind.EXPERIMENT);
+        }
+
         @SuppressWarnings("unchecked")
         @Override
         protected <AH extends IPermIdHolder & IAttachmentsHolder> Collection<AH> getAttachments(
@@ -356,6 +397,11 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
 
     private static final class SamplesHandler extends AbstractHandler
     {
+        public SamplesHandler()
+        {
+            super(SyncEntityKind.SAMPLE);
+        }
+
         @SuppressWarnings("unchecked")
         @Override
         protected <AH extends IPermIdHolder & IAttachmentsHolder> Collection<AH> getAttachments(

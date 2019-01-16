@@ -21,8 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.time.DateUtils;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -42,7 +40,6 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSe
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
-import ch.systemsx.cisd.openbis.dss.generic.server.EncapsulatedOpenBISService;
 
 /**
  * 
@@ -51,8 +48,6 @@ import ch.systemsx.cisd.openbis.dss.generic.server.EncapsulatedOpenBISService;
  */
 public class V3Facade
 {
-    public static final long TIMEOUT = 6 * DateUtils.MILLIS_PER_HOUR;
-
     private final IDataStoreServerApi dss;
     
     private final IApplicationServerApi as;
@@ -61,12 +56,8 @@ public class V3Facade
 
     public V3Facade(SyncConfig config)
     {
-        String asUrl = config.getDataSourceOpenbisURL();
-        String dssUrl = config.getDataSourceDSSURL();
-        long timeout = TIMEOUT;
-        String timeoutInMinutes = Long.toString(timeout / DateUtils.MILLIS_PER_MINUTE);
-        as = EncapsulatedOpenBISService.createOpenBisV3Service(asUrl, timeoutInMinutes);
-        dss = EncapsulatedOpenBISService.createDataStoreV3Service(dssUrl, timeoutInMinutes);
+        as = ServiceUtils.createAsV3Api(config.getDataSourceOpenbisURL());
+        dss = ServiceUtils.createDssV3Api(config.getDataSourceDSSURL());
         sessionToken = as.login(config.getUser(), config.getPassword());
      }
 
