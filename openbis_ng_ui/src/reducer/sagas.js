@@ -5,24 +5,30 @@ import actions from './actions'
 // TODO split sagas
 
 function* init() {
+  // TODO we want to check if there is an active session here to avoid the login
+}
+
+function* loginDone() {
   try {
     const result = yield call(openbis.getSpaces)
-    yield put(actions.setSpaces(result.getObjects()))  
+    yield put(actions.setSpaces(result.getObjects()))
   } catch(exception) {
     yield put(actions.error(exception))  
   }
 }
 
-export function* watchInit() {
-  yield takeEvery('INIT', init)
+function* logout() {
+  try {
+    console.log('logout')
+    const result = yield call(openbis.logout)
+    yield put(actions.logoutDone())
+  } catch(exception) {
+    yield put(actions.error(exception))  
+  }
 }
 
 function* selectSpace(action) {
   yield put(actions.selectEntity(action.spaces[0].permId.permId))
-}
-
-export function* watchSetSpaces() {
-  yield takeEvery('SET-SPACES', selectSpace)
 }
 
 function* saveEntity(action) {
@@ -35,10 +41,6 @@ function* saveEntity(action) {
   } catch(exception) {
     yield put(actions.error(exception))  
   }
-}
-
-export function* watchSaveEntity() {
-  yield takeEvery('SAVE-ENTITY', saveEntity)
 }
 
 function* expandNode(action) {
@@ -56,6 +58,21 @@ function* expandNode(action) {
   }
 }
 
-export function* watchExpandNode() {
+export function* login(action) {
+  try {
+    const result = yield openbis.login(action.username, action.password)
+    yield put(actions.loginDone())
+  } catch(exception) {
+    yield put(actions.error(exception))
+  }
+}
+
+export function* watchActions() {
+  yield takeEvery('INIT', init)
+  yield takeEvery('LOGIN', login)
+  yield takeEvery('LOGIN-DONE', loginDone)
+  yield takeEvery('LOGOUT', logout)
+  yield takeEvery('SAVE-ENTITY', saveEntity)
+  yield takeEvery('SET-SPACES', selectSpace)
   yield takeEvery('EXPAND-NODE', expandNode)
 }

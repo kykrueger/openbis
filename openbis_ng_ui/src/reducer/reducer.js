@@ -39,6 +39,15 @@ function loading(loading = initialState.loading, action) {
   case 'ERROR': {
     return false
   }
+  case 'LOGIN': {
+    return true
+  }
+  case 'LOGOUT': {
+    return true
+  }
+  case 'LOGOUT-DONE': {
+    return false
+  }
   default: {
     return loading
   }}
@@ -134,8 +143,22 @@ function exceptions(exceptions = initialState.exceptions, action) {
   }}
 }
 
+function sessionActive(sessionActive = initialState.sessionActive, action) {
+  switch(action.type) {
+  case 'LOGIN-DONE': {
+    return true
+  }
+  case 'LOGOUT-DONE': {
+    return false
+  }
+  default: {
+    return sessionActive
+  }}
+}
+
 function reducer(state = initialState, action) {
   return {
+    sessionActive: sessionActive(state.sessionActive, action),
     database: database(state.database, action),
     loading: loading(state.loading, action),
     databaseTreeNodes: databaseTreeNodes(state.databaseTreeNodes, action),

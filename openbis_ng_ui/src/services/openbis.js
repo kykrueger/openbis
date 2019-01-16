@@ -1,11 +1,26 @@
 import { store } from '../index.js'
 
+
 let v3 = null
 /* eslint-disable-next-line no-undef */
 requirejs([ 'openbis' ], openbis => {
   v3 = new openbis()
-  v3.login('admin', 'password').done(() => store.dispatch({type: 'INIT'}))
+  store.dispatch({type: 'INIT'})
 })
+
+function login(user, password) {
+  return new Promise( (resolve, reject) => {
+    v3.login(user, password).done(resolve).fail(() => {
+      reject({ message: 'Login failed' })
+    })
+  })
+}
+
+function logout() {
+  return new Promise( (resolve, reject) => {
+    v3.logout().done(resolve).fail(reject)
+  })
+}
 
 function getSpaces() {
   return new Promise( (resolve, reject) => {
@@ -49,7 +64,9 @@ function searchProjects(spacePermId) {
 }
 
 export default {
+  login: login,
+  logout: logout,
   getSpaces: getSpaces,
   updateSpace: updateSpace,
-  searchProjects: searchProjects
+  searchProjects: searchProjects,
 }

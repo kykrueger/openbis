@@ -6,22 +6,28 @@ import { createStore, applyMiddleware, compose } from 'redux'
 import { Provider } from 'react-redux'
 import createSagaMiddleware from 'redux-saga'
 import reducer from './reducer/reducer.js'
-import { watchInit, watchSetSpaces, watchSaveEntity, watchExpandNode } from './reducer/sagas'
+import { watchActions } from './reducer/sagas'
 
 const sagaMiddleware = createSagaMiddleware()
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 export const store = createStore(reducer, composeEnhancers(applyMiddleware(sagaMiddleware)))
 
-sagaMiddleware.run(watchInit)
-sagaMiddleware.run(watchSetSpaces)
-sagaMiddleware.run(watchSaveEntity)
-sagaMiddleware.run(watchExpandNode)
+sagaMiddleware.run(watchActions)
 
 const render = () => {
   const App = require('./components/App.jsx').default
+  const WithLogin = require('./components/WithLogin.jsx').default
+  const WithLoader = require('./components/WithLoader.jsx').default
+  const WithError = require('./components/WithError.jsx').default
   ReactDOM.render(
     <Provider store = { store }>
-      <App />
+      <WithLoader>
+        <WithError>
+          <WithLogin>
+            <App />
+          </WithLogin>
+        </WithError>
+      </WithLoader>
     </Provider>,
     document.getElementById("app")
   )

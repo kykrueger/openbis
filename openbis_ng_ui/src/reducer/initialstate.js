@@ -40,8 +40,11 @@ let tableColumns = foldLeft(stringColumns, {}, (acc, a) => Object.assign({}, acc
 tableColumns = foldLeft(intColumns, tableColumns, (acc, a) => Object.assign({}, acc, { [a]: 'int'}))
 tableColumns = foldLeft(shuffle(Object.entries(tableColumns)), { Id: 'int' }, (acc, a) => Object.assign({}, acc, { [a[0]] : a[1] }))
 
-// TODO split initialstate
+// TODO split initialstate when it becomes too big
 export default {
+
+  sessionActive: false,
+
   database: {
     spaces: {},
     projects: {},
@@ -67,7 +70,7 @@ export default {
   },
   dirtyEntities: [],
 
-  loading: true,
+  loading: false,
   // TODO generic tree
   databaseTreeNodes: [],
   exceptions: [],

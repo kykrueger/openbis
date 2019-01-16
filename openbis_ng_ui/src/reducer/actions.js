@@ -1,5 +1,8 @@
 export default {
-  // TODO setDirty for generic tabs
+  init: () => ({
+    type: 'INIT',
+  }),
+  // TODO setDirty for generic tabs instead of entities
   setDirty: (entityPermId, dirty) => ({
     type: 'SET-DIRTY',
     entityPermId: entityPermId,
@@ -62,5 +65,20 @@ export default {
   }),
   closeError: () => ({
     type: 'CLOSE-ERROR',
+  }),
+  // session
+  login: (username, password) => ({
+    type: 'LOGIN',
+    username: username,
+    password: password,
+  }),
+  loginDone: () => ({
+    type: 'LOGIN-DONE',
+  }),
+  logout: () => ({
+    type: 'LOGOUT'
+  }),
+  logoutDone: () => ({
+    type: 'LOGOUT-DONE',
   }),
 }

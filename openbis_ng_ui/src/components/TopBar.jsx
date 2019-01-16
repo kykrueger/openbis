@@ -1,14 +1,19 @@
 import React from 'react'
+import { withStyles } from '@material-ui/core/styles'
+import { connect } from 'react-redux'
+import flow from 'lodash/flow'
+
+import Grid from '@material-ui/core/Grid'
+import Button from '@material-ui/core/Button'
+import Hidden from '@material-ui/core/Hidden'
+import LogoutIcon from '@material-ui/icons/PowerSettingsNew'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import SearchIcon from '@material-ui/icons/Search'
-import { withStyles } from '@material-ui/core/styles'
-import Grid from '@material-ui/core/Grid'
-import Button from '@material-ui/core/Button'
-import Hidden from '@material-ui/core/Hidden'
-import LogoutIcon from '@material-ui/icons/PowerSettingsNew'
+
+import actions from '../reducer/actions.js'
 
 
 const styles = theme => ({
@@ -23,6 +28,14 @@ const styles = theme => ({
     minWidth: 0
   }
 })
+
+
+function mapDispatchToProps(dispatch) {
+  return {
+    logout: () => dispatch(actions.logout()),
+  }
+}
+
 
 class TopBar extends React.Component {
 
@@ -63,7 +76,8 @@ class TopBar extends React.Component {
             <Grid item>
               <Button
                 variant="contained" 
-                color="primary">
+                color="primary"
+                onClick={ this.props.logout }>
                 <LogoutIcon />
               </Button>
             </Grid>
@@ -75,4 +89,7 @@ class TopBar extends React.Component {
   }
 }
 
-export default withStyles(styles)(TopBar)
+export default flow(
+  connect(null, mapDispatchToProps),
+  withStyles(styles)
+)(TopBar)
