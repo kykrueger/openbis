@@ -185,7 +185,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
         private void log(List<IncomingEntity<?>> entities, int numberOfEntitiesWithAttachments, String description)
         {
             List<String> ids = entities.stream().map(IncomingEntity::getIdentifer).collect(Collectors.toList());
-            String idsAsString = CollectionUtils.abbreviate(ids, 100);
+            String idsAsString = CollectionUtils.abbreviate(ids, 200);
             monitor.log(String.format("%4d (of %4d) %ss %s. %s", 
                     numberOfEntitiesWithAttachments, entities.size(), entityKind, description, idsAsString));
         }
@@ -193,11 +193,11 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
         public <AH extends IPermIdHolder & IAttachmentsHolder> void handle(List<IncomingEntity<?>> entities)
         {
             List<IncomingEntity<?>> filteredEntities = entities.stream().filter(e -> e.hasAttachments()).collect(Collectors.toList());
-            log(entities, filteredEntities.size(), "with attachments on data source");
             if (filteredEntities.isEmpty())
             {
                 return;
             }
+            log(entities, filteredEntities.size(), "with attachments on data source");
             Map<String, Map<String, Attachment>> existingAttachments = retrievAttachments(v3api, sessionToken, entities);
             log(entities, existingAttachments.size(), "on harvester");
             Map<String, Map<String, Attachment>> attachmentsFromDataSource =
