@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -278,6 +279,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
                     attachment = attachment.getPreviousVersion();
                 }
             }
+            Collections.reverse(attachmentCreations);
             attachmentListUpdate.add(attachmentCreations.toArray(new AttachmentCreation[0]));
         }
 
