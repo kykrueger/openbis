@@ -1,6 +1,7 @@
 from tabulate import tabulate
 from texttable import Texttable
 from pybis.utils import check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl
+from pandas import DataFrame
 
 
 class PropertyAssignments():
@@ -42,6 +43,10 @@ class PropertyAssignments():
     def __ne__(self, other):
         return str(self) != str(other)
 
+    def get_propertyAssignments(self):
+        attrs = ['code', 'dataType', 'description', 'label', 'mandatory', 'ordinal']
+        pas = [ {**pa['propertyType'], **pa} for pa in self.data['propertyAssignments'] ]
+        return DataFrame(pas, columns=attrs)
 
     def codes(self):
         codes = []
@@ -169,3 +174,5 @@ description: {}""".format (
         table.set_cols_width([28,28,28,28,9])
         table.set_cols_align(['l','l','l','l','l'])
         return title + "\n\n" + table.draw()
+
+
