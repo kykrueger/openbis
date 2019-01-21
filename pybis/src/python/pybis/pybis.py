@@ -822,7 +822,8 @@ class Openbis:
             for key in keys_csv:
                 if key in resp:
                     resp[key] = list(map(lambda item: item.strip(), resp[key].split(',')))
-            return ServerInformation(resp)
+            self.server_information = ServerInformation(resp)
+            return self.server_information
         else:
             raise ValueError("Could not get the server information")
 
@@ -2474,7 +2475,7 @@ class Openbis:
     get_object_types = get_sample_types # Alias
 
     def get_sample_type(self, type):
-        try:
+        #try:
             property_asignments = self._get_types_of(
                 "searchSampleTypes",
                 "Sample",
@@ -2482,8 +2483,8 @@ class Openbis:
                 additional_attributes=["generatedCodePrefix", "validationPluginId"]
             )
             return SampleType(self, property_asignments.data)
-        except Exception:
-            raise ValueError("no such sample type: {}".format(type))
+        #except Exception:
+        #    raise ValueError("no such sample type: {}".format(type))
 
     get_object_type = get_sample_type # Alias
 
@@ -2575,7 +2576,7 @@ class Openbis:
                 "code": type_name
             })
             fetchopts['propertyAssignments'] = fetch_option['propertyAssignments']
-            if self.server_information.api_version > '3.3':
+            if self.get_server_information().api_version > '3.3':
                 fetchopts['validationPlugin'] = fetch_option['plugin']
 
         request = {
