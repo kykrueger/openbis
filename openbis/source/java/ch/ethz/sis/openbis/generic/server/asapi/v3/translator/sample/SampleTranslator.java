@@ -210,6 +210,11 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
         result.setCode(baseRecord.code);
         result.setIdentifier(new SampleIdentifier(baseRecord.spaceCode, baseRecord.projectCode,
                 baseRecord.containerCode, baseRecord.code));
+        result.setFrozen(baseRecord.frozen);
+        result.setFrozenForComponents(baseRecord.frozenForComponents);
+        result.setFrozenForChildren(baseRecord.frozenForChildren);
+        result.setFrozenForParents(baseRecord.frozenForParents);
+        result.setFrozenForDataSets(baseRecord.frozenForDataSets);
         result.setModificationDate(baseRecord.modificationDate);
         result.setRegistrationDate(baseRecord.registrationDate);
 

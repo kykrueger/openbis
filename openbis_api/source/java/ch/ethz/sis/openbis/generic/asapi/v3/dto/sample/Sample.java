@@ -61,7 +61,9 @@ import java.util.Set;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.sample.Sample")
-public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, IDataSetsHolder, IEntityTypeHolder, IExperimentHolder, IIdentifierHolder, IMaterialPropertiesHolder, IModificationDateHolder, IModifierHolder, IParentChildrenHolder<Sample>, IPermIdHolder, IProjectHolder, IPropertiesHolder, IRegistrationDateHolder, IRegistratorHolder, ISpaceHolder, ITagsHolder
+public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, IDataSetsHolder, IEntityTypeHolder, IExperimentHolder,
+        IIdentifierHolder, IMaterialPropertiesHolder, IModificationDateHolder, IModifierHolder, IParentChildrenHolder<Sample>, IPermIdHolder,
+        IProjectHolder, IPropertiesHolder, IRegistrationDateHolder, IRegistratorHolder, ISpaceHolder, ITagsHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -76,6 +78,21 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
 
     @JsonProperty
     private String code;
+
+    @JsonProperty
+    private boolean frozen;
+
+    @JsonProperty
+    private boolean frozenForComponents;
+
+    @JsonProperty
+    private boolean frozenForChildren;
+
+    @JsonProperty
+    private boolean frozenForParents;
+
+    @JsonProperty
+    private boolean frozenForDataSets;
 
     @JsonProperty
     private Date registrationDate;
@@ -186,6 +203,56 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         this.code = code;
     }
 
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
+    public boolean isFrozenForComponents()
+    {
+        return frozenForComponents;
+    }
+
+    public void setFrozenForComponents(boolean frozenForComponents)
+    {
+        this.frozenForComponents = frozenForComponents;
+    }
+
+    public boolean isFrozenForChildren()
+    {
+        return frozenForChildren;
+    }
+
+    public void setFrozenForChildren(boolean frozenForChildren)
+    {
+        this.frozenForChildren = frozenForChildren;
+    }
+
+    public boolean isFrozenForParents()
+    {
+        return frozenForParents;
+    }
+
+    public void setFrozenForParents(boolean frozenForParents)
+    {
+        this.frozenForParents = frozenForParents;
+    }
+
+    public boolean isFrozenForDataSets()
+    {
+        return frozenForDataSets;
+    }
+
+    public void setFrozenForDataSets(boolean frozenForDataSets)
+    {
+        this.frozenForDataSets = frozenForDataSets;
+    }
+
     // Method automatically generated with DtoGenerator
     @JsonIgnore
     @Override
@@ -222,8 +289,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasType())
         {
             return type;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Sample type has not been fetched.");
         }
@@ -243,8 +309,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasProject())
         {
             return project;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Project has not been fetched.");
         }
@@ -264,8 +329,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasSpace())
         {
             return space;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Space has not been fetched.");
         }
@@ -285,8 +349,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasExperiment())
         {
             return experiment;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Experiment has not been fetched.");
         }
@@ -306,8 +369,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasProperties())
         {
             return properties;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Properties have not been fetched.");
         }
@@ -328,8 +390,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasMaterialProperties())
         {
             return materialProperties;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Material Properties have not been fetched.");
         }
@@ -350,8 +411,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasParents())
         {
             return parents;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Parents have not been fetched.");
         }
@@ -371,8 +431,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasChildren())
         {
             return children;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Children have not been fetched.");
         }
@@ -391,8 +450,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasContainer())
         {
             return container;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Container sample has not been fetched.");
         }
@@ -411,8 +469,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasComponents())
         {
             return components;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Component samples have not been fetched.");
         }
@@ -432,8 +489,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasDataSets())
         {
             return dataSets;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Data sets have not been fetched.");
         }
@@ -452,8 +508,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasHistory())
         {
             return history;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("History have not been fetched.");
         }
@@ -473,8 +528,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasTags())
         {
             return tags;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Tags have not been fetched.");
         }
@@ -494,8 +548,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }
@@ -515,8 +568,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasModifier())
         {
             return modifier;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Modifier has not been fetched.");
         }
@@ -536,8 +588,7 @@ public class Sample implements Serializable, IAttachmentsHolder, ICodeHolder, ID
         if (getFetchOptions() != null && getFetchOptions().hasAttachments())
         {
             return attachments;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Attachments have not been fetched.");
         }

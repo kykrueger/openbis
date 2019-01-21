@@ -91,6 +91,18 @@ public class UpdateSpaceExecutor extends AbstractUpdateEntityExecutor<SpaceUpdat
             {
                 space.setDescription(update.getDescription().getValue());
             }
+            if (update.shouldBeFrozen())
+            {
+                space.setFrozen(true);
+            }
+            if (update.shouldBeFrozenForProjects())
+            {
+                space.setFrozenForProject(true);
+            }
+            if (update.shouldBeFrozenForSamples())
+            {
+                space.setFrozenForSample(true);
+            }
         }
     }
 

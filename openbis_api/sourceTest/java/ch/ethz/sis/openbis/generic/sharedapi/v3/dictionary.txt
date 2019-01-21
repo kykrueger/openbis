@@ -2238,3 +2238,39 @@ set Plugin
 with Plugin
 with Plugin Using
 
+freeze
+freeze For Children
+freeze For Components
+freeze For Containers
+freeze For DataSets
+freeze For Experiments
+freeze For Parents
+freeze For Projects
+freeze For Samples
+is Frozen
+is Frozen For Children
+is Frozen For Components
+is Frozen For Containers
+is Frozen For DataSets
+is Frozen For Experiments
+is Frozen For Parents
+is Frozen For Projects
+is Frozen For Samples
+set Frozen
+set Frozen For Children
+set Frozen For Components
+set Frozen For Containers
+set Frozen For DataSets
+set Frozen For Experiments
+set Frozen For Parents
+set Frozen For Projects
+set Frozen For Samples
+should Be Frozen
+should Be Frozen For Children
+should Be Frozen For Components
+should Be Frozen For Containers
+should Be Frozen For DataSets
+should Be Frozen For Experiments
+should Be Frozen For Parents
+should Be Frozen For Projects
+should Be Frozen For Samples

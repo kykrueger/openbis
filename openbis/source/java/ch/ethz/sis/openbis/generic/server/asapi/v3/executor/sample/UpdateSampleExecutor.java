@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -118,11 +120,33 @@ public class UpdateSampleExecutor extends AbstractUpdateEntityExecutor<SampleUpd
     {
         Collection<SamplePE> experimentOrProjectSamples = new ArrayList<SamplePE>();
 
-        for (SamplePE entity : batch.getObjects().values())
+        for (Entry<SampleUpdate, SamplePE> entry : batch.getObjects().entrySet())
         {
+            SampleUpdate update = entry.getKey();
+            SamplePE entity = entry.getValue();;
             if (entity.getExperiment() != null || entity.getProject() != null)
             {
                 experimentOrProjectSamples.add(entity);
+            }
+            if (update.shouldBeFrozen())
+            {
+                entity.setFrozen(true);
+            }
+            if (update.shouldBeFrozenForComponents())
+            {
+                entity.setFrozenForComponent(true);
+            }
+            if (update.shouldBeFrozenForChildren())
+            {
+                entity.setFrozenForChildren(true);
+            }
+            if (update.shouldBeFrozenForParents())
+            {
+                entity.setFrozenForParents(true);
+            }
+            if (update.shouldBeFrozenForDataSets())
+            {
+                entity.setFrozenForDataSet(true);
             }
         }
 

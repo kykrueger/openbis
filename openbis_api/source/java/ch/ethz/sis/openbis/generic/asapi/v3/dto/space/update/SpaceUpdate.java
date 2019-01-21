@@ -41,6 +41,15 @@ public class SpaceUpdate implements IUpdate, IObjectUpdate<ISpaceId>
     @JsonProperty
     private FieldUpdateValue<String> description = new FieldUpdateValue<String>();
 
+    @JsonProperty
+    private boolean freeze;
+
+    @JsonProperty
+    private boolean freezeForProjects;
+
+    @JsonProperty
+    private boolean freezeForSamples;
+
     @Override
     @JsonIgnore
     public ISpaceId getObjectId()
@@ -70,6 +79,41 @@ public class SpaceUpdate implements IUpdate, IObjectUpdate<ISpaceId>
     public FieldUpdateValue<String> getDescription()
     {
         return description;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozen()
+    {
+        return freeze;
+    }
+
+    public void freeze()
+    {
+        this.freeze = true;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozenForProjects()
+    {
+        return freezeForProjects;
+    }
+
+    public void freezeForProjects()
+    {
+        this.freeze = true;
+        this.freezeForProjects = true;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozenForSamples()
+    {
+        return freezeForSamples;
+    }
+
+    public void freezeForSamples()
+    {
+        this.freeze = true;
+        this.freezeForSamples = true;
     }
 
     @Override
