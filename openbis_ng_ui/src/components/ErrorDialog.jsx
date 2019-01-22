@@ -8,6 +8,7 @@ import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
+import Slide from '@material-ui/core/Slide'
 
 import profile from '../profile.js'
 
@@ -20,7 +21,21 @@ const dialogStyles = {
 
 const StyledDialog = withStyles(dialogStyles)(Dialog)
 
+const ANIMATION_TIME_MS = 250
+
+function Transition(props) {
+  return <Slide 
+    direction="up"
+    timeout={{ enter: ANIMATION_TIME_MS, exit: ANIMATION_TIME_MS }}
+    {...props}
+  />
+}
+
 class ErrorDialog extends React.Component {
+
+  state = {
+    open: true,
+  }
 
   getErrorMailtoHref() {
     let report = 
@@ -37,15 +52,21 @@ class ErrorDialog extends React.Component {
     return href
   }
 
+  close() {
+    this.setState({ open: false })
+    setTimeout(this.props.onClose, ANIMATION_TIME_MS)
+  }
+
   render() {
     return (
       <StyledDialog
-        open={ true }
+        open={ this.state.open }
         onClose={ this.props.closeError }
         scroll="paper"
         aria-labelledby="error-dialog-title"
         fullWidth={ true }
         maxWidth="md"
+        TransitionComponent={Transition}
       >
         <DialogTitle id="error-dialog-title">Error</DialogTitle>
         <DialogContent>
@@ -54,7 +75,7 @@ class ErrorDialog extends React.Component {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={ this.props.onClose } color="primary">
+          <Button onClick={ this.close.bind(this) } color="primary">
             Dismiss
           </Button>
           <Button color="primary" href={this.getErrorMailtoHref()}>
