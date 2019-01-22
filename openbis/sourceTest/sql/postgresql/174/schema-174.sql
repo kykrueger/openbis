@@ -25,7 +25,7 @@ CREATE DOMAIN edms_address_type AS text
 CREATE DOMAIN entity_kind AS character varying(40)
 	CONSTRAINT entity_kind_check CHECK (((VALUE)::text = ANY (ARRAY[('SAMPLE'::character varying)::text, ('EXPERIMENT'::character varying)::text, ('DATA_SET'::character varying)::text, ('MATERIAL'::character varying)::text])));
 CREATE DOMAIN event_type AS character varying(40)
-	CONSTRAINT event_type_check CHECK (((VALUE)::text = ANY (ARRAY[('DELETION'::character varying)::text, ('MOVEMENT'::character varying)::text])));
+	CONSTRAINT event_type_check CHECK (((VALUE)::text = ANY ((ARRAY['DELETION'::character varying, 'MOVEMENT'::character varying, 'FREEZING'::character varying])::text[])));
 CREATE DOMAIN file AS bytea;
 CREATE DOMAIN file_name AS character varying(255);
 CREATE DOMAIN grid_expression AS character varying(2000);

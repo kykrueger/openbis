@@ -307,6 +307,7 @@ CREATE INDEX etpt_exty_fk_i ON experiment_type_property_types USING btree (exty_
 CREATE INDEX etpt_pers_fk_i ON experiment_type_property_types USING btree (pers_id_registerer);
 CREATE INDEX etpt_prty_fk_i ON experiment_type_property_types USING btree (prty_id);
 CREATE INDEX evnt_exac_fk_i ON events USING btree (exac_id);
+CREATE INDEX evnt_fr_id_fk_i ON events USING btree (identifiers) WHERE ((event_type)::text = 'FREEZING'::text);
 CREATE INDEX evnt_pers_fk_i ON events USING btree (pers_id_registerer);
 CREATE INDEX exda_cvte_fk_i ON external_data USING btree (cvte_id_stor_fmt);
 CREATE INDEX exda_cvte_stored_on_fk_i ON external_data USING btree (cvte_id_store);
