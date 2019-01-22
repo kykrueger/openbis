@@ -24,13 +24,13 @@ module.exports = {
       pragma: "React",
       version: "16.4.2"
     },
-    propWrapperFunctions: [ "forbidExtraProps" ]
+    propWrapperFunctions: ["forbidExtraProps"]
   },
   rules: {
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
 
-    "indent": ["error", 2],
+    "indent": ["error", 4, {"SwitchCase": 1}],
     "linebreak-style": ["error", "unix"],
     "quotes": ["error", "single"],
     "semi": ["error", "never"],
@@ -41,4 +41,4 @@ module.exports = {
     // override default options for rules from base configurations
     "no-cond-assign": ["error", "always"],
   }
-}
+};
