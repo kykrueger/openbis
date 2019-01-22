@@ -57,7 +57,9 @@ import java.util.Set;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.experiment.Experiment")
-public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder, IDataSetsHolder, IEntityTypeHolder, IIdentifierHolder, IMaterialPropertiesHolder, IModificationDateHolder, IModifierHolder, IPermIdHolder, IProjectHolder, IPropertiesHolder, IRegistrationDateHolder, IRegistratorHolder, ISamplesHolder, ITagsHolder
+public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder, IDataSetsHolder, IEntityTypeHolder, IIdentifierHolder,
+        IMaterialPropertiesHolder, IModificationDateHolder, IModifierHolder, IPermIdHolder, IProjectHolder, IPropertiesHolder,
+        IRegistrationDateHolder, IRegistratorHolder, ISamplesHolder, ITagsHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -72,6 +74,15 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
 
     @JsonProperty
     private String code;
+
+    @JsonProperty
+    private boolean frozen;
+
+    @JsonProperty
+    private boolean frozenForDataSets;
+
+    @JsonProperty
+    private boolean frozenForSamples;
 
     @JsonProperty
     private Date registrationDate;
@@ -167,6 +178,36 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         this.code = code;
     }
 
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
+    public boolean isFrozenForDataSets()
+    {
+        return frozenForDataSets;
+    }
+
+    public void setFrozenForDataSets(boolean frozenForDataSets)
+    {
+        this.frozenForDataSets = frozenForDataSets;
+    }
+
+    public boolean isFrozenForSamples()
+    {
+        return frozenForSamples;
+    }
+
+    public void setFrozenForSamples(boolean frozenForSamples)
+    {
+        this.frozenForSamples = frozenForSamples;
+    }
+
     // Method automatically generated with DtoGenerator
     @JsonIgnore
     @Override
@@ -203,8 +244,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasType())
         {
             return type;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Experiment type has not been fetched.");
         }
@@ -224,8 +264,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasProject())
         {
             return project;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Project has not been fetched.");
         }
@@ -245,8 +284,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasDataSets())
         {
             return dataSets;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Data sets have not been fetched.");
         }
@@ -266,8 +304,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasSamples())
         {
             return samples;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Samples have not been fetched.");
         }
@@ -286,8 +323,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasHistory())
         {
             return history;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("History have not been fetched.");
         }
@@ -307,8 +343,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasProperties())
         {
             return properties;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Properties have not been fetched.");
         }
@@ -329,8 +364,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasMaterialProperties())
         {
             return materialProperties;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Material Properties have not been fetched.");
         }
@@ -351,8 +385,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasTags())
         {
             return tags;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Tags have not been fetched.");
         }
@@ -372,8 +405,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }
@@ -393,8 +425,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasModifier())
         {
             return modifier;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Modifier has not been fetched.");
         }
@@ -414,8 +445,7 @@ public class Experiment implements Serializable, IAttachmentsHolder, ICodeHolder
         if (getFetchOptions() != null && getFetchOptions().hasAttachments())
         {
             return attachments;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Attachments have not been fetched.");
         }

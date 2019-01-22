@@ -49,6 +49,15 @@ public class ExperimentUpdate implements IUpdate, IObjectUpdate<IExperimentId>, 
     private IExperimentId experimentId;
 
     @JsonProperty
+    private boolean freeze;
+
+    @JsonProperty
+    private boolean freezeForDataSets;
+
+    @JsonProperty
+    private boolean freezeForSamples;
+
+    @JsonProperty
     private Map<String, String> properties = new HashMap<String, String>();
 
     @JsonProperty
@@ -77,6 +86,41 @@ public class ExperimentUpdate implements IUpdate, IObjectUpdate<IExperimentId>, 
     public void setExperimentId(IExperimentId experimentId)
     {
         this.experimentId = experimentId;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozen()
+    {
+        return freeze;
+    }
+
+    public void freeze()
+    {
+        this.freeze = true;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozenForDataSets()
+    {
+        return freezeForDataSets;
+    }
+
+    public void freezeForDataSets()
+    {
+        this.freeze = true;
+        this.freezeForDataSets = true;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozenForSamples()
+    {
+        return freezeForSamples;
+    }
+
+    public void freezeForSamples()
+    {
+        this.freeze = true;
+        this.freezeForSamples = true;
     }
 
     @Override

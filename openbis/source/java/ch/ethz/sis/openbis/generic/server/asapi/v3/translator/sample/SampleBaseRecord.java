@@ -36,6 +36,16 @@ public class SampleBaseRecord extends ObjectBaseRecord
 
     public String permId;
 
+    public boolean frozen;
+
+    public boolean frozenForComponents;
+
+    public boolean frozenForChildren;
+
+    public boolean frozenForParents;
+
+    public boolean frozenForDataSets;
+
     public Date registrationDate;
 
     public Date modificationDate;

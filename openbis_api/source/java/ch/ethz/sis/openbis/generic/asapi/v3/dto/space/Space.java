@@ -40,7 +40,8 @@ import java.util.List;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.space.Space")
-public class Space implements Serializable, ICodeHolder, IDescriptionHolder, IModificationDateHolder, IPermIdHolder, IProjectsHolder, IRegistrationDateHolder, IRegistratorHolder, ISamplesHolder
+public class Space implements Serializable, ICodeHolder, IDescriptionHolder, IModificationDateHolder, IPermIdHolder, IProjectsHolder,
+        IRegistrationDateHolder, IRegistratorHolder, ISamplesHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -55,6 +56,15 @@ public class Space implements Serializable, ICodeHolder, IDescriptionHolder, IMo
 
     @JsonProperty
     private String description;
+
+    @JsonProperty
+    private boolean frozen;
+
+    @JsonProperty
+    private boolean frozenForProjects;
+
+    @JsonProperty
+    private boolean frozenForSamples;
 
     @JsonProperty
     private Date registrationDate;
@@ -126,6 +136,36 @@ public class Space implements Serializable, ICodeHolder, IDescriptionHolder, IMo
         this.description = description;
     }
 
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
+    public boolean isFrozenForProjects()
+    {
+        return frozenForProjects;
+    }
+
+    public void setFrozenForProjects(boolean frozenForProjects)
+    {
+        this.frozenForProjects = frozenForProjects;
+    }
+
+    public boolean isFrozenForSamples()
+    {
+        return frozenForSamples;
+    }
+
+    public void setFrozenForSamples(boolean frozenForSamples)
+    {
+        this.frozenForSamples = frozenForSamples;
+    }
+
     // Method automatically generated with DtoGenerator
     @JsonIgnore
     @Override
@@ -162,8 +202,7 @@ public class Space implements Serializable, ICodeHolder, IDescriptionHolder, IMo
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }
@@ -183,8 +222,7 @@ public class Space implements Serializable, ICodeHolder, IDescriptionHolder, IMo
         if (getFetchOptions() != null && getFetchOptions().hasSamples())
         {
             return samples;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Samples have not been fetched.");
         }
@@ -204,8 +242,7 @@ public class Space implements Serializable, ICodeHolder, IDescriptionHolder, IMo
         if (getFetchOptions() != null && getFetchOptions().hasProjects())
         {
             return projects;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Projects have not been fetched.");
         }

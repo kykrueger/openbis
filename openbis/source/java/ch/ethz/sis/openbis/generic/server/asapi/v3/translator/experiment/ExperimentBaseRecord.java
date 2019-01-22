@@ -34,6 +34,12 @@ public class ExperimentBaseRecord extends ObjectBaseRecord
 
     public String spaceCode;
 
+    public boolean frozen;
+
+    public boolean frozenForDataSets;
+
+    public boolean frozenForSamples;
+
     public Date registrationDate;
 
     public Date modificationDate;

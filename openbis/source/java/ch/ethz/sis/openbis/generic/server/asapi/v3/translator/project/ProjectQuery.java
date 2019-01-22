@@ -37,7 +37,9 @@ public interface ProjectQuery extends ObjectQuery
             + "where p.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ProjectAuthorizationRecord> getAuthorizations(LongSet longSet);
 
-    @Select(sql = "select p.id, p.code, p.perm_id as permId, sp.code as spaceCode, p.description, p.registration_timestamp as registrationDate, p.modification_timestamp as modificationDate "
+    @Select(sql = "select p.id, p.code, p.perm_id as permId, sp.code as spaceCode, p.description, "
+            + "p.registration_timestamp as registrationDate, p.modification_timestamp as modificationDate, "
+            + "p.frozen as frozen, p.frozen_for_exp as frozenForExperiments, p.frozen_for_samp as frozenForSamples "
             + "from projects p left outer join spaces sp on p.space_id = sp.id "
             + "where p.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ProjectBaseRecord> getProjects(LongSet projectIds);

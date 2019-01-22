@@ -30,6 +30,10 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.AttachmentFileName;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
@@ -59,6 +63,7 @@ import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUse
  */
 public class UpdateExperimentTest extends AbstractExperimentTest
 {
+    private static final String PREFIX = "UET-";
 
     @Test
     public void testUpdateWithIndexCheck()
@@ -753,6 +758,132 @@ public class UpdateExperimentTest extends AbstractExperimentTest
                     }
                 }, update.getExperimentId());
         }
+    }
+
+    @Test
+    public void testFreezeForSamples()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentIdentifier expId1 = new ExperimentIdentifier("/CISD/NEMO/EXP10");
+        ExperimentIdentifier expId2 = new ExperimentIdentifier("/CISD/NEMO/EXP11");
+        ExperimentUpdate update1 = new ExperimentUpdate();
+        update1.setExperimentId(expId1);
+        update1.freeze();
+        ExperimentUpdate update2 = new ExperimentUpdate();
+        update2.setExperimentId(expId2);
+        update2.freezeForSamples();
+
+        // When
+        v3api.updateExperiments(sessionToken, Arrays.asList(update1, update2));
+
+        // Then
+        Map<IExperimentId, Experiment> experiments = v3api.getExperiments(sessionToken, Arrays.asList(expId1, expId2), new ExperimentFetchOptions());
+        Experiment experiment1 = experiments.get(expId1);
+        assertEquals(experiment1.getIdentifier().getIdentifier(), expId1.getIdentifier());
+        assertEquals(experiment1.isFrozen(), true);
+        assertEquals(experiment1.isFrozenForDataSets(), false);
+        assertEquals(experiment1.isFrozenForSamples(), false);
+        Experiment experiment2 = experiments.get(expId2);
+        assertEquals(experiment2.getIdentifier().getIdentifier(), expId2.getIdentifier());
+        assertEquals(experiment2.isFrozen(), true);
+        assertEquals(experiment2.isFrozenForDataSets(), false);
+        assertEquals(experiment2.isFrozenForSamples(), true);
+    }
+
+    @Test
+    public void testFreezeForDataSets()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentIdentifier expId1 = new ExperimentIdentifier("/CISD/NEMO/EXP10");
+        ExperimentIdentifier expId2 = new ExperimentIdentifier("/CISD/NEMO/EXP11");
+        ExperimentUpdate update1 = new ExperimentUpdate();
+        update1.setExperimentId(expId1);
+        update1.freeze();
+        ExperimentUpdate update2 = new ExperimentUpdate();
+        update2.setExperimentId(expId2);
+        update2.freezeForDataSets();
+
+        // When
+        v3api.updateExperiments(sessionToken, Arrays.asList(update1, update2));
+
+        // Then
+        Map<IExperimentId, Experiment> experiments = v3api.getExperiments(sessionToken, Arrays.asList(expId1, expId2), new ExperimentFetchOptions());
+        Experiment experiment1 = experiments.get(expId1);
+        assertEquals(experiment1.getIdentifier().getIdentifier(), expId1.getIdentifier());
+        assertEquals(experiment1.isFrozen(), true);
+        assertEquals(experiment1.isFrozenForDataSets(), false);
+        assertEquals(experiment1.isFrozenForSamples(), false);
+        Experiment experiment2 = experiments.get(expId2);
+        assertEquals(experiment2.getIdentifier().getIdentifier(), expId2.getIdentifier());
+        assertEquals(experiment2.isFrozen(), true);
+        assertEquals(experiment2.isFrozenForDataSets(), true);
+        assertEquals(experiment2.isFrozenForSamples(), false);
+    }
+
+    @Test
+    public void testFreezing()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentIdentifier expId = new ExperimentIdentifier("/CISD/NEMO/EXP10");
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(expId);
+        update.freeze();
+        v3api.updateExperiments(sessionToken, Arrays.asList(update));
+        ExperimentUpdate update2 = new ExperimentUpdate();
+        update2.setExperimentId(expId);
+        update2.setProperty("DESCRIPTION", "new description");
+
+        // When
+        assertUserFailureException(Void -> v3api.updateExperiments(sessionToken, Arrays.asList(update2)),
+                // Then
+                "ERROR: Operation UPDATE PROPERTY is not allowed because experiment EXP10 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForSample()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentIdentifier expId = new ExperimentIdentifier("/CISD/NEMO/EXP10");
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(expId);
+        update.freezeForSamples();
+        v3api.updateExperiments(sessionToken, Arrays.asList(update));
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setExperimentId(expId);
+        sampleCreation.setTypeId(new EntityTypePermId("NORMAL", EntityKind.SAMPLE));
+        sampleCreation.setCode(PREFIX + "S1");
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)),
+                // Then
+                "ERROR: Operation SET EXPERIMENT is not allowed because experiment EXP10 is frozen for sample UET-S1.");
+    }
+
+    @Test
+    public void testFreezingForDataSets()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentIdentifier expId = new ExperimentIdentifier("/CISD/NEMO/EXP10");
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(expId);
+        update.freezeForDataSets();
+        v3api.updateExperiments(sessionToken, Arrays.asList(update));
+        DataSetCreation dataSetCreation = new DataSetCreation();
+        dataSetCreation.setCode(PREFIX + "D1");
+        dataSetCreation.setTypeId(new EntityTypePermId("DELETION_TEST_CONTAINER", EntityKind.DATA_SET));
+        dataSetCreation.setDataStoreId(new DataStorePermId("STANDARD"));
+        dataSetCreation.setDataSetKind(DataSetKind.CONTAINER);
+        dataSetCreation.setExperimentId(expId);
+
+        // When
+        assertUserFailureException(Void -> v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation)),
+                // Then
+                "ERROR: Operation SET EXPERIMENT is not allowed because experiment EXP10 is frozen for data set UET-D1.");
     }
 
     @Test

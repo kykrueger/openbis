@@ -102,6 +102,9 @@ public class SpaceTranslator extends AbstractCachingTranslator<Long, Space, Spac
         result.setCode(baseRecord.code);
         result.setPermId(new SpacePermId(baseRecord.code));
         result.setDescription(baseRecord.description);
+        result.setFrozen(baseRecord.frozen);
+        result.setFrozenForProjects(baseRecord.frozenForProjects);
+        result.setFrozenForSamples(baseRecord.frozenForSamples);
         // TODO: add modification date to spaces table
         result.setModificationDate(baseRecord.registrationDate);
         result.setRegistrationDate(baseRecord.registrationDate);

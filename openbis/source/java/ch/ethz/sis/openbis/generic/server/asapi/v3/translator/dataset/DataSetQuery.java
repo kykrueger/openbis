@@ -36,7 +36,12 @@ import net.lemnik.eodsql.Select;
 public interface DataSetQuery extends ObjectQuery
 {
 
-    @Select(sql = "select d.id, d.code, d.is_derived as isDerived, d.data_producer_code as dataProducer, d.production_timestamp as dataProductionDate, d.access_timestamp as accessDate, d.modification_timestamp as modificationDate, d.registration_timestamp as registrationDate, d.data_set_kind as dataSetKind "
+    @Select(sql = "select d.id, d.code, d.is_derived as isDerived, d.data_producer_code as dataProducer, "
+            + "d.production_timestamp as dataProductionDate, d.access_timestamp as accessDate, "
+            + "d.modification_timestamp as modificationDate, d.registration_timestamp as registrationDate, "
+            + "d.data_set_kind as dataSetKind, d.frozen as frozen, d.frozen_for_children as frozenForChildren, "
+            + "d.frozen_for_parents as frozenForParents, d.frozen_for_comps as frozenForComponents, "
+            + "d.frozen_for_conts as frozenForContainers "
             + "from data d where d.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<DataSetBaseRecord> getDataSets(LongSet dataSetIds);
 

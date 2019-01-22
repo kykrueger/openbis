@@ -48,6 +48,21 @@ public class DataSetUpdate implements IUpdate, IObjectUpdate<IDataSetId>, IPrope
     private IDataSetId dataSetId;
 
     @JsonProperty
+    private boolean freeze;
+
+    @JsonProperty
+    private boolean freezeForChildren;
+
+    @JsonProperty
+    private boolean freezeForParents;
+
+    @JsonProperty
+    private boolean freezeForComponents;
+
+    @JsonProperty
+    private boolean freezeForContainers;
+
+    @JsonProperty
     private FieldUpdateValue<IExperimentId> experimentId = new FieldUpdateValue<IExperimentId>();
 
     @JsonProperty
@@ -93,6 +108,65 @@ public class DataSetUpdate implements IUpdate, IObjectUpdate<IDataSetId>, IPrope
     public void setDataSetId(IDataSetId dataSetId)
     {
         this.dataSetId = dataSetId;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozen()
+    {
+        return freeze;
+    }
+
+    public void freeze()
+    {
+        this.freeze = true;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozenForChildren()
+    {
+        return freezeForChildren;
+    }
+
+    public void freezeForChildren()
+    {
+        this.freeze = true;
+        this.freezeForChildren = true;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozenForParents()
+    {
+        return freezeForParents;
+    }
+
+    public void freezeForParents()
+    {
+        this.freeze = true;
+        this.freezeForParents = true;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozenForComponents()
+    {
+        return freezeForComponents;
+    }
+
+    public void freezeForComponents()
+    {
+        this.freeze = true;
+        this.freezeForComponents = true;
+    }
+
+    @JsonIgnore
+    public boolean shouldBeFrozenForContainers()
+    {
+        return freezeForContainers;
+    }
+
+    public void freezeForContainers()
+    {
+        this.freeze = true;
+        this.freezeForContainers = true;
     }
 
     @JsonIgnore
