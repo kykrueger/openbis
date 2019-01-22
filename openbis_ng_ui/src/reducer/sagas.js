@@ -37,7 +37,7 @@ function* saveEntity(action) {
     const result = yield call(openbis.getSpaces)
     const spaces = result.getObjects()
     const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
-    yield put(actions.savedEntity(space))
+    yield put(actions.saveEntityDone(space))
   } catch(exception) {
     yield put(actions.error(exception))  
   }

@@ -33,7 +33,7 @@ function loading(loading = initialState.loading, action) {
   case 'SAVE-ENTITY': {
     return true
   }
-  case 'SAVED-ENTITY': {
+  case 'SAVE-ENTITY-DONE': {
     return false
   }
   case 'ERROR': {
@@ -119,7 +119,7 @@ function dirtyEntities(dirtyEntities = initialState.dirtyEntities, action) {
       return dirtyEntities.filter(e => e !== action.entityPermId)
     }
   }
-  case 'SAVED-ENTITY': {
+  case 'SAVE-ENTITY-DONE': {
     return dirtyEntities.filter(permId => permId !== action.entity.permId.permId)
   }
   case 'CLOSE-ENTITY': {
