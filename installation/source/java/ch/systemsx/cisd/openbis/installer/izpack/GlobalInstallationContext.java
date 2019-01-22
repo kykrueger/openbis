@@ -52,6 +52,8 @@ public class GlobalInstallationContext
 
     public static final String TECHNOLOGY_ELN_LIMS = "ELN-LIMS";
 
+    public static final String TECHNOLOGY_ELN_LIMS_LIFE_SCIENCES = "ELN-LIMS-LIFE-SCIENCES";
+
     public static final String TECHNOLOGY_MICROSCOPY = "MICROSCOPY";
 
     public static final String TECHNOLOGY_FLOW_CYTOMETRY = "FLOW";
@@ -60,7 +62,7 @@ public class GlobalInstallationContext
 
     public static final String[] TECHNOLOGIES =
             { TECHNOLOGY_PROTEOMICS, TECHNOLOGY_SCREENING, TECHNOLOGY_ILLUMINA_NGS, TECHNOLOGY_ELN_LIMS, TECHNOLOGY_MICROSCOPY,
-                    TECHNOLOGY_FLOW_CYTOMETRY };
+                    TECHNOLOGY_FLOW_CYTOMETRY, TECHNOLOGY_ELN_LIMS_LIFE_SCIENCES };
 
     /**
      * set to true if the installation process is trying to update an existing openBIS installation.
@@ -87,8 +89,6 @@ public class GlobalInstallationContext
     public static boolean presentKeyStoreFile = false;
 
     public static File installDir;
-
-    public static boolean isElnMasterDataNotInstalled = false;
 
     public static void initialize(AutomatedInstallData data)
     {
@@ -123,14 +123,6 @@ public class GlobalInstallationContext
         {
             populateFirstTimeInstallVariables(data);
         }
-
-        isElnMasterDataNotInstalled = (isFirstTimeInstallation == true) ||
-                ((new File(installDir, "servers/core-plugins/eln-lims/1/as/initialize-master-data.py").exists() == false) &&
-                        (new File(installDir, "servers/core-plugins/eln-lims/1/as/initializemasterdataminimum.py").exists() == false))
-                ||
-                ((new File(installDir, "servers/core-plugins/eln-lims/1/as/.eln-master-data-installed").exists() == false) &&
-                        (new File(installDir, "servers/core-plugins/eln-lims/1/as/initializemasterdataminimum.py").exists() == true));
-
     }
 
     private static boolean installationExists()

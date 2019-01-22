@@ -65,23 +65,14 @@
     <field type="check" variable="ELN-LIMS">
       <spec txt="ELN/LIMS" true="true" false="false"/>
     </field>
+    <field type="check" variable="ELN-LIMS-LIFE-SCIENCES">
+      <spec txt="ELN/LIMS Life Sciences Types" true="true" false="false"/>
+    </field>
     <field type="check" variable="MICROSCOPY">
       <spec txt="Microscopy" true="true" false="false"/>
     </field>
     <field type="check" variable="FLOW">
       <spec txt="Flow Cytometry" true="true" false="false"/>
-    </field>
-  </panel>
-  
-  <panel id="UserInputPanel.ELN_MASTER_DATA">
-    <field type="title" txt="ELN/LIMS master data" bold="true" size="2" />
-
-    <field type="radio" variable="ELN-LIMS-MASTER-DATA">
-      <description align="left" txt="Install ELN/LIMS default entity types (PLASMID, YEAST, FLY, etc.)?" />
-      <spec>
-          <choice txt="Yes" value="true" set="true"/>
-          <choice txt="No" value="false"/>
-      </spec>
     </field>
   </panel>
   

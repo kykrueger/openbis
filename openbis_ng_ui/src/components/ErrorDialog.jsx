@@ -1,5 +1,5 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import PropTypes from 'prop-types'
 
 import Button from '@material-ui/core/Button'
@@ -8,6 +8,7 @@ import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
+import Slide from '@material-ui/core/Slide'
 
 import profile from '../profile.js'
 
@@ -20,41 +21,61 @@ const dialogStyles = {
 
 const StyledDialog = withStyles(dialogStyles)(Dialog)
 
+const ANIMATION_TIME_MS = 250
+
+function Transition(props) {
+  return <Slide
+    direction="up"
+    timeout={{ enter: ANIMATION_TIME_MS, exit: ANIMATION_TIME_MS }}
+    {...props}
+  />
+}
+
 class ErrorDialog extends React.Component {
 
+  state = {
+    open: true,
+  }
+
   getErrorMailtoHref() {
-    let report =
+    let report = 
       'agent: ' + navigator.userAgent + '%0D%0A' +
       'domain: ' + location.hostname + '%0D%0A' +
       'timestamp: ' + new Date() + '%0D%0A' +
       'href: ' + location.href.replace(new RegExp('&', 'g'), ' - ') + '%0D%0A' +
       'error: ' + JSON.stringify(this.props.exception['data'])
-
-    let href =
+    
+    let href = 
       'mailto:' + profile.devEmail +
       '?subject=openBIS Error Report [' + location.hostname + ']' +
       '&body=' + report
     return href
   }
 
+  close() {
+    this.setState({ open: false })
+    setTimeout(this.props.onClose, ANIMATION_TIME_MS)
+  }
+
   render() {
     return (
       <StyledDialog
-        open={true}
-        onClose={this.props.closeError}
+        open={ this.state.open }
+        onClose={ this.props.closeError }
         scroll="paper"
         aria-labelledby="error-dialog-title"
-        fullWidth={true}
+        fullWidth={ true }
         maxWidth="md"
+        TransitionComponent={Transition}
       >
         <DialogTitle id="error-dialog-title">Error</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {this.props.exception.message}
+            { this.props.exception.message }
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.props.onClose} color="primary">
+          <Button onClick={ this.close.bind(this) } color="primary">
             Dismiss
           </Button>
           <Button color="primary" href={this.getErrorMailtoHref()}>

@@ -146,6 +146,9 @@ public class ProjectTranslator extends AbstractCachingTranslator<Long, Project, 
         result.setPermId(new ProjectPermId(baseRecord.permId));
         result.setIdentifier(new ProjectIdentifier(baseRecord.spaceCode, baseRecord.code));
         result.setDescription(baseRecord.description);
+        result.setFrozen(baseRecord.frozen);
+        result.setFrozenForExperiments(baseRecord.frozenForExperiments);
+        result.setFrozenForSamples(baseRecord.frozenForSamples);
         result.setRegistrationDate(baseRecord.registrationDate);
         result.setModificationDate(baseRecord.modificationDate);
 

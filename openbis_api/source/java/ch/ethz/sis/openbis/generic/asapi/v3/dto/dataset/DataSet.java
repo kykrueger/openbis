@@ -55,7 +55,9 @@ import java.util.Set;
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.dataset.DataSet")
-public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IExperimentHolder, IMaterialPropertiesHolder, IModificationDateHolder, IModifierHolder, IParentChildrenHolder<DataSet>, IPermIdHolder, IPropertiesHolder, IRegistrationDateHolder, IRegistratorHolder, ISampleHolder, ITagsHolder
+public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IExperimentHolder, IMaterialPropertiesHolder, IModificationDateHolder,
+        IModifierHolder, IParentChildrenHolder<DataSet>, IPermIdHolder, IPropertiesHolder, IRegistrationDateHolder, IRegistratorHolder, ISampleHolder,
+        ITagsHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -67,6 +69,21 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
 
     @JsonProperty
     private String code;
+
+    @JsonProperty
+    private boolean frozen;
+
+    @JsonProperty
+    private boolean frozenForChildren;
+
+    @JsonProperty
+    private boolean frozenForParents;
+
+    @JsonProperty
+    private boolean frozenForComponents;
+
+    @JsonProperty
+    private boolean frozenForContainers;
 
     @JsonProperty
     private DataSetType type;
@@ -181,6 +198,56 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         this.code = code;
     }
 
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
+    public boolean isFrozenForChildren()
+    {
+        return frozenForChildren;
+    }
+
+    public void setFrozenForChildren(boolean frozenForChildren)
+    {
+        this.frozenForChildren = frozenForChildren;
+    }
+
+    public boolean isFrozenForParents()
+    {
+        return frozenForParents;
+    }
+
+    public void setFrozenForParents(boolean frozenForParents)
+    {
+        this.frozenForParents = frozenForParents;
+    }
+
+    public boolean isFrozenForComponents()
+    {
+        return frozenForComponents;
+    }
+
+    public void setFrozenForComponents(boolean frozenForComponents)
+    {
+        this.frozenForComponents = frozenForComponents;
+    }
+
+    public boolean isFrozenForContainers()
+    {
+        return frozenForContainers;
+    }
+
+    public void setFrozenForContainers(boolean frozenForContainers)
+    {
+        this.frozenForContainers = frozenForContainers;
+    }
+
     // Method automatically generated with DtoGenerator
     @JsonIgnore
     @Override
@@ -189,8 +256,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasType())
         {
             return type;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Data Set type has not been fetched.");
         }
@@ -204,24 +270,23 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
 
     @JsonIgnore
     public DataSetKind getKind()
-	{
-		return kind;
-	}
+    {
+        return kind;
+    }
 
-	public void setKind(DataSetKind kind)
-	{
-		this.kind = kind;
-	}
+    public void setKind(DataSetKind kind)
+    {
+        this.kind = kind;
+    }
 
-	// Method automatically generated with DtoGenerator
+    // Method automatically generated with DtoGenerator
     @JsonIgnore
     public DataStore getDataStore()
     {
         if (getFetchOptions() != null && getFetchOptions().hasDataStore())
         {
             return dataStore;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Data store has not been fetched.");
         }
@@ -266,8 +331,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasPhysicalData())
         {
             return physicalData;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Physical data has not been fetched.");
         }
@@ -286,8 +350,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasLinkedData())
         {
             return linkedData;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Linked data has not been fetched.");
         }
@@ -307,8 +370,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasExperiment())
         {
             return experiment;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Experiment has not been fetched.");
         }
@@ -328,8 +390,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasSample())
         {
             return sample;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Sample has not been fetched.");
         }
@@ -349,8 +410,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasProperties())
         {
             return properties;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Properties have not been fetched.");
         }
@@ -371,8 +431,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasMaterialProperties())
         {
             return materialProperties;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Material Properties have not been fetched.");
         }
@@ -393,8 +452,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasParents())
         {
             return parents;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Parents have not been fetched.");
         }
@@ -414,8 +472,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasChildren())
         {
             return children;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Children have not been fetched.");
         }
@@ -434,8 +491,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasContainers())
         {
             return containers;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Container data sets have not been fetched.");
         }
@@ -454,8 +510,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasComponents())
         {
             return components;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Component data sets have not been fetched.");
         }
@@ -475,8 +530,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasTags())
         {
             return tags;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Tags have not been fetched.");
         }
@@ -495,8 +549,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasHistory())
         {
             return history;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("History have not been fetched.");
         }
@@ -530,8 +583,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasModifier())
         {
             return modifier;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Modifier has not been fetched.");
         }
@@ -565,8 +617,7 @@ public class DataSet implements Serializable, ICodeHolder, IEntityTypeHolder, IE
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }

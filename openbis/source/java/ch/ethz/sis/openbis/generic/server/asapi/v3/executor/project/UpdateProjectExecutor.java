@@ -110,6 +110,18 @@ public class UpdateProjectExecutor extends AbstractUpdateEntityExecutor<ProjectU
             {
                 project.setDescription(update.getDescription().getValue());
             }
+            if (update.shouldBeFrozen())
+            {
+                project.setFrozen(true);
+            }
+            if (update.shouldBeFrozenForExperiments())
+            {
+                project.setFrozenForExperiment(true);
+            }
+            if (update.shouldBeFrozenForSamples())
+            {
+                project.setFrozenForSample(true);
+            }
         }
     }
 

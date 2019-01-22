@@ -76,7 +76,7 @@ function spaces(spaces = initialState.spaces, action) {
   case 'SET-SPACES': {
     return entitiesByPermId(action.spaces)
   }
-  case 'SAVED-ENTITY': {
+  case 'SAVE-ENTITY-DONE': {
     const newSpaces = Object.assign({}, spaces)
     newSpaces[action.entity.permId.permId] = action.entity
     return newSpaces

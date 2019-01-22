@@ -12,6 +12,11 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.permId = null;
 		prototype.identifier = null;
 		prototype.code = null;
+		prototype.frozen = null;
+		prototype.frozenForComponents = null;
+		prototype.frozenForChildren = null;
+		prototype.frozenForParents = null;
+		prototype.frozenForDataSets = null;
 		prototype.registrationDate = null;
 		prototype.modificationDate = null;
 		prototype.type = null;
@@ -54,6 +59,36 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setCode = function(code) {
 			this.code = code;
 		};
+		prototype.isFrozen = function() {
+			return this.frozen;
+		}
+		prototype.setFrozen = function(frozen) {
+			this.frozen = frozen;
+		}
+		prototype.isFrozenForComponents = function() {
+			return this.frozenForComponents;
+		}
+		prototype.setFrozenForComponents = function(frozenForComponents) {
+			this.frozenForComponents = frozenForComponents;
+		}
+		prototype.isFrozenForChildren = function() {
+			return this.frozenForChildren;
+		}
+		prototype.setFrozenForChildren = function(frozenForChildren) {
+			this.frozenForChildren = frozenForChildren;
+		}
+		prototype.isFrozenForParents = function() {
+			return this.frozenForParents;
+		}
+		prototype.setFrozenForParents = function(frozenForParents) {
+			this.frozenForParents = frozenForParents;
+		}
+		prototype.isFrozenForDataSets = function() {
+			return this.frozenForDataSets;
+		}
+		prototype.setFrozenForDataSets = function(frozenForDataSets) {
+			this.frozenForDataSets = frozenForDataSets;
+		}
 		prototype.getRegistrationDate = function() {
 			return this.registrationDate;
 		};

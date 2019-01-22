@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -110,9 +111,23 @@ public class UpdateExperimentExecutor extends AbstractUpdateEntityExecutor<Exper
         PersonPE person = context.getSession().tryGetPerson();
         Date timeStamp = daoFactory.getTransactionTimestamp();
 
-        for (ExperimentPE entity : batch.getObjects().values())
+        for (Entry<ExperimentUpdate, ExperimentPE> entry : batch.getObjects().entrySet())
         {
-            RelationshipUtils.updateModificationDateAndModifier(entity, person, timeStamp);
+            ExperimentUpdate update = entry.getKey();
+            ExperimentPE experiment = entry.getValue();
+            RelationshipUtils.updateModificationDateAndModifier(experiment, person, timeStamp);
+            if (update.shouldBeFrozen())
+            {
+                experiment.setFrozen(true);
+            }
+            if (update.shouldBeFrozenForDataSets())
+            {
+                experiment.setFrozenForDataSet(true);
+            }
+            if (update.shouldBeFrozenForSamples())
+            {
+                experiment.setFrozenForSample(true);
+            }
         }
     }
 

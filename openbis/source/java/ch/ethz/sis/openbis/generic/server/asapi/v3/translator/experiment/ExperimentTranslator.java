@@ -175,6 +175,9 @@ public class ExperimentTranslator extends AbstractCachingTranslator<Long, Experi
         result.setCode(baseRecord.code);
         result.setPermId(new ExperimentPermId(baseRecord.permId));
         result.setIdentifier(new ExperimentIdentifier(baseRecord.spaceCode, baseRecord.projectCode, baseRecord.code));
+        result.setFrozen(baseRecord.frozen);
+        result.setFrozenForDataSets(baseRecord.frozenForDataSets);
+        result.setFrozenForSamples(baseRecord.frozenForSamples);
         result.setRegistrationDate(baseRecord.registrationDate);
         result.setModificationDate(baseRecord.modificationDate);
 

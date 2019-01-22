@@ -355,7 +355,9 @@ public abstract class FreezingTest extends AbstractTest
         fetchOptions.withProperties();
         fetchOptions.withTags();
         fetchOptions.withChildren();
+        fetchOptions.withParents();
         fetchOptions.withComponents();
+        fetchOptions.withContainers();
         fetchOptions.withExperiment();
         fetchOptions.withSample();
         return v3api.getDataSets(systemSessionToken, Arrays.asList(dataSetId), fetchOptions).get(dataSetId);

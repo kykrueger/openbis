@@ -41,4 +41,14 @@ public class DataSetBaseRecord extends ObjectBaseRecord
     public Date registrationDate;
 
     public String dataSetKind;
+
+    public boolean frozen;
+
+    public boolean frozenForChildren;
+
+    public boolean frozenForParents;
+
+    public boolean frozenForComponents;
+
+    public boolean frozenForContainers;
 }

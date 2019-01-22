@@ -64,8 +64,8 @@ export default {
     type: 'SAVE-ENTITY',
     entity: entity
   }),
-  savedEntity: (entity) => ({
-    type: 'SAVED-ENTITY',
+  saveEntityDone: (entity) => ({
+    type: 'SAVE-ENTITY-DONE',
     entity: entity
   }),
   error: (exception) => ({
