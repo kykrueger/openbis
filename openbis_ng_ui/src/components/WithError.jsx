@@ -7,35 +7,35 @@ import actions from '../reducer/actions.js'
 
 
 function mapStateToProps(state) {
-    return {
-        exception: state.exceptions.length > 0 ? state.exceptions[0] : null
-    }
+  return {
+    exception: state.exceptions.length > 0 ? state.exceptions[0] : null
+  }
 }
 
 function mapDispatchToProps(dispatch) {
-    return {
-        closeError: () => dispatch(actions.closeError()),
-    }
+  return {
+    closeError: () => dispatch(actions.closeError()),
+  }
 }
 
 
 class WithError extends React.Component {
 
-    render() {
+  render() {
 
-        return (
-            <div>
-                {
-                    this.props.exception &&
-                    <ErrorDialog exception={this.props.exception} onClose={this.props.closeError}/>
-                }
-                {this.props.children}
-            </div>
-        )
-    }
+    return (
+      <div>
+        {
+          this.props.exception &&
+          <ErrorDialog exception={this.props.exception} onClose={this.props.closeError}/>
+        }
+        {this.props.children}
+      </div>
+    )
+  }
 }
 
 export default flow(
-    connect(mapStateToProps, mapDispatchToProps),
+  connect(mapStateToProps, mapDispatchToProps),
 )(WithError)
   

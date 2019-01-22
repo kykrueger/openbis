@@ -30,7 +30,7 @@ module.exports = {
     "react/jsx-uses-react": "error",
     "react/jsx-uses-vars": "error",
 
-    "indent": ["error", 4, {"SwitchCase": 1}],
+    "indent": ["error", 2],
     "linebreak-style": ["error", "unix"],
     "quotes": ["error", "single"],
     "semi": ["error", "never"],
