@@ -206,7 +206,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				creations.push(c.createDataSet(facade, "UNKNOWN"));
 			});
 			return $.when.apply($, creations).then(function(){
-				return Array.from(arguments);
+				return Array.prototype.slice.call(arguments);
 			});
 		}
 		
