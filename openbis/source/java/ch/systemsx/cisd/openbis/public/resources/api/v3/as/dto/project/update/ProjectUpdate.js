@@ -11,6 +11,9 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/attachment/upd
 		prototype['@type'] = 'as.dto.project.update.ProjectUpdate';
 		constructor.serialVersionUID = 1;
 		prototype.projectId = null;
+		prototype.freeze = null;
+		prototype.freezeForExperiments = null;
+		prototype.freezeForSamples = null;
 		prototype.spaceId = null;
 		prototype.description = null;
 		prototype.attachments = null;
@@ -36,6 +39,26 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/attachment/upd
 		prototype.setDescription = function(description) {
 			this.description.setValue(description);
 		};
+		prototype.shouldBeFrozen = function() {
+			return this.freeze;
+		}
+		prototype.freeze = function() {
+			this.freeze = true;
+		}
+		prototype.shouldBeFrozenForExperiments = function() {
+			return this.freezeForExperiments;
+		}
+		prototype.freezeForExperiments = function() {
+			this.freeze = true;
+			this.freezeForExperiments = true;
+		}
+		prototype.shouldBeFrozenForSamples = function() {
+			return this.freezeForSamples;
+		}
+		prototype.freezeForSamples = function() {
+			this.freeze = true;
+			this.freezeForSamples = true;
+		}
 		prototype.getAttachments = function() {
 			return this.attachments;
 		};

@@ -10,6 +10,9 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		constructor.serialVersionUID = 1;
 		prototype.spaceId = null;
 		prototype.description = null;
+		prototype.freeze = null;
+		prototype.freezeForProjects = null;
+		prototype.freezeForSamples = null;
 
 		prototype.getObjectId = function() {
 			return this.getSpaceId();
@@ -26,6 +29,26 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		prototype.setDescription = function(description) {
 			this.description.setValue(description);
 		};
+		prototype.shouldBeFrozen = function() {
+			return this.freeze;
+		}
+		prototype.freeze = function() {
+			this.freeze = true;
+		}
+		prototype.shouldBeFrozenForProjects = function() {
+			return this.freezeForProjects;
+		}
+		prototype.freezeForProjects = function() {
+			this.freeze = true;
+			this.freezeForProjects = true;
+		}
+		prototype.shouldBeFrozenForSamples = function() {
+			return this.freezeForSamples;
+		}
+		prototype.freezeForSamples = function() {
+			this.freeze = true;
+			this.freezeForSamples = true;
+		}
 	}, {
 		spaceId : "ISpaceId"
 	});

@@ -18,6 +18,11 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype['@type'] = 'as.dto.dataset.update.DataSetUpdate';
 		constructor.serialVersionUID = 1;
 		prototype.dataSetId = null;
+		prototype.freeze = null;
+		prototype.freezeForChildren = null;
+		prototype.freezeForParents = null;
+		prototype.freezeForComponents = null;
+		prototype.freezeForContainers = null;
 		prototype.experimentId = null;
 		prototype.sampleId = null;
 		prototype.physicalData = null;
@@ -38,6 +43,40 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.setDataSetId = function(dataSetId) {
 			this.dataSetId = dataSetId;
 		};
+		prototype.shouldBeFrozen = function() {
+			return this.freeze;
+		}
+		prototype.freeze = function() {
+			this.freeze = true;
+		}
+		prototype.shouldBeFrozenForChildren = function() {
+			return this.freezeForChildren;
+		}
+		prototype.freezeForChildren = function() {
+			this.freeze = true;
+			this.freezeForChildren = true;
+		}
+		prototype.shouldBeFrozenForParents = function() {
+			return this.freezeForParents;
+		}
+		prototype.freezeForParents = function() {
+			this.freeze = true;
+			this.freezeForParents = true;
+		}
+		prototype.shouldBeFrozenForComponents = function() {
+			return this.freezeForComponents;
+		}
+		prototype.freezeForComponents = function() {
+			this.freeze = true;
+			this.freezeForComponents = true;
+		}
+		prototype.shouldBeFrozenForContainers = function() {
+			return this.freezeForContainers;
+		}
+		prototype.freezeForContainers = function() {
+			this.freeze = true;
+			this.freezeForContainers = true;
+		}
 		prototype.getExperimentId = function() {
 			return this.experimentId;
 		};
