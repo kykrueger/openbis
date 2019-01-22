@@ -19,7 +19,6 @@ function* loginDone() {
 
 function* logout() {
   try {
-    console.log('logout')
     const result = yield call(openbis.logout)
     yield put(actions.logoutDone())
   } catch(exception) {
