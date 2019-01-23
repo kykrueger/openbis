@@ -150,6 +150,13 @@ public class DataSetAuthorizationExecutor implements IDataSetAuthorizationExecut
     }
 
     @Override
+    @RolesAllowed(RoleWithHierarchy.SPACE_ADMIN)
+    @Capability("FREEZE_DATASET")
+    public void canFreeze(IOperationContext context)
+    {
+    }
+    
+    @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_POWER_USER, RoleWithHierarchy.SPACE_ETL_SERVER })
     @Capability("ARCHIVE_DATASET")
     public void canArchive(IOperationContext context, IDataSetId id, @AuthorizationGuard(guardClass = DataPEPredicate.class) DataPE dataSet)

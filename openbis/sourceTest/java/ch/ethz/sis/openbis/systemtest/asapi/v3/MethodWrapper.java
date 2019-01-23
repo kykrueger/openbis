@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 ETH Zuerich, CISD
+ * Copyright 2019 ETH Zuerich, SIS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,30 @@
  * limitations under the License.
  */
 
-package ch.systemsx.cisd.openbis.generic.shared.dto;
+package ch.ethz.sis.openbis.systemtest.asapi.v3;
+
+import java.lang.reflect.Method;
 
 /**
- * Enumeration of the type of an {@link EventPE} instance.
- * <p>
- * These names reflect the ones that could be found in the database.
- * </p>
+ * Wrapper class for TestNG DataProviders. This is needed because in TestNG a test with an argument of type Method isn't handled
+ * as a value from a DataProvider.
  * 
  * @author Franz-Josef Elmer
+ *
  */
-public enum EventType
+public class MethodWrapper
 {
-    DELETION, MOVEMENT, FREEZING;
+    public Method method;
+
+    public MethodWrapper(Method method)
+    {
+        this.method = method;
+    }
+
+    @Override
+    public String toString()
+    {
+        return method.getName();
+    }
+    
 }

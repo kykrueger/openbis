@@ -35,4 +35,6 @@ public interface ISampleAuthorizationExecutor extends IObjectAuthorizationExecut
     void canSearch(IOperationContext context);
 
     void canGet(IOperationContext context);
+
+    void canFreeze(IOperationContext context);
 }

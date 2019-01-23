@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 ETH Zuerich, CISD
+ * Copyright 2019 ETH Zuerich, SIS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package ch.systemsx.cisd.openbis.generic.shared.dto;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common;
+
+import java.util.List;
+
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingEvent;
 
 /**
- * Enumeration of the type of an {@link EventPE} instance.
- * <p>
- * These names reflect the ones that could be found in the database.
- * </p>
- * 
  * @author Franz-Josef Elmer
+ *
  */
-public enum EventType
+public interface IEventExecutor
 {
-    DELETION, MOVEMENT, FREEZING;
+    public void persist(IOperationContext context, List<FreezingEvent> freezingEvents);
 }

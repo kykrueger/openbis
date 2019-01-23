@@ -21,6 +21,7 @@ import static org.testng.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -32,7 +33,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 
 /**
  * @author pkupczyk
@@ -172,10 +175,12 @@ public class UpdateSpaceTest extends AbstractTest
         assertEquals(space1.isFrozen(), true);
         assertEquals(space1.isFrozenForProjects(), false);
         assertEquals(space1.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, space1.getCode(), EntityType.SPACE, new FreezingFlags().freeze());
         assertEquals(space2.getCode(), spaceCode2);
         assertEquals(space2.isFrozen(), true);
         assertEquals(space2.isFrozenForProjects(), true);
         assertEquals(space2.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, space2.getCode(), EntityType.SPACE, new FreezingFlags().freeze().freezeForProjects());
     }
 
     @Test
@@ -211,10 +216,12 @@ public class UpdateSpaceTest extends AbstractTest
         assertEquals(space1.isFrozen(), true);
         assertEquals(space1.isFrozenForProjects(), false);
         assertEquals(space1.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, space1.getCode(), EntityType.SPACE, new FreezingFlags().freeze());
         assertEquals(space2.getCode(), spaceCode2);
         assertEquals(space2.isFrozen(), true);
         assertEquals(space2.isFrozenForProjects(), false);
         assertEquals(space2.isFrozenForSamples(), true);
+        assertFreezingEvent(TEST_USER, space2.getCode(), EntityType.SPACE, new FreezingFlags().freeze().freezeForSamples());
     }
 
     @Test
@@ -254,8 +261,8 @@ public class UpdateSpaceTest extends AbstractTest
 
         // When
         assertUserFailureException(Void -> v3api.createProjects(sessionToken, Arrays.asList(projectCreation)),
-                "ERROR: Operation SET SPACE is not allowed because space CISD is frozen for project " 
-        + projectCreation.getCode() + ".");
+                "ERROR: Operation SET SPACE is not allowed because space CISD is frozen for project "
+                        + projectCreation.getCode() + ".");
     }
 
     @Test
@@ -272,13 +279,33 @@ public class UpdateSpaceTest extends AbstractTest
         sampleCreation.setSpaceId(spaceId);
         sampleCreation.setTypeId(new EntityTypePermId("NORMAL", EntityKind.SAMPLE));
         sampleCreation.setCode(PREFIX + "S1");
-        
+
         // When
         assertUserFailureException(Void -> v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)),
                 // Then
                 "ERROR: Operation SET SPACE is not allowed because space CISD is frozen for sample UST-S1.");
     }
-    
+
+    @Test(dataProvider = "freezeMethods")
+    public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_SPACE_ETLSERVER_TESTSPACE, PASSWORD);
+        SpacePermId spaceId = new SpacePermId("TEST-SPACE");
+        SpaceUpdate spaceUpdate = new SpaceUpdate();
+        spaceUpdate.setSpaceId(spaceId);
+        freezeMethod.method.invoke(spaceUpdate);
+
+        // When
+        assertAuthorizationFailureException(Void -> v3api.updateSpaces(sessionToken, Arrays.asList(spaceUpdate)), null);
+    }
+
+    @DataProvider(name = "freezeMethods")
+    public static Object[][] freezeMethods()
+    {
+        return asCartesianProduct(getFreezingMethods(SpaceUpdate.class));
+    }
+
     @Test
     public void testLogging()
     {

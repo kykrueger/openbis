@@ -367,10 +367,10 @@ public class SampleFreezingTest extends FreezingTest
     public static Object[][] liquidChildParentRelations()
     {
         List<FrozenFlags> combinationsForParent =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForParents().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForParents().createAllCombinations();
         combinationsForParent.add(new FrozenFlags(false).freezeForChildren());
         List<FrozenFlags> combinationsForChild =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForChildren().createAllCombinations();
         combinationsForChild.add(new FrozenFlags(false).freezeForParents());
         return asCartesianProduct(combinationsForParent, combinationsForChild);
     }
@@ -461,12 +461,12 @@ public class SampleFreezingTest extends FreezingTest
     public static Object[][] frozenChildParentRelations()
     {
         List<FrozenFlags> combinationsForLiquidParent =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForParents().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForParents().createAllCombinations();
         FrozenFlags childFrozenForParents = new FrozenFlags(true).freezeForParents();
         Object[][] combinationForInvalidChild =
                 asCartesianProduct(combinationsForLiquidParent, Arrays.asList(childFrozenForParents));
         List<FrozenFlags> combinationsForLiquidChild =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForChildren().createAllCombinations();
         FrozenFlags parentFrozenForChildren = new FrozenFlags(true).freezeForChildren();
         Object[][] combinationForInvalidParent =
                 asCartesianProduct(Arrays.asList(parentFrozenForChildren), combinationsForLiquidChild);
@@ -515,9 +515,9 @@ public class SampleFreezingTest extends FreezingTest
     {
         List<FrozenFlags> combinationsForLiquidContainer =
                 new FrozenFlags(true).freezeForChildren().freezeForDataSet().freezeForParents().createAllCombinations();
-        combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponent());
+        combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponents());
         List<FrozenFlags> combinationsForLiquidComponent =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
         return asCartesianProduct(combinationsForLiquidContainer, combinationsForLiquidComponent);
     }
 
@@ -597,9 +597,9 @@ public class SampleFreezingTest extends FreezingTest
     @DataProvider(name = "frozenComponentContainerRelations")
     public static Object[][] frozenComponentContainerRelations()
     {
-        List<FrozenFlags> frozenContainer = Arrays.asList(new FrozenFlags(true).freezeForComponent());
+        List<FrozenFlags> frozenContainer = Arrays.asList(new FrozenFlags(true).freezeForComponents());
         List<FrozenFlags> combinationsForLiquidComponent =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
         return asCartesianProduct(frozenContainer, combinationsForLiquidComponent);
     }
 
@@ -623,7 +623,7 @@ public class SampleFreezingTest extends FreezingTest
     {
         List<FrozenFlags> combinationsForLiquidContainer = new FrozenFlags(true).freezeForDataSet()
                 .freezeForChildren().freezeForParents().createAllCombinations();
-        combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponent());
+        combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponents());
         return asCartesianProduct(combinationsForLiquidContainer);
     }
 
@@ -631,7 +631,7 @@ public class SampleFreezingTest extends FreezingTest
     public void testInvalidAddSampleToContainer()
     {
         // Given
-        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponent(), sample1);
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponents(), sample1);
         SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
         sampleCreation.setContainerId(sample1);
 
@@ -646,8 +646,8 @@ public class SampleFreezingTest extends FreezingTest
     public void testInvalidAddSampleToContainerAfterMelting()
     {
         // Given
-        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponent(), sample1);
-        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponent().melt(), sample1);
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponents(), sample1);
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponents().melt(), sample1);
         SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
         sampleCreation.setContainerId(sample1);
 
@@ -677,7 +677,7 @@ public class SampleFreezingTest extends FreezingTest
     public static Object[][] liquidParent()
     {
         List<FrozenFlags> combinationsForLiquidParent = new FrozenFlags(true).freezeForDataSet()
-                .freezeForComponent().freezeForParents().createAllCombinations();
+                .freezeForComponents().freezeForParents().createAllCombinations();
         combinationsForLiquidParent.add(new FrozenFlags(false).freezeForChildren());
         return asCartesianProduct(combinationsForLiquidParent);
     }
@@ -732,7 +732,7 @@ public class SampleFreezingTest extends FreezingTest
     public static Object[][] liquidChild()
     {
         List<FrozenFlags> combinationsForLiquidChild = new FrozenFlags(true).freezeForDataSet()
-                .freezeForComponent().freezeForChildren().createAllCombinations();
+                .freezeForComponents().freezeForChildren().createAllCombinations();
         combinationsForLiquidChild.add(new FrozenFlags(false).freezeForChildren());
         return asCartesianProduct(combinationsForLiquidChild);
     }

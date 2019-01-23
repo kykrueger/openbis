@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -31,14 +32,18 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.IProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IEventExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.tag.IUpdateTagForEntityExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingEvent;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.UpdateRelationProgress;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
@@ -72,6 +77,9 @@ public class UpdateExperimentExecutor extends AbstractUpdateEntityExecutor<Exper
 
     @Autowired
     private IUpdateExperimentAttachmentExecutor updateExperimentAttachmentExecutor;
+
+    @Autowired
+    private IEventExecutor eventExecutor;
 
     @Override
     protected IExperimentId getId(ExperimentUpdate update)
@@ -110,24 +118,40 @@ public class UpdateExperimentExecutor extends AbstractUpdateEntityExecutor<Exper
 
         PersonPE person = context.getSession().tryGetPerson();
         Date timeStamp = daoFactory.getTransactionTimestamp();
+        List<FreezingEvent> freezingEvents = new ArrayList<>();
 
         for (Entry<ExperimentUpdate, ExperimentPE> entry : batch.getObjects().entrySet())
         {
             ExperimentUpdate update = entry.getKey();
             ExperimentPE experiment = entry.getValue();
+            FreezingFlags freezingFlags = new FreezingFlags();
             RelationshipUtils.updateModificationDateAndModifier(experiment, person, timeStamp);
             if (update.shouldBeFrozen())
             {
+                authorizationExecutor.canFreeze(context);
                 experiment.setFrozen(true);
+                freezingFlags.freeze();
             }
             if (update.shouldBeFrozenForDataSets())
             {
+                authorizationExecutor.canFreeze(context);
                 experiment.setFrozenForDataSet(true);
+                freezingFlags.freezeForDataSets();
             }
             if (update.shouldBeFrozenForSamples())
             {
+                authorizationExecutor.canFreeze(context);
                 experiment.setFrozenForSample(true);
+                freezingFlags.freezeForSamples();
             }
+            if (freezingFlags.noFlags() == false)
+            {
+                freezingEvents.add(new FreezingEvent(experiment.getIdentifier(), EventPE.EntityType.EXPERIMENT, freezingFlags));
+            }
+        }
+        if (freezingEvents.isEmpty() == false)
+        {
+            eventExecutor.persist(context, freezingEvents);
         }
     }
 
