@@ -33,10 +33,13 @@ import org.apache.log4j.Logger;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LinkedData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
@@ -305,6 +308,16 @@ public class EntityRetriever implements IEntityRetriever
         {
             Node<DataSet> dataSetNode = new Node<DataSet>(dataSet);
             graph.addEdge(expNode, dataSetNode, new Edge(CONNECTION));
+            LinkedData linkedData = dataSet.getLinkedData();
+            if (linkedData != null)
+            {
+                List<ContentCopy> contentCopies = linkedData.getContentCopies();
+                for (ContentCopy contentCopy : contentCopies)
+                {
+                    ExternalDms externalDms = contentCopy.getExternalDms();
+//                Node<ExternalDms> dmsNode = new Node<ExternalDms>(externalDms);
+                }
+            }
             addChildAndContainedDataSets(dataSetNode);
         }
     }
@@ -507,6 +520,7 @@ public class EntityRetriever implements IEntityRetriever
         fo.withProperties();
         fo.withChildrenUsing(fo);
         fo.withComponentsUsing(fo);
+        fo.withLinkedData().withExternalDms();
         return fo;
     }
 
