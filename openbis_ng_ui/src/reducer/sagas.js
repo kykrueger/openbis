@@ -1,69 +1,15 @@
 import { put, takeEvery, call } from 'redux-saga/effects'
-import openbis from '../services/openbis'
+import Openbis from '../services/openbis'
 import actions from './actions'
 
-// TODO split sagas
+// TODO split sagas when it gets too big
 
-function* init() {
-  // TODO we want to check if there is an active session here to avoid the login
-}
+let openbis = new Openbis()
 
-function* loginDone() {
-  try {
-    const result = yield call(openbis.getSpaces)
-    yield put(actions.setSpaces(result.getObjects()))
-  } catch(exception) {
-    yield put(actions.error(exception))  
-  }
-}
-
-function* logout() {
-  try {
-    const result = yield call(openbis.logout)
-    yield put(actions.logoutDone())
-  } catch(exception) {
-    yield put(actions.error(exception))  
-  }
-}
-
-function* selectSpace(action) {
-  yield put(actions.selectEntity(action.spaces[0].permId.permId))
-}
-
-function* saveEntity(action) {
-  try {
-    yield openbis.updateSpace(action.entity.permId, action.entity.description)
-    const result = yield call(openbis.getSpaces)
-    const spaces = result.getObjects()
-    const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
-    yield put(actions.saveEntityDone(space))
-  } catch(exception) {
-    yield put(actions.error(exception))  
-  }
-}
-
-function* expandNode(action) {
-  try {
-    const node = action.node
-    if (node.loaded === false) {
-      if (node.type === 'as.dto.space.Space') {
-        const result = yield openbis.searchProjects(node.id)
-        const projects = result.getObjects()
-        yield put(actions.setProjects(projects, node.id))
-      }
-    }
-  } catch(exception) {
-    yield put(actions.error(exception))  
-  }
-}
-
-export function* login(action) {
-  try {
-    const result = yield openbis.login(action.username, action.password)
-    yield put(actions.loginDone())
-  } catch(exception) {
-    yield put(actions.error(exception))
-  }
+// used only for testing - need to have a new mock for each test
+export function newOpenbis() {
+  openbis = new Openbis()
+  return openbis
 }
 
 export function* watchActions() {
@@ -74,4 +20,65 @@ export function* watchActions() {
   yield takeEvery('SAVE-ENTITY', saveEntity)
   yield takeEvery('SET-SPACES', selectSpace)
   yield takeEvery('EXPAND-NODE', expandNode)
+}
+
+function* handleException(f) {
+  try {
+    yield f()
+  } catch(exception) {
+    yield put(actions.error(exception))
+  }
+}
+
+function* init() {
+  // TODO Check for session token and yield loginDone if valid.
+  //      This can properly be done when we have the session token in a cookie.
+}
+
+function* login(action) {
+  yield handleException(function*() {
+    yield openbis.login(action.username, action.password)
+    yield put(actions.loginDone())
+  })
+}
+
+function* loginDone() {
+  yield handleException(function*() {
+    const result = yield call(openbis.getSpaces)
+    yield put(actions.setSpaces(result.getObjects()))
+  })
+}
+
+function* logout() {
+  yield handleException(function*() {
+    yield call(openbis.logout)
+    yield put(actions.logoutDone())
+  })
+}
+
+function* selectSpace(action) {
+  yield put(actions.selectEntity(action.spaces[0].permId.permId))
+}
+
+function* saveEntity(action) {
+  yield handleException(function*() {
+    yield openbis.updateSpace(action.entity.permId, action.entity.description)
+    const result = yield call(openbis.getSpaces)
+    const spaces = result.getObjects()
+    const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
+    yield put(actions.saveEntityDone(space))    
+  })
+}
+
+function* expandNode(action) {
+  yield handleException(function*() {
+    const node = action.node
+    if (node.loaded === false) {
+      if (node.type === 'as.dto.space.Space') {
+        const result = yield openbis.searchProjects(node.id)
+        const projects = result.getObjects()
+        yield put(actions.setProjects(projects, node.id))
+      }
+    }
+  })
 }
