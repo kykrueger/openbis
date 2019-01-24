@@ -1,5 +1,5 @@
 import initialState from '../initialstate.js'
-import _ from 'lodash'
+import {browserExpandNode, browserCollapseNode, sortById} from '../common/reducer'
 
 export default function users(users = initialState.users, action) {
   return {
@@ -10,24 +10,24 @@ export default function users(users = initialState.users, action) {
 function browser(browser = initialState.users.browser, action) {
   switch (action.type) {
   case 'SET-MODE-DONE':
-    return browser_SetModeDone(browser, action)
+    return browserSetModeDone(browser, action)
   case 'EXPAND-NODE':
-    return browser_ExpandNode(browser, action)
+    return browserExpandNode(browser, action)
   case 'COLLAPSE-NODE':
-    return browser_CollapseNode(browser, action)
+    return browserCollapseNode(browser, action)
   default:
     return browser
   }
 }
 
-function browser_SetModeDone(browser, action) {
+function browserSetModeDone(browser, action) {
   return {
     selectedNodeId: browser.selectedNodeId,
-    nodes: [browser_SetModeDone_UserNodes(action.data.users, action.data.groups), browser_SetModeDone_GroupNodes(action.data.groups)]
+    nodes: [browserSetModeDoneUserNodes(action.data.users, action.data.groups), browserSetModeDoneGroupNodes(action.data.groups)]
   }
 }
 
-function browser_SetModeDone_UserNodes(users, groups) {
+function browserSetModeDoneUserNodes(users, groups) {
   let userGroupsMap = {}
   let userNodes = []
 
@@ -53,7 +53,7 @@ function browser_SetModeDone_UserNodes(users, groups) {
       })
     })
 
-    _sortById(groupNodes)
+    sortById(groupNodes)
 
     userNodes.push({
       id: user.getPermId().getPermId(),
@@ -64,7 +64,7 @@ function browser_SetModeDone_UserNodes(users, groups) {
     })
   })
 
-  _sortById(userNodes)
+  sortById(userNodes)
 
   return {
     id: 'Users',
@@ -75,7 +75,7 @@ function browser_SetModeDone_UserNodes(users, groups) {
   }
 }
 
-function browser_SetModeDone_GroupNodes(groups) {
+function browserSetModeDoneGroupNodes(groups) {
   let groupNodes = []
 
   groups.forEach(group => {
@@ -108,54 +108,3 @@ function browser_SetModeDone_GroupNodes(groups) {
   }
 }
 
-function browser_ExpandNode(browser, action) {
-  let newBrowser = _.cloneDeep(browser)
-  _visitNodes(newBrowser.nodes, node => {
-    if (node.id === action.node.id) {
-      node.expanded = true
-    }
-  })
-  return newBrowser
-}
-
-function browser_CollapseNode(browser, action) {
-  let newBrowser = _.cloneDeep(browser)
-  _visitNodes(newBrowser.nodes, node => {
-    if (node.id === action.node.id) {
-      node.expanded = false
-    }
-  })
-  return newBrowser
-}
-
-const _visitNodes = (nodes, visitor) => {
-  let toVisit = []
-  let visited = {}
-
-  toVisit.push(...nodes)
-
-  while (toVisit.length > 0) {
-    let node = toVisit.shift()
-
-    if (!visited[node.id]) {
-      visited[node.id] = true
-      let result = visitor(node)
-      if (result) {
-        return result
-      }
-    }
-
-    if (node.children !== undefined) {
-      node.children.forEach((child) => {
-        toVisit.push(child)
-      })
-    }
-  }
-}
-
-
-const _sortById = (arr) => {
-  arr.sort((i1, i2) => {
-    return i1.id.localeCompare(i2.id)
-  })
-}
