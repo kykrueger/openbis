@@ -44,8 +44,12 @@ function SettingsManager(serverFacade) {
 			if(settingsObjects) {
 				for(var sIdx = 0; sIdx < settingsObjects.length; sIdx++) {
 					var settingsObject = settingsObjects[sIdx];
-					if (settingsObject && settingsObject.properties && settingsObject.properties["ELN_SETTINGS"]) {
-						var settings = JSON.parse(settingsObject.properties["ELN_SETTINGS"]);
+					if (settingsObject && settingsObject.properties && (settingsObject.properties["ELN_SETTINGS"] || settingsObject.properties["$ELN_SETTINGS"])) {
+						var settings = settingsObject.properties["$ELN_SETTINGS"];
+						if(!settings) {
+							settings = settingsObject.properties["ELN_SETTINGS"];
+						}
+						settings = JSON.parse(settings);
 						if (settings) {
 							var errors = this._validateSettings(settings);
 							if (errors.length > 0) {
