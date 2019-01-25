@@ -133,7 +133,7 @@ function SettingsManager(serverFacade) {
 			// Remove current profile show config
 			if($.inArray(sampleTypeCode, targetProfile.hideTypes["sampleTypeCodes"]) !== -1) {
 				var indexToRemove = $.inArray(sampleTypeCode, targetProfile.hideTypes["sampleTypeCodes"]);
-				targetProfile.hideTypes["sampleTypeCodes"] = targetProfile.hideTypes["sampleTypeCodes"].splice(indexToRemove, 1);
+				targetProfile.hideTypes["sampleTypeCodes"].splice(indexToRemove, 1);
 			}
 			
 			// Add current profile show config
