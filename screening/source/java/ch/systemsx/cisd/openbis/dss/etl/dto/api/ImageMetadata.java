@@ -1,6 +1,6 @@
 package ch.systemsx.cisd.openbis.dss.etl.dto.api;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Store well, channel and tile number to which an image belongs. Optionally stores timepoint/depth-scan/image series number.

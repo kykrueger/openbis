@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.systemtest.base.auth;
 
 import java.util.UUID;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleLevel;
 

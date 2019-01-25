@@ -18,7 +18,7 @@ package ch.systemsx.cisd.yeastx.etl;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.parser.BeanProperty;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewProperty;

@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.common.parser;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * A simple <code>IPropertyModel</code> implementation that acts like a bean.

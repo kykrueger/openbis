@@ -19,7 +19,7 @@ package ch.systemsx.cisd.dbmigration;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 
 import ch.systemsx.cisd.common.db.SQLStateUtils;

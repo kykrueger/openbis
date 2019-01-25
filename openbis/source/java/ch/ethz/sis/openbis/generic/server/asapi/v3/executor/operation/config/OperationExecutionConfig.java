@@ -21,7 +21,7 @@ import java.util.Properties;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Component;
 
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;

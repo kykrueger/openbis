@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.common.reflection;
 
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * A modified short prefix {@link ToStringStyle} which allows to work together with jmock and cruisecontrol. The problem was that in jmock exception

@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.shared.basic.string.StringUtils;

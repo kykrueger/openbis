@@ -18,8 +18,8 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;

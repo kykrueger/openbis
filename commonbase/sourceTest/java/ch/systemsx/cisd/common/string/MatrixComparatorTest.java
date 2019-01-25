@@ -18,7 +18,7 @@ package ch.systemsx.cisd.common.string;
 
 import java.util.Arrays;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.string.MatrixComparator;

@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Queue;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.io.PersistentExtendedBlockingQueueDecorator;

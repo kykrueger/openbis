@@ -18,7 +18,7 @@ package ch.systemsx.cisd.common.filesystem;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 

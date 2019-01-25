@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.generic.client.web.server.util;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.openbis.generic.client.web.server.IBasicTableDataProvider;
 

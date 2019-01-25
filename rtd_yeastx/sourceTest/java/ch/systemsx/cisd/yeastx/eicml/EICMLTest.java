@@ -25,7 +25,7 @@ import java.text.ParseException;
 
 import net.lemnik.eodsql.DataIterator;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.testng.AssertJUnit;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;

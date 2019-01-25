@@ -26,7 +26,7 @@ import java.io.Serializable;
  * </p>
  * 
  * @author Chritian Ribeaud
- * @see org.apache.commons.lang.NotImplementedException
+ * @see org.apache.commons.lang3.NotImplementedException
  */
 public final class NotImplementedException extends RuntimeException
 {

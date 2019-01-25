@@ -18,8 +18,8 @@ package ch.systemsx.cisd.openbis.generic.shared.dto.identifier;
 
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;

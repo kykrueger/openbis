@@ -19,7 +19,7 @@ package ch.systemsx.cisd.datamover.filesystem.store;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.filesystem.HostAwareFile;
