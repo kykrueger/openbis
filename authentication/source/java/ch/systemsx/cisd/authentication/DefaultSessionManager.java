@@ -28,7 +28,7 @@ import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
