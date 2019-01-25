@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.util;
 
-import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang.time.StopWatch;
 
 /**
  * Wrapper over {@link StopWatch} making it more simple to debug performance.

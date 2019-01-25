@@ -19,7 +19,7 @@ package ch.systemsx.cisd.common.image;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
-import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
