@@ -1,9 +1,11 @@
 import initialState from '../initialstate.js'
-import {browserExpandNode, browserCollapseNode, sortById} from '../common/reducer'
+import {browserExpandNode, browserCollapseNode, openEntities, dirtyEntities, sortById} from '../common/reducer'
 
 export default function types(types = initialState.types, action) {
   return {
     browser: browser(types.browser, action),
+    openEntities: openEntities(types.openEntities, action),
+    dirtyEntities: dirtyEntities(types.dirtyEntities, action)
   }
 }
 
@@ -21,14 +23,18 @@ function browser(browser = initialState.types.browser, action) {
 }
 
 function browserSetModeDone(browser, action) {
-  return {
-    selectedNodeId: browser.selectedNodeId,
-    nodes: [
-      browserSetModeDoneTypeNodes('Object Types', action.data.objectTypes),
-      browserSetModeDoneTypeNodes('Collection Types', action.data.collectionTypes),
-      browserSetModeDoneTypeNodes('Data Set Types', action.data.dataSetTypes),
-      browserSetModeDoneTypeNodes('Material Types', action.data.materialTypes)
-    ]
+  if (action.data) {
+    return {
+      loaded: true,
+      nodes: [
+        browserSetModeDoneTypeNodes('Object Types', action.data.objectTypes),
+        browserSetModeDoneTypeNodes('Collection Types', action.data.collectionTypes),
+        browserSetModeDoneTypeNodes('Data Set Types', action.data.dataSetTypes),
+        browserSetModeDoneTypeNodes('Material Types', action.data.materialTypes)
+      ]
+    }
+  } else {
+    return browser
   }
 }
 

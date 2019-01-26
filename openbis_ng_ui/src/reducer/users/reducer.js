@@ -1,9 +1,11 @@
 import initialState from '../initialstate.js'
-import {browserExpandNode, browserCollapseNode, sortById} from '../common/reducer'
+import {browserExpandNode, browserCollapseNode, sortById, openEntities, dirtyEntities} from '../common/reducer'
 
 export default function users(users = initialState.users, action) {
   return {
     browser: browser(users.browser, action),
+    openEntities: openEntities(users.openEntities, action),
+    dirtyEntities: dirtyEntities(users.dirtyEntities, action)
   }
 }
 
@@ -21,9 +23,13 @@ function browser(browser = initialState.users.browser, action) {
 }
 
 function browserSetModeDone(browser, action) {
-  return {
-    selectedNodeId: browser.selectedNodeId,
-    nodes: [browserSetModeDoneUserNodes(action.data.users, action.data.groups), browserSetModeDoneGroupNodes(action.data.groups)]
+  if (action.data) {
+    return {
+      loaded: true,
+      nodes: [browserSetModeDoneUserNodes(action.data.users, action.data.groups), browserSetModeDoneGroupNodes(action.data.groups)]
+    }
+  } else {
+    return browser
   }
 }
 

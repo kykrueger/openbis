@@ -1,5 +1,58 @@
 import _ from 'lodash'
 
+export function openEntities(openEntities, action) {
+  switch (action.type) {
+  case 'SELECT-ENTITY': {
+    const entities = openEntities.entities
+    return {
+      entities: entities.indexOf(action.entityPermId) > -1 ? entities : [].concat(entities, [action.entityPermId]),
+      selectedEntity: action.entityPermId,
+    }
+  }
+  case 'CLOSE-ENTITY': {
+    const newOpenEntities = openEntities.entities.filter(e => e !== action.entityPermId)
+    if (openEntities.selectedEntity === action.entityPermId) {
+      const oldIndex = openEntities.entities.indexOf(action.entityPermId)
+      const newIndex = oldIndex === newOpenEntities.length ? oldIndex - 1 : oldIndex
+      const selectedEntity = newIndex > -1 ? newOpenEntities[newIndex] : null
+      return {
+        entities: newOpenEntities,
+        selectedEntity: selectedEntity,
+      }
+    } else {
+      return {
+        entities: newOpenEntities,
+        selectedEntity: openEntities.selectedEntity,
+      }
+    }
+  }
+  default: {
+    return openEntities
+  }
+  }
+}
+
+export function dirtyEntities(dirtyEntities, action) {
+  switch (action.type) {
+  case 'SET-DIRTY': {
+    if (action.dirty) {
+      return [].concat(dirtyEntities, [action.entityPermId])
+    } else {
+      return dirtyEntities.filter(e => e !== action.entityPermId)
+    }
+  }
+  case 'SAVE-ENTITY-DONE': {
+    return dirtyEntities.filter(permId => permId !== action.entity.permId.permId)
+  }
+  case 'CLOSE-ENTITY': {
+    return dirtyEntities.filter(permId => permId !== action.entityPermId)
+  }
+  default: {
+    return dirtyEntities
+  }
+  }
+}
+
 export function browserExpandNode(browser, action) {
   let newBrowser = _.cloneDeep(browser)
   visitNodes(newBrowser.nodes, node => {

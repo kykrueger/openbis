@@ -56,34 +56,39 @@ export default {
       sortColumn: '',
       sortDirection: 'asc'
     },
+    browser: {
+      nodes: []
+    },
+    openEntities: {
+      entities: [],
+      selectedEntity: null,
+    },
+    dirtyEntities: []
   },
 
   types: {
     browser: {
-      selectedNodeId: null,
       nodes: []
+    },
+    openEntities: {
+      entities: [],
+      selectedEntity: null,
     }
   },
 
   users: {
     browser: {
-      selectedNodeId: null,
       nodes: []
+    },
+    openEntities: {
+      entities: [],
+      selectedEntity: null,
     }
   },
 
   favourites: {},
   tools: {},
 
-  // TODO replace with generic tab description
-  openEntities: {
-    entities: [],
-    selectedEntity: null,
-  },
-  dirtyEntities: [],
-
   loading: false,
-  // TODO generic tree
-  databaseTreeNodes: [],
   exceptions: [],
 }

@@ -4,7 +4,7 @@ import EntityDetails from './database/EntityDetails.jsx'
 import TabContainer from './TabContainer.jsx'
 import TabContent from './TabContent.jsx'
 import actions from '../reducer/actions.js'
-
+import {getTabState, getTabEntity} from '../reducer/selectors.js'
 
 /**
  * This component at the moment only makes tabs for entities.
@@ -24,14 +24,12 @@ function mapDispatchToProps(dispatch) {
 
 
 function mapStateToProps(state) {
-  const selectedEntity = state.openEntities.selectedEntity
-  const spaces = state.database.spaces
+  let tabState = getTabState(state)
   return {
-    openEntities: state.openEntities.entities
-      .filter(permId => permId in spaces)
-      .map(permId => spaces[permId]),
-    selectedEntity: selectedEntity,
-    dirtyEntities: state.dirtyEntities,
+    openEntities: tabState.openEntities.entities
+      .map(permId => getTabEntity(state, permId)),
+    selectedEntity: tabState.openEntities.selectedEntity,
+    dirtyEntities: tabState.dirtyEntities,
   }
 }
 

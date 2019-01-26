@@ -1,4 +1,4 @@
-import {put, takeEvery, call} from 'redux-saga/effects'
+import {put, takeEvery, call, select} from 'redux-saga/effects'
 import openbis from '../services/openbis'
 import actions from './actions'
 
@@ -68,31 +68,41 @@ export function* login(action) {
 
 function* setMode(action) {
   try {
+    let state = yield select()
+
     switch (action.mode) {
     case 'USERS': {
-      let users = yield call(openbis.getUsers)
-      let groups = yield call(openbis.getGroups)
-      yield put(actions.setModeDone(action.mode, {
-        users: users.getObjects(),
-        groups: groups.getObjects()
-      }))
+      if (!state.users.browser.loaded) {
+        let users = yield call(openbis.getUsers)
+        let groups = yield call(openbis.getGroups)
+        yield put(actions.setModeDone(action.mode, {
+          users: users.getObjects(),
+          groups: groups.getObjects()
+        }))
+      } else {
+        yield put(actions.setModeDone(action.mode))
+      }
       break
     }
     case 'TYPES': {
-      let objectTypes = yield call(openbis.getObjectTypes)
-      let collectionTypes = yield call(openbis.getCollectionTypes)
-      let dataSetTypes = yield call(openbis.getDataSetTypes)
-      let materialTypes = yield call(openbis.getMaterialTypes)
-      yield put(actions.setModeDone(action.mode, {
-        objectTypes: objectTypes.getObjects(),
-        collectionTypes: collectionTypes.getObjects(),
-        dataSetTypes: dataSetTypes.getObjects(),
-        materialTypes: materialTypes.getObjects(),
-      }))
+      if (!state.types.browser.loaded) {
+        let objectTypes = yield call(openbis.getObjectTypes)
+        let collectionTypes = yield call(openbis.getCollectionTypes)
+        let dataSetTypes = yield call(openbis.getDataSetTypes)
+        let materialTypes = yield call(openbis.getMaterialTypes)
+        yield put(actions.setModeDone(action.mode, {
+          objectTypes: objectTypes.getObjects(),
+          collectionTypes: collectionTypes.getObjects(),
+          dataSetTypes: dataSetTypes.getObjects(),
+          materialTypes: materialTypes.getObjects(),
+        }))
+      } else {
+        yield put(actions.setModeDone(action.mode))
+      }
       break
     }
     default: {
-      yield put(actions.setModeDone(action.mode, {}))
+      yield put(actions.setModeDone(action.mode))
       break
     }
     }

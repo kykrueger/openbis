@@ -1,14 +1,15 @@
 import initialState from '../initialstate.js'
-
+import merge from 'lodash/merge'
+import {openEntities, dirtyEntities} from '../common/reducer.js'
 
 function filterOf(filter, columns) {
-  if (filter == null || filter.length === 0) {
+  if (filter === null || filter.length === 0) {
     return _ => true
   } else {
     return entity =>
       Object.keys(columns)
         .map(col => entity[col])
-        .map(value => value != null && value.toString().includes(filter))
+        .map(value => value !== null && value.toString().includes(filter))
         .includes(true)
   }
 }
@@ -17,13 +18,13 @@ function sortOf(orderColumn, direction, columns) {
   return (a, b) => {
     let valA = a[orderColumn]
     let valB = b[orderColumn]
-    if (valA == null && valB == null) {
+    if (valA === null && valB === null) {
       return 0
     }
-    if (valA == null) {
+    if (valA === null) {
       return 1
     }
-    if (valB == null) {
+    if (valB === null) {
       return -1
     }
     const type = columns[orderColumn]
@@ -38,6 +39,27 @@ function sortOf(orderColumn, direction, columns) {
         return 0
       }
     }
+  }
+}
+
+function replaceNode(nodes, newNode) {
+  return nodes.map(node => {
+    if (node.id === newNode.id) {
+      return newNode
+    }
+    return node
+  })
+}
+
+function asTreeNode(entity) {
+  return {
+    id: entity.permId.permId,
+    permId : entity.permId.permId,
+    type: entity['@type'],
+    expanded: false,
+    loading: false,
+    loaded: false,
+    children: [],
   }
 }
 
@@ -138,11 +160,49 @@ function table(table = initialState.table, action) {
   }
 }
 
+function browser(browser = initialState.database.browser, action) {
+  switch (action.type) {
+  case 'SET-SPACES': {
+    return {
+      nodes: action.spaces.map(asTreeNode)
+    }
+  }
+  case 'SET-PROJECTS': {
+    const oldNode = browser.nodes.filter(node => node.id === action.spacePermId)[0]
+    const projectNodes = action.projects.map(asTreeNode).map(project => {
+      return merge(project, {loaded: true, permId: null})
+    })
+    const node = merge({}, oldNode, {loading: false, loaded: true, children: projectNodes})
+    return {
+      nodes: replaceNode(browser.nodes, node)
+    }
+  }
+  case 'EXPAND-NODE': {
+    const loading = action.node.loaded === false
+    const node = merge({}, action.node, {expanded: true, loading: loading})
+    return {
+      nodes: replaceNode(browser.nodes, node)
+    }
+  }
+  case 'COLLAPSE-NODE': {
+    const node = merge({}, action.node, {expanded: false})
+    return {
+      nodes: replaceNode(browser.nodes, node)
+    }
+  }
+  default: {
+    return browser
+  }
+  }
+}
 
 export default function database(database = initialState.database, action) {
   return {
     spaces: spaces(database.spaces, action),
     projects: projects(database.projects, action),
     table: table(database.table, action),
+    browser: browser(database.browser, action),
+    openEntities: openEntities(database.openEntities, action),
+    dirtyEntities: dirtyEntities(database.dirtyEntities, action),
   }
 }
