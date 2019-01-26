@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.yeastx.etl;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Describes an additional conversion.

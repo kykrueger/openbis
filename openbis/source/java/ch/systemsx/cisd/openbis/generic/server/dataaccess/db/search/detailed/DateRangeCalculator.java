@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CompareType;

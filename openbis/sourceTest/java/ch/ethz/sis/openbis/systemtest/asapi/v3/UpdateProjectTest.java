@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
@@ -44,8 +45,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -396,11 +399,14 @@ public class UpdateProjectTest extends AbstractTest
         assertEquals(project1.isFrozen(), true);
         assertEquals(project1.isFrozenForExperiments(), false);
         assertEquals(project1.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, project1.getIdentifier().getIdentifier(), EntityType.PROJECT, new FreezingFlags().freeze());
         Project project2 = projects.get(projectId2);
         assertEquals(project2.getIdentifier().getIdentifier(), projectId2.toString());
         assertEquals(project2.isFrozen(), true);
         assertEquals(project2.isFrozenForExperiments(), true);
         assertEquals(project2.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, project2.getIdentifier().getIdentifier(), EntityType.PROJECT,
+                new FreezingFlags().freeze().freezeForExperiments());
     }
 
     @Test
@@ -427,11 +433,14 @@ public class UpdateProjectTest extends AbstractTest
         assertEquals(project1.isFrozen(), true);
         assertEquals(project1.isFrozenForExperiments(), false);
         assertEquals(project1.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, project1.getIdentifier().getIdentifier(), EntityType.PROJECT, new FreezingFlags().freeze());
         Project project2 = projects.get(projectId2);
         assertEquals(project2.getIdentifier().getIdentifier(), projectId2.toString());
         assertEquals(project2.isFrozen(), true);
         assertEquals(project2.isFrozenForExperiments(), false);
         assertEquals(project2.isFrozenForSamples(), true);
+        assertFreezingEvent(TEST_USER, project2.getIdentifier().getIdentifier(), EntityType.PROJECT,
+                new FreezingFlags().freeze().freezeForSamples());
     }
 
     @Test
@@ -473,6 +482,26 @@ public class UpdateProjectTest extends AbstractTest
         assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation)),
                 // Then
                 "ERROR: Operation SET PROJECT is not allowed because project NEMO is frozen for experiment UPT-E1.");
+    }
+
+    @Test(dataProvider = "freezeMethods")
+    public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
+        IProjectId projectId = new ProjectIdentifier("/CISD/NEMO");
+        ProjectUpdate update = new ProjectUpdate();
+        update.setProjectId(projectId);
+        freezeMethod.method.invoke(update);
+
+        // When
+        assertAuthorizationFailureException(Void -> v3api.updateProjects(sessionToken, Arrays.asList(update)), null);
+    }
+
+    @DataProvider(name = "freezeMethods")
+    public static Object[][] freezeMethods()
+    {
+        return asCartesianProduct(getFreezingMethods(ProjectUpdate.class));
     }
 
 }

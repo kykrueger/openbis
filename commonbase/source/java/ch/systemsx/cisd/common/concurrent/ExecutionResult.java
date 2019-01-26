@@ -19,7 +19,7 @@ package ch.systemsx.cisd.common.concurrent;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 

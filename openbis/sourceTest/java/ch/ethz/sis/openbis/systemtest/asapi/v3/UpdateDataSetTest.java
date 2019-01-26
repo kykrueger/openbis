@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -39,12 +40,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifi
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.test.AssertionUtil;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -810,30 +814,60 @@ public class UpdateDataSetTest extends AbstractSampleTest
         assertEquals(ds1.isFrozenForParents(), false);
         assertEquals(ds1.isFrozenForComponents(), false);
         assertEquals(ds1.isFrozenForContainers(), false);
+        assertFreezingEvent(TEST_USER, ds1.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze());
         DataSet ds2 = dataSets.get(dsId2);
         assertEquals(ds2.isFrozen(), true);
         assertEquals(ds2.isFrozenForChildren(), true);
         assertEquals(ds2.isFrozenForParents(), false);
         assertEquals(ds2.isFrozenForComponents(), false);
         assertEquals(ds2.isFrozenForContainers(), false);
+        assertFreezingEvent(TEST_USER, ds2.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze().freezeForChildren());
         DataSet ds3 = dataSets.get(dsId3);
         assertEquals(ds3.isFrozen(), true);
         assertEquals(ds3.isFrozenForChildren(), false);
         assertEquals(ds3.isFrozenForParents(), true);
         assertEquals(ds3.isFrozenForComponents(), false);
         assertEquals(ds3.isFrozenForContainers(), false);
+        assertFreezingEvent(TEST_USER, ds3.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze().freezeForParents());
         DataSet ds4 = dataSets.get(dsId4);
         assertEquals(ds4.isFrozen(), true);
         assertEquals(ds4.isFrozenForChildren(), false);
         assertEquals(ds4.isFrozenForParents(), false);
         assertEquals(ds4.isFrozenForComponents(), true);
         assertEquals(ds4.isFrozenForContainers(), false);
+        assertFreezingEvent(TEST_USER, ds4.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze().freezeForComponents());
         DataSet ds5 = dataSets.get(dsId5);
         assertEquals(ds5.isFrozen(), true);
         assertEquals(ds5.isFrozenForChildren(), false);
         assertEquals(ds5.isFrozenForParents(), false);
         assertEquals(ds5.isFrozenForComponents(), false);
         assertEquals(ds5.isFrozenForContainers(), true);
+        assertFreezingEvent(TEST_USER, ds5.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze().freezeForContainers());
+    }
+
+    @Test(dataProvider = "freezeMethods")
+    public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
+        DataSetPermId dsId = new DataSetPermId("20081105092159111-1");
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dsId);
+        freezeMethod.method.invoke(update);
+
+        // When
+        assertAuthorizationFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)), null);
+    }
+
+    @DataProvider(name = "freezeMethods")
+    public static Object[][] freezeMethods()
+    {
+        return asCartesianProduct(getFreezingMethods(DataSetUpdate.class));
     }
 
     @Test

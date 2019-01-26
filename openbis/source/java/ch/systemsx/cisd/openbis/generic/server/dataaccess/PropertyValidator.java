@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;

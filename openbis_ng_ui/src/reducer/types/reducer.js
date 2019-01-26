@@ -4,8 +4,8 @@ import {browserExpandNode, browserCollapseNode, openEntities, dirtyEntities, sor
 export default function types(types = initialState.types, action) {
   return {
     browser: browser(types.browser, action),
-    openEntities: openEntities(types.openEntities, action),
-    dirtyEntities: dirtyEntities(types.dirtyEntities, action)
+    openEntities: openEntities(types.openEntities, action) || initialState.types.openEntities,
+    dirtyEntities: dirtyEntities(types.dirtyEntities, action) || initialState.types.dirtyEntities
   }
 }
 

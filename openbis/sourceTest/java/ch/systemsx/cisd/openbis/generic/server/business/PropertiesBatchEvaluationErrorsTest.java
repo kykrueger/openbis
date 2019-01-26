@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server.business;
 
 import static ch.systemsx.cisd.openbis.generic.server.business.PropertiesBatchEvaluationErrors.MAX_ERROR_DETAILS_KEPT;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

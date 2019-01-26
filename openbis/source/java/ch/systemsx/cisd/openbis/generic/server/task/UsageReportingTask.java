@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 import javax.activation.DataHandler;
 import javax.mail.util.ByteArrayDataSource;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.IMailClient;

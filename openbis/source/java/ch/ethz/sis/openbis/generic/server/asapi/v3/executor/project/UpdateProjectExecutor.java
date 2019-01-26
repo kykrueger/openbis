@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.project;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -30,13 +31,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.IProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IEventExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingEvent;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.UpdateRelationProgress;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
 import ch.systemsx.cisd.openbis.generic.shared.util.RelationshipUtils;
@@ -63,6 +68,9 @@ public class UpdateProjectExecutor extends AbstractUpdateEntityExecutor<ProjectU
 
     @Autowired
     private IProjectAuthorizationExecutor authorizationExecutor;
+
+    @Autowired
+    private IEventExecutor eventExecutor;
 
     @Override
     protected IProjectId getId(ProjectUpdate update)
@@ -99,10 +107,12 @@ public class UpdateProjectExecutor extends AbstractUpdateEntityExecutor<ProjectU
 
         PersonPE person = context.getSession().tryGetPerson();
         Date timeStamp = daoFactory.getTransactionTimestamp();
+        List<FreezingEvent> freezingEvents = new ArrayList<>();
         for (Map.Entry<ProjectUpdate, ProjectPE> entry : batch.getObjects().entrySet())
         {
             ProjectUpdate update = entry.getKey();
             ProjectPE project = entry.getValue();
+            FreezingFlags freezingFlags = new FreezingFlags();
 
             RelationshipUtils.updateModificationDateAndModifier(project, person, timeStamp);
 
@@ -112,16 +122,30 @@ public class UpdateProjectExecutor extends AbstractUpdateEntityExecutor<ProjectU
             }
             if (update.shouldBeFrozen())
             {
+                authorizationExecutor.canFreeze(context);
                 project.setFrozen(true);
+                freezingFlags.freeze();
             }
             if (update.shouldBeFrozenForExperiments())
             {
+                authorizationExecutor.canFreeze(context);
                 project.setFrozenForExperiment(true);
+                freezingFlags.freezeForExperiments();
             }
             if (update.shouldBeFrozenForSamples())
             {
+                authorizationExecutor.canFreeze(context);
                 project.setFrozenForSample(true);
+                freezingFlags.freezeForSamples();
             }
+            if (freezingFlags.noFlags() == false)
+            {
+                freezingEvents.add(new FreezingEvent(project.getIdentifier(), EventPE.EntityType.PROJECT, freezingFlags));
+            }
+        }
+        if (freezingEvents.isEmpty() == false)
+        {
+            eventExecutor.persist(context, freezingEvents);
         }
     }
 

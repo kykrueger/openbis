@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;

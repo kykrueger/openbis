@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.test.annotation.Rollback;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
@@ -53,9 +54,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -784,11 +787,14 @@ public class UpdateExperimentTest extends AbstractExperimentTest
         assertEquals(experiment1.isFrozen(), true);
         assertEquals(experiment1.isFrozenForDataSets(), false);
         assertEquals(experiment1.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, experiment1.getIdentifier().getIdentifier(), EntityType.EXPERIMENT, new FreezingFlags().freeze());
         Experiment experiment2 = experiments.get(expId2);
         assertEquals(experiment2.getIdentifier().getIdentifier(), expId2.getIdentifier());
         assertEquals(experiment2.isFrozen(), true);
         assertEquals(experiment2.isFrozenForDataSets(), false);
         assertEquals(experiment2.isFrozenForSamples(), true);
+        assertFreezingEvent(TEST_USER, experiment2.getIdentifier().getIdentifier(), EntityType.EXPERIMENT,
+                new FreezingFlags().freeze().freezeForSamples());
     }
 
     @Test
@@ -815,11 +821,14 @@ public class UpdateExperimentTest extends AbstractExperimentTest
         assertEquals(experiment1.isFrozen(), true);
         assertEquals(experiment1.isFrozenForDataSets(), false);
         assertEquals(experiment1.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, experiment1.getIdentifier().getIdentifier(), EntityType.EXPERIMENT, new FreezingFlags().freeze());
         Experiment experiment2 = experiments.get(expId2);
         assertEquals(experiment2.getIdentifier().getIdentifier(), expId2.getIdentifier());
         assertEquals(experiment2.isFrozen(), true);
         assertEquals(experiment2.isFrozenForDataSets(), true);
         assertEquals(experiment2.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, experiment2.getIdentifier().getIdentifier(), EntityType.EXPERIMENT,
+                new FreezingFlags().freeze().freezeForDataSets());
     }
 
     @Test
@@ -884,6 +893,26 @@ public class UpdateExperimentTest extends AbstractExperimentTest
         assertUserFailureException(Void -> v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation)),
                 // Then
                 "ERROR: Operation SET EXPERIMENT is not allowed because experiment EXP10 is frozen for data set UET-D1.");
+    }
+
+    @Test(dataProvider = "freezeMethods")
+    public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
+        ExperimentIdentifier expId = new ExperimentIdentifier("/CISD/NEMO/EXP10");
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(expId);
+        freezeMethod.method.invoke(update);
+
+        // When
+        assertAuthorizationFailureException(Void -> v3api.updateExperiments(sessionToken, Arrays.asList(update)), null);
+    }
+
+    @DataProvider(name = "freezeMethods")
+    public static Object[][] freezeMethods()
+    {
+        return asCartesianProduct(getFreezingMethods(ExperimentUpdate.class));
     }
 
     @Test

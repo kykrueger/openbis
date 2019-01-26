@@ -22,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -33,8 +32,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.IProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IEventExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.tag.IUpdateTagForEntityExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingEvent;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.UpdateRelationProgress;
@@ -42,6 +44,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
@@ -88,6 +91,9 @@ public class UpdateSampleExecutor extends AbstractUpdateEntityExecutor<SampleUpd
     @Autowired
     protected IRelationshipService relationshipService;
 
+    @Autowired
+    private IEventExecutor eventExecutor;
+
     @Override
     protected ISampleId getId(SampleUpdate update)
     {
@@ -119,35 +125,55 @@ public class UpdateSampleExecutor extends AbstractUpdateEntityExecutor<SampleUpd
     protected void updateBatch(IOperationContext context, MapBatch<SampleUpdate, SamplePE> batch)
     {
         Collection<SamplePE> experimentOrProjectSamples = new ArrayList<SamplePE>();
+        List<FreezingEvent> freezingEvents = new ArrayList<>();
 
         for (Entry<SampleUpdate, SamplePE> entry : batch.getObjects().entrySet())
         {
             SampleUpdate update = entry.getKey();
-            SamplePE entity = entry.getValue();;
+            SamplePE entity = entry.getValue();
+            FreezingFlags freezingFlags = new FreezingFlags();
             if (entity.getExperiment() != null || entity.getProject() != null)
             {
                 experimentOrProjectSamples.add(entity);
             }
             if (update.shouldBeFrozen())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozen(true);
+                freezingFlags.freeze();
             }
             if (update.shouldBeFrozenForComponents())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozenForComponent(true);
+                freezingFlags.freezeForComponents();
             }
             if (update.shouldBeFrozenForChildren())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozenForChildren(true);
+                freezingFlags.freezeForChildren();
             }
             if (update.shouldBeFrozenForParents())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozenForParents(true);
+                freezingFlags.freezeForParents();
             }
             if (update.shouldBeFrozenForDataSets())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozenForDataSet(true);
+                freezingFlags.freezeForDataSets();
             }
+            if (freezingFlags.noFlags() == false)
+            {
+                freezingEvents.add(new FreezingEvent(entity.getIdentifier(), EventPE.EntityType.SAMPLE, freezingFlags));
+            }
+        }
+        if (freezingEvents.isEmpty() == false)
+        {
+            eventExecutor.persist(context, freezingEvents);
         }
 
         updateSampleSpaceExecutor.update(context, batch);

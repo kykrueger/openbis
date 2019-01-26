@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.concurrent.DummyTimerTaskListener;
 import ch.systemsx.cisd.common.concurrent.ITimerTaskListener;

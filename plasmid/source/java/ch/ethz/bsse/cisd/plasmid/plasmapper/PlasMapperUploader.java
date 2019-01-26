@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentProvider;

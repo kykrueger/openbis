@@ -21,8 +21,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 /**
  * An extension of {@link Properties}. The extension avoid duplicating properties by reusing. There are two ways to reuse properties:

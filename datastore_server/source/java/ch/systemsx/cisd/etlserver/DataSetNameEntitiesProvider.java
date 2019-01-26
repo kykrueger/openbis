@@ -19,7 +19,7 @@ package ch.systemsx.cisd.etlserver;
 import java.io.File;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 

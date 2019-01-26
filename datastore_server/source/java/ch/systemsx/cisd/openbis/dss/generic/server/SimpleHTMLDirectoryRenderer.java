@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 import java.io.PrintWriter;
 import java.net.URI;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.string.Template;

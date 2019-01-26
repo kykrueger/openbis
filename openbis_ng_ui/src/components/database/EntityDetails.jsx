@@ -17,6 +17,7 @@ import _ from 'lodash'
 
 import OpenBISTable from './OpenBISTable.jsx'
 import actions from '../../reducer/actions.js'
+import { getTabState } from '../../reducer/selectors';
 
 
 /* eslint-disable-next-line no-unused-vars */
@@ -27,8 +28,9 @@ const styles = theme => ({
 })
 
 function mapStateToProps(state) {
+  let tabState = getTabState(state)
   return {
-    dirtyEntities: state.dirtyEntities,
+    dirtyEntities: tabState.dirtyEntities,
   }
 }
 

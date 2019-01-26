@@ -23,7 +23,7 @@ import static org.testng.AssertJUnit.fail;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.string.Template.IToken;

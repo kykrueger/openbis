@@ -316,6 +316,8 @@ public final class ColumnNames
 
     public static final String DATA_SET_FROZEN_COLUMN = "dase_frozen";
 
+    public static final String LINK_DATA_SET_FROZEN_COLUMN = "data_frozen";
+
     public static final String EXPERIMENT_FROZEN_COLUMN = "expe_frozen";
 
     public static final String SAMPLE_FROZEN_COLUMN = "samp_frozen";

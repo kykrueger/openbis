@@ -3,13 +3,13 @@ import merge from 'lodash/merge'
 import {openEntities, dirtyEntities} from '../common/reducer.js'
 
 function filterOf(filter, columns) {
-  if (filter === null || filter.length === 0) {
+  if (filter == null || filter.length === 0) {
     return _ => true
   } else {
     return entity =>
       Object.keys(columns)
         .map(col => entity[col])
-        .map(value => value !== null && value.toString().includes(filter))
+        .map(value => value != null && value.toString().includes(filter))
         .includes(true)
   }
 }
@@ -18,13 +18,13 @@ function sortOf(orderColumn, direction, columns) {
   return (a, b) => {
     let valA = a[orderColumn]
     let valB = b[orderColumn]
-    if (valA === null && valB === null) {
+    if (valA == null && valB == null) {
       return 0
     }
-    if (valA === null) {
+    if (valA == null) {
       return 1
     }
-    if (valB === null) {
+    if (valB == null) {
       return -1
     }
     const type = columns[orderColumn]
@@ -54,7 +54,7 @@ function replaceNode(nodes, newNode) {
 function asTreeNode(entity) {
   return {
     id: entity.permId.permId,
-    permId : entity.permId.permId,
+    permId: entity.permId.permId,
     type: entity['@type'],
     expanded: false,
     loading: false,
@@ -202,7 +202,7 @@ export default function database(database = initialState.database, action) {
     projects: projects(database.projects, action),
     table: table(database.table, action),
     browser: browser(database.browser, action),
-    openEntities: openEntities(database.openEntities, action),
-    dirtyEntities: dirtyEntities(database.dirtyEntities, action),
+    openEntities: openEntities(database.openEntities || initialState.database.openEntities, action),
+    dirtyEntities: dirtyEntities(database.dirtyEntities || initialState.database.dirtyEntities, action),
   }
 }

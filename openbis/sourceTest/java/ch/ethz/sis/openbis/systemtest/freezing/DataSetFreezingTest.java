@@ -25,12 +25,17 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.ContentCopyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.LinkedDataCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.LinkedDataUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.create.TagCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
@@ -46,6 +51,10 @@ public class DataSetFreezingTest extends FreezingTest
 
     private static final String DATA_SET_2 = PREFIX + "2";
 
+    private static final String DATA_SET_3 = PREFIX + "3";
+
+    private static final String DATA_SET_4 = PREFIX + "4";
+
     private TagPermId blueTag;
 
     private DataSetPermId dataSet1;
@@ -53,6 +62,10 @@ public class DataSetFreezingTest extends FreezingTest
     private DataSetPermId dataSet2;
 
     private SamplePermId sampleId;
+
+    private DataSetPermId dataSet3;
+
+    private DataSetPermId dataSet4;
 
     @BeforeMethod
     public void createDataSetExamples()
@@ -64,10 +77,27 @@ public class DataSetFreezingTest extends FreezingTest
         ds1.setProperty("DESCRIPTION", "testing");
         DataSetCreation ds2 = physicalDataSet(DATA_SET_2);
         ds2.setSampleId(sampleId);
+        DataSetCreation ds3 = dataSet(DATA_SET_3);
+        ds3.setSampleId(sampleId);
+        ds3.setDataSetKind(DataSetKind.LINK);
+        LinkedDataCreation linkedData = new LinkedDataCreation();
+        ContentCopyCreation ccCreation = new ContentCopyCreation();
+        ccCreation.setExternalDmsId(new ExternalDmsPermId("DMS_3"));
+        ccCreation.setPath("a/b/c");
+        linkedData.setContentCopies(Arrays.asList(ccCreation));
+        ds3.setLinkedData(linkedData);
+        DataSetCreation ds4 = dataSet(DATA_SET_4);
+        ds4.setSampleId(sampleId);
+        ds4.setDataSetKind(DataSetKind.LINK);
+        LinkedDataCreation linkedData2 = new LinkedDataCreation();
+        linkedData2.setContentCopies(Arrays.asList());
+        ds4.setLinkedData(linkedData2);
 
-        List<DataSetPermId> dataSetIds = v3api.createDataSets(systemSessionToken, Arrays.asList(ds1, ds2));
+        List<DataSetPermId> dataSetIds = v3api.createDataSets(systemSessionToken, Arrays.asList(ds1, ds2, ds3, ds4));
         dataSet1 = dataSetIds.get(0);
         dataSet2 = dataSetIds.get(1);
+        dataSet3 = dataSetIds.get(2);
+        dataSet4 = dataSetIds.get(3);
 
         TagCreation tagCreation = new TagCreation();
         tagCreation.setCode("blue");
@@ -249,6 +279,89 @@ public class DataSetFreezingTest extends FreezingTest
 
         // Then
         assertEquals(getDataSet(dataSet1).getProperty("DESCRIPTION"), null);
+    }
+
+    @Test
+    public void testAddContentCopy()
+    {
+        // Given
+        setFrozenFlagForDataSets(true, dataSet4);
+        assertEquals(getDataSet(dataSet4).getLinkedData().getContentCopies().toString(), "[]");
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSet4);
+        LinkedDataUpdate linkedDataUpdate = new LinkedDataUpdate();
+        ContentCopyCreation contentCopyCreation = new ContentCopyCreation();
+        contentCopyCreation.setExternalDmsId(new ExternalDmsPermId("DMS_3"));
+        contentCopyCreation.setPath("a/b/c/d");
+        linkedDataUpdate.getContentCopies().add(contentCopyCreation);
+        dataSetUpdate.getLinkedData().setValue(linkedDataUpdate);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
+                // Then
+                "ERROR: Operation INSERT CONTENT_COPY is not allowed because data set " + DATA_SET_4 + " is frozen.");
+    }
+
+    @Test
+    public void testAddContentCopyForMoltenDataSet()
+    {
+        // Given
+        setFrozenFlagForDataSets(true, dataSet4);
+        setFrozenFlagForDataSets(false, dataSet4);
+        assertEquals(getDataSet(dataSet4).getLinkedData().getContentCopies().toString(), "[]");
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSet4);
+        LinkedDataUpdate linkedDataUpdate = new LinkedDataUpdate();
+        ContentCopyCreation contentCopyCreation = new ContentCopyCreation();
+        contentCopyCreation.setExternalDmsId(new ExternalDmsPermId("DMS_3"));
+        contentCopyCreation.setPath("a/b/c/d");
+        linkedDataUpdate.getContentCopies().add(contentCopyCreation);
+        dataSetUpdate.getLinkedData().setValue(linkedDataUpdate);
+
+        // When
+        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
+
+        // Then
+        assertEquals(getDataSet(dataSet4).getLinkedData().getContentCopies().get(0).getPath(), "/a/b/c/d");
+    }
+
+    @Test
+    public void testDeleteContentCopy()
+    {
+        // Given
+        setFrozenFlagForDataSets(true, dataSet3);
+        assertEquals(getDataSet(dataSet3).getLinkedData().getContentCopies().get(0).getPath(), "/a/b/c");
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSet3);
+        LinkedDataUpdate linkedDataUpdate = new LinkedDataUpdate();
+        linkedDataUpdate.getContentCopies().remove(getDataSet(dataSet3).getLinkedData().getContentCopies().get(0).getId());
+        dataSetUpdate.getLinkedData().setValue(linkedDataUpdate);
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
+                // Then
+                "ERROR: Operation DELETE CONTENT_COPY is not allowed because data set " + DATA_SET_3 + " is frozen.");
+    }
+
+    @Test
+    public void testDeleteContentCopyForMoltenDataSet()
+    {
+        // Given
+        setFrozenFlagForDataSets(true, dataSet3);
+        setFrozenFlagForDataSets(false, dataSet3);
+        ContentCopy contentCopy = getDataSet(dataSet3).getLinkedData().getContentCopies().get(0);
+        assertEquals(contentCopy.getPath(), "/a/b/c");
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSet3);
+        LinkedDataUpdate linkedDataUpdate = new LinkedDataUpdate();
+        linkedDataUpdate.getContentCopies().remove(contentCopy.getId());
+        dataSetUpdate.getLinkedData().setValue(linkedDataUpdate);
+
+        // When
+        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
+
+        // Then
+        assertEquals(getDataSet(dataSet3).getLinkedData().getContentCopies().toString(), "[]");
     }
 
     @Test(dataProvider = "LiquidComponentContainerRelations")
@@ -676,8 +789,7 @@ public class DataSetFreezingTest extends FreezingTest
         // Then
         assertEquals(getDataSet(id).getChildren().get(0).getCode(), DATA_SET_1);
     }
-    
-    
+
     @Test(dataProvider = "liquidContainer")
     public void testValidCreateComponentDataSet(FrozenFlags frozenFlagsForContainer)
     {
@@ -686,14 +798,14 @@ public class DataSetFreezingTest extends FreezingTest
         DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
         dataSetCreation.setSampleId(sampleId);
         dataSetCreation.setContainerIds(Arrays.asList(dataSet1));
-        
+
         // When
         DataSetPermId id = v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)).iterator().next();
-        
+
         // Then
         assertEquals(getDataSet(id).getContainers().get(0).getCode(), DATA_SET_1);
     }
-    
+
     @DataProvider(name = "liquidContainer")
     public static Object[][] liquidContainer()
     {
@@ -702,7 +814,7 @@ public class DataSetFreezingTest extends FreezingTest
         combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponents());
         return asCartesianProduct(combinationsForLiquidContainer);
     }
-    
+
     @Test
     public void testInvalidCreateComponentDataSet()
     {
@@ -711,15 +823,15 @@ public class DataSetFreezingTest extends FreezingTest
         DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
         dataSetCreation.setSampleId(sampleId);
         dataSetCreation.setContainerIds(Arrays.asList(dataSet1));
-        
+
         // When
         assertUserFailureException(Void -> v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)),
                 // Then
                 "ERROR: Operation INSERT CONTAINER_COMPONENT is not allowed because data set " + DATA_SET_1
-                + " or " + dataSetCreation.getCode() + " is frozen.");
-        
+                        + " or " + dataSetCreation.getCode() + " is frozen.");
+
     }
-    
+
     @Test
     public void testInvalidCreateComponentDataSetAfterMelting()
     {
@@ -730,14 +842,14 @@ public class DataSetFreezingTest extends FreezingTest
         DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
         dataSetCreation.setSampleId(sampleId);
         dataSetCreation.setContainerIds(Arrays.asList(dataSet1));
-        
+
         // When
         DataSetPermId id = v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)).iterator().next();
-        
+
         // Then
         assertEquals(getDataSet(id).getContainers().get(0).getCode(), DATA_SET_1);
     }
-    
+
     @Test(dataProvider = "liquidComponent")
     public void testValidCreateContainerDataSet(FrozenFlags frozenFlagsForComponent)
     {
@@ -747,14 +859,14 @@ public class DataSetFreezingTest extends FreezingTest
         dataSetCreation.setDataSetKind(DataSetKind.CONTAINER);
         dataSetCreation.setSampleId(sampleId);
         dataSetCreation.setComponentIds(Arrays.asList(dataSet2));
-        
+
         // When
         DataSetPermId id = v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)).iterator().next();
-        
+
         // Then
         assertEquals(getDataSet(id).getComponents().get(0).getCode(), DATA_SET_2);
     }
-    
+
     @DataProvider(name = "liquidComponent")
     public static Object[][] liquidComponent()
     {
@@ -763,7 +875,7 @@ public class DataSetFreezingTest extends FreezingTest
         combinationsForLiquidComponent.add(new FrozenFlags(false).freezeForContainers());
         return asCartesianProduct(combinationsForLiquidComponent);
     }
-    
+
     @Test
     public void testInvalidCreateContainerDataSet()
     {
@@ -773,15 +885,15 @@ public class DataSetFreezingTest extends FreezingTest
         dataSetCreation.setDataSetKind(DataSetKind.CONTAINER);
         dataSetCreation.setSampleId(sampleId);
         dataSetCreation.setComponentIds(Arrays.asList(dataSet2));
-        
+
         // When
         assertUserFailureException(Void -> v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)),
                 // Then
                 "ERROR: Operation INSERT CONTAINER_COMPONENT is not allowed because data set " + dataSetCreation.getCode()
-                + " or " + DATA_SET_2 + " is frozen.");
-        
+                        + " or " + DATA_SET_2 + " is frozen.");
+
     }
-    
+
     @Test
     public void testInvalidCreateContainerDataSetAfterMelting()
     {
@@ -793,10 +905,10 @@ public class DataSetFreezingTest extends FreezingTest
         dataSetCreation.setDataSetKind(DataSetKind.CONTAINER);
         dataSetCreation.setSampleId(sampleId);
         dataSetCreation.setComponentIds(Arrays.asList(dataSet2));
-        
+
         // When
         DataSetPermId id = v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)).iterator().next();
-        
+
         // Then
         assertEquals(getDataSet(id).getComponents().get(0).getCode(), DATA_SET_2);
     }

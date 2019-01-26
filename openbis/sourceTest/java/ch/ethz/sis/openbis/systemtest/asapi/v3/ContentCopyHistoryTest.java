@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Objects;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hibernate.Query;

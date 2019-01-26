@@ -16,8 +16,8 @@
 
 package ch.systemsx.cisd.openbis.common.api.server.json.object;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

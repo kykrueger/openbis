@@ -36,17 +36,15 @@ class FrozenFlags
 
     private static final int FROZEN_FOR_CONTAINERS_INDEX = 4;
 
-    private static final int FROZEN_FOR_COMPONENT_INDEX = 5;
+    private static final int FROZEN_FOR_DATA_SET_INDEX = 5;
 
-    private static final int FROZEN_FOR_DATA_SET_INDEX = 6;
+    private static final int FROZEN_FOR_SAMPLE_INDEX = 6;
 
-    private static final int FROZEN_FOR_SAMPLE_INDEX = 7;
+    private static final int FROZEN_FOR_EXPERMENT_INDEX = 7;
 
-    private static final int FROZEN_FOR_EXPERMENT_INDEX = 8;
+    private static final int FROZEN_FOR_PROJECT_INDEX = 8;
 
-    private static final int FROZEN_FOR_PROJECT_INDEX = 9;
-
-    private static final int NUMBER_OF_FLAGS = 10;
+    private static final int NUMBER_OF_FLAGS = 9;
 
     private boolean[] flags = new boolean[NUMBER_OF_FLAGS];
 
@@ -174,23 +172,6 @@ class FrozenFlags
         return flags[FROZEN_FOR_CONTAINERS_INDEX];
     }
 
-    FrozenFlags freezeForComponent()
-    {
-        flags[FROZEN_FOR_COMPONENT_INDEX] = true;
-        return this;
-    }
-
-    FrozenFlags meltForComponent()
-    {
-        flags[FROZEN_FOR_COMPONENT_INDEX] = false;
-        return this;
-    }
-
-    boolean isFrozenForComponent()
-    {
-        return flags[FROZEN_FOR_COMPONENT_INDEX];
-    }
-
     FrozenFlags freezeForDataSet()
     {
         flags[FROZEN_FOR_DATA_SET_INDEX] = true;
@@ -267,7 +248,6 @@ class FrozenFlags
         addForFlag(builder, isFrozenForParents(), "parents");
         addForFlag(builder, isFrozenForComponents(), "components");
         addForFlag(builder, isFrozenForContainers(), "containers");
-        addForFlag(builder, isFrozenForComponent(), "component");
         addForFlag(builder, isFrozenForDataSet(), "data set");
         addForFlag(builder, isFrozenForSample(), "sample");
         addForFlag(builder, isFrozenForExperiment(), "experiment");

@@ -16,12 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -32,8 +32,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.IProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IEventExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.tag.IUpdateTagForEntityExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingEvent;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.UpdateRelationProgress;
@@ -41,6 +44,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.util.RelationshipUtils;
@@ -83,6 +87,9 @@ public class UpdateDataSetExecutor extends AbstractUpdateEntityExecutor<DataSetU
     @Autowired
     private IUpdateTagForEntityExecutor updateTagForEntityExecutor;
 
+    @Autowired
+    private IEventExecutor eventExecutor;
+
     @Override
     protected IDataSetId getId(DataSetUpdate update)
     {
@@ -122,32 +129,52 @@ public class UpdateDataSetExecutor extends AbstractUpdateEntityExecutor<DataSetU
 
         PersonPE person = context.getSession().tryGetPerson();
         Date timeStamp = daoFactory.getTransactionTimestamp();
+        List<FreezingEvent> freezingEvents = new ArrayList<>();
 
         for (Entry<DataSetUpdate, DataPE> entry : batch.getObjects().entrySet())
         {
             DataSetUpdate update = entry.getKey();;
             DataPE entity = entry.getValue();
+            FreezingFlags freezingFlags = new FreezingFlags();
             RelationshipUtils.updateModificationDateAndModifier(entity, person, timeStamp);
             if (update.shouldBeFrozen())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozen(true);
+                freezingFlags.freeze();
             }
             if (update.shouldBeFrozenForChildren())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozenForChildren(true);
+                freezingFlags.freezeForChildren();
             }
             if (update.shouldBeFrozenForParents())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozenForParents(true);
+                freezingFlags.freezeForParents();
             }
             if (update.shouldBeFrozenForComponents())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozenForComponents(true);
+                freezingFlags.freezeForComponents();
             }
             if (update.shouldBeFrozenForContainers())
             {
+                authorizationExecutor.canFreeze(context);
                 entity.setFrozenForContainers(true);
+                freezingFlags.freezeForContainers();
             }
+            if (freezingFlags.noFlags() == false)
+            {
+                freezingEvents.add(new FreezingEvent(entity.getIdentifier(), EventPE.EntityType.DATASET, freezingFlags));
+            }
+        }
+        if (freezingEvents.isEmpty() == false)
+        {
+            eventExecutor.persist(context, freezingEvents);
         }
     }
 

@@ -19,9 +19,8 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common;
 import static ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant.INTERNAL_NAMESPACE_PREFIX;
 
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,29 +36,41 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IDescriptionHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyAssignmentsHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.search.PluginSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySearchCriteria;
+import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IDataSetTypeImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IEntityType;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IExperimentTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMasterDataRegistrationTransaction;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMaterialTypeImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IPropertyTypeImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.ISampleTypeImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IScriptImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IVocabularyImmutable;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IVocabularyTermImmutable;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 
 /**
@@ -67,6 +78,18 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
  */
 public class MasterDataExtractor
 {
+    private static final VocabularySearchCriteria VOCABULARY_SEARCH_CRITERIA = new VocabularySearchCriteria();
+
+    private static final PropertyTypeSearchCriteria PROPERTY_TYPE_SEARCH_CRITERIA = new PropertyTypeSearchCriteria();
+
+    private static final ExperimentTypeSearchCriteria EXPERIMENT_TYPE_SEARCH_CRITERIA = new ExperimentTypeSearchCriteria();
+
+    private static final MaterialTypeSearchCriteria MATERIAL_TYPE_SEARCH_CRITERIA = new MaterialTypeSearchCriteria();
+
+    private static final SampleTypeSearchCriteria SAMPLE_TYPE_SEARCH_CRITERIA = new SampleTypeSearchCriteria();
+
+    private static final DataSetTypeSearchCriteria DATA_SET_TYPE_SEARCH_CRITERIA = new DataSetTypeSearchCriteria();
+
     private final IMasterDataRegistrationTransaction masterDataRegistrationTransaction;
 
     private final IApplicationServerApi v3Api;
@@ -96,36 +119,18 @@ public class MasterDataExtractor
         rootElement.setAttribute("xmlns:xmd", "https://sis.id.ethz.ch/software/#openbis/xmdterms/");
         doc.appendChild(rootElement);
 
-        // append scripts
-        List<IScriptImmutable> scripts = masterDataRegistrationTransaction.listScripts();
-        appendValidationPlugins(doc, rootElement, scripts);
+        appendFileFormatTypes(doc, rootElement);
 
-        // append file format types
-        List<IFileFormatTypeImmutable> fileFormatTypes = masterDataRegistrationTransaction.listFileFormatTypes();
-        appendFileFormatTypes(doc, rootElement, fileFormatTypes);
+        appendValidationPlugins(doc, rootElement);
+        appendVocabularies(doc, rootElement);
 
-        // append vocabularies
-        List<IVocabularyImmutable> vocabularies = masterDataRegistrationTransaction.listVocabularies();
-        appendVocabularies(doc, rootElement, vocabularies);
+        appendPropertyTypes(doc, rootElement);
+        appendSampleTypes(doc, rootElement);
+        appendExperimentTypes(doc, rootElement);
+        appendDataSetTypes(doc, rootElement);
+        appendMaterialTypes(doc, rootElement);
 
-        // append property types
-        List<IPropertyTypeImmutable> propertyTypes = masterDataRegistrationTransaction.listPropertyTypes();
-        appendPropertyTypes(doc, rootElement, propertyTypes);
-
-        // append sample types
-        List<ISampleTypeImmutable> sampleTypes = masterDataRegistrationTransaction.listSampleTypes();
-        appendSampleTypes(doc, rootElement, sampleTypes);
-
-        // append experiment types
-        List<IExperimentTypeImmutable> experimentTypes = masterDataRegistrationTransaction.listExperimentTypes();
-        appendExperimentTypes(doc, rootElement, experimentTypes);
-
-        // append data set types
-        List<IDataSetTypeImmutable> dataSetTypes = masterDataRegistrationTransaction.listDataSetTypes();
-        appendDataSetTypes(doc, rootElement, dataSetTypes);
-
-        List<IMaterialTypeImmutable> materialTypes = masterDataRegistrationTransaction.listMaterialTypes();
-        appendMaterialTypes(doc, rootElement, materialTypes);
+        appendExternalDataManagementSystems(doc, rootElement);
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
@@ -143,30 +148,71 @@ public class MasterDataExtractor
         return writer.toString();
     }
 
-    private void appendValidationPlugins(Document doc, Element rootElement, List<IScriptImmutable> scripts)
+    protected void appendExternalDataManagementSystems(Document doc, Element rootElement)
     {
-        if (scripts.size() > 0)
+        ExternalDmsSearchCriteria searchCriteria = new ExternalDmsSearchCriteria();
+        ExternalDmsFetchOptions fetchOptions = new ExternalDmsFetchOptions();
+        List<ExternalDms> externalDataManagementSystems =
+                v3Api.searchExternalDataManagementSystems(sessionToken, searchCriteria, fetchOptions).getObjects();
+        if (externalDataManagementSystems.isEmpty() == false)
         {
-            Element pluginsElement = doc.createElement("xmd:validationPlugins");
-            rootElement.appendChild(pluginsElement);
-            for (IScriptImmutable script : scripts)
+            Element externalDataManagementSystemsElement = doc.createElement("xmd:externalDataManagementSystems");
+            rootElement.appendChild(externalDataManagementSystemsElement);
+            for (ExternalDms externalDms : externalDataManagementSystems)
             {
-                Element pluginElement = doc.createElement("xmd:validationPlugin");
-                // pluginElement.setAttribute("code", script.getCode());
-                pluginElement.setAttribute("name", script.getName());
-                pluginElement.setAttribute("description", script.getDescription());
-                pluginElement.setAttribute("type", script.getScriptType());
-                pluginElement.setAttribute("entityKind", script.getEntity() == null ? "All" : script.getEntity());
-                // TODO isAvailable? Maybe to be gotten from the internal API?
-
-                pluginElement.appendChild(doc.createCDATASection(script.getScript()));
-                pluginsElement.appendChild(pluginElement);
+                Element externalDmsElement = doc.createElement("xmd:externalDataManagementSystem");
+                externalDmsElement.setAttribute("code", externalDms.getCode());
+                externalDmsElement.setAttribute("label", externalDms.getLabel());
+                externalDmsElement.setAttribute("address", externalDms.getAddress());
+                externalDmsElement.setAttribute("addressType", externalDms.getAddressType().toString());
+                externalDataManagementSystemsElement.appendChild(externalDmsElement);
             }
         }
     }
 
-    private void appendFileFormatTypes(Document doc, Element rootElement, List<IFileFormatTypeImmutable> fileFormatTypes)
+    private void appendValidationPlugins(Document doc, Element rootElement)
     {
+        PluginFetchOptions fetchOptions = new PluginFetchOptions();
+        fetchOptions.withScript();
+        List<Plugin> plugins = v3Api.searchPlugins(sessionToken, new PluginSearchCriteria(), fetchOptions).getObjects();
+        if (plugins.isEmpty())
+        {
+            return;
+        }
+        Element pluginsElement = doc.createElement("xmd:validationPlugins");
+        rootElement.appendChild(pluginsElement);
+        for (Plugin plugin : plugins)
+        {
+            Element pluginElement = doc.createElement("xmd:validationPlugin");
+            pluginElement.setAttribute("name", plugin.getName());
+            pluginElement.setAttribute("description", plugin.getDescription());
+            pluginElement.setAttribute("type", plugin.getPluginType().toString());
+            pluginElement.setAttribute("entityKind", getEntityKind(plugin));
+            pluginElement.setAttribute("isAvailable", String.valueOf(plugin.isAvailable()));
+            pluginElement.appendChild(doc.createCDATASection(plugin.getScript()));
+            pluginsElement.appendChild(pluginElement);
+        }
+    }
+
+    protected String getEntityKind(Plugin plugin)
+    {
+        String entityKind = "All";
+        Set<EntityKind> entityKinds = plugin.getEntityKinds();
+        if (entityKinds != null)
+        {
+            CommaSeparatedListBuilder builder = new CommaSeparatedListBuilder();
+            for (EntityKind kind : entityKinds)
+            {
+                builder.append(kind.toString());
+            }
+            entityKind = builder.toString();
+        }
+        return entityKind;
+    }
+
+    private void appendFileFormatTypes(Document doc, Element rootElement)
+    {
+        List<IFileFormatTypeImmutable> fileFormatTypes = masterDataRegistrationTransaction.listFileFormatTypes();
         if (fileFormatTypes.size() > 0)
         {
             Element fileFormatTypesElement = doc.createElement("xmd:fileFormatTypes");
@@ -181,274 +227,221 @@ public class MasterDataExtractor
         }
     }
 
-    private void appendPropertyTypes(Document doc, Element rootElement, List<IPropertyTypeImmutable> propertyTypes)
+    private void appendPropertyTypes(Document doc, Element rootElement)
     {
-        if (propertyTypes.size() > 0)
+        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+        fetchOptions.withMaterialType();
+        fetchOptions.withVocabulary();
+        List<PropertyType> propertyTypes = v3Api.searchPropertyTypes(sessionToken, PROPERTY_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        if (propertyTypes.isEmpty())
         {
-            Element propertyTypesElement = doc.createElement("xmd:propertyTypes");
-            rootElement.appendChild(propertyTypesElement);
-            for (IPropertyTypeImmutable propertyTypeImmutable : propertyTypes)
-            {
-                String code =
-                        (propertyTypeImmutable.isInternalNamespace()
-                                && propertyTypeImmutable.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX))
-                                        ? CodeConverter.tryToDatabase(propertyTypeImmutable
-                                                .getCode())
-                                        : propertyTypeImmutable.getCode();
-                Element propertyTypeElement = doc.createElement("xmd:propertyType");
-                propertyTypeElement.setAttribute("code", code);
-                propertyTypeElement.setAttribute("label", propertyTypeImmutable.getLabel());
-                propertyTypeElement.setAttribute("dataType", propertyTypeImmutable.getDataType().name());
-                propertyTypeElement.setAttribute("internalNamespace", String.valueOf(propertyTypeImmutable.isInternalNamespace()));
-                propertyTypeElement.setAttribute("managedInternally", String.valueOf(propertyTypeImmutable.isManagedInternally()));
-                propertyTypeElement.setAttribute("description", propertyTypeImmutable.getDescription());
-                if (propertyTypeImmutable.getDataType().name().equals(DataType.CONTROLLEDVOCABULARY.name()))
-                {
-                    propertyTypeElement.setAttribute("vocabulary", propertyTypeImmutable.getVocabulary().getCode());
-                } else if (propertyTypeImmutable.getDataType().name().equals(DataType.MATERIAL.name()))
-                {
-                    if (propertyTypeImmutable.getMaterialType() != null)
-                    {
-                        propertyTypeElement.setAttribute("material", propertyTypeImmutable.getMaterialType().getCode());
-                    } else
-                    {
-                        // for properties like "inhibitor_of" where it is of Material of Any Type
-                        propertyTypeElement.setAttribute("material", "");
-                    }
-                }
-                propertyTypesElement.appendChild(propertyTypeElement);
-            }
+            return;
         }
-    }
-
-    private void appendVocabularies(Document doc, Element rootElement, List<IVocabularyImmutable> vocabularies)
-    {
-        if (vocabularies.size() > 0)
+        Element propertyTypesElement = doc.createElement("xmd:propertyTypes");
+        rootElement.appendChild(propertyTypesElement);
+        for (PropertyType propertyType : propertyTypes)
         {
-            Element vocabsElement = doc.createElement("xmd:controlledVocabularies");
-            rootElement.appendChild(vocabsElement);
-            for (IVocabularyImmutable vocabImmutable : vocabularies)
+            Boolean internalNameSpace = propertyType.isInternalNameSpace();
+            String code =
+                    (internalNameSpace && propertyType.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX))
+                            ? CodeConverter.tryToDatabase(propertyType.getCode())
+                            : propertyType.getCode();
+            Element typeElement = doc.createElement("xmd:propertyType");
+            typeElement.setAttribute("code", code);
+            typeElement.setAttribute("label", propertyType.getLabel());
+            typeElement.setAttribute("dataType", propertyType.getDataType().name());
+            typeElement.setAttribute("internalNamespace", String.valueOf(internalNameSpace));
+            typeElement.setAttribute("managedInternally", String.valueOf(propertyType.isManagedInternally()));
+            typeElement.setAttribute("description", propertyType.getDescription());
+            if (propertyType.getDataType().name().equals(DataType.CONTROLLEDVOCABULARY.name()))
             {
-                Element vocabElement = doc.createElement("xmd:controlledVocabulary");
-                String code = vocabImmutable.isInternalNamespace()
-                        && vocabImmutable.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX) ? CodeConverter.tryToDatabase(vocabImmutable.getCode())
-                                : vocabImmutable.getCode();
-                vocabElement.setAttribute("code", code);
-                vocabElement.setAttribute("description", vocabImmutable.getDescription());
-                vocabElement.setAttribute("urlTemplate", vocabImmutable.getUrlTemplate());
-                vocabElement.setAttribute("managedInternally", String.valueOf(vocabImmutable.isManagedInternally()));
-                vocabElement.setAttribute("internalNamespace", String.valueOf(vocabImmutable.isInternalNamespace()));
-                vocabElement.setAttribute("chosenFromList", String.valueOf(vocabImmutable.isChosenFromList()));
-                vocabsElement.appendChild(vocabElement);
-
-                List<IVocabularyTermImmutable> terms = vocabImmutable.getTerms();
-                for (IVocabularyTermImmutable vocabTermImmutable : terms)
+                typeElement.setAttribute("vocabulary", propertyType.getVocabulary().getCode());
+            } else if (propertyType.getDataType().name().equals(DataType.MATERIAL.name()))
+            {
+                if (propertyType.getMaterialType() != null)
                 {
-                    Element termElement = doc.createElement("term");
-                    termElement.setAttribute("code", vocabTermImmutable.getCode());
-                    termElement.setAttribute("label", vocabTermImmutable.getLabel());
-                    termElement.setAttribute("description", vocabTermImmutable.getDescription());
-                    termElement.setAttribute("ordinal", String.valueOf(vocabTermImmutable.getOrdinal()));
-                    termElement.setAttribute("url", vocabTermImmutable.getUrl());
-                    vocabElement.appendChild(termElement);
+                    typeElement.setAttribute("material", propertyType.getMaterialType().getCode());
+                } else
+                {
+                    // for properties like "inhibitor_of" where it is of Material of Any Type
+                    typeElement.setAttribute("material", "");
                 }
             }
+            propertyTypesElement.appendChild(typeElement);
         }
     }
 
-    private void appendMaterialTypes(Document doc, Element rootElement, List<IMaterialTypeImmutable> materialTypes)
+    private void appendVocabularies(Document doc, Element rootElement)
     {
-        if (materialTypes.size() > 0)
+        VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
+        fetchOptions.withTerms();
+        List<Vocabulary> vocabularies = v3Api.searchVocabularies(sessionToken, VOCABULARY_SEARCH_CRITERIA, fetchOptions).getObjects();
+        if (vocabularies.isEmpty())
         {
-            Element materialTypesElement = doc.createElement("xmd:materialTypes");
-            rootElement.appendChild(materialTypesElement);
-            Map<String, List<PropertyAssignment>> materialTypeCodePropAssignmentMap = loadMaterialTypesUsingV3WithPropertyAssignments();
-            for (IMaterialTypeImmutable matType : materialTypes)
+            return;
+        }
+        Element vocabsElement = doc.createElement("xmd:controlledVocabularies");
+        rootElement.appendChild(vocabsElement);
+        for (Vocabulary vocabulary : vocabularies)
+        {
+            Element vocabElement = doc.createElement("xmd:controlledVocabulary");
+            String code = vocabulary.isInternalNameSpace()
+                    && vocabulary.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX) ? CodeConverter.tryToDatabase(vocabulary.getCode())
+                            : vocabulary.getCode();
+            vocabElement.setAttribute("code", code);
+            vocabElement.setAttribute("description", vocabulary.getDescription());
+            String urlTemplate = vocabulary.getUrlTemplate();
+            vocabElement.setAttribute("urlTemplate", urlTemplate);
+            vocabElement.setAttribute("managedInternally", String.valueOf(vocabulary.isManagedInternally()));
+            vocabElement.setAttribute("internalNamespace", String.valueOf(vocabulary.isInternalNameSpace()));
+            vocabElement.setAttribute("chosenFromList", String.valueOf(vocabulary.isChosenFromList()));
+            vocabsElement.appendChild(vocabElement);
+
+            for (VocabularyTerm term : vocabulary.getTerms())
             {
-                Element matTypeElement = getEntityTypeXML(doc, matType, "xmd:materialType");
-                matTypeElement.setAttribute("description", matType.getDescription());
-                matTypeElement.setAttribute("validationPlugin", matType.getValidationScript() != null ? matType.getValidationScript().getName() : "");
-                materialTypesElement.appendChild(matTypeElement);
-                Element propertyAssignmentsElement = getPropertyAssignmentXML(doc, materialTypeCodePropAssignmentMap.get(matType.getCode()));
-                matTypeElement.appendChild(propertyAssignmentsElement);
+                Element termElement = doc.createElement("term");
+                termElement.setAttribute("code", term.getCode());
+                termElement.setAttribute("label", term.getLabel());
+                termElement.setAttribute("description", term.getDescription());
+                termElement.setAttribute("ordinal", String.valueOf(term.getOrdinal()));
+                termElement.setAttribute("url", createUrl(urlTemplate, term.getCode()));
+                vocabElement.appendChild(termElement);
             }
         }
     }
 
-    private void appendDataSetTypes(Document doc, Element rootElement, List<IDataSetTypeImmutable> dataSetTypes)
+    private String createUrl(String urlTemplate, String code)
     {
-        if (dataSetTypes.size() > 0)
+        if (urlTemplate == null)
         {
-            Element dataSetTypesElement = doc.createElement("xmd:dataSetTypes");
-            rootElement.appendChild(dataSetTypesElement);
-            Map<String, List<PropertyAssignment>> dsTypeCodePropAssignmentMap = loadDataSetTypesUsingV3WithPropertyAssignments();
-            for (IDataSetTypeImmutable dsType : dataSetTypes)
-            {
-                Element dsTypeElement = getEntityTypeXML(doc, dsType, "xmd:dataSetType");
-                dsTypeElement.setAttribute("description", dsType.getDescription());
-                dsTypeElement.setAttribute("mainDataSetPattern", dsType.getMainDataSetPattern());
-                dsTypeElement.setAttribute("mainDataSetPath", dsType.getMainDataSetPath());
-                dsTypeElement.setAttribute("deletionDisallowed", String.valueOf(dsType.isDeletionDisallowed()));
-                dsTypeElement.setAttribute("validationPlugin", dsType.getValidationScript() != null ? dsType.getValidationScript().getName() : "");
-                dataSetTypesElement.appendChild(dsTypeElement);
-                Element propertyAssignmentsElement = getPropertyAssignmentXML(doc, dsTypeCodePropAssignmentMap.get(dsType.getCode()));
-                dsTypeElement.appendChild(propertyAssignmentsElement);
-            }
+            return null;
+        }
+        String url = urlTemplate.replaceAll(BasicConstant.DEPRECATED_VOCABULARY_URL_TEMPLATE_TERM_PATTERN, code);
+        return url.replaceAll(BasicConstant.VOCABULARY_URL_TEMPLATE_TERM_PATTERN, code);
+    }
+
+    private void appendMaterialTypes(Document doc, Element rootElement)
+    {
+        MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().withPropertyType();
+        fetchOptions.withPropertyAssignments().withPlugin();
+        fetchOptions.withValidationPlugin();
+        List<MaterialType> types = v3Api.searchMaterialTypes(sessionToken, MATERIAL_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        if (types.isEmpty())
+        {
+            return;
+        }
+        Element typesElement = doc.createElement("xmd:materialTypes");
+        rootElement.appendChild(typesElement);
+        for (MaterialType type : types)
+        {
+            Element typeElement = createTypeElement(doc, typesElement, "xmd:materialType", type);
+            typeElement.setAttribute("validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
         }
     }
 
-    private void appendExperimentTypes(Document doc, Element rootElement, List<IExperimentTypeImmutable> experimentTypes)
+    private void appendExperimentTypes(Document doc, Element rootElement)
     {
-        if (experimentTypes.size() > 0)
+        ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().withPropertyType();
+        fetchOptions.withPropertyAssignments().withPlugin();
+        fetchOptions.withValidationPlugin();
+        List<ExperimentType> types = v3Api.searchExperimentTypes(sessionToken, EXPERIMENT_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        if (types.isEmpty())
         {
-            Element experimentTypesElement = doc.createElement("xmd:collectionTypes");
-            rootElement.appendChild(experimentTypesElement);
-            Map<String, List<PropertyAssignment>> expTypeCodePropAssignmentMap = loadExperimentTypesUsingV3WithPropertyAssignments();
-            for (IExperimentTypeImmutable expType : experimentTypes)
-            {
-                Element experimentTypeElement = getEntityTypeXML(doc, expType, "xmd:collectionType");
-                experimentTypeElement.setAttribute("description", expType.getDescription());
-                experimentTypesElement.setAttribute("validationPlugin",
-                        expType.getValidationScript() != null ? expType.getValidationScript().getName() : "");
-                experimentTypesElement.appendChild(experimentTypeElement);
-                Element propertyAssignmentsElement = getPropertyAssignmentXML(doc, expTypeCodePropAssignmentMap.get(expType.getCode()));
-                experimentTypeElement.appendChild(propertyAssignmentsElement);
-            }
+            return;
+        }
+        Element typesElement = doc.createElement("xmd:collectionTypes");
+        rootElement.appendChild(typesElement);
+        for (ExperimentType type : types)
+        {
+            Element typeElement = createTypeElement(doc, typesElement, "xmd:collectionType", type);
+            typeElement.setAttribute("validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
         }
     }
 
-    private void appendSampleTypes(Document doc, Element rootElement, List<ISampleTypeImmutable> sampleTypes)
+    private void appendSampleTypes(Document doc, Element rootElement)
     {
-        if (sampleTypes.size() > 0)
+        SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().withPropertyType();
+        fetchOptions.withPropertyAssignments().withPlugin();
+        fetchOptions.withValidationPlugin();
+        List<SampleType> types = v3Api.searchSampleTypes(sessionToken, SAMPLE_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        if (types.isEmpty())
         {
-            Element sampleTypesElement = doc.createElement("xmd:objectTypes");
-            rootElement.appendChild(sampleTypesElement);
-
-            Map<String, List<PropertyAssignment>> sampleTypeCodePropAssignmentMap = loadSampleTypesUsingV3WithPropertyAssignments();
-            for (ISampleTypeImmutable sampleType : sampleTypes)
-            {
-                Element sampleTypeElement = getEntityTypeXML(doc, sampleType, "xmd:objectType");
-                sampleTypeElement.setAttribute("description", sampleType.getDescription());
-                sampleTypeElement.setAttribute("listable", String.valueOf(sampleType.isListable()));
-                sampleTypeElement.setAttribute("showContainer", String.valueOf(sampleType.isShowContainer()));
-                sampleTypeElement.setAttribute("showParents", String.valueOf(sampleType.isShowParents()));
-                sampleTypeElement.setAttribute("showParentMetadata", String.valueOf(sampleType.isShowParentMetadata()));
-                sampleTypeElement.setAttribute("subcodeUnique", String.valueOf(sampleType.isSubcodeUnique()));
-                sampleTypeElement.setAttribute("autoGeneratedCode", String.valueOf(sampleType.isAutoGeneratedCode()));
-                sampleTypeElement.setAttribute("generatedCodePrefix", sampleType.getGeneratedCodePrefix());
-                sampleTypeElement.setAttribute("validationPlugin", sampleType.getValidationScript() != null ? sampleType.getValidationScript()
-                        .getName() : "");
-                sampleTypesElement.appendChild(sampleTypeElement);
-                Element propertyAssignmentsElement = getPropertyAssignmentXML(doc, sampleTypeCodePropAssignmentMap.get(sampleType.getCode()));
-                sampleTypeElement.appendChild(propertyAssignmentsElement);
-            }
+            return;
+        }
+        Element typesElement = doc.createElement("xmd:objectTypes");
+        rootElement.appendChild(typesElement);
+        for (SampleType type : types)
+        {
+            Element typeElement = createTypeElement(doc, typesElement, "xmd:objectType", type);
+            typeElement.setAttribute("listable", String.valueOf(type.isListable()));
+            typeElement.setAttribute("showContainer", String.valueOf(type.isShowContainer()));
+            typeElement.setAttribute("showParents", String.valueOf(type.isShowParents()));
+            typeElement.setAttribute("showParentMetadata", String.valueOf(type.isShowParentMetadata()));
+            typeElement.setAttribute("subcodeUnique", String.valueOf(type.isSubcodeUnique()));
+            typeElement.setAttribute("autoGeneratedCode", String.valueOf(type.isAutoGeneratedCode()));
+            typeElement.setAttribute("generatedCodePrefix", type.getGeneratedCodePrefix());
+            typeElement.setAttribute("validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
         }
     }
 
-    private <E extends IEntityType> Element getEntityTypeXML(Document doc, E entityType,
-            String elementName)
+    private void appendDataSetTypes(Document doc, Element rootElement)
     {
-        Element typeElement = doc.createElement(elementName);
-        typeElement.setAttribute("code", entityType.getCode());
+        DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().withPropertyType();
+        fetchOptions.withPropertyAssignments().withPlugin();
+        fetchOptions.withValidationPlugin();
+        List<DataSetType> types = v3Api.searchDataSetTypes(sessionToken, DATA_SET_TYPE_SEARCH_CRITERIA, fetchOptions).getObjects();
+        if (types.isEmpty())
+        {
+            return;
+        }
+        Element typesElement = doc.createElement("xmd:dataSetTypes");
+        rootElement.appendChild(typesElement);
+        for (DataSetType type : types)
+        {
+            Element typeElement = createTypeElement(doc, typesElement, "xmd:dataSetType", type);
+            typeElement.setAttribute("mainDataSetPattern", type.getMainDataSetPattern());
+            typeElement.setAttribute("mainDataSetPath", type.getMainDataSetPath());
+            typeElement.setAttribute("deletionDisallowed", String.valueOf(type.isDisallowDeletion()));
+            typeElement.setAttribute("validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+        }
+    }
+
+    private <T extends ICodeHolder & IDescriptionHolder & IPropertyAssignmentsHolder> Element createTypeElement(
+            Document doc, Element rootElement, String elementType, T type)
+    {
+        Element typeElement = doc.createElement(elementType);
+        rootElement.appendChild(typeElement);
+        typeElement.setAttribute("code", type.getCode());
+        typeElement.setAttribute("description", type.getDescription());
+        appendPropertyAssignments(doc, typeElement, type.getPropertyAssignments());
         return typeElement;
     }
 
-    private Element getPropertyAssignmentXML(Document doc, List<PropertyAssignment> propertyAssignments)
+    private void appendPropertyAssignments(Document doc, Element rootElement, List<PropertyAssignment> propertyAssignments)
     {
         Element propertyAssignmentsElement = doc.createElement("xmd:propertyAssignments");
-        for (PropertyAssignment propAssignment : propertyAssignments)
+        rootElement.appendChild(propertyAssignmentsElement);
+        for (PropertyAssignment propertyAssignment : propertyAssignments)
         {
             Element propertyAssignmentElement = doc.createElement("xmd:propertyAssignment");
             propertyAssignmentsElement.appendChild(propertyAssignmentElement);
-            propertyAssignmentElement.setAttribute("propertyTypeCode", propAssignment.getPropertyType().getCode());
-            propertyAssignmentElement.setAttribute("ordinal", String.valueOf(propAssignment.getOrdinal()));
-            propertyAssignmentElement.setAttribute("section", propAssignment.getSection());
-            propertyAssignmentElement.setAttribute("showInEdit", String.valueOf(propAssignment.isShowInEditView()));
-            propertyAssignmentElement.setAttribute("mandatory", String.valueOf(propAssignment.isMandatory()));
-            propertyAssignmentElement.setAttribute("showRawValueInForms", String.valueOf(propAssignment.isShowRawValueInForms()));
-            Plugin plugin = propAssignment.getPlugin();
+            propertyAssignmentElement.setAttribute("propertyTypeCode", propertyAssignment.getPropertyType().getCode());
+            propertyAssignmentElement.setAttribute("ordinal", String.valueOf(propertyAssignment.getOrdinal()));
+            propertyAssignmentElement.setAttribute("section", propertyAssignment.getSection());
+            propertyAssignmentElement.setAttribute("showInEdit", String.valueOf(propertyAssignment.isShowInEditView()));
+            propertyAssignmentElement.setAttribute("mandatory", String.valueOf(propertyAssignment.isMandatory()));
+            propertyAssignmentElement.setAttribute("showRawValueInForms", String.valueOf(propertyAssignment.isShowRawValueInForms()));
+            Plugin plugin = propertyAssignment.getPlugin();
             if (plugin != null)
             {
                 propertyAssignmentElement.setAttribute("plugin", plugin.getPermId().getPermId());
                 propertyAssignmentElement.setAttribute("pluginType", plugin.getPluginType().toString());
             }
         }
-        return propertyAssignmentsElement;
     }
 
-    private Map<String, List<PropertyAssignment>> loadDataSetTypesUsingV3WithPropertyAssignments()
-    {
-        // We are mixing up v1 and v3 here because using v3 api to get property assignments is easier
-        Map<String, List<PropertyAssignment>> dsTypeCodePropAssignmentMap = new HashMap<String, List<PropertyAssignment>>();
-        DataSetTypeSearchCriteria searchCriteria = new DataSetTypeSearchCriteria();
-        DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
-        fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary();
-        fetchOptions.withPropertyAssignments().withPlugin();
-
-        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType> searchResult =
-                v3Api.searchDataSetTypes(sessionToken, searchCriteria, fetchOptions);
-        List<ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType> objects = searchResult.getObjects();
-        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType dataSetType : objects)
-        {
-            dsTypeCodePropAssignmentMap.put(dataSetType.getCode(), dataSetType.getPropertyAssignments());
-        }
-        return dsTypeCodePropAssignmentMap;
-    }
-
-    private Map<String, List<PropertyAssignment>> loadSampleTypesUsingV3WithPropertyAssignments()
-    {
-        // We are mixing up v1 and v3 here because using v3 api to get property assignments is easier
-        Map<String, List<PropertyAssignment>> sampleTypeCodePropAssignmentMap = new HashMap<String, List<PropertyAssignment>>();
-        SampleTypeSearchCriteria searchCriteria = new SampleTypeSearchCriteria();
-        SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
-        fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary();
-        fetchOptions.withPropertyAssignments().withPlugin();
-
-        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType> searchResult =
-                v3Api.searchSampleTypes(sessionToken, searchCriteria, fetchOptions);
-        List<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType> objects = searchResult.getObjects();
-        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType sampleType : objects)
-        {
-            sampleTypeCodePropAssignmentMap.put(sampleType.getCode(), sampleType.getPropertyAssignments());
-        }
-        return sampleTypeCodePropAssignmentMap;
-    }
-
-    private Map<String, List<PropertyAssignment>> loadExperimentTypesUsingV3WithPropertyAssignments()
-    {
-        // We are mixing up v1 and v3 here because using v3 api to get property assignments is easier
-        Map<String, List<PropertyAssignment>> expTypeCodePropAssignmentMap = new HashMap<String, List<PropertyAssignment>>();
-        ExperimentTypeSearchCriteria searchCriteria = new ExperimentTypeSearchCriteria();
-        ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
-        fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary();
-        fetchOptions.withPropertyAssignments().withPlugin();
-
-        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType> searchResult =
-                v3Api.searchExperimentTypes(sessionToken, searchCriteria, fetchOptions);
-        List<ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType> objects = searchResult.getObjects();
-        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType experimentType : objects)
-        {
-            expTypeCodePropAssignmentMap.put(experimentType.getCode(), experimentType.getPropertyAssignments());
-        }
-        return expTypeCodePropAssignmentMap;
-    }
-
-    private Map<String, List<PropertyAssignment>> loadMaterialTypesUsingV3WithPropertyAssignments()
-    {
-        // We are mixing up v1 and v3 here because using v3 api to get property assignments is easier
-        Map<String, List<PropertyAssignment>> matTypeCodePropAssignmentMap = new HashMap<String, List<PropertyAssignment>>();
-        MaterialTypeSearchCriteria searchCriteria = new MaterialTypeSearchCriteria();
-        MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
-        fetchOptions.withPropertyAssignments().withPropertyType().withVocabulary();
-        fetchOptions.withPropertyAssignments().withPlugin();
-
-        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType> searchResult =
-                v3Api.searchMaterialTypes(sessionToken, searchCriteria, fetchOptions);
-        List<ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType> objects = searchResult.getObjects();
-        for (ch.ethz.sis.openbis.generic.asapi.v3.dto.material.MaterialType materialType : objects)
-        {
-            matTypeCodePropAssignmentMap.put(materialType.getCode(), materialType.getPropertyAssignments());
-        }
-        return matTypeCodePropAssignmentMap;
-    }
 }

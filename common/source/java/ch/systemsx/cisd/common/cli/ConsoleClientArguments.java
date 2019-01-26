@@ -22,7 +22,7 @@ import java.util.List;
 
 import jline.ConsoleReader;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.args4j.Argument;
 import ch.systemsx.cisd.args4j.Option;

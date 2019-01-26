@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.filesystem.DirectoryScanningTimerTask.IScannedStore;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;

@@ -28,7 +28,7 @@ import java.util.Set;
 import net.lemnik.eodsql.DataIterator;
 
 import org.apache.commons.collections4.Predicate;
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialBO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;

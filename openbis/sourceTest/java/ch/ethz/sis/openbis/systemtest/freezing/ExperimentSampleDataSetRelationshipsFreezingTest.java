@@ -112,7 +112,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     {
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsSample =
-                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponents().createAllCombinations();
         return asCartesianProduct(combinationsDataSet, combinationsSample, combinationsSample);
     }
 
@@ -165,7 +165,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     {
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsLiquidSample =
-                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponents().createAllCombinations();
         List<FrozenFlags> combinationsFrozenSample = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
         return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenSample, combinationsLiquidSample),
                 asCartesianProduct(combinationsDataSet, combinationsLiquidSample, combinationsFrozenSample),
@@ -249,7 +249,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     {
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsLiquidExperiment =
-                new FrozenFlags(true).freezeForSample().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForSample().freezeForComponents().createAllCombinations();
         List<FrozenFlags> combinationsFrozenExperiment = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
         return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsLiquidExperiment),
                 asCartesianProduct(combinationsDataSet, combinationsLiquidExperiment, combinationsFrozenExperiment),
@@ -284,7 +284,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsExperiment = new FrozenFlags(true).freezeForSample().createAllCombinations();
         List<FrozenFlags> combinationsSample =
-                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponents().createAllCombinations();
         return asCartesianProduct(combinationsDataSet, combinationsExperiment, combinationsSample);
     }
 
@@ -340,10 +340,10 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     {
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsLiquidExperiment =
-                new FrozenFlags(true).freezeForSample().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForSample().freezeForComponents().createAllCombinations();
         List<FrozenFlags> combinationsFrozenExperiment = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
         List<FrozenFlags> combinationsLiquidSample =
-                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponents().createAllCombinations();
         List<FrozenFlags> combinationsFrozenSample = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
 
         return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsLiquidSample),
@@ -369,7 +369,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     @DataProvider(name = "liquidSample")
     public static Object[][] liquidSample()
     {
-        List<FrozenFlags> combinationsForLiquidSample = new FrozenFlags(true).freezeForComponent().freezeForChildren()
+        List<FrozenFlags> combinationsForLiquidSample = new FrozenFlags(true).freezeForComponents().freezeForChildren()
                 .freezeForParents().createAllCombinations();
         combinationsForLiquidSample.add(new FrozenFlags(false).freezeForDataSet());
         return asCartesianProduct(combinationsForLiquidSample);
@@ -394,7 +394,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     public void testInvalidAddDataSetToSampleAfterMelting()
     {
         // Given
-        FrozenFlags frozenFlags = new FrozenFlags(true).freezeForComponent().freezeForChildren().freezeForParents();
+        FrozenFlags frozenFlags = new FrozenFlags(true).freezeForComponents().freezeForChildren().freezeForParents();
         setFrozenFlagsForSamples(frozenFlags, sample1);
         setFrozenFlagsForSamples(frozenFlags.clone().melt(), sample1);
         DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");

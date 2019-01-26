@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;

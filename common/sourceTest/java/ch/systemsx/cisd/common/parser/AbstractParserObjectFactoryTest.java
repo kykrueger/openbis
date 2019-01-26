@@ -19,7 +19,7 @@ package ch.systemsx.cisd.common.parser;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.fail;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
