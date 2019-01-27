@@ -15,12 +15,15 @@ describe('reducer', () => {
 
 describe('reducer', () => {
   it('should add and select entity', () => {
-    const entityPermId = 0
-    const action = actions.selectEntity(entityPermId)
+    const entity = {
+      permId: 0,
+      type: 'A'
+    }
+    const action = actions.selectEntity(entity.permId, entity.type)
     const state = reducer(initialState, action)
     expect(state.database.openEntities).toEqual({
-      entities: [entityPermId],
-      selectedEntity: entityPermId,
+      entities: [entity],
+      selectedEntity: entity
     })
   })
 })
@@ -30,16 +33,16 @@ describe('reducer', () => {
     const beforeState = Object.assign({}, initialState, {
       database: {
         openEntities: {
-          entities: [0, 1, 2],
-          selectedEntity: 1
+          entities: [{permId: 0, type: 'A'}, {permId: 1, type: 'A'}, {permId: 1, type: 'B'}, {permId: 2, type: 'B'}],
+          selectedEntity: {permId: 1, type: 'B'}
         }
       }
     })
-    const action = actions.closeEntity(1)
+    const action = actions.closeEntity(1, 'B')
     const state = reducer(beforeState, action)
     expect(state.database.openEntities).toEqual({
-      entities: [0, 2],
-      selectedEntity: 2,
+      entities: [{permId: 0, type: 'A'}, {permId: 1, type: 'A'}, {permId: 2, type: 'B'}],
+      selectedEntity: {permId: 2, type: 'B'},
     })
   })
 })

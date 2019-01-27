@@ -1,5 +1,13 @@
 import initialState from '../initialstate.js'
-import {browserExpandNode, browserCollapseNode, sortById, openEntities, dirtyEntities} from '../common/reducer'
+import {
+  browserExpandNode,
+  browserCollapseNode,
+  sortBy,
+  openEntities,
+  dirtyEntities,
+  emptyTreeNode,
+  entityTreeNode
+} from '../common/reducer'
 
 export default function users(users = initialState.users, action) {
   return {
@@ -50,37 +58,21 @@ function browserSetModeDoneUserNodes(users, groups) {
     let groupNodes = []
 
     userGroups.forEach(group => {
-      groupNodes.push({
-        id: group.getPermId().getPermId(),
-        permId: group.getPermId().getPermId(),
-        expanded: false,
-        loading: false,
-        loaded: true,
-        children: []
-      })
+      groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true}))
     })
 
-    sortById(groupNodes)
+    sortBy(groupNodes, 'permId')
 
-    userNodes.push({
-      id: user.getPermId().getPermId(),
-      permId: user.getPermId().getPermId(),
-      expanded: false,
-      loading: false,
-      loaded: true,
-      children: groupNodes
-    })
+    userNodes.push(entityTreeNode(user, {loaded: true, selectable: true, children: groupNodes}))
   })
 
-  sortById(userNodes)
+  sortBy(userNodes, 'permId')
 
-  return {
+  return emptyTreeNode({
     id: 'Users',
-    expanded: false,
-    loading: false,
     loaded: true,
     children: userNodes
-  }
+  })
 }
 
 function browserSetModeDoneGroupNodes(groups) {
@@ -88,33 +80,22 @@ function browserSetModeDoneGroupNodes(groups) {
 
   groups.forEach(group => {
     let userNodes = []
+
     group.getUsers().forEach(user => {
-      userNodes.push({
-        id: user.getPermId().getPermId(),
-        permId: user.getPermId().getPermId(),
-        expanded: false,
-        loading: false,
-        loaded: true,
-        children: []
-      })
+      userNodes.push(entityTreeNode(user, {loaded: true, selectable: true}))
     })
 
-    groupNodes.push({
-      id: group.getPermId().getPermId(),
-      permId: group.getPermId().getPermId(),
-      expanded: false,
-      loading: false,
-      loaded: true,
-      children: userNodes
-    })
+    sortBy(userNodes, 'permId')
+
+    groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true, children: userNodes}))
   })
 
-  return {
+  sortBy(groupNodes, 'permId')
+
+  return emptyTreeNode({
     id: 'Groups',
-    expanded: false,
-    loading: false,
     loaded: true,
     children: groupNodes
-  }
+  })
 }
 

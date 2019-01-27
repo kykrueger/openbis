@@ -6,12 +6,11 @@ import BrowserList from './BrowserList.jsx'
 import actions from '../reducer/actions.js'
 import {getTabState} from '../reducer/selectors.js'
 
-
 function mapDispatchToProps(dispatch) {
   return {
     selectNode: node => {
-      if (node.permId) {
-        dispatch(actions.selectEntity(node.permId))
+      if (node.selectable) {
+        dispatch(actions.selectEntity(node.permId, node.type))
       }
     }
   }
@@ -19,9 +18,10 @@ function mapDispatchToProps(dispatch) {
 
 function mapStateToProps(state) {
   let tabState = getTabState(state)
+  let selectedEntity = tabState.openEntities.selectedEntity
   return {
     nodes: tabState.browser.nodes,
-    selectedNodeId: tabState.openEntities.selectedEntity
+    selectedNodeId: selectedEntity ? selectedEntity.type + '#' + selectedEntity.permId : null
   }
 }
 
@@ -35,7 +35,7 @@ class Browser extends React.Component {
         selectedNodeId={this.props.selectedNodeId}
         onSelect={this.props.selectNode}
         renderNode={node => {
-          return (<ListItemText inset secondary={node.id}/>)
+          return (<ListItemText inset secondary={node.permId || node.id}/>)
         }}
       />
     )

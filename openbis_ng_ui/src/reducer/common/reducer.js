@@ -3,16 +3,24 @@ import _ from 'lodash'
 export function openEntities(openEntities, action) {
   switch (action.type) {
   case 'SELECT-ENTITY': {
+    const actionEntity = {
+      permId: action.entityPermId,
+      type: action.entityType
+    }
     const entities = openEntities.entities
     return {
-      entities: entities.indexOf(action.entityPermId) > -1 ? entities : [].concat(entities, [action.entityPermId]),
-      selectedEntity: action.entityPermId,
+      entities: _.findIndex(entities, actionEntity) > -1 ? entities : [].concat(entities, [actionEntity]),
+      selectedEntity: actionEntity,
     }
   }
   case 'CLOSE-ENTITY': {
-    const newOpenEntities = openEntities.entities.filter(e => e !== action.entityPermId)
-    if (openEntities.selectedEntity === action.entityPermId) {
-      const oldIndex = openEntities.entities.indexOf(action.entityPermId)
+    const actionEntity = {
+      permId: action.entityPermId,
+      type: action.entityType
+    }
+    const newOpenEntities = openEntities.entities.filter(entity => !_.isEqual(entity, actionEntity))
+    if (_.isEqual(openEntities.selectedEntity, actionEntity)) {
+      const oldIndex = _.findIndex(openEntities.entities, actionEntity)
       const newIndex = oldIndex === newOpenEntities.length ? oldIndex - 1 : oldIndex
       const selectedEntity = newIndex > -1 ? newOpenEntities[newIndex] : null
       return {
@@ -73,6 +81,27 @@ export function browserCollapseNode(browser, action) {
   return newBrowser
 }
 
+export function emptyTreeNode(values = {}) {
+  return _.merge({
+    id: null,
+    permId: null,
+    type: null,
+    selectable: false,
+    expanded: false,
+    loading: false,
+    loaded: false,
+    children: [],
+  }, values)
+}
+
+export function entityTreeNode(entity, values = {}) {
+  return _.merge(emptyTreeNode(), {
+    id: entity['@type'] + '#' + entity.permId.permId,
+    permId: entity.permId.permId,
+    type: entity['@type'],
+  }, values)
+}
+
 export const visitNodes = (nodes, visitor) => {
   let toVisit = []
   let visited = {}
@@ -99,8 +128,8 @@ export const visitNodes = (nodes, visitor) => {
 }
 
 
-export const sortById = (arr) => {
+export const sortBy = (arr, field) => {
   arr.sort((i1, i2) => {
-    return i1.id.localeCompare(i2.id)
+    return i1[field].localeCompare(i2[field])
   })
 }

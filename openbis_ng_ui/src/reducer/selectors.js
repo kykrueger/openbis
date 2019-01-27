@@ -12,11 +12,11 @@ export function getTabState(state) {
   }
 }
 
-export function getTabEntity(state, permId) {
+export function getTabEntity(state, entity) {
   switch (state.mode) {
   case 'DATABASE':
     let tabState = getTabState(state)
-    return tabState.spaces[permId]
+    return tabState.spaces[entity.permId]
   default:
     return null
   }

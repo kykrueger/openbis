@@ -1,5 +1,13 @@
 import initialState from '../initialstate.js'
-import {browserExpandNode, browserCollapseNode, openEntities, dirtyEntities, sortById} from '../common/reducer'
+import {
+  browserExpandNode,
+  browserCollapseNode,
+  openEntities,
+  dirtyEntities,
+  sortBy,
+  emptyTreeNode,
+  entityTreeNode
+} from '../common/reducer'
 
 export default function types(types = initialState.types, action) {
   return {
@@ -42,23 +50,10 @@ function browserSetModeDoneTypeNodes(groupId, types) {
   let typeNodes = []
 
   types.forEach(type => {
-    typeNodes.push({
-      id: type.getPermId().getPermId(),
-      permId: type.getPermId().getPermId(),
-      expanded: false,
-      loading: false,
-      loaded: true,
-      children: []
-    })
+    typeNodes.push(entityTreeNode(type, {loaded: true, selectable: true}))
   })
 
-  sortById(typeNodes)
+  sortBy(typeNodes, 'permId')
 
-  return {
-    id: groupId,
-    expanded: false,
-    loading: false,
-    loaded: true,
-    children: typeNodes
-  }
+  return emptyTreeNode({id: groupId, loaded: true, children: typeNodes})
 }

@@ -14,10 +14,10 @@ import {getTabState, getTabEntity} from '../reducer/selectors.js'
 
 function mapDispatchToProps(dispatch) {
   return {
-    selectEntity: (entityPermId) => dispatch(actions.selectEntity(entityPermId)),
-    closeEntity: (e, entityPermId) => {
+    selectEntity: (entityPermId, entityTypeId) => dispatch(actions.selectEntity(entityPermId, entityTypeId)),
+    closeEntity: (e, entityPermId, entityTypeId) => {
       e.stopPropagation()
-      dispatch(actions.closeEntity(entityPermId))
+      dispatch(actions.closeEntity(entityPermId, entityTypeId))
     }
   }
 }
@@ -27,7 +27,7 @@ function mapStateToProps(state) {
   let tabState = getTabState(state)
   return {
     openEntities: tabState.openEntities.entities
-      .map(permId => getTabEntity(state, permId))
+      .map(entity => getTabEntity(state, entity))
       .filter(entity => entity),
     selectedEntity: tabState.openEntities.selectedEntity,
     dirtyEntities: tabState.dirtyEntities,
@@ -43,7 +43,7 @@ class TabPanel extends React.Component {
     }
 
     return (
-      <TabContainer selectedKey={this.props.selectedEntity}>
+      <TabContainer selectedKey={this.props.selectedEntity.permId}>
         {
           this.props.openEntities.map(entity => {
             return (
@@ -52,10 +52,10 @@ class TabPanel extends React.Component {
                 name={entity.code}
                 dirty={this.props.dirtyEntities.indexOf(entity.permId.permId) > -1}
                 onSelect={() => {
-                  this.props.selectEntity(entity.permId.permId)
+                  this.props.selectEntity(entity.permId.permId, entity['@type'])
                 }}
                 onClose={(e) => {
-                  this.props.closeEntity(e, entity.permId.permId)
+                  this.props.closeEntity(e, entity.permId.permId, entity['@type'])
                 }}
               >
                 <EntityDetails

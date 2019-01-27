@@ -58,7 +58,7 @@ function* logout() {
 }
 
 function* selectSpace(action) {
-  yield put(actions.selectEntity(action.spaces[0].permId.permId))
+  yield put(actions.selectEntity(action.spaces[0].permId.permId, action.spaces[0]['@type']))
 }
 
 function* saveEntity(action) {
@@ -76,9 +76,9 @@ function* expandNode(action) {
     const node = action.node
     if (node.loaded === false) {
       if (node.type === 'as.dto.space.Space') {
-        const result = yield openbis.searchProjects(node.id)
+        const result = yield openbis.searchProjects(node.permId)
         const projects = result.getObjects()
-        yield put(actions.setProjects(projects, node.id))
+        yield put(actions.setProjects(projects, node.permId))
       }
     }
   })

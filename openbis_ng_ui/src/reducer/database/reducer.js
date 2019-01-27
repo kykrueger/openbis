@@ -1,6 +1,6 @@
 import initialState from '../initialstate.js'
 import merge from 'lodash/merge'
-import {openEntities, dirtyEntities} from '../common/reducer.js'
+import {openEntities, dirtyEntities, entityTreeNode} from '../common/reducer.js'
 
 function filterOf(filter, columns) {
   if (filter == null || filter.length === 0) {
@@ -51,18 +51,6 @@ function replaceNode(nodes, newNode) {
   })
 }
 
-function asTreeNode(entity) {
-  return {
-    id: entity.permId.permId,
-    permId: entity.permId.permId,
-    type: entity['@type'],
-    expanded: false,
-    loading: false,
-    loaded: false,
-    children: [],
-  }
-}
-
 function transformData(data, columns, filter, orderColumn, direction) {
   const filtered = data.filter(filterOf(filter, columns))
   if (orderColumn in columns) {
@@ -93,7 +81,7 @@ function entitiesByPermId(entities) {
 }
 
 
-function spaces(spaces = initialState.spaces, action) {
+function spaces(spaces = initialState.database.spaces, action) {
   switch (action.type) {
   case 'SET-SPACES': {
     return entitiesByPermId(action.spaces)
@@ -110,7 +98,7 @@ function spaces(spaces = initialState.spaces, action) {
 }
 
 
-function projects(projects = initialState.projects, action) {
+function projects(projects = initialState.database.projects, action) {
   switch (action.type) {
   case 'SET-PROJECTS': {
     return entitiesByPermId(action.projects)
@@ -122,7 +110,7 @@ function projects(projects = initialState.projects, action) {
 }
 
 
-function table(table = initialState.table, action) {
+function table(table = initialState.database.table, action) {
   switch (action.type) {
   case 'CHANGE-PAGE': {
     return Object.assign({}, table, {page: action.page})
@@ -164,14 +152,12 @@ function browser(browser = initialState.database.browser, action) {
   switch (action.type) {
   case 'SET-SPACES': {
     return {
-      nodes: action.spaces.map(asTreeNode)
+      nodes: action.spaces.map(space => entityTreeNode(space, {selectable: true}))
     }
   }
   case 'SET-PROJECTS': {
-    const oldNode = browser.nodes.filter(node => node.id === action.spacePermId)[0]
-    const projectNodes = action.projects.map(asTreeNode).map(project => {
-      return merge(project, {loaded: true, permId: null})
-    })
+    const oldNode = browser.nodes.filter(node => node.permId === action.spacePermId)[0]
+    const projectNodes = action.projects.map(project => entityTreeNode(project, {loaded: true}))
     const node = merge({}, oldNode, {loading: false, loaded: true, children: projectNodes})
     return {
       nodes: replaceNode(browser.nodes, node)

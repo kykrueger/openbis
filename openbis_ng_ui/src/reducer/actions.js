@@ -26,13 +26,15 @@ export default {
     projects: projects,
     spacePermId: spacePermId
   }),
-  selectEntity: entityPermId => ({
+  selectEntity: (entityPermId, entityType) => ({
     type: 'SELECT-ENTITY',
-    entityPermId: entityPermId
+    entityPermId: entityPermId,
+    entityType: entityType
   }),
-  closeEntity: entityPermId => ({
+  closeEntity: (entityPermId, entityType) => ({
     type: 'CLOSE-ENTITY',
-    entityPermId: entityPermId
+    entityPermId: entityPermId,
+    entityType: entityType
   }),
   changePage: page => ({
     type: 'CHANGE-PAGE',

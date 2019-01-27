@@ -43,8 +43,8 @@ class ModeBar extends React.Component {
             <Tab value="DATABASE" className={classes.browserTab} label="Database"/>
             <Tab value="TYPES" className={classes.browserTab} label="Types"/>
             <Tab value="USERS" className={classes.browserTab} label="Users"/>
-            <Tab value="FAVOURITES" className={classes.browserTab} label="Favourites"/>
-            <Tab value="TOOLS" className={classes.browserTab} label="Tools"/>
+            <Tab value="" className={classes.browserTab} label="Favourites"/>
+            <Tab value="" className={classes.browserTab} label="Tools"/>
           </Tabs>
         </Toolbar>
       </AppBar>

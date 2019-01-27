@@ -63,6 +63,10 @@ function sessionActive(sessionActive = initialState.sessionActive, action) {
 }
 
 function mode(mode = initialState.mode, action) {
+  if (!action.mode) {
+    return mode
+  }
+
   switch (action.type) {
   case 'SET-MODE-DONE' : {
     return action.mode
