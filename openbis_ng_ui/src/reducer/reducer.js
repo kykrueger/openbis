@@ -79,7 +79,7 @@ function reducer(state = initialState, action) {
   return {
     sessionActive: sessionActive(state.sessionActive, action),
     mode: newMode,
-    database: database(state.database, action),
+    database: newMode === 'DATABASE' ? database(state.database, action) : state.database,
     users: newMode === 'USERS' ? users(state.users, action) : state.users,
     types: newMode === 'TYPES' ? types(state.types, action) : state.types,
     loading: loading(state.loading, action),

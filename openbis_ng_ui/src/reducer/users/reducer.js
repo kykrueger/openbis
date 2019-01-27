@@ -4,8 +4,8 @@ import {browserExpandNode, browserCollapseNode, sortById, openEntities, dirtyEnt
 export default function users(users = initialState.users, action) {
   return {
     browser: browser(users.browser, action),
-    openEntities: openEntities(users.openEntities, action) || initialState.users.openEntities,
-    dirtyEntities: dirtyEntities(users.dirtyEntities, action) || initialState.users.dirtyEntities
+    openEntities: openEntities(users.openEntities || initialState.users.openEntities, action),
+    dirtyEntities: dirtyEntities(users.dirtyEntities || initialState.users.dirtyEntities, action)
   }
 }
 
@@ -52,6 +52,7 @@ function browserSetModeDoneUserNodes(users, groups) {
     userGroups.forEach(group => {
       groupNodes.push({
         id: group.getPermId().getPermId(),
+        permId: group.getPermId().getPermId(),
         expanded: false,
         loading: false,
         loaded: true,
@@ -63,6 +64,7 @@ function browserSetModeDoneUserNodes(users, groups) {
 
     userNodes.push({
       id: user.getPermId().getPermId(),
+      permId: user.getPermId().getPermId(),
       expanded: false,
       loading: false,
       loaded: true,
@@ -89,6 +91,7 @@ function browserSetModeDoneGroupNodes(groups) {
     group.getUsers().forEach(user => {
       userNodes.push({
         id: user.getPermId().getPermId(),
+        permId: user.getPermId().getPermId(),
         expanded: false,
         loading: false,
         loaded: true,
@@ -98,6 +101,7 @@ function browserSetModeDoneGroupNodes(groups) {
 
     groupNodes.push({
       id: group.getPermId().getPermId(),
+      permId: group.getPermId().getPermId(),
       expanded: false,
       loading: false,
       loaded: true,

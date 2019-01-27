@@ -27,7 +27,8 @@ function mapStateToProps(state) {
   let tabState = getTabState(state)
   return {
     openEntities: tabState.openEntities.entities
-      .map(permId => getTabEntity(state, permId)),
+      .map(permId => getTabEntity(state, permId))
+      .filter(entity => entity),
     selectedEntity: tabState.openEntities.selectedEntity,
     dirtyEntities: tabState.dirtyEntities,
   }
@@ -40,6 +41,7 @@ class TabPanel extends React.Component {
     if (this.props.openEntities.length === 0) {
       return null
     }
+
     return (
       <TabContainer selectedKey={this.props.selectedEntity}>
         {
