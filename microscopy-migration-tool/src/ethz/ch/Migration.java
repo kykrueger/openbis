@@ -10,8 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -42,12 +46,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 
 public class Migration
 {
     
     private static final String OPENBIS_LOCAL_DEV = "http://localhost:8888";
+    private static final String DSS_LOCAL_DEV = "http://localhost:8889";
 //    private static final String OPENBIS_LOCAL_PROD = "https://localhost:8443";
 //    private static final String OPENBIS_SCU = "https://openbis-scu.ethz.ch";
 //    private static final String OPENBIS_SCU_TEST = "https://bs-lamp09.ethz.ch:8443/";
@@ -60,20 +66,28 @@ public class Migration
     {
         if(args.length == 7) {
             boolean COMMIT_CHANGES_TO_OPENBIS = Boolean.parseBoolean(args[0]);
-            String URL = args[1] + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL;
-            String user = args[2];
-            String pass = args[3];
-            doTheWork(COMMIT_CHANGES_TO_OPENBIS, URL, user, pass, true, true, true);
+            String AS_URL = args[1] + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL;
+            String DSS_URL = args[2] + "/datastore_server" + IDataStoreServerApi.SERVICE_URL;
+            DatasetCreationHelper.setDssURL(args[2]);
+            String user = args[3];
+            String pass = args[4];
+            doTheWork(COMMIT_CHANGES_TO_OPENBIS, AS_URL, DSS_URL, user, pass, true, true, true);
         } else {
             System.out.println("Example: java -jar microscopy_migration_tool.jar https://openbis-domain.ethz.ch user password");
-            doTheWork(true, OPENBIS_LOCAL_DEV + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL, "pontia", "migrationtool", true, true, true);
+            DatasetCreationHelper.setDssURL(DSS_LOCAL_DEV);
+            doTheWork(true, 
+                    OPENBIS_LOCAL_DEV + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL, 
+                    DSS_LOCAL_DEV + "/datastore_server" + IDataStoreServerApi.SERVICE_URL, 
+                    "pontia", "migrationtool", true, true, true);
         }
     }
     
-    private static void doTheWork(boolean COMMIT_CHANGES_TO_OPENBIS, String URL, String userId, String pass, boolean installELNTypes, boolean migrateData, boolean deleteOldExperiments) {
+    private static void doTheWork(boolean COMMIT_CHANGES_TO_OPENBIS, String AS_URL, String DSS_URL, String userId, String pass, boolean installELNTypes, boolean migrateData, boolean deleteOldExperiments) {
         System.out.println("Migration Started");
-        SslCertificateHelper.trustAnyCertificate(URL);
-        IApplicationServerApi v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, URL, TIMEOUT);
+        SslCertificateHelper.trustAnyCertificate(AS_URL);
+        SslCertificateHelper.trustAnyCertificate(DSS_URL);
+        IApplicationServerApi v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, AS_URL, TIMEOUT);
+        IDataStoreServerApi v3dss = HttpInvokerUtils.createServiceStub(IDataStoreServerApi.class, DSS_URL, TIMEOUT);
         String sessionToken = v3.login(userId, pass);
         Map<String, String> serverInfo = v3.getServerInformation(sessionToken);
         
@@ -88,7 +102,7 @@ public class Migration
             MigrationMasterdataHelper.installELNTypes(sessionToken, v3, COMMIT_CHANGES_TO_OPENBIS);
         }
         if(migrateData) {
-            migrate(sessionToken, v3, COMMIT_CHANGES_TO_OPENBIS);
+            migrate(sessionToken, v3, v3dss, COMMIT_CHANGES_TO_OPENBIS);
         }
         if(deleteOldExperiments) {
             deleteMICROSCOPY_EXPERIMENTExperiments(sessionToken, v3, COMMIT_CHANGES_TO_OPENBIS);
@@ -97,12 +111,12 @@ public class Migration
         System.out.println("Migration Finished");
     }
     
-    private static void migrate(String sessionToken, IApplicationServerApi v3, boolean COMMIT_CHANGES_TO_OPENBIS) {
+    private static void migrate(String sessionToken, IApplicationServerApi v3, IDataStoreServerApi v3dss,boolean COMMIT_CHANGES_TO_OPENBIS) {
         
         //
         // 1. Installing new sample types
         //
-        System.out.println("1. Installing new sample types");
+        System.out.println("1. Installing types");
         
         // Install Sample Type MICROSCOPY_EXPERIMENT
         if(COMMIT_CHANGES_TO_OPENBIS && !doSampleTypeExist(v3, sessionToken, "MICROSCOPY_EXPERIMENT")) {
@@ -115,6 +129,12 @@ public class Migration
             v3.createSampleTypes(sessionToken, Collections.singletonList(MigrationMasterdataHelper.getSampleTypeORGANIZATION_UNIT()));
         }
         System.out.println("ORGANIZATION_UNIT Sample Type installed.");
+        
+        if(COMMIT_CHANGES_TO_OPENBIS && !doDataSetTypeExist(v3, sessionToken, "ATTACHMENT")) {
+            v3.createDataSetTypes(sessionToken, Collections.singletonList(MigrationMasterdataHelper.getDataSetTypeATTACHMENT()));
+        }
+        
+        System.out.println("ATTACHMENT DataSet Type installed.");
         
         //
         // 2. Creating new ORGANIZATION_UNITS_COLLECTION and MICROSCOPY_EXPERIMENTS_COLLECTION
@@ -178,6 +198,7 @@ public class Migration
         experimentFetchOptions.withDataSets().withSample();
         experimentFetchOptions.withRegistrator();
         experimentFetchOptions.withModifier();
+        experimentFetchOptions.withAttachments().withContent();
         
         SearchResult<Experiment> experiments = v3.searchExperiments(sessionToken, experimentSearchCriteria, experimentFetchOptions);
         Map<SampleCreation, Experiment> experimentsToMigrateBySampleCreation = new HashMap<>();
@@ -229,6 +250,9 @@ public class Migration
             
             // SQL Audit data update
             AuditDataHelper.addAuditData(sampleIdentifier, experiment);
+            
+            // Save Attachments
+            MigrationAttachmentsHelper.addAttachmentData(experiment);
         }
         
         //
@@ -259,6 +283,21 @@ public class Migration
         
         AuditDataHelper.writeSQLAuditUpdate();
         
+        System.out.println("4.3 Migrate Attachments");
+        
+        Map<String, List<Attachment>> attachments = MigrationAttachmentsHelper.getAttachments();
+        for(String sampleIdentifier :attachments.keySet()) {
+            for(Attachment attachment:attachments.get(sampleIdentifier)) {
+                if(COMMIT_CHANGES_TO_OPENBIS) {
+                    Map<String, String> properties = new HashMap<>();
+                    if(attachment.getDescription() != null) {
+                        properties.put("NOTES", attachment.getDescription());
+                    }
+                    DatasetCreationHelper.createDataset(v3dss, sessionToken, sampleIdentifier, "ATTACHMENT", attachment.getFileName(), attachment.getContent(), properties);
+                }
+            }
+        }
+            
         //
         // 5. Moving Samples out from MICROSCOPY_EXPERIMENT Experiments to MICROSCOPY_EXPERIMENT Samples
         //
@@ -362,6 +401,15 @@ public class Migration
     //
     // Helper functions
     //
+    private static boolean doDataSetTypeExist(IApplicationServerApi v3, String sessionToken, String dataSetTypeCode) {
+        DataSetTypeSearchCriteria criteria = new DataSetTypeSearchCriteria();
+        criteria.withCode().thatEquals(dataSetTypeCode);
+
+        SearchResult<DataSetType> type = v3.searchDataSetTypes(sessionToken, criteria, new DataSetTypeFetchOptions());
+
+        return !type.getObjects().isEmpty();
+    }
+    
     private static boolean doSampleTypeExist(IApplicationServerApi v3, String sessionToken, String sampleTypeCode) {
         SampleTypeSearchCriteria criteria = new SampleTypeSearchCriteria();
         criteria.withCode().thatEquals(sampleTypeCode);

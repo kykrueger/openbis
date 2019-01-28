@@ -1,11 +1,15 @@
 Example: java -jar microscopy_migration_tool.jar https://openbis-domain.ethz.ch user password
 Migration Started
+2019-01-28 15:08:00.063:INFO::main: Logging initialized @756ms to org.eclipse.jetty.util.log.StdErrLog
+2019-01-28 15:08:00.226:WARN:oejusS.config:main: Trusting all certificates configured for SslContextFactory@158da8e[provider=null,keyStore=null,trustStore=null]
+2019-01-28 15:08:00.227:WARN:oejusS.config:main: No Client EndPointIdentificationAlgorithm configured for SslContextFactory@158da8e[provider=null,keyStore=null,trustStore=null]
 Project samples enabled.
 Installing Missing ELN Types.
 ELN Types installed.
-1. Installing new sample types
+1. Installing types
 MICROSCOPY_EXPERIMENT Sample Type installed.
 ORGANIZATION_UNIT Sample Type installed.
+ATTACHMENT DataSet Type installed.
 2. Creating new ORGANIZATION_UNITS_COLLECTION and MICROSCOPY_EXPERIMENTS_COLLECTION
 Space Project Created: /BEERENWINKEL_GROUP/COMMON_ORGANIZATION_UNITS
 Space Experiment Created: /BEERENWINKEL_GROUP/COMMON_ORGANIZATION_UNITS/ORGANIZATION_UNITS_COLLECTION
@@ -484,45 +488,76 @@ Space Experiment Created: /TAY_GROUP/COMMON_ORGANIZATION_UNITS/ORGANIZATION_UNIT
 3. Preparing copy of experiment of type MICROSCOPY_EXPERIMENT to samples of type MICROSCOPY_EXPERIMENT
 Found 253 MICROSCOPY_EXPERIMENT to migrate 
 4. Copy of experiments of type MICROSCOPY_EXPERIMENT to samples of type MICROSCOPY_EXPERIMENT
-Tags readed - 703 tags for 258 entities.
-Tags Found: 2 Tags Missing: 2 Tags Created: 2
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 2 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 2 Tags Missing: 2 Tags Created: 2
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 2 Tags Missing: 2 Tags Created: 2
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 5 Tags Missing: 4 Tags Created: 4
-Tags Found: 2 Tags Missing: 2 Tags Created: 2
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 2 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 2 Tags Missing: 1 Tags Created: 1
-Tags Found: 2 Tags Missing: 1 Tags Created: 1
-Tags Found: 3 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 1 Tags Missing: 1 Tags Created: 1
-Tags Found: 2 Tags Missing: 2 Tags Created: 2
+Tags readed - 85 tags for 64 entities.
+Tags Found: 2 Tags Missing: 2
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 1
+Tags Found: 2 Tags Missing: 1
+Tags Found: 2 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 0
+Tags Found: 2 Tags Missing: 2
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 1
+Tags Found: 2 Tags Missing: 2
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 5 Tags Missing: 4
+Tags Found: 1 Tags Missing: 0
+Tags Found: 2 Tags Missing: 2
+Tags Found: 1 Tags Missing: 1
+Tags Found: 2 Tags Missing: 1
+Tags Found: 2 Tags Missing: 0
+Tags Found: 2 Tags Missing: 0
+Tags Found: 2 Tags Missing: 0
+Tags Found: 1 Tags Missing: 1
+Tags Found: 3 Tags Missing: 0
+Tags Found: 2 Tags Missing: 1
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 2 Tags Missing: 1
+Tags Found: 3 Tags Missing: 1
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 1
+Tags Found: 1 Tags Missing: 0
+Tags Found: 1 Tags Missing: 1
+Tags Found: 2 Tags Missing: 2
 Created 253 MICROSCOPY_EXPERIMENT Samples.
 4.2 Write SQL Audit Update
 Writing openbis_audit_data_update.sql
 openbis_audit_data_update.sql writen.
+4.3 Migrate Attachments
 5. Moving Samples out from MICROSCOPY_EXPERIMENT Experiments to MICROSCOPY_EXPERIMENT Samples
 Moving 15571 Samples from Experiment MICROSCOPY_EXPERIMENT to COLLECTION.
 Updated 1000/15571

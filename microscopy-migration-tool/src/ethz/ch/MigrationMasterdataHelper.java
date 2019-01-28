@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
@@ -35,11 +36,12 @@ public class MigrationMasterdataHelper
     
     public static void createPropertiesIfMissing(String sessionToken, IApplicationServerApi v3) {
         PropertyTypeSearchCriteria propertyTypeSearchCriteria = new PropertyTypeSearchCriteria();
-        propertyTypeSearchCriteria.withCodes().setFieldValue(Arrays.asList("$NAME", "$DEFAULT_OBJECT_TYPE", "$XMLCOMMENTS", "$ANNOTATIONS_STATE"));
+        propertyTypeSearchCriteria.withCodes().setFieldValue(Arrays.asList("$NAME", "NOTES", "$DEFAULT_OBJECT_TYPE", "$XMLCOMMENTS", "$ANNOTATIONS_STATE"));
         propertyTypeSearchCriteria.withOrOperator();
         
         List<PropertyType> propertyTypes = v3.searchPropertyTypes(sessionToken, propertyTypeSearchCriteria, new PropertyTypeFetchOptions()).getObjects();
         boolean name = false;
+        boolean notes = false;
         boolean default_object_type = false;
         boolean xmlcomments = false;
         boolean annotations_state = false;
@@ -47,6 +49,9 @@ public class MigrationMasterdataHelper
         for(PropertyType propertyType:propertyTypes) {
             if(propertyType.getCode().equals("$NAME")) {
                 name = true;
+            }
+            if(propertyType.getCode().equals("NOTES")) {
+                notes = true;
             }
             if(propertyType.getCode().equals("$DEFAULT_OBJECT_TYPE")) {
                 default_object_type = true;
@@ -69,6 +74,15 @@ public class MigrationMasterdataHelper
             NAME.setDataType(DataType.VARCHAR);
             NAME.setInternalNameSpace(true);
             toCreate.add(NAME);
+        }
+        
+        if(!notes) {
+            PropertyTypeCreation NOTES = new PropertyTypeCreation();
+            NOTES.setCode("NOTES");
+            NOTES.setLabel("Notes");
+            NOTES.setDescription("Notes");
+            NOTES.setDataType(DataType.VARCHAR);
+            toCreate.add(NOTES);
         }
         
         if(!default_object_type) {
@@ -127,6 +141,30 @@ public class MigrationMasterdataHelper
         if(!collection) {
             v3.createExperimentTypes(sessionToken, Arrays.asList(creation));
         }
+    }
+    
+    //
+    // NEW TYPE TO MIGRATE ATTACHMENTS
+    //
+    
+    public static DataSetTypeCreation getDataSetTypeATTACHMENT() {
+        PropertyAssignmentCreation NAME = new PropertyAssignmentCreation();
+        NAME.setPropertyTypeId(new PropertyTypePermId("$NAME"));
+        
+        PropertyAssignmentCreation NOTES = new PropertyAssignmentCreation();
+        NOTES.setPropertyTypeId(new PropertyTypePermId("NOTES"));
+        
+        PropertyAssignmentCreation XMLCOMMENTS = new PropertyAssignmentCreation();
+        XMLCOMMENTS.setPropertyTypeId(new PropertyTypePermId("$XMLCOMMENTS"));
+        XMLCOMMENTS.setShowInEditView(Boolean.FALSE);
+        
+        
+        DataSetTypeCreation creation = new DataSetTypeCreation();
+        creation.setCode("ATTACHMENT");
+        creation.setDescription("Used to attach files to entities.");
+        creation.setPropertyAssignments(Arrays.asList(NAME, NOTES, XMLCOMMENTS));
+        
+        return creation;
     }
     
     //
