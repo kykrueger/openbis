@@ -27,10 +27,11 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     var toggleMenuSizeBig = false;
     var DISPLAY_NAME_LENGTH_SHORT = 15;
     var DISPLAY_NAME_LENGTH_LONG = 300;
-    var cutDisplayNameAtLength = DISPLAY_NAME_LENGTH_SHORT; // Fix for long names
+	var cutDisplayNameAtLength = DISPLAY_NAME_LENGTH_SHORT; // Fix for long names
     
     this.repaint = function($container) {
-        var _this = this;
+		var _this = this;
+		this._$container = $container;
         var $widget = $("<div>");
         //
         // Fix Header
@@ -127,8 +128,24 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         			$body.css("-webkit-overflow-scrolling", "touch");
         		}
         });
-        
-        $widget.append($header)
+
+		// sorting
+		var sortOptions = [
+			{
+				sortField: "displayName",
+				description: "Sort by name",
+				icon: "glyphicon-sort-by-alphabet",
+			},
+			{
+				sortField: "registrationDate",
+				description: "Sort by date",
+				icon: "glyphicon-sort-by-order",
+			},
+		];
+		var $sortButtonGroup = this._makeSortButtonGroup(sortOptions);
+		$searchForm.append($sortButtonGroup);
+
+		$widget.append($header)
                .append($body);
 
         $container.empty();
@@ -140,22 +157,59 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         this._sideMenuWidgetModel.menuDOMBody = $body;
         this.repaintTreeMenuDinamic();
     };
-    
-    this.getLinkForNode = function(displayName, menuId, view, viewData) {
+
+	this._makeSortButtonGroup = function(sortOptions) {
+		var buttons = [];
+		for (var i=0; i<sortOptions.length; i++) {
+			var sortOption = sortOptions[i];
+			var $button = this._makeSortButton(sortOption);
+			buttons.push($button);
+		}
+		var $buttonGroup = FormUtil.getButtonGroup(buttons);
+		$buttonGroup.css({
+			position: "absolute",
+			right: "0"
+		});
+		return $buttonGroup;
+	}
+
+	this._makeSortButton = function(sortOption) {
+		var _this = this;
+		var $button = FormUtil.getButtonWithIcon(sortOption.icon, function() {
+			_this._sideMenuWidgetController.setSortField(sortOption.sortField);
+			_this.repaint(_this._$container);
+		}, null, sortOption.description);
+		if (this._sideMenuWidgetModel.sortField == sortOption.sortField) {
+			$button.addClass("active");
+		}
+		return $button;
+	}
+
+	this.getLinkForNode = function(displayName, menuId, view, viewData) {
     	var href = Util.getURLFor(menuId, view, viewData);
     	displayName = String(displayName).replace(/<(?:.|\n)*?>/gm, ''); //Clean any HTML tags
         var $menuItemLink = $("<a>", {"href": href, "class" : "browser-compatible-javascript-link browser-compatible-javascript-link-tree" }).text(displayName);
         return $menuItemLink[0].outerHTML;
     }
-    
-    this.repaintTreeMenuDinamic = function() {
-    		var _this = this;
+
+
+	this.repaintTreeMenuDinamic = function() {
+		var _this = this;
         this._sideMenuWidgetModel.menuDOMBody.empty();
         var $tree = $("<div>", { "id" : "tree" });
-        
-        var sortByDisplayName = function(resultA, resultB) {
-    			return naturalSort(resultA.displayName, resultB.displayName);
-    		}
+
+		var sortItems = function(resultA, resultB) {
+			var sortField = _this._sideMenuWidgetModel.sortField;
+			// default to displayName
+			if (sortField == null || !resultA.hasOwnProperty(sortField) == null || !resultB.hasOwnProperty(sortField)) {
+				sortField = "displayName";
+			}
+			// descending order for registrationDate
+			if (sortField == "registrationDate") {
+				return naturalSort(resultB[sortField], resultA[sortField]);
+			}
+			return naturalSort(resultA[sortField], resultB[sortField]);
+		}
     		
         //
         // Body
@@ -272,16 +326,18 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	    			mainController.serverFacade.searchForSpacesAdvanced(spaceRules, null, function(searchResult) {
     	    			var results = [];
     	    			var spaces = searchResult.objects;
-    	            var nonInventoryNonHiddenSpaces = []; 
+					var nonInventoryNonHiddenSpaces = [];
+					var spacesByCode = {}; 
     	                for (var i = 0; i < spaces.length; i++) {
     	                    var space = spaces[i];
     	                    var isInventorySpace = profile.isInventorySpace(space.code);
     	                    var isHiddenSpace = profile.isHiddenSpace(space.code);
         	                if(!isInventorySpace && (space.code !== HOME_SPACE) && !isHiddenSpace) {
-        	                		nonInventoryNonHiddenSpaces.push(space.code);
+									nonInventoryNonHiddenSpaces.push(space.code);
+									spacesByCode[space.code] = space;
         	                }
     	                }
-    	                
+						
     	                mainController.serverFacade.customELNASAPI({
     	                		"method" : "doSpacesBelongToDisabledUsers",
     	                		"spaceCodes" : nonInventoryNonHiddenSpaces
@@ -300,10 +356,20 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                			
     	                			var normalizedSpaceTitle = Util.getDisplayNameFromCode(spaceCode);
         	                		var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, spaceCode, "showSpacePage", spaceCode);
-        	              		var spaceNode = { displayName: normalizedSpaceTitle, title : spaceLink, entityType: "SPACE", key : spaceCode, folder : true, lazy : true, view : "showSpacePage", viewData: spaceCode };
-        	               		results.push(spaceNode);
+									var spaceNode = {
+										displayName: normalizedSpaceTitle,
+										title : spaceLink,
+										entityType: "SPACE",
+										key : spaceCode,
+										folder : true,
+										lazy : true,
+										view : "showSpacePage",
+										viewData: spaceCode,
+										registrationDate: spacesByCode[spaceCode].registrationDate,
+									};
+									results.push(spaceNode);
     	                		}
-    	                		results.sort(sortByDisplayName);
+    	                		results.sort(sortItems);
     	                		dfd.resolve(results);
     	                });
     	    			});
@@ -324,14 +390,24 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	                if(!isInventorySpace && (space.code === HOME_SPACE) && !isHiddenSpace) {
         	                	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	var spaceLink = _this.getLinkForNode("My Space (" + normalizedSpaceTitle + ")", space.getCode(), "showSpacePage", space.getCode());
-        	                    var spaceNode = { displayName: "My Space (" + normalizedSpaceTitle + ")", title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
+        	                    var spaceNode = {
+									displayName: "My Space (" + normalizedSpaceTitle + ")",
+									title : spaceLink,
+									entityType: "SPACE",
+									key : space.getCode(),
+									folder : true,
+									lazy : true,
+									view : "showSpacePage",
+									viewData: space.getCode(),
+									registrationDate: space.registrationDate,
+								};
         	                    results.push(spaceNode);
         	                }
     	                }
     	                
 	               	results.push({ displayName: "Others", title : "Others", entityType: "LAB_NOTEBOOK_OTHERS", key : "LAB_NOTEBOOK_OTHERS", folder : true, lazy : true, view : "showLabNotebookPage" });
 	               	results.push({ displayName: "Others (disabled)", title : "Others (disabled)", entityType: "LAB_NOTEBOOK_OTHERS_DISABLED", key : "LAB_NOTEBOOK_OTHERS_DISABLED", folder : true, lazy : true, view : "showLabNotebookPage" });
-    	                results.sort(sortByDisplayName);
+    	                results.sort(sortItems);
     	                dfd.resolve(results);
     	    			});
     	    		});
@@ -355,13 +431,23 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         	                	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	
         	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
-        	                    var spaceNode = { displayName: normalizedSpaceTitle, title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
+        	                    var spaceNode = {
+									displayName: normalizedSpaceTitle,
+									title : spaceLink,
+									entityType: "SPACE",
+									key : space.getCode(),
+									folder : true,
+									lazy : true,
+									view : "showSpacePage",
+									viewData: space.getCode(),
+									registrationDate: space.registrationDate,
+								};
         	                    if(!space.getCode().endsWith("STOCK_CATALOG") && !space.getCode().endsWith("STOCK_ORDERS")) {
         	                    		results.push(spaceNode);
         	                    }
         	                }
     	                }
-    	                results.sort(sortByDisplayName);
+    	                results.sort(sortItems);
     	                dfd.resolve(results);
     	    		});
     	    		break;
@@ -375,12 +461,22 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                    if(space.getCode().endsWith("STOCK_CATALOG") || space.getCode().endsWith("STOCK_ORDERS")) {
     	                    	var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.code);
         	                	var spaceLink = _this.getLinkForNode(normalizedSpaceTitle, space.getCode(), "showSpacePage", space.getCode());
-        	                    var spaceNode = { displayName: normalizedSpaceTitle, title : spaceLink, entityType: "SPACE", key : space.getCode(), folder : true, lazy : true, view : "showSpacePage", viewData: space.getCode() };
+        	                    var spaceNode = {
+									displayName: normalizedSpaceTitle,
+									title : spaceLink,
+									entityType: "SPACE",
+									key : space.getCode(),
+									folder : true,
+									lazy : true,
+									view : "showSpacePage",
+									viewData: space.getCode(),
+									registrationDate: space.registrationDate,
+								};
         	                    spaceNode.icon = "fa fa-shopping-cart";
         	                    results.push(spaceNode);
     	                    }
     	                }
-    	                results.sort(sortByDisplayName);
+    	                results.sort(sortItems);
     	                dfd.resolve(results);
     	    		});
     	    		break;
@@ -397,10 +493,20 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                           }
                           var normalizedProjectTitle = Util.getDisplayNameFromCode(project.code);
                           var projectLink = _this.getLinkForNode(normalizedProjectTitle, project.getPermId().getPermId(), "showProjectPageFromPermId", project.getPermId().getPermId());
-                          results.push({ displayName: normalizedProjectTitle, title : projectLink, entityType: "PROJECT", key : project.getPermId().getPermId(), folder : true, lazy : true, view : "showProjectPageFromPermId", viewData: project.getPermId().getPermId() });
+                          results.push({
+							  displayName: normalizedProjectTitle,
+							  title : projectLink,
+							  entityType: "PROJECT",
+							  key : project.getPermId().getPermId(),
+							  folder : true,
+							  lazy : true,
+							  view : "showProjectPageFromPermId",
+							  viewData: project.getPermId().getPermId(),
+							  registrationDate: project.registrationDate,
+							});
                           
                       }
-                      results.sort(sortByDisplayName);
+                      results.sort(sortItems);
                       dfd.resolve(results);
     	    		});
     	    		break;
@@ -427,9 +533,19 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     	                    }
     	                    
     	                    var experimentLink = _this.getLinkForNode(experimentDisplayName, experiment.getPermId().getPermId(), viewToUse, experiment.getIdentifier().getIdentifier());
-    	                    results.push({ displayName: experimentDisplayName, title : experimentLink, entityType: "EXPERIMENT", key : experiment.getPermId().getPermId(), folder : true, lazy : loadSamples, view : viewToUse, viewData: experiment.getIdentifier().getIdentifier() });
+    	                    results.push({
+								displayName: experimentDisplayName,
+								title : experimentLink,
+								entityType: "EXPERIMENT",
+								key : experiment.getPermId().getPermId(),
+								folder : true,
+								lazy : loadSamples,
+								view : viewToUse,
+								viewData: experiment.getIdentifier().getIdentifier(),
+								registrationDate: experiment.registrationDate,
+							});
     	                }
-    	                results.sort(sortByDisplayName);
+    	                results.sort(sortItems);
     	                dfd.resolve(results);
     	    		});
     	    		break;
@@ -472,7 +588,18 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 	        	                    }
 	        	                    
 	        	                    var sampleLink = _this.getLinkForNode(sampleDisplayName, sample.getPermId().getPermId(), "showViewSamplePageFromPermId", sample.getPermId().getPermId());
-	        	                    var sampleNode = { displayName: sampleDisplayName, title : sampleLink, entityType: "SAMPLE", key : sample.getPermId().getPermId(), folder : true, lazy : true, view : "showViewSamplePageFromPermId", viewData: sample.getPermId().getPermId(), icon : "fa fa-flask" };
+	        	                    var sampleNode = {
+										displayName: sampleDisplayName,
+										title : sampleLink,
+										entityType: "SAMPLE",
+										key : sample.getPermId().getPermId(),
+										folder : true,
+										lazy : true,
+										view : "showViewSamplePageFromPermId",
+										viewData: sample.getPermId().getPermId(),
+										icon : "fa fa-flask",
+										registrationDate: sample.registrationDate,
+									};
 	        	                    results.push(sampleNode);
         	                	}
         	                	
@@ -499,11 +626,22 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                     	                    }
                     	                    
                     	                    var datasetLink = _this.getLinkForNode(datasetDisplayName, dataset.getPermId().getPermId(), "showViewDataSetPageFromPermId", dataset.getPermId().getPermId());
-                    	                    results.push({ displayName: datasetDisplayName, title : datasetLink, entityType: "DATASET", key : dataset.getPermId().getPermId(), folder : true, lazy : false, view : "showViewDataSetPageFromPermId", viewData: dataset.getPermId().getPermId(), icon : "fa fa-database" });
+                    	                    results.push({
+												displayName: datasetDisplayName,
+												title : datasetLink,
+												entityType: "DATASET",
+												key : dataset.getPermId().getPermId(),
+												folder : true,
+												lazy : false,
+												view : "showViewDataSetPageFromPermId",
+												viewData: dataset.getPermId().getPermId(),
+												icon : "fa fa-database",
+												registrationDate: dataset.registrationDate,
+											});
                     	                }
                 	                }
                 	            
-                	            results.sort(sortByDisplayName);
+                	            results.sort(sortItems);
                 	    			dfd.resolve(results);
             	                	Util.unblockUI();
                 	    		});
@@ -549,7 +687,18 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 	                    	sampleDisplayName = sample.properties[profile.propertyReplacingCode];
                 	                }
             	    					var sampleLink = _this.getLinkForNode(sampleDisplayName, sample.getPermId().getPermId(), "showViewSamplePageFromPermId", sample.getPermId().getPermId());
-                	                var sampleNode = { displayName: sampleDisplayName, title : sampleLink, entityType: "SAMPLE", key : sample.getPermId().getPermId(), folder : true, lazy : true, view : "showViewSamplePageFromPermId", viewData: sample.getPermId().getPermId(), icon : "fa fa-flask" };
+                	                var sampleNode = {
+										displayName: sampleDisplayName,
+										title : sampleLink,
+										entityType: "SAMPLE",
+										key : sample.getPermId().getPermId(),
+										folder : true,
+										lazy : true,
+										view : "showViewSamplePageFromPermId",
+										viewData: sample.getPermId().getPermId(),
+										icon : "fa fa-flask",
+										registrationDate: sample.registrationDate,
+									};
                 	                results.push(sampleNode);
         	    					}
         	    				}
@@ -571,11 +720,22 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             	                    }
             	                    
             	                    var datasetLink = _this.getLinkForNode(datasetDisplayName, dataset.getPermId().getPermId(), "showViewDataSetPageFromPermId", dataset.getPermId().getPermId());
-            	                    results.push({ displayName: datasetDisplayName, title : datasetLink, entityType: "DATASET", key : dataset.getPermId().getPermId(), folder : true, lazy : false, view : "showViewDataSetPageFromPermId", viewData: dataset.getPermId().getPermId(), icon : "fa fa-database" });
+            	                    results.push({
+										displayName: datasetDisplayName,
+										title : datasetLink,
+										entityType: "DATASET",
+										key : dataset.getPermId().getPermId(),
+										folder : true,
+										lazy : false,
+										view : "showViewDataSetPageFromPermId",
+										viewData: dataset.getPermId().getPermId(),
+										icon : "fa fa-database",
+										registrationDate: dataset.registrationDate,
+									});
             	                }
         	                }
         	                
-        	                results.sort(sortByDisplayName);
+        	                results.sort(sortItems);
         	                dfd.resolve(results);
         	    		});
     	    		});

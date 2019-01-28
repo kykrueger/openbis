@@ -510,7 +510,18 @@ var FormUtil = new function() {
 		$btn.click(clickEvent);
 		return $btn;
 	}
-	
+
+	this.getButtonGroup = function(buttons) {
+		var $buttonGroup = $("<div>", {
+			"class": "btn-group",
+			"role": "group",
+		});
+		for (var i=0; i<buttons.length; i++) {
+			$buttonGroup.append(buttons[i]);
+		}
+		return $buttonGroup;
+	}
+
 	/**
 	 * @param {string} settingLoadedCallback Can be used to avoid flickering. Only called if dontRestoreState is not true.
 	 * @param {string} dontRestoreState Sets the state to collaped and doesn't load it from server.
