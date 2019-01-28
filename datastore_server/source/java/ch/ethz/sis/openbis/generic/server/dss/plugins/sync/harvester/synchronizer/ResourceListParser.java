@@ -235,6 +235,7 @@ public class ResourceListParser
         masterData.setExperimentTypesToProcess(mdParser.getExperimentTypes());
         masterData.setMaterialTypesToProcess(mdParser.getMaterialTypes());
         masterData.setPropertyAssignmentsToProcess(mdParser.getEntityPropertyAssignments());
+        masterData.setExternalDataManagementSystemsToProcess(mdParser.getExternalDataManagementSystems());
     }
 
     private void parseMetaData(String uri, Date lastModificationDate, Node xdNode) throws XPathExpressionException
@@ -300,6 +301,10 @@ public class ResourceListParser
         {
             ds = new NewContainerDataSet();
             ds.setDataSetKind(ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind.CONTAINER);
+        } else if (dsKind.equals(DataSetKind.LINK.toString()))
+        {
+            ds = new NewExternalData();
+            ds.setDataSetKind(ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind.LINK);
         } else if (dsKind.equals(DataSetKind.PHYSICAL.toString()))
         {
             ds = new NewExternalData();
