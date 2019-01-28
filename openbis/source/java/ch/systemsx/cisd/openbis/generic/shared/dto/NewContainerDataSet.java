@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * @author Chandrasekhar Ramakrishnan

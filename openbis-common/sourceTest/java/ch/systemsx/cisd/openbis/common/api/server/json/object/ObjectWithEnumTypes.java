@@ -19,8 +19,8 @@ package ch.systemsx.cisd.openbis.common.api.server.json.object;
 import java.util.EnumMap;
 import java.util.EnumSet;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 import ch.systemsx.cisd.base.annotation.JsonObject;
 

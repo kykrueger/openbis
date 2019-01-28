@@ -18,7 +18,7 @@ package ch.systemsx.cisd.common.servlet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.server.IRemoteHostProvider;
 

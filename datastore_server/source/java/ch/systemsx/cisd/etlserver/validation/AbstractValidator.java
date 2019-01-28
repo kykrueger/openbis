@@ -18,7 +18,7 @@ package ch.systemsx.cisd.etlserver.validation;
 
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 

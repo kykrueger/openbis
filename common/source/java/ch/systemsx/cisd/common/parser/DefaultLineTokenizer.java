@@ -19,8 +19,8 @@ package ch.systemsx.cisd.common.parser;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.apache.commons.lang.text.StrMatcher;
-import org.apache.commons.lang.text.StrTokenizer;
+import org.apache.commons.lang3.text.StrMatcher;
+import org.apache.commons.lang3.text.StrTokenizer;
 
 /**
  * A default <code>ILineTokenizer</code> implementation that parses a line into an array of <code>String</code> objects. This implementation uses

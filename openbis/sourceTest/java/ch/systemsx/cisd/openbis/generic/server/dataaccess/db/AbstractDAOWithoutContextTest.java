@@ -29,7 +29,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;

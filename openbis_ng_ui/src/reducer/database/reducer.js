@@ -1,11 +1,12 @@
 import initialState from '../initialstate.js'
-
+import merge from 'lodash/merge'
+import {openEntities, dirtyEntities, entityTreeNode} from '../common/reducer.js'
 
 function filterOf(filter, columns) {
   if (filter == null || filter.length === 0) {
     return _ => true
-  } else { 
-    return entity => 
+  } else {
+    return entity =>
       Object.keys(columns)
         .map(col => entity[col])
         .map(value => value != null && value.toString().includes(filter))
@@ -30,15 +31,24 @@ function sortOf(orderColumn, direction, columns) {
     if (type === 'int') {
       return direction === 'asc' ? valA - valB : valB - valA
     } else {
-      if (valA < valB){
+      if (valA < valB) {
         return direction === 'asc' ? -1 : 1
       } else if (valA > valB) {
         return direction === 'asc' ? 1 : -1
       } else {
         return 0
-      }    
+      }
     }
   }
+}
+
+function replaceNode(nodes, newNode) {
+  return nodes.map(node => {
+    if (node.id === newNode.id) {
+      return newNode
+    }
+    return node
+  })
 }
 
 function transformData(data, columns, filter, orderColumn, direction) {
@@ -55,7 +65,7 @@ const take = (array, n) => array.slice(0, n)
 const drop = (array, n) => array.slice(n)
 const remove = (array, index) => [...take(array, index), ...drop(array, index + 1)]
 
-function move (array, oldIndex, newIndex) {
+function move(array, oldIndex, newIndex) {
   const value = array[oldIndex]
   const removed = remove(array, oldIndex)
   return concat(take(removed, newIndex), [value], drop(removed, newIndex))
@@ -71,7 +81,7 @@ function entitiesByPermId(entities) {
 }
 
 
-function spaces(spaces = initialState.spaces, action) {
+function spaces(spaces = initialState.database.spaces, action) {
   switch (action.type) {
   case 'SET-SPACES': {
     return entitiesByPermId(action.spaces)
@@ -83,31 +93,33 @@ function spaces(spaces = initialState.spaces, action) {
   }
   default: {
     return spaces
-  }}
+  }
+  }
 }
 
 
-function projects(projects = initialState.projects, action) {
+function projects(projects = initialState.database.projects, action) {
   switch (action.type) {
   case 'SET-PROJECTS': {
-    return  entitiesByPermId(action.projects)
+    return entitiesByPermId(action.projects)
   }
   default: {
     return projects
-  }}
+  }
+  }
 }
 
 
-function table(table = initialState.table, action) {
+function table(table = initialState.database.table, action) {
   switch (action.type) {
   case 'CHANGE-PAGE': {
-    return Object.assign({}, table, { page: action.page })
-  }  
+    return Object.assign({}, table, {page: action.page})
+  }
   case 'SORT-BY': {
     const column = action.column
-    const direction = 
-      column === table.sortColumn 
-        ? table.sortDirection === 'asc' ? 'desc' : 'asc' 
+    const direction =
+      column === table.sortColumn
+        ? table.sortDirection === 'asc' ? 'desc' : 'asc'
         : 'asc'
     return Object.assign({}, table, {
       sortColumn: column,
@@ -132,14 +144,51 @@ function table(table = initialState.table, action) {
   }
   default: {
     return table
-  }}
+  }
+  }
 }
 
+function browser(browser = initialState.database.browser, action) {
+  switch (action.type) {
+  case 'SET-SPACES': {
+    return {
+      nodes: action.spaces.map(space => entityTreeNode(space, {selectable: true}))
+    }
+  }
+  case 'SET-PROJECTS': {
+    const oldNode = browser.nodes.filter(node => node.permId === action.spacePermId)[0]
+    const projectNodes = action.projects.map(project => entityTreeNode(project, {loaded: true}))
+    const node = merge({}, oldNode, {loading: false, loaded: true, children: projectNodes})
+    return {
+      nodes: replaceNode(browser.nodes, node)
+    }
+  }
+  case 'EXPAND-NODE': {
+    const loading = action.node.loaded === false
+    const node = merge({}, action.node, {expanded: true, loading: loading})
+    return {
+      nodes: replaceNode(browser.nodes, node)
+    }
+  }
+  case 'COLLAPSE-NODE': {
+    const node = merge({}, action.node, {expanded: false})
+    return {
+      nodes: replaceNode(browser.nodes, node)
+    }
+  }
+  default: {
+    return browser
+  }
+  }
+}
 
 export default function database(database = initialState.database, action) {
   return {
     spaces: spaces(database.spaces, action),
     projects: projects(database.projects, action),
     table: table(database.table, action),
+    browser: browser(database.browser, action),
+    openEntities: openEntities(database.openEntities || initialState.database.openEntities, action),
+    dirtyEntities: dirtyEntities(database.dirtyEntities || initialState.database.dirtyEntities, action),
   }
 }

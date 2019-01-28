@@ -24,7 +24,7 @@ import java.sql.Types;
 
 import net.lemnik.eodsql.TypeMapper;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 
 /**
  * @author Franz-Josef Elmer

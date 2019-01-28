@@ -1,6 +1,6 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import { connect } from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
+import {connect} from 'react-redux'
 import flow from 'lodash/flow'
 
 import Button from '@material-ui/core/Button'
@@ -57,8 +57,8 @@ class WithLogin extends React.Component {
     })
   }
 
-  keyPress(e){
-    if(e.key === 'Enter'){
+  keyPress(e) {
+    if (e.key === 'Enter') {
       this.login()
     }
   }
@@ -92,7 +92,9 @@ class WithLogin extends React.Component {
                   className={classes.textField}
                   margin="normal"
                   autoFocus={true}
-                  onKeyPress={ (e) => { this.keyPress(e) }}
+                  onKeyPress={(e) => {
+                    this.keyPress(e)
+                  }}
                   onChange={this.handleChange('user')}
                 />
                 <TextField
@@ -102,11 +104,13 @@ class WithLogin extends React.Component {
                   type="password"
                   autoComplete="current-password"
                   margin="normal"
-                  onKeyPress={ (e) => { this.keyPress(e) }}
+                  onKeyPress={(e) => {
+                    this.keyPress(e)
+                  }}
                   onChange={this.handleChange('password')}
                 />
-                <Button 
-                  onClick={ this.login }
+                <Button
+                  onClick={this.login}
                   color="primary"
                   className={classes.button}
                   variant="contained">

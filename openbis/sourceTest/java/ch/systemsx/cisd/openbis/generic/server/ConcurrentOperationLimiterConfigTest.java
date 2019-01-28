@@ -21,7 +21,7 @@ import static org.testng.Assert.assertEquals;
 import java.util.Collections;
 import java.util.Properties;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.testng.annotations.Test;
 
 /**

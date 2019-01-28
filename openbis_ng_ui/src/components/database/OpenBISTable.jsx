@@ -1,6 +1,6 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { withStyles } from '@material-ui/core/styles'
+import {connect} from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -54,21 +54,22 @@ function mapDispatchToProps(dispatch) {
 class OpenBISTable extends React.Component {
 
   render() {
-    const { data, columns, classes, page } = this.props
+    const {data, columns, classes, page} = this.props
     return (
       <Paper className={classes.table}>
         <Table padding='checkbox'>
           <TableHead>
             <TableRow>
               <TableCell className={classes.headerCell} variant='head'/>
-              { Object.entries(columns).map(([column, type]) => 
-                <TableCell key={column} className={classes.headerCell} numeric={type === 'int'} variant='head'>
+              {Object.entries(columns).map(([column, type]) =>
+                <TableCell key={column} className={classes.headerCell} numeric={type === 'int'}
+                           variant='head'>
                   <TableSortLabel
                     className={classes.headerCell}
-                    active={ this.props.sortColumn === column }
-                    direction={ this.props.sortDirection }
-                    onClick={() => this.props.sortBy(column)} >
-                    { column }
+                    active={this.props.sortColumn === column}
+                    direction={this.props.sortDirection}
+                    onClick={() => this.props.sortBy(column)}>
+                    {column}
                   </TableSortLabel>
                 </TableCell>
               )}
@@ -76,27 +77,27 @@ class OpenBISTable extends React.Component {
           </TableHead>
           <TableBody>
             {
-              data.slice(page * 10, page * 10 + 10).map(row => 
-                <OpenBISTableRow key = { row.Id } row = { row } columns = { columns } />
+              data.slice(page * 10, page * 10 + 10).map(row =>
+                <OpenBISTableRow key={row.Id} row={row} columns={columns}/>
               )
             }
           </TableBody>
           <TableFooter className={classes.headerCell}>
             <TableRow>
               <TableCell>
-                <div 
-                  style = {{ cursor: 'pointer' }}>
+                <div
+                  style={{cursor: 'pointer'}}>
                   <SettingsIcon/>
                 </div>
               </TableCell>
               <TableCell colSpan={2}>
                 <TextField
-                  onChange = { e => this.props.setFilter(e.target.value) }
-                  placeholder = "filter rows by value"
+                  onChange={e => this.props.setFilter(e.target.value)}
+                  placeholder="filter rows by value"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start" variant="outlined">
-                        <FilterIcon />
+                        <FilterIcon/>
                       </InputAdornment>
                     ),
                   }}/>
@@ -113,7 +114,7 @@ class OpenBISTable extends React.Component {
         </Table>
       </Paper>
     )
-  }  
+  }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(OpenBISTable))

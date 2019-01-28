@@ -239,6 +239,13 @@ function LinksView(linksController, linksModel) {
 					for(var pIdx = 0; pIdx < annotationProperties.length; pIdx++) {
 						var annotationProperty = annotationProperties[pIdx];
 						var propertyType = profile.getPropertyType(annotationProperty.TYPE);
+						if(!propertyType) {
+							Util.showError("Missing property found in configuration, contact support: " + annotationProperty.TYPE, function() {}, true, false, true, false);
+							propertyType = {
+									code : annotationProperty.TYPE,
+									label : annotationProperty.TYPE
+							}
+						}
 						extraColumns.push(linksView.getCustomField(propertyType));
 					}
 				}

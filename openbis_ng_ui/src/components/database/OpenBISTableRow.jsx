@@ -1,10 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { connect } from 'react-redux'
+import {connect} from 'react-redux'
 import TableCell from '@material-ui/core/TableCell'
 import TableRow from '@material-ui/core/TableRow'
-import { DragSource } from 'react-dnd'
-import { DropTarget } from 'react-dnd'
+import {DragSource} from 'react-dnd'
+import {DropTarget} from 'react-dnd'
 import DragHandle from '@material-ui/icons/DragHandle'
 
 import actions from '../../reducer/actions.js'
@@ -69,21 +69,21 @@ class OpenBISTableRow extends React.Component {
   render() {
     const row = this.props.row
     return (
-      <TableRow 
-        key ={ row.Id }
-        ref = { instance => {
-          this.props.connectDragPreview(ReactDOM.findDOMNode(instance)) 
-          this.props.connectDropTarget(ReactDOM.findDOMNode(instance)) 
+      <TableRow
+        key={row.Id}
+        ref={instance => {
+          this.props.connectDragPreview(ReactDOM.findDOMNode(instance))
+          this.props.connectDropTarget(ReactDOM.findDOMNode(instance))
         }}>
         <TableCell>
-          <div 
-            style = {{ cursor: 'pointer' }}
-            ref = { instance => this.props.connectDragSource(ReactDOM.findDOMNode(instance)) }>
+          <div
+            style={{cursor: 'pointer'}}
+            ref={instance => this.props.connectDragSource(ReactDOM.findDOMNode(instance))}>
             <DragHandle/>
           </div>
         </TableCell>
-        { Object.entries(this.props.columns).map(([col, type]) =>
-          <TableCell key={col} numeric={type === 'int'}> { row[col] }</TableCell>
+        {Object.entries(this.props.columns).map(([col, type]) =>
+          <TableCell key={col} numeric={type === 'int'}> {row[col]}</TableCell>
         )}
       </TableRow>
     )

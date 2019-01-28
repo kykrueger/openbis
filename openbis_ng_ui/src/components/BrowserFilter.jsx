@@ -1,5 +1,5 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
+import {withStyles} from '@material-ui/core/styles'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import FilterIcon from '@material-ui/icons/FilterList'
@@ -18,12 +18,12 @@ class BrowserFilter extends React.Component {
 
     return (
       <TextField
-        className = { classes.browserFilter }
-        placeholder = "Filter"
+        className={classes.browserFilter}
+        placeholder="Filter"
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <FilterIcon />
+              <FilterIcon/>
             </InputAdornment>
           ),
         }}/>

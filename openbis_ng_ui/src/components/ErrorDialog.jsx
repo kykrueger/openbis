@@ -24,7 +24,7 @@ const StyledDialog = withStyles(dialogStyles)(Dialog)
 const ANIMATION_TIME_MS = 250
 
 function Transition(props) {
-  return <Slide 
+  return <Slide
     direction="up"
     timeout={{ enter: ANIMATION_TIME_MS, exit: ANIMATION_TIME_MS }}
     {...props}

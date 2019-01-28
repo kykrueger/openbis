@@ -18,7 +18,7 @@ package ch.systemsx.cisd.authentication;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Dummy authentication services.

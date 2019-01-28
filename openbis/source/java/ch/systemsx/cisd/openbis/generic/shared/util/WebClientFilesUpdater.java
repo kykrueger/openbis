@@ -21,8 +21,8 @@ import java.io.FileFilter;
 import java.util.Arrays;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;

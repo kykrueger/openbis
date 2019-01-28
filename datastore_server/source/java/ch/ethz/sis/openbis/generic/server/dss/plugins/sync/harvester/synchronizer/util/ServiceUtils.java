@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;

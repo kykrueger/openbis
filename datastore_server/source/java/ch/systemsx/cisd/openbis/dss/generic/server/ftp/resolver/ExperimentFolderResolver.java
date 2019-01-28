@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server.ftp.resolver;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ftpserver.ftplet.FtpFile;
 
 import ch.systemsx.cisd.openbis.dss.generic.server.ftp.FtpConstants;

@@ -30,7 +30,7 @@ import java.util.Map;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.springframework.aop.framework.ProxyFactory;

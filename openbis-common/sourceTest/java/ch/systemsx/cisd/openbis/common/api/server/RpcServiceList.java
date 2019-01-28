@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.common.api.server;
 
 import java.util.Collection;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import ch.systemsx.cisd.common.api.IRpcServiceNameServer;
 import ch.systemsx.cisd.common.api.RpcServiceInterfaceDTO;
