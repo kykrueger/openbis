@@ -175,7 +175,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var $button = FormUtil.getButtonWithIcon(sortOption.icon, function() {
             _this._sideMenuWidgetController.setSortField(sortOption.sortField);
             _this.repaint(_this._$container);
-			$(window).trigger('resize');
+            _this._sideMenuWidgetController.resize();
         }, null, sortOption.description);
         if (this._sideMenuWidgetModel.sortField == sortOption.sortField) {
             $button.addClass("active");

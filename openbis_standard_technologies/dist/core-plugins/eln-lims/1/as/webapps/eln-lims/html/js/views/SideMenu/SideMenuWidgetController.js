@@ -80,22 +80,22 @@ function SideMenuWidgetController(mainController) {
             
             _this._sideMenuWidgetView.repaint($container);
             
-            var resize = function(event) {
-                var $elementHead = $("#sideMenuHeader");
-                var sideMenuHeaderHeight = $elementHead.outerHeight();
-                var $elementSortField = $("#sideMenuSortBar");
-                var sideMenuSortFieldHeight = $elementSortField.outerHeight();
-                var $elementBody = $("#sideMenuBody");
-                var height = $( window ).height();
-                $elementBody.css('height', height - sideMenuHeaderHeight - sideMenuSortFieldHeight);
-            }
-            
-            LayoutManager.addResizeEventHandler(resize);
+            LayoutManager.addResizeEventHandler(_this.resize);
             
             initCallback();    
         });
     }
-    
+
+    this.resize = function() {
+        var $elementHead = $("#sideMenuHeader");
+        var sideMenuHeaderHeight = $elementHead.outerHeight();
+        var $elementSortField = $("#sideMenuSortBar");
+        var sideMenuSortFieldHeight = $elementSortField.outerHeight();
+        var $elementBody = $("#sideMenuBody");
+        var height = $( window ).height();
+        $elementBody.css('height', height - sideMenuHeaderHeight - sideMenuSortFieldHeight);
+    }
+
     this._showNodeView = function(node) {
 		if(node.data.view) {
 			var viewData =  node.data.viewData;
