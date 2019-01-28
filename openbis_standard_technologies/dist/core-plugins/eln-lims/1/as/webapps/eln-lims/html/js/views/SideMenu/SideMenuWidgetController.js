@@ -83,9 +83,11 @@ function SideMenuWidgetController(mainController) {
             var resize = function(event) {
                 var $elementHead = $("#sideMenuHeader");
                 var sideMenuHeaderHeight = $elementHead.outerHeight();
+                var $elementSortField = $("#sideMenuSortBar");
+                var sideMenuSortFieldHeight = $elementSortField.outerHeight();
                 var $elementBody = $("#sideMenuBody");
                 var height = $( window ).height();
-                $elementBody.css('height', height - sideMenuHeaderHeight);
+                $elementBody.css('height', height - sideMenuHeaderHeight - sideMenuSortFieldHeight);
             }
             
             LayoutManager.addResizeEventHandler(resize);

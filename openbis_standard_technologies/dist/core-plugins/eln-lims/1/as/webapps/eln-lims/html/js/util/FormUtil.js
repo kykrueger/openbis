@@ -511,14 +511,16 @@ var FormUtil = new function() {
 		return $btn;
 	}
 
-	this.getButtonGroup = function(buttons) {
+	this.getButtonGroup = function(buttons, size) {
+		var styleClass = "btn-group" + (size ? "-" + size : "");
 		var $buttonGroup = $("<div>", {
-			"class": "btn-group",
+			"class": styleClass,
 			"role": "group",
 		});
 		for (var i=0; i<buttons.length; i++) {
 			$buttonGroup.append(buttons[i]);
 		}
+		$buttonGroup.css({ "margin": "3px" });
 		return $buttonGroup;
 	}
 
