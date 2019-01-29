@@ -37,6 +37,7 @@ import org.w3c.dom.NodeList;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
@@ -125,7 +126,7 @@ public class MasterDataParser
         parseSampleTypes(docElement.getElementsByTagName("xmd:objectTypes"));
         parseDataSetTypes(docElement.getElementsByTagName("xmd:dataSetTypes"));
         parseExperimentTypes(docElement.getElementsByTagName("xmd:collectionTypes"));
-        parseExternalDataManagementSystems(docElement.getElementsByTagName("xml:externalDataManagementSystems"));
+        parseExternalDataManagementSystems(docElement.getElementsByTagName("xmd:externalDataManagementSystems"));
     }
 
 
@@ -219,8 +220,9 @@ public class MasterDataParser
         {
             Element element = (Element) edmsNodes.item(i);
             ExternalDms edms = new ExternalDms();
-            String code = getAttribute(element, "code");
+            String code = nameTranslator.translate(getAttribute(element, "code"));
             edms.setCode(code);
+            edms.setPermId(new ExternalDmsPermId(code));
             edms.setLabel(getAttribute(element, "label"));
             edms.setAddressType(ExternalDmsAddressType.valueOf(getAttribute(element, "addressType")));
             edms.setAddress(getAttribute(element, "address"));

@@ -45,9 +45,14 @@ import org.w3c.dom.Document;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
@@ -60,6 +65,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
@@ -145,6 +151,8 @@ public class EntitySynchronizer
 
     private final IApplicationServerApi v3Api;
     
+    private final IDataStoreServerApi v3DssApi;
+
     private final DataSetProcessingContext context;
 
     private final Date lastSyncTimestamp;
@@ -163,10 +171,12 @@ public class EntitySynchronizer
 
     private final Set<String> blackListedDataSetCodes;
 
+
     public EntitySynchronizer(SynchronizationContext synContext)
     {
         service = synContext.getService();
         v3Api = synContext.getV3Api();
+        v3DssApi = synContext.getV3DssApi();
         dataStoreCode = synContext.getDataStoreCode();
         storeRoot = synContext.getStoreRoot();
         lastSyncTimestamp = synContext.getLastSyncTimestamp();
@@ -197,12 +207,14 @@ public class EntitySynchronizer
     private void registerDataSets(ResourceListParserData data, List<String> notSyncedAttachmentsHolders) throws IOException
     {
         Monitor monitor = new Monitor("Register data sets", operationLog);
+        operationLog.info("Registering data sets...");
+        registerLinkDataSets(data, monitor);
+        
         // register physical data sets without any hierarchy
         // Note that container/component and parent/child relationships are established post-reg.
         // setParentDataSetsOnTheChildren(data);
         Map<String, IncomingDataSet> physicalDSMap =
-                data.filterPhysicalDataSetsByLastModificationDate(lastSyncTimestamp, dataSetsCodesToRetry, blackListedDataSetCodes);
-        operationLog.info("Registering data sets...");
+                data.filterByDataSetKindAndLastModificationDate(DataSetKind.PHYSICAL, lastSyncTimestamp, dataSetsCodesToRetry, blackListedDataSetCodes);
 
         if (config.isVerbose())
         {
@@ -235,8 +247,46 @@ public class EntitySynchronizer
         List<String> skippedDataSets = new ArrayList<String>();
         skippedDataSets.addAll(notRegisteredDataSetCodes);
         skippedDataSets.addAll(blackListedDataSetCodes);
-        establishDataSetRelationships(data.getDataSetsToProcess(), skippedDataSets, physicalDSMap);
+        Set<String> containerDataSets = data.filterByDataSetKindAndLastModificationDate(DataSetKind.CONTAINER, lastSyncTimestamp, dataSetsCodesToRetry, blackListedDataSetCodes).keySet();
+        establishDataSetRelationships(data.getDataSetsToProcess(), skippedDataSets, containerDataSets);
         monitor.log();
+    }
+
+    private void registerLinkDataSets(ResourceListParserData data, Monitor monitor)
+    {
+        Map<String, IncomingDataSet> linkDataSets = data.filterByDataSetKindAndLastModificationDate(DataSetKind.LINK, lastSyncTimestamp, dataSetsCodesToRetry, blackListedDataSetCodes);
+        monitor.log("Register " + linkDataSets.size() + " link data sets");
+        Collection<IncomingDataSet> values = linkDataSets.values();
+        List<DataSetPermId> dataSetIds = values.stream().map(ds -> new DataSetPermId(ds.getFullDataSet().getMetadataCreation().getCode())).collect(Collectors.toList());
+        System.err.println("new data sets:"+dataSetIds);
+        Map<IDataSetId, DataSet> existingDataSets = v3Api.getDataSets(service.getSessionToken(), dataSetIds, new DataSetFetchOptions());
+        System.err.println("existing data sets:"+existingDataSets.keySet());
+        List<DataSetUpdate> updates = new ArrayList<>();
+        List<FullDataSetCreation> creations = new ArrayList<>();
+        for (IncomingDataSet incomingDataSet : values)
+        {
+            FullDataSetCreation fullDataSet = incomingDataSet.getFullDataSet();
+            DataSetCreation dataSet = fullDataSet.getMetadataCreation();
+            DataSetPermId permId = new DataSetPermId(dataSet.getCode());
+            if (existingDataSets.containsKey(permId))
+            {
+                DataSetUpdate update = new DataSetUpdate();
+                update.setDataSetId(permId);
+                update.setProperties(dataSet.getProperties());
+                updates.add(update);
+            } else
+            {
+                creations.add(fullDataSet);
+            }
+        }
+        if (updates.isEmpty() && config.isDryRun() == false)
+        {
+            v3Api.updateDataSets(service.getSessionToken(), updates);
+        }
+        if (creations.isEmpty() == false && config.isDryRun() == false)
+        {
+            v3DssApi.createDataSets(service.getSessionToken(), creations);
+        }
     }
 
     private List<String> registerAttachments(ResourceListParserData data, MultiKeyMap<String, String> newEntities)
@@ -558,7 +608,7 @@ public class EntitySynchronizer
     // }
 
     private void establishDataSetRelationships(Map<String, IncomingDataSet> dataSetsToProcess,
-            List<String> skippedDataSets, Map<String, IncomingDataSet> physicalDSMap)
+            List<String> skippedDataSets, Set<String> containerDataSets)
     {
         // set parent and container data set codes before everything else
         // container and physical data sets can both be parents/children of each other
@@ -608,7 +658,7 @@ public class EntitySynchronizer
             {
                 if (blackListedDataSetCodes.contains(dataSet.getCode()) == false)
                 {
-                    if (physicalDSMap.containsKey(dataSet.getCode()) == false && service.tryGetDataSet(dataSet.getCode()) == null)
+                    if (containerDataSets.contains(dataSet.getCode()) && service.tryGetDataSet(dataSet.getCode()) == null)
                     {
                         builder.dataSet(dataSet);
                     } else
