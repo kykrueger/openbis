@@ -235,7 +235,7 @@ public class ResourceListParser
         masterData.setExperimentTypesToProcess(mdParser.getExperimentTypes());
         masterData.setMaterialTypesToProcess(mdParser.getMaterialTypes());
         masterData.setPropertyAssignmentsToProcess(mdParser.getEntityPropertyAssignments());
-//        masterData.setExternalDataManagementSystemsToProcess(mdParser.getExternalDataManagementSystems());
+        masterData.setExternalDataManagementSystemsToProcess(mdParser.getExternalDataManagementSystems());
     }
 
     private void parseMetaData(String uri, Date lastModificationDate, Node xdNode) throws XPathExpressionException

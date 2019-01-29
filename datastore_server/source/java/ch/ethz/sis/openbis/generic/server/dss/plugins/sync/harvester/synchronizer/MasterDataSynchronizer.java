@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -96,6 +97,8 @@ public class MasterDataSynchronizer
         processEntityTypes(masterData.getExperimentTypesToProcess(), propertyAssignmentsToProcess);
         monitor.log("process material type property assignments");
         processDeferredMaterialTypePropertyAssignments(propertyAssignmentsToProcess);
+        monitor.log("process external data management systems");
+        processExternalDataManagementSystems(masterData.getExternalDataManagementSystemsToProcess());
 
         synchronizerFacade.printSummary();
     }
@@ -147,6 +150,11 @@ public class MasterDataSynchronizer
                 synchronizerFacade.registerValidationPlugin(incomingplugin);
             }
         }
+    }
+
+    private void processExternalDataManagementSystems(Map<String, ExternalDms> externalDataManagementSystems)
+    {
+        // TODO
     }
 
     private void processFileFormatTypes(Map<String, FileFormatType> fileFormatTypesToProcess)

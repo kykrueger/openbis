@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.collections4.map.MultiKeyMap;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExperimentType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.FileFormatType;
@@ -35,6 +36,8 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 class MasterData
 {
     private Map<String, FileFormatType> fileFormatTypesToProcess = new HashMap<String, FileFormatType>();
+
+    private Map<String, ExternalDms> externalDataManagementSystemsToProcess = new HashMap<>();
 
     private Map<String, Script> validationPluginsToProcess = new HashMap<String, Script>();
 
@@ -105,6 +108,16 @@ class MasterData
     public void setFileFormatTypesToProcess(Map<String, FileFormatType> fileFormatTypesToProcess)
     {
         this.fileFormatTypesToProcess = fileFormatTypesToProcess;
+    }
+
+    public Map<String, ExternalDms> getExternalDataManagementSystemsToProcess()
+    {
+        return externalDataManagementSystemsToProcess;
+    }
+
+    public void setExternalDataManagementSystemsToProcess(Map<String, ExternalDms> edmsToProcess)
+    {
+        this.externalDataManagementSystemsToProcess = edmsToProcess;
     }
 
     public void setVocabulariesToProcess(Map<String, NewVocabulary> vocabulariesToProcess)
