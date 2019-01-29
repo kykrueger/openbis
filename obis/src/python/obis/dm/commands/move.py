@@ -13,10 +13,18 @@ from ... import dm
 
 class Move(OpenbisCommand):
     """
-    Implements the move command. Uses other commands for implementation.
+    Implements the move command. Uses clone, then deletes the old content 
+    copy in openBIS and deletes the repository from the old location.
     """
 
     def __init__(self, dm, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
+        """
+        :param dm: data management
+        :param data_set_id: permId of the data set to be cloned
+        :param ssh_user: user for remote access
+        :param content_copy_index: in case of multiple content copied
+        :param skip_integrity_check: Checksums are not validated if True
+        """
         self.data_set_id = data_set_id
         self.ssh_user = ssh_user
         self.content_copy_index = content_copy_index

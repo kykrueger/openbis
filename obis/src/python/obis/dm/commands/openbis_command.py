@@ -11,6 +11,8 @@ from ...scripts import cli
 
 
 class OpenbisCommand(object):
+    """ Superclass for commands connecting to openBIS.
+    """
 
     def __init__(self, dm):
         self.data_mgmt = dm
@@ -127,6 +129,8 @@ class OpenbisCommand(object):
 
 
     def login(self):
+        """ Checks for valid session and asks user for password
+        if login is needed. """
         user = self.user()
         if self.openbis.is_session_active():
             if self.openbis.token.startswith(user):
@@ -216,7 +220,8 @@ class OpenbisCommand(object):
 
 
 class ContentCopySelector(object):
-
+    """ In case a command needs information from a content copy, this class
+    asks the user to pick one if there are multiple. """
 
     def __init__(self, data_set, content_copy_index=None, get_index=False):
         self.data_set = data_set

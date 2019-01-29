@@ -7,8 +7,8 @@ from ..utils import complete_openbis_config
 
 class Removeref(OpenbisCommand):
     """
-    Command to add the current folder, which is supposed to be an obis repository, as 
-    a new content copy to openBIS.
+    Command to remove the content copy corresponding to the
+    obis repository from openBIS.
     """
 
     def __init__(self, dm, data_set_id=None):
