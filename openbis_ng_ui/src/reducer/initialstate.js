@@ -57,6 +57,8 @@ export default {
       sortDirection: 'asc'
     },
     browser: {
+      loaded: false,
+      filter: '',
       nodes: []
     },
     openEntities: {
@@ -68,6 +70,8 @@ export default {
 
   types: {
     browser: {
+      loaded: false,
+      filter: '',
       nodes: []
     },
     openEntities: {
@@ -78,6 +82,8 @@ export default {
 
   users: {
     browser: {
+      loaded: false,
+      filter: '',
       nodes: []
     },
     openEntities: {

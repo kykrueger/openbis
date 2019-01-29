@@ -46,7 +46,7 @@ export default {
   }),
   setFilter: filter => ({
     type: 'SET-FILTER',
-    value: filter
+    filter: filter
   }),
   setMode: mode => ({
     type: 'SET-MODE',

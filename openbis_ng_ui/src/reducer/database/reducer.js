@@ -1,6 +1,6 @@
 import initialState from '../initialstate.js'
 import merge from 'lodash/merge'
-import {openEntities, dirtyEntities, entityTreeNode} from '../common/reducer.js'
+import {openEntities, dirtyEntities, entityTreeNode, browserSetFilter} from '../common/reducer.js'
 
 function filterOf(filter, columns) {
   if (filter == null || filter.length === 0) {
@@ -152,7 +152,8 @@ function browser(browser = initialState.database.browser, action) {
   switch (action.type) {
   case 'SET-SPACES': {
     return {
-      nodes: action.spaces.map(space => entityTreeNode(space, {selectable: true}))
+      filter: browser.filter,
+      nodes: action.spaces.map(space => entityTreeNode(space, {selectable: true, filterable: true}))
     }
   }
   case 'SET-PROJECTS': {
@@ -160,19 +161,24 @@ function browser(browser = initialState.database.browser, action) {
     const projectNodes = action.projects.map(project => entityTreeNode(project, {loaded: true}))
     const node = merge({}, oldNode, {loading: false, loaded: true, children: projectNodes})
     return {
+      filter: browser.filter,
       nodes: replaceNode(browser.nodes, node)
     }
   }
+  case 'SET-FILTER':
+    return browserSetFilter(browser, action)
   case 'EXPAND-NODE': {
     const loading = action.node.loaded === false
     const node = merge({}, action.node, {expanded: true, loading: loading})
     return {
+      filter: browser.filter,
       nodes: replaceNode(browser.nodes, node)
     }
   }
   case 'COLLAPSE-NODE': {
     const node = merge({}, action.node, {expanded: false})
     return {
+      filter: browser.filter,
       nodes: replaceNode(browser.nodes, node)
     }
   }

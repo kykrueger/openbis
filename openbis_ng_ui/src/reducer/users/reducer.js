@@ -2,12 +2,14 @@ import initialState from '../initialstate.js'
 import {
   browserExpandNode,
   browserCollapseNode,
+  browserSetFilter,
   sortBy,
   openEntities,
   dirtyEntities,
   emptyTreeNode,
   entityTreeNode
 } from '../common/reducer'
+import _ from 'lodash'
 
 export default function users(users = initialState.users, action) {
   return {
@@ -21,6 +23,8 @@ function browser(browser = initialState.users.browser, action) {
   switch (action.type) {
   case 'SET-MODE-DONE':
     return browserSetModeDone(browser, action)
+  case 'SET-FILTER':
+    return browserSetFilter(browser, action)
   case 'EXPAND-NODE':
     return browserExpandNode(browser, action)
   case 'COLLAPSE-NODE':
@@ -34,6 +38,7 @@ function browserSetModeDone(browser, action) {
   if (action.data) {
     return {
       loaded: true,
+      filter: '',
       nodes: [browserSetModeDoneUserNodes(action.data.users, action.data.groups), browserSetModeDoneGroupNodes(action.data.groups)]
     }
   } else {
@@ -58,18 +63,19 @@ function browserSetModeDoneUserNodes(users, groups) {
     let groupNodes = []
 
     userGroups.forEach(group => {
-      groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true}))
+      groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true, filterable: true}))
     })
 
     sortBy(groupNodes, 'permId')
 
-    userNodes.push(entityTreeNode(user, {loaded: true, selectable: true, children: groupNodes}))
+    userNodes.push(entityTreeNode(user, {loaded: true, selectable: true, filterable: true, children: groupNodes}))
   })
 
   sortBy(userNodes, 'permId')
 
   return emptyTreeNode({
     id: 'Users',
+    text: 'Users',
     loaded: true,
     children: userNodes
   })
@@ -82,20 +88,22 @@ function browserSetModeDoneGroupNodes(groups) {
     let userNodes = []
 
     group.getUsers().forEach(user => {
-      userNodes.push(entityTreeNode(user, {loaded: true, selectable: true}))
+      userNodes.push(entityTreeNode(user, {loaded: true, selectable: true, filterable: true}))
     })
 
     sortBy(userNodes, 'permId')
 
-    groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true, children: userNodes}))
+    groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true, filterable: true, children: userNodes}))
   })
 
   sortBy(groupNodes, 'permId')
 
   return emptyTreeNode({
     id: 'Groups',
+    text: 'Groups',
     loaded: true,
     children: groupNodes
   })
 }
+
 

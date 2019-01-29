@@ -35,7 +35,7 @@ class Browser extends React.Component {
         selectedNodeId={this.props.selectedNodeId}
         onSelect={this.props.selectNode}
         renderNode={node => {
-          return (<ListItemText inset secondary={node.permId || node.id}/>)
+          return (<ListItemText inset secondary={node.text}/>)
         }}
       />
     )

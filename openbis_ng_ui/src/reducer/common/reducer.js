@@ -81,12 +81,28 @@ export function browserCollapseNode(browser, action) {
   return newBrowser
 }
 
+export function browserSetFilter(browser, action) {
+  let newBrowser = _.cloneDeep(browser)
+  newBrowser.filter = action.filter
+  visitNodes(newBrowser.nodes, node => {
+    if (action.filter === null || action.filter.trim() === '') {
+      node.filtered = true
+    } else {
+      node.filtered = node.text.toLowerCase().indexOf(action.filter.toLowerCase()) !== -1
+    }
+  })
+  return newBrowser
+}
+
 export function emptyTreeNode(values = {}) {
   return _.merge({
     id: null,
     permId: null,
     type: null,
+    text: null,
     selectable: false,
+    filterable: false,
+    filtered: true,
     expanded: false,
     loading: false,
     loaded: false,
@@ -98,6 +114,7 @@ export function entityTreeNode(entity, values = {}) {
   return _.merge(emptyTreeNode(), {
     id: entity['@type'] + '#' + entity.permId.permId,
     permId: entity.permId.permId,
+    text: entity.permId.permId,
     type: entity['@type'],
   }, values)
 }
