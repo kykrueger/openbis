@@ -457,12 +457,14 @@ public class MasterDataParser
             assignment.setMandatory(Boolean.valueOf(getAttribute(propertyAssignmentElement, "mandatory")));
             assignment.setDefaultValue(ERROR_PROPERTY_PREFIX);
             assignment.setSection(getAttribute(propertyAssignmentElement, "section"));
-            assignment.setOrdinal(Long.valueOf(getAttribute(propertyAssignmentElement, "ordinal")));
+            // ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypePropertyTypeBO.createAssignment() increases
+            // the provided ordinal by one. Thus, we have to subtract 1 in order to get the same ordinal.
+            assignment.setOrdinal(Long.valueOf(getAttribute(propertyAssignmentElement, "ordinal")) - 1);
             assignment.setShownInEditView(Boolean.valueOf(getAttribute(propertyAssignmentElement, "showInEdit")));
             String pluginId = getAttribute(propertyAssignmentElement, "plugin");
             if (pluginId != null)
             {
-                assignment.setScriptName(pluginId);
+                assignment.setScriptName(nameTranslator.translate(pluginId));
                 String pluginType = getAttribute(propertyAssignmentElement, "pluginType");
                 assignment.setDynamic(ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType.DYNAMIC_PROPERTY.toString().equals(pluginType));
                 assignment.setManaged(ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType.MANAGED_PROPERTY.toString().equals(pluginType));
