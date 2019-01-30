@@ -23,16 +23,16 @@ import java.util.List;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreation;
-import ch.systemsx.cisd.openbis.generic.shared.dto.NewContainerDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
-import ch.systemsx.cisd.openbis.generic.shared.dto.NewLinkDataSet;
 
-public class IncomingDataSet implements Serializable
+public class IncomingDataSet extends AbstractRegistrationHolder implements Serializable
 {
     private static final long serialVersionUID = 1L;
+
     private final NewExternalData dataSet;
 
     final Date lastModificationDate;
+
     private FullDataSetCreation fullDataSet;
 
     public Date getLastModificationDate()

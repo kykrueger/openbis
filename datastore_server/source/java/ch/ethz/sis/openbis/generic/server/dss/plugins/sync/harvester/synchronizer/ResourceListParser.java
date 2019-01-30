@@ -348,6 +348,7 @@ public class ResourceListParser
         }
 
         IncomingDataSet incomingDataSet = new IncomingDataSet(ds, fullDataSet, lastModificationDate);
+        setRegistratorAndRegistrationTimestamp(xdNode, incomingDataSet);
         data.getDataSetsToProcess().put(permId, incomingDataSet);
         incomingDataSet.setConnections(parseConnections(xdNode));
         List<NewProperty> properties = parseDataSetProperties(xdNode);
@@ -505,6 +506,7 @@ public class ResourceListParser
         data.getProjectsToProcess().put(permId, incomingProject);
         incomingProject.setConnections(parseConnections(xdNode));
         incomingProject.setHasAttachments(hasAttachments(xdNode));
+        setRegistratorAndRegistrationTimestamp(xdNode, incomingProject);
     }
 
     private ExperimentIdentifier createExperimentIdentifier(String spaceId, String prjCode, String expCode)
@@ -546,9 +548,9 @@ public class ResourceListParser
         String code = nameTranslator.translate(extractCode(xdNode));
         String type = extractType(xdNode);
         NewMaterialWithType newMaterial = new NewMaterialWithType(code, type);
-        MaterialWithLastModificationDate materialWithLastModDate =
-                new MaterialWithLastModificationDate(newMaterial, lastModificationDate);
-        data.getMaterialsToProcess().put(code, type, materialWithLastModDate);
+        IncomingMaterial incomingMaterial = new IncomingMaterial(newMaterial, lastModificationDate);
+        setRegistratorAndRegistrationTimestamp(xdNode, incomingMaterial);
+        data.getMaterialsToProcess().put(code, type, incomingMaterial);
         newMaterial.setProperties(parseProperties(xdNode));
     }
 
@@ -668,6 +670,7 @@ public class ResourceListParser
         data.getExperimentsToProcess().put(permId, incomingExperiment);
         incomingExperiment.setConnections(parseConnections(xdNode));
         incomingExperiment.setHasAttachments(hasAttachments(xdNode));
+        setRegistratorAndRegistrationTimestamp(xdNode, incomingExperiment);
         newExp.setProperties(parseProperties(xdNode));
     }
 
@@ -709,7 +712,21 @@ public class ResourceListParser
         data.getSamplesToProcess().put(permId, incomingSample);
         incomingSample.setHasAttachments(hasAttachments(xdNode));
         incomingSample.setConnections(parseConnections(xdNode));
+        setRegistratorAndRegistrationTimestamp(xdNode, incomingSample);
         newSample.setProperties(parseProperties(xdNode));
+    }
+
+    private void setRegistratorAndRegistrationTimestamp(Node xdNode, AbstractRegistrationHolder registrationHolder)
+    {
+        registrationHolder.setRegistrator(extractAttribute(xdNode, "registrator"));
+        String registrationTimestampAsString = extractAttribute(xdNode, "registration-timestamp");
+        try
+        {
+            registrationHolder.setRegistrationTimestamp(convertFromW3CDate(registrationTimestampAsString));
+        } catch (ParseException e)
+        {
+            throw new IllegalArgumentException("Invalid registration-timestamp: " + registrationTimestampAsString);
+        }
     }
 
     private String extractType(Node xdNode)

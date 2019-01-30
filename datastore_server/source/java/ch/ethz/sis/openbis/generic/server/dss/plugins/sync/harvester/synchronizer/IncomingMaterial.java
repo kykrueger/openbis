@@ -20,7 +20,7 @@ import java.util.Date;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 
-class MaterialWithLastModificationDate
+class IncomingMaterial extends AbstractRegistrationHolder
 {
     private final NewMaterialWithType material;
 
@@ -31,7 +31,7 @@ class MaterialWithLastModificationDate
         return material;
     }
 
-    MaterialWithLastModificationDate(NewMaterialWithType material, Date lastModDate)
+    IncomingMaterial(NewMaterialWithType material, Date lastModDate)
     {
         this.material = material;
         this.lastModificationDate = lastModDate;
