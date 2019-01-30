@@ -49,7 +49,7 @@ public class ResourceListParserData
 
     private Map<String, IncomingDataSet> dataSetsToProcess = new HashMap<String, IncomingDataSet>();
 
-    private MultiKeyMap<String, MaterialWithLastModificationDate> materialsToProcess = new MultiKeyMap<String, MaterialWithLastModificationDate>();
+    private MultiKeyMap<String, IncomingMaterial> materialsToProcess = new MultiKeyMap<String, IncomingMaterial>();
 
     public MasterData getMasterData()
     {
@@ -91,20 +91,20 @@ public class ResourceListParserData
         return dataSetsToProcess;
     }
 
-    public MultiKeyMap<String, MaterialWithLastModificationDate> getMaterialsToProcess()
+    public MultiKeyMap<String, IncomingMaterial> getMaterialsToProcess()
     {
         return materialsToProcess;
     }
 
-    public Map<String, IncomingDataSet> filterPhysicalDataSetsByLastModificationDate(Date lastSyncDate, Set<String> dataSetsCodesToRetry,
-            Set<String> blackListedDataSetCodes)
+    public Map<String, IncomingDataSet> filterByDataSetKindAndLastModificationDate(DataSetKind dataSetKind, Date lastSyncDate,
+            Set<String> dataSetsCodesToRetry, Set<String> blackListedDataSetCodes)
     {
         Map<String, IncomingDataSet> dsMap = new HashMap<String, IncomingDataSet>();
         for (String permId : dataSetsToProcess.keySet())
         {
             IncomingDataSet ds = dataSetsToProcess.get(permId);
             String dataSetCode = ds.getDataSet().getCode();
-            if (ds.getKind() == DataSetKind.PHYSICAL
+            if (ds.getKind() == dataSetKind
                     && (ds.lastModificationDate.after(lastSyncDate) == true || dataSetsCodesToRetry.contains(dataSetCode)) == true)
             {
                 if (blackListedDataSetCodes.contains(dataSetCode) == false)

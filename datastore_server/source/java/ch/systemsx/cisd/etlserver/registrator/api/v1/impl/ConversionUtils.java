@@ -377,7 +377,10 @@ public class ConversionUtils
 
         dataSetUpdate.setDatasetId(new TechId(externalData));
         dataSetUpdate.setVersion(externalData.getVersion());
-        dataSetUpdate.setFileFormatTypeCode(dataSet.getFileFormatType());
+        if (dataSet.isLinkDataSet() == false && dataSet.isContainerDataSet() == false)
+        {
+            dataSetUpdate.setFileFormatTypeCode(dataSet.getFileFormatType());
+        }
         dataSetUpdate.setProperties(externalData.getProperties());
 
         if (externalData.getExperiment() != null)

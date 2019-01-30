@@ -22,18 +22,11 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
@@ -66,6 +59,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySearchCriteria;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
@@ -111,44 +105,32 @@ public class MasterDataExtractor
 
     public String fetchAsXmlString() throws ParserConfigurationException, TransformerException
     {
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-        Document doc = docBuilder.newDocument();
-        docFactory.setNamespaceAware(true);
-        Element rootElement = doc.createElementNS("https://sis.id.ethz.ch/software/#openbis/xmdterms/", "xmd:masterData");
-        rootElement.setAttribute("xmlns:xmd", "https://sis.id.ethz.ch/software/#openbis/xmdterms/");
-        doc.appendChild(rootElement);
-
-        appendFileFormatTypes(doc, rootElement);
-
-        appendValidationPlugins(doc, rootElement);
-        appendVocabularies(doc, rootElement);
-
-        appendPropertyTypes(doc, rootElement);
-        appendSampleTypes(doc, rootElement);
-        appendExperimentTypes(doc, rootElement);
-        appendDataSetTypes(doc, rootElement);
-        appendMaterialTypes(doc, rootElement);
-
-        appendExternalDataManagementSystems(doc, rootElement);
-
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-        transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS,
-                "validationPlugin");
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-        DOMSource source = new DOMSource(doc);
         StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        transformer.transform(source, result);
-        return writer.toString();
+        try
+        {
+            XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
+            XMLStreamWriter xmlStreamWriter = xmlOutputFactory.createXMLStreamWriter(writer);
+            // xmlStreamWriter.writeStartDocument();
+            xmlStreamWriter.writeStartElement("xmd:masterData");
+            xmlStreamWriter.writeAttribute("xmlns:xmd", "https://sis.id.ethz.ch/software/#openbis/xmdterms/");
+            appendFileFormatTypes(xmlStreamWriter);
+            appendValidationPlugins(xmlStreamWriter);
+            appendVocabularies(xmlStreamWriter);
+            appendPropertyTypes(xmlStreamWriter);
+            appendSampleTypes(xmlStreamWriter);
+            appendExperimentTypes(xmlStreamWriter);
+            appendDataSetTypes(xmlStreamWriter);
+            appendMaterialTypes(xmlStreamWriter);
+            appendExternalDataManagementSystems(xmlStreamWriter);
+            xmlStreamWriter.writeEndElement();
+            return writer.toString();
+        } catch (Exception e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
     }
 
-    protected void appendExternalDataManagementSystems(Document doc, Element rootElement)
+    private void appendExternalDataManagementSystems(XMLStreamWriter out) throws XMLStreamException
     {
         ExternalDmsSearchCriteria searchCriteria = new ExternalDmsSearchCriteria();
         ExternalDmsFetchOptions fetchOptions = new ExternalDmsFetchOptions();
@@ -156,21 +138,29 @@ public class MasterDataExtractor
                 v3Api.searchExternalDataManagementSystems(sessionToken, searchCriteria, fetchOptions).getObjects();
         if (externalDataManagementSystems.isEmpty() == false)
         {
-            Element externalDataManagementSystemsElement = doc.createElement("xmd:externalDataManagementSystems");
-            rootElement.appendChild(externalDataManagementSystemsElement);
+            out.writeStartElement("xmd:externalDataManagementSystems");
             for (ExternalDms externalDms : externalDataManagementSystems)
             {
-                Element externalDmsElement = doc.createElement("xmd:externalDataManagementSystem");
-                externalDmsElement.setAttribute("code", externalDms.getCode());
-                externalDmsElement.setAttribute("label", externalDms.getLabel());
-                externalDmsElement.setAttribute("address", externalDms.getAddress());
-                externalDmsElement.setAttribute("addressType", externalDms.getAddressType().toString());
-                externalDataManagementSystemsElement.appendChild(externalDmsElement);
+                out.writeStartElement("xmd:externalDataManagementSystem");
+                writeAttributeIfNotNull(out, "code", externalDms.getCode());
+                writeAttributeIfNotNull(out, "label", externalDms.getLabel());
+                writeAttributeIfNotNull(out, "address", externalDms.getAddress());
+                writeAttributeIfNotNull(out, "addressType", externalDms.getAddressType().toString());
+                out.writeEndElement();
             }
+            out.writeEndElement();
         }
     }
 
-    private void appendValidationPlugins(Document doc, Element rootElement)
+    private void writeAttributeIfNotNull(XMLStreamWriter out, String key, String value) throws XMLStreamException
+    {
+        if (value != null)
+        {
+            out.writeAttribute(key, value);
+        }
+    }
+
+    private void appendValidationPlugins(XMLStreamWriter out) throws XMLStreamException
     {
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         fetchOptions.withScript();
@@ -179,22 +169,25 @@ public class MasterDataExtractor
         {
             return;
         }
-        Element pluginsElement = doc.createElement("xmd:validationPlugins");
-        rootElement.appendChild(pluginsElement);
+        out.writeStartElement("xmd:validationPlugins");
         for (Plugin plugin : plugins)
         {
-            Element pluginElement = doc.createElement("xmd:validationPlugin");
-            pluginElement.setAttribute("name", plugin.getName());
-            pluginElement.setAttribute("description", plugin.getDescription());
-            pluginElement.setAttribute("type", plugin.getPluginType().toString());
-            pluginElement.setAttribute("entityKind", getEntityKind(plugin));
-            pluginElement.setAttribute("isAvailable", String.valueOf(plugin.isAvailable()));
-            pluginElement.appendChild(doc.createCDATASection(plugin.getScript()));
-            pluginsElement.appendChild(pluginElement);
+            out.writeStartElement("xmd:validationPlugin");
+            writeAttributeIfNotNull(out, "name", plugin.getName());
+            writeAttributeIfNotNull(out, "description", plugin.getDescription());
+            writeAttributeIfNotNull(out, "type", plugin.getPluginType().toString());
+            writeAttributeIfNotNull(out, "entityKind", getEntityKind(plugin));
+            writeAttributeIfNotNull(out, "isAvailable", String.valueOf(plugin.isAvailable()));
+            if (plugin.getScript() != null)
+            {
+                out.writeCData(plugin.getScript());
+            }
+            out.writeEndElement();
         }
+        out.writeEndElement();
     }
 
-    protected String getEntityKind(Plugin plugin)
+    private String getEntityKind(Plugin plugin)
     {
         String entityKind = "All";
         Set<EntityKind> entityKinds = plugin.getEntityKinds();
@@ -210,24 +203,24 @@ public class MasterDataExtractor
         return entityKind;
     }
 
-    private void appendFileFormatTypes(Document doc, Element rootElement)
+    private void appendFileFormatTypes(XMLStreamWriter out) throws XMLStreamException
     {
         List<IFileFormatTypeImmutable> fileFormatTypes = masterDataRegistrationTransaction.listFileFormatTypes();
         if (fileFormatTypes.size() > 0)
         {
-            Element fileFormatTypesElement = doc.createElement("xmd:fileFormatTypes");
-            rootElement.appendChild(fileFormatTypesElement);
+            out.writeStartElement("xmd:fileFormatTypes");
             for (IFileFormatTypeImmutable fileFormatType : fileFormatTypes)
             {
-                Element fileFormatTypeElement = doc.createElement("xmd:fileFormatType");
-                fileFormatTypeElement.setAttribute("code", fileFormatType.getCode());
-                fileFormatTypeElement.setAttribute("description", fileFormatType.getDescription());
-                fileFormatTypesElement.appendChild(fileFormatTypeElement);
+                out.writeStartElement("xmd:fileFormatType");
+                writeAttributeIfNotNull(out, "code", fileFormatType.getCode());
+                writeAttributeIfNotNull(out, "description", fileFormatType.getDescription());
+                out.writeEndElement();
             }
+            out.writeEndElement();
         }
     }
 
-    private void appendPropertyTypes(Document doc, Element rootElement)
+    private void appendPropertyTypes(XMLStreamWriter out) throws XMLStreamException
     {
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
         fetchOptions.withMaterialType();
@@ -237,8 +230,8 @@ public class MasterDataExtractor
         {
             return;
         }
-        Element propertyTypesElement = doc.createElement("xmd:propertyTypes");
-        rootElement.appendChild(propertyTypesElement);
+        out.writeStartElement("xmd:propertyTypes");
+
         for (PropertyType propertyType : propertyTypes)
         {
             Boolean internalNameSpace = propertyType.isInternalNameSpace();
@@ -246,32 +239,33 @@ public class MasterDataExtractor
                     (internalNameSpace && propertyType.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX))
                             ? CodeConverter.tryToDatabase(propertyType.getCode())
                             : propertyType.getCode();
-            Element typeElement = doc.createElement("xmd:propertyType");
-            typeElement.setAttribute("code", code);
-            typeElement.setAttribute("label", propertyType.getLabel());
-            typeElement.setAttribute("dataType", propertyType.getDataType().name());
-            typeElement.setAttribute("internalNamespace", String.valueOf(internalNameSpace));
-            typeElement.setAttribute("managedInternally", String.valueOf(propertyType.isManagedInternally()));
-            typeElement.setAttribute("description", propertyType.getDescription());
+            out.writeStartElement("xmd:propertyType");
+            writeAttributeIfNotNull(out, "code", code);
+            writeAttributeIfNotNull(out, "label", propertyType.getLabel());
+            writeAttributeIfNotNull(out, "dataType", propertyType.getDataType().name());
+            writeAttributeIfNotNull(out, "internalNamespace", String.valueOf(internalNameSpace));
+            writeAttributeIfNotNull(out, "managedInternally", String.valueOf(propertyType.isManagedInternally()));
+            writeAttributeIfNotNull(out, "description", propertyType.getDescription());
             if (propertyType.getDataType().name().equals(DataType.CONTROLLEDVOCABULARY.name()))
             {
-                typeElement.setAttribute("vocabulary", propertyType.getVocabulary().getCode());
+                writeAttributeIfNotNull(out, "vocabulary", propertyType.getVocabulary().getCode());
             } else if (propertyType.getDataType().name().equals(DataType.MATERIAL.name()))
             {
                 if (propertyType.getMaterialType() != null)
                 {
-                    typeElement.setAttribute("material", propertyType.getMaterialType().getCode());
+                    writeAttributeIfNotNull(out, "material", propertyType.getMaterialType().getCode());
                 } else
                 {
                     // for properties like "inhibitor_of" where it is of Material of Any Type
-                    typeElement.setAttribute("material", "");
+                    writeAttributeIfNotNull(out, "material", "");
                 }
             }
-            propertyTypesElement.appendChild(typeElement);
+            out.writeEndElement();
         }
+        out.writeEndElement();
     }
 
-    private void appendVocabularies(Document doc, Element rootElement)
+    private void appendVocabularies(XMLStreamWriter out) throws XMLStreamException
     {
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
         fetchOptions.withTerms();
@@ -280,34 +274,34 @@ public class MasterDataExtractor
         {
             return;
         }
-        Element vocabsElement = doc.createElement("xmd:controlledVocabularies");
-        rootElement.appendChild(vocabsElement);
+        out.writeStartElement("xmd:controlledVocabularies");
         for (Vocabulary vocabulary : vocabularies)
         {
-            Element vocabElement = doc.createElement("xmd:controlledVocabulary");
+            out.writeStartElement("xmd:controlledVocabulary");
             String code = vocabulary.isInternalNameSpace()
                     && vocabulary.getCode().startsWith(INTERNAL_NAMESPACE_PREFIX) ? CodeConverter.tryToDatabase(vocabulary.getCode())
                             : vocabulary.getCode();
-            vocabElement.setAttribute("code", code);
-            vocabElement.setAttribute("description", vocabulary.getDescription());
+            writeAttributeIfNotNull(out, "code", code);
+            writeAttributeIfNotNull(out, "description", vocabulary.getDescription());
             String urlTemplate = vocabulary.getUrlTemplate();
-            vocabElement.setAttribute("urlTemplate", urlTemplate);
-            vocabElement.setAttribute("managedInternally", String.valueOf(vocabulary.isManagedInternally()));
-            vocabElement.setAttribute("internalNamespace", String.valueOf(vocabulary.isInternalNameSpace()));
-            vocabElement.setAttribute("chosenFromList", String.valueOf(vocabulary.isChosenFromList()));
-            vocabsElement.appendChild(vocabElement);
+            writeAttributeIfNotNull(out, "urlTemplate", urlTemplate);
+            writeAttributeIfNotNull(out, "managedInternally", String.valueOf(vocabulary.isManagedInternally()));
+            writeAttributeIfNotNull(out, "internalNamespace", String.valueOf(vocabulary.isInternalNameSpace()));
+            writeAttributeIfNotNull(out, "chosenFromList", String.valueOf(vocabulary.isChosenFromList()));
 
             for (VocabularyTerm term : vocabulary.getTerms())
             {
-                Element termElement = doc.createElement("term");
-                termElement.setAttribute("code", term.getCode());
-                termElement.setAttribute("label", term.getLabel());
-                termElement.setAttribute("description", term.getDescription());
-                termElement.setAttribute("ordinal", String.valueOf(term.getOrdinal()));
-                termElement.setAttribute("url", createUrl(urlTemplate, term.getCode()));
-                vocabElement.appendChild(termElement);
+                out.writeStartElement("xmd:term");
+                writeAttributeIfNotNull(out, "code", term.getCode());
+                writeAttributeIfNotNull(out, "label", term.getLabel());
+                writeAttributeIfNotNull(out, "description", term.getDescription());
+                writeAttributeIfNotNull(out, "ordinal", String.valueOf(term.getOrdinal()));
+                writeAttributeIfNotNull(out, "url", createUrl(urlTemplate, term.getCode()));
+                out.writeEndElement();
             }
+            out.writeEndElement();
         }
+        out.writeEndElement();
     }
 
     private String createUrl(String urlTemplate, String code)
@@ -320,7 +314,7 @@ public class MasterDataExtractor
         return url.replaceAll(BasicConstant.VOCABULARY_URL_TEMPLATE_TERM_PATTERN, code);
     }
 
-    private void appendMaterialTypes(Document doc, Element rootElement)
+    private void appendMaterialTypes(XMLStreamWriter out) throws XMLStreamException
     {
         MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -331,16 +325,18 @@ public class MasterDataExtractor
         {
             return;
         }
-        Element typesElement = doc.createElement("xmd:materialTypes");
-        rootElement.appendChild(typesElement);
+        out.writeStartElement("xmd:materialTypes");
         for (MaterialType type : types)
         {
-            Element typeElement = createTypeElement(doc, typesElement, "xmd:materialType", type);
-            typeElement.setAttribute("validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+            writeTypeElement(out, "xmd:materialType", type);
+            writeAttributeIfNotNull(out, "validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+            appendPropertyAssignments(out, type.getPropertyAssignments());
+            out.writeEndElement();
         }
+        out.writeEndElement();
     }
 
-    private void appendExperimentTypes(Document doc, Element rootElement)
+    private void appendExperimentTypes(XMLStreamWriter out) throws XMLStreamException
     {
         ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -351,16 +347,18 @@ public class MasterDataExtractor
         {
             return;
         }
-        Element typesElement = doc.createElement("xmd:collectionTypes");
-        rootElement.appendChild(typesElement);
+        out.writeStartElement("xmd:collectionTypes");
         for (ExperimentType type : types)
         {
-            Element typeElement = createTypeElement(doc, typesElement, "xmd:collectionType", type);
-            typeElement.setAttribute("validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+            writeTypeElement(out, "xmd:collectionType", type);
+            writeAttributeIfNotNull(out, "validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+            appendPropertyAssignments(out, type.getPropertyAssignments());
+            out.writeEndElement();
         }
+        out.writeEndElement();
     }
 
-    private void appendSampleTypes(Document doc, Element rootElement)
+    private void appendSampleTypes(XMLStreamWriter out) throws XMLStreamException
     {
         SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -371,23 +369,25 @@ public class MasterDataExtractor
         {
             return;
         }
-        Element typesElement = doc.createElement("xmd:objectTypes");
-        rootElement.appendChild(typesElement);
+        out.writeStartElement("xmd:objectTypes");
         for (SampleType type : types)
         {
-            Element typeElement = createTypeElement(doc, typesElement, "xmd:objectType", type);
-            typeElement.setAttribute("listable", String.valueOf(type.isListable()));
-            typeElement.setAttribute("showContainer", String.valueOf(type.isShowContainer()));
-            typeElement.setAttribute("showParents", String.valueOf(type.isShowParents()));
-            typeElement.setAttribute("showParentMetadata", String.valueOf(type.isShowParentMetadata()));
-            typeElement.setAttribute("subcodeUnique", String.valueOf(type.isSubcodeUnique()));
-            typeElement.setAttribute("autoGeneratedCode", String.valueOf(type.isAutoGeneratedCode()));
-            typeElement.setAttribute("generatedCodePrefix", type.getGeneratedCodePrefix());
-            typeElement.setAttribute("validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+            writeTypeElement(out, "xmd:objectType", type);
+            writeAttributeIfNotNull(out, "listable", String.valueOf(type.isListable()));
+            writeAttributeIfNotNull(out, "showContainer", String.valueOf(type.isShowContainer()));
+            writeAttributeIfNotNull(out, "showParents", String.valueOf(type.isShowParents()));
+            writeAttributeIfNotNull(out, "showParentMetadata", String.valueOf(type.isShowParentMetadata()));
+            writeAttributeIfNotNull(out, "subcodeUnique", String.valueOf(type.isSubcodeUnique()));
+            writeAttributeIfNotNull(out, "autoGeneratedCode", String.valueOf(type.isAutoGeneratedCode()));
+            writeAttributeIfNotNull(out, "generatedCodePrefix", type.getGeneratedCodePrefix());
+            writeAttributeIfNotNull(out, "validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+            appendPropertyAssignments(out, type.getPropertyAssignments());
+            out.writeEndElement();
         }
+        out.writeEndElement();
     }
 
-    private void appendDataSetTypes(Document doc, Element rootElement)
+    private void appendDataSetTypes(XMLStreamWriter out) throws XMLStreamException
     {
         DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -398,50 +398,49 @@ public class MasterDataExtractor
         {
             return;
         }
-        Element typesElement = doc.createElement("xmd:dataSetTypes");
-        rootElement.appendChild(typesElement);
+        out.writeStartElement("xmd:dataSetTypes");
         for (DataSetType type : types)
         {
-            Element typeElement = createTypeElement(doc, typesElement, "xmd:dataSetType", type);
-            typeElement.setAttribute("mainDataSetPattern", type.getMainDataSetPattern());
-            typeElement.setAttribute("mainDataSetPath", type.getMainDataSetPath());
-            typeElement.setAttribute("deletionDisallowed", String.valueOf(type.isDisallowDeletion()));
-            typeElement.setAttribute("validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+            writeTypeElement(out, "xmd:dataSetType", type);
+            writeAttributeIfNotNull(out, "mainDataSetPattern", type.getMainDataSetPattern());
+            writeAttributeIfNotNull(out, "mainDataSetPath", type.getMainDataSetPath());
+            writeAttributeIfNotNull(out, "deletionDisallowed", String.valueOf(type.isDisallowDeletion()));
+            writeAttributeIfNotNull(out, "validationPlugin", type.getValidationPlugin() != null ? type.getValidationPlugin().getName() : null);
+            appendPropertyAssignments(out, type.getPropertyAssignments());
+            out.writeEndElement();
         }
+        out.writeEndElement();
     }
 
-    private <T extends ICodeHolder & IDescriptionHolder & IPropertyAssignmentsHolder> Element createTypeElement(
-            Document doc, Element rootElement, String elementType, T type)
+    private <T extends ICodeHolder & IDescriptionHolder & IPropertyAssignmentsHolder> void writeTypeElement(
+            XMLStreamWriter out, String elementType, T type) throws XMLStreamException
     {
-        Element typeElement = doc.createElement(elementType);
-        rootElement.appendChild(typeElement);
-        typeElement.setAttribute("code", type.getCode());
-        typeElement.setAttribute("description", type.getDescription());
-        appendPropertyAssignments(doc, typeElement, type.getPropertyAssignments());
-        return typeElement;
+        out.writeStartElement(elementType);
+        writeAttributeIfNotNull(out, "code", type.getCode());
+        writeAttributeIfNotNull(out, "description", type.getDescription());
     }
 
-    private void appendPropertyAssignments(Document doc, Element rootElement, List<PropertyAssignment> propertyAssignments)
+    private void appendPropertyAssignments(XMLStreamWriter out, List<PropertyAssignment> propertyAssignments) throws XMLStreamException
     {
-        Element propertyAssignmentsElement = doc.createElement("xmd:propertyAssignments");
-        rootElement.appendChild(propertyAssignmentsElement);
+        out.writeStartElement("xmd:propertyAssignments");
         for (PropertyAssignment propertyAssignment : propertyAssignments)
         {
-            Element propertyAssignmentElement = doc.createElement("xmd:propertyAssignment");
-            propertyAssignmentsElement.appendChild(propertyAssignmentElement);
-            propertyAssignmentElement.setAttribute("propertyTypeCode", propertyAssignment.getPropertyType().getCode());
-            propertyAssignmentElement.setAttribute("ordinal", String.valueOf(propertyAssignment.getOrdinal()));
-            propertyAssignmentElement.setAttribute("section", propertyAssignment.getSection());
-            propertyAssignmentElement.setAttribute("showInEdit", String.valueOf(propertyAssignment.isShowInEditView()));
-            propertyAssignmentElement.setAttribute("mandatory", String.valueOf(propertyAssignment.isMandatory()));
-            propertyAssignmentElement.setAttribute("showRawValueInForms", String.valueOf(propertyAssignment.isShowRawValueInForms()));
+            out.writeStartElement("xmd:propertyAssignment");
+            writeAttributeIfNotNull(out, "propertyTypeCode", propertyAssignment.getPropertyType().getCode());
+            writeAttributeIfNotNull(out, "ordinal", String.valueOf(propertyAssignment.getOrdinal()));
+            writeAttributeIfNotNull(out, "section", propertyAssignment.getSection());
+            writeAttributeIfNotNull(out, "showInEdit", String.valueOf(propertyAssignment.isShowInEditView()));
+            writeAttributeIfNotNull(out, "mandatory", String.valueOf(propertyAssignment.isMandatory()));
+            writeAttributeIfNotNull(out, "showRawValueInForms", String.valueOf(propertyAssignment.isShowRawValueInForms()));
             Plugin plugin = propertyAssignment.getPlugin();
             if (plugin != null)
             {
-                propertyAssignmentElement.setAttribute("plugin", plugin.getPermId().getPermId());
-                propertyAssignmentElement.setAttribute("pluginType", plugin.getPluginType().toString());
+                writeAttributeIfNotNull(out, "plugin", plugin.getPermId().getPermId());
+                writeAttributeIfNotNull(out, "pluginType", plugin.getPluginType().toString());
             }
+            out.writeEndElement();
         }
+        out.writeEndElement();
     }
 
 }

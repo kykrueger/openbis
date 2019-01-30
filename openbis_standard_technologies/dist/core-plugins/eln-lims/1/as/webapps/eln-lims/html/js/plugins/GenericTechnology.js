@@ -47,7 +47,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 			"SAMPLE_PARENTS_HINT" : [{
 				"LABEL" : "Requests",
 				"TYPE": "REQUEST",
-				"MIN_COUNT" : 0,
+				"MIN_COUNT" : 1,
 				"ANNOTATION_PROPERTIES" : []
 			}]
 		},

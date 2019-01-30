@@ -7,13 +7,19 @@ from ..utils import cd
 
 class Download(OpenbisCommand):
     """
-    Command to download files of a data set. Uses the microservice server to access the files.
+    Command to download files of a data set. Uses the big data link server to access the files.
     As opposed to the clone, the user does not need to be able to access the files via ssh 
     and no new content copy is created in openBIS.
     """
 
 
     def __init__(self, dm, data_set_id, content_copy_index, file, skip_integrity_check):
+        """
+        :param dm: data management
+        :param data_set_id: permId of the data set to be cloned
+        :param content_copy_index: in case of multiple content copied
+        :param skip_integrity_check: Checksums are not validated if True
+        """
         self.data_set_id = data_set_id
         self.content_copy_index = content_copy_index
         self.files = [file] if file is not None else None

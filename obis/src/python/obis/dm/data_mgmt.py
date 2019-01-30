@@ -51,6 +51,8 @@ def DataMgmt(echo_func=None, settings_resolver=None, openbis_config={}, git_conf
     complete_git_config(git_config)
     git_wrapper = GitWrapper(**git_config)
     if not git_wrapper.can_run():
+        # TODO We could just as well throw an error here instead of creating
+        #      creating the NoGitDataMgmt which will fail later.
         return NoGitDataMgmt(settings_resolver, None, git_wrapper, openbis, log, data_path, metadata_path, invocation_path)
 
     if settings_resolver is None:
@@ -239,6 +241,7 @@ def restore_signal_handler(data_mgmt):
 
 
 def with_log(f):
+    """ To be used with commands that use the CommandLog. """
     def f_with_log(self, *args):
         try:
             result = f(self, *args)
@@ -254,6 +257,7 @@ def with_log(f):
 
 
 def with_restore(f):
+    """ Sets the restore point and restores on error. """
     def f_with_restore(self, *args):
         self.set_restorepoint()
         try:
@@ -360,6 +364,7 @@ class GitDataMgmt(AbstractDataMgmt):
 
     @with_restore
     def commit(self, msg, auto_add=True, sync=True):
+        """ Git add, commit and sync with openBIS. """
         if auto_add:
             result = self.git_wrapper.git_top_level_path()
             if result.failure():
@@ -390,16 +395,19 @@ class GitDataMgmt(AbstractDataMgmt):
         return CommandResult(returncode=0, output=output)
 
     def set_restorepoint(self):
+        """ Stores the git commit hash and copies the obis metadata. """
         self.previous_git_commit_hash = self.git_wrapper.git_commit_hash().output
         self.clear_restorepoint()
         shutil.copytree('.obis', '.obis_restorepoint')
 
     def restore(self):
+        """ Resets to the stored git commit hash and restores the copied obis metadata. """
         self.git_wrapper.git_reset_to(self.previous_git_commit_hash)
         shutil.rmtree('.obis')
         shutil.copytree('.obis_restorepoint', '.obis')
 
     def clear_restorepoint(self):
+        """ Deletes the obis metadata copy. This must always be done. """
         if os.path.exists('.obis_restorepoint'):
             shutil.rmtree('.obis_restorepoint')
 
@@ -429,9 +437,20 @@ class GitDataMgmt(AbstractDataMgmt):
     #
 
     def config(self, category, is_global, is_data_set_property, prop=None, value=None, set=False, get=False, clear=False):
+        """
+        :param category: config, object, collection, data_set or repository
+        :param is_global: act on global settings - local if false
+        :param is_data_set_property: true if prop / value are a data set property
+        :param prop: setting key
+        :param value: setting value
+        :param set: True for setting values
+        :param get: True for getting values
+        :param clear: True for clearing values
+        """
         resolver = self.settings_resolver.get(category)
         if resolver is None:
             raise ValueError('Invalid settings category: ' + category)
+        # we can only do one action at a time
         if set == True:
             assert get == False
             assert clear == False

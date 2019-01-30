@@ -78,17 +78,30 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var toolbarModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 			//Create Experiment Step
-			if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
+			var mandatorySampleTypeCode = null;
+			var mandatorySampleType = null;
+			
+			if(this._experimentFormModel.experiment && 
+					this._experimentFormModel.experiment.properties &&
+					this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"]) {
+				mandatorySampleTypeCode = this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"];
+			} else if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
+				mandatorySampleTypeCode = "EXPERIMENTAL_STEP";
+			}
+			
+			mandatorySampleType = profile.getSampleTypeForSampleTypeCode(mandatorySampleTypeCode);
+			
+			if(mandatorySampleType) {
 				var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 					var argsMap = {
-							"sampleTypeCode" : "EXPERIMENTAL_STEP",
+							"sampleTypeCode" : mandatorySampleTypeCode,
 							"experimentIdentifier" : _this._experimentFormModel.experiment.identifier
 					}
 					var argsMapStr = JSON.stringify(argsMap);
 					Util.unblockUI();
 					mainController.changeView("showCreateSubExperimentPage", argsMapStr);
 				});
-				toolbarModel.push({ component : $createBtn, tooltip: "Create Experimental Step" });
+				toolbarModel.push({ component : $createBtn, tooltip: "Create " + Util.getDisplayNameFromCode(mandatorySampleTypeCode) });
 			}
 			
 			//Edit

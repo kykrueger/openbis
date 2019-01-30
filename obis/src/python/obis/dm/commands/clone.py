@@ -14,9 +14,17 @@ class Clone(OpenbisCommand):
     """
     Implements the clone command. Copies a repository from a content copy of a data set
     and adds the local copy as a new content copy using the addref command.
+    Validates the checksums of the copied files unless skip_integrity_check is True.
     """
 
     def __init__(self, dm, data_set_id, ssh_user, content_copy_index, skip_integrity_check):
+        """
+        :param dm: data management
+        :param data_set_id: permId of the data set to be cloned
+        :param ssh_user: user for remote access
+        :param content_copy_index: in case of multiple content copied
+        :param skip_integrity_check: Checksums are not validated if True
+        """
         if dm.data_path != dm.metadata_path:
             raise CommandException(CommandResult(returncode=-1, output='Clone/move not supported with obis_metadata_folder.'))
         self.data_set_id = data_set_id

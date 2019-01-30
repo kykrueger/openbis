@@ -3,6 +3,12 @@ import os
 
 
 class CommandLog(object):
+    """ CommandLog can write a log for a command with multiple steps.
+    The idea is that, when a later step fails, we want to know what happened 
+    before. This can be useful for cases where no automatic recovery can 
+    be done. If the success method is called, the log is removed.
+    If there is an existing log, the user must first make sure everything 
+    is in order and delete the log before using obis """
 
     def __init__(self):
         self.folder_path = os.path.join(os.path.expanduser('~'), ".obis", "log")
