@@ -153,7 +153,7 @@ function browser(browser = initialState.database.browser, action) {
   case 'SET-SPACES': {
     return {
       filter: browser.filter,
-      nodes: action.spaces.map(space => entityTreeNode(space, {selectable: true, filterable: true}))
+      nodes: action.spaces.map(space => entityTreeNode(space, {selectable: true}))
     }
   }
   case 'SET-PROJECTS': {

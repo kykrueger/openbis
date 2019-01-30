@@ -63,7 +63,7 @@ export function dirtyEntities(dirtyEntities, action) {
 
 export function browserExpandNode(browser, action) {
   let newBrowser = _.cloneDeep(browser)
-  visitNodes(newBrowser.nodes, node => {
+  getAllNodes(newBrowser.nodes).forEach(node => {
     if (node.id === action.node.id) {
       node.expanded = true
     }
@@ -73,7 +73,7 @@ export function browserExpandNode(browser, action) {
 
 export function browserCollapseNode(browser, action) {
   let newBrowser = _.cloneDeep(browser)
-  visitNodes(newBrowser.nodes, node => {
+  getAllNodes(newBrowser.nodes).forEach(node => {
     if (node.id === action.node.id) {
       node.expanded = false
     }
@@ -84,13 +84,23 @@ export function browserCollapseNode(browser, action) {
 export function browserSetFilter(browser, action) {
   let newBrowser = _.cloneDeep(browser)
   newBrowser.filter = action.filter
-  visitNodes(newBrowser.nodes, node => {
+  getAllNodes(newBrowser.nodes).reverse().forEach(node => {
     if (action.filter === null || action.filter.trim() === '') {
       node.filtered = true
     } else {
-      node.filtered = node.text.toLowerCase().indexOf(action.filter.toLowerCase()) !== -1
+      let filteredChildren = node.children !== undefined && node.children.some(node => {
+        return node.filtered
+      })
+
+      if (filteredChildren) {
+        node.filtered = true
+        node.expanded = true
+      } else {
+        node.filtered = node.text.toLowerCase().indexOf(action.filter.toLowerCase()) !== -1
+      }
     }
   })
+
   return newBrowser
 }
 
@@ -101,7 +111,6 @@ export function emptyTreeNode(values = {}) {
     type: null,
     text: null,
     selectable: false,
-    filterable: false,
     filtered: true,
     expanded: false,
     loading: false,
@@ -119,31 +128,38 @@ export function entityTreeNode(entity, values = {}) {
   }, values)
 }
 
-export const visitNodes = (nodes, visitor) => {
+export const getAllNodes = nodes => {
+  let levels = getAllNodesByLevel(nodes)
+  return _.concat(...levels)
+}
+
+export const getAllNodesByLevel = nodes => {
+  let levels = []
   let toVisit = []
-  let visited = {}
 
   toVisit.push(...nodes)
 
   while (toVisit.length > 0) {
-    let node = toVisit.shift()
+    let levelSize = toVisit.length
+    let level = []
 
-    if (!visited[node.id]) {
-      visited[node.id] = true
-      let result = visitor(node)
-      if (result) {
-        return result
+    for (let i = 0; i < levelSize; i++) {
+      let node = toVisit.shift()
+
+      level.push(node)
+
+      if (node.children !== undefined) {
+        node.children.forEach(child => {
+          toVisit.push(child)
+        })
       }
     }
 
-    if (node.children !== undefined) {
-      node.children.forEach((child) => {
-        toVisit.push(child)
-      })
-    }
+    levels.push(level)
   }
-}
 
+  return levels
+}
 
 export const sortBy = (arr, field) => {
   arr.sort((i1, i2) => {

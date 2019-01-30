@@ -63,12 +63,12 @@ function browserSetModeDoneUserNodes(users, groups) {
     let groupNodes = []
 
     userGroups.forEach(group => {
-      groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true, filterable: true}))
+      groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true}))
     })
 
     sortBy(groupNodes, 'permId')
 
-    userNodes.push(entityTreeNode(user, {loaded: true, selectable: true, filterable: true, children: groupNodes}))
+    userNodes.push(entityTreeNode(user, {loaded: true, selectable: true, children: groupNodes}))
   })
 
   sortBy(userNodes, 'permId')
@@ -88,12 +88,12 @@ function browserSetModeDoneGroupNodes(groups) {
     let userNodes = []
 
     group.getUsers().forEach(user => {
-      userNodes.push(entityTreeNode(user, {loaded: true, selectable: true, filterable: true}))
+      userNodes.push(entityTreeNode(user, {loaded: true, selectable: true}))
     })
 
     sortBy(userNodes, 'permId')
 
-    groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true, filterable: true, children: userNodes}))
+    groupNodes.push(entityTreeNode(group, {loaded: true, selectable: true, children: userNodes}))
   })
 
   sortBy(groupNodes, 'permId')

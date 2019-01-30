@@ -55,7 +55,7 @@ class BrowserList extends React.Component {
       <List className={classes.noPadding}>
         {
           this.props.nodes.map(node =>
-            (!node.filterable || node.filtered) &&
+            node.filtered &&
             <div key={node.id}>
               <ListItem
                 button

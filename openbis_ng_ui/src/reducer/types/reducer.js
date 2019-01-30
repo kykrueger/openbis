@@ -54,7 +54,7 @@ function browserSetModeDoneTypeNodes(groupId, types) {
   let typeNodes = []
 
   types.forEach(type => {
-    typeNodes.push(entityTreeNode(type, {loaded: true, selectable: true, filterable: true}))
+    typeNodes.push(entityTreeNode(type, {loaded: true, selectable: true}))
   })
 
   sortBy(typeNodes, 'permId')
