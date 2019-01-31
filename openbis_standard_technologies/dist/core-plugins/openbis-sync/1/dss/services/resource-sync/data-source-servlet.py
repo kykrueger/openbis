@@ -245,7 +245,9 @@ def createDataSetMetaData(entity, url_elm):
     return ET.SubElement(url_elm, "x:xd", attrib = attrs)
 
 def createMaterialMetaData(material, url_elm):
-    attrs = {"kind": "MATERIAL", "code": material.getCode(), "type": material.getType().getCode(), "registration-timestamp": getRegistrationTimestamp(material)}
+    attrs = {"kind": "MATERIAL", "code": material.getCode(), "type": material.getType().getCode(), 
+             "registration-timestamp": getRegistrationTimestamp(material),
+             "registrator":  material.getRegistrator().getUserId()}
     return ET.SubElement(url_elm, "x:xd", attrib = attrs)
 
 def attachProperties(entity, xd_elm):
