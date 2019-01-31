@@ -348,7 +348,7 @@ public class ResourceListParser
         }
 
         IncomingDataSet incomingDataSet = new IncomingDataSet(ds, fullDataSet, lastModificationDate);
-        setRegistratorAndRegistrationTimestamp(xdNode, incomingDataSet);
+        setTimestampsAndUsers(xdNode, incomingDataSet);
         data.getDataSetsToProcess().put(permId, incomingDataSet);
         incomingDataSet.setConnections(parseConnections(xdNode));
         List<NewProperty> properties = parseDataSetProperties(xdNode);
@@ -434,8 +434,8 @@ public class ResourceListParser
 
     private String extractAttribute(Node xdNode, String attrName, boolean nullAllowed)
     {
-        String val = xdNode.getAttributes().getNamedItem(attrName).getTextContent();
-        if (StringUtils.isBlank(val) == true)
+        Node item = xdNode.getAttributes().getNamedItem(attrName);
+        if (item == null || StringUtils.isBlank(item.getTextContent()) == true)
         {
             if (nullAllowed == false)
             {
@@ -445,7 +445,7 @@ public class ResourceListParser
                 return null;
             }
         }
-        return val;
+        return item.getTextContent();
     }
 
     private String extractAttribute(Node xdNode, String attrName) throws IllegalArgumentException
@@ -506,7 +506,7 @@ public class ResourceListParser
         data.getProjectsToProcess().put(permId, incomingProject);
         incomingProject.setConnections(parseConnections(xdNode));
         incomingProject.setHasAttachments(hasAttachments(xdNode));
-        setRegistratorAndRegistrationTimestamp(xdNode, incomingProject);
+        setTimestampsAndUsers(xdNode, incomingProject);
     }
 
     private ExperimentIdentifier createExperimentIdentifier(String spaceId, String prjCode, String expCode)
@@ -549,7 +549,7 @@ public class ResourceListParser
         String type = extractType(xdNode);
         NewMaterialWithType newMaterial = new NewMaterialWithType(code, type);
         IncomingMaterial incomingMaterial = new IncomingMaterial(newMaterial, lastModificationDate);
-        setRegistratorAndRegistrationTimestamp(xdNode, incomingMaterial);
+        setTimestampsAndUsers(xdNode, incomingMaterial);
         data.getMaterialsToProcess().put(code, type, incomingMaterial);
         newMaterial.setProperties(parseProperties(xdNode));
     }
@@ -670,7 +670,7 @@ public class ResourceListParser
         data.getExperimentsToProcess().put(permId, incomingExperiment);
         incomingExperiment.setConnections(parseConnections(xdNode));
         incomingExperiment.setHasAttachments(hasAttachments(xdNode));
-        setRegistratorAndRegistrationTimestamp(xdNode, incomingExperiment);
+        setTimestampsAndUsers(xdNode, incomingExperiment);
         newExp.setProperties(parseProperties(xdNode));
     }
 
@@ -712,17 +712,18 @@ public class ResourceListParser
         data.getSamplesToProcess().put(permId, incomingSample);
         incomingSample.setHasAttachments(hasAttachments(xdNode));
         incomingSample.setConnections(parseConnections(xdNode));
-        setRegistratorAndRegistrationTimestamp(xdNode, incomingSample);
+        setTimestampsAndUsers(xdNode, incomingSample);
         newSample.setProperties(parseProperties(xdNode));
     }
 
-    private void setRegistratorAndRegistrationTimestamp(Node xdNode, AbstractRegistrationHolder registrationHolder)
+    private void setTimestampsAndUsers(Node xdNode, AbstractTimestampsAndUserHolder timestampsAndUserHolder)
     {
-        registrationHolder.setRegistrator(extractAttribute(xdNode, "registrator"));
+        timestampsAndUserHolder.setRegistrator(extractAttribute(xdNode, "registrator"));
+        timestampsAndUserHolder.setModifier(extractAttribute(xdNode, "modifier", true));
         String registrationTimestampAsString = extractAttribute(xdNode, "registration-timestamp");
         try
         {
-            registrationHolder.setRegistrationTimestamp(convertFromW3CDate(registrationTimestampAsString));
+            timestampsAndUserHolder.setRegistrationTimestamp(convertFromW3CDate(registrationTimestampAsString));
         } catch (ParseException e)
         {
             throw new IllegalArgumentException("Invalid registration-timestamp: " + registrationTimestampAsString);

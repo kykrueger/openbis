@@ -20,7 +20,7 @@ import java.util.Date;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 
-class IncomingMaterial extends AbstractRegistrationHolder
+class IncomingMaterial extends AbstractTimestampsAndUserHolder
 {
     private final NewMaterialWithType material;
 

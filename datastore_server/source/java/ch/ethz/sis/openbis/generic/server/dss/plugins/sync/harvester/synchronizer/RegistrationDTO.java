@@ -33,6 +33,8 @@ public class RegistrationDTO
 
     private long registratorId;
 
+    private Long modifierId;
+
     public String getPermId()
     {
         return permId;
@@ -61,6 +63,16 @@ public class RegistrationDTO
     public void setModificationTimestamp(Date modificationTimestamp)
     {
         this.modificationTimestamp = modificationTimestamp;
+    }
+
+    public Long getModifierId()
+    {
+        return modifierId;
+    }
+
+    public void setModifierId(Long modifierId)
+    {
+        this.modifierId = modifierId;
     }
 
     public Date getRegistrationTimestamp()

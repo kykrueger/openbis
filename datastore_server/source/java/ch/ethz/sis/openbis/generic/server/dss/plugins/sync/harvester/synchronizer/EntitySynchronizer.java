@@ -97,19 +97,16 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.ConversionUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
-import ch.systemsx.cisd.openbis.dss.generic.shared.DataSourceQueryService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.generic.server.batch.BatchOperationExecutor;
 import ch.systemsx.cisd.openbis.generic.server.batch.IBatchOperation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BatchRegistrationResult;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
@@ -244,26 +241,26 @@ public class EntitySynchronizer
 
     private void createMissingUsers(ResourceListParserData data, Monitor monitor)
     {
-        Set<String> registrators = new HashSet<>();
-        addRegistrators(registrators, data.getMaterialsToProcess().values());
-        addRegistrators(registrators, data.getProjectsToProcess().values());
-        addRegistrators(registrators, data.getExperimentsToProcess().values());
-        addRegistrators(registrators, data.getSamplesToProcess().values());
-        addRegistrators(registrators, data.getDataSetsToProcess().values());
+        Set<String> users = new HashSet<>();
+        addUsers(users, data.getMaterialsToProcess().values());
+        addUsers(users, data.getProjectsToProcess().values());
+        addUsers(users, data.getExperimentsToProcess().values());
+        addUsers(users, data.getSamplesToProcess().values());
+        addUsers(users, data.getDataSetsToProcess().values());
         Set<String> knownPersons = v3Api.getPersons(service.getSessionToken(),
-                registrators.stream().map(PersonPermId::new).collect(Collectors.toList()),
+                users.stream().map(PersonPermId::new).collect(Collectors.toList()),
                 new PersonFetchOptions()).keySet().stream().map(p -> p.toString()).collect(Collectors.toSet());
         List<PersonCreation> personCreations = new ArrayList<>();
-        for (String registrator : registrators)
+        for (String user : users)
         {
-            if (knownPersons.contains(registrator) == false)
+            if (knownPersons.contains(user) == false)
             {
                 PersonCreation personCreation = new PersonCreation();
-                personCreation.setUserId(registrator);
+                personCreation.setUserId(user);
                 personCreations.add(personCreation);
             }
         }
-        monitor.log(personCreations.size() + " from " + registrators.size() + " registrators are new.");
+        monitor.log(personCreations.size() + " from " + users.size() + " users are new.");
         if (personCreations.isEmpty() == false)
         {
             v3Api.createPersons(service.getSessionToken(), personCreations);
@@ -389,34 +386,39 @@ public class EntitySynchronizer
             });
     }
 
-    private void addRegistration(List<RegistrationDTO> registrations, String permID, AbstractRegistrationHolder entity,
+    private void addRegistration(List<RegistrationDTO> registrations, String permID, AbstractTimestampsAndUserHolder entity,
             Map<String, Long> userTechIdsByUserId)
     {
         addRegistration(registrations, permID, null, entity, userTechIdsByUserId);
     }
 
-    private void addRegistration(List<RegistrationDTO> registrations, String permID, Long typeId, AbstractRegistrationHolder entity,
+    private void addRegistration(List<RegistrationDTO> registrations, String permID, Long typeId, AbstractTimestampsAndUserHolder entity,
             Map<String, Long> userTechIdsByUserId)
     {
-        String registrator = entity.getRegistrator();
-        Long registratorId = userTechIdsByUserId.get(registrator);
+        Long registratorId = userTechIdsByUserId.get(entity.getRegistrator());
         if (registratorId != null)
         {
             RegistrationDTO registration = new RegistrationDTO();
             registration.setPermId(permID);
             registration.setTypeId(typeId);
             registration.setModificationTimestamp(entity.getLastModificationDate());
+            registration.setModifierId(userTechIdsByUserId.get(entity.getModifier()));
             registration.setRegistrationTimestamp(entity.getRegistrationTimestamp());
             registration.setRegistratorId(registratorId);
             registrations.add(registration);
         }
     }
 
-    private void addRegistrators(Set<String> registrators, Collection<? extends AbstractRegistrationHolder> registrationHolders)
+    private void addUsers(Set<String> users, Collection<? extends AbstractTimestampsAndUserHolder> timestampsAndUserHolders)
     {
-        for (AbstractRegistrationHolder incomingMaterial : registrationHolders)
+        for (AbstractTimestampsAndUserHolder holder : timestampsAndUserHolders)
         {
-            registrators.add(incomingMaterial.getRegistrator());
+            users.add(holder.getRegistrator());
+            String modifier = holder.getModifier();
+            if (modifier != null)
+            {
+                users.add(modifier);
+            }
         }
     }
 

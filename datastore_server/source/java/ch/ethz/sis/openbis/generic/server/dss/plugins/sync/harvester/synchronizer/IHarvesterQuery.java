@@ -27,9 +27,10 @@ import net.lemnik.eodsql.Update;
  */
 public interface IHarvesterQuery extends BaseQuery
 {
-    public static final String SETTERS = "set modification_timestamp = ?{1.modificationTimestamp}, "
+    public static final String SETTERS_WITHOUT_MODIFIER = "set modification_timestamp = ?{1.modificationTimestamp}, "
             + "registration_timestamp = ?{1.registrationTimestamp}, "
             + "pers_id_registerer = ?{1.registratorId} ";
+    public static final String SETTERS_WITH_MODIFIER = SETTERS_WITHOUT_MODIFIER + ", pers_id_modifier = ?{1.modifierId} ";
 
     @Select("select id,user_id as userId from persons")
     public List<PersonRecord> listAllUsers();
@@ -37,18 +38,18 @@ public interface IHarvesterQuery extends BaseQuery
     @Select("select id,code from material_types")
     public List<MaterialTypeRecord> listAllMaterialTypes();
 
-    @Update(sql = "update materials " + SETTERS + " where code = ?{1.permId} and maty_id = ?{1.typeId}", batchUpdate = true)
+    @Update(sql = "update materials " + SETTERS_WITHOUT_MODIFIER + " where code = ?{1.permId} and maty_id = ?{1.typeId}", batchUpdate = true)
     public void updateMaterialRegistrations(List<RegistrationDTO> registrations);
 
-    @Update(sql = "update projects " + SETTERS + "where perm_id = ?{1.permId}", batchUpdate = true)
+    @Update(sql = "update projects " + SETTERS_WITH_MODIFIER + "where perm_id = ?{1.permId}", batchUpdate = true)
     public void updateProjectRegistrations(List<RegistrationDTO> registrations);
 
-    @Update(sql = "update experiments_all " + SETTERS + "where perm_id = ?{1.permId}", batchUpdate = true)
+    @Update(sql = "update experiments_all " + SETTERS_WITH_MODIFIER + "where perm_id = ?{1.permId}", batchUpdate = true)
     public void updateExperimentRegistrations(List<RegistrationDTO> registrations);
 
-    @Update(sql = "update samples_all " + SETTERS + "where perm_id = ?{1.permId}", batchUpdate = true)
+    @Update(sql = "update samples_all " + SETTERS_WITH_MODIFIER + "where perm_id = ?{1.permId}", batchUpdate = true)
     public void updateSampleRegistrations(List<RegistrationDTO> registrations);
 
-    @Update(sql = "update data_all " + SETTERS + "where code = ?{1.permId}", batchUpdate = true)
+    @Update(sql = "update data_all " + SETTERS_WITH_MODIFIER + "where code = ?{1.permId}", batchUpdate = true)
     public void updateDataSetRegistrations(List<RegistrationDTO> registrations);
 }

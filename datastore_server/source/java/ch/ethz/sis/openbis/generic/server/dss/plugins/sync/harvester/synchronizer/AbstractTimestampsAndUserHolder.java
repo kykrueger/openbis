@@ -20,11 +20,12 @@ import java.util.Date;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
-public abstract class AbstractRegistrationHolder
+public abstract class AbstractTimestampsAndUserHolder
 {
     private String registrator;
+
+    private String modifier;
 
     private Date registrationTimestamp;
 
@@ -46,6 +47,16 @@ public abstract class AbstractRegistrationHolder
     public void setRegistrationTimestamp(Date registrationTimestamp)
     {
         this.registrationTimestamp = registrationTimestamp;
+    }
+
+    public String getModifier()
+    {
+        return modifier;
+    }
+
+    public void setModifier(String modifier)
+    {
+        this.modifier = modifier;
     }
 
     public abstract Date getLastModificationDate();

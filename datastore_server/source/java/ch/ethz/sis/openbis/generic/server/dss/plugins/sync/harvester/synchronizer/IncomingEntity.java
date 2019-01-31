@@ -23,7 +23,7 @@ import java.util.List;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Identifier;
 
-public class IncomingEntity<T extends Identifier<T>> extends AbstractRegistrationHolder
+public class IncomingEntity<T extends Identifier<T>> extends AbstractTimestampsAndUserHolder
 {
     private final Identifier<T> entity;
 
