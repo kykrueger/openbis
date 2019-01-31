@@ -34,8 +34,12 @@ public interface IHarvesterQuery extends BaseQuery
     @Select("select id,user_id as userId from persons")
     public List<PersonRecord> listAllUsers();
 
-//    @Update(sql = "update materials " + UPDATE2, batchUpdate = true)
-//    public void updateMaterialRegistrations(List<RegistrationDTO> registrations);
+    @Select("select id,code from material_types")
+    public List<MaterialTypeRecord> listAllMaterialTypes();
+
+    @Update(sql = "update materials set registration_timestamp = ?{1.registrationTimestamp}, pers_id_registerer = ?{1.registratorId} "
+            + "where code = ?{1.permId} and maty_id = ?{1.typeId}", batchUpdate = true)
+    public void updateMaterialRegistrations(List<RegistrationDTO> registrations);
 
     @Update(sql = "update projects " + UPDATE2, batchUpdate = true)
     public void updateProjectRegistrations(List<RegistrationDTO> registrations);

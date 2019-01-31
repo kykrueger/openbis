@@ -271,12 +271,20 @@ public class EntitySynchronizer
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
         monitor.log("update " + materials.size() + " materials");
+        List<MaterialTypeRecord> listAllMaterialTypes = query.listAllMaterialTypes();
+        Map<String, Long> materialTypeIdsByCode = new HashMap<>();
+        for (MaterialTypeRecord materialTypeRecord : listAllMaterialTypes)
+        {
+            materialTypeIdsByCode.put(materialTypeRecord.code, materialTypeRecord.id);
+        }
         List<RegistrationDTO> registrations = new ArrayList<>();
         for (IncomingMaterial incomingMaterial : materials)
         {
-//            addRegistration(registrations, incomingMaterial.getPermID(), incomingMaterial, userTechIdsByUserId);
+            NewMaterialWithType material = incomingMaterial.getMaterial();
+            Long typeId = materialTypeIdsByCode.get(material.getType());
+            addRegistration(registrations, material.getCode(), typeId, incomingMaterial, userTechIdsByUserId);
         }
-        query.updateProjectRegistrations(registrations);
+        query.updateMaterialRegistrations(registrations);
     }
 
     private void updateProjects(Collection<IncomingProject> projects, IHarvesterQuery query,
@@ -290,7 +298,7 @@ public class EntitySynchronizer
         }
         query.updateProjectRegistrations(registrations);
     }
-    
+
     private void updateExperiments(Collection<IncomingExperiment> experiments, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
@@ -345,40 +353,46 @@ public class EntitySynchronizer
     {
         monitor.log("update " + dataSets.size() + " data sets");
         BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingDataSet>()
-        {
-            @Override
-            public List<IncomingDataSet> getAllEntities()
             {
-                return new ArrayList<>(dataSets);
-            }
-            
-            @Override
-            public void execute(List<IncomingDataSet> dataSets)
-            {
-                List<RegistrationDTO> registrations = new ArrayList<>();
-                for (IncomingDataSet incomingDataSet : dataSets)
+                @Override
+                public List<IncomingDataSet> getAllEntities()
                 {
-                    addRegistration(registrations, incomingDataSet.getFullDataSet().getMetadataCreation().getCode(), 
-                            incomingDataSet, userTechIdsByUserId);
+                    return new ArrayList<>(dataSets);
                 }
-                query.updateDataSetRegistrations(registrations);
-            }
-            
-            @Override
-            public String getEntityName()
-            {
-                return "data set";
-            }
-            
-            @Override
-            public String getOperationName()
-            {
-                return "update registration";
-            }
-        });
+
+                @Override
+                public void execute(List<IncomingDataSet> dataSets)
+                {
+                    List<RegistrationDTO> registrations = new ArrayList<>();
+                    for (IncomingDataSet incomingDataSet : dataSets)
+                    {
+                        addRegistration(registrations, incomingDataSet.getFullDataSet().getMetadataCreation().getCode(),
+                                incomingDataSet, userTechIdsByUserId);
+                    }
+                    query.updateDataSetRegistrations(registrations);
+                }
+
+                @Override
+                public String getEntityName()
+                {
+                    return "data set";
+                }
+
+                @Override
+                public String getOperationName()
+                {
+                    return "update registration";
+                }
+            });
     }
-    
+
     private void addRegistration(List<RegistrationDTO> registrations, String permID, AbstractRegistrationHolder entity,
+            Map<String, Long> userTechIdsByUserId)
+    {
+        addRegistration(registrations, permID, null, entity, userTechIdsByUserId);
+    }
+
+    private void addRegistration(List<RegistrationDTO> registrations, String permID, Long typeId, AbstractRegistrationHolder entity,
             Map<String, Long> userTechIdsByUserId)
     {
         String registrator = entity.getRegistrator();
@@ -387,6 +401,7 @@ public class EntitySynchronizer
         {
             RegistrationDTO registration = new RegistrationDTO();
             registration.setPermId(permID);
+            registration.setTypeId(typeId);
             registration.setRegistrationTimestamp(entity.getRegistrationTimestamp());
             registration.setRegistratorId(registratorId);
             registrations.add(registration);

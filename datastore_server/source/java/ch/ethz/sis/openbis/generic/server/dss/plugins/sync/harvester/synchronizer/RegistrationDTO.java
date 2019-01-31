@@ -24,6 +24,8 @@ import java.util.Date;
 public class RegistrationDTO
 {
     private String permId;
+    
+    private Long typeId;
 
     private Date registrationTimestamp;
 
@@ -37,6 +39,16 @@ public class RegistrationDTO
     public void setPermId(String permId)
     {
         this.permId = permId;
+    }
+
+    public Long getTypeId()
+    {
+        return typeId;
+    }
+
+    public void setTypeId(Long typeId)
+    {
+        this.typeId = typeId;
     }
 
     public Date getRegistrationTimestamp()
