@@ -48,5 +48,5 @@ public abstract class AbstractRegistrationHolder
         this.registrationTimestamp = registrationTimestamp;
     }
 
-
+    public abstract Date getLastModificationDate();
 }

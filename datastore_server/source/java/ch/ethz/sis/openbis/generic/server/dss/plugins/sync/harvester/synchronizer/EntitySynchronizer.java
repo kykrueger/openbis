@@ -402,6 +402,7 @@ public class EntitySynchronizer
             RegistrationDTO registration = new RegistrationDTO();
             registration.setPermId(permID);
             registration.setTypeId(typeId);
+            registration.setModificationTimestamp(entity.getLastModificationDate());
             registration.setRegistrationTimestamp(entity.getRegistrationTimestamp());
             registration.setRegistratorId(registratorId);
             registrations.add(registration);
