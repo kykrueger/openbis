@@ -24,8 +24,6 @@ import java.util.List;
 import ch.systemsx.cisd.common.mail.EMailAddress;
 
 /**
- * 
- *
  * @author Ganime Betul Akin
  */
 public class SyncConfig
@@ -212,6 +210,8 @@ public class SyncConfig
 
     private Boolean verbose = false;
 
+    private boolean keepOriginalTimestampsAndUsers;
+
     private List<String> dataSourceSpaces = new ArrayList<>();
 
     private List<String> harvesterSpaces = new ArrayList<>();
@@ -323,7 +323,17 @@ public class SyncConfig
     {
         this.verbose = verbose;
     }
-    
+
+    public boolean keepOriginalTimestampsAndUsers()
+    {
+        return keepOriginalTimestampsAndUsers;
+    }
+
+    public void setKeepOriginalTimestampsAndUsers(boolean keepOriginalTimestampsAndUsers)
+    {
+        this.keepOriginalTimestampsAndUsers = keepOriginalTimestampsAndUsers;
+    }
+
     public void setParallelizedExecutionPrefs(double machineLoad, int maxThreads, int retriesOnFailure, boolean stopOnFailure)
     {
         this.parallelizedExecutionPrefs = new ParallelizedExecutionPreferences(machineLoad, maxThreads, retriesOnFailure, stopOnFailure);

@@ -209,14 +209,17 @@ public class EntitySynchronizer
         List<String> notSyncedAttachmentsHolders = registerAttachments(data, newEntities);
         registerDataSets(data, notSyncedAttachmentsHolders);
 
-        updateRegistratorAndRegistrationTimestamp(data);
+        if (config.keepOriginalTimestampsAndUsers())
+        {
+            updateTimestampsAndUsers(data);
+        }
 
         return data.getResourceListTimestamp();
     }
 
-    private void updateRegistratorAndRegistrationTimestamp(ResourceListParserData data)
+    private void updateTimestampsAndUsers(ResourceListParserData data)
     {
-        Monitor monitor = new Monitor("Update registrator and registration timestamp", operationLog);
+        Monitor monitor = new Monitor("Update timestamps and users", operationLog);
         createMissingUsers(data, monitor);
         DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("openbis-db");
         IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
