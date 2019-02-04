@@ -206,25 +206,39 @@ class TestCase(systemtest.testcase.TestCase):
                                "select '{0}' || name as name, description, script_type, plugin_type, entity_kind, is_available, "
                                + "  length(script) as script_length, md5(script) as script_hash "
                                + "from scripts where name like '{1}%' order by name")
+        self._compareDataBases("Projects", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || s.code as space, p.code as project, p.description, "
+                               + " ur.user_id as registrator, p.registration_timestamp, "
+                               + " um.user_id as modifier, p.modification_timestamp "
+                               + "from projects p join spaces s on p.space_id = s.id "
+                               + "join persons ur on p.pers_id_registerer = ur.id "
+                               + "join persons um on p.pers_id_modifier = um.id "
+                               + "where s.code like '{1}%' order by s.code, p.code")
         self._compareDataBases("Material properties", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || m.code as material, '{0}' || t.code as type, '{0}' || pt.code as property, "
-                               + "  concat(mp.value, cvt.code, '{0}' || m2.code) as value "
+                               + "  concat(mp.value, cvt.code, '{0}' || m2.code) as value, "
+                               + " ur.user_id as registrator, m.registration_timestamp, m.modification_timestamp "
                                + "from materials m join material_properties mp on mp.mate_id = m.id "
                                + "left join controlled_vocabulary_terms cvt on mp.cvte_id = cvt.id "
                                + "left join materials m2 on mp.mate_prop_id = m2.id "
                                + "join material_type_property_types etpt on mp.mtpt_id = etpt.id "
                                + "join material_types t on etpt.maty_id = t.id "
                                + "join property_types pt on etpt.prty_id = pt.id "
+                               + "join persons ur on m.pers_id_registerer = ur.id "
                                + "order by m.code, pt.code")
         self._compareDataBases("Experiment properties", openbis_data_source, openbis_harvester, "openbis", 
                                "select e.code as experiment, '{0}' || t.code as type, '{0}' || pt.code as property, "
-                               + "  concat(ep.value, cvt.code, m.code) as value "
+                               + "  concat(ep.value, cvt.code, m.code) as value, "
+                               + " ur.user_id as registrator, e.registration_timestamp, "
+                               + " um.user_id as modifier, e.modification_timestamp "
                                + "from experiments e join experiment_properties ep on ep.expe_id = e.id "
                                + "left join controlled_vocabulary_terms cvt on ep.cvte_id = cvt.id "
                                + "left join materials m on ep.mate_prop_id = m.id "
                                + "join experiment_type_property_types etpt on ep.etpt_id = etpt.id "
                                + "join experiment_types t on etpt.exty_id = t.id "
                                + "join property_types pt on etpt.prty_id = pt.id "
+                               + "join persons ur on e.pers_id_registerer = ur.id "
+                               + "join persons um on e.pers_id_modifier = um.id "
                                + "order by e.code, pt.code")
         self._compareDataBases("Number of samples per experiment", openbis_data_source, openbis_harvester, "openbis",
                                "select p.code as project, e.code as experiment, count(*) as number_of_samples "
@@ -242,12 +256,16 @@ class TestCase(systemtest.testcase.TestCase):
                                + "left join samples s on a.samp_id = s.id order by a.file_name, a.version")
         self._compareDataBases("Samples which are not of type BENCHMARK_OBJECT", openbis_data_source, openbis_harvester, "openbis",
                                "select s.code, '{0}' || t.code as type, s.perm_id, '{0}' || sp.code as space, "
-                               + "  p.code as project, e.code as experiment, sc.code as container "
+                               + "  p.code as project, e.code as experiment, sc.code as container, "
+                               + " ur.user_id as registrator, s.registration_timestamp, "
+                               + " um.user_id as modifier, s.modification_timestamp "
                                + "from samples s join sample_types t on s.saty_id = t.id "
                                + "left join spaces sp on s.space_id = sp.id "
                                + "left join projects p on s.proj_id = p.id "
                                + "left join experiments e on s.expe_id = e.id "
                                + "left join samples sc on s.samp_id_part_of = sc.id "
+                               + "join persons ur on s.pers_id_registerer = ur.id "
+                               + "join persons um on s.pers_id_modifier = um.id "
                                + "where t.code <> '{1}BENCHMARK_OBJECT' and s.code != 'DEFAULT' order by s.code, s.perm_id")
         self._compareDataBases("Sample properties", openbis_data_source, openbis_harvester, "openbis",
                                "select s.code as sample, '{0}' || t.code as type, '{0}' || pt.code as property, "
@@ -271,13 +289,17 @@ class TestCase(systemtest.testcase.TestCase):
                                + "left join experiments e on d.expe_id=e.id order by d.code")
         self._compareDataBases("Data set properties", openbis_data_source, openbis_harvester, "openbis", 
                                "select d.code as data_set, '{0}' || t.code as type, '{0}' || pt.code as property, "
-                               + "  concat(dp.value, cvt.code, m.code) as value "
+                               + "  concat(dp.value, cvt.code, m.code) as value, "
+                               + " ur.user_id as registrator, d.registration_timestamp, "
+                               + " um.user_id as modifier, d.modification_timestamp "
                                + "from data d join data_set_properties dp on dp.ds_id = d.id "
                                + "left join controlled_vocabulary_terms cvt on dp.cvte_id = cvt.id "
                                + "left join materials m on dp.mate_prop_id = m.id "
                                + "join data_set_type_property_types dtpt on dp.dstpt_id = dtpt.id "
                                + "join data_set_types t on dtpt.dsty_id = t.id "
                                + "join property_types pt on dtpt.prty_id = pt.id "
+                               + "join persons ur on d.pers_id_registerer = ur.id "
+                               + "join persons um on d.pers_id_modifier = um.id "
                                + "order by d.code, pt.code")
         self._compareDataBases("Data set sizes", openbis_data_source, openbis_harvester, "pathinfo",
                                "select d.code as data_set, file_name, size_in_bytes "
