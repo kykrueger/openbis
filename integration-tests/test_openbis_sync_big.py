@@ -208,8 +208,8 @@ class TestCase(systemtest.testcase.TestCase):
                                + "from scripts where name like '{1}%' order by name")
         self._compareDataBases("Projects", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || s.code as space, p.code as project, p.description, "
-                               + " ur.user_id as registrator, p.registration_timestamp, "
-                               + " um.user_id as modifier, p.modification_timestamp "
+                               + " ur.user_id as registrator, to_char(p.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS'), "
+                               + " um.user_id as modifier, to_char(p.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') "
                                + "from projects p join spaces s on p.space_id = s.id "
                                + "join persons ur on p.pers_id_registerer = ur.id "
                                + "join persons um on p.pers_id_modifier = um.id "
@@ -217,7 +217,8 @@ class TestCase(systemtest.testcase.TestCase):
         self._compareDataBases("Material properties", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || m.code as material, '{0}' || t.code as type, '{0}' || pt.code as property, "
                                + "  concat(mp.value, cvt.code, '{0}' || m2.code) as value, "
-                               + " ur.user_id as registrator, m.registration_timestamp, m.modification_timestamp "
+                               + " ur.user_id as registrator, to_char(m.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS'), "
+                               + " to_char(m.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') "
                                + "from materials m join material_properties mp on mp.mate_id = m.id "
                                + "left join controlled_vocabulary_terms cvt on mp.cvte_id = cvt.id "
                                + "left join materials m2 on mp.mate_prop_id = m2.id "
@@ -229,8 +230,8 @@ class TestCase(systemtest.testcase.TestCase):
         self._compareDataBases("Experiment properties", openbis_data_source, openbis_harvester, "openbis", 
                                "select e.code as experiment, '{0}' || t.code as type, '{0}' || pt.code as property, "
                                + "  concat(ep.value, cvt.code, m.code) as value, "
-                               + " ur.user_id as registrator, e.registration_timestamp, "
-                               + " um.user_id as modifier, e.modification_timestamp "
+                               + " ur.user_id as registrator, to_char(e.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS'), "
+                               + " um.user_id as modifier, to_char(e.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') "
                                + "from experiments e join experiment_properties ep on ep.expe_id = e.id "
                                + "left join controlled_vocabulary_terms cvt on ep.cvte_id = cvt.id "
                                + "left join materials m on ep.mate_prop_id = m.id "
@@ -257,8 +258,8 @@ class TestCase(systemtest.testcase.TestCase):
         self._compareDataBases("Samples which are not of type BENCHMARK_OBJECT", openbis_data_source, openbis_harvester, "openbis",
                                "select s.code, '{0}' || t.code as type, s.perm_id, '{0}' || sp.code as space, "
                                + "  p.code as project, e.code as experiment, sc.code as container, "
-                               + " ur.user_id as registrator, s.registration_timestamp, "
-                               + " um.user_id as modifier, s.modification_timestamp "
+                               + " ur.user_id as registrator, to_char(s.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS'), "
+                               + " um.user_id as modifier, to_char(s.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') "
                                + "from samples s join sample_types t on s.saty_id = t.id "
                                + "left join spaces sp on s.space_id = sp.id "
                                + "left join projects p on s.proj_id = p.id "
@@ -290,8 +291,8 @@ class TestCase(systemtest.testcase.TestCase):
         self._compareDataBases("Data set properties", openbis_data_source, openbis_harvester, "openbis", 
                                "select d.code as data_set, '{0}' || t.code as type, '{0}' || pt.code as property, "
                                + "  concat(dp.value, cvt.code, m.code) as value, "
-                               + " ur.user_id as registrator, d.registration_timestamp, "
-                               + " um.user_id as modifier, d.modification_timestamp "
+                               + " ur.user_id as registrator, to_char(d.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS'), "
+                               + " um.user_id as modifier, to_char(d.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') "
                                + "from data d join data_set_properties dp on dp.ds_id = d.id "
                                + "left join controlled_vocabulary_terms cvt on dp.cvte_id = cvt.id "
                                + "left join materials m on dp.mate_prop_id = m.id "
