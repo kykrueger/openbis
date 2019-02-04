@@ -24,7 +24,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
@@ -225,7 +225,7 @@ public class DeleteFromExternalDBMaintenanceTask extends
             {
                 sb.append(", ");
             }
-            sb.append("'" + StringEscapeUtils.escapeSql(dds.getIdentifier()) + "'");
+            sb.append("'" + StringUtils.replace(dds.getIdentifier(), "'", "''") + "'");
         }
         String ids = sb.toString();
         return ids;

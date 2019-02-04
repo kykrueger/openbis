@@ -21,7 +21,7 @@ import static org.testng.AssertJUnit.fail;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.SampleBrowserTest;
@@ -81,9 +81,9 @@ public class SampleDetailsTest extends GenericSystemTestCase
     private static final String CELL_PLATE_EXAMPLE_PERM_ID = "200811050946559-979";
 
     private static final String CONTROL_LAYOUT_EXAMPLE_PERMLINK = StringEscapeUtils
-            .escapeHtml(String.format(PERMLINK_TEMPLATE, CONTROL_LAYOUT_EXAMPLE_PERM_ID));
+            .escapeHtml4(String.format(PERMLINK_TEMPLATE, CONTROL_LAYOUT_EXAMPLE_PERM_ID));
 
-    private static final String CELL_PLATE_EXAMPLE_PERMLINK = StringEscapeUtils.escapeHtml(String
+    private static final String CELL_PLATE_EXAMPLE_PERMLINK = StringEscapeUtils.escapeHtml4(String
             .format(PERMLINK_TEMPLATE, CELL_PLATE_EXAMPLE_PERM_ID));
 
     private static final String DIRECTLY_CONNECTED_DATA_SET_CODE = "20081105092159222-2";
