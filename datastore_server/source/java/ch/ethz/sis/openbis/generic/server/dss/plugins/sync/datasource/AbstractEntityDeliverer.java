@@ -179,6 +179,11 @@ abstract class AbstractEntityDeliverer<T>
         addAttribute(writer, attributeName, value, v -> v);
     }
 
+    protected void addAttribute(XMLStreamWriter writer, String attributeName, Boolean value) throws XMLStreamException
+    {
+        addAttribute(writer, attributeName, value, v -> String.valueOf(v));
+    }
+    
     protected <O> void addAttribute(XMLStreamWriter writer, String attributeName, O object, Function<O, String> mapper) throws XMLStreamException
     {
         if (object != null)

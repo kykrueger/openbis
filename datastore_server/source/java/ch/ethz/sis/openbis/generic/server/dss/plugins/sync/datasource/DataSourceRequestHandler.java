@@ -42,6 +42,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -50,6 +51,9 @@ import ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.IRequestHandler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSourceQueryService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMasterDataRegistrationTransaction;
+import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.EncapsulatedCommonServer;
+import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.MasterDataRegistrationService;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 
 /**
@@ -106,6 +110,7 @@ public class DataSourceRequestHandler implements IRequestHandler
         materialDeliverer = new MaterialDeliverer(deliveryContext);
         sampleDeliverer = new SampleDeliverer(deliveryContext);
         projectDeliverer = new ProjectDeliverer(deliveryContext);
+        String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
         masterDataDeliverer = new MasterDataDeliverer(deliveryContext);
     }
 
