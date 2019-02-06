@@ -16,7 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.query;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.TableModel;
@@ -52,7 +52,7 @@ public class ExecuteQueryExecutor extends AbstractExecuteExecutor implements IEx
 
         authorizationExecutor.canExecute(context, queryId, query);
 
-        return doExecute(context, StringEscapeUtils.unescapeHtml(query.getExpression()), database, options.getParameters());
+        return doExecute(context, StringEscapeUtils.unescapeHtml4(query.getExpression()), database, options.getParameters());
     }
 
 }

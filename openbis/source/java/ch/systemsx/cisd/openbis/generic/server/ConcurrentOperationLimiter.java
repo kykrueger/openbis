@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -129,7 +129,7 @@ public class ConcurrentOperationLimiter implements IConcurrentOperationLimiter
                 {
                     operationLog.info(
                             "Operation '" + operationName + "' failed to acquire an execution permit within "
-                                    + DurationFormatUtils.formatDurationHMS(timeout) + ".");
+                                    + DurationFormatUtils.formatDuration(timeout, "H:mm:ss.SSS") + ".");
                     throw new UserFailureException(
                             "Sorry, the server is very loaded at the moment. Your request can not be currently processed. Please try again later.");
                 }

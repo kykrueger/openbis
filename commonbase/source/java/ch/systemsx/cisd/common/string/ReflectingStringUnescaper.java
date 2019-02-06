@@ -18,7 +18,7 @@ package ch.systemsx.cisd.common.string;
 
 import java.lang.reflect.Field;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -120,10 +120,10 @@ class ReflectingStringUnescaperUnrestricted<T> extends ReflectingStringUnescaper
             if (null == fieldOrNull)
             {
                 // happens e.g. when array of strings is unescaped
-                return StringEscapeUtils.unescapeHtml(value);
+                return StringEscapeUtils.unescapeHtml4(value);
             }
 
-            return StringEscapeUtils.unescapeHtml(value);
+            return StringEscapeUtils.unescapeHtml4(value);
         }
     }
 

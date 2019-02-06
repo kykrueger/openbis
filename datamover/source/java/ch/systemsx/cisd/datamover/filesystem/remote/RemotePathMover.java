@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.datamover.filesystem.remote;
 
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.concurrent.InactivityMonitor;
@@ -199,7 +199,7 @@ public final class RemotePathMover implements IStoreMover
                 public String describeInactivity(long now)
                 {
                     final String inactivityPeriod =
-                            DurationFormatUtils.formatDurationHMS(now - lineHandler.getLastTimestamp());
+                            DurationFormatUtils.formatDuration(now - lineHandler.getLastTimestamp(), "H:mm:ss.SSS");
                     return "No write activity on for " + inactivityPeriod;
                 }
             };
