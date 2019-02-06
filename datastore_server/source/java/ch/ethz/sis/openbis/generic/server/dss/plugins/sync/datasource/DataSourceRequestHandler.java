@@ -162,11 +162,12 @@ public class DataSourceRequestHandler implements IRequestHandler
         deliveryContext.setV3api(ServiceProvider.getV3ApplicationService());
         deliveryContext.setContentProvider(ServiceProvider.getHierarchicalContentProvider());
         Deliverers deliverers = new Deliverers();
-        deliverers.addDeliverer(new DataSetDeliverer(deliveryContext));
-        deliverers.addDeliverer(new MaterialDeliverer(deliveryContext));
-        deliverers.addDeliverer(new SampleDeliverer(deliveryContext));
-        deliverers.addDeliverer(new ProjectDeliverer(deliveryContext));
         deliverers.addDeliverer(new MasterDataDeliverer(deliveryContext));
+        deliverers.addDeliverer(new MaterialDeliverer(deliveryContext));
+        deliverers.addDeliverer(new ProjectDeliverer(deliveryContext));
+        deliverers.addDeliverer(new ExperimentDeliverer(deliveryContext));
+        deliverers.addDeliverer(new SampleDeliverer(deliveryContext));
+        deliverers.addDeliverer(new DataSetDeliverer(deliveryContext));
         deliverer = deliverers;
     }
 
