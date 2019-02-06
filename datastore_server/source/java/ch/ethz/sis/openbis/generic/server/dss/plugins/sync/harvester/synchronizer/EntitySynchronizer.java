@@ -85,6 +85,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentsSynchronizer;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetRegistrationTaskExecutor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetSynchronizationSummary;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.PrefixBasedNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
@@ -592,7 +593,11 @@ public class EntitySynchronizer
         // Parse the resource list: This sends back all projects,
         // experiments, samples and data sets contained in the XML together with their last modification date to be used for filtering
         operationLog.info("Parsing the resource list xml document...");
-        INameTranslator nameTranslator = new PrefixBasedNameTranslator(config.getDataSourceAlias());
+        INameTranslator nameTranslator = new DefaultNameTranslator();
+        if (config.isTranslateUsingDataSourceAlias())
+        {
+            nameTranslator = new PrefixBasedNameTranslator(config.getDataSourceAlias());
+        }
 
         ResourceListParser parser = ResourceListParser.create(nameTranslator, dataStoreCode);
         ResourceListParserData data = parser.parseResourceListDocument(doc, monitor);
