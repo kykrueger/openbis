@@ -28,7 +28,7 @@ import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
@@ -185,7 +185,7 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
         operationLog.info(String.format("Authentication service: '%s'", authenticationService
                 .getClass().getName()));
         operationLog.info(String.format("Session expiration period: %s",
-                DurationFormatUtils.formatDurationHMS(sessionExpirationPeriodMillis)));
+                DurationFormatUtils.formatDuration(sessionExpirationPeriodMillis, "H:mm:ss.SSS")));
         try
         {
             authenticationService.check();
@@ -408,7 +408,7 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
         }
         final String prefix = prefixGenerator.createPrefix(session);
         authenticationLog.info(prefix + ": session_expired  [inactive "
-                + DurationFormatUtils.formatDurationHMS(sessionExpirationPeriodMillis) + "]");
+                + DurationFormatUtils.formatDuration(sessionExpirationPeriodMillis, "H:mm:ss.SSS") + "]");
     }
 
     private void logLogout(final T session)
