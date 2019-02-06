@@ -497,7 +497,7 @@ public class ResourceListParser
     {
 
         String code = extractCode(xdNode);
-        String desc = xdNode.getAttributes().getNamedItem("desc").getTextContent();
+        String desc = extractAttribute(xdNode, "desc", true);
         String space = extractSpace(xdNode, false);
         ProjectIdentifier projectIdentifier = createProjectIdentifier(code, space);
         NewProject newProject = new NewProject(projectIdentifier.toString(), desc);
