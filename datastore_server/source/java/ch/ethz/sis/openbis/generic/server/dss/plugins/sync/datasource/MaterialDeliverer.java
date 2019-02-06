@@ -69,7 +69,7 @@ public class MaterialDeliverer extends AbstractEntityDeliverer<Material>
             addLink(writer, "#action=VIEW&entity=MATERIAL&code=" + code + "&type=" + type);
             startXdElement(writer);
             writer.writeAttribute("code", code);
-            writer.writeAttribute("dsKind", "MATERIAL");
+            writer.writeAttribute("kind", "MATERIAL");
             addRegistrationDate(writer, material);
             addRegistrator(writer, material);
             addType(writer, material.getType());
