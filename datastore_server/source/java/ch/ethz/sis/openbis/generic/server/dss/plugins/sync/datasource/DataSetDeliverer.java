@@ -113,12 +113,14 @@ public class DataSetDeliverer extends AbstractEntityDeliverer<DataSet>
             List<ContentCopy> contentCopies = linkedData.getContentCopies();
             for (ContentCopy contentCopy : contentCopies)
             {
+                writer.writeStartElement("x:contentCopy");
                 addAttribute(writer, "externalCode", contentCopy.getExternalCode());
                 addAttribute(writer, "externalDMS", contentCopy.getExternalDms(), edms -> edms.getCode());
                 addAttribute(writer, "gitCommitHash", contentCopy.getGitCommitHash());
                 addAttribute(writer, "gitRepositoryId", contentCopy.getGitRepositoryId());
                 addAttribute(writer, "id", contentCopy.getId(), id -> id.getPermId());
                 addAttribute(writer, "path", contentCopy.getPath());
+                writer.writeEndElement();
             }
             addFileNodes(writer, code, context.getContentProvider().asContent(code).getRootNode());
             writer.writeEndElement();

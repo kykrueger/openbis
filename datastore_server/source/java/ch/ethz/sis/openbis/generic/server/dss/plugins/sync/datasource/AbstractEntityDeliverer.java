@@ -48,7 +48,7 @@ import ch.systemsx.cisd.openbis.generic.server.batch.IBatchOperation;
 /**
  * @author Franz-Josef Elmer
  */
-abstract class AbstractEntityDeliverer<T>
+abstract class AbstractEntityDeliverer<T> implements IDeliverer
 {
     private static final int CHUNK_SIZE = 1000;
 
@@ -70,7 +70,8 @@ abstract class AbstractEntityDeliverer<T>
         operationLog = LogFactory.getLogger(LogCategory.OPERATION, getClass());
     }
 
-    void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    @Override
+    public void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
     {
         List<T> allEntities = getAllEntities(sessionToken);
         executeInBatches(allEntities, entities -> deliverEntities(writer, sessionToken, spaces, entities));

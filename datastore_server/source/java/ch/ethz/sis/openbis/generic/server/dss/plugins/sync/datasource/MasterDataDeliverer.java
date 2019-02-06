@@ -89,7 +89,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
     }
 
     @Override
-    void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    public void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
     {
         startUrlElement(writer);
         addLocation(writer, "MASTER_DATA", "MASTER_DATA");

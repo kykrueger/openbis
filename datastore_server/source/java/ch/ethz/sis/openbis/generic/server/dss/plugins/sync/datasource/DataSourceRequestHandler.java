@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -27,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,25 +34,14 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.log4j.Logger;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.IRequestHandler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSourceQueryService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMasterDataRegistrationTransaction;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.EncapsulatedCommonServer;
-import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.MasterDataRegistrationService;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 
 /**
@@ -61,57 +49,125 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
  */
 public class DataSourceRequestHandler implements IRequestHandler
 {
-    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, DataSourceRequestHandler.class);
+    private enum Capability
+    {
+        ABOUT("about", "description", null, false),
+        CAPABILITY_LIST("capabilitylist", ABOUT, false),
+        RESOURCE_LIST("resourcelist", CAPABILITY_LIST, true)
+        {
+            @Override
+            void writeUrls(XMLStreamWriter writer, DeliveryContext context, IDeliverer deliverer,
+                    Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
+            {
+                SpaceSearchCriteria searchCriteria = new SpaceSearchCriteria();
+                SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
+                List<Space> spaces = context.getV3api().searchSpaces(sessionToken, searchCriteria, fetchOptions).getObjects();
+                List<String> spaceCodes = spaces.stream().map(Space::getCode).collect(Collectors.toList());
+                Set<String> requestedSpaces = DataSourceUtils.getRequestedAndAllowedSubSet(spaceCodes,
+                        parameterMap.get("white_list"), parameterMap.get("black_list"));
+                deliverer.deliverEntities(writer, sessionToken, requestedSpaces, requestTimestamp);
+            }
+        };
 
-    private File tempDir;
+        private String name;
 
-    private String serverUrl;
+        private Capability up;
 
-    private String downloadUrl;
+        private Capability down;
 
-    private String servletPath;
+        private String capabilityAttribute;
+
+        private boolean withAt;
+
+        static
+        {
+            ABOUT.down = CAPABILITY_LIST;
+            CAPABILITY_LIST.down = RESOURCE_LIST;
+        }
+
+        private Capability(String name, Capability up, boolean withAt)
+        {
+            this(name, name, up, withAt);
+        }
+
+        private Capability(String name, String capabilityAttribute, Capability up, boolean withAt)
+        {
+            this.name = name;
+            this.capabilityAttribute = capabilityAttribute;
+            this.up = up;
+            this.withAt = withAt;
+        }
+
+        boolean matchVerb(Set<String> verbs)
+        {
+            return verbs.contains(asVerb());
+        }
+
+        String asVerb()
+        {
+            return name + ".xml";
+        }
+
+        void write(XMLStreamWriter writer, DeliveryContext context, IDeliverer deliverer,
+                Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
+        {
+            writer.writeStartElement("rs:ln");
+            String verb = up == null ? asVerb() : up.asVerb();
+            writer.writeAttribute("href", createDownloadUrl(context, verb));
+            writer.writeAttribute("rel", up == null ? "describedby" : "up");
+            writer.writeEndElement();
+            writer.writeStartElement("rs:md");
+            if (withAt)
+            {
+                writer.writeAttribute("at", DataSourceUtils.convertToW3CDate(requestTimestamp));
+            }
+            writer.writeAttribute("capability", capabilityAttribute);
+            writer.writeEndElement();
+            writeUrls(writer, context, deliverer, parameterMap, sessionToken, requestTimestamp);
+        }
+
+        void writeUrls(XMLStreamWriter writer, DeliveryContext context, IDeliverer deliverer,
+                Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
+        {
+            writer.writeStartElement("url");
+            writer.writeStartElement("loc");
+            writer.writeCharacters(createDownloadUrl(context, down.asVerb()));
+            writer.writeEndElement();
+            writer.writeStartElement("rs:md");
+            writer.writeAttribute("capability", down.name);
+            writer.writeEndElement();
+        }
+
+        private String createDownloadUrl(DeliveryContext context, String verb)
+        {
+            return context.getDownloadUrl() + context.getServletPath() + "/?verb=" + verb;
+        }
+
+    }
 
     private DataSourceQueryService queryService;
 
-    private IApplicationServerApi v3api;
+    private IDeliverer deliverer;
 
-    private IHierarchicalContentProvider contentProvider;
-
-    private AbstractEntityDeliverer<DataSet> dataSetDeliverer;
-
-    private ExperimentDeliverer experimentDeliverer;
-
-    private MaterialDeliverer materialDeliverer;
-
-    private SampleDeliverer sampleDeliverer;
-
-    private ProjectDeliverer projectDeliverer;
-
-    private MasterDataDeliverer masterDataDeliverer;
+    private DeliveryContext deliveryContext;
 
     @Override
     public void init(Properties properties)
     {
-        DeliveryContext deliveryContext = new DeliveryContext();
-        servletPath = new File(PropertyUtils.getMandatoryProperty(properties, "path")).getParent();
-        deliveryContext.setServletPath(servletPath);
-        tempDir = new File(PropertyUtils.getMandatoryProperty(properties, "temp-dir"));
-        serverUrl = PropertyUtils.getMandatoryProperty(properties, "server-url");
-        deliveryContext.setServerUrl(serverUrl);
-        downloadUrl = PropertyUtils.getMandatoryProperty(properties, "download-url");
-        deliveryContext.setDownloadUrl(downloadUrl);
         queryService = new DataSourceQueryService();
-        v3api = ServiceProvider.getV3ApplicationService();
-        deliveryContext.setV3api(v3api);
-        contentProvider = ServiceProvider.getHierarchicalContentProvider();
-        deliveryContext.setContentProvider(contentProvider);
-        dataSetDeliverer = new DataSetDeliverer(deliveryContext);
-        experimentDeliverer = new ExperimentDeliverer(deliveryContext);
-        materialDeliverer = new MaterialDeliverer(deliveryContext);
-        sampleDeliverer = new SampleDeliverer(deliveryContext);
-        projectDeliverer = new ProjectDeliverer(deliveryContext);
-        String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
-        masterDataDeliverer = new MasterDataDeliverer(deliveryContext);
+        deliveryContext = new DeliveryContext();
+        deliveryContext.setServletPath(new File(PropertyUtils.getMandatoryProperty(properties, "path")).getParent());
+        deliveryContext.setServerUrl(PropertyUtils.getMandatoryProperty(properties, "server-url"));
+        deliveryContext.setDownloadUrl(PropertyUtils.getMandatoryProperty(properties, "download-url"));
+        deliveryContext.setV3api(ServiceProvider.getV3ApplicationService());
+        deliveryContext.setContentProvider(ServiceProvider.getHierarchicalContentProvider());
+        Deliverers deliverers = new Deliverers();
+        deliverers.addDeliverer(new DataSetDeliverer(deliveryContext));
+        deliverers.addDeliverer(new MaterialDeliverer(deliveryContext));
+        deliverers.addDeliverer(new SampleDeliverer(deliveryContext));
+        deliverers.addDeliverer(new ProjectDeliverer(deliveryContext));
+        deliverers.addDeliverer(new MasterDataDeliverer(deliveryContext));
+        deliverer = deliverers;
     }
 
     @Override
@@ -119,7 +175,7 @@ public class DataSourceRequestHandler implements IRequestHandler
     {
         try
         {
-            Map<String, Set<String>> parameterMap = getParameterMap(request);
+            Map<String, List<String>> parameterMap = getParameterMap(request);
             XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
             XMLStreamWriter writer = xmlOutputFactory.createXMLStreamWriter(response.getWriter());
             writer.writeStartDocument();
@@ -132,11 +188,10 @@ public class DataSourceRequestHandler implements IRequestHandler
             writer.writeAttribute("xsi:schemaLocation",
                     "https://sis.id.ethz.ch/software/#openbis/xdterms/ ./xml/xdterms.xsd https://sis.id.ethz.ch/software/#openbis/xmdterms/");
             String sessionToken = session.getSessionToken();
-            Set<String> verbs = parameterMap.get("verb");
-            if (verbs.contains("resourcelist.xml"))
-            {
-                deliverResourceList(parameterMap, sessionToken, writer);
-            }
+            Date requestTimestamp = getRequestTimestamp();
+            Set<String> verbs = new HashSet<>(parameterMap.get("verb"));
+            Capability capability = findMatchingCapability(verbs);
+            capability.write(writer, deliveryContext, deliverer, parameterMap, sessionToken, requestTimestamp);
             writer.writeEndElement();
             writer.writeEndDocument();
         } catch (Exception e)
@@ -145,41 +200,22 @@ public class DataSourceRequestHandler implements IRequestHandler
         }
     }
 
-    private void deliverResourceList(Map<String, Set<String>> parameterMap, String sessionToken, XMLStreamWriter writer) throws XMLStreamException
+    private Capability findMatchingCapability(Set<String> verbs)
     {
-
-        writer.writeStartElement("rs:ln");
-        writer.writeAttribute("href", downloadUrl + servletPath + "/?verb=capabilitylist.xml");
-        writer.writeAttribute("rel", "up");
-        writer.writeEndElement();
-        writer.writeStartElement("rs:md");
-        Date requestTimestamp = getRequestTimestamp();
-        writer.writeAttribute("at", DataSourceUtils.convertToW3CDate(requestTimestamp));
-        writer.writeAttribute("capability", "resourceList");
-        writer.writeEndElement();
-        Set<String> ignoredSpaces = parameterMap.get("black_list");
-        if (ignoredSpaces == null)
+        if (verbs != null)
         {
-            ignoredSpaces = Collections.emptySet();
-        }
-        Set<String> requestedSpaces = new TreeSet<>();
-        List<Space> spaces = v3api.searchSpaces(sessionToken, new SpaceSearchCriteria(), new SpaceFetchOptions()).getObjects();
-        for (Space space : spaces)
-        {
-            if (ignoredSpaces.contains(space.getCode()) == false)
+            for (Capability capability : Capability.values())
             {
-                requestedSpaces.add(space.getCode());
+                if (capability.matchVerb(verbs))
+                {
+                    return capability;
+                }
             }
         }
-        dataSetDeliverer.deliverEntities(writer, sessionToken, requestedSpaces, requestTimestamp);
-        experimentDeliverer.deliverEntities(writer, sessionToken, requestedSpaces, requestTimestamp);
-        masterDataDeliverer.deliverEntities(writer, sessionToken, requestedSpaces, requestTimestamp);;
-        materialDeliverer.deliverEntities(writer, sessionToken, requestedSpaces, requestTimestamp);
-        projectDeliverer.deliverEntities(writer, sessionToken, requestedSpaces, requestTimestamp);
-        sampleDeliverer.deliverEntities(writer, sessionToken, requestedSpaces, requestTimestamp);
+        return Capability.ABOUT;
     }
 
-    protected Date getRequestTimestamp()
+    private Date getRequestTimestamp()
     {
         Date requestTimestamp = new Date();
         String query = "select xact_start FROM pg_stat_activity WHERE xact_start IS NOT NULL ORDER BY xact_start ASC LIMIT 1";
@@ -190,14 +226,14 @@ public class DataSourceRequestHandler implements IRequestHandler
         return requestTimestamp;
     }
 
-    private Map<String, Set<String>> getParameterMap(HttpServletRequest request)
+    private Map<String, List<String>> getParameterMap(HttpServletRequest request)
     {
         Enumeration<String> enumeration = request.getParameterNames();
-        Map<String, Set<String>> parameterMap = new HashMap<>();
+        Map<String, List<String>> parameterMap = new HashMap<>();
         while (enumeration.hasMoreElements())
         {
             String parameter = enumeration.nextElement();
-            parameterMap.put(parameter, new HashSet<>(Arrays.asList(request.getParameterValues(parameter))));
+            parameterMap.put(parameter, Arrays.asList(request.getParameterValues(parameter)));
         }
         return parameterMap;
     }
