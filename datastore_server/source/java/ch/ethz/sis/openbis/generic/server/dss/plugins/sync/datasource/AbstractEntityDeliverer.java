@@ -42,6 +42,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 import ch.systemsx.cisd.openbis.generic.server.batch.BatchOperationExecutor;
 import ch.systemsx.cisd.openbis.generic.server.batch.IBatchOperation;
 
@@ -71,13 +72,13 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
     }
 
     @Override
-    public void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    public void deliverEntities(XMLStreamWriter writer, IDataSourceQueryService queryService, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
     {
-        List<T> allEntities = getAllEntities(sessionToken);
+        List<T> allEntities = getAllEntities(queryService, sessionToken);
         executeInBatches(allEntities, entities -> deliverEntities(writer, sessionToken, spaces, entities));
     }
 
-    protected List<T> getAllEntities(String sessionToken)
+    protected List<T> getAllEntities(IDataSourceQueryService queryService, String sessionToken)
     {
         return Collections.emptyList();
     }

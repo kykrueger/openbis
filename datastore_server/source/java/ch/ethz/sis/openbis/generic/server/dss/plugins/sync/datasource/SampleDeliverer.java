@@ -28,33 +28,23 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-public class SampleDeliverer extends AbstractEntityDeliverer<Sample>
+public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
 {
 
     SampleDeliverer(DeliveryContext context)
     {
-        super(context, "sample");
+        super(context, "sample", "samples");
     }
 
     @Override
-    protected List<Sample> getAllEntities(String sessionToken)
+    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> samplePermIds) throws XMLStreamException
     {
-        SampleSearchCriteria searchCriteria = new SampleSearchCriteria();
-        SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        fetchOptions.sortBy().permId();
-        return context.getV3api().searchSamples(sessionToken, searchCriteria, fetchOptions).getObjects();
-    }
-
-    @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<Sample> samples) throws XMLStreamException
-    {
-        List<SamplePermId> permIds = samples.stream().map(Sample::getPermId).collect(Collectors.toList());
+        List<SamplePermId> permIds = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
         Collection<Sample> fullSamples = context.getV3api().getSamples(sessionToken, permIds, createFullFetchOptions()).values();
         int count = 0;
         for (Sample sample : fullSamples)
@@ -85,7 +75,7 @@ public class SampleDeliverer extends AbstractEntityDeliverer<Sample>
                 count++;
             }
         }
-        operationLog.info(count + " of " + samples.size() + " samples have been delivered.");
+        operationLog.info(count + " of " + samplePermIds.size() + " samples have been delivered.");
     }
 
     private SampleFetchOptions createFullFetchOptions()

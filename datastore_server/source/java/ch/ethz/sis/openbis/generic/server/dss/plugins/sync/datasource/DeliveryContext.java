@@ -21,7 +21,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 class DeliveryContext
 {
@@ -34,6 +33,8 @@ class DeliveryContext
     private IApplicationServerApi v3api;
 
     private IHierarchicalContentProvider contentProvider;
+
+    private String openBisDataSourceName;
 
     public String getServerUrl()
     {
@@ -83,6 +84,16 @@ class DeliveryContext
     public void setContentProvider(IHierarchicalContentProvider contentProvider)
     {
         this.contentProvider = contentProvider;
+    }
+
+    public String getOpenBisDataSourceName()
+    {
+        return openBisDataSourceName;
+    }
+
+    public void setOpenBisDataSourceName(String openBisDataSourceName)
+    {
+        this.openBisDataSourceName = openBisDataSourceName;
     }
 
 }

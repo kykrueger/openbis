@@ -1338,7 +1338,7 @@ public class EntitySynchronizer
                     builder.experimentUpdate(expUpdate);
                 }
             }
-            handleExperimentConnections(data, exp, incomingExp);
+//            handleExperimentConnections(data, exp, incomingExp);
         }
     }
 

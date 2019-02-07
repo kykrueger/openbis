@@ -30,7 +30,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LinkedData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
@@ -38,28 +37,18 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 /**
  * @author Franz-Josef Elmer
  */
-public class DataSetDeliverer extends AbstractEntityDeliverer<DataSet>
+public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
 {
 
     DataSetDeliverer(DeliveryContext context)
     {
-        super(context, "data set");
+        super(context, "data set", "data", "code");
     }
 
     @Override
-    protected List<DataSet> getAllEntities(String sessionToken)
+    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> dataSets) throws XMLStreamException
     {
-        DataSetSearchCriteria searchCriteria = new DataSetSearchCriteria();
-        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
-        fetchOptions.sortBy().code().asc();
-        return context.getV3api().searchDataSets(sessionToken, searchCriteria, fetchOptions).getObjects();
-
-    }
-
-    @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<DataSet> dataSets) throws XMLStreamException
-    {
-        List<DataSetPermId> permIds = dataSets.stream().map(DataSet::getPermId).collect(Collectors.toList());
+        List<DataSetPermId> permIds = dataSets.stream().map(DataSetPermId::new).collect(Collectors.toList());
         Collection<DataSet> fullDataSets = context.getV3api().getDataSets(sessionToken, permIds, createDataSetFetchOptions()).values();
         int count = 0;
         for (DataSet dataSet : fullDataSets)

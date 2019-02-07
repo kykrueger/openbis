@@ -24,6 +24,8 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
+
 /**
  * @author Franz-Josef Elmer
  */
@@ -37,11 +39,11 @@ public class Deliverers implements IDeliverer
     }
 
     @Override
-    public void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    public void deliverEntities(XMLStreamWriter writer, IDataSourceQueryService queryService, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
     {
         for (IDeliverer deliverer : deliverers)
         {
-            deliverer.deliverEntities(writer, sessionToken, spaces, requestTimestamp);
+            deliverer.deliverEntities(writer, queryService, sessionToken, spaces, requestTimestamp);
         }
     }
 

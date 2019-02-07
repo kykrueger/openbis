@@ -28,34 +28,24 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-public class ExperimentDeliverer extends AbstractEntityDeliverer<Experiment>
+public class ExperimentDeliverer extends AbstractEntityWithPermIdDeliverer
 {
 
     ExperimentDeliverer(DeliveryContext context)
     {
-        super(context, "experiment");
+        super(context, "experiment", "experiments");
     }
 
     @Override
-    protected List<Experiment> getAllEntities(String sessionToken)
-    {
-        ExperimentSearchCriteria searchCriteria = new ExperimentSearchCriteria();
-        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
-        fetchOptions.sortBy().permId();
-        return context.getV3api().searchExperiments(sessionToken, searchCriteria, fetchOptions).getObjects();
-    }
-
-    @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<Experiment> experiments)
+    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> experiments)
             throws XMLStreamException
     {
-        List<ExperimentPermId> permIds = experiments.stream().map(Experiment::getPermId).collect(Collectors.toList());
+        List<ExperimentPermId> permIds = experiments.stream().map(ExperimentPermId::new).collect(Collectors.toList());
         Collection<Experiment> fullExperiments = context.getV3api().getExperiments(sessionToken, permIds, createFullFetchOptions()).values();
         int count = 0;
         for (Experiment experiment : fullExperiments)
@@ -74,10 +64,10 @@ public class ExperimentDeliverer extends AbstractEntityDeliverer<Experiment>
                 addSpace(writer, experiment.getProject().getSpace());
                 addType(writer, experiment.getType());
                 addProperties(writer, experiment.getProperties());
-                ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
-                connectionsBuilder.addConnections(experiment.getSamples());
-                connectionsBuilder.addConnections(experiment.getDataSets());
-                connectionsBuilder.writeTo(writer);
+//                ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
+//                connectionsBuilder.addConnections(experiment.getSamples());
+//                connectionsBuilder.addConnections(experiment.getDataSets());
+//                connectionsBuilder.writeTo(writer);
                 addAttachments(writer, experiment.getAttachments());
                 writer.writeEndElement();
                 writer.writeEndElement();
@@ -96,8 +86,8 @@ public class ExperimentDeliverer extends AbstractEntityDeliverer<Experiment>
         fo.withProject().withSpace();
         fo.withType();
         fo.withAttachments();
-        fo.withSamples();
-        fo.withDataSets();
+//        fo.withSamples();
+//        fo.withDataSets();
         return fo;
     }
 

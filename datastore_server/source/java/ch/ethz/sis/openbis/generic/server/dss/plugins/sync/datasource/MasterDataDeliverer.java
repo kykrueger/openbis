@@ -58,6 +58,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.DataType;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IFileFormatTypeImmutable;
 import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.IMasterDataRegistrationTransaction;
@@ -89,13 +90,14 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
     }
 
     @Override
-    public void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    public void deliverEntities(XMLStreamWriter writer, IDataSourceQueryService queryService, 
+            String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
     {
         startUrlElement(writer);
         addLocation(writer, "MASTER_DATA", "MASTER_DATA");
         addLastModificationDate(writer, requestTimestamp);
         writer.writeStartElement("xmd:masterData");
-        addFileFormatTypes(writer, sessionToken);
+        addFileFormatTypes(writer, queryService, sessionToken);
         addValidationPlugins(writer, sessionToken);
         addVocabularies(writer, sessionToken);
         addPropertyTypes(writer, sessionToken);
@@ -108,7 +110,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addFileFormatTypes(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addFileFormatTypes(XMLStreamWriter writer, IDataSourceQueryService queryService, String sessionToken) throws XMLStreamException
     {
         String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
         EncapsulatedCommonServer encapsulatedServer = ServiceFinderUtils.getEncapsulatedCommonServer(sessionToken, openBisServerUrl);

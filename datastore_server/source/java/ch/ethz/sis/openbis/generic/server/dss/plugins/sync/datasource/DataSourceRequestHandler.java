@@ -42,6 +42,7 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.IRequestHandler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSourceQueryService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
 
 /**
@@ -56,7 +57,7 @@ public class DataSourceRequestHandler implements IRequestHandler
         RESOURCE_LIST("resourcelist", CAPABILITY_LIST, true)
         {
             @Override
-            void writeUrls(XMLStreamWriter writer, DeliveryContext context, IDeliverer deliverer,
+            void writeUrls(XMLStreamWriter writer, DeliveryContext context, IDataSourceQueryService queryService, IDeliverer deliverer,
                     Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
             {
                 SpaceSearchCriteria searchCriteria = new SpaceSearchCriteria();
@@ -65,7 +66,7 @@ public class DataSourceRequestHandler implements IRequestHandler
                 List<String> spaceCodes = spaces.stream().map(Space::getCode).collect(Collectors.toList());
                 Set<String> requestedSpaces = DataSourceUtils.getRequestedAndAllowedSubSet(spaceCodes,
                         parameterMap.get("white_list"), parameterMap.get("black_list"));
-                deliverer.deliverEntities(writer, sessionToken, requestedSpaces, requestTimestamp);
+                deliverer.deliverEntities(writer, queryService, sessionToken, requestedSpaces, requestTimestamp);
             }
         };
 
@@ -108,7 +109,7 @@ public class DataSourceRequestHandler implements IRequestHandler
             return name + ".xml";
         }
 
-        void write(XMLStreamWriter writer, DeliveryContext context, IDeliverer deliverer,
+        void write(XMLStreamWriter writer, DeliveryContext context, IDataSourceQueryService queryService, IDeliverer deliverer,
                 Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
         {
             writer.writeStartElement("rs:ln");
@@ -123,10 +124,10 @@ public class DataSourceRequestHandler implements IRequestHandler
             }
             writer.writeAttribute("capability", capabilityAttribute);
             writer.writeEndElement();
-            writeUrls(writer, context, deliverer, parameterMap, sessionToken, requestTimestamp);
+            writeUrls(writer, context, queryService, deliverer, parameterMap, sessionToken, requestTimestamp);
         }
 
-        void writeUrls(XMLStreamWriter writer, DeliveryContext context, IDeliverer deliverer,
+        void writeUrls(XMLStreamWriter writer, DeliveryContext context, IDataSourceQueryService queryService, IDeliverer deliverer,
                 Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
         {
             writer.writeStartElement("url");
@@ -145,8 +146,6 @@ public class DataSourceRequestHandler implements IRequestHandler
 
     }
 
-    private DataSourceQueryService queryService;
-
     private IDeliverer deliverer;
 
     private DeliveryContext deliveryContext;
@@ -154,13 +153,13 @@ public class DataSourceRequestHandler implements IRequestHandler
     @Override
     public void init(Properties properties)
     {
-        queryService = new DataSourceQueryService();
         deliveryContext = new DeliveryContext();
         deliveryContext.setServletPath(new File(PropertyUtils.getMandatoryProperty(properties, "path")).getParent());
         deliveryContext.setServerUrl(PropertyUtils.getMandatoryProperty(properties, "server-url"));
         deliveryContext.setDownloadUrl(PropertyUtils.getMandatoryProperty(properties, "download-url"));
         deliveryContext.setV3api(ServiceProvider.getV3ApplicationService());
         deliveryContext.setContentProvider(ServiceProvider.getHierarchicalContentProvider());
+        deliveryContext.setOpenBisDataSourceName(properties.getProperty("openbis-data-source-name", "openbis-db"));
         Deliverers deliverers = new Deliverers();
         deliverers.addDeliverer(new MasterDataDeliverer(deliveryContext));
         deliverers.addDeliverer(new MaterialDeliverer(deliveryContext));
@@ -174,6 +173,7 @@ public class DataSourceRequestHandler implements IRequestHandler
     @Override
     public void handle(SessionContextDTO session, HttpServletRequest request, HttpServletResponse response)
     {
+        DataSourceQueryService queryService = new DataSourceQueryService();
         try
         {
             Map<String, List<String>> parameterMap = getParameterMap(request);
@@ -189,15 +189,18 @@ public class DataSourceRequestHandler implements IRequestHandler
             writer.writeAttribute("xsi:schemaLocation",
                     "https://sis.id.ethz.ch/software/#openbis/xdterms/ ./xml/xdterms.xsd https://sis.id.ethz.ch/software/#openbis/xmdterms/");
             String sessionToken = session.getSessionToken();
-            Date requestTimestamp = getRequestTimestamp();
+            Date requestTimestamp = getRequestTimestamp(queryService);
             Set<String> verbs = new HashSet<>(parameterMap.get("verb"));
             Capability capability = findMatchingCapability(verbs);
-            capability.write(writer, deliveryContext, deliverer, parameterMap, sessionToken, requestTimestamp);
+            capability.write(writer, deliveryContext, queryService, deliverer, parameterMap, sessionToken, requestTimestamp);
             writer.writeEndElement();
             writer.writeEndDocument();
         } catch (Exception e)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        } finally
+        {
+            queryService.release();
         }
     }
 
@@ -216,11 +219,11 @@ public class DataSourceRequestHandler implements IRequestHandler
         return Capability.ABOUT;
     }
 
-    private Date getRequestTimestamp()
+    private Date getRequestTimestamp(IDataSourceQueryService queryService)
     {
         Date requestTimestamp = new Date();
         String query = "select xact_start FROM pg_stat_activity WHERE xact_start IS NOT NULL ORDER BY xact_start ASC LIMIT 1";
-        for (Map<String, Object> map : queryService.select("openbis-db", query))
+        for (Map<String, Object> map : queryService.select(deliveryContext.getOpenBisDataSourceName(), query))
         {
             requestTimestamp = (Date) map.get("xact_start");
         }

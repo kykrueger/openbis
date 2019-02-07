@@ -27,33 +27,23 @@ import javax.xml.stream.XMLStreamWriter;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
 
 /**
  * @author Franz-Josef Elmer
  *
  */
-public class ProjectDeliverer extends AbstractEntityDeliverer<Project>
+public class ProjectDeliverer extends AbstractEntityWithPermIdDeliverer
 {
 
     ProjectDeliverer(DeliveryContext context)
     {
-        super(context, "project");
+        super(context, "project", "projects");
     }
 
     @Override
-    protected List<Project> getAllEntities(String sessionToken)
+    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> projectPermIds) throws XMLStreamException
     {
-        ProjectSearchCriteria searchCriteria = new ProjectSearchCriteria();
-        ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
-        fetchOptions.sortBy().permId();
-        return context.getV3api().searchProjects(sessionToken, searchCriteria, fetchOptions).getObjects();
-    }
-
-    @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<Project> projects) throws XMLStreamException
-    {
-        List<ProjectPermId> permIds = projects.stream().map(Project::getPermId).collect(Collectors.toList());
+        List<ProjectPermId> permIds = projectPermIds.stream().map(ProjectPermId::new).collect(Collectors.toList());
         Collection<Project> fullProjects = context.getV3api().getProjects(sessionToken, permIds, createFullFetchOptions()).values();
         int count = 0;
         for (Project project : fullProjects)
@@ -76,7 +66,7 @@ public class ProjectDeliverer extends AbstractEntityDeliverer<Project>
                 count++;
             }
         }
-        operationLog.info(count + " of " + projects.size() + " projects have been delivered.");
+        operationLog.info(count + " of " + projectPermIds.size() + " projects have been delivered.");
     }
 
     private ProjectFetchOptions createFullFetchOptions()

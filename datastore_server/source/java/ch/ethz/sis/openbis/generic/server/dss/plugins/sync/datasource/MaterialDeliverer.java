@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 
 /**
  * @author Franz-Josef Elmer
@@ -44,7 +45,7 @@ public class MaterialDeliverer extends AbstractEntityDeliverer<Material>
     }
 
     @Override
-    protected List<Material> getAllEntities(String sessionToken)
+    protected List<Material> getAllEntities(IDataSourceQueryService queryService, String sessionToken)
     {
 
         MaterialSearchCriteria searchCriteria = new MaterialSearchCriteria();
