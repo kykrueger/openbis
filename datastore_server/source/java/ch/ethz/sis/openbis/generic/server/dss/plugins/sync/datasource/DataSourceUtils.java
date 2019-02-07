@@ -87,7 +87,7 @@ class DataSourceUtils
                 String[] splitted = commaSeparatedList.split(",");
                 for (String string : splitted)
                 {
-                    regexs.add(Pattern.compile(string.trim().toUpperCase()));
+                    regexs.add(Pattern.compile(string.trim()));
                 }
             }
         }
