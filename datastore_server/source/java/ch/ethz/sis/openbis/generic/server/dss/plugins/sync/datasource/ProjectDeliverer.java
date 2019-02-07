@@ -70,11 +70,6 @@ public class ProjectDeliverer extends AbstractEntityDeliverer<Project>
                 addRegistrationDate(writer, project);
                 addRegistrator(writer, project);
                 addSpace(writer, project.getSpace());
-                ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
-                connectionsBuilder.addConnections(project.getExperiments());
-                connectionsBuilder.addConnections(project.getSamples().stream()
-                        .filter(s -> s.getExperiment() == null).collect(Collectors.toList()));
-                connectionsBuilder.writeTo(writer);
                 addAttachments(writer, project.getAttachments());
                 writer.writeEndElement();
                 writer.writeEndElement();
@@ -91,8 +86,6 @@ public class ProjectDeliverer extends AbstractEntityDeliverer<Project>
         fetchOptions.withRegistrator();
         fetchOptions.withModifier();
         fetchOptions.withSpace();
-        fetchOptions.withExperiments();
-        fetchOptions.withSamples().withExperiment();
         return fetchOptions;
     }
 
