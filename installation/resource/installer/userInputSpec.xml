@@ -50,7 +50,7 @@
   </panel>
 
   <panel id="UserInputPanel.TECHNOLOGIES">
-    <field type="title" txt="Technologies and Fast File Browsing" bold="true" size="2" />
+    <field type="title" txt="Technologies" bold="true" size="2" />
     <field type="staticText" align="left"
       txt="Select any technology-specific modules that should installed along with openBIS. The selection can be altered at the next upgrade:" />
     <field type="check" variable="PROTEOMICS">
