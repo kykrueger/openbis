@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
 import ch.rinn.restrictions.Private;
@@ -149,7 +149,7 @@ final class RetryingPathRemover implements IPathRemover
         synchronized public String describeInactivity(long now)
         {
             return "No delete activity of path " + path.getPath() + " for "
-                    + DurationFormatUtils.formatDurationHMS(now - lastActivityMillis);
+                    + DurationFormatUtils.formatDuration(now - lastActivityMillis, "H:mm:ss.SSS");
         }
 
         @Override

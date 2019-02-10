@@ -53,7 +53,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
@@ -785,7 +785,7 @@ public final class FileUtilities
         public String describeInactivity(long now)
         {
             return "No delete activity of path " + path.getPath() + " for "
-                    + DurationFormatUtils.formatDurationHMS(now - getLastActivityMillis());
+                    + DurationFormatUtils.formatDuration(now - getLastActivityMillis(), "H:mm:ss.SSS");
         }
 
     }

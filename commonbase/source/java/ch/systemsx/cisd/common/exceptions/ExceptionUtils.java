@@ -36,7 +36,7 @@ public final class ExceptionUtils
      * Default packages (and subpackages) for not been masqueraded.
      */
     private final static String[] ACCEPTED_PACKAGE_NAME_DEPENDENCIES =
-    { "java.lang", "ch.systemsx.cisd.base", "ch.systemsx.cisd.common.exceptions" };
+            { "java.lang", "ch.systemsx.cisd.base", "ch.systemsx.cisd.common.exceptions" };
 
     ExceptionUtils()
     {
@@ -67,7 +67,7 @@ public final class ExceptionUtils
     {
         assert fromException != null : "Unspecified 'from' Exception.";
         assert toException != null : "Unspecified 'to' Exception.";
-        final Exception fromCauseException =                (Exception) fromException.getCause();
+        final Exception fromCauseException = (Exception) fromException.getCause();
         if (fromCauseException != null && fromCauseException != fromException)
         {
             final Exception toCauseException =

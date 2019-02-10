@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search;
 import java.io.File;
 import java.util.Queue;
 
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;

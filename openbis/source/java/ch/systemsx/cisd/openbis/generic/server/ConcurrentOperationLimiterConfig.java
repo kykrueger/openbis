@@ -25,7 +25,7 @@ import javax.annotation.Resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -116,8 +116,8 @@ public class ConcurrentOperationLimiterConfig
             timeoutAsync = TIMEOUT_ASYNC_DEFAULT;
         }
 
-        operationLog.info("Configured timeout: " + DurationFormatUtils.formatDurationHMS(timeout));
-        operationLog.info("Configured timeout async: " + DurationFormatUtils.formatDurationHMS(timeoutAsync));
+        operationLog.info("Configured timeout: " + DurationFormatUtils.formatDuration(timeout, "H:mm:ss.SSS"));
+        operationLog.info("Configured timeout async: " + DurationFormatUtils.formatDuration(timeoutAsync, "H:mm:ss.SSS"));
 
         this.timeout = timeout;
         this.timeoutAsync = timeoutAsync;

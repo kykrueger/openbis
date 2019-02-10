@@ -141,7 +141,7 @@ public class SynchronizationConfigReader
             }
 
             config.setHarvesterTempDir(reader.getString(section, HARVESTER_TEMP_DIR_PROPERTY_NAME, DEFAULT_HARVESTER_TEMP_DIR, false));
-            config.setTranslateUsingDataSourceAlias(reader.getBoolean(section, TRANSLATE_USING_DATA_SOURCE_ALIAS_PROPERTY_NAME, false));
+            config.setTranslateUsingDataSourceAlias(reader.getBoolean(section, TRANSLATE_USING_DATA_SOURCE_ALIAS_PROPERTY_NAME, true));
 
             // read full-sync configuration
             boolean fullSync = reader.getBoolean(section, FULL_SYNC_PROPERTY_NAME, false);

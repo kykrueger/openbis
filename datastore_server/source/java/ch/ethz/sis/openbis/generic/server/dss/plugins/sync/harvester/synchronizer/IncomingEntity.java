@@ -38,11 +38,6 @@ public class IncomingEntity<T extends Identifier<T>> extends AbstractTimestampsA
         return connections;
     }
 
-    void addConnection(Connection conn)
-    {
-        this.connections.add(conn);
-    }
-
     public SyncEntityKind getEntityKind()
     {
         return entityKind;

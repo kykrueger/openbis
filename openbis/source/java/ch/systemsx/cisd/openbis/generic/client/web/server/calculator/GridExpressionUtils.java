@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.jython.evaluator.EvaluatorException;
@@ -70,7 +70,7 @@ public class GridExpressionUtils
             CustomFilterInfo<?> customFilterInfo)
     {
         List<Integer> filtered = new ArrayList<Integer>();
-        String expression = StringEscapeUtils.unescapeHtml(customFilterInfo.getExpression());
+        String expression = StringEscapeUtils.unescapeHtml4(customFilterInfo.getExpression());
         Set<ParameterWithValue> parameters = customFilterInfo.getParameters();
         try
         {
@@ -134,7 +134,7 @@ public class GridExpressionUtils
     private static RowCalculator createRowCalculator(ITableDataProvider dataProvider,
             GridCustomColumn customColumn, boolean errorMessagesAreLong)
     {
-        String expression = StringEscapeUtils.unescapeHtml(customColumn.getExpression());
+        String expression = StringEscapeUtils.unescapeHtml4(customColumn.getExpression());
         try
         {
             return new RowCalculator(dataProvider, expression);

@@ -24,7 +24,7 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
@@ -281,7 +281,7 @@ public class QueryServer extends AbstractServer<IQueryServer> implements IQueryS
             IQueryDAO queryDAO = getDAOFactory().getQueryDAO();
             QueryPE query = queryDAO.getByTechId(queryId);
             String dbKey = query.getQueryDatabaseKey();
-            String expression = StringEscapeUtils.unescapeHtml(query.getExpression());
+            String expression = StringEscapeUtils.unescapeHtml4(query.getExpression());
             QueryAccessController.checkReadAccess(session, dbKey);
             return QueryAccessController.filterResults(session.tryGetPerson(), dbKey,
                     getDAOFactory(), queryDatabaseWithKey(dbKey, expression, bindings));

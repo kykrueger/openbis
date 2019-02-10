@@ -85,6 +85,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentsSynchronizer;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetRegistrationTaskExecutor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetSynchronizationSummary;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.PrefixBasedNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
@@ -592,7 +593,11 @@ public class EntitySynchronizer
         // Parse the resource list: This sends back all projects,
         // experiments, samples and data sets contained in the XML together with their last modification date to be used for filtering
         operationLog.info("Parsing the resource list xml document...");
-        INameTranslator nameTranslator = new PrefixBasedNameTranslator(config.getDataSourceAlias());
+        INameTranslator nameTranslator = new DefaultNameTranslator();
+        if (config.isTranslateUsingDataSourceAlias())
+        {
+            nameTranslator = new PrefixBasedNameTranslator(config.getDataSourceAlias());
+        }
 
         ResourceListParser parser = ResourceListParser.create(nameTranslator, dataStoreCode);
         ResourceListParserData data = parser.parseResourceListDocument(doc, monitor);
@@ -1333,7 +1338,7 @@ public class EntitySynchronizer
                     builder.experimentUpdate(expUpdate);
                 }
             }
-            handleExperimentConnections(data, exp, incomingExp);
+//            handleExperimentConnections(data, exp, incomingExp);
         }
     }
 
@@ -1428,38 +1433,6 @@ public class EntitySynchronizer
                 }
             }
             // handleProjectConnections(data, prj);
-        }
-    }
-
-    private void handleProjectConnections(ResourceListParserData data, IncomingProject prj)
-    {
-        Map<String, IncomingExperiment> experimentsToProcess = data.getExperimentsToProcess();
-        for (Connection conn : prj.getConnections())
-        {
-            String connectedExpPermId = conn.getToPermId();
-            // TODO we need to do the same check for samples to support project samples
-            if (experimentsToProcess.containsKey(connectedExpPermId))
-            {
-                // the project is connected to an experiment
-                IncomingExperiment exp = experimentsToProcess.get(connectedExpPermId);
-                NewExperiment newExp = exp.getExperiment();
-                Experiment experiment = service.tryGetExperimentByPermId(connectedExpPermId);
-                // check if our local graph has the same connection
-                if (service.tryGetExperiment(ExperimentIdentifierFactory.parse(newExp.getIdentifier())) == null)
-                {
-                    // add new edge
-                    String oldIdentifier = newExp.getIdentifier();
-                    int index = oldIdentifier.lastIndexOf('/');
-                    String expCode = oldIdentifier.substring(index + 1);
-                    newExp.setIdentifier(prj.getProject().getIdentifier() + "/" + expCode);
-                    // add new experiment node
-                }
-            } else
-            {
-                // This means the XML contains the connection but not the connected entity.
-                // This is an unlikely scenario.
-                operationLog.info("Connected experiment with permid : " + connectedExpPermId + " is missing");
-            }
         }
     }
 

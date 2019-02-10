@@ -24,7 +24,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -87,7 +87,7 @@ public class AttachmentDownloadServlet extends AbstractFileDownloadServlet
             versionOrNull = Integer.parseInt(versionStringOrNull);
         }
 
-        String fileName = StringEscapeUtils.unescapeHtml(
+        String fileName = StringEscapeUtils.unescapeHtml4(
                 request.getParameter(AttachmentDownloadConstants.FILE_NAME_PARAMETER));
         String encoding = request.getCharacterEncoding();
         if (encoding == null)
