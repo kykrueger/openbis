@@ -278,9 +278,10 @@ public class TrackingClient
     }
     
     private static IApplicationServerApi initV3(Parameters params) {
+        int TIMEOUT = 30000;
         v3 = HttpInvokerUtils
                 .createServiceStub(IApplicationServerApi.class, params.getOpenbisServerURL()
-                        + IApplicationServerApi.SERVICE_URL, 10000);
+                        + IApplicationServerApi.SERVICE_URL, TIMEOUT);
         return v3;
    }
 }

@@ -2274,3 +2274,6 @@ should Be Frozen For Experiments
 should Be Frozen For Parents
 should Be Frozen For Projects
 should Be Frozen For Samples
+
+Identifier Search Criteria
+with Identifier
