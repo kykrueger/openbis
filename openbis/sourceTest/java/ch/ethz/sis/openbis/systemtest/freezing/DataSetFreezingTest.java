@@ -282,32 +282,10 @@ public class DataSetFreezingTest extends FreezingTest
     }
 
     @Test
-    public void testAddContentCopy()
+    public void testAddContentCopyForFrozenLinkDataSet()
     {
         // Given
         setFrozenFlagForDataSets(true, dataSet4);
-        assertEquals(getDataSet(dataSet4).getLinkedData().getContentCopies().toString(), "[]");
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSet4);
-        LinkedDataUpdate linkedDataUpdate = new LinkedDataUpdate();
-        ContentCopyCreation contentCopyCreation = new ContentCopyCreation();
-        contentCopyCreation.setExternalDmsId(new ExternalDmsPermId("DMS_3"));
-        contentCopyCreation.setPath("a/b/c/d");
-        linkedDataUpdate.getContentCopies().add(contentCopyCreation);
-        dataSetUpdate.getLinkedData().setValue(linkedDataUpdate);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
-                // Then
-                "ERROR: Operation INSERT CONTENT_COPY is not allowed because data set " + DATA_SET_4 + " is frozen.");
-    }
-
-    @Test
-    public void testAddContentCopyForMoltenDataSet()
-    {
-        // Given
-        setFrozenFlagForDataSets(true, dataSet4);
-        setFrozenFlagForDataSets(false, dataSet4);
         assertEquals(getDataSet(dataSet4).getLinkedData().getContentCopies().toString(), "[]");
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
         dataSetUpdate.setDataSetId(dataSet4);
@@ -326,29 +304,10 @@ public class DataSetFreezingTest extends FreezingTest
     }
 
     @Test
-    public void testDeleteContentCopy()
+    public void testDeleteContentCopyForFrozenLinkDataSet()
     {
         // Given
         setFrozenFlagForDataSets(true, dataSet3);
-        assertEquals(getDataSet(dataSet3).getLinkedData().getContentCopies().get(0).getPath(), "/a/b/c");
-        DataSetUpdate dataSetUpdate = new DataSetUpdate();
-        dataSetUpdate.setDataSetId(dataSet3);
-        LinkedDataUpdate linkedDataUpdate = new LinkedDataUpdate();
-        linkedDataUpdate.getContentCopies().remove(getDataSet(dataSet3).getLinkedData().getContentCopies().get(0).getId());
-        dataSetUpdate.getLinkedData().setValue(linkedDataUpdate);
-
-        // When
-        assertUserFailureException(Void -> v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate)),
-                // Then
-                "ERROR: Operation DELETE CONTENT_COPY is not allowed because data set " + DATA_SET_3 + " is frozen.");
-    }
-
-    @Test
-    public void testDeleteContentCopyForMoltenDataSet()
-    {
-        // Given
-        setFrozenFlagForDataSets(true, dataSet3);
-        setFrozenFlagForDataSets(false, dataSet3);
         ContentCopy contentCopy = getDataSet(dataSet3).getLinkedData().getContentCopies().get(0);
         assertEquals(contentCopy.getPath(), "/a/b/c");
         DataSetUpdate dataSetUpdate = new DataSetUpdate();
