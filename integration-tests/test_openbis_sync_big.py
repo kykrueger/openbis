@@ -74,7 +74,7 @@ class TestCase(systemtest.testcase.TestCase):
         for example_file in example_files:
             with open("%s/.MARKER_is_finished_%s" % (incoming, example_file), 'w') as f:
                 pass
-        openbis.waitUntilDataSetRegistrationFinished(2, timeOutInMinutes = 10)
+        openbis.waitUntilDataSetRegistrationFinished(2, timeOutInMinutes = 20)
         
     def _drop_big_file(self, incoming):
         big_file = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'openBIS-installation')
