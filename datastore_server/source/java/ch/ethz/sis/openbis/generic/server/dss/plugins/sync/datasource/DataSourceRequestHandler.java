@@ -163,6 +163,7 @@ public class DataSourceRequestHandler implements IRequestHandler
         Deliverers deliverers = new Deliverers();
         deliverers.addDeliverer(new MasterDataDeliverer(deliveryContext));
         deliverers.addDeliverer(new MaterialDeliverer(deliveryContext));
+        deliverers.addDeliverer(new SpaceDeliverer(deliveryContext));
         deliverers.addDeliverer(new ProjectDeliverer(deliveryContext));
         deliverers.addDeliverer(new ExperimentDeliverer(deliveryContext));
         deliverers.addDeliverer(new SampleDeliverer(deliveryContext));
