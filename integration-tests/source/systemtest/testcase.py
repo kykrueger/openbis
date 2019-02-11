@@ -727,8 +727,10 @@ class OpenbisController(_Controller):
         monitor.addNotificationCondition(util.RegexCondition('post-registration'))
         numberOfRegisteredDataSets = 0
         while numberOfRegisteredDataSets < numberOfDataSets:
-            elements = monitor.waitUntilEvent(util.RegexCondition('Post registration of (\\d*). of \\1 data sets'))
-            numberOfRegisteredDataSets += int(elements[0])
+            condition1 = util.RegexCondition('Post registration of (\\d*). of \\1 data sets')
+            condition2 = util.RegexCondition('Paths inside data set .* successfully added to database')
+            elements = monitor.waitUntilEvent(util.ConditionSequence([condition1, condition2]))
+            numberOfRegisteredDataSets += int(elements[0][0])
             util.printAndFlush("%d of %d data sets registered" % (numberOfRegisteredDataSets, numberOfDataSets))
 
     def waitUntilDataSetRegistrationFailed(self, timeOutInMinutes = DEFAULT_TIME_OUT_IN_MINUTES):
