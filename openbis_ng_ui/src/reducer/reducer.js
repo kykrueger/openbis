@@ -1,5 +1,4 @@
 import initialState from './initialstate.js'
-import database from './database/reducer.js'
 import users from './users/reducer.js'
 import types from './types/reducer.js'
 
@@ -7,20 +6,14 @@ import types from './types/reducer.js'
 
 function loading(loading = initialState.loading, action) {
   switch (action.type) {
-  case 'SET-SPACES': {
-    return false
-  }
-  case 'SAVE-ENTITY': {
-    return true
-  }
-  case 'SAVE-ENTITY-DONE': {
-    return false
-  }
   case 'ERROR': {
     return false
   }
   case 'LOGIN': {
     return true
+  }
+  case 'LOGIN-DONE': {
+    return false
   }
   case 'LOGOUT': {
     return true
@@ -78,12 +71,10 @@ function mode(mode = initialState.mode, action) {
 }
 
 function reducer(state = initialState, action) {
-  let newMode = mode(state.mode, action);
-
+  let newMode = mode(state.mode, action)
   return {
     sessionActive: sessionActive(state.sessionActive, action),
     mode: newMode,
-    database: newMode === 'DATABASE' ? database(state.database, action) : state.database,
     users: newMode === 'USERS' ? users(state.users, action) : state.users,
     types: newMode === 'TYPES' ? types(state.types, action) : state.types,
     loading: loading(state.loading, action),

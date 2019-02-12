@@ -40,7 +40,6 @@ class ModeBar extends React.Component {
       <AppBar position="static">
         <Toolbar>
           <Tabs value={this.props.mode} onChange={this.props.setMode} fullWidth className={classes.browserTabs}>
-            <Tab value="DATABASE" className={classes.browserTab} label="Database"/>
             <Tab value="TYPES" className={classes.browserTab} label="Types"/>
             <Tab value="USERS" className={classes.browserTab} label="Users"/>
             <Tab value="" className={classes.browserTab} label="Favourites"/>

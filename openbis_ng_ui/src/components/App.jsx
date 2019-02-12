@@ -10,7 +10,6 @@ import Browser from './Browser.jsx'
 import BrowserFilter from './BrowserFilter.jsx'
 import BrowserButtons from './BrowserButtons.jsx'
 import ModeBar from './ModeBar.jsx'
-import TabPanel from './TabPanel.jsx'
 import TopBar from './TopBar.jsx'
 
 
@@ -59,9 +58,6 @@ class App extends React.Component {
           <BrowserFilter/>
           <Browser/>
           <BrowserButtons/>
-          <div className={classes.topMargin}>
-            <TabPanel/>
-          </div>
         </Hidden>
 
         <Hidden smDown>
@@ -75,9 +71,6 @@ class App extends React.Component {
           </div>
           <div className={classes.right}>
             <TopBar/>
-            <div className={classes.topMargin}>
-              <TabPanel/>
-            </div>
           </div>
         </Hidden>
       </div>

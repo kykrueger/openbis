@@ -21,28 +21,9 @@ describe('reducer', () => {
     }
     const action = actions.selectEntity(entity.permId, entity.type)
     const state = reducer(initialState, action)
-    expect(state.database.openEntities).toEqual({
+    expect(state.types.openEntities).toEqual({
       entities: [entity],
       selectedEntity: entity
-    })
-  })
-})
-
-describe('reducer', () => {
-  it('should close an entity and select the next open one', () => {
-    const beforeState = Object.assign({}, initialState, {
-      database: {
-        openEntities: {
-          entities: [{permId: 0, type: 'A'}, {permId: 1, type: 'A'}, {permId: 1, type: 'B'}, {permId: 2, type: 'B'}],
-          selectedEntity: {permId: 1, type: 'B'}
-        }
-      }
-    })
-    const action = actions.closeEntity(1, 'B')
-    const state = reducer(beforeState, action)
-    expect(state.database.openEntities).toEqual({
-      entities: [{permId: 0, type: 'A'}, {permId: 1, type: 'A'}, {permId: 2, type: 'B'}],
-      selectedEntity: {permId: 2, type: 'B'},
     })
   })
 })

@@ -13,50 +13,8 @@ export function openEntities(openEntities, action) {
       selectedEntity: actionEntity,
     }
   }
-  case 'CLOSE-ENTITY': {
-    const actionEntity = {
-      permId: action.entityPermId,
-      type: action.entityType
-    }
-    const newOpenEntities = openEntities.entities.filter(entity => !_.isEqual(entity, actionEntity))
-    if (_.isEqual(openEntities.selectedEntity, actionEntity)) {
-      const oldIndex = _.findIndex(openEntities.entities, actionEntity)
-      const newIndex = oldIndex === newOpenEntities.length ? oldIndex - 1 : oldIndex
-      const selectedEntity = newIndex > -1 ? newOpenEntities[newIndex] : null
-      return {
-        entities: newOpenEntities,
-        selectedEntity: selectedEntity,
-      }
-    } else {
-      return {
-        entities: newOpenEntities,
-        selectedEntity: openEntities.selectedEntity,
-      }
-    }
-  }
   default: {
     return openEntities
-  }
-  }
-}
-
-export function dirtyEntities(dirtyEntities, action) {
-  switch (action.type) {
-  case 'SET-DIRTY': {
-    if (action.dirty) {
-      return [].concat(dirtyEntities, [action.entityPermId])
-    } else {
-      return dirtyEntities.filter(e => e !== action.entityPermId)
-    }
-  }
-  case 'SAVE-ENTITY-DONE': {
-    return dirtyEntities.filter(permId => permId !== action.entity.permId.permId)
-  }
-  case 'CLOSE-ENTITY': {
-    return dirtyEntities.filter(permId => permId !== action.entityPermId)
-  }
-  default: {
-    return dirtyEntities
   }
   }
 }

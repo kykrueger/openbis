@@ -18,7 +18,10 @@ let openbis = null
 beforeEach(() => {
   Openbis.mockClear()
   openbis = newOpenbis()
-  openbis.getSpaces.mockReturnValue({ getObjects: getSpaces })
+  openbis.getObjectTypes.mockReturnValue({ getObjects: getTypes })
+  openbis.getCollectionTypes.mockReturnValue({ getObjects: getTypes })
+  openbis.getDataSetTypes.mockReturnValue({ getObjects: getTypes })
+  openbis.getMaterialTypes.mockReturnValue({ getObjects: getTypes })
 })
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ tests ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,16 +35,13 @@ describe('sagas', () => {
     store.dispatch(actions.login(username, password))
     // then
     const state = store.getState()
-    const spaces = getSpaces()
     expect(openbis.login).toHaveBeenCalledWith(username, password)
     expect(state.sessionActive).toEqual(true)
-    expect(openbis.getSpaces).toHaveBeenCalled()
+    expect(openbis.getObjectTypes).toHaveBeenCalled()
+    expect(openbis.getCollectionTypes).toHaveBeenCalled()
+    expect(openbis.getDataSetTypes).toHaveBeenCalled()
+    expect(openbis.getMaterialTypes).toHaveBeenCalled()
     expect(state.exceptions).toEqual([])
-    expect(state.database.spaces).toEqual({
-      '0': spaces[0],
-      '1': spaces[1],
-      '2': spaces[2],
-    })
   })
 })
 
@@ -58,21 +58,9 @@ describe('sagas', () => {
   })
 })
 
-describe('sagas', () => {
-  it('should save entity', () => {
-    // given
-    store.dispatch(actions.login('paul.atreides', 'secret'))
-    // when
-    store.dispatch(actions.saveEntity(getSpaces()[0]))
-    // then
-    const space = getSpaces()[0]
-    expect(openbis.updateSpace).toHaveBeenCalledWith(space.permId, space.description)
-  })
-})
-
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ mocked data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function getSpaces() {
+function getTypes() {
   return [
     { permId: { permId: '0' }, description: 'desc0' },
     { permId: { permId: '1' }, description: 'desc1' },

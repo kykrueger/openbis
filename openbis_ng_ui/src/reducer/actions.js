@@ -2,12 +2,6 @@ export default {
   init: () => ({
     type: 'INIT',
   }),
-  // TODO setDirty for generic tabs instead of entities
-  setDirty: (entityPermId, dirty) => ({
-    type: 'SET-DIRTY',
-    entityPermId: entityPermId,
-    dirty: dirty
-  }),
   expandNode: (node) => ({
     type: 'EXPAND-NODE',
     node: node
@@ -16,33 +10,10 @@ export default {
     type: 'COLLAPSE-NODE',
     node: node
   }),
-  // database stuff
-  setSpaces: spaces => ({
-    type: 'SET-SPACES',
-    spaces: spaces,
-  }),
-  setProjects: (projects, spacePermId) => ({
-    type: 'SET-PROJECTS',
-    projects: projects,
-    spacePermId: spacePermId
-  }),
   selectEntity: (entityPermId, entityType) => ({
     type: 'SELECT-ENTITY',
     entityPermId: entityPermId,
     entityType: entityType
-  }),
-  closeEntity: (entityPermId, entityType) => ({
-    type: 'CLOSE-ENTITY',
-    entityPermId: entityPermId,
-    entityType: entityType
-  }),
-  changePage: page => ({
-    type: 'CHANGE-PAGE',
-    page: page
-  }),
-  sortBy: column => ({
-    type: 'SORT-BY',
-    column: column
   }),
   setFilter: filter => ({
     type: 'SET-FILTER',
@@ -56,19 +27,6 @@ export default {
     type: 'SET-MODE-DONE',
     mode,
     data
-  }),
-  moveEntity: (source, target) => ({
-    type: 'MOVE-ENTITY',
-    source: source,
-    target: target
-  }),
-  saveEntity: (entity) => ({
-    type: 'SAVE-ENTITY',
-    entity: entity
-  }),
-  saveEntityDone: (entity) => ({
-    type: 'SAVE-ENTITY-DONE',
-    entity: entity
   }),
   error: (exception) => ({
     type: 'ERROR',

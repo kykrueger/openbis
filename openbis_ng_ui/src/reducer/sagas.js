@@ -17,8 +17,6 @@ export function* watchActions() {
   yield takeEvery('LOGIN', login)
   yield takeEvery('LOGIN-DONE', loginDone)
   yield takeEvery('LOGOUT', logout)
-  yield takeEvery('SAVE-ENTITY', saveEntity)
-  yield takeEvery('SET-SPACES', selectSpace)
   yield takeEvery('EXPAND-NODE', expandNode)
   yield takeEvery('SET-MODE', setMode)
 }
@@ -45,8 +43,7 @@ function* login(action) {
 
 function* loginDone() {
   yield handleException(function* () {
-    const result = yield call(openbis.getSpaces)
-    yield put(actions.setSpaces(result.getObjects()))
+    yield put(actions.setMode('TYPES'))
   })
 }
 
@@ -54,20 +51,6 @@ function* logout() {
   yield handleException(function* () {
     yield call(openbis.logout)
     yield put(actions.logoutDone())
-  })
-}
-
-function* selectSpace(action) {
-  yield put(actions.selectEntity(action.spaces[0].permId.permId, action.spaces[0]['@type']))
-}
-
-function* saveEntity(action) {
-  yield handleException(function* () {
-    yield openbis.updateSpace(action.entity.permId, action.entity.description)
-    const result = yield call(openbis.getSpaces)
-    const spaces = result.getObjects()
-    const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
-    yield put(actions.saveEntityDone(space))
   })
 }
 

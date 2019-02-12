@@ -3,9 +3,8 @@ import {
   browserExpandNode,
   browserCollapseNode,
   browserSetFilter,
-  sortBy,
   openEntities,
-  dirtyEntities,
+  sortBy,
   emptyTreeNode,
   entityTreeNode
 } from '../common/reducer'
@@ -14,8 +13,7 @@ import _ from 'lodash'
 export default function users(users = initialState.users, action) {
   return {
     browser: browser(users.browser, action),
-    openEntities: openEntities(users.openEntities || initialState.users.openEntities, action),
-    dirtyEntities: dirtyEntities(users.dirtyEntities || initialState.users.dirtyEntities, action)
+    openEntities: openEntities(users.openEntities || initialState.users.openEntities, action)
   }
 }
 
@@ -105,5 +103,3 @@ function browserSetModeDoneGroupNodes(groups) {
     children: groupNodes
   })
 }
-
-

@@ -4,7 +4,6 @@ import {
   browserCollapseNode,
   browserSetFilter,
   openEntities,
-  dirtyEntities,
   sortBy,
   emptyTreeNode,
   entityTreeNode
@@ -13,8 +12,7 @@ import {
 export default function types(types = initialState.types, action) {
   return {
     browser: browser(types.browser, action),
-    openEntities: openEntities(types.openEntities || initialState.types.openEntities, action),
-    dirtyEntities: dirtyEntities(types.dirtyEntities || initialState.types.dirtyEntities, action)
+    openEntities: openEntities(types.openEntities || initialState.types.openEntities, action)
   }
 }
 
