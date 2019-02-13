@@ -63,10 +63,7 @@ public class DataSetFileDownloadReader implements Serializable
                     @Override
                     public int read() throws IOException
                     {
-                        if (lastDownload.getInputStream() != this)
-                        {
-                            throw new IllegalStateException("Input stream no longer valid");
-                        }
+                        assertValidInputStream();
 
                         if (bytesToRead > 0)
                         {
@@ -78,6 +75,27 @@ public class DataSetFileDownloadReader implements Serializable
                         }
                     }
 
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException
+                    {
+                        assertValidInputStream();
+                        
+                        int numberOfBytesRead = -1;
+                        if (bytesToRead > 0)
+                        {
+                            numberOfBytesRead = in.read(b, off, (int) Math.min(bytesToRead, (long) len));
+                            bytesToRead -= numberOfBytesRead;
+                        }
+                        return numberOfBytesRead;
+                    }
+
+                    protected void assertValidInputStream()
+                    {
+                        if (lastDownload.getInputStream() != this)
+                        {
+                            throw new IllegalStateException("Input stream no longer valid");
+                        }
+                    }
                 };
 
             lastDownload = new DataSetFileDownload(header, content);
@@ -136,12 +154,7 @@ public class DataSetFileDownloadReader implements Serializable
         }
 
         byte[] bytes = new byte[(int) objectSize];
-
-        for (int i = 0; i < objectSize; i++)
-        {
-            bytes[i] = (byte) in.read();
-        }
-
+        in.read(bytes, 0, bytes.length);
         ByteArrayInputStream b = new ByteArrayInputStream(bytes);
         ObjectInputStream o = new ObjectInputStream(b);
         return o.readObject();
