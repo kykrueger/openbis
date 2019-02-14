@@ -84,7 +84,10 @@ public class DataSetFileDownloadReader implements Serializable
                         if (bytesToRead > 0)
                         {
                             numberOfBytesRead = in.read(b, off, (int) Math.min(bytesToRead, (long) len));
-                            bytesToRead -= numberOfBytesRead;
+                            if (numberOfBytesRead > 0)
+                            {
+                                bytesToRead -= numberOfBytesRead;
+                            }
                         }
                         return numberOfBytesRead;
                     }
