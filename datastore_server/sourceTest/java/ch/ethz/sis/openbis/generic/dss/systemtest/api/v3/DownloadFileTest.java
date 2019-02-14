@@ -210,7 +210,7 @@ public class DownloadFileTest extends AbstractFileTest
     private String getContent(String path)
     {
         String relativePath = path.substring(getPathPrefix().length());
-        return "file content of " + relativePath;
+        return createRandomContent(relativePath);
     }
 
     private String getPath(String path)
