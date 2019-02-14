@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
+import org.apache.commons.io.IOUtils;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 
@@ -92,7 +94,7 @@ public class DataSetFileDownloadReader implements Serializable
                         return numberOfBytesRead;
                     }
 
-                    protected void assertValidInputStream()
+                    private void assertValidInputStream()
                     {
                         if (lastDownload.getInputStream() != this)
                         {
@@ -157,7 +159,11 @@ public class DataSetFileDownloadReader implements Serializable
         }
 
         byte[] bytes = new byte[(int) objectSize];
-        in.read(bytes, 0, bytes.length);
+        int numberOfBytesRead = IOUtils.read(in, bytes);
+        if (numberOfBytesRead < objectSize)
+        {
+            throw new IllegalStateException("Only " + numberOfBytesRead + " bytes read instead of " + objectSize + " read.");
+        }
         ByteArrayInputStream b = new ByteArrayInputStream(bytes);
         ObjectInputStream o = new ObjectInputStream(b);
         return o.readObject();
