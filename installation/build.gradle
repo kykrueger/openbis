@@ -27,7 +27,7 @@ buildscript {
     dependencies {
         classpath 'izpack:izpack:+', 
             'apache:commons-io:+',
-            'apache:commons-lang3:+'
+            'apache:commons-lang:+'
     }
 }
 
