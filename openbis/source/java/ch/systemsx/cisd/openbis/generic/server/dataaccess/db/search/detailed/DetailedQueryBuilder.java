@@ -313,24 +313,18 @@ public class DetailedQueryBuilder
 
     private static boolean getFieldSplit(EntityKind entityKind, String fieldName)
     {
-        if ((EntityKind.SAMPLE.equals(entityKind) || EntityKind.EXPERIMENT.equals(entityKind)) && SearchFieldConstants.IDENTIFIER.equals(fieldName))
-        {
-            return false;
-        } else
-        {
-            return true;
-        }
+        return isSampleOrExperimentIdentifierField(entityKind, fieldName) == false;
     }
 
     private static Analyzer getFieldAnalyzer(EntityKind entityKind, String fieldName, Analyzer defaultAnalyzer)
     {
-        if ((EntityKind.SAMPLE.equals(entityKind) || EntityKind.EXPERIMENT.equals(entityKind)) && SearchFieldConstants.IDENTIFIER.equals(fieldName))
-        {
-            return new IgnoreCaseAnalyzer();
-        } else
-        {
-            return defaultAnalyzer;
-        }
+        return isSampleOrExperimentIdentifierField(entityKind, fieldName) ? new IgnoreCaseAnalyzer() : defaultAnalyzer;
+    }
+
+    private static boolean isSampleOrExperimentIdentifierField(EntityKind entityKind, String fieldName)
+    {
+        return (EntityKind.SAMPLE.equals(entityKind) || EntityKind.EXPERIMENT.equals(entityKind))
+                && SearchFieldConstants.IDENTIFIER.equals(fieldName);
     }
 
 }
