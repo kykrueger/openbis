@@ -111,18 +111,76 @@ public class Migration
         System.out.println("Migration Finished");
     }
     
+    private static class ExperimentTypeMigrationConfig {
+        private final String typeCode;
+        private final String experimentToMigrateTo;
+        private final Map<String, String> propertyTypesFromTo = new HashMap<String, String>();
+        private final List<String> propertyTypesToDeleteAfterMigration = new ArrayList<String>();
+        
+        public ExperimentTypeMigrationConfig(String typeCode, String experimentToMigrateTo, String nameProperty) {
+            this.typeCode = typeCode;
+            this.experimentToMigrateTo = experimentToMigrateTo;
+            this.propertyTypesFromTo.put("$NAME", nameProperty);
+            this.propertyTypesToDeleteAfterMigration.add(nameProperty);
+        }
+
+        public String getTypeCode()
+        {
+            return typeCode;
+        }
+
+        public String getExperimentToMigrateTo()
+        {
+            return experimentToMigrateTo;
+        }
+
+        public Map<String, String> getPropertyTypesFromTo()
+        {
+            return propertyTypesFromTo;
+        }
+
+        public List<String> getPropertyTypesToDeleteAfterMigration()
+        {
+            return propertyTypesToDeleteAfterMigration;
+        }
+        
+        
+    }
+    
     private static void migrate(String sessionToken, IApplicationServerApi v3, IDataStoreServerApi v3dss,boolean COMMIT_CHANGES_TO_OPENBIS) {
+        
+        //
+        // Experiment types to migrate as samples
+        //
+        
+        ExperimentTypeMigrationConfig MICROSCOPY_EXPERIMENT = new ExperimentTypeMigrationConfig("MICROSCOPY_EXPERIMENT", "MICROSCOPY_EXPERIMENTS_COLLECTION", "MICROSCOPY_EXPERIMENT_NAME");
+        ExperimentTypeMigrationConfig FACS_ARIA_EXPERIMENT = new ExperimentTypeMigrationConfig("FACS_ARIA_EXPERIMENT", "FLOW_CYTOMETRY_SORTERS", "FACS_ARIA_EXPERIMENT_NAME");
+        ExperimentTypeMigrationConfig INFLUX_EXPERIMENT = new ExperimentTypeMigrationConfig("INFLUX_EXPERIMENT", "FLOW_CYTOMETRY_SORTERS", "INFLUX_EXPERIMENT_NAME");
+        ExperimentTypeMigrationConfig LSR_FORTESSA_EXPERIMENT = new ExperimentTypeMigrationConfig("LSR_FORTESSA_EXPERIMENT", "LSR_FORTESSA_ANALYZERS", "LSR_FORTESSA_EXPERIMENT_NAME");
+        ExperimentTypeMigrationConfig MOFLO_XDP_EXPERIMENT = new ExperimentTypeMigrationConfig("MOFLO_XDP_EXPERIMENT", "FLOW_CYTOMETRY_SORTERS", "MOFLO_XDP_EXPERIMENT_NAME");
+        ExperimentTypeMigrationConfig S3E_EXPERIMENT = new ExperimentTypeMigrationConfig("S3E_EXPERIMENT", "FLOW_CYTOMETRY_SORTERS", "S3E_EXPERIMENT_NAME");
         
         //
         // 1. Installing new sample types
         //
         System.out.println("1. Installing types");
         
-        // Install Sample Type MICROSCOPY_EXPERIMENT
-        if(COMMIT_CHANGES_TO_OPENBIS && !doSampleTypeExist(v3, sessionToken, "MICROSCOPY_EXPERIMENT")) {
-            v3.createSampleTypes(sessionToken, Collections.singletonList(MigrationMasterdataHelper.getSampleTypeMICROSCOPY_EXPERIMENT()));
+        // Install Sample Types for Experiment Types
+        List<ExperimentTypeMigrationConfig> experimentMigrationConfigs = Arrays.asList(MICROSCOPY_EXPERIMENT,
+                FACS_ARIA_EXPERIMENT,
+                INFLUX_EXPERIMENT,
+                LSR_FORTESSA_EXPERIMENT,
+                MOFLO_XDP_EXPERIMENT,
+                S3E_EXPERIMENT);
+        
+        for(ExperimentTypeMigrationConfig experimentMigrationConfig:experimentMigrationConfigs) {
+            if(COMMIT_CHANGES_TO_OPENBIS && !doSampleTypeExist(v3, sessionToken, experimentMigrationConfig.getTypeCode())) {
+                MigrationMasterdataHelper.createSampleTypesFromExperimentTypes(sessionToken, v3, Arrays.asList(experimentMigrationConfig.getTypeCode()));
+                System.out.println(experimentMigrationConfig.getTypeCode() + " Sample Type installed.");
+            } else {
+                System.out.println(experimentMigrationConfig.getTypeCode() + " Sample Type installation skipped.");
+            }
         }
-        System.out.println("MICROSCOPY_EXPERIMENT Sample Type installed.");
         
         // Install Sample Type ORGANIZATION_UNIT
         if(COMMIT_CHANGES_TO_OPENBIS && !doSampleTypeExist(v3, sessionToken, "ORGANIZATION_UNIT")) {

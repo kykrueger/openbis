@@ -2,22 +2,28 @@ package ethz.ch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 
 public class MigrationMasterdataHelper
 {
@@ -36,11 +42,12 @@ public class MigrationMasterdataHelper
     
     public static void createPropertiesIfMissing(String sessionToken, IApplicationServerApi v3) {
         PropertyTypeSearchCriteria propertyTypeSearchCriteria = new PropertyTypeSearchCriteria();
-        propertyTypeSearchCriteria.withCodes().setFieldValue(Arrays.asList("$NAME", "NOTES", "$DEFAULT_OBJECT_TYPE", "$XMLCOMMENTS", "$ANNOTATIONS_STATE"));
+        propertyTypeSearchCriteria.withCodes().setFieldValue(Arrays.asList("$NAME", "$DESCRIPTION", "NOTES", "$DEFAULT_OBJECT_TYPE", "$XMLCOMMENTS", "$ANNOTATIONS_STATE"));
         propertyTypeSearchCriteria.withOrOperator();
         
         List<PropertyType> propertyTypes = v3.searchPropertyTypes(sessionToken, propertyTypeSearchCriteria, new PropertyTypeFetchOptions()).getObjects();
         boolean name = false;
+        boolean description = false;
         boolean notes = false;
         boolean default_object_type = false;
         boolean xmlcomments = false;
@@ -49,6 +56,9 @@ public class MigrationMasterdataHelper
         for(PropertyType propertyType:propertyTypes) {
             if(propertyType.getCode().equals("$NAME")) {
                 name = true;
+            }
+            if(propertyType.getCode().equals("$DESCRIPTION")) {
+                description = true;
             }
             if(propertyType.getCode().equals("NOTES")) {
                 notes = true;
@@ -74,6 +84,16 @@ public class MigrationMasterdataHelper
             NAME.setDataType(DataType.VARCHAR);
             NAME.setInternalNameSpace(true);
             toCreate.add(NAME);
+        }
+        
+        if(!description) {
+            PropertyTypeCreation DESCRIPTION = new PropertyTypeCreation();
+            DESCRIPTION.setCode("$DESCRIPTION");
+            DESCRIPTION.setLabel("Description");
+            DESCRIPTION.setDescription("Description");
+            DESCRIPTION.setDataType(DataType.VARCHAR);
+            DESCRIPTION.setInternalNameSpace(true);
+            toCreate.add(DESCRIPTION);
         }
         
         if(!notes) {
@@ -124,9 +144,6 @@ public class MigrationMasterdataHelper
         ExperimentTypeSearchCriteria experimentTypeSearchCriteria = new ExperimentTypeSearchCriteria();
         experimentTypeSearchCriteria.withCode().thatEquals("COLLECTION");
         
-        List<ExperimentType> experimentType = v3.searchExperimentTypes(sessionToken, experimentTypeSearchCriteria, new ExperimentTypeFetchOptions()).getObjects();
-        boolean collection = !experimentType.isEmpty();
-        
         PropertyAssignmentCreation NAME = new PropertyAssignmentCreation();
         NAME.setPropertyTypeId(new PropertyTypePermId("$NAME"));
         
@@ -138,9 +155,7 @@ public class MigrationMasterdataHelper
         creation.setDescription("Used as a folder for things.");
         creation.setPropertyAssignments(Arrays.asList(NAME,  DEFAULT_OBJECT_TYPE));
         
-        if(!collection) {
-            v3.createExperimentTypes(sessionToken, Arrays.asList(creation));
-        }
+        createExperimentTypeIfMissing(sessionToken, v3, creation);
     }
     
     //
@@ -175,6 +190,9 @@ public class MigrationMasterdataHelper
         PropertyAssignmentCreation NAME = new PropertyAssignmentCreation();
         NAME.setPropertyTypeId(new PropertyTypePermId("$NAME"));
         
+        PropertyAssignmentCreation DESCRIPTION = new PropertyAssignmentCreation();
+        DESCRIPTION.setPropertyTypeId(new PropertyTypePermId("$DESCRIPTION"));
+        
         PropertyAssignmentCreation XMLCOMMENTS = new PropertyAssignmentCreation();
         XMLCOMMENTS.setPropertyTypeId(new PropertyTypePermId("$XMLCOMMENTS"));
         XMLCOMMENTS.setShowInEditView(Boolean.FALSE);
@@ -186,7 +204,7 @@ public class MigrationMasterdataHelper
         SampleTypeCreation creation = new SampleTypeCreation();
         creation.setCode("ORGANIZATION_UNIT");
         creation.setDescription("Used to create different organisations for samples since they can't belong to more than one experiment.");
-        creation.setPropertyAssignments(Arrays.asList(NAME, 
+        creation.setPropertyAssignments(Arrays.asList(NAME, DESCRIPTION,
                 XMLCOMMENTS, 
                 ANNOTATIONS_STATE));
         creation.setGeneratedCodePrefix("OU.");
@@ -195,40 +213,68 @@ public class MigrationMasterdataHelper
     }
     
     //
-    // NEW MICROSCOPY_EXPERIMENT SAMPLE TYPE TO MIGRATE EXPERIMENT TYPE TO MIGRATE TAGS
+    // NEW SAMPLE TYPES FROM EXPERIMENTS TYPES TO MIGRATE TAGS
     //
     
-    public static SampleTypeCreation getSampleTypeMICROSCOPY_EXPERIMENT() {
+    public static void createSampleTypeIfMissing(String sessionToken, IApplicationServerApi v3, SampleTypeCreation toCreate) {
+        Collection<SampleType> t = v3.getSampleTypes(sessionToken, Arrays.asList(new EntityTypePermId(toCreate.getCode())), new SampleTypeFetchOptions()).values();
+        
+        if(t.isEmpty()) {
+            v3.createSampleTypes(sessionToken, Arrays.asList(toCreate));
+        }
+    }
+    
+    public static void createExperimentTypeIfMissing(String sessionToken, IApplicationServerApi v3, ExperimentTypeCreation toCreate) {
+        Collection<ExperimentType> t = v3.getExperimentTypes(sessionToken, Arrays.asList(new EntityTypePermId(toCreate.getCode())), new ExperimentTypeFetchOptions()).values();
+        
+        if(t.isEmpty()) {
+            v3.createExperimentTypes(sessionToken, Arrays.asList(toCreate));
+        }
+    }
+    
+    public static void createSampleTypesFromExperimentTypes(String sessionToken, IApplicationServerApi v3, List<String> experimentTypeIds) {
+        List<EntityTypePermId> ids = new ArrayList<EntityTypePermId>();
+        for(String experimentTypeId:experimentTypeIds) {
+            ids.add(new EntityTypePermId(experimentTypeId));
+        }
+        ExperimentTypeFetchOptions fo = new ExperimentTypeFetchOptions();
+        fo.withPropertyAssignments().withPropertyType();
+        
+        Collection<ExperimentType>  experimentTypes = v3.getExperimentTypes(sessionToken, ids, fo).values();
+        for(ExperimentType experimentType:experimentTypes) {
+            SampleTypeCreation stc = getSampleTypeFromExperimentType(experimentType);
+            createSampleTypeIfMissing(sessionToken, v3, stc);
+        }
+    }
+    
+    public static SampleTypeCreation getSampleTypeFromExperimentType(ExperimentType experimentType) {
+        SampleTypeCreation creation = new SampleTypeCreation();
+        creation.setCode(experimentType.getCode());
+        creation.setDescription(experimentType.getDescription());
+        List<PropertyAssignmentCreation> propertyAssignmentCreations = new ArrayList<PropertyAssignmentCreation>();
+        
         PropertyAssignmentCreation NAME = new PropertyAssignmentCreation();
         NAME.setPropertyTypeId(new PropertyTypePermId("$NAME"));
-        
-        PropertyAssignmentCreation MICROSCOPY_EXPERIMENT_NAME = new PropertyAssignmentCreation();
-        MICROSCOPY_EXPERIMENT_NAME.setPropertyTypeId(new PropertyTypePermId("MICROSCOPY_EXPERIMENT_NAME"));
-        
-        PropertyAssignmentCreation MICROSCOPY_EXPERIMENT_DESCRIPTION = new PropertyAssignmentCreation();
-        MICROSCOPY_EXPERIMENT_DESCRIPTION.setPropertyTypeId(new PropertyTypePermId("MICROSCOPY_EXPERIMENT_DESCRIPTION"));
-        
-        PropertyAssignmentCreation MICROSCOPY_EXPERIMENT_VERSION = new PropertyAssignmentCreation();
-        MICROSCOPY_EXPERIMENT_VERSION.setPropertyTypeId(new PropertyTypePermId("MICROSCOPY_EXPERIMENT_VERSION"));
-        MICROSCOPY_EXPERIMENT_VERSION.setShowInEditView(Boolean.FALSE);
-        
-        PropertyAssignmentCreation MICROSCOPY_EXPERIMENT_ACQ_HARDWARE_FRIENDLY_NAME = new PropertyAssignmentCreation();
-        MICROSCOPY_EXPERIMENT_ACQ_HARDWARE_FRIENDLY_NAME.setPropertyTypeId(new PropertyTypePermId("MICROSCOPY_EXPERIMENT_ACQ_HARDWARE_FRIENDLY_NAME"));
+        NAME.setSection("General Info");
+        NAME.setShowInEditView(Boolean.TRUE);
         
         PropertyAssignmentCreation ANNOTATIONS_STATE = new PropertyAssignmentCreation();
         ANNOTATIONS_STATE.setPropertyTypeId(new PropertyTypePermId("$ANNOTATIONS_STATE"));
+        ANNOTATIONS_STATE.setSection("General Info");
         ANNOTATIONS_STATE.setShowInEditView(Boolean.FALSE);
         
-        SampleTypeCreation creation = new SampleTypeCreation();
-        creation.setCode("MICROSCOPY_EXPERIMENT");
-        creation.setDescription("Generic microscopy experiment.");
-        creation.setPropertyAssignments(Arrays.asList(
-                NAME,
-                MICROSCOPY_EXPERIMENT_NAME, 
-                MICROSCOPY_EXPERIMENT_DESCRIPTION, 
-                MICROSCOPY_EXPERIMENT_VERSION, 
-                MICROSCOPY_EXPERIMENT_ACQ_HARDWARE_FRIENDLY_NAME,
-                ANNOTATIONS_STATE));
+        propertyAssignmentCreations.add(NAME);
+        propertyAssignmentCreations.add(ANNOTATIONS_STATE);
+        
+        for(PropertyAssignment propertyAssignment:experimentType.getPropertyAssignments()) {
+            PropertyAssignmentCreation pac = new PropertyAssignmentCreation();
+            pac.setPropertyTypeId(propertyAssignment.getPropertyType().getPermId());
+            pac.setShowInEditView(propertyAssignment.isShowInEditView());
+            pac.setSection(propertyAssignment.getSection());
+            propertyAssignmentCreations.add(pac);
+        }
+        creation.setPropertyAssignments(propertyAssignmentCreations);
+        
         return creation;
     }
 }
