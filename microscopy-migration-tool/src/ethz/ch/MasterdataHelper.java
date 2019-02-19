@@ -6,7 +6,9 @@ import java.util.Collection;
 import java.util.List;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
@@ -23,9 +25,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 
-public class MigrationMasterdataHelper
+public class MasterdataHelper
 {
     //
     // ELN TYPES
@@ -215,19 +216,29 @@ public class MigrationMasterdataHelper
     //
     // NEW SAMPLE TYPES FROM EXPERIMENTS TYPES TO MIGRATE TAGS
     //
+    public static boolean doDataSetTypeExist(String sessionToken, IApplicationServerApi v3, String dataSetTypeCode) {
+        Collection<DataSetType> c = v3.getDataSetTypes(sessionToken, Arrays.asList(new EntityTypePermId(dataSetTypeCode)), new DataSetTypeFetchOptions()).values();
+        return !c.isEmpty();
+    }
+    
+    public static boolean doSampleTypeExist(String sessionToken, IApplicationServerApi v3, String sampleTypeCode) {
+        Collection<SampleType> c = v3.getSampleTypes(sessionToken, Arrays.asList(new EntityTypePermId(sampleTypeCode)), new SampleTypeFetchOptions()).values();
+        return !c.isEmpty();
+    }
+    
+    public static boolean doExperimentTypeExist(String sessionToken, IApplicationServerApi v3, String experimentTypeCode) {
+        Collection<ExperimentType> c = v3.getExperimentTypes(sessionToken, Arrays.asList(new EntityTypePermId(experimentTypeCode)), new ExperimentTypeFetchOptions()).values();
+        return !c.isEmpty();
+    }
     
     public static void createSampleTypeIfMissing(String sessionToken, IApplicationServerApi v3, SampleTypeCreation toCreate) {
-        Collection<SampleType> t = v3.getSampleTypes(sessionToken, Arrays.asList(new EntityTypePermId(toCreate.getCode())), new SampleTypeFetchOptions()).values();
-        
-        if(t.isEmpty()) {
+        if(!doSampleTypeExist(sessionToken, v3, toCreate.getCode())) {
             v3.createSampleTypes(sessionToken, Arrays.asList(toCreate));
         }
     }
     
     public static void createExperimentTypeIfMissing(String sessionToken, IApplicationServerApi v3, ExperimentTypeCreation toCreate) {
-        Collection<ExperimentType> t = v3.getExperimentTypes(sessionToken, Arrays.asList(new EntityTypePermId(toCreate.getCode())), new ExperimentTypeFetchOptions()).values();
-        
-        if(t.isEmpty()) {
+        if(!doExperimentTypeExist(sessionToken, v3, toCreate.getCode())) {
             v3.createExperimentTypes(sessionToken, Arrays.asList(toCreate));
         }
     }

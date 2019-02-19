@@ -79,7 +79,7 @@ public class TagsHelper
                     if(ousByTagName.containsKey(tagRequired)) {
                         ousFound.add(ousByTagName.get(tagRequired).getPermId());
                     } else {
-                        ousMissing.add(MigrationMetadataHelper.getOrganizationUnitCreation(ouCollIdent, tagRequired));
+                        ousMissing.add(MetadataHelper.getOrganizationUnitCreation(ouCollIdent, tagRequired));
                     }
                 }
                 

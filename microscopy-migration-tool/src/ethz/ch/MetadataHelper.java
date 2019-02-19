@@ -1,23 +1,38 @@
 package ethz.ch;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 
-public class MigrationMetadataHelper
+public class MetadataHelper
 {
+    
     public static ProjectCreation getProjectCreation(String spaceCode, String projectCode, String description) {
         ProjectCreation projectCreation = new ProjectCreation();
         projectCreation.setCode(projectCode);
@@ -92,4 +107,51 @@ public class MigrationMetadataHelper
             }
         }
     }
+    
+    public static Experiment getExperiment(String sessionToken,  IApplicationServerApi v3, ExperimentPermId permId) {
+        ExperimentFetchOptions fo = new ExperimentFetchOptions();
+        fo.withProperties();
+        fo.withSamples();
+        fo.withDataSets().withSample();
+        fo.withRegistrator();
+        fo.withModifier();
+        fo.withAttachments().withContent();
+        
+        Collection<Experiment> es = v3.getExperiments(sessionToken, Arrays.asList(permId), fo).values();
+        if(es.size() == 1) {
+            return es.iterator().next();
+        } else {
+            throw new RuntimeException("Experiment with PermId not found: " + permId.getPermId());
+        }
+    }
+    
+    public static boolean doProjectExist(IApplicationServerApi v3, String sessionToken, String projectIdentifier) {
+        Map<IProjectId, Project> projects = v3.getProjects(sessionToken, Collections.singletonList(new ProjectIdentifier(projectIdentifier)), new ProjectFetchOptions());
+        return !projects.isEmpty();
+    }
+    
+    public static boolean doExperimentExist(IApplicationServerApi v3, String sessionToken, String experimentIdentifier) {
+        Map<IExperimentId, Experiment> experiments = v3.getExperiments(sessionToken, Collections.singletonList(new ExperimentIdentifier(experimentIdentifier)), new ExperimentFetchOptions());
+        return !experiments.isEmpty();
+    }
+    
+    public static boolean doSampleExist(IApplicationServerApi v3, String sessionToken, String sampleIdentifier) {
+        Map<ISampleId, Sample> samples = v3.getSamples(sessionToken, Collections.singletonList(new SampleIdentifier(sampleIdentifier)), new SampleFetchOptions());
+        return !samples.isEmpty();
+    }
+    
+    public static Sample getSample(IApplicationServerApi v3, String sessionToken, String sampleIdentifier) {
+        SampleFetchOptions fo = new SampleFetchOptions();
+        fo.withProperties();
+        fo.withChildren();
+        fo.withParents();
+        fo.withDataSets().withType();
+        fo.withRegistrator();
+        fo.withModifier();
+        fo.withAttachments();
+        Map<ISampleId, Sample> samples = v3.getSamples(sessionToken, Collections.singletonList(new SampleIdentifier(sampleIdentifier)), fo);
+        return samples.get(new SampleIdentifier(sampleIdentifier));
+    }
+    
+    
 }
