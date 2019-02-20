@@ -84,12 +84,12 @@ public class Main
         // Experiment types to migrate as samples
         //
         
-        ExperimentType2SampleType MICROSCOPY_EXPERIMENT = new ExperimentType2SampleType("MICROSCOPY_EXPERIMENT", "MICROSCOPY_EXPERIMENTS_COLLECTION", "MICROSCOPY_EXPERIMENT_NAME");
-        ExperimentType2SampleType FACS_ARIA_EXPERIMENT = new ExperimentType2SampleType("FACS_ARIA_EXPERIMENT", "FLOW_CYTOMETRY_SORTERS", "FACS_ARIA_EXPERIMENT_NAME");
-        ExperimentType2SampleType INFLUX_EXPERIMENT = new ExperimentType2SampleType("INFLUX_EXPERIMENT", "FLOW_CYTOMETRY_SORTERS", "INFLUX_EXPERIMENT_NAME");
-        ExperimentType2SampleType LSR_FORTESSA_EXPERIMENT = new ExperimentType2SampleType("LSR_FORTESSA_EXPERIMENT", "LSR_FORTESSA_ANALYZERS", "LSR_FORTESSA_EXPERIMENT_NAME");
-        ExperimentType2SampleType MOFLO_XDP_EXPERIMENT = new ExperimentType2SampleType("MOFLO_XDP_EXPERIMENT", "FLOW_CYTOMETRY_SORTERS", "MOFLO_XDP_EXPERIMENT_NAME");
-        ExperimentType2SampleType S3E_EXPERIMENT = new ExperimentType2SampleType("S3E_EXPERIMENT", "FLOW_CYTOMETRY_SORTERS", "S3E_EXPERIMENT_NAME");
+        ExperimentType2SampleType MICROSCOPY_EXPERIMENT = new ExperimentType2SampleType("MICROSCOPY_EXPERIMENT",    "MICROSCOPY_EXPERIMENTS_COLLECTION", "MICROSCOPY_EXPERIMENT_NAME");
+        ExperimentType2SampleType FACS_ARIA_EXPERIMENT = new ExperimentType2SampleType("FACS_ARIA_EXPERIMENT",      "FLOW_SORTERS_EXPERIMENTS_COLLECTION", "FACS_ARIA_EXPERIMENT_NAME");
+        ExperimentType2SampleType INFLUX_EXPERIMENT = new ExperimentType2SampleType("INFLUX_EXPERIMENT",            "FLOW_SORTERS_EXPERIMENTS_COLLECTION", "INFLUX_EXPERIMENT_NAME");
+        ExperimentType2SampleType LSR_FORTESSA_EXPERIMENT = new ExperimentType2SampleType("LSR_FORTESSA_EXPERIMENT","FLOW_ANALYZERS_EXPERIMENTS_COLLECTION", "LSR_FORTESSA_EXPERIMENT_NAME");
+        ExperimentType2SampleType MOFLO_XDP_EXPERIMENT = new ExperimentType2SampleType("MOFLO_XDP_EXPERIMENT",      "FLOW_SORTERS_EXPERIMENTS_COLLECTION", "MOFLO_XDP_EXPERIMENT_NAME");
+        ExperimentType2SampleType S3E_EXPERIMENT = new ExperimentType2SampleType("S3E_EXPERIMENT",                  "FLOW_SORTERS_EXPERIMENTS_COLLECTION", "S3E_EXPERIMENT_NAME");
         
         //
         // 1. Installing new sample types
@@ -167,6 +167,7 @@ public class Main
             }
         }
         
+        System.out.println("3. Translate Experiment to Samples");
         
         for(ExperimentType2SampleType config:experimentMigrationConfigs) {
             int total = 0;
@@ -175,10 +176,33 @@ public class Main
             SearchResult<Experiment> experiments = v3.searchExperiments(sessionToken, experimentSearchCriteria, new ExperimentFetchOptions());
             for(Experiment experiment:experiments.getObjects()) {
                 Experiment2Sample toMigrate = new Experiment2Sample(config, experiment.getPermId());
-                Experiment2SampleTranslator.migrate(sessionToken, v3, v3dss, toMigrate, COMMIT_CHANGES_TO_OPENBIS);
+                Experiment2SampleTranslator.translate(sessionToken, v3, v3dss, toMigrate, COMMIT_CHANGES_TO_OPENBIS);
                 total++;
                 System.out.println("[DONE] " + config.getTypeCode() + "\t" + total + "/" + experiments.getTotalCount());
             }
         }
+        
+        //
+        //
+        //
+        
+        System.out.println("4. Translate Properties to Samples");
+
+        PropertyType2SampleType FACS_ARIA_TUBE =    new PropertyType2SampleType(        "FACS_ARIA_TUBE",   "FACS_ARIA_SPECIMEN",   "FACS_ARIA_SPECIMEN",   "$NAME");
+        PropertyType2SampleType FACS_ARIA_WELL =    new PropertyType2SampleType(        "FACS_ARIA_WELL",   "FACS_ARIA_SPECIMEN",   "FACS_ARIA_SPECIMEN",   "$NAME");
+        PropertyType2SampleType INFLUX_TUBE =       new PropertyType2SampleType(        "INFLUX_TUBE",      "INFLUX_SPECIMEN",      "INFLUX_SPECIMEN",      "$NAME");
+        PropertyType2SampleType LSR_FORTESSA_TUBE = new PropertyType2SampleType(        "LSR_FORTESSA_TUBE","LSR_FORTESSA_SPECIMEN","LSR_FORTESSA_SPECIMEN","$NAME");
+        PropertyType2SampleType LSR_FORTESSA_WELL = new PropertyType2SampleType(        "LSR_FORTESSA_WELL","LSR_FORTESSA_SPECIMEN","LSR_FORTESSA_SPECIMEN","$NAME");
+        PropertyType2SampleType MOFLO_XDP_TUBE =    new PropertyType2SampleType(        "MOFLO_XDP_TUBE",   "MOFLO_XDP_SPECIMEN",   "MOFLO_XDP_SPECIMEN",   "$NAME");
+        PropertyType2SampleType SE3_TUBE =          new PropertyType2SampleType(        "SE3_TUBE",         "SE3_SPECIMEN",         "SE3_SPECIMEN",         "$NAME");
+        
+        List<PropertyType2SampleType> propertiesMigrationConfigs = Arrays.asList(FACS_ARIA_TUBE,
+                FACS_ARIA_WELL,
+                INFLUX_TUBE,
+                LSR_FORTESSA_TUBE,
+                LSR_FORTESSA_WELL,
+                MOFLO_XDP_TUBE,
+                SE3_TUBE);
+        
     }
 }

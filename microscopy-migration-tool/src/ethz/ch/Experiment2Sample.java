@@ -19,18 +19,10 @@ public class Experiment2Sample
     {
         return config;
     }
-    public void setConfig(ExperimentType2SampleType config)
-    {
-        this.config = config;
-    }
+
     public ExperimentPermId getExperimentPermId()
     {
         return experimentPermId;
     }
-    public void setExperimentPermId(ExperimentPermId experimentPermId)
-    {
-        this.experimentPermId = experimentPermId;
-    }
-    
     
 }

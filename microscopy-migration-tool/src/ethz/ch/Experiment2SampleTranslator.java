@@ -30,7 +30,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 public class Experiment2SampleTranslator
 {
     
-    public static void migrate(String sessionToken, 
+    public static void translate(String sessionToken, 
                                 IApplicationServerApi v3, 
                                 IDataStoreServerApi v3dss,
                                 Experiment2Sample toMigrate, 
