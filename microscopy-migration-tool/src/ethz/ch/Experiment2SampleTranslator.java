@@ -1,6 +1,5 @@
 package ethz.ch;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
@@ -35,9 +34,17 @@ public class Experiment2SampleTranslator
                                 IApplicationServerApi v3, 
                                 IDataStoreServerApi v3dss,
                                 Experiment2Sample toMigrate, 
-                                boolean COMMIT_CHANGES_TO_OPENBIS) throws IOException {
+                                boolean COMMIT_CHANGES_TO_OPENBIS) throws Exception {
         System.out.println("[START]\t" + toMigrate.getExperimentPermId());
         Experiment experiment = MetadataHelper.getExperiment(sessionToken, v3, toMigrate.getExperimentPermId());
+        
+        // Test mode, only with complete experiments
+//        if(experiment.getAttachments().isEmpty() || 
+//                experiment.getSamples().isEmpty() || 
+//                experiment.getDataSets().isEmpty()) {
+//            return;
+//        }
+        //
         
         SampleCreation sampleCreation = new SampleCreation();
         sampleCreation.setCode(experiment.getCode());
@@ -122,12 +129,13 @@ public class Experiment2SampleTranslator
         }
         
         // 6. Does the new sample have assigned as datasets the attachments of the experiment? Create if not.
-        if(COMMIT_CHANGES_TO_OPENBIS && (sample == null || !hasAttachments(sample))) {
+        if(COMMIT_CHANGES_TO_OPENBIS && !experiment.getAttachments().isEmpty() && (sample == null || !hasAttachments(sample))) {
             for(Attachment attachment:experiment.getAttachments()) {
-                System.out.println("Update Attachment\t" + attachment.getFileName());
+                System.out.println("Add Attachment\t" + attachment.getFileName());
                 Map<String, String> properties = new HashMap<>();
+                properties.put("$NAME", attachment.getFileName());
                 if(attachment.getDescription() != null) {
-                    properties.put("NOTES", attachment.getDescription());
+                    properties.put("$DESCRIPTION", attachment.getDescription());
                 }
                 DatasetCreationHelper.createDataset(v3dss, sessionToken, sampleIdentifier.getIdentifier(), "ATTACHMENT", attachment.getFileName(), attachment.getContent(), properties);
             }

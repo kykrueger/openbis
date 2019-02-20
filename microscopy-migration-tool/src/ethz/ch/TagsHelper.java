@@ -32,9 +32,9 @@ public class TagsHelper
         {
             List<String> taglines = FileUtils.readLines(new File("tags.txt"));
             for(String tagline:taglines) {
-                String tag = tagline.split(";")[0];
+                String tag = tagline.split("\t")[0];
                 tag = tag.substring(1, tag.length() - 1);
-                String permId = tagline.split(";")[1];
+                String permId = tagline.split("\t")[1];
                 permId = permId.substring(1, permId.length() - 1);
                 List<String> tagsOfPermId = tags.get(permId);
                 if(tagsOfPermId == null) {

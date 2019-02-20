@@ -167,6 +167,9 @@ public class MasterdataHelper
         PropertyAssignmentCreation NAME = new PropertyAssignmentCreation();
         NAME.setPropertyTypeId(new PropertyTypePermId("$NAME"));
         
+        PropertyAssignmentCreation DESCRIPTION = new PropertyAssignmentCreation();
+        DESCRIPTION.setPropertyTypeId(new PropertyTypePermId("$DESCRIPTION"));
+        
         PropertyAssignmentCreation NOTES = new PropertyAssignmentCreation();
         NOTES.setPropertyTypeId(new PropertyTypePermId("NOTES"));
         
@@ -178,7 +181,7 @@ public class MasterdataHelper
         DataSetTypeCreation creation = new DataSetTypeCreation();
         creation.setCode("ATTACHMENT");
         creation.setDescription("Used to attach files to entities.");
-        creation.setPropertyAssignments(Arrays.asList(NAME, NOTES, XMLCOMMENTS));
+        creation.setPropertyAssignments(Arrays.asList(NAME, DESCRIPTION, NOTES, XMLCOMMENTS));
         
         return creation;
     }
