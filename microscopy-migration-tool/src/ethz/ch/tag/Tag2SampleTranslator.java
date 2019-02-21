@@ -76,7 +76,7 @@ public class Tag2SampleTranslator
                     if(ousByTagName.containsKey(tagRequired)) {
                         ousFound.add(ousByTagName.get(tagRequired).getPermId());
                     } else {
-                        ousMissing.add(MetadataHelper.getOrganizationUnitCreation(ouCollIdent, tagRequired));
+                        ousMissing.add(MetadataHelper.getBasicSampleCreation(ouCollIdent, "ORGANIZATION_UNIT", tagRequired));
                     }
                 }
                 

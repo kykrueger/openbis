@@ -2,23 +2,23 @@ package ethz.ch.property;
 
 public class PropertyType2SampleType
 {
-    private String oldSampleType;
+    private String oldSampleTypeCode;
     private String oldPropertyCode;
-    private String newSampleType;
+    private String newSampleTypeCode;
     private String newPropertyCode;
     
     public PropertyType2SampleType(String oldSampleType, String oldPropertyCode, String newSampleType, String newPropertyCode)
     {
         super();
-        this.oldSampleType = oldSampleType;
+        this.oldSampleTypeCode = oldSampleType;
         this.oldPropertyCode = oldPropertyCode;
-        this.newSampleType = newSampleType;
+        this.newSampleTypeCode = newSampleType;
         this.newPropertyCode = newPropertyCode;
     }
 
-    public String getOldSampleType()
+    public String getOldSampleTypeCode()
     {
-        return oldSampleType;
+        return oldSampleTypeCode;
     }
 
     public String getOldPropertyCode()
@@ -26,9 +26,9 @@ public class PropertyType2SampleType
         return oldPropertyCode;
     }
 
-    public String getNewSampleType()
+    public String getNewSampleTypeCode()
     {
-        return newSampleType;
+        return newSampleTypeCode;
     }
 
     public String getNewPropertyCode()

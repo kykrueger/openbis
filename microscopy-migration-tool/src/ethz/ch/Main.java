@@ -13,6 +13,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
@@ -22,6 +25,8 @@ import ethz.ch.dataset.DatasetCreationHelper;
 import ethz.ch.experiment.Experiment2Sample;
 import ethz.ch.experiment.Experiment2SampleTranslator;
 import ethz.ch.experiment.ExperimentType2SampleType;
+import ethz.ch.property.Property2Sample;
+import ethz.ch.property.Property2SampleTranslator;
 import ethz.ch.property.PropertyType2SampleType;
 import ethz.ch.ssl.SslCertificateHelper;
 import ethz.ch.tag.Tag2SampleTranslator;
@@ -191,10 +196,6 @@ public class Main
             }
         }
         
-        //
-        //
-        //
-        
         System.out.println("4. Translate Properties to Samples");
 
         PropertyType2SampleType FACS_ARIA_TUBE =    new PropertyType2SampleType(        "FACS_ARIA_TUBE",   "FACS_ARIA_SPECIMEN",   "FACS_ARIA_SPECIMEN",   "$NAME");
@@ -213,5 +214,26 @@ public class Main
                 MOFLO_XDP_TUBE,
                 SE3_TUBE);
         
+        for(PropertyType2SampleType propertyMigrationConfigs:propertiesMigrationConfigs) {
+            if(COMMIT_CHANGES_TO_OPENBIS && !MasterdataHelper.doSampleTypeExist(sessionToken, v3, propertyMigrationConfigs.getNewSampleTypeCode())) {
+                MasterdataHelper.createDefaultSampleType(sessionToken, v3, propertyMigrationConfigs.getNewSampleTypeCode());
+                System.out.println(propertyMigrationConfigs.getNewSampleTypeCode() + " Sample Type installed.");
+            } else {
+                System.out.println(propertyMigrationConfigs.getNewSampleTypeCode() + " Sample Type installation skipped.");
+            }
+        }
+        
+        for(PropertyType2SampleType config:propertiesMigrationConfigs) {
+            int total = 0;
+            SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
+            sampleSearchCriteria.withType().withCode().thatEquals(config.getOldSampleTypeCode());
+            SearchResult<Sample> samples = v3.searchSamples(sessionToken, sampleSearchCriteria, new SampleFetchOptions());
+            for(Sample sample:samples.getObjects()) {
+                Property2Sample toMigrate = new Property2Sample(config, sample.getPermId());
+                Property2SampleTranslator.translate(sessionToken, v3, v3dss, toMigrate, COMMIT_CHANGES_TO_OPENBIS);
+                total++;
+                System.out.println("[DONE] " + config.getOldSampleTypeCode() + "\t" + total + "/" + samples.getTotalCount());
+            }
+        }
     }
 }

@@ -61,12 +61,12 @@ public class MetadataHelper
         return experimentCreation;
     }
     
-    public static SampleCreation getOrganizationUnitCreation(ExperimentIdentifier experimentId, String name) {
+    public static SampleCreation getBasicSampleCreation(ExperimentIdentifier experimentIdentifier, String sampleTypeCode, String name) {
         SampleCreation sampleCreation = new SampleCreation();
-        sampleCreation.setTypeId(new EntityTypePermId("ORGANIZATION_UNIT"));
+        sampleCreation.setTypeId(new EntityTypePermId(sampleTypeCode));
         sampleCreation.setProperty("$NAME", name);
-        sampleCreation.setSpaceId(new SpacePermId(experimentId.getIdentifier().split("/")[1]));
-        sampleCreation.setExperimentId(experimentId);
+        sampleCreation.setSpaceId(new SpacePermId(experimentIdentifier.getIdentifier().split("/")[1]));
+        sampleCreation.setExperimentId(experimentIdentifier);
         return sampleCreation;
     }
     
@@ -134,17 +134,20 @@ public class MetadataHelper
     // Gets
     //
     
-    public static Sample getSample(IApplicationServerApi v3, String sessionToken, String sampleIdentifier) {
+    public static Sample getSample(String sessionToken, IApplicationServerApi v3, ISampleId sampleId) {
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withProperties();
         fo.withChildren();
         fo.withParents();
+        fo.withContainer();
+        fo.withSpace();
+        fo.withExperiment();
         fo.withDataSets().withType();
         fo.withRegistrator();
         fo.withModifier();
         fo.withAttachments();
-        Map<ISampleId, Sample> samples = v3.getSamples(sessionToken, Collections.singletonList(new SampleIdentifier(sampleIdentifier)), fo);
-        return samples.get(new SampleIdentifier(sampleIdentifier));
+        Map<ISampleId, Sample> samples = v3.getSamples(sessionToken, Collections.singletonList(sampleId), fo);
+        return samples.get(sampleId);
     }
     
     public static Experiment getExperiment(String sessionToken,  IApplicationServerApi v3, ExperimentPermId permId) {

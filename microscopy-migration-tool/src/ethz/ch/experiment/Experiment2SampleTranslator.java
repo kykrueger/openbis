@@ -44,11 +44,11 @@ public class Experiment2SampleTranslator
         Experiment experiment = MetadataHelper.getExperiment(sessionToken, v3, toMigrate.getExperimentPermId());
         
         // Test mode, only with complete experiments
-        if(experiment.getAttachments().isEmpty() || 
-                experiment.getSamples().isEmpty() || 
-                experiment.getDataSets().isEmpty()) {
-            return;
-        }
+//        if(experiment.getAttachments().isEmpty() || 
+//                experiment.getSamples().isEmpty() || 
+//                experiment.getDataSets().isEmpty()) {
+//            return;
+//        }
         //
         
         SampleCreation sampleCreation = new SampleCreation();
@@ -78,7 +78,7 @@ public class Experiment2SampleTranslator
         // 2. Does the new sample exists? Create if not
         SampleIdentifier sampleIdentifier = new SampleIdentifier(experiment.getIdentifier().getIdentifier());
         SamplePermId samplePermId = null;
-        Sample sample = MetadataHelper.getSample(v3, sessionToken, sampleIdentifier.getIdentifier());
+        Sample sample = MetadataHelper.getSample(sessionToken, v3, sampleIdentifier);
         if(COMMIT_CHANGES_TO_OPENBIS && sample == null) {
             samplePermId = v3.createSamples(sessionToken, Collections.singletonList(sampleCreation)).get(0);
             System.out.println("Created Sample\t" + sampleIdentifier.getIdentifier());
