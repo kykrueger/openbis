@@ -1,4 +1,4 @@
-package ethz.ch;
+package ethz.ch.experiment;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
@@ -26,6 +27,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
+import ethz.ch.MetadataHelper;
+import ethz.ch.dataset.DatasetCreationHelper;
+import ethz.ch.sample.SampleAuditDataHelper;
+import ethz.ch.tag.Tag2SampleTranslator;
 
 public class Experiment2SampleTranslator
 {
@@ -39,11 +44,11 @@ public class Experiment2SampleTranslator
         Experiment experiment = MetadataHelper.getExperiment(sessionToken, v3, toMigrate.getExperimentPermId());
         
         // Test mode, only with complete experiments
-//        if(experiment.getAttachments().isEmpty() || 
-//                experiment.getSamples().isEmpty() || 
-//                experiment.getDataSets().isEmpty()) {
-//            return;
-//        }
+        if(experiment.getAttachments().isEmpty() || 
+                experiment.getSamples().isEmpty() || 
+                experiment.getDataSets().isEmpty()) {
+            return;
+        }
         //
         
         SampleCreation sampleCreation = new SampleCreation();
@@ -115,7 +120,7 @@ public class Experiment2SampleTranslator
         
         // 5. Does the new sample have assigned tags as organisational units? Create and add if not.
         if(COMMIT_CHANGES_TO_OPENBIS && (sample == null || sample.getParents().isEmpty())) {
-            List<SamplePermId> tagsAsParentOU = TagsHelper.getOrganizationUnits(sessionToken, v3, COMMIT_CHANGES_TO_OPENBIS, experiment);
+            List<SamplePermId> tagsAsParentOU = Tag2SampleTranslator.getOrganizationUnitsFromTags(sessionToken, v3, COMMIT_CHANGES_TO_OPENBIS, experiment);
             if(tagsAsParentOU != null) {
                 SampleUpdate sampleUpdate = new SampleUpdate();
                 sampleUpdate.setSampleId(samplePermId);
@@ -137,13 +142,13 @@ public class Experiment2SampleTranslator
                 if(attachment.getDescription() != null) {
                     properties.put("$DESCRIPTION", attachment.getDescription());
                 }
-                DatasetCreationHelper.createDataset(v3dss, sessionToken, sampleIdentifier.getIdentifier(), "ATTACHMENT", attachment.getFileName(), attachment.getContent(), properties);
+                DatasetCreationHelper.createOneFileDataset(v3dss, sessionToken, EntityKind.SAMPLE, sampleIdentifier.getIdentifier(), "ATTACHMENT", attachment.getFileName(), attachment.getContent(), properties);
             }
         }
         
         // 7. Add audit data always, repeating updates doesn't hurt
         System.out.println("Attach Audit data\t" + toMigrate.getExperimentPermId() + "\t" + sampleIdentifier.getIdentifier());
-        AuditDataHelper.addAuditUpdate(samplePermId, experiment);
+        SampleAuditDataHelper.appendAuditUpdate("openbis_audit_data_update.sql", samplePermId, experiment);
         System.out.println("Delete Experiment\t" + toMigrate.getExperimentPermId());
         
         // 8. Delete the migrated experiment

@@ -1,4 +1,4 @@
-package ethz.ch;
+package ethz.ch.property;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;

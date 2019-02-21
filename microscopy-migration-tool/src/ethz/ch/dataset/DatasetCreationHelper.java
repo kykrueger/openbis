@@ -1,4 +1,4 @@
-package ethz.ch;
+package ethz.ch.dataset;
 
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +14,7 @@ import org.eclipse.jetty.http.HttpMethod;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.UploadedDataSetCreation;
@@ -37,14 +38,33 @@ public class DatasetCreationHelper
 
     public static final String UPLOAD_ID_PARAM = "uploadID";
     
-    public static void createDataset(IDataStoreServerApi v3dss, String sessionToken, String sampleIdentifier, String dataSetType, String fileName, byte[] content, Map<String,String> properties) throws Exception {
+    public static void createOneFileDataset(IDataStoreServerApi v3dss, String sessionToken, EntityKind entityKind, String identifier, String dataSetType, String fileName, byte[] content, Map<String,String> properties) throws Exception {
         String uploadId = UUID.randomUUID().toString();
-        String folder = sampleIdentifier.substring(1).replace('/', '+');
-        uploadFile(sessionToken, uploadId, dataSetType, false, "O+" + folder + "+ATTACHMENT" , fileName, content);
-            
+        String folder = identifier.substring(1).replace('/', '+');
+        char type;
+        
+        switch(entityKind) {
+            case SAMPLE:
+                type = 'O';
+                break;
+            case EXPERIMENT:
+                type = 'E';
+                break;
+            default:
+                throw new RuntimeException("Unsuported entity to upload dataset");
+        }
+        
+        uploadFile(sessionToken, uploadId, dataSetType, false, type + "+" + folder + "+" + dataSetType , fileName, content);
+        
         UploadedDataSetCreation uploadedDataSetCreation = new UploadedDataSetCreation();
         uploadedDataSetCreation.setTypeId(new EntityTypePermId(dataSetType, EntityKind.DATA_SET));
-        uploadedDataSetCreation.setSampleId(new SampleIdentifier(sampleIdentifier));
+        
+        if(type == 'O') {
+            uploadedDataSetCreation.setSampleId(new SampleIdentifier(identifier));  
+        } else {
+            uploadedDataSetCreation.setExperimentId(new ExperimentIdentifier(identifier));
+        }
+        
         uploadedDataSetCreation.setUploadId(uploadId);
         uploadedDataSetCreation.setProperties(properties);
             

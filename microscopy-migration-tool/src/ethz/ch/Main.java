@@ -18,6 +18,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import ethz.ch.dataset.DatasetCreationHelper;
+import ethz.ch.experiment.Experiment2Sample;
+import ethz.ch.experiment.Experiment2SampleTranslator;
+import ethz.ch.experiment.ExperimentType2SampleType;
+import ethz.ch.property.PropertyType2SampleType;
+import ethz.ch.ssl.SslCertificateHelper;
+import ethz.ch.tag.Tag2SampleTranslator;
 
 public class Main
 {
@@ -67,6 +74,8 @@ public class Main
             System.out.println("Enable project samples before running the migration.");
             return;
         }
+        
+        Tag2SampleTranslator.init("tags.txt");
         
         if(installELNTypes) {
             MasterdataHelper.installELNTypes(sessionToken, v3, COMMIT_CHANGES_TO_OPENBIS);

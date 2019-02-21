@@ -1,4 +1,4 @@
-package ethz.ch;
+package ethz.ch.experiment;
 
 import java.util.ArrayList;
 import java.util.HashMap;

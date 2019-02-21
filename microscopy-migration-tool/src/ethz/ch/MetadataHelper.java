@@ -70,6 +70,9 @@ public class MetadataHelper
         return sampleCreation;
     }
     
+    //
+    // Batch Updates
+    //
     private static int SAMPLE_BATCH_SIZE = 1000;
     
     public static void executeSampleUpdates(String sessionToken, IApplicationServerApi v3, boolean COMMIT_CHANGES_TO_OPENBIS, Deque<SampleUpdate> updates) {
@@ -108,22 +111,9 @@ public class MetadataHelper
         }
     }
     
-    public static Experiment getExperiment(String sessionToken,  IApplicationServerApi v3, ExperimentPermId permId) {
-        ExperimentFetchOptions fo = new ExperimentFetchOptions();
-        fo.withProperties();
-        fo.withSamples();
-        fo.withDataSets().withSample();
-        fo.withRegistrator();
-        fo.withModifier();
-        fo.withAttachments().withContent();
-        
-        Collection<Experiment> es = v3.getExperiments(sessionToken, Arrays.asList(permId), fo).values();
-        if(es.size() == 1) {
-            return es.iterator().next();
-        } else {
-            throw new RuntimeException("Experiment with PermId not found: " + permId.getPermId());
-        }
-    }
+    //
+    // Exists
+    //
     
     public static boolean doProjectExist(IApplicationServerApi v3, String sessionToken, String projectIdentifier) {
         Map<IProjectId, Project> projects = v3.getProjects(sessionToken, Collections.singletonList(new ProjectIdentifier(projectIdentifier)), new ProjectFetchOptions());
@@ -140,6 +130,10 @@ public class MetadataHelper
         return !samples.isEmpty();
     }
     
+    //
+    // Gets
+    //
+    
     public static Sample getSample(IApplicationServerApi v3, String sessionToken, String sampleIdentifier) {
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withProperties();
@@ -153,5 +147,21 @@ public class MetadataHelper
         return samples.get(new SampleIdentifier(sampleIdentifier));
     }
     
+    public static Experiment getExperiment(String sessionToken,  IApplicationServerApi v3, ExperimentPermId permId) {
+        ExperimentFetchOptions fo = new ExperimentFetchOptions();
+        fo.withProperties();
+        fo.withSamples();
+        fo.withDataSets().withSample();
+        fo.withRegistrator();
+        fo.withModifier();
+        fo.withAttachments().withContent();
+        
+        Collection<Experiment> es = v3.getExperiments(sessionToken, Arrays.asList(permId), fo).values();
+        if(es.size() == 1) {
+            return es.iterator().next();
+        } else {
+            throw new RuntimeException("Experiment with PermId not found: " + permId.getPermId());
+        }
+    }
     
 }

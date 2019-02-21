@@ -1,4 +1,4 @@
-package ethz.ch;
+package ethz.ch.property;
 
 public class PropertyType2SampleType
 {

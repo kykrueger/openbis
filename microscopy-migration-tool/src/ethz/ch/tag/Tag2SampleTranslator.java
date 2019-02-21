@@ -1,4 +1,4 @@
-package ethz.ch;
+package ethz.ch.tag;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,19 +18,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ethz.ch.MetadataHelper;
 
-public class TagsHelper
+public class Tag2SampleTranslator
 {
     private static Map<String, List<String>> tags = new HashMap<>();
     
-    static {
-        read();
-    }
-    
-    public static void read() {
+    public static void init(String fileName) {
         try
         {
-            List<String> taglines = FileUtils.readLines(new File("tags.txt"));
+            List<String> taglines = FileUtils.readLines(new File(fileName));
             for(String tagline:taglines) {
                 String tag = tagline.split("\t")[0];
                 tag = tag.substring(1, tag.length() - 1);
@@ -54,7 +51,7 @@ public class TagsHelper
         return tags.get(permId);
     }
     
-    public static List<SamplePermId> getOrganizationUnits(String sessionToken, IApplicationServerApi v3, boolean COMMIT_CHANGES_TO_OPENBIS, Experiment experiment) {
+    public static List<SamplePermId> getOrganizationUnitsFromTags(String sessionToken, IApplicationServerApi v3, boolean COMMIT_CHANGES_TO_OPENBIS, Experiment experiment) {
         List<String> tagsRequired = tags.get(experiment.getPermId().getPermId());
         if(tagsRequired != null) {
             String spaceCode = experiment.getIdentifier().getIdentifier().split("/")[1];

@@ -29,7 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFe
 public class MasterdataHelper
 {
     //
-    // ELN TYPES
+    // ELN properties and types
     //
     
     public static void installELNTypes(String sessionToken, IApplicationServerApi v3, boolean COMMIT_CHANGES_TO_OPENBIS) {
@@ -160,7 +160,7 @@ public class MasterdataHelper
     }
     
     //
-    // NEW TYPE TO MIGRATE ATTACHMENTS
+    // Type to translate Attachments to DataSets
     //
     
     public static DataSetTypeCreation getDataSetTypeATTACHMENT() {
@@ -187,7 +187,7 @@ public class MasterdataHelper
     }
     
     //
-    // NEW TYPE TO MIGRATE TAGS
+    // Type to translate Tags to Samples
     //
     
     public static SampleTypeCreation getSampleTypeORGANIZATION_UNIT() {
@@ -217,8 +217,9 @@ public class MasterdataHelper
     }
     
     //
-    // NEW SAMPLE TYPES FROM EXPERIMENTS TYPES TO MIGRATE TAGS
+    // Exists
     //
+    
     public static boolean doDataSetTypeExist(String sessionToken, IApplicationServerApi v3, String dataSetTypeCode) {
         Collection<DataSetType> c = v3.getDataSetTypes(sessionToken, Arrays.asList(new EntityTypePermId(dataSetTypeCode)), new DataSetTypeFetchOptions()).values();
         return !c.isEmpty();
@@ -234,6 +235,10 @@ public class MasterdataHelper
         return !c.isEmpty();
     }
     
+    //
+    // Create if missing
+    //
+    
     public static void createSampleTypeIfMissing(String sessionToken, IApplicationServerApi v3, SampleTypeCreation toCreate) {
         if(!doSampleTypeExist(sessionToken, v3, toCreate.getCode())) {
             v3.createSampleTypes(sessionToken, Arrays.asList(toCreate));
@@ -245,6 +250,10 @@ public class MasterdataHelper
             v3.createExperimentTypes(sessionToken, Arrays.asList(toCreate));
         }
     }
+    
+    //
+    // Experiment Type to Sample Type translator
+    //
     
     public static void createSampleTypesFromExperimentTypes(String sessionToken, IApplicationServerApi v3, List<String> experimentTypeIds) {
         List<EntityTypePermId> ids = new ArrayList<EntityTypePermId>();

@@ -1,4 +1,4 @@
-package ethz.ch;
+package ethz.ch.experiment;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 
