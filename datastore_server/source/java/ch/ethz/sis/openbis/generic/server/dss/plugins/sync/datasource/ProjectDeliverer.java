@@ -55,6 +55,9 @@ public class ProjectDeliverer extends AbstractEntityWithPermIdDeliverer
                 startXdElement(writer);
                 writer.writeAttribute("code", project.getCode());
                 addAttribute(writer, "desc", project.getDescription());
+                addAttribute(writer, "frozen", project.isFrozen());
+                addAttribute(writer, "frozenForExperiments", project.isFrozenForExperiments());
+                addAttribute(writer, "frozenForSamples", project.isFrozenForSamples());
                 addKind(writer, "PROJECT");
                 addModifier(writer, project);
                 addRegistrationDate(writer, project);
