@@ -1,4 +1,5 @@
-import actions from '../actions/actions.js'
+import {selectEntity} from '../actions/page.js'
+import {error} from '../actions/notification.js'
 import initialState from '../initialstate.js'
 import reducer from '../reducers/reducer.js'
 
@@ -6,7 +7,7 @@ import reducer from '../reducers/reducer.js'
 describe('reducer', () => {
   it('should add exception', () => {
     const exception = {message: 'test error'}
-    const action = actions.error(exception)
+    const action = error(exception)
     const expectedExceptions = [exception]
     const state = reducer(initialState, action)
     expect(state.exceptions).toEqual(expectedExceptions)
@@ -19,7 +20,7 @@ describe('reducer', () => {
       permId: 0,
       type: 'A'
     }
-    const action = actions.selectEntity(entity.permId, entity.type)
+    const action = selectEntity(entity.permId, entity.type)
     const state = reducer(initialState, action)
     expect(state.types.openEntities).toEqual({
       entities: [entity],

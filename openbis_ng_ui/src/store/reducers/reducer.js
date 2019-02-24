@@ -1,24 +1,27 @@
 import initialState from '../initialstate.js'
 import users from './users.js'
 import types from './types.js'
+import * as pageActions from '../actions/page.js'
+import * as loginActions from '../actions/login.js'
+import * as notificationActions from '../actions/notification.js'
 
 // reducers
 
 function loading(loading = initialState.loading, action) {
   switch (action.type) {
-  case 'ERROR': {
+  case notificationActions.ERROR: {
     return false
   }
-  case 'LOGIN': {
+  case loginActions.LOGIN: {
     return true
   }
-  case 'LOGIN-DONE': {
+  case loginActions.LOGIN_DONE: {
     return false
   }
-  case 'LOGOUT': {
+  case loginActions.LOGOUT: {
     return true
   }
-  case 'LOGOUT-DONE': {
+  case loginActions.LOGOUT_DONE: {
     return false
   }
   default: {
@@ -29,10 +32,10 @@ function loading(loading = initialState.loading, action) {
 
 function exceptions(exceptions = initialState.exceptions, action) {
   switch (action.type) {
-  case 'ERROR': {
+  case notificationActions.ERROR: {
     return [].concat(exceptions, [action.exception])
   }
-  case 'CLOSE-ERROR': {
+  case notificationActions.CLOSE_ERROR: {
     return exceptions.slice(1)
   }
   default: {
@@ -43,10 +46,10 @@ function exceptions(exceptions = initialState.exceptions, action) {
 
 function sessionActive(sessionActive = initialState.sessionActive, action) {
   switch (action.type) {
-  case 'LOGIN-DONE': {
+  case loginActions.LOGIN_DONE: {
     return true
   }
-  case 'LOGOUT-DONE': {
+  case loginActions.LOGOUT_DONE: {
     return false
   }
   default: {
@@ -61,7 +64,7 @@ function mode(mode = initialState.mode, action) {
   }
 
   switch (action.type) {
-  case 'SET-MODE-DONE' : {
+  case pageActions.SET_MODE_DONE : {
     return action.mode
   }
   default: {

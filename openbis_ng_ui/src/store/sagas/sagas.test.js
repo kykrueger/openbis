@@ -1,5 +1,5 @@
 import Openbis from '../services/openbis.js'
-import actions from '../actions/actions.js'
+import * as actions from '../actions/login.js'
 import { newOpenbis } from '../sagas/sagas.js'
 import { store } from '../store.js'
 

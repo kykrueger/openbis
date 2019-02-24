@@ -5,7 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import {withStyles} from '@material-ui/core/styles'
-import actions from '../store/actions/actions.js'
+import {setMode} from '../store/actions/page.js'
 
 /*eslint-disable-next-line no-unused-vars*/
 const styles = theme => ({
@@ -26,7 +26,7 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return {
     setMode: (event, value) => {
-      dispatch(actions.setMode(value))
+      dispatch(setMode(value))
     }
   }
 }

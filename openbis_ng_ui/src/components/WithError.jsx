@@ -3,7 +3,7 @@ import {connect} from 'react-redux'
 import flow from 'lodash/flow'
 
 import ErrorDialog from './ErrorDialog.jsx'
-import actions from '../store/actions/actions.js'
+import {closeError} from '../store/actions/notification.js'
 
 
 function mapStateToProps(state) {
@@ -14,7 +14,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    closeError: () => dispatch(actions.closeError()),
+    closeError: () => dispatch(closeError()),
   }
 }
 

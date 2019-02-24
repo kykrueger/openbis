@@ -1,4 +1,4 @@
-import actions from './actions.js'
+import * as actions from './login.js'
 
 
 // note: This is just an example. It would not make much sense to

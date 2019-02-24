@@ -9,9 +9,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty'
 import Collapse from '@material-ui/core/Collapse'
 import PropTypes from 'prop-types'
-
-
-import actions from '../store/actions/actions.js'
+import {expandNode, collapseNode} from '../store/actions/browser.js'
 
 
 /*eslint-disable-next-line no-unused-vars*/
@@ -27,11 +25,11 @@ function mapDispatchToProps(dispatch) {
   return {
     expandNode: (e, node) => {
       e.stopPropagation()
-      dispatch(actions.expandNode(node))
+      dispatch(expandNode(node))
     },
     collapseNode: (e, node) => {
       e.stopPropagation()
-      dispatch(actions.collapseNode(node))
+      dispatch(collapseNode(node))
     },
   }
 }

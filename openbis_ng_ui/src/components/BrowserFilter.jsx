@@ -4,7 +4,7 @@ import {withStyles} from '@material-ui/core/styles'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import FilterIcon from '@material-ui/icons/FilterList'
-import actions from '../store/actions/actions.js'
+import {setFilter} from '../store/actions/browser.js'
 import {getTabState} from '../store/selectors/selectors.js'
 
 /*eslint-disable-next-line no-unused-vars*/
@@ -17,7 +17,7 @@ const styles = theme => ({
 function mapDispatchToProps(dispatch) {
   return {
     setFilter: filter => {
-      dispatch(actions.setFilter(filter))
+      dispatch(setFilter(filter))
     }
   }
 }

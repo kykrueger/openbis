@@ -3,14 +3,14 @@ import {connect} from 'react-redux'
 import ListItemText from '@material-ui/core/ListItemText'
 
 import BrowserList from './BrowserList.jsx'
-import actions from '../store/actions/actions.js'
+import {selectEntity} from '../store/actions/page.js'
 import {getTabState} from '../store/selectors/selectors.js'
 
 function mapDispatchToProps(dispatch) {
   return {
     selectNode: node => {
       if (node.selectable) {
-        dispatch(actions.selectEntity(node.permId, node.type))
+        dispatch(selectEntity(node.permId, node.type))
       }
     }
   }

@@ -13,7 +13,7 @@ import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import SearchIcon from '@material-ui/icons/Search'
 
-import actions from '../store/actions/actions.js'
+import {logout} from '../store/actions/login.js'
 
 
 const styles = theme => ({
@@ -32,7 +32,7 @@ const styles = theme => ({
 
 function mapDispatchToProps(dispatch) {
   return {
-    logout: () => dispatch(actions.logout()),
+    logout: () => dispatch(logout()),
   }
 }
 

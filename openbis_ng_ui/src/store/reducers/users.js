@@ -9,6 +9,8 @@ import {
   entityTreeNode
 } from './common.js'
 import _ from 'lodash'
+import * as pageActions from '../actions/page.js'
+import * as browserActions from '../actions/browser.js'
 
 export default function users(users = initialState.users, action) {
   return {
@@ -19,13 +21,13 @@ export default function users(users = initialState.users, action) {
 
 function browser(browser = initialState.users.browser, action) {
   switch (action.type) {
-  case 'SET-MODE-DONE':
+  case pageActions.SET_MODE_DONE:
     return browserSetModeDone(browser, action)
-  case 'SET-FILTER':
+  case browserActions.SET_FILTER:
     return browserSetFilter(browser, action)
-  case 'EXPAND-NODE':
+  case browserActions.EXPAND_NODE:
     return browserExpandNode(browser, action)
-  case 'COLLAPSE-NODE':
+  case browserActions.COLLAPSE_NODE:
     return browserCollapseNode(browser, action)
   default:
     return browser

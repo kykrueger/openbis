@@ -1,6 +1,10 @@
 import {put, takeEvery, call, select} from 'redux-saga/effects'
 import Openbis from '../../services/openbis.js'
-import actions from '../actions/actions.js'
+
+import * as pageActions from '../actions/page.js'
+import * as loginActions from '../actions/login.js'
+import * as browserActions from '../actions/browser.js'
+import * as notificationActions from '../actions/notification.js'
 
 // TODO split sagas when it gets too big
 
@@ -13,19 +17,18 @@ export function newOpenbis() {
 }
 
 export function* watchActions() {
-  yield takeEvery('INIT', init)
-  yield takeEvery('LOGIN', login)
-  yield takeEvery('LOGIN-DONE', loginDone)
-  yield takeEvery('LOGOUT', logout)
-  yield takeEvery('EXPAND-NODE', expandNode)
-  yield takeEvery('SET-MODE', setMode)
+  yield takeEvery(pageActions.INIT, init)
+  yield takeEvery(loginActions.LOGIN, login)
+  yield takeEvery(loginActions.LOGIN_DONE, loginDone)
+  yield takeEvery(loginActions.LOGOUT, logout)
+  yield takeEvery(pageActions.SET_MODE, setMode)
 }
 
 function* handleException(f) {
   try {
     yield f()
   } catch (exception) {
-    yield put(actions.error(exception))
+    yield put(notificationActions.error(exception))
   }
 }
 
@@ -37,33 +40,20 @@ function* init() {
 function* login(action) {
   yield handleException(function* () {
     yield openbis.login(action.username, action.password)
-    yield put(actions.loginDone())
+    yield put(loginActions.loginDone())
   })
 }
 
 function* loginDone() {
   yield handleException(function* () {
-    yield put(actions.setMode('TYPES'))
+    yield put(pageActions.setMode('TYPES'))
   })
 }
 
 function* logout() {
   yield handleException(function* () {
     yield call(openbis.logout)
-    yield put(actions.logoutDone())
-  })
-}
-
-function* expandNode(action) {
-  yield handleException(function* () {
-    const node = action.node
-    if (node.loaded === false) {
-      if (node.type === 'as.dto.space.Space') {
-        const result = yield openbis.searchProjects(node.permId)
-        const projects = result.getObjects()
-        yield put(actions.setProjects(projects, node.permId))
-      }
-    }
+    yield put(loginActions.logoutDone())
   })
 }
 
@@ -76,12 +66,12 @@ function* setMode(action) {
       if (!state.users.browser.loaded) {
         let users = yield call(openbis.getUsers)
         let groups = yield call(openbis.getGroups)
-        yield put(actions.setModeDone(action.mode, {
+        yield put(pageActions.setModeDone(action.mode, {
           users: users.getObjects(),
           groups: groups.getObjects()
         }))
       } else {
-        yield put(actions.setModeDone(action.mode))
+        yield put(pageActions.setModeDone(action.mode))
       }
       break
     }
@@ -91,19 +81,19 @@ function* setMode(action) {
         let collectionTypes = yield call(openbis.getCollectionTypes)
         let dataSetTypes = yield call(openbis.getDataSetTypes)
         let materialTypes = yield call(openbis.getMaterialTypes)
-        yield put(actions.setModeDone(action.mode, {
+        yield put(pageActions.setModeDone(action.mode, {
           objectTypes: objectTypes.getObjects(),
           collectionTypes: collectionTypes.getObjects(),
           dataSetTypes: dataSetTypes.getObjects(),
           materialTypes: materialTypes.getObjects(),
         }))
       } else {
-        yield put(actions.setModeDone(action.mode))
+        yield put(pageActions.setModeDone(action.mode))
       }
       break
     }
     default: {
-      yield put(actions.setModeDone(action.mode))
+      yield put(pageActions.setModeDone(action.mode))
       break
     }
     }

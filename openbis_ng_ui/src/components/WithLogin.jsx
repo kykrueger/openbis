@@ -9,7 +9,7 @@ import CardContent from '@material-ui/core/CardContent'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
-import actions from '../store/actions/actions.js'
+import {login} from '../store/actions/login.js'
 
 
 const styles = {
@@ -43,7 +43,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    login: (user, password) => dispatch(actions.login(user, password)),
+    login: (user, password) => dispatch(login(user, password)),
   }
 }
 

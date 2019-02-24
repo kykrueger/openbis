@@ -1,8 +1,9 @@
 import _ from 'lodash'
+import * as pageActions from '../actions/page.js'
 
 export function openEntities(openEntities, action) {
   switch (action.type) {
-  case 'SELECT-ENTITY': {
+  case pageActions.SELECT_ENTITY: {
     const actionEntity = {
       permId: action.entityPermId,
       type: action.entityType
