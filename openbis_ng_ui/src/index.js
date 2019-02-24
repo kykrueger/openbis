@@ -26,8 +26,8 @@ const render = () => {
 
 if (module.hot) {
   module.hot.accept('./components/App.jsx', () => setTimeout(render))
-  module.hot.accept('./store/reducers/reducer.js', () => {
-    const nextRootReducer = require('./store/reducers/reducer.js').default
+  module.hot.accept('./store/reducers/root.js', () => {
+    const nextRootReducer = require('./store/reducers/root.js').default
     store.replaceReducer(nextRootReducer)
   })
 }

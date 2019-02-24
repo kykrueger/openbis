@@ -29,7 +29,7 @@ function* setMode(action) {
 
     switch (action.mode) {
     case 'USERS': {
-      if (!state.users.browser.loaded) {
+      if (!state.users || !state.users.browser || !state.users.browser.loaded) {
         let users = yield call(openbis.getUsers)
         let groups = yield call(openbis.getGroups)
         yield put(pageActions.setModeDone(action.mode, {
@@ -42,7 +42,7 @@ function* setMode(action) {
       break
     }
     case 'TYPES': {
-      if (!state.types.browser.loaded) {
+      if (!state.types || !state.types.browser || !state.types.browser.loaded) {
         let objectTypes = yield call(openbis.getObjectTypes)
         let collectionTypes = yield call(openbis.getCollectionTypes)
         let dataSetTypes = yield call(openbis.getDataSetTypes)

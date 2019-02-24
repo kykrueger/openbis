@@ -1,7 +1,7 @@
 import {selectEntity} from '../actions/page.js'
 import {error} from '../actions/notification.js'
 import initialState from '../initialstate.js'
-import reducer from '../reducers/reducer.js'
+import reducer from '../reducers/root.js'
 
 
 describe('reducer', () => {
