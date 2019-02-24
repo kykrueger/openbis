@@ -3,8 +3,8 @@ import {connect} from 'react-redux'
 import ListItemText from '@material-ui/core/ListItemText'
 
 import BrowserList from './BrowserList.jsx'
-import actions from '../reducer/actions.js'
-import {getTabState} from '../reducer/selectors.js'
+import actions from '../store/actions/actions.js'
+import {getTabState} from '../store/selectors/selectors.js'
 
 function mapDispatchToProps(dispatch) {
   return {

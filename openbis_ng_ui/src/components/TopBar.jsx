@@ -13,7 +13,7 @@ import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import SearchIcon from '@material-ui/icons/Search'
 
-import actions from '../reducer/actions.js'
+import actions from '../store/actions/actions.js'
 
 
 const styles = theme => ({

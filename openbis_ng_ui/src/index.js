@@ -9,7 +9,7 @@ const render = () => {
   const WithLogin = require('./components/WithLogin.jsx').default
   const WithLoader = require('./components/WithLoader.jsx').default
   const WithError = require('./components/WithError.jsx').default
-  const store = require('./reducer/middleware.js').default.store
+  const store = require('./store/store.js').default.store
   ReactDOM.render(
     <Provider store = { store }>
       <WithLoader>
@@ -25,9 +25,9 @@ const render = () => {
 }
 
 if (module.hot) {
-  module.hot.accept('./components/App.jsx', () => setTimeout(render))  
-  module.hot.accept('./reducer/reducer.js', () => {
-    const nextRootReducer = require('./reducer/reducer.js').default
+  module.hot.accept('./components/App.jsx', () => setTimeout(render))
+  module.hot.accept('./store/reducers/reducer.js', () => {
+    const nextRootReducer = require('./store/reducers/reducer.js').default
     store.replaceReducer(nextRootReducer)
   })
 }

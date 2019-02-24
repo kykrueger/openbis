@@ -1,6 +1,6 @@
 import {put, takeEvery, call, select} from 'redux-saga/effects'
-import Openbis from '../services/openbis'
-import actions from './actions'
+import Openbis from '../../services/openbis.js'
+import actions from '../actions/actions.js'
 
 // TODO split sagas when it gets too big
 

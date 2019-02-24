@@ -7,7 +7,7 @@ import {
   sortBy,
   emptyTreeNode,
   entityTreeNode
-} from '../common/reducer'
+} from './common.js'
 
 export default function types(types = initialState.types, action) {
   return {

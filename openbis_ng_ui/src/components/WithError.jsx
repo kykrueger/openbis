@@ -3,7 +3,7 @@ import {connect} from 'react-redux'
 import flow from 'lodash/flow'
 
 import ErrorDialog from './ErrorDialog.jsx'
-import actions from '../reducer/actions.js'
+import actions from '../store/actions/actions.js'
 
 
 function mapStateToProps(state) {
@@ -38,4 +38,3 @@ class WithError extends React.Component {
 export default flow(
   connect(mapStateToProps, mapDispatchToProps),
 )(WithError)
-  

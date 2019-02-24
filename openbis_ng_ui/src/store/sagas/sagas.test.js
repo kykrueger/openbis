@@ -1,7 +1,7 @@
-import Openbis from '../services/openbis'
-import actions from './actions'
-import { newOpenbis } from './sagas.js'
-import { store } from './middleware'
+import Openbis from '../services/openbis.js'
+import actions from '../actions/actions.js'
+import { newOpenbis } from '../sagas/sagas.js'
+import { store } from '../store.js'
 
 // These tests test sagas, reducer and the interaction with openbis.
 

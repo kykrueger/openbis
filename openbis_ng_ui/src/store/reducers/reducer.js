@@ -1,6 +1,6 @@
-import initialState from './initialstate.js'
-import users from './users/reducer.js'
-import types from './types/reducer.js'
+import initialState from '../initialstate.js'
+import users from './users.js'
+import types from './types.js'
 
 // reducers
 

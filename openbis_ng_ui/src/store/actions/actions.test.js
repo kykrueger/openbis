@@ -1,7 +1,7 @@
-import actions from './actions'
+import actions from './actions.js'
 
 
-// note: This is just an example. It would not make much sense to 
+// note: This is just an example. It would not make much sense to
 //       test simple action creators such as this.
 describe('actions', () => {
   it('should create a login action', () => {

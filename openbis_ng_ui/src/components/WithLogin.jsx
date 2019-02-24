@@ -9,7 +9,7 @@ import CardContent from '@material-ui/core/CardContent'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
-import actions from '../reducer/actions.js'
+import actions from '../store/actions/actions.js'
 
 
 const styles = {

@@ -38,14 +38,14 @@ class ErrorDialog extends React.Component {
   }
 
   getErrorMailtoHref() {
-    let report = 
+    let report =
       'agent: ' + navigator.userAgent + '%0D%0A' +
       'domain: ' + location.hostname + '%0D%0A' +
       'timestamp: ' + new Date() + '%0D%0A' +
       'href: ' + location.href.replace(new RegExp('&', 'g'), ' - ') + '%0D%0A' +
       'error: ' + JSON.stringify(this.props.exception['data'])
-    
-    let href = 
+
+    let href =
       'mailto:' + profile.devEmail +
       '?subject=openBIS Error Report [' + location.hostname + ']' +
       '&body=' + report

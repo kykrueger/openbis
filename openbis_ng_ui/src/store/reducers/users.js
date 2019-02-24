@@ -7,7 +7,7 @@ import {
   sortBy,
   emptyTreeNode,
   entityTreeNode
-} from '../common/reducer'
+} from './common.js'
 import _ from 'lodash'
 
 export default function users(users = initialState.users, action) {

@@ -1,6 +1,6 @@
-import actions from './actions'
-import initialState from './initialstate.js'
-import reducer from './reducer.js'
+import actions from '../actions/actions.js'
+import initialState from '../initialstate.js'
+import reducer from '../reducers/reducer.js'
 
 
 describe('reducer', () => {

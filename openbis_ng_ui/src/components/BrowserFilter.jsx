@@ -4,8 +4,8 @@ import {withStyles} from '@material-ui/core/styles'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import FilterIcon from '@material-ui/icons/FilterList'
-import actions from '../reducer/actions'
-import {getTabState} from '../reducer/selectors'
+import actions from '../store/actions/actions.js'
+import {getTabState} from '../store/selectors/selectors.js'
 
 /*eslint-disable-next-line no-unused-vars*/
 const styles = theme => ({

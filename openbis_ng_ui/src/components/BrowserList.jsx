@@ -7,11 +7,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty'
-import Collapse from '@material-ui/core/Collapse';
+import Collapse from '@material-ui/core/Collapse'
 import PropTypes from 'prop-types'
 
 
-import actions from '../reducer/actions.js'
+import actions from '../store/actions/actions.js'
 
 
 /*eslint-disable-next-line no-unused-vars*/
