@@ -47,7 +47,7 @@ Debugging tests
 
   1. execute in command line:
 
-    node --debug-brk --inspect ./node_modules/.bin/jest --runInBand
+    node --inspect-brk ./node_modules/.bin/jest --runInBand
 
   2. put the following snippet of code in a line where the debugger should stop:
 

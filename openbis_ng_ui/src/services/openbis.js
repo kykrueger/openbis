@@ -1,7 +1,6 @@
 const autoBind = require('auto-bind')
 
-
-export default class Openbis {
+class Openbis {
 
   constructor() {
     autoBind(this)
@@ -103,3 +102,5 @@ export default class Openbis {
   }
 
 }
+
+export const openbis = new Openbis()

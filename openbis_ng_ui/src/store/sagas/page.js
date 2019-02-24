@@ -1,29 +1,15 @@
 import {put, takeEvery, call, select} from 'redux-saga/effects'
-import Openbis from '../../services/openbis.js'
+import {openbis} from '../../services/openbis.js'
 
 import * as pageActions from '../actions/page.js'
-import * as loginActions from '../actions/login.js'
-import * as browserActions from '../actions/browser.js'
 import * as notificationActions from '../actions/notification.js'
-
-// TODO split sagas when it gets too big
-
-let openbis = new Openbis()
-
-// used only for testing - need to have a new mock for each test
-export function newOpenbis() {
-  openbis = new Openbis()
-  return openbis
-}
 
 export function* watchActions() {
   yield takeEvery(pageActions.INIT, init)
-  yield takeEvery(loginActions.LOGIN, login)
-  yield takeEvery(loginActions.LOGIN_DONE, loginDone)
-  yield takeEvery(loginActions.LOGOUT, logout)
   yield takeEvery(pageActions.SET_MODE, setMode)
 }
 
+// TODO handleException is duplicated in each saga file
 function* handleException(f) {
   try {
     yield f()
@@ -35,26 +21,6 @@ function* handleException(f) {
 function* init() {
   // TODO Check for session token and yield loginDone if valid.
   //      This can properly be done when we have the session token in a cookie.
-}
-
-function* login(action) {
-  yield handleException(function* () {
-    yield openbis.login(action.username, action.password)
-    yield put(loginActions.loginDone())
-  })
-}
-
-function* loginDone() {
-  yield handleException(function* () {
-    yield put(pageActions.setMode('TYPES'))
-  })
-}
-
-function* logout() {
-  yield handleException(function* () {
-    yield call(openbis.logout)
-    yield put(loginActions.logoutDone())
-  })
 }
 
 function* setMode(action) {
