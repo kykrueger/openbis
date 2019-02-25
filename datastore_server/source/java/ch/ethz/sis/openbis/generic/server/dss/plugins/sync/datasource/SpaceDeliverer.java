@@ -54,9 +54,9 @@ public class SpaceDeliverer extends AbstractEntityWithPermIdDeliverer
                 startUrlElement(writer, "SPACE", code, space.getModificationDate());
                 startXdElement(writer);
                 addAttribute(writer, "desc", space.getDescription());
-                addAttribute(writer, "frozen", space.isFrozen());
-                addAttribute(writer, "frozenForProjects", space.isFrozenForProjects());
-                addAttribute(writer, "frozenForSamples", space.isFrozenForSamples());
+                addAttributeIfSet(writer, "frozen", space.isFrozen());
+                addAttributeIfSet(writer, "frozenForProjects", space.isFrozenForProjects());
+                addAttributeIfSet(writer, "frozenForSamples", space.isFrozenForSamples());
                 addKind(writer, "SPACE");
                 addRegistrationDate(writer, space);
                 addRegistrator(writer, space);

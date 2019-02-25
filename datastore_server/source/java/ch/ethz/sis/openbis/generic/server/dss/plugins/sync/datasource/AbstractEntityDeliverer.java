@@ -181,6 +181,14 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
         addAttribute(writer, attributeName, value, v -> v);
     }
 
+    protected void addAttributeIfSet(XMLStreamWriter writer, String attributeName, Boolean value) throws XMLStreamException
+    {
+        if (Boolean.TRUE.equals(value))
+        {
+            addAttribute(writer, attributeName, value);
+        }
+    }
+    
     protected void addAttribute(XMLStreamWriter writer, String attributeName, Boolean value) throws XMLStreamException
     {
         addAttribute(writer, attributeName, value, v -> String.valueOf(v));
