@@ -679,25 +679,26 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                             } else {
                                 for(var cIdx = 0; cIdx < samples[0].children.length; cIdx++) {
                                     var sample = samples[0].children[cIdx];
-                                    if(sample.type.code.indexOf("EXPERIMENT") > -1) {
+                                    
+        							if(profile.sampleTypeDefinitionsExtension[sample.type.code] && profile.sampleTypeDefinitionsExtension[sample.type.code]["SHOW_ON_NAV"]) {
                                         var sampleDisplayName = sample.code;
-                                    if(sample.properties && sample.properties[profile.propertyReplacingCode]) {
-                                            sampleDisplayName = sample.properties[profile.propertyReplacingCode];
-                                    }
+	                                    if(sample.properties && sample.properties[profile.propertyReplacingCode]) {
+	                                            sampleDisplayName = sample.properties[profile.propertyReplacingCode];
+	                                    }
                                         var sampleLink = _this.getLinkForNode(sampleDisplayName, sample.getPermId().getPermId(), "showViewSamplePageFromPermId", sample.getPermId().getPermId());
-                                    var sampleNode = {
-                                        displayName: sampleDisplayName,
-                                        title : sampleLink,
-                                        entityType: "SAMPLE",
-                                        key : sample.getPermId().getPermId(),
-                                        folder : true,
-                                        lazy : true,
-                                        view : "showViewSamplePageFromPermId",
-                                        viewData: sample.getPermId().getPermId(),
-                                        icon : "fa fa-flask",
-                                        registrationDate: sample.registrationDate,
-                                    };
-                                    results.push(sampleNode);
+                                    	var sampleNode = {
+	                                        displayName: sampleDisplayName,
+	                                        title : sampleLink,
+	                                        entityType: "SAMPLE",
+	                                        key : sample.getPermId().getPermId(),
+	                                        folder : true,
+	                                        lazy : true,
+	                                        view : "showViewSamplePageFromPermId",
+	                                        viewData: sample.getPermId().getPermId(),
+	                                        icon : "fa fa-flask",
+	                                        registrationDate: sample.registrationDate
+                                    	};
+                                    	results.push(sampleNode);
                                     }
                                 }
                             }
