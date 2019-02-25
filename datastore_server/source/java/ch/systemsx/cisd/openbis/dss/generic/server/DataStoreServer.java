@@ -57,6 +57,7 @@ import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
 import com.marathon.util.spring.StreamSupportingHttpInvokerServiceExporter;
 
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
+import ch.ethz.sis.openbis.generic.server.dssapi.v3.FileTransferServerServlet;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.upload.StoreShareFileUploadServlet;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.api.IRpcServiceNameServer;
@@ -133,7 +134,7 @@ public class DataStoreServer
         }
     }
 
-    static final String APPLICATION_CONTEXT_KEY = "application-context";
+    public static final String APPLICATION_CONTEXT_KEY = "application-context";
 
     private static final String PREFIX = "data-set-download.";
 
@@ -439,6 +440,9 @@ public class DataStoreServer
         context.addServlet(IdentifiedStreamHandlingServlet.class, "/"
                 + DATA_STORE_SERVER_WEB_APPLICATION_NAME + "/"
                 + IdentifiedStreamHandlingServlet.SERVLET_NAME + "/*");
+        context.addServlet(FileTransferServerServlet.class, "/" 
+                + DATA_STORE_SERVER_WEB_APPLICATION_NAME + "/" 
+                + FileTransferServerServlet.SERVLET_NAME + "/*");
     }
 
     private static void registerDssUploadClientHandler(Server thisServer,
