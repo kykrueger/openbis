@@ -77,6 +77,8 @@ public class SynchronizationConfigReader
 
     private static final String KEEP_ORIGINAL_TIMESTAMPS_AND_USERS_PROPERTY_NAME = "keep-original-timestamps-and-users";
 
+    private static final String KEEP_ORIGINAL_FROZEN_FLAGS_PROPERTY_NAME = "keep-original-frozen-flags";
+
     private static final String PARALLELIZED_EXECUTION_PREFS_MACHINE_LOAD_PROPERTY_NAME = "machine-load";
 
     private static final String PARALLELIZED_EXECUTION_PREFS_MACHINE_MAX_THREADS_PROPERTY_NAME = "max-threads";
@@ -169,6 +171,7 @@ public class SynchronizationConfigReader
                 config.setVerbose(true);
             }
             config.setKeepOriginalTimestampsAndUsers(reader.getBoolean(section, KEEP_ORIGINAL_TIMESTAMPS_AND_USERS_PROPERTY_NAME, true));
+            config.setKeepOriginalFrozenFlags(reader.getBoolean(section, KEEP_ORIGINAL_FROZEN_FLAGS_PROPERTY_NAME, true));
 
             Double machineLoad = reader.getDouble(section, PARALLELIZED_EXECUTION_PREFS_MACHINE_LOAD_PROPERTY_NAME, DEFAULT_MACHINE_LOAD, false);
             Integer maxThreads =

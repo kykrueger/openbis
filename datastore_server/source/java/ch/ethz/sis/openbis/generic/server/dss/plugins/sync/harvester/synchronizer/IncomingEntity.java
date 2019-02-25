@@ -74,6 +74,11 @@ public class IncomingEntity<T extends Identifier<T>> extends AbstractTimestampsA
         return getEntity().getPermID();
     }
 
+    public FrozenFlags getFrozenFlags()
+    {
+        return frozenFlags;
+    }
+
     public Date getLastModificationDate()
     {
         return lastModificationDate;
@@ -81,9 +86,12 @@ public class IncomingEntity<T extends Identifier<T>> extends AbstractTimestampsA
 
     private final Date lastModificationDate;
 
-    IncomingEntity(Identifier<T> entity, SyncEntityKind entityKind, Date lastModDate)
+    private FrozenFlags frozenFlags;
+
+    IncomingEntity(Identifier<T> entity, FrozenFlags frozenFlags, SyncEntityKind entityKind, Date lastModDate)
     {
         this.entity = entity;
+        this.frozenFlags = frozenFlags;
         this.entityKind = entityKind;
         this.lastModificationDate = lastModDate;
     }

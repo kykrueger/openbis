@@ -28,8 +28,8 @@ class IncomingSample extends IncomingEntity<NewSample>
         return (NewSample) getEntity();
     }
 
-    IncomingSample(NewSample sample, Date lastModDate)
+    IncomingSample(NewSample sample, FrozenFlags frozenFlags, Date lastModDate)
     {
-        super(sample, SyncEntityKind.SAMPLE, lastModDate);
+        super(sample, frozenFlags, SyncEntityKind.SAMPLE, lastModDate);
     }
 }

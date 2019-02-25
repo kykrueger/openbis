@@ -301,6 +301,8 @@ public class ResourceListParser
 
     private void parseDataSetMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.CHILDREN, FrozenForType.PARENTS,
+                FrozenForType.COMPONENTS, FrozenForType.CONTAINERS);
         String code = extractCode(xdNode);
         String sampleIdentifier = extractAttribute(xdNode, "sample", true);
         String experimentIdentifier = extractAttribute(xdNode, "experiment", true);
@@ -347,7 +349,7 @@ public class ResourceListParser
             dataSet.setExperimentId(new ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier(experimentId.toString()));
         }
 
-        IncomingDataSet incomingDataSet = new IncomingDataSet(ds, fullDataSet, lastModificationDate);
+        IncomingDataSet incomingDataSet = new IncomingDataSet(ds, frozenFlags, fullDataSet, lastModificationDate);
         setTimestampsAndUsers(xdNode, incomingDataSet);
         data.getDataSetsToProcess().put(permId, incomingDataSet);
         incomingDataSet.setConnections(parseConnections(xdNode));
@@ -431,6 +433,11 @@ public class ResourceListParser
         String attribute = contentCopyElement.getAttribute(name);
         return StringUtils.isBlank(attribute) ? null : attribute;
     }
+    
+    private boolean extractBooleanAttribute(Node xdNode, String attrName)
+    {
+        return "true".equals(extractAttribute(xdNode, attrName, true));
+    }
 
     private String extractAttribute(Node xdNode, String attrName, boolean nullAllowed)
     {
@@ -495,18 +502,30 @@ public class ResourceListParser
 
     private void parseProjectMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
-
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.EXPERIMENTS, FrozenForType.SAMPLES);
         String code = extractCode(xdNode);
         String desc = extractAttribute(xdNode, "desc", true);
         String space = extractSpace(xdNode, false);
         ProjectIdentifier projectIdentifier = createProjectIdentifier(code, space);
         NewProject newProject = new NewProject(projectIdentifier.toString(), desc);
         newProject.setPermID(permId);
-        IncomingProject incomingProject = new IncomingProject(newProject, lastModificationDate);
+        IncomingProject incomingProject = new IncomingProject(newProject, frozenFlags, lastModificationDate);
         data.getProjectsToProcess().put(permId, incomingProject);
         incomingProject.setConnections(parseConnections(xdNode));
         incomingProject.setHasAttachments(hasAttachments(xdNode));
         setTimestampsAndUsers(xdNode, incomingProject);
+    }
+    
+    private FrozenFlags extractFrozenFlags(String permId, Node xdNode, FrozenForType...frozenForTypes)
+    {
+        FrozenFlags frozenFlags = new FrozenFlags(permId, extractBooleanAttribute(xdNode, "frozen"));
+        for (FrozenForType type : frozenForTypes)
+        {
+            String attributeName = "frozenFor" + StringUtils.capitalize(type.toString().toLowerCase());
+            boolean value = extractBooleanAttribute(xdNode, attributeName);
+            type.setFlag(frozenFlags, value);
+        }
+        return frozenFlags;
     }
 
     private ExperimentIdentifier createExperimentIdentifier(String spaceId, String prjCode, String expCode)
@@ -659,6 +678,7 @@ public class ResourceListParser
 
     private void parseExperimentMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.DATA_SETS, FrozenForType.SAMPLES);
         String code = extractCode(xdNode);
         String type = extractType(xdNode);
         String project = extractAttribute(xdNode, "project");
@@ -666,7 +686,7 @@ public class ResourceListParser
         ExperimentIdentifier experimentIdentifier = createExperimentIdentifier(space, project, code);
         NewExperiment newExp = new NewExperiment(experimentIdentifier.toString(), type);
         newExp.setPermID(permId);
-        IncomingExperiment incomingExperiment = new IncomingExperiment(newExp, lastModificationDate);
+        IncomingExperiment incomingExperiment = new IncomingExperiment(newExp, frozenFlags, lastModificationDate);
         data.getExperimentsToProcess().put(permId, incomingExperiment);
         incomingExperiment.setConnections(parseConnections(xdNode));
         incomingExperiment.setHasAttachments(hasAttachments(xdNode));
@@ -676,6 +696,8 @@ public class ResourceListParser
 
     private void parseSampleMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.COMPONENTS, FrozenForType.CHILDREN, 
+                FrozenForType.PARENTS, FrozenForType.DATA_SETS);
         String code = extractCode(xdNode);
         String type = extractType(xdNode);
         String experiment = extractAttribute(xdNode, "experiment", true);
@@ -708,7 +730,7 @@ public class ResourceListParser
         {
             newSample.setProjectIdentifier(createProjectIdentifier(project, space).toString());
         }
-        IncomingSample incomingSample = new IncomingSample(newSample, lastModificationDate);
+        IncomingSample incomingSample = new IncomingSample(newSample, frozenFlags, lastModificationDate);
         data.getSamplesToProcess().put(permId, incomingSample);
         incomingSample.setHasAttachments(hasAttachments(xdNode));
         incomingSample.setConnections(parseConnections(xdNode));

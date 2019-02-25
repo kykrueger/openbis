@@ -52,4 +52,22 @@ public interface IHarvesterQuery extends BaseQuery
 
     @Update(sql = "update data_all " + SETTERS_WITH_MODIFIER + "where code = ?{1.permId}", batchUpdate = true)
     public void updateDataSetRegistrations(List<RegistrationDTO> registrations);
+    
+    @Update(sql = "update projects set frozen = ?{1.frozen}, frozen_for_exp = ?{1.frozenForExperiments}, "
+            + "frozen_for_samp = ?{1.frozenForSamples} where perm_id = ?{1.permId}", batchUpdate = true)
+    public void updateProjectFrozenFlags(List<FrozenFlags> frozenFlags);
+    
+    @Update(sql = "update experiments_all set frozen = ?{1.frozen}, frozen_for_data = ?{1.frozenForDataSets}, "
+            + "frozen_for_samp = ?{1.frozenForSamples} where perm_id = ?{1.permId}", batchUpdate = true)
+    public void updateExperimentFrozenFlags(List<FrozenFlags> frozenFlags);
+    
+    @Update(sql = "update samples_all set frozen = ?{1.frozen}, frozen_for_data = ?{1.frozenForDataSets}, "
+            + "frozen_for_comp = ?{1.frozenForComponents}, frozen_for_children = ?{1.frozenForChildren}, "
+            + "frozen_for_parents = ?{1.frozenForParents} where perm_id = ?{1.permId}", batchUpdate = true)
+    public void updateSampleFrozenFlags(List<FrozenFlags> frozenFlags);
+    
+    @Update(sql = "update data_all set frozen = ?{1.frozen}, frozen_for_comps = ?{1.frozenForComponents}, "
+            + "frozen_for_conts = ?{1.frozenForContainers}, frozen_for_children = ?{1.frozenForChildren}, "
+            + "frozen_for_parents = ?{1.frozenForParents} where code = ?{1.permId}", batchUpdate = true)
+    public void updateDataSetFrozenFlags(List<FrozenFlags> frozenFlags);
 }

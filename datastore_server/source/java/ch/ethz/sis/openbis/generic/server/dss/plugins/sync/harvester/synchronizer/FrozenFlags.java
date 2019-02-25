@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 ETH Zuerich, SIS
+ * Copyright 2019 ETH Zuerich, SIS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,34 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
-import java.util.Date;
-
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
-
-class IncomingExperiment extends IncomingEntity<NewExperiment>
+/**
+ * @author Franz-Josef Elmer
+ */
+public class FrozenFlags
 {
-    public NewExperiment getExperiment()
+    public String permId;
+
+    public boolean frozen;
+
+    public boolean frozenForChildren;
+
+    public boolean frozenForComponents;
+
+    public boolean frozenForContainers;
+
+    public boolean frozenForDataSets;
+
+    public boolean frozenForExperiments;
+
+    public boolean frozenForParents;
+
+    public boolean frozenForProjects;
+
+    public boolean frozenForSamples;
+
+    FrozenFlags(String permId, boolean frozen)
     {
-        return (NewExperiment) getEntity();
-    }
-    IncomingExperiment(NewExperiment exp, FrozenFlags frozenFlags, Date lastModDate)
-    {
-        super(exp, frozenFlags, SyncEntityKind.EXPERIMENT, lastModDate);
+        this.permId = permId;
+        this.frozen = frozen;
     }
 }

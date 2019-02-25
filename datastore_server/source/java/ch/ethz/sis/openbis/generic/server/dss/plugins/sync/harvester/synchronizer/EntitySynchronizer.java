@@ -211,6 +211,10 @@ public class EntitySynchronizer
         {
             updateTimestampsAndUsers(data);
         }
+        if (config.keepOriginalFrozenFlags())
+        {
+            updateFrozenFlags(data);
+        }
 
         return data.getResourceListTimestamp();
     }
@@ -421,6 +425,91 @@ public class EntitySynchronizer
                 users.add(modifier);
             }
         }
+    }
+
+    private void updateFrozenFlags(ResourceListParserData data)
+    {
+        Monitor monitor = new Monitor("Update frozen flags", operationLog);
+        DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("openbis-db");
+        IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
+        updateProjectFrozenFlags(data.getProjectsToProcess().values(), query, monitor);
+        updateExperimentFrozenFlags(data.getExperimentsToProcess().values(), query, monitor);
+        updateSampleFrozenFlags(data.getSamplesToProcess().values(), query, monitor);
+        updateDataSetFrozenFlags(data.getDataSetsToProcess().values(), query, monitor);
+    }
+
+    private void updateProjectFrozenFlags(Collection<IncomingProject> projects, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + projects.size() + " projects.");
+        query.updateProjectFrozenFlags(projects.stream().map(IncomingProject::getFrozenFlags).collect(Collectors.toList()));
+    }
+
+    private void updateExperimentFrozenFlags(Collection<IncomingExperiment> experiments, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + experiments.size() + " experiments.");
+        query.updateExperimentFrozenFlags(experiments.stream().map(IncomingExperiment::getFrozenFlags).collect(Collectors.toList()));
+    }
+
+    private void updateSampleFrozenFlags(Collection<IncomingSample> samples, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + samples.size() + " samples.");
+        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingSample>()
+            {
+                @Override
+                public List<IncomingSample> getAllEntities()
+                {
+                    return new ArrayList<>(samples);
+                }
+
+                @Override
+                public void execute(List<IncomingSample> samples)
+                {
+                    query.updateSampleFrozenFlags(samples.stream().map(IncomingSample::getFrozenFlags).collect(Collectors.toList()));
+                }
+
+                @Override
+                public String getEntityName()
+                {
+                    return "sample";
+                }
+
+                @Override
+                public String getOperationName()
+                {
+                    return "update frozen flags";
+                }
+            });
+    }
+
+    private void updateDataSetFrozenFlags(Collection<IncomingDataSet> dataSets, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + dataSets.size() + " data sets.");
+        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingDataSet>()
+            {
+                @Override
+                public List<IncomingDataSet> getAllEntities()
+                {
+                    return new ArrayList<>(dataSets);
+                }
+
+                @Override
+                public void execute(List<IncomingDataSet> dataSets)
+                {
+                    query.updateDataSetFrozenFlags(dataSets.stream().map(IncomingDataSet::getFrozenFlags).collect(Collectors.toList()));
+                }
+
+                @Override
+                public String getEntityName()
+                {
+                    return "data set";
+                }
+
+                @Override
+                public String getOperationName()
+                {
+                    return "update frozen flags";
+                }
+            });
     }
 
     private void registerDataSets(ResourceListParserData data, List<String> notSyncedAttachmentsHolders) throws IOException
@@ -1338,7 +1427,7 @@ public class EntitySynchronizer
                     builder.experimentUpdate(expUpdate);
                 }
             }
-//            handleExperimentConnections(data, exp, incomingExp);
+            // handleExperimentConnections(data, exp, incomingExp);
         }
     }
 
