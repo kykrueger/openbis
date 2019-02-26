@@ -521,8 +521,7 @@ public class ResourceListParser
         FrozenFlags frozenFlags = new FrozenFlags(permId, extractBooleanAttribute(xdNode, "frozen"));
         for (FrozenForType type : frozenForTypes)
         {
-            String attributeName = "frozenFor" + StringUtils.capitalize(type.toString().toLowerCase());
-            boolean value = extractBooleanAttribute(xdNode, attributeName);
+            boolean value = extractBooleanAttribute(xdNode, type.getAttributeName());
             type.setFlag(frozenFlags, value);
         }
         return frozenFlags;
