@@ -227,6 +227,7 @@ public class EntitySynchronizer
         IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
         Map<String, Long> userTechIdsByUserId = getUserTechIds(query);
         updateMaterials(data.getMaterialsToProcess().values(), query, userTechIdsByUserId, monitor);
+        updateSpaces(data.getRelevantSpacesToProcess(), query, userTechIdsByUserId, monitor);
         updateProjects(data.getProjectsToProcess().values(), query, userTechIdsByUserId, monitor);
         updateExperiments(data.getExperimentsToProcess().values(), query, userTechIdsByUserId, monitor);
         updateSamples(data.getSamplesToProcess().values(), query, userTechIdsByUserId, monitor);
@@ -292,6 +293,18 @@ public class EntitySynchronizer
         query.updateMaterialRegistrations(registrations);
     }
 
+    private void updateSpaces(Collection<IncomingSpace> spaces, IHarvesterQuery query,
+            Map<String, Long> userTechIdsByUserId, Monitor monitor)
+    {
+        monitor.log("update " + spaces.size() + " spaces");
+        List<RegistrationDTO> registrations = new ArrayList<>();
+        for (IncomingSpace incomingSpace : spaces)
+        {
+            addRegistration(registrations, incomingSpace.getPermID(), incomingSpace, userTechIdsByUserId);
+        }
+        query.updateSpaceRegistrations(registrations);
+    }
+
     private void updateProjects(Collection<IncomingProject> projects, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {
@@ -303,7 +316,7 @@ public class EntitySynchronizer
         }
         query.updateProjectRegistrations(registrations);
     }
-
+    
     private void updateExperiments(Collection<IncomingExperiment> experiments, IHarvesterQuery query,
             Map<String, Long> userTechIdsByUserId, Monitor monitor)
     {

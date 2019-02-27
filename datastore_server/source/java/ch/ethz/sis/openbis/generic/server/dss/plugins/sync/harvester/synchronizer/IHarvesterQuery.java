@@ -27,9 +27,12 @@ import net.lemnik.eodsql.Update;
  */
 public interface IHarvesterQuery extends BaseQuery
 {
-    public static final String SETTERS_WITHOUT_MODIFIER = "set modification_timestamp = ?{1.modificationTimestamp}, "
-            + "registration_timestamp = ?{1.registrationTimestamp}, "
+    public static final String SETTERS_WITH_REGISTRATOR_ONLY = "set registration_timestamp = ?{1.registrationTimestamp}, "
             + "pers_id_registerer = ?{1.registratorId} ";
+
+    public static final String SETTERS_WITHOUT_MODIFIER = SETTERS_WITH_REGISTRATOR_ONLY
+            + ", modification_timestamp = ?{1.modificationTimestamp}";
+
     public static final String SETTERS_WITH_MODIFIER = SETTERS_WITHOUT_MODIFIER + ", pers_id_modifier = ?{1.modifierId} ";
 
     @Select("select id,user_id as userId from persons")
@@ -40,6 +43,9 @@ public interface IHarvesterQuery extends BaseQuery
 
     @Update(sql = "update materials " + SETTERS_WITHOUT_MODIFIER + " where code = ?{1.permId} and maty_id = ?{1.typeId}", batchUpdate = true)
     public void updateMaterialRegistrations(List<RegistrationDTO> registrations);
+
+    @Update(sql = "update spaces " + SETTERS_WITH_REGISTRATOR_ONLY + "where code = ?{1.permId}", batchUpdate = true)
+    public void updateSpaceRegistrations(List<RegistrationDTO> registrations);
 
     @Update(sql = "update projects " + SETTERS_WITH_MODIFIER + "where perm_id = ?{1.permId}", batchUpdate = true)
     public void updateProjectRegistrations(List<RegistrationDTO> registrations);
@@ -52,24 +58,24 @@ public interface IHarvesterQuery extends BaseQuery
 
     @Update(sql = "update data_all " + SETTERS_WITH_MODIFIER + "where code = ?{1.permId}", batchUpdate = true)
     public void updateDataSetRegistrations(List<RegistrationDTO> registrations);
-    
+
     @Update(sql = "update spaces set frozen = ?{1.frozen}, frozen_for_proj = ?{1.frozenForProjects}, "
             + "frozen_for_samp = ?{1.frozenForSamples} where code = ?{1.permId}", batchUpdate = true)
     public void updateSpaceFrozenFlags(List<FrozenFlags> frozenFlags);
-    
+
     @Update(sql = "update projects set frozen = ?{1.frozen}, frozen_for_exp = ?{1.frozenForExperiments}, "
             + "frozen_for_samp = ?{1.frozenForSamples} where perm_id = ?{1.permId}", batchUpdate = true)
     public void updateProjectFrozenFlags(List<FrozenFlags> frozenFlags);
-    
+
     @Update(sql = "update experiments_all set frozen = ?{1.frozen}, frozen_for_data = ?{1.frozenForDataSets}, "
             + "frozen_for_samp = ?{1.frozenForSamples} where perm_id = ?{1.permId}", batchUpdate = true)
     public void updateExperimentFrozenFlags(List<FrozenFlags> frozenFlags);
-    
+
     @Update(sql = "update samples_all set frozen = ?{1.frozen}, frozen_for_data = ?{1.frozenForDataSets}, "
             + "frozen_for_comp = ?{1.frozenForComponents}, frozen_for_children = ?{1.frozenForChildren}, "
             + "frozen_for_parents = ?{1.frozenForParents} where perm_id = ?{1.permId}", batchUpdate = true)
     public void updateSampleFrozenFlags(List<FrozenFlags> frozenFlags);
-    
+
     @Update(sql = "update data_all set frozen = ?{1.frozen}, frozen_for_comps = ?{1.frozenForComponents}, "
             + "frozen_for_conts = ?{1.frozenForContainers}, frozen_for_children = ?{1.frozenForChildren}, "
             + "frozen_for_parents = ?{1.frozenForParents} where code = ?{1.permId}", batchUpdate = true)
