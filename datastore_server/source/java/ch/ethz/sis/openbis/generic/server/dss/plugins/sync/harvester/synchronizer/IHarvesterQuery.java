@@ -54,7 +54,7 @@ public interface IHarvesterQuery extends BaseQuery
     public void updateDataSetRegistrations(List<RegistrationDTO> registrations);
     
     @Update(sql = "update spaces set frozen = ?{1.frozen}, frozen_for_proj = ?{1.frozenForProjects}, "
-            + "frozen_for_samp = ?{1.frozenForSamples} where perm_id = ?{1.permId}", batchUpdate = true)
+            + "frozen_for_samp = ?{1.frozenForSamples} where code = ?{1.permId}", batchUpdate = true)
     public void updateSpaceFrozenFlags(List<FrozenFlags> frozenFlags);
     
     @Update(sql = "update projects set frozen = ?{1.frozen}, frozen_for_exp = ?{1.frozenForExperiments}, "

@@ -255,7 +255,7 @@ public class ResourceListParser
 
         if (SyncEntityKind.SPACE.toString().equals(entityKind))
         {
-            parseSpaceMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
+            parseSpaceMetaData(xdNode, lastModificationDate);
         } else if (SyncEntityKind.PROJECT.toString().equals(entityKind))
         {
             parseProjectMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
@@ -504,14 +504,14 @@ public class ResourceListParser
                 expCode);
     }
 
-    private void parseSpaceMetaData(String permId, Node xdNode, Date lastModificationDate)
+    private void parseSpaceMetaData(Node xdNode, Date lastModificationDate)
     {
-        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.PROJECTS, FrozenForType.SAMPLES);
         String code = extractCode(xdNode);
+        FrozenFlags frozenFlags = extractFrozenFlags(code, xdNode, FrozenForType.PROJECTS, FrozenForType.SAMPLES);
         String desc = extractAttribute(xdNode, "desc", true);
         NewSpace space = new NewSpace(code, desc, null);
         IncomingSpace incomingSpace = new IncomingSpace(space, frozenFlags, lastModificationDate);
-        data.getSpacesToProcess().put(permId, incomingSpace);
+        data.getSpacesToProcess().add(incomingSpace);
         setTimestampsAndUsers(xdNode, incomingSpace);
     }
     

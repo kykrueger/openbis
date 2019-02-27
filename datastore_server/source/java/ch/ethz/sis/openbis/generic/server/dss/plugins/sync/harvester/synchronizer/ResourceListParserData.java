@@ -41,7 +41,7 @@ public class ResourceListParserData
 
     private MasterData masterData = new MasterData();
 
-    private Map<String, IncomingSpace> spacesToProcess = new HashMap<>();
+    private List<IncomingSpace> spacesToProcess = new ArrayList<>();
 
     private Map<String, IncomingProject> projectsToProcess = new HashMap<String, IncomingProject>();
 
@@ -73,7 +73,7 @@ public class ResourceListParserData
         return harvesterSpaceList;
     }
 
-    public Map<String, IncomingSpace> getSpacesToProcess()
+    public List<IncomingSpace> getSpacesToProcess()
     {
         return spacesToProcess;
     }
@@ -81,8 +81,7 @@ public class ResourceListParserData
     public List<IncomingSpace> getRelevantSpacesToProcess()
     {
         List<IncomingSpace> result = new ArrayList<>();
-        Collection<IncomingSpace> values = spacesToProcess.values();
-        for (IncomingSpace incomingSpace : values)
+        for (IncomingSpace incomingSpace : spacesToProcess)
         {
             if (harvesterSpaceList.contains(incomingSpace.getPermID()))
             {
