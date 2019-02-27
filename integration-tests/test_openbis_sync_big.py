@@ -69,6 +69,8 @@ class TestCase(systemtest.testcase.TestCase):
     def _freeze_some_entities(self, openbis_data_source):
         util.printAndFlush("Freeze some entities")
         openbis_data_source.queryDatabase("openbis", 
+              "update spaces set frozen = 't', frozen_for_proj = 't', frozen_for_samp = 't' where code = 'DEFAULT'")
+        openbis_data_source.queryDatabase("openbis", 
               "update projects set frozen = 't', frozen_for_exp = 't', frozen_for_samp = 't' where code = 'DEFAULT'")
         openbis_data_source.queryDatabase("openbis", 
               "update experiments set frozen = 't', frozen_for_data = 't' where code = 'MICROSCOPY-EXP1_181511081915722000'")
@@ -228,6 +230,13 @@ class TestCase(systemtest.testcase.TestCase):
                                "select '{0}' || name as name, description, script_type, plugin_type, entity_kind, is_available, "
                                + "  length(script) as script_length, md5(script) as script_hash "
                                + "from scripts where name like '{1}%' order by name")
+        self._compareDataBases("Spaces", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || s.code as code, s.description, "
+                               + " ur.user_id as registrator, "
+                               + "to_char(s.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS') as registration_timestamp, "
+                               + "s.frozen, s.frozen_for_proj, s.frozen_for_samp "
+                               + "from spaces s join persons ur on s.pers_id_registerer = ur.id "
+                               + "where s.code like '{1}%' order by s.code")
         self._compareDataBases("Projects", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || s.code as space, p.code as project, p.description, "
                                + " ur.user_id as registrator, "
