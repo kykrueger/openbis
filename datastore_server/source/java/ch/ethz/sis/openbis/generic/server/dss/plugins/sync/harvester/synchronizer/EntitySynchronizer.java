@@ -432,10 +432,17 @@ public class EntitySynchronizer
         Monitor monitor = new Monitor("Update frozen flags", operationLog);
         DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("openbis-db");
         IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
+        updateSpaceFrozenFlags(data.getRelevantSpacesToProcess(), query, monitor);
         updateProjectFrozenFlags(data.getProjectsToProcess().values(), query, monitor);
         updateExperimentFrozenFlags(data.getExperimentsToProcess().values(), query, monitor);
         updateSampleFrozenFlags(data.getSamplesToProcess().values(), query, monitor);
         updateDataSetFrozenFlags(data.getDataSetsToProcess().values(), query, monitor);
+    }
+
+    private void updateSpaceFrozenFlags(Collection<IncomingSpace> spaces, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + spaces.size() + " spaces.");
+        query.updateSpaceFrozenFlags(spaces.stream().map(IncomingSpace::getFrozenFlags).collect(Collectors.toList()));
     }
 
     private void updateProjectFrozenFlags(Collection<IncomingProject> projects, IHarvesterQuery query, Monitor monitor)
@@ -666,12 +673,14 @@ public class EntitySynchronizer
 
     private void processSpaces(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
     {
-        for (String spaceCode : data.getHarvesterSpaceList())
+        List<IncomingSpace> list = data.getRelevantSpacesToProcess();
+        for (IncomingSpace incomingSpace : list)
         {
+            String spaceCode = incomingSpace.getPermID();
             Space space = service.tryGetSpace(new SpaceIdentifier(spaceCode));
             if (space == null)
             {
-                builder.space(new NewSpace(spaceCode, "Synchronized from: " + config.getDataSourceURI(), null));
+                builder.space(incomingSpace.getEntity());
             }
         }
     }
@@ -754,7 +763,7 @@ public class EntitySynchronizer
                         continue;
                     }
                 }
-                operationLog.info(holder.getIdentifer());
+                operationLog.info(holder.getIdentifier());
             }
         }
     }
@@ -1552,7 +1561,7 @@ public class EntitySynchronizer
         {
             if (++count % 10000 == 0)
             {
-                monitor.log(String.format("%7d/%d sample: %s", count, n, sample.getIdentifer()));
+                monitor.log(String.format("%7d/%d sample: %s", count, n, sample.getIdentifier()));
             }
             NewSample incomingSample = sample.getSample();
             if (sample.getLastModificationDate().after(lastSyncTimestamp))

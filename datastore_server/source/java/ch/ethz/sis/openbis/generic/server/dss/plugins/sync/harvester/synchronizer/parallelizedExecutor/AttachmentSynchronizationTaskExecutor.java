@@ -102,17 +102,17 @@ public final class AttachmentSynchronizationTaskExecutor implements ITaskExecuto
             AbstractEntityAttachmentsOperationsHandler attachmentsOperationsHandler = null;
             if (item.getEntityKind() == SyncEntityKind.EXPERIMENT)
             {
-                Experiment experiment = service.tryGetExperiment(ExperimentIdentifierFactory.parse(item.getEntity().getIdentifier()));
+                Experiment experiment = service.tryGetExperiment(ExperimentIdentifierFactory.parse(item.getIdentifier()));
                 techId = new TechId(experiment.getId());
                 attachmentsOperationsHandler = new ExperimentAttachmentsOperationsHandler(config, commonServer, v3FacadeToDataSource, localSessionToken);
             } else if (item.getEntityKind() == SyncEntityKind.SAMPLE)
             {
-                Sample sample = service.tryGetSampleByPermId(item.getEntity().getPermID());
+                Sample sample = service.tryGetSampleByPermId(item.getPermID());
                 techId = new TechId(sample.getId());
                 attachmentsOperationsHandler = new SampleAttachmentsOperationsHandler(config, commonServer, v3FacadeToDataSource, localSessionToken);
             } else if (item.getEntityKind() == SyncEntityKind.PROJECT)
             {
-                Project project = service.tryGetProject(ProjectIdentifierFactory.parse(item.getEntity().getIdentifier()));
+                Project project = service.tryGetProject(ProjectIdentifierFactory.parse(item.getIdentifier()));
                 techId = new TechId(project.getId());
                 attachmentsOperationsHandler = new ProjectAttachmentsOperationsHandler(config, commonServer, v3FacadeToDataSource, localSessionToken);
             } else

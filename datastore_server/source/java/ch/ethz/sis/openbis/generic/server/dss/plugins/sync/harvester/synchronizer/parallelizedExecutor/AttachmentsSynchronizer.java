@@ -184,7 +184,7 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
         
         private void log(List<IncomingEntity<?>> entities, int numberOfEntitiesWithAttachments, int totalNumberOfEntities, String description)
         {
-            List<String> ids = entities.stream().map(IncomingEntity::getIdentifer).collect(Collectors.toList());
+            List<String> ids = entities.stream().map(IncomingEntity::getIdentifier).collect(Collectors.toList());
             String idsAsString = CollectionUtils.abbreviate(ids, 20);
             monitor.log(String.format("%4d (of %4d) %ss %s. %s", 
                     numberOfEntitiesWithAttachments, totalNumberOfEntities, entityKind, description, idsAsString));

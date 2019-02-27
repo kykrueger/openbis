@@ -69,6 +69,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewContainerDataSet;
@@ -252,7 +253,10 @@ public class ResourceListParser
     {
         String entityKind = xdNode.getAttributes().getNamedItem("kind").getTextContent();
 
-        if (SyncEntityKind.PROJECT.toString().equals(entityKind))
+        if (SyncEntityKind.SPACE.toString().equals(entityKind))
+        {
+            parseSpaceMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
+        } else if (SyncEntityKind.PROJECT.toString().equals(entityKind))
         {
             parseProjectMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
         } else if (SyncEntityKind.EXPERIMENT.toString().equals(entityKind))
@@ -500,6 +504,17 @@ public class ResourceListParser
                 expCode);
     }
 
+    private void parseSpaceMetaData(String permId, Node xdNode, Date lastModificationDate)
+    {
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.PROJECTS, FrozenForType.SAMPLES);
+        String code = extractCode(xdNode);
+        String desc = extractAttribute(xdNode, "desc", true);
+        NewSpace space = new NewSpace(code, desc, null);
+        IncomingSpace incomingSpace = new IncomingSpace(space, frozenFlags, lastModificationDate);
+        data.getSpacesToProcess().put(permId, incomingSpace);
+        setTimestampsAndUsers(xdNode, incomingSpace);
+    }
+    
     private void parseProjectMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
         FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.EXPERIMENTS, FrozenForType.SAMPLES);

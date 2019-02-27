@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 ETH Zuerich, SIS
+ * Copyright 2019 ETH Zuerich, SIS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,21 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common;
+package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
+
+import java.util.Date;
+
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 
 /**
- * Contrary to the Entity Kind in openbis core, this one also includes Projects which are "Entities" in OpenbisSync
- * 
- * @author Ganime Betul Akin
+ * @author Franz-Josef Elmer
+ *
  */
-public enum SyncEntityKind
+public class IncomingSpace extends IncomingEntity<NewSpace>
 {
-    SPACE("SP"), PROJECT("P"), EXPERIMENT("E"), SAMPLE("S"), DATA_SET("D"), MATERIAL("M");
-
-    private final String abbreviation;
-
-    private SyncEntityKind(String abbreviation)
+    IncomingSpace(NewSpace space, FrozenFlags frozenFlags, Date lastModDate)
     {
-        this.abbreviation = abbreviation;
-
-    }
-
-    public final String getAbbreviation()
-    {
-        return abbreviation;
+        super(space, space.getCode(), space.getCode(), frozenFlags, SyncEntityKind.SPACE, lastModDate);
     }
 }
