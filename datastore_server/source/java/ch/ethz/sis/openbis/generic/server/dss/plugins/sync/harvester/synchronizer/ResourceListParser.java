@@ -506,7 +506,7 @@ public class ResourceListParser
 
     private void parseSpaceMetaData(Node xdNode, Date lastModificationDate)
     {
-        String code = extractCode(xdNode);
+        String code = nameTranslator.translate(extractCode(xdNode));
         FrozenFlags frozenFlags = extractFrozenFlags(code, xdNode, FrozenForType.PROJECTS, FrozenForType.SAMPLES);
         String desc = extractAttribute(xdNode, "desc", true);
         NewSpace space = new NewSpace(code, desc, null);
