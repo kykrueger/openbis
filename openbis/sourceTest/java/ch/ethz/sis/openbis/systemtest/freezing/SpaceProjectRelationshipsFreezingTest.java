@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
@@ -134,7 +135,7 @@ public class SpaceProjectRelationshipsFreezingTest extends FreezingTest
     }
 
     @DataProvider(name = "frozenProjectSpaceSpaceRelations")
-    public static Object[][] liquidProjectSpaceRelations()
+    public static Object[][] frozenProjectSpaceSpaceRelations()
     {
         List<FrozenFlags> combinationsForProject = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsForLiquidSpace = new FrozenFlags(true).freezeForSample().createAllCombinations();
@@ -145,4 +146,60 @@ public class SpaceProjectRelationshipsFreezingTest extends FreezingTest
                 asCartesianProduct(combinationsForProject, combinationsForFrozenSpace, combinationsForFrozenSpace));
     }
 
+    @Test(dataProvider = "liquidSpace")
+    public void testValidAddProjectToSpace(FrozenFlags frozenFlagsForSpace)
+    {
+        // Given
+        setFrozenFlagsForSpaces(frozenFlagsForSpace, space1);
+        ProjectCreation projectCreation = new ProjectCreation();
+        projectCreation.setSpaceId(space1);
+        projectCreation.setCode(PREFIX + "-PROJ2");
+
+        // When
+        ProjectPermId id = v3api.createProjects(systemSessionToken, Arrays.asList(projectCreation)).iterator().next();
+
+        // Then
+        assertEquals(getProject(id).getSpace().getCode(), SPACE_1);
+    }
+
+    @DataProvider(name = "liquidSpace")
+    public static Object[][] liquidSpace()
+    {
+        List<FrozenFlags> combinationsForLiquidSpace = new FrozenFlags(true).freezeForSample().createAllCombinations();
+        combinationsForLiquidSpace.add(new FrozenFlags(false).freezeForProject());
+        return asCartesianProduct(combinationsForLiquidSpace);
+    }
+
+    @Test
+    public void testInvalidAddProjectToSpace()
+    {
+        // Given
+        setFrozenFlagsForSpaces(new FrozenFlags(true).freezeForProject(), space1);
+        ProjectCreation projectCreation = new ProjectCreation();
+        projectCreation.setSpaceId(space1);
+        projectCreation.setCode(PREFIX + "PROJ2");
+
+        // When
+        assertUserFailureException(Void -> v3api.createProjects(systemSessionToken, Arrays.asList(projectCreation)),
+                // Then
+                "ERROR: Operation SET SPACE is not allowed because space " + SPACE_1 + " is frozen for project "
+                        + projectCreation.getCode() + ".");
+    }
+
+    @Test
+    public void testInvalidAddProjectToSpaceAfterMelting()
+    {
+        // Given
+        setFrozenFlagsForSpaces(new FrozenFlags(true).freezeForProject(), space1);
+        setFrozenFlagsForSpaces(new FrozenFlags(true).freezeForProject().melt(), space1);
+        ProjectCreation projectCreation = new ProjectCreation();
+        projectCreation.setSpaceId(space1);
+        projectCreation.setCode(PREFIX + "-PROJ2");
+
+        // When
+        ProjectPermId id = v3api.createProjects(systemSessionToken, Arrays.asList(projectCreation)).iterator().next();
+
+        // Then
+        assertEquals(getProject(id).getSpace().getCode(), SPACE_1);
+    }
 }

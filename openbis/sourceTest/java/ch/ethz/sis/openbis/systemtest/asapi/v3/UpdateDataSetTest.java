@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -39,12 +40,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifi
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.test.AssertionUtil;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -770,6 +774,204 @@ public class UpdateDataSetTest extends AbstractSampleTest
 
         assertAccessLog(
                 "update-data-sets  DATA_SET_UPDATES('[DataSetUpdate[dataSetId=20081105092159111-1], DataSetUpdate[dataSetId=20110509092359990-10]]')");
+    }
+
+    @Test
+    public void testFreeze()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetPermId dsId1 = new DataSetPermId("20081105092159111-1");
+        DataSetUpdate update1 = new DataSetUpdate();
+        update1.setDataSetId(dsId1);
+        update1.freeze();
+        DataSetPermId dsId2 = new DataSetPermId("20081105092159222-2");
+        DataSetUpdate update2 = new DataSetUpdate();
+        update2.setDataSetId(dsId2);
+        update2.freezeForChildren();
+        DataSetPermId dsId3 = new DataSetPermId("20081105092159333-3");
+        DataSetUpdate update3 = new DataSetUpdate();
+        update3.setDataSetId(dsId3);
+        update3.freezeForParents();
+        DataSetPermId dsId4 = new DataSetPermId("20081105092259000-8");
+        DataSetUpdate update4 = new DataSetUpdate();
+        update4.setDataSetId(dsId4);
+        update4.freezeForComponents();
+        DataSetPermId dsId5 = new DataSetPermId("20081105092259000-20");
+        DataSetUpdate update5 = new DataSetUpdate();
+        update5.setDataSetId(dsId5);
+        update5.freezeForContainers();
+
+        // When
+        v3api.updateDataSets(sessionToken, Arrays.asList(update1, update2, update3, update4, update5));
+
+        // Then
+        Map<IDataSetId, DataSet> dataSets =
+                v3api.getDataSets(sessionToken, Arrays.asList(dsId1, dsId2, dsId3, dsId4, dsId5), new DataSetFetchOptions());
+        DataSet ds1 = dataSets.get(dsId1);
+        assertEquals(ds1.isFrozen(), true);
+        assertEquals(ds1.isFrozenForChildren(), false);
+        assertEquals(ds1.isFrozenForParents(), false);
+        assertEquals(ds1.isFrozenForComponents(), false);
+        assertEquals(ds1.isFrozenForContainers(), false);
+        assertFreezingEvent(TEST_USER, ds1.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze());
+        DataSet ds2 = dataSets.get(dsId2);
+        assertEquals(ds2.isFrozen(), true);
+        assertEquals(ds2.isFrozenForChildren(), true);
+        assertEquals(ds2.isFrozenForParents(), false);
+        assertEquals(ds2.isFrozenForComponents(), false);
+        assertEquals(ds2.isFrozenForContainers(), false);
+        assertFreezingEvent(TEST_USER, ds2.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze().freezeForChildren());
+        DataSet ds3 = dataSets.get(dsId3);
+        assertEquals(ds3.isFrozen(), true);
+        assertEquals(ds3.isFrozenForChildren(), false);
+        assertEquals(ds3.isFrozenForParents(), true);
+        assertEquals(ds3.isFrozenForComponents(), false);
+        assertEquals(ds3.isFrozenForContainers(), false);
+        assertFreezingEvent(TEST_USER, ds3.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze().freezeForParents());
+        DataSet ds4 = dataSets.get(dsId4);
+        assertEquals(ds4.isFrozen(), true);
+        assertEquals(ds4.isFrozenForChildren(), false);
+        assertEquals(ds4.isFrozenForParents(), false);
+        assertEquals(ds4.isFrozenForComponents(), true);
+        assertEquals(ds4.isFrozenForContainers(), false);
+        assertFreezingEvent(TEST_USER, ds4.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze().freezeForComponents());
+        DataSet ds5 = dataSets.get(dsId5);
+        assertEquals(ds5.isFrozen(), true);
+        assertEquals(ds5.isFrozenForChildren(), false);
+        assertEquals(ds5.isFrozenForParents(), false);
+        assertEquals(ds5.isFrozenForComponents(), false);
+        assertEquals(ds5.isFrozenForContainers(), true);
+        assertFreezingEvent(TEST_USER, ds5.getCode(), EntityType.DATASET,
+                new FreezingFlags().freeze().freezeForContainers());
+    }
+
+    @Test(dataProvider = "freezeMethods")
+    public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
+        DataSetPermId dsId = new DataSetPermId("20081105092159111-1");
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dsId);
+        freezeMethod.method.invoke(update);
+
+        // When
+        assertAuthorizationFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(update)), null);
+    }
+
+    @DataProvider(name = "freezeMethods")
+    public static Object[][] freezeMethods()
+    {
+        return asCartesianProduct(getFreezingMethods(DataSetUpdate.class));
+    }
+
+    @Test
+    public void testFreezing()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetPermId dsId = new DataSetPermId("20081105092159111-1");
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dsId);
+        update.freeze();
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dsId);
+        dataSetUpdate.setProperty("COMMENT", "test comment");
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(dataSetUpdate)),
+                // Then
+                "ERROR: Operation UPDATE PROPERTY is not allowed because data set 20081105092159111-1 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForChildren()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetPermId dsId = new DataSetPermId("20081105092159111-1");
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dsId);
+        update.freezeForChildren();
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dsId);
+        dataSetUpdate.getChildIds().add(new DataSetPermId("20081105092259000-20"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(dataSetUpdate)),
+                // Then
+                "ERROR: Operation INSERT PARENT_CHILD is not allowed because data set 20081105092159111-1 "
+                        + "or 20081105092259000-20 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForParents()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetPermId dsId = new DataSetPermId("20081105092159111-1");
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dsId);
+        update.freezeForParents();
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dsId);
+        dataSetUpdate.getParentIds().add(new DataSetPermId("20081105092259000-20"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(dataSetUpdate)),
+                // Then
+                "ERROR: Operation INSERT PARENT_CHILD is not allowed because data set 20081105092259000-20 "
+                        + "or 20081105092159111-1 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForComponents()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetPermId dsId = new DataSetPermId("CONTAINER_1");
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dsId);
+        update.freezeForComponents();
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dsId);
+        dataSetUpdate.getComponentIds().add(new DataSetPermId("20081105092259000-20"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(dataSetUpdate)),
+                // Then
+                "ERROR: Operation INSERT CONTAINER_COMPONENT is not allowed because data set CONTAINER_1 "
+                        + "or 20081105092259000-20 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForContainers()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetPermId dsId = new DataSetPermId("20081105092259000-20");
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dsId);
+        update.freezeForContainers();
+        v3api.updateDataSets(sessionToken, Arrays.asList(update));
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dsId);
+        dataSetUpdate.getContainerIds().add(new DataSetPermId("CONTAINER_1"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateDataSets(sessionToken, Arrays.asList(dataSetUpdate)),
+                // Then
+                "ERROR: Operation INSERT CONTAINER_COMPONENT is not allowed because data set CONTAINER_1 "
+                        + "or 20081105092259000-20 is frozen.");
     }
 
     private Collection<String> dataSetCodes(Collection<? extends DataSet> list)

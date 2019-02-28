@@ -37,4 +37,6 @@ public interface ISpaceAuthorizationExecutor extends IObjectAuthorizationExecuto
 
     void canSearch(IOperationContext context);
 
+    void canFreeze(IOperationContext context);
+
 }

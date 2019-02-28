@@ -30,8 +30,8 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -203,7 +203,7 @@ public class SearchObjectsOperationExecutorStressTest
                         } catch (Throwable throwable)
                         {
                             executor.addError(
-                                    "Exception in thread " + Thread.currentThread().getName() + ": " + ExceptionUtils.getFullStackTrace(throwable));
+                                    "Exception in thread " + Thread.currentThread().getName() + ": " + ExceptionUtils.getStackTrace(throwable));
                         }
 
                     }

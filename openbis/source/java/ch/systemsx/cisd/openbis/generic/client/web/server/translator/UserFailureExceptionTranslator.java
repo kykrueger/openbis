@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.client.web.server.translator;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
@@ -63,7 +63,7 @@ public class UserFailureExceptionTranslator
     {
         final String className =
                 WEB_CLIENT_EXCEPTIONS_PACKAGE + "." + exception.getClass().getSimpleName();
-        final String fullMessage = StringEscapeUtils.escapeHtml(exception.getMessage());
+        final String fullMessage = StringEscapeUtils.escapeHtml4(exception.getMessage());
 
         try
         {

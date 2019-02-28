@@ -47,7 +47,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 			"SAMPLE_PARENTS_HINT" : [{
 				"LABEL" : "Requests",
 				"TYPE": "REQUEST",
-				"MIN_COUNT" : 0,
+				"MIN_COUNT" : 1,
 				"ANNOTATION_PROPERTIES" : []
 			}]
 		},
@@ -71,6 +71,7 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 		},
 		"EXPERIMENTAL_STEP" : {
 			"SHOW" : false,
+			"SHOW_ON_NAV" : true,
 			"SAMPLE_PARENTS_HINT" : [{
 				"LABEL" : "General protocol",
 				"TYPE": "GENERAL_PROTOCOL",
@@ -80,7 +81,6 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
 		},
 		"GENERAL_PROTOCOL" : {
 			"SHOW" : false,
-			"ENABLE_STORAGE" : true,
 			"USE_AS_PROTOCOL" : true,
 			"SAMPLE_PARENTS_HINT" : [{
 				"LABEL" : "General protocol",

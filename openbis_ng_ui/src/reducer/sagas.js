@@ -1,70 +1,15 @@
-import { put, takeEvery, call } from 'redux-saga/effects'
-import openbis from '../services/openbis'
+import {put, takeEvery, call, select} from 'redux-saga/effects'
+import Openbis from '../services/openbis'
 import actions from './actions'
 
-// TODO split sagas
+// TODO split sagas when it gets too big
 
-function* init() {
-  // TODO we want to check if there is an active session here to avoid the login
-}
+let openbis = new Openbis()
 
-function* loginDone() {
-  try {
-    const result = yield call(openbis.getSpaces)
-    yield put(actions.setSpaces(result.getObjects()))
-  } catch(exception) {
-    yield put(actions.error(exception))  
-  }
-}
-
-function* logout() {
-  try {
-    console.log('logout')
-    const result = yield call(openbis.logout)
-    yield put(actions.logoutDone())
-  } catch(exception) {
-    yield put(actions.error(exception))  
-  }
-}
-
-function* selectSpace(action) {
-  yield put(actions.selectEntity(action.spaces[0].permId.permId))
-}
-
-function* saveEntity(action) {
-  try {
-    yield openbis.updateSpace(action.entity.permId, action.entity.description)
-    const result = yield call(openbis.getSpaces)
-    const spaces = result.getObjects()
-    const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
-    yield put(actions.savedEntity(space))
-  } catch(exception) {
-    yield put(actions.error(exception))  
-  }
-}
-
-function* expandNode(action) {
-  try {
-    const node = action.node
-    if (node.loaded === false) {
-      if (node.type === 'as.dto.space.Space') {
-        const result = yield openbis.searchProjects(node.id)
-        const projects = result.getObjects()
-        yield put(actions.setProjects(projects, node.id))
-      }
-    }
-  } catch(exception) {
-    yield put(actions.error(exception))  
-  }
-}
-
-export function* login(action) {
-  try {
-    const result = yield openbis.login(action.username, action.password)
-    yield put(actions.loginDone())
-  } catch(exception) {
-    yield put(actions.error(exception))
-  }
+// used only for testing - need to have a new mock for each test
+export function newOpenbis() {
+  openbis = new Openbis()
+  return openbis
 }
 
 export function* watchActions() {
@@ -75,4 +20,109 @@ export function* watchActions() {
   yield takeEvery('SAVE-ENTITY', saveEntity)
   yield takeEvery('SET-SPACES', selectSpace)
   yield takeEvery('EXPAND-NODE', expandNode)
+  yield takeEvery('SET-MODE', setMode)
+}
+
+function* handleException(f) {
+  try {
+    yield f()
+  } catch (exception) {
+    yield put(actions.error(exception))
+  }
+}
+
+function* init() {
+  // TODO Check for session token and yield loginDone if valid.
+  //      This can properly be done when we have the session token in a cookie.
+}
+
+function* login(action) {
+  yield handleException(function* () {
+    yield openbis.login(action.username, action.password)
+    yield put(actions.loginDone())
+  })
+}
+
+function* loginDone() {
+  yield handleException(function* () {
+    const result = yield call(openbis.getSpaces)
+    yield put(actions.setSpaces(result.getObjects()))
+  })
+}
+
+function* logout() {
+  yield handleException(function* () {
+    yield call(openbis.logout)
+    yield put(actions.logoutDone())
+  })
+}
+
+function* selectSpace(action) {
+  yield put(actions.selectEntity(action.spaces[0].permId.permId, action.spaces[0]['@type']))
+}
+
+function* saveEntity(action) {
+  yield handleException(function* () {
+    yield openbis.updateSpace(action.entity.permId, action.entity.description)
+    const result = yield call(openbis.getSpaces)
+    const spaces = result.getObjects()
+    const space = spaces.filter(space => space.permId.permId === action.entity.permId.permId)[0]
+    yield put(actions.saveEntityDone(space))
+  })
+}
+
+function* expandNode(action) {
+  yield handleException(function* () {
+    const node = action.node
+    if (node.loaded === false) {
+      if (node.type === 'as.dto.space.Space') {
+        const result = yield openbis.searchProjects(node.permId)
+        const projects = result.getObjects()
+        yield put(actions.setProjects(projects, node.permId))
+      }
+    }
+  })
+}
+
+function* setMode(action) {
+  yield handleException(function* () {
+    let state = yield select()
+
+    switch (action.mode) {
+    case 'USERS': {
+      if (!state.users.browser.loaded) {
+        let users = yield call(openbis.getUsers)
+        let groups = yield call(openbis.getGroups)
+        yield put(actions.setModeDone(action.mode, {
+          users: users.getObjects(),
+          groups: groups.getObjects()
+        }))
+      } else {
+        yield put(actions.setModeDone(action.mode))
+      }
+      break
+    }
+    case 'TYPES': {
+      if (!state.types.browser.loaded) {
+        let objectTypes = yield call(openbis.getObjectTypes)
+        let collectionTypes = yield call(openbis.getCollectionTypes)
+        let dataSetTypes = yield call(openbis.getDataSetTypes)
+        let materialTypes = yield call(openbis.getMaterialTypes)
+        yield put(actions.setModeDone(action.mode, {
+          objectTypes: objectTypes.getObjects(),
+          collectionTypes: collectionTypes.getObjects(),
+          dataSetTypes: dataSetTypes.getObjects(),
+          materialTypes: materialTypes.getObjects(),
+        }))
+      } else {
+        yield put(actions.setModeDone(action.mode))
+      }
+      break
+    }
+    default: {
+      yield put(actions.setModeDone(action.mode))
+      break
+    }
+    }
+  })
 }

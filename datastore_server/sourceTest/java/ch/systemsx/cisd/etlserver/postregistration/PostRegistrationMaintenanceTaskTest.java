@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;

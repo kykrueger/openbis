@@ -26,7 +26,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.DataSetUpdates;
@@ -381,7 +381,7 @@ public class PropertiesHistoryTest extends SystemTestCase
     private String renderUser(SessionContext session)
     {
         Person person = session.getUser().getUserPersonObject();
-        return StringEscapeUtils.escapeHtml(person.getLastName() + ", " + person.getFirstName());
+        return StringEscapeUtils.escapeHtml4(person.getLastName() + ", " + person.getFirstName());
     }
 
 }

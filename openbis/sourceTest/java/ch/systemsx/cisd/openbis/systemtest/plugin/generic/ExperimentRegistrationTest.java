@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.string.UnicodeUtils;
@@ -101,7 +101,7 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
         List<IEntityProperty> properties = experiment.getProperties();
         assertEquals("DESCRIPTION", properties.get(0).getPropertyType().getCode());
         // Make sure the string is escaped
-        assertEquals(StringEscapeUtils.escapeHtml("my éxpériment"), properties.get(0)
+        assertEquals(StringEscapeUtils.escapeHtml4("my éxpériment"), properties.get(0)
                 .tryGetAsString());
         assertEquals(1, properties.size());
     }
@@ -484,7 +484,7 @@ public class ExperimentRegistrationTest extends GenericSystemTestCase
                     if (codes[i].equals(prop.getPropertyType().getCode()))
                     {
                         // Make sure the string is escaped
-                        assertEquals(StringEscapeUtils.escapeHtml(values[i]), prop.tryGetAsString());
+                        assertEquals(StringEscapeUtils.escapeHtml4(values[i]), prop.tryGetAsString());
                         found = true;
                         continue;
                     }

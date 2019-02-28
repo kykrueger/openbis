@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.dss.etl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.hcs.Geometry;
 import ch.systemsx.cisd.hcs.Location;

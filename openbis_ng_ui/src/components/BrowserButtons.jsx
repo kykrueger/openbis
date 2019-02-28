@@ -14,20 +14,20 @@ class BrowserButtons extends React.Component {
         <Toolbar>
           <Grid container alignItems='center'>
             <Grid item xs={2}>
-              <Button 
-                variant="contained" 
-                color="primary">
-                <RemoveIcon />
-              </Button>
-            </Grid> 
-            <Grid item xs={8} />
-            <Grid item xs={2}>
-              <Button 
+              <Button
                 variant="contained"
                 color="primary">
-                <AddIcon />
+                <RemoveIcon/>
               </Button>
-            </Grid> 
+            </Grid>
+            <Grid item xs={8}/>
+            <Grid item xs={2}>
+              <Button
+                variant="contained"
+                color="primary">
+                <AddIcon/>
+              </Button>
+            </Grid>
           </Grid>
         </Toolbar>
       </AppBar>

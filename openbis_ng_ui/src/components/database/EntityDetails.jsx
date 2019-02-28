@@ -1,6 +1,6 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { withStyles } from '@material-ui/core/styles'
+import {connect} from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Card from '@material-ui/core/Card'
 import CardHeader from '@material-ui/core/CardHeader'
@@ -17,6 +17,7 @@ import _ from 'lodash'
 
 import OpenBISTable from './OpenBISTable.jsx'
 import actions from '../../reducer/actions.js'
+import { getTabState } from '../../reducer/selectors';
 
 
 /* eslint-disable-next-line no-unused-vars */
@@ -27,8 +28,9 @@ const styles = theme => ({
 })
 
 function mapStateToProps(state) {
+  let tabState = getTabState(state)
   return {
-    dirtyEntities: state.dirtyEntities,    
+    dirtyEntities: tabState.dirtyEntities,
   }
 }
 
@@ -75,24 +77,24 @@ class EntityDetails extends React.Component {
   }
 
   render() {
-    const { classes } = this.props
+    const {classes} = this.props
     if (this.props.entity === null) {
-      return (<div />)
+      return (<div/>)
     }
     const entity = this.props.entity
 
-    const options = { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric', 
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
     }
     const created = new Date(entity.registrationDate).toLocaleDateString('en-US', options)
 
-    return(
+    return (
       <Card className={classes.card}>
         <CardHeader
           avatar={
@@ -101,39 +103,39 @@ class EntityDetails extends React.Component {
             </Avatar>
           }
           action={
-            <Button 
-              color="primary" 
-              disabled={!this.state.dirty} 
+            <Button
+              color="primary"
+              disabled={!this.state.dirty}
               variant="contained"
-              onClick={ () => this.handleSave(this.props.entity) }>
+              onClick={() => this.handleSave(this.props.entity)}>
               Save
             </Button>
           }
-          title={ 'Space '+entity.code }
-          subheader={ 'Created on ' + created }
+          title={'Space ' + entity.code}
+          subheader={'Created on ' + created}
         />
         <CardContent>
           <TextField
             label='Description'
             className={classes.textField}
             value={this.state.description ? this.state.description : ''}
-            onChange={ (e) => {
+            onChange={(e) => {
               this.handleChange('description', e)
             }}
             margin='normal'
           />
-          <OpenBISTable />
+          <OpenBISTable/>
 
         </CardContent>
         <CardActions disableActionSpacing>
           <IconButton aria-label="Add to favorites">
-            <FavoriteIcon />
+            <FavoriteIcon/>
           </IconButton>
           <IconButton aria-label="Share">
-            <ShareIcon />
+            <ShareIcon/>
           </IconButton>
           <IconButton>
-            <ExpandMoreIcon />
+            <ExpandMoreIcon/>
           </IconButton>
         </CardActions>
       </Card>

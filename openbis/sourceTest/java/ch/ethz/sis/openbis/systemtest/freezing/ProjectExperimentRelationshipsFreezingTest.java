@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
@@ -138,7 +139,7 @@ public class ProjectExperimentRelationshipsFreezingTest extends FreezingTest
     }
 
     @DataProvider(name = "frozenExperimentProjectProjectRelations")
-    public static Object[][] liquidExperimentProjectRelations()
+    public static Object[][] frozenExperimentProjectProjectRelations()
     {
         List<FrozenFlags> combinationsForExperiment = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsForLiquidProject = new FrozenFlags(true).freezeForSample().createAllCombinations();
@@ -149,4 +150,56 @@ public class ProjectExperimentRelationshipsFreezingTest extends FreezingTest
                 asCartesianProduct(combinationsForExperiment, combinationsForFrozenProject, combinationsForFrozenProject));
     }
 
+
+    @Test(dataProvider = "liquidExperimentProjectRelations")
+    public void testValidAddExperimentToProject(FrozenFlags frozenFlagsForProject)
+    {
+        // Given
+        setFrozenFlagsForProjects(frozenFlagsForProject, project1);
+        ExperimentCreation experimentCreation = experiment(project1, PREFIX + "E2");
+
+        // When
+        ExperimentPermId id = v3api.createExperiments(systemSessionToken, Arrays.asList(experimentCreation)).iterator().next();
+
+        // Then
+        assertEquals(getExperiment(id).getProject().getCode(), PROJECT_1);
+    }
+
+    @DataProvider(name = "liquidExperimentProjectRelations")
+    public static Object[][] liquidExperimentProjectRelations()
+    {
+        List<FrozenFlags> combinationsForLiquidProject = new FrozenFlags(true).freezeForSample().createAllCombinations();
+        combinationsForLiquidProject.add(new FrozenFlags(false).freezeForExperiment());
+        return asCartesianProduct(combinationsForLiquidProject);
+    }
+
+    @Test
+    public void testInvalidAddExperimentToProject()
+    {
+        // Given
+        setFrozenFlagsForProjects(new FrozenFlags(true).freezeForExperiment(), project1);
+        ExperimentCreation experimentCreation = experiment(project1, PREFIX + "E2");
+
+        // When
+        assertUserFailureException(Void -> v3api.createExperiments(systemSessionToken, Arrays.asList(experimentCreation)),
+                // Then
+                "ERROR: Operation SET PROJECT is not allowed because project " + PROJECT_1 + " is frozen for experiment "
+                        + experimentCreation.getCode() + ".");
+    }
+
+    @Test
+    public void testInvalidAddExperimentToProjectAfterMelting()
+    {
+        // Given
+        setFrozenFlagsForProjects(new FrozenFlags(true).freezeForExperiment(), project1);
+        setFrozenFlagsForProjects(new FrozenFlags(true).freezeForExperiment().melt(), project1);
+        ExperimentCreation experimentCreation = experiment(project1, PREFIX + "E2");
+
+        // When
+        ExperimentPermId id = v3api.createExperiments(systemSessionToken, Arrays.asList(experimentCreation)).iterator().next();
+
+        // Then
+        assertEquals(getExperiment(id).getProject().getCode(), PROJECT_1);
+
+    }
 }

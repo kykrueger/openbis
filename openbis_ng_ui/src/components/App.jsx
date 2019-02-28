@@ -1,7 +1,7 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
+import {withStyles} from '@material-ui/core/styles'
 import HTML5Backend from 'react-dnd-html5-backend'
-import { DragDropContext } from 'react-dnd'
+import {DragDropContext} from 'react-dnd'
 import flow from 'lodash/flow'
 
 import Hidden from '@material-ui/core/Hidden'
@@ -22,7 +22,7 @@ const styles = {
     paddingLeft: 4,
     marginLeft: drawerWidth + 5,
   },
-  
+
   left: {
     float: 'left',
     width: drawerWidth,
@@ -58,9 +58,9 @@ class App extends React.Component {
           </div>
           <BrowserFilter/>
           <Browser/>
-          <BrowserButtons />
+          <BrowserButtons/>
           <div className={classes.topMargin}>
-            <TabPanel />
+            <TabPanel/>
           </div>
         </Hidden>
 
@@ -69,14 +69,14 @@ class App extends React.Component {
             <ModeBar/>
             <BrowserFilter/>
             <div className={classes.browser}>
-              <Browser />
+              <Browser/>
             </div>
-            <BrowserButtons />
+            <BrowserButtons/>
           </div>
           <div className={classes.right}>
-            <TopBar />
+            <TopBar/>
             <div className={classes.topMargin}>
-              <TabPanel />
+              <TabPanel/>
             </div>
           </div>
         </Hidden>

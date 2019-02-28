@@ -12,7 +12,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import javax.validation.ReportAsSingleViolation;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.search.annotations.Field;
@@ -45,6 +44,8 @@ public class ContentCopyPE extends HibernateAbstractRegistrationHolder
 
     private String gitRepositoryId;
     
+    private boolean dataSetFrozen;
+
     @Id
     @SequenceGenerator(name = SequenceNames.CONTENT_COPY_SEQUENCE, sequenceName = SequenceNames.CONTENT_COPY_SEQUENCE, allocationSize = 1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.CONTENT_COPY_SEQUENCE)
@@ -58,6 +59,18 @@ public class ContentCopyPE extends HibernateAbstractRegistrationHolder
         this.id = id;
     }
 
+    @NotNull
+    @Column(name = ColumnNames.LINK_DATA_SET_FROZEN_COLUMN, nullable = false)
+    public boolean isDataSetFrozen()
+    {
+        return dataSetFrozen;
+    }
+
+    public void setDataSetFrozen(boolean dataSetFrozen)
+    {
+        this.dataSetFrozen = dataSetFrozen;
+    }
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = ColumnNames.DATA_ID_COLUMN, updatable = true)
     public LinkDataPE getDataSet()
@@ -68,6 +81,10 @@ public class ContentCopyPE extends HibernateAbstractRegistrationHolder
     public void setDataSet(LinkDataPE dataSet)
     {
         this.dataSet = dataSet;
+        if (dataSet != null)
+        {
+            dataSetFrozen = dataSet.isFrozen();
+        }
     }
 
     @ManyToOne(fetch = FetchType.EAGER)

@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.common.api.client;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.AssertJUnit;
@@ -32,6 +33,8 @@ import ch.systemsx.cisd.common.api.IRpcService;
 @Friend(toClasses = ServiceFinder.class)
 public class ServiceFinderTest extends AssertJUnit
 {
+    private static final long SERVER_TIMEOUT = ServiceFinder.SERVER_TIMEOUT_IN_MINUTES * DateUtils.MILLIS_PER_MINUTE;
+
     private static interface ITestService
     {
         public void ping();
@@ -41,35 +44,13 @@ public class ServiceFinderTest extends AssertJUnit
     {
     }
 
-    private static interface IStubFactory
-    {
-        <S> S createStub(Class<S> serviceClass, String serverUrl);
-    }
-
-    private static final class MockServiceFinder extends ServiceFinder
-    {
-        private final IStubFactory stubFactory;
-
-        public MockServiceFinder(String applicationName, String urlServiceSuffix, IStubFactory stubFactory)
-        {
-            super(applicationName, urlServiceSuffix);
-            this.stubFactory = stubFactory;
-        }
-
-        @Override
-        <S> S createServiceStub(Class<S> serviceClass, String serverUrl, long timeout)
-        {
-            return stubFactory.createStub(serviceClass, serverUrl);
-        }
-    }
-
     private Mockery context;
 
     private ITestService service;
 
     private ITestRpcService rpcService;
 
-    private IStubFactory stubFactory;
+    private IServiceStubFactory stubFactory;
 
     private ServiceFinder finder;
 
@@ -90,8 +71,8 @@ public class ServiceFinderTest extends AssertJUnit
         context = new Mockery();
         service = context.mock(ITestService.class);
         rpcService = context.mock(ITestRpcService.class);
-        stubFactory = context.mock(IStubFactory.class);
-        finder = new MockServiceFinder("name", "service", stubFactory);
+        stubFactory = context.mock(IServiceStubFactory.class);
+        finder = new ServiceFinder("name", "service", stubFactory);
     }
 
     @AfterMethod
@@ -108,8 +89,8 @@ public class ServiceFinderTest extends AssertJUnit
         context.checking(new Expectations()
             {
                 {
-                    one(stubFactory).createStub(ITestService.class,
-                            "http://localhost/name/name/service");
+                    one(stubFactory).createServiceStub(ITestService.class,
+                            "http://localhost/name/name/service", SERVER_TIMEOUT);
                     will(returnValue(service));
 
                     one(service).ping();
@@ -127,8 +108,8 @@ public class ServiceFinderTest extends AssertJUnit
         context.checking(new Expectations()
             {
                 {
-                    one(stubFactory).createStub(ITestRpcService.class,
-                            "http://localhost/name/name/service");
+                    one(stubFactory).createServiceStub(ITestRpcService.class,
+                            "http://localhost/name/name/service", SERVER_TIMEOUT);
                     will(returnValue(rpcService));
 
                     one(rpcService).getMajorVersion();
@@ -147,15 +128,15 @@ public class ServiceFinderTest extends AssertJUnit
         context.checking(new Expectations()
             {
                 {
-                    one(stubFactory).createStub(ITestService.class,
-                            "http://localhost/name/name/service");
+                    one(stubFactory).createServiceStub(ITestService.class,
+                            "http://localhost/name/name/service", SERVER_TIMEOUT);
                     will(returnValue(service));
 
                     one(service).ping();
                     will(throwException(new RuntimeException()));
 
                     one(stubFactory)
-                            .createStub(ITestService.class, "http://localhost/name/service");
+                            .createServiceStub(ITestService.class, "http://localhost/name/service", SERVER_TIMEOUT);
                     will(returnValue(service));
 
                     one(service).ping();
@@ -173,8 +154,8 @@ public class ServiceFinderTest extends AssertJUnit
         context.checking(new Expectations()
             {
                 {
-                    one(stubFactory).createStub(ITestService.class,
-                            "http://localhost/name/name/service");
+                    one(stubFactory).createServiceStub(ITestService.class,
+                            "http://localhost/name/name/service", SERVER_TIMEOUT);
                     will(returnValue(service));
 
                     one(service).ping();

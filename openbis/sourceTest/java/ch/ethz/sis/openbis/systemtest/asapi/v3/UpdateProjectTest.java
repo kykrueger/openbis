@@ -27,10 +27,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
@@ -41,8 +45,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
 
 /**
@@ -50,6 +56,7 @@ import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUse
  */
 public class UpdateProjectTest extends AbstractTest
 {
+    private static final String PREFIX = "UPT-";
 
     @Test
     public void testUpdateWithProjectNull()
@@ -366,6 +373,135 @@ public class UpdateProjectTest extends AbstractTest
 
         assertAccessLog(
                 "update-projects  PROJECT_UPDATES('[ProjectUpdate[projectId=/TEST-SPACE/TEST-PROJECT], ProjectUpdate[projectId=20120814110011738-101]]')");
+    }
+
+    @Test
+    public void testFreezeForExperiments()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final IProjectId projectId1 = new ProjectIdentifier("/CISD/NEMO");
+        ProjectUpdate update1 = new ProjectUpdate();
+        update1.setProjectId(projectId1);
+        update1.freeze();
+        final IProjectId projectId2 = new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT");
+        ProjectUpdate update2 = new ProjectUpdate();
+        update2.setProjectId(projectId2);
+        update2.freezeForExperiments();
+
+        // When
+        v3api.updateProjects(sessionToken, Arrays.asList(update1, update2));
+
+        // Then
+        Map<IProjectId, Project> projects = v3api.getProjects(sessionToken, Arrays.asList(projectId1, projectId2), new ProjectFetchOptions());
+        Project project1 = projects.get(projectId1);
+        assertEquals(project1.getIdentifier().getIdentifier(), projectId1.toString());
+        assertEquals(project1.isFrozen(), true);
+        assertEquals(project1.isFrozenForExperiments(), false);
+        assertEquals(project1.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, project1.getIdentifier().getIdentifier(), EntityType.PROJECT, new FreezingFlags().freeze());
+        Project project2 = projects.get(projectId2);
+        assertEquals(project2.getIdentifier().getIdentifier(), projectId2.toString());
+        assertEquals(project2.isFrozen(), true);
+        assertEquals(project2.isFrozenForExperiments(), true);
+        assertEquals(project2.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, project2.getIdentifier().getIdentifier(), EntityType.PROJECT,
+                new FreezingFlags().freeze().freezeForExperiments());
+    }
+
+    @Test
+    public void testFreezeForSamples()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final IProjectId projectId1 = new ProjectIdentifier("/CISD/NEMO");
+        ProjectUpdate update1 = new ProjectUpdate();
+        update1.setProjectId(projectId1);
+        update1.freeze();
+        final IProjectId projectId2 = new ProjectIdentifier("/TEST-SPACE/TEST-PROJECT");
+        ProjectUpdate update2 = new ProjectUpdate();
+        update2.setProjectId(projectId2);
+        update2.freezeForSamples();
+
+        // When
+        v3api.updateProjects(sessionToken, Arrays.asList(update1, update2));
+
+        // Then
+        Map<IProjectId, Project> projects = v3api.getProjects(sessionToken, Arrays.asList(projectId1, projectId2), new ProjectFetchOptions());
+        Project project1 = projects.get(projectId1);
+        assertEquals(project1.getIdentifier().getIdentifier(), projectId1.toString());
+        assertEquals(project1.isFrozen(), true);
+        assertEquals(project1.isFrozenForExperiments(), false);
+        assertEquals(project1.isFrozenForSamples(), false);
+        assertFreezingEvent(TEST_USER, project1.getIdentifier().getIdentifier(), EntityType.PROJECT, new FreezingFlags().freeze());
+        Project project2 = projects.get(projectId2);
+        assertEquals(project2.getIdentifier().getIdentifier(), projectId2.toString());
+        assertEquals(project2.isFrozen(), true);
+        assertEquals(project2.isFrozenForExperiments(), false);
+        assertEquals(project2.isFrozenForSamples(), true);
+        assertFreezingEvent(TEST_USER, project2.getIdentifier().getIdentifier(), EntityType.PROJECT,
+                new FreezingFlags().freeze().freezeForSamples());
+    }
+
+    @Test
+    public void testFreezing()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final IProjectId projectId = new ProjectIdentifier("/CISD/NEMO");
+        ProjectUpdate update = new ProjectUpdate();
+        update.setProjectId(projectId);
+        update.freeze();
+        v3api.updateProjects(sessionToken, Arrays.asList(update));
+        ProjectUpdate update2 = new ProjectUpdate();
+        update2.setProjectId(projectId);
+        update2.setDescription("new description");
+
+        // When
+        assertUserFailureException(Void -> v3api.updateProjects(sessionToken, Arrays.asList(update2)),
+                // Then
+                "ERROR: Operation UPDATE is not allowed because project NEMO is frozen.");
+    }
+
+    @Test
+    public void testFreezingForExperiments()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final IProjectId projectId = new ProjectIdentifier("/CISD/NEMO");
+        ProjectUpdate update = new ProjectUpdate();
+        update.setProjectId(projectId);
+        update.freezeForExperiments();
+        v3api.updateProjects(sessionToken, Arrays.asList(update));
+        ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setProjectId(projectId);
+        experimentCreation.setTypeId(new EntityTypePermId("DELETION_TEST", EntityKind.EXPERIMENT));
+        experimentCreation.setCode(PREFIX + "E1");
+
+        // When
+        assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation)),
+                // Then
+                "ERROR: Operation SET PROJECT is not allowed because project NEMO is frozen for experiment UPT-E1.");
+    }
+
+    @Test(dataProvider = "freezeMethods")
+    public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
+        IProjectId projectId = new ProjectIdentifier("/CISD/NEMO");
+        ProjectUpdate update = new ProjectUpdate();
+        update.setProjectId(projectId);
+        freezeMethod.method.invoke(update);
+
+        // When
+        assertAuthorizationFailureException(Void -> v3api.updateProjects(sessionToken, Arrays.asList(update)), null);
+    }
+
+    @DataProvider(name = "freezeMethods")
+    public static Object[][] freezeMethods()
+    {
+        return asCartesianProduct(getFreezingMethods(ProjectUpdate.class));
     }
 
 }

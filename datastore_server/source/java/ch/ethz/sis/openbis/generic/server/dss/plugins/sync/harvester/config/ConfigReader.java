@@ -174,17 +174,9 @@ public class ConfigReader
         return Double.parseDouble(val);
     }
 
-    public boolean getBoolean(String section, String key, boolean mandatory)
+    public boolean getBoolean(String section, String key, boolean defaultvalue)
     {
         String val = getValue(section, key);
-        if (val == null)
-        {
-            if (mandatory)
-            {
-                throw new ConfigurationFailureException("Property '" + key + "' in section '" + section + "'  is mandatory.");
-            }
-            return false;
-        }
-        return Boolean.parseBoolean(val);
+        return val == null ? defaultvalue : Boolean.parseBoolean(val);
     }
 }

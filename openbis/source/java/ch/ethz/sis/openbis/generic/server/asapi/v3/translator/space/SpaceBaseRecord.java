@@ -30,6 +30,12 @@ public class SpaceBaseRecord extends ObjectBaseRecord
 
     public String description;
 
+    public boolean frozen;
+
+    public boolean frozenForProjects;
+
+    public boolean frozenForSamples;
+
     public Date registrationDate;
 
 }

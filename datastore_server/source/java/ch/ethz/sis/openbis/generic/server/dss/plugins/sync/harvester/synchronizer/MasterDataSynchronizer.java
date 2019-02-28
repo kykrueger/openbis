@@ -21,10 +21,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.create.ExternalDmsCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.fetchoptions.ExternalDmsFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.update.ExternalDmsUpdate;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.ServiceFinderUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.Monitor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -64,6 +72,8 @@ public class MasterDataSynchronizer
 
     final Map<TechId, String> vocabularyTechIdToCode = new HashMap<TechId, String>();
 
+    private IApplicationServerApi v3api;
+
     public MasterDataSynchronizer(String harvesterUser, String harvesterPassword, boolean dryRun, boolean verbose, Logger operationLog)
     {
         String openBisServerUrl = ServiceProvider.getConfigProvider().getOpenBisServerUrl();
@@ -71,6 +81,7 @@ public class MasterDataSynchronizer
         this.synchronizerFacade = new SynchronizerFacade(openBisServerUrl, harvesterUser, harvesterPassword, dryRun, verbose, operationLog);
         this.commonServer = ServiceFinderUtils.getCommonServer(openBisServerUrl);
         this.sessionToken = ServiceFinderUtils.login(commonServer, harvesterUser, harvesterPassword);
+        v3api = ServiceProvider.getV3ApplicationService();
         vocabularyTermsToBeDeleted = new HashMap<TechId, List<VocabularyTerm>>();
     }
 
@@ -96,6 +107,8 @@ public class MasterDataSynchronizer
         processEntityTypes(masterData.getExperimentTypesToProcess(), propertyAssignmentsToProcess);
         monitor.log("process material type property assignments");
         processDeferredMaterialTypePropertyAssignments(propertyAssignmentsToProcess);
+        monitor.log("process external data management systems");
+        processExternalDataManagementSystems(masterData.getExternalDataManagementSystemsToProcess());
 
         synchronizerFacade.printSummary();
     }
@@ -146,6 +159,43 @@ public class MasterDataSynchronizer
             {
                 synchronizerFacade.registerValidationPlugin(incomingplugin);
             }
+        }
+    }
+
+    private void processExternalDataManagementSystems(Map<String, ExternalDms> externalDataManagementSystems)
+    {
+        List<ExternalDmsPermId> ids = externalDataManagementSystems.keySet().stream()
+                .map(ExternalDmsPermId::new).collect(Collectors.toList());
+        Map<IExternalDmsId, ExternalDms> existingDmss 
+            = v3api.getExternalDataManagementSystems(sessionToken,ids, new ExternalDmsFetchOptions());
+        List<ExternalDmsCreation> creations = new ArrayList<>();
+        List<ExternalDmsUpdate> updates = new ArrayList<>();
+        for (ExternalDms externalDms : externalDataManagementSystems.values())
+        {
+            if (existingDmss.containsKey(externalDms.getPermId()))
+            {
+                ExternalDmsUpdate update = new ExternalDmsUpdate();
+                update.setExternalDmsId(externalDms.getPermId());
+                update.setAddress(externalDms.getAddress());
+                update.setLabel(externalDms.getLabel());
+                updates.add(update);
+            } else
+            {
+                ExternalDmsCreation creation = new ExternalDmsCreation();
+                creation.setCode(externalDms.getCode());
+                creation.setLabel(externalDms.getLabel());
+                creation.setAddress(externalDms.getAddress());
+                creation.setAddressType(externalDms.getAddressType());
+                creations.add(creation);
+            }
+        }
+        if (creations.isEmpty() == false && dryRun == false)
+        {
+            v3api.createExternalDataManagementSystems(sessionToken, creations);
+        }
+        if (updates.isEmpty() == false && dryRun == false)
+        {
+            v3api.updateExternalDataManagementSystems(sessionToken, updates);
         }
     }
 

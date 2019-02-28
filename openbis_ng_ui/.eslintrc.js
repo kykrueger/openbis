@@ -10,6 +10,7 @@ module.exports = {
   },
   env: {
     browser: true,
+    jest: true,
   },
   extends: [
     'eslint:recommended',
@@ -24,7 +25,7 @@ module.exports = {
       pragma: "React",
       version: "16.4.2"
     },
-    propWrapperFunctions: [ "forbidExtraProps" ]
+    propWrapperFunctions: ["forbidExtraProps"]
   },
   rules: {
     "react/jsx-uses-react": "error",
@@ -41,4 +42,4 @@ module.exports = {
     // override default options for rules from base configurations
     "no-cond-assign": ["error", "always"],
   }
-}
+};

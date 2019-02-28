@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.IEventExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingEvent;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 
 /**
@@ -42,7 +47,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 public class UpdateSpaceExecutor extends AbstractUpdateEntityExecutor<SpaceUpdate, SpacePE, ISpaceId, SpacePermId> implements
         IUpdateSpaceExecutor
 {
-
     @Autowired
     private IDAOFactory daoFactory;
 
@@ -51,6 +55,9 @@ public class UpdateSpaceExecutor extends AbstractUpdateEntityExecutor<SpaceUpdat
 
     @Autowired
     private ISpaceAuthorizationExecutor authorizationExecutor;
+
+    @Autowired
+    private IEventExecutor eventExecutor;
 
     @Override
     protected ISpaceId getId(SpaceUpdate update)
@@ -82,15 +89,43 @@ public class UpdateSpaceExecutor extends AbstractUpdateEntityExecutor<SpaceUpdat
     @Override
     protected void updateBatch(IOperationContext context, MapBatch<SpaceUpdate, SpacePE> batch)
     {
+        List<FreezingEvent> freezingEvents = new ArrayList<>();
         for (Map.Entry<SpaceUpdate, SpacePE> entry : batch.getObjects().entrySet())
         {
             SpaceUpdate update = entry.getKey();
+            FreezingFlags freezingFlags = new FreezingFlags();
             SpacePE space = entry.getValue();
 
             if (update.getDescription() != null && update.getDescription().isModified())
             {
                 space.setDescription(update.getDescription().getValue());
             }
+            if (update.shouldBeFrozen())
+            {
+                authorizationExecutor.canFreeze(context);
+                space.setFrozen(true);
+                freezingFlags.freeze();
+            }
+            if (update.shouldBeFrozenForProjects())
+            {
+                authorizationExecutor.canFreeze(context);
+                space.setFrozenForProject(true);
+                freezingFlags.freezeForProjects();
+            }
+            if (update.shouldBeFrozenForSamples())
+            {
+                authorizationExecutor.canFreeze(context);
+                space.setFrozenForSample(true);
+                freezingFlags.freezeForSamples();
+            }
+            if (freezingFlags.noFlags() == false)
+            {
+                freezingEvents.add(new FreezingEvent(space.getCode(), EventPE.EntityType.SPACE, freezingFlags));
+            }
+        }
+        if (freezingEvents.isEmpty() == false)
+        {
+            eventExecutor.persist(context, freezingEvents);
         }
     }
 

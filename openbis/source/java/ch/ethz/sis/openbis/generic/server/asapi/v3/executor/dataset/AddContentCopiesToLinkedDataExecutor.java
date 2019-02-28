@@ -124,7 +124,8 @@ public class AddContentCopiesToLinkedDataExecutor implements IAddContentCopiesTo
         {
             return LocationType.FILE_SYSTEM_GIT;
         }
-        throw new UserFailureException("Invalid arguments: external data management system type " + edms.getAddressType()
-                + ", externalId " + externalId + " , path " + path + ", gitCommitHash " + gitCommitHash);
+        throw new UserFailureException("Invalid arguments: external data management system type: " + edms.getAddressType()
+                + ", externalId: " + externalId + " , path: " + path + ", gitCommitHash: " + gitCommitHash 
+                + ", gitRepositoryId: " + gitRepositoryId);
     }
 }

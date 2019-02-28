@@ -367,10 +367,10 @@ public class SampleFreezingTest extends FreezingTest
     public static Object[][] liquidChildParentRelations()
     {
         List<FrozenFlags> combinationsForParent =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForParents().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForParents().createAllCombinations();
         combinationsForParent.add(new FrozenFlags(false).freezeForChildren());
         List<FrozenFlags> combinationsForChild =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForChildren().createAllCombinations();
         combinationsForChild.add(new FrozenFlags(false).freezeForParents());
         return asCartesianProduct(combinationsForParent, combinationsForChild);
     }
@@ -461,12 +461,12 @@ public class SampleFreezingTest extends FreezingTest
     public static Object[][] frozenChildParentRelations()
     {
         List<FrozenFlags> combinationsForLiquidParent =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForParents().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForParents().createAllCombinations();
         FrozenFlags childFrozenForParents = new FrozenFlags(true).freezeForParents();
         Object[][] combinationForInvalidChild =
                 asCartesianProduct(combinationsForLiquidParent, Arrays.asList(childFrozenForParents));
         List<FrozenFlags> combinationsForLiquidChild =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForChildren().createAllCombinations();
         FrozenFlags parentFrozenForChildren = new FrozenFlags(true).freezeForChildren();
         Object[][] combinationForInvalidParent =
                 asCartesianProduct(Arrays.asList(parentFrozenForChildren), combinationsForLiquidChild);
@@ -515,9 +515,9 @@ public class SampleFreezingTest extends FreezingTest
     {
         List<FrozenFlags> combinationsForLiquidContainer =
                 new FrozenFlags(true).freezeForChildren().freezeForDataSet().freezeForParents().createAllCombinations();
-        combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponent());
+        combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponents());
         List<FrozenFlags> combinationsForLiquidComponent =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
         return asCartesianProduct(combinationsForLiquidContainer, combinationsForLiquidComponent);
     }
 
@@ -597,10 +597,175 @@ public class SampleFreezingTest extends FreezingTest
     @DataProvider(name = "frozenComponentContainerRelations")
     public static Object[][] frozenComponentContainerRelations()
     {
-        List<FrozenFlags> frozenContainer = Arrays.asList(new FrozenFlags(true).freezeForComponent());
+        List<FrozenFlags> frozenContainer = Arrays.asList(new FrozenFlags(true).freezeForComponents());
         List<FrozenFlags> combinationsForLiquidComponent =
-                new FrozenFlags(true).freezeForComponent().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
+                new FrozenFlags(true).freezeForComponents().freezeForDataSet().freezeForChildren().freezeForParents().createAllCombinations();
         return asCartesianProduct(frozenContainer, combinationsForLiquidComponent);
     }
 
+    @Test(dataProvider = "liquidContainer")
+    public void testValidAddSampleToContainer(FrozenFlags frozenFlagsForContainer)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsForContainer, sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setContainerId(sample1);
+
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+
+        // Then
+        assertEquals(getSample(id).getContainer().getCode(), SAMPLE_1);
+    }
+
+    @DataProvider(name = "liquidContainer")
+    public static Object[][] liquidContainer()
+    {
+        List<FrozenFlags> combinationsForLiquidContainer = new FrozenFlags(true).freezeForDataSet()
+                .freezeForChildren().freezeForParents().createAllCombinations();
+        combinationsForLiquidContainer.add(new FrozenFlags(false).freezeForComponents());
+        return asCartesianProduct(combinationsForLiquidContainer);
+    }
+
+    @Test
+    public void testInvalidAddSampleToContainer()
+    {
+        // Given
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponents(), sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setContainerId(sample1);
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)),
+                // Then
+                "ERROR: Operation SET CONTAINER is not allowed because sample " + SAMPLE_1 + " is frozen for sample "
+                        + sampleCreation.getCode() + ".");
+    }
+
+    @Test
+    public void testInvalidAddSampleToContainerAfterMelting()
+    {
+        // Given
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponents(), sample1);
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForComponents().melt(), sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setContainerId(sample1);
+
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+
+        // Then
+        assertEquals(getSample(id).getContainer().getCode(), SAMPLE_1);
+    }
+
+    @Test(dataProvider = "liquidParent")
+    public void testValidAddSampleToParent(FrozenFlags frozenFlagsForParent)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsForParent, sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setParentIds(Arrays.asList(sample1));
+
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+
+        // Then
+        assertEquals(getSample(id).getParents().get(0).getCode(), SAMPLE_1);
+    }
+    
+    @DataProvider(name = "liquidParent")
+    public static Object[][] liquidParent()
+    {
+        List<FrozenFlags> combinationsForLiquidParent = new FrozenFlags(true).freezeForDataSet()
+                .freezeForComponents().freezeForParents().createAllCombinations();
+        combinationsForLiquidParent.add(new FrozenFlags(false).freezeForChildren());
+        return asCartesianProduct(combinationsForLiquidParent);
+    }
+    
+    @Test
+    public void testInvalidAddSampleToParent()
+    {
+        // Given
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForChildren(), sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setParentIds(Arrays.asList(sample1));
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)),
+                // Then
+                "ERROR: Operation INSERT is not allowed because sample " + SAMPLE_1
+                        + " or " + sampleCreation.getCode() + " is frozen.");
+    }
+
+    @Test
+    public void testInvalidAddSampleToParentAfterMelting()
+    {
+        // Given
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForChildren(), sample1);
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForChildren().melt(), sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setParentIds(Arrays.asList(sample1));
+
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+
+        // Then
+        assertEquals(getSample(id).getParents().get(0).getCode(), SAMPLE_1);
+    }
+
+    @Test(dataProvider = "liquidChild")
+    public void testValidAddSampleToChild(FrozenFlags frozenFlagsForChild)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsForChild, sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setChildIds(Arrays.asList(sample1));
+        
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+        
+        // Then
+        assertEquals(getSample(id).getChildren().get(0).getCode(), SAMPLE_1);
+    }
+    
+    @DataProvider(name = "liquidChild")
+    public static Object[][] liquidChild()
+    {
+        List<FrozenFlags> combinationsForLiquidChild = new FrozenFlags(true).freezeForDataSet()
+                .freezeForComponents().freezeForChildren().createAllCombinations();
+        combinationsForLiquidChild.add(new FrozenFlags(false).freezeForChildren());
+        return asCartesianProduct(combinationsForLiquidChild);
+    }
+    
+    @Test
+    public void testInvalidAddSampleToChild()
+    {
+        // Given
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForParents(), sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setChildIds(Arrays.asList(sample1));
+        
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)),
+                // Then
+                "ERROR: Operation INSERT is not allowed because sample " + sampleCreation.getCode()
+                + " or " + SAMPLE_1 + " is frozen.");
+    }
+    
+    @Test
+    public void testInvalidAddSampleToChildAfterMelting()
+    {
+        // Given
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForParents(), sample1);
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForParents().melt(), sample1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setChildIds(Arrays.asList(sample1));
+        
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+        
+        // Then
+        assertEquals(getSample(id).getChildren().get(0).getCode(), SAMPLE_1);
+    }
+    
 }

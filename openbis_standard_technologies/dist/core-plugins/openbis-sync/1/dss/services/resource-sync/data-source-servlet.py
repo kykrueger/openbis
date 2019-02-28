@@ -245,7 +245,9 @@ def createDataSetMetaData(entity, url_elm):
     return ET.SubElement(url_elm, "x:xd", attrib = attrs)
 
 def createMaterialMetaData(material, url_elm):
-    attrs = {"kind": "MATERIAL", "code": material.getCode(), "type": material.getType().getCode(), "registration-timestamp": getRegistrationTimestamp(material)}
+    attrs = {"kind": "MATERIAL", "code": material.getCode(), "type": material.getType().getCode(), 
+             "registration-timestamp": getRegistrationTimestamp(material),
+             "registrator":  material.getRegistrator().getUserId()}
     return ET.SubElement(url_elm, "x:xd", attrib = attrs)
 
 def attachProperties(entity, xd_elm):
@@ -288,14 +290,22 @@ def attachConnections(entity, xd_elm):
 def attachBinaryData(entity, xd_elm):
     entityKind = entity.getEntityKind().toString()
     if entityKind == "DATA_SET":
-        ''' Do not attach binary data if it is not a physical DS'''
-        '''TO-DO How about link DSs?'''
-        if entity.getEntity().getKind().equals(DataSetKind.PHYSICAL) == False:
-            return
         dataSetCode = entity.getCode()
-        binaryDataNode = ET.SubElement(xd_elm, "x:binaryData")
-        for path, crc32_checksm, file_length in getDataSetFileNodes(dataSetCode):
-            linkNode = ET.SubElement(binaryDataNode, "x:fileNode", attrib = {"path": path, "checksum": str(crc32_checksm), "length": str(file_length)})
+        if entity.getEntity().getKind().equals(DataSetKind.PHYSICAL):
+            binaryDataNode = ET.SubElement(xd_elm, "x:binaryData")
+            _addFileNodes(binaryDataNode, dataSetCode)
+        if entity.getEntity().getKind().equals(DataSetKind.LINK):
+            binaryDataNode = ET.SubElement(xd_elm, "x:binaryData")
+            for cc in entity.getEntity().getLinkedData().getContentCopies():
+                attributes = {}
+                _addIfSpecified(attributes, "id", cc.getId().getPermId())
+                _addIfSpecified(attributes, "externalDMS", cc.getExternalDms().getCode())
+                _addIfSpecified(attributes, "externalCode", cc.getExternalCode())
+                _addIfSpecified(attributes, "gitCommitHash", cc.getGitCommitHash())
+                _addIfSpecified(attributes, "gitRepositoryId", cc.getGitRepositoryId())
+                _addIfSpecified(attributes, "path", cc.getPath())
+                ET.SubElement(binaryDataNode, "x:contentCopy", attrib = attributes)
+            _addFileNodes(binaryDataNode, dataSetCode)
     else:
         attachments = entity.getAttachmentsOrNull()
         if not attachments:
@@ -306,6 +316,9 @@ def attachBinaryData(entity, xd_elm):
             desc = attachment.getDescription()
             linkNode = ET.SubElement(binaryDataNode, "x:attachment", attrib = {"fileName": attachment.getFileName(), "title":  title if  title else "", "latestVersion" : str(attachment.getVersion()), "description": desc if desc else "", "permink": attachment.getPermlink()})
 
+def _addIfSpecified(dict, key, value):
+    if value is not None:
+        dict[key] = value
 
 def createEntityMetaData(entity, url_elm, entityKind):
     if entityKind == "PROJECT":
@@ -654,45 +667,36 @@ def getTempDir():
     else:
         raise Exception("No temporary directory has been configured. Please check that 'temp-dir' property has been properly set in the service plugin plugin.properties.")
 
-def getDataSetFileNodes(dataSetCode):
-    paths = []
-    for path, crc32_checksum, file_length in getFilesInDataSet(dataSetCode) :
+def _addFileNodes(binaryDataNode, dataSetCode):
+    for path, crc32_checksum, checksum, file_length in getDataSetFileInfos(dataSetCode):
+        attributes = {"path": path, "length": str(file_length)}
+        if crc32_checksum is not None:
+            attributes["crc32checksum"] = crc32_checksum
+        if checksum is not None:
+            attributes["checksum"] = checksum
+        linkNode = ET.SubElement(binaryDataNode, "x:fileNode", attrib = attributes)
+    
+def getDataSetFileInfos(dataSetCode):
+    infos = []
+    for path, crc32_checksum, checksum, file_length in getFilesInDataSet(dataSetCode) :
         '''TO-DO make below  URL configurable'''
-        paths.append((getDownloadUrl() + "/datastore_server/" + dataSetCode + "/" + path + "?", crc32_checksum, file_length)) # + "?mode=simpleHtml&sessionID=" + userSessionToken 
-    return paths 
+        infos.append((getDownloadUrl() + "/datastore_server/" + dataSetCode + "/" + path + "?", crc32_checksum, checksum, file_length)) # + "?mode=simpleHtml&sessionID=" + userSessionToken 
+    return infos 
 
 def getFilesInDataSet(dataSetCode):
-    ''' TODO For some fileNodes getFileLength and getChecksumCRC32 will throw UnsupportedOperationException
-    when this happens we return UNSUPPORTED as the value.
-    It might be best to re-visit this'''
-    paths = []
+    infos = []
     fileNodes = contentProvider.getContent(dataSetCode).listMatchingNodes(".*\.*")
     if fileNodes:
         for  i, fileNode in enumerate(fileNodes):
             try:
                 if fileNodes[i].isDirectory() == False:
                     relPath = fileNodes[i].getRelativePath();
-                    fileLength = None
-                    crc32checksum = None
-                    try:
-                        fileLength = fileNode.getFileLength()
-                        crc32checksum = fileNode.getChecksumCRC32()
-                    except UnsupportedOperationException, ex:
-                        fileLength = "UNSUPPORTED"
-                        crc32checksum = "UNSUPPORTED"
-                    paths.append((relPath, crc32checksum, fileLength));
+                    fileLength = str(fileNode.getFileLength())
+                    crc32checksum = str(fileNode.getChecksumCRC32()) if fileNode.isChecksumCRC32Precalculated() else None
+                    checksum = fileNode.getChecksum()
+                    infos.append((relPath, crc32checksum, checksum, fileLength));
             except Exception, ex:
                 print "File  node: %d for data set' %s' no longer exists: %s" % (i, str(dataSetCode), ex.getMessage())
     else:
         print "No fileNode found in data set: '%s'" % str(dataSetCode)   
-    return paths
-#===============================================================================
-# def getFileName(dataSetCode):
-#     fileNodes = contentProvider.getContent(dataSetCode).listMatchingNodes(".*\.*")
-#     if fileNodes:
-#         relPath = fileNodes[0].getFile().getAbsolutePath();
-#         print "Found fileNode: %s in dataSet: %s" % (relPath, dataSetCode);
-#         return os.path.basename(relPath);
-#     else:
-#         raise "No fileNode found in data set: '%s'" % str(dataSetCode); 
-#===============================================================================
+    return infos

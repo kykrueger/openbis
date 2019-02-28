@@ -184,15 +184,21 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			//
 			if(sample.sampleTypeCode === "REQUEST") {
 				var maxProducts;
+				var minProducts;
 				if(profile.sampleTypeDefinitionsExtension && 
 					profile.sampleTypeDefinitionsExtension["REQUEST"] && 
 					profile.sampleTypeDefinitionsExtension["REQUEST"]["SAMPLE_PARENTS_HINT"] && 
 					profile.sampleTypeDefinitionsExtension["REQUEST"]["SAMPLE_PARENTS_HINT"][0]) {
 					maxProducts = profile.sampleTypeDefinitionsExtension["REQUEST"]["SAMPLE_PARENTS_HINT"][0]["MAX_COUNT"];
+					minProducts = profile.sampleTypeDefinitionsExtension["REQUEST"]["SAMPLE_PARENTS_HINT"][0]["MIN_COUNT"];
 				}
 				
 				if(maxProducts && (sampleParentsFinal.length + newSampleParents.length) > maxProducts) {
 					Util.showUserError("There is more than " + maxProducts + " product.");
+					return;
+				}
+				if(minProducts && (sampleParentsFinal.length + newSampleParents.length) < minProducts) {
+					Util.showUserError("There is less than " + maxProducts + " product.");
 					return;
 				}
 			}

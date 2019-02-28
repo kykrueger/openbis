@@ -36,7 +36,7 @@ public final class ExceptionUtils
      * Default packages (and subpackages) for not been masqueraded.
      */
     private final static String[] ACCEPTED_PACKAGE_NAME_DEPENDENCIES =
-    { "java.lang", "ch.systemsx.cisd.base", "ch.systemsx.cisd.common.exceptions" };
+            { "java.lang", "ch.systemsx.cisd.base", "ch.systemsx.cisd.common.exceptions" };
 
     ExceptionUtils()
     {
@@ -67,9 +67,7 @@ public final class ExceptionUtils
     {
         assert fromException != null : "Unspecified 'from' Exception.";
         assert toException != null : "Unspecified 'to' Exception.";
-        final Exception fromCauseException =
-                (Exception) org.apache.commons.lang.exception.ExceptionUtils
-                        .getCause(fromException);
+        final Exception fromCauseException = (Exception) fromException.getCause();
         if (fromCauseException != null && fromCauseException != fromException)
         {
             final Exception toCauseException =
@@ -78,8 +76,7 @@ public final class ExceptionUtils
             {
                 if (ClassUtils.setFieldValue(toException, "cause", toCauseException) == false)
                 {
-                    org.apache.commons.lang.exception.ExceptionUtils.setCause(toException,
-                            toCauseException);
+                    toException.initCause(toCauseException);
                 }
             }
             copyCauseException(fromCauseException, toCauseException, acceptedPackages);
@@ -141,8 +138,7 @@ public final class ExceptionUtils
         {
             return clazz.cast(throwable);
         }
-        final Throwable cause =
-                org.apache.commons.lang.exception.ExceptionUtils.getCause(throwable);
+        final Throwable cause = throwable.getCause();
         if (cause != null)
         {
             return tryGetThrowableOfClass(cause, clazz);

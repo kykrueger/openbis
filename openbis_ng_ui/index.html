@@ -3,10 +3,22 @@
   <head>
     <title>openBIS / React</title>
     <meta charset="utf-8">
-    <script src="/openbis/resources/api/v3/config.js"></script>
+    <script>
+      function loadError() {
+        window.onload = function() {
+          let text = "Error: Could not connect to openBIS."
+          let h2 = document.createElement("h2")
+          var textnode = document.createTextNode(text)
+          h2.appendChild(textnode)
+          document.getElementById("error").appendChild(h2)
+        }
+      }
+    </script>
+    <script src="/openbis/resources/api/v3/config.js" onerror="loadError()"></script>
     <script src="/openbis/resources/api/v3/require.js"></script>
   </head>
   <body style="min-height:100%; margin: 0px 0px 0px 0px;">
     <div id="app"></div>
+    <div id="error" style="margin-left: 20px"></div>
   </body>
 </html>

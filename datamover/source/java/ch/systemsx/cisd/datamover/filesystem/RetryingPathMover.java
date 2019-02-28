@@ -18,8 +18,8 @@ package ch.systemsx.cisd.datamover.filesystem;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.filesystem.FileUtilities;

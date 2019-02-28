@@ -1371,7 +1371,7 @@ final class DataDAO extends AbstractGenericEntityWithPropertiesDAO<DataPE> imple
     @Override
     public final void validateAndSaveUpdatedEntity(DataPE entity) throws DataAccessException
     {
-        this.currentSession().flush();
+        flushWithSqlExceptionHandling(getHibernateTemplate());
         super.validateAndSaveUpdatedEntity(entity);
         scheduleDynamicPropertiesEvaluation(Arrays.asList(entity));
     }

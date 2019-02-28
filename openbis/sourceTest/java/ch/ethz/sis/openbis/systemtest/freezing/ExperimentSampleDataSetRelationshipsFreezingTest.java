@@ -112,7 +112,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     {
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsSample =
-                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponents().createAllCombinations();
         return asCartesianProduct(combinationsDataSet, combinationsSample, combinationsSample);
     }
 
@@ -165,7 +165,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     {
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsLiquidSample =
-                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponents().createAllCombinations();
         List<FrozenFlags> combinationsFrozenSample = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
         return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenSample, combinationsLiquidSample),
                 asCartesianProduct(combinationsDataSet, combinationsLiquidSample, combinationsFrozenSample),
@@ -249,7 +249,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     {
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsLiquidExperiment =
-                new FrozenFlags(true).freezeForSample().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForSample().freezeForComponents().createAllCombinations();
         List<FrozenFlags> combinationsFrozenExperiment = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
         return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsLiquidExperiment),
                 asCartesianProduct(combinationsDataSet, combinationsLiquidExperiment, combinationsFrozenExperiment),
@@ -284,7 +284,7 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsExperiment = new FrozenFlags(true).freezeForSample().createAllCombinations();
         List<FrozenFlags> combinationsSample =
-                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponents().createAllCombinations();
         return asCartesianProduct(combinationsDataSet, combinationsExperiment, combinationsSample);
     }
 
@@ -340,10 +340,10 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
     {
         List<FrozenFlags> combinationsDataSet = new FrozenFlags(true).createAllCombinations();
         List<FrozenFlags> combinationsLiquidExperiment =
-                new FrozenFlags(true).freezeForSample().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForSample().freezeForComponents().createAllCombinations();
         List<FrozenFlags> combinationsFrozenExperiment = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
         List<FrozenFlags> combinationsLiquidSample =
-                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponent().createAllCombinations();
+                new FrozenFlags(true).freezeForChildren().freezeForParents().freezeForComponents().createAllCombinations();
         List<FrozenFlags> combinationsFrozenSample = Arrays.asList(new FrozenFlags(true).freezeForDataSet());
 
         return merge(asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsLiquidSample),
@@ -351,4 +351,114 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
                 asCartesianProduct(combinationsDataSet, combinationsFrozenExperiment, combinationsFrozenSample));
     }
 
+    @Test(dataProvider = "liquidSample")
+    public void testValidAddDataSetToSample(FrozenFlags frozenFlagsForSample)
+    {
+        // Given
+        setFrozenFlagsForSamples(frozenFlagsForSample, sample1);
+        DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
+        dataSetCreation.setSampleId(sample1);
+
+        // When
+        DataSetPermId id = v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)).iterator().next();
+
+        // Then
+        assertEquals(getDataSet(id).getSample().getCode(), SAMPLE_1);
+    }
+
+    @DataProvider(name = "liquidSample")
+    public static Object[][] liquidSample()
+    {
+        List<FrozenFlags> combinationsForLiquidSample = new FrozenFlags(true).freezeForComponents().freezeForChildren()
+                .freezeForParents().createAllCombinations();
+        combinationsForLiquidSample.add(new FrozenFlags(false).freezeForDataSet());
+        return asCartesianProduct(combinationsForLiquidSample);
+    }
+
+    @Test
+    public void testInvalidAddDataSetToSample()
+    {
+        // Given
+        setFrozenFlagsForSamples(new FrozenFlags(true).freezeForDataSet(), sample1);
+        DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
+        dataSetCreation.setSampleId(sample1);
+
+        // When
+        assertUserFailureException(Void -> v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)),
+                // Then
+                "ERROR: Operation SET SAMPLE is not allowed because sample " + SAMPLE_1 + " is frozen for data set "
+                        + dataSetCreation.getCode() + ".");
+    }
+
+    @Test
+    public void testInvalidAddDataSetToSampleAfterMelting()
+    {
+        // Given
+        FrozenFlags frozenFlags = new FrozenFlags(true).freezeForComponents().freezeForChildren().freezeForParents();
+        setFrozenFlagsForSamples(frozenFlags, sample1);
+        setFrozenFlagsForSamples(frozenFlags.clone().melt(), sample1);
+        DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
+        dataSetCreation.setSampleId(sample1);
+
+        // When
+        DataSetPermId id = v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)).iterator().next();
+
+        // Then
+        assertEquals(getDataSet(id).getSample().getCode(), SAMPLE_1);
+    }
+
+    @Test(dataProvider = "liquidExperiment")
+    public void testValidAddDataSetToExperiment(FrozenFlags frozenFlagsForExperiment)
+    {
+        // Given
+        setFrozenFlagsForExperiments(frozenFlagsForExperiment, experiment1);
+        DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
+        dataSetCreation.setExperimentId(experiment1);
+
+        // When
+        DataSetPermId id = v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)).iterator().next();
+
+        // Then
+        assertEquals(getDataSet(id).getExperiment().getCode(), EXPERIMENT_1);
+    }
+
+    @DataProvider(name = "liquidExperiment")
+    public static Object[][] liquidExperiment()
+    {
+        List<FrozenFlags> combinationsForLiquidExperiment = new FrozenFlags(true).freezeForSample().createAllCombinations();
+        combinationsForLiquidExperiment.add(new FrozenFlags(false).freezeForDataSet());
+        return asCartesianProduct(combinationsForLiquidExperiment);
+    }
+
+    @Test
+    public void testInvalidAddDataSetToExperiment()
+    {
+        // Given
+        setFrozenFlagsForExperiments(new FrozenFlags(true).freezeForDataSet(), experiment1);
+        DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
+        dataSetCreation.setExperimentId(experiment1);
+
+        // When
+        assertUserFailureException(Void -> v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)),
+                // Then
+                "ERROR: Operation SET EXPERIMENT is not allowed because experiment " + EXPERIMENT_1 + " is frozen for data set "
+                        + dataSetCreation.getCode() + ".");
+    }
+
+    @Test
+    public void testInvalidAddDataSetToExperimentAfterMelting()
+    {
+        // Given
+        FrozenFlags frozenFlags = new FrozenFlags(true).freezeForDataSet();
+        setFrozenFlagsForExperiments(frozenFlags, experiment1);
+        setFrozenFlagsForExperiments(frozenFlags.clone().melt(), experiment1);
+        DataSetCreation dataSetCreation = physicalDataSet(PREFIX + "D2");
+        dataSetCreation.setExperimentId(experiment1);
+
+        // When
+        DataSetPermId id = v3api.createDataSets(systemSessionToken, Arrays.asList(dataSetCreation)).iterator().next();
+
+        // Then
+        assertEquals(getDataSet(id).getExperiment().getCode(), EXPERIMENT_1);
+    }
 }

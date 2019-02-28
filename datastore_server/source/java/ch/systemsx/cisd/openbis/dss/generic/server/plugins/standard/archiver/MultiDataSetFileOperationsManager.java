@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateUtils;
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;

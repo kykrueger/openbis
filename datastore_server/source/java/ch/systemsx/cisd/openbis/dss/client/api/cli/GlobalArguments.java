@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.openbis.dss.client.api.cli;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import ch.systemsx.cisd.args4j.Option;
 import ch.systemsx.cisd.openbis.generic.shared.cli.OpenBisConsoleClientArguments;

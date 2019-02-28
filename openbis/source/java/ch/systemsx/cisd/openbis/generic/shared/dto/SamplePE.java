@@ -44,9 +44,9 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -55,6 +55,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OptimisticLock;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.ClassBridge;
 import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.DocumentId;
@@ -79,6 +80,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.IdentifierHelper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+import ch.systemsx.cisd.openbis.generic.shared.search.IgnoreCaseAnalyzer;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
@@ -951,7 +953,8 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @Override
     @Transient
-    @Field(index = Index.NO, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
+    @Analyzer(impl = IgnoreCaseAnalyzer.class)
+    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
     public final String getIdentifier()
     {
         return getSampleIdentifier().toString();

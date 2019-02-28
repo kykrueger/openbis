@@ -7,7 +7,7 @@ from .checksum import ChecksumGeneratorCrc32, ChecksumGeneratorGitAnnex
 
 
 class GitWrapper(object):
-    """A wrapper on commands to git."""
+    """A wrapper on commands to git and git annex."""
 
     def __init__(self, git_path=None, git_annex_path=None, find_git=None, data_path=None, metadata_path=None, invocation_path=None):
         self.git_path = git_path
@@ -16,6 +16,9 @@ class GitWrapper(object):
         self.metadata_path = metadata_path
 
     def _git(self, params, strip_leading_whitespace=True, relative_repo_path=''):
+        """ all git invocations need to go through this method
+        since it sets --work-tree and '--git-dir.
+         """
         cmd = [self.git_path]
         if self.data_path is not None and self.metadata_path is not None:
             git_dir = os.path.join(self.metadata_path, relative_repo_path, '.git')
@@ -25,7 +28,7 @@ class GitWrapper(object):
 
 
     def can_run(self):
-        """Return true if the perquisites are satisfied to run"""
+        """Return true if the perquisites are satisfied to run (git and git annex)"""
         if self.git_path is None:
             return False
         if self.git_annex_path is None:
@@ -51,6 +54,10 @@ class GitWrapper(object):
             return self._git(["annex", "status", path], strip_leading_whitespace=False)
 
     def git_annex_init(self, desc, git_annex_backend=None):
+        """ Configures annex in a git repository."""
+
+        # We use annex --version=5 since that works better with big files. Version 
+        # 6 can lead to out of memory errors.
         cmd = ["annex", "init", "--version=5"]
         if desc is not None:
             cmd.append(desc)
@@ -77,6 +84,7 @@ class GitWrapper(object):
         if result.failure():
             return result
 
+        # copy out annex config and change the annex backend according to obis config
         attributes_src = os.path.join(os.path.dirname(__file__), "git-annex-attributes")
         attributes_dst = '.git/info/attributes'
         shutil.copyfile(attributes_src, attributes_dst)

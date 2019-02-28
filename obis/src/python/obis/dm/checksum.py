@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 from .utils import run_shell, cd
 from .command_result import CommandResult, CommandException
 
+# We generate checksums for small files according to what is used by git annex,
+# This ensures that all files in a data set have the same checksum type.
 
 def get_checksum_generator(checksum_type, data_path, metadata_path, default=None):
     if checksum_type == "SHA256":
@@ -29,6 +31,7 @@ def validate_checksum(openbis, files, data_set_id, data_path, metadata_path):
     for filename in files:
         dataset_file = dataset_files_by_path[filename]
         checksum_generator = None
+        # data set files have either checksumCRC32 or checksumType and checksum.
         if dataset_file['checksumCRC32'] is not None and dataset_file['checksumCRC32'] > 0:
             checksum_generator = ChecksumGeneratorCrc32(data_path, metadata_path)
             expected_checksum = dataset_file['checksumCRC32']
@@ -72,9 +75,11 @@ class ChecksumGeneratorCrc32(ChecksumGenerator):
 class ChecksumGeneratorHashlib(ChecksumGenerator):
 
     def hash_function(self):
+        """ Implemented in subclass. """
         pass
 
     def hash_type(self):
+        """ Implemented in subclass. """
         pass
 
     def _get_checksum(self, file):
@@ -122,6 +127,7 @@ class ChecksumGeneratorWORM(ChecksumGenerator):
 
 
 class ChecksumGeneratorGitAnnex(ChecksumGenerator):
+    """ This class generates checksums according to the git annex backend configuration. """
 
     def __init__(self, data_path, metadata_path):
         self.data_path = data_path

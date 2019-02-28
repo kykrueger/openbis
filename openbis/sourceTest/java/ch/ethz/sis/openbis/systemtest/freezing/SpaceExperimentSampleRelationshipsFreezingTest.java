@@ -523,4 +523,114 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
                 asCartesianProduct(combinationsForSample, combinationsForFrozenExperiment, combinationsForFrozenExperiment));
     }
 
+    @Test(dataProvider = "liquidSpace")
+    public void testValidAddSampleToSpace(FrozenFlags frozenFlagsForSpace)
+    {
+        // Given
+        setFrozenFlagsForSpaces(frozenFlagsForSpace, space1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setSpaceId(space1);
+
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+
+        // Then
+        assertEquals(getSample(id).getSpace().getCode(), SPACE_1);
+    }
+
+    @DataProvider(name = "liquidSpace")
+    public static Object[][] liquidSpace()
+    {
+        List<FrozenFlags> combinationsForLiquidSpace = new FrozenFlags(true).freezeForProject().createAllCombinations();
+        combinationsForLiquidSpace.add(new FrozenFlags(false).freezeForSample());
+        return asCartesianProduct(combinationsForLiquidSpace);
+    }
+
+    @Test
+    public void testInvalidAddSampleToSpace()
+    {
+        // Given
+        setFrozenFlagsForSpaces(new FrozenFlags(true).freezeForSample(), space1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setSpaceId(space1);
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)),
+                // Then
+                "ERROR: Operation SET SPACE is not allowed because space " + SPACE_1 + " is frozen for sample "
+                        + sampleCreation.getCode() + ".");
+    }
+
+    @Test
+    public void testInvalidAddSampleToSpaceAfterMelting()
+    {
+        // Given
+        setFrozenFlagsForSpaces(new FrozenFlags(true).freezeForSample(), space1);
+        setFrozenFlagsForSpaces(new FrozenFlags(true).freezeForSample().melt(), space1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setSpaceId(space1);
+
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+
+        // Then
+        assertEquals(getSample(id).getSpace().getCode(), SPACE_1);
+    }
+
+    @Test(dataProvider = "liquidExperiment")
+    public void testValidAddSampleToExperiment(FrozenFlags frozenFlagsForExperiment)
+    {
+        // Given
+        setFrozenFlagsForExperiments(frozenFlagsForExperiment, experiment1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setSpaceId(spaceOfSample);
+        sampleCreation.setExperimentId(experiment1);
+
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+
+        // Then
+        assertEquals(getSample(id).getExperiment().getCode(), EXPERIMENT_1);
+    }
+
+    @DataProvider(name = "liquidExperiment")
+    public static Object[][] liquidExperiment()
+    {
+        List<FrozenFlags> combinationsForLiquidExperiment = new FrozenFlags(true).freezeForDataSet().createAllCombinations();
+        combinationsForLiquidExperiment.add(new FrozenFlags(false).freezeForSample());
+        return asCartesianProduct(combinationsForLiquidExperiment);
+    }
+
+    @Test
+    public void testInvalidAddSampleToExperiment()
+    {
+        // Given
+        setFrozenFlagsForExperiments(new FrozenFlags(true).freezeForSample(), experiment1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setSpaceId(spaceOfSample);
+        sampleCreation.setExperimentId(experiment1);
+
+        // When
+        assertUserFailureException(Void -> v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)),
+                // Then
+                "ERROR: Operation SET EXPERIMENT is not allowed because experiment " + EXPERIMENT_1 + " is frozen for sample "
+                        + sampleCreation.getCode() + ".");
+    }
+
+    @Test
+    public void testInvalidAddSampleToExperimentAfterMelting()
+    {
+        // Given
+        setFrozenFlagsForExperiments(new FrozenFlags(true).freezeForSample(), experiment1);
+        setFrozenFlagsForExperiments(new FrozenFlags(true).freezeForSample().melt(), experiment1);
+        SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
+        sampleCreation.setSpaceId(spaceOfSample);
+        sampleCreation.setExperimentId(experiment1);
+
+        // When
+        SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
+
+        // Then
+        assertEquals(getSample(id).getExperiment().getCode(), EXPERIMENT_1);
+    }
 }

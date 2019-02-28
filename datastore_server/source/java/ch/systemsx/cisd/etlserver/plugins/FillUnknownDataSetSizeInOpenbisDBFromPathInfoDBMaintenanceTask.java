@@ -28,7 +28,7 @@ import java.util.Set;
 
 import net.lemnik.eodsql.QueryTool;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

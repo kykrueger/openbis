@@ -507,6 +507,7 @@ public class EntityRetriever implements IEntityRetriever
         fo.withProperties();
         fo.withChildrenUsing(fo);
         fo.withComponentsUsing(fo);
+        fo.withLinkedData().withExternalDms();
         return fo;
     }
 

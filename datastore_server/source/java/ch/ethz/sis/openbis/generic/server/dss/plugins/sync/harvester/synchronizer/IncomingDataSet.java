@@ -22,16 +22,25 @@ import java.util.Date;
 import java.util.List;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
-import ch.systemsx.cisd.openbis.generic.shared.dto.NewContainerDataSet;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
-import ch.systemsx.cisd.openbis.generic.shared.dto.NewLinkDataSet;
 
-public class IncomingDataSet implements Serializable
+public class IncomingDataSet extends AbstractTimestampsAndUserHolder implements Serializable
 {
     private static final long serialVersionUID = 1L;
+
     private final NewExternalData dataSet;
 
     final Date lastModificationDate;
+
+    private FullDataSetCreation fullDataSet;
+
+    private FrozenFlags frozenFlags;
+
+    public FrozenFlags getFrozenFlags()
+    {
+        return frozenFlags;
+    }
 
     public Date getLastModificationDate()
     {
@@ -40,11 +49,7 @@ public class IncomingDataSet implements Serializable
 
     public DataSetKind getKind()
     {
-        if (dataSet instanceof NewContainerDataSet)
-            return DataSetKind.CONTAINER;
-        else if (dataSet instanceof NewLinkDataSet)
-            return DataSetKind.LINK;
-        return DataSetKind.PHYSICAL;
+        return fullDataSet.getMetadataCreation().getDataSetKind();
     }
 
     public NewExternalData getDataSet()
@@ -52,10 +57,17 @@ public class IncomingDataSet implements Serializable
         return dataSet;
     }
 
-    IncomingDataSet(NewExternalData dataSet, Date lastModDate)
+    public FullDataSetCreation getFullDataSet()
+    {
+        return fullDataSet;
+    }
+
+    IncomingDataSet(NewExternalData dataSet, FrozenFlags frozenFlags, FullDataSetCreation fullDataSet, Date lastModDate)
     {
         super();
         this.dataSet = dataSet;
+        this.frozenFlags = frozenFlags;
+        this.fullDataSet = fullDataSet;
         this.lastModificationDate = lastModDate;
     }
 

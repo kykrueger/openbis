@@ -42,7 +42,7 @@ import java.util.jar.JarFile;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 
@@ -77,14 +77,14 @@ public final class ClassUtils
     private final static List<Class<?>> getAllInterfaces(final Object object)
     {
         assert object != null : "Unspecified object";
-        return org.apache.commons.lang.ClassUtils.getAllInterfaces(object.getClass());
+        return org.apache.commons.lang3.ClassUtils.getAllInterfaces(object.getClass());
     }
 
     @SuppressWarnings("unchecked")
     private final static List<Class<?>> getAllSuperclasses(final Object object)
     {
         assert object != null : "Unspecified object";
-        return org.apache.commons.lang.ClassUtils.getAllSuperclasses(object.getClass());
+        return org.apache.commons.lang3.ClassUtils.getAllSuperclasses(object.getClass());
     }
 
     /**
@@ -417,7 +417,7 @@ public final class ClassUtils
                     if (classFilter.accept(className))
                     {
                         final Class<?> clazz =
-                                org.apache.commons.lang.ClassUtils.getClass(className, false);
+                                org.apache.commons.lang3.ClassUtils.getClass(className, false);
                         if (classFilter.accept(clazz))
                         {
                             classes.add(clazz);

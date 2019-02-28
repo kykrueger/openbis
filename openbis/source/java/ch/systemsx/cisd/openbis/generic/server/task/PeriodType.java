@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.server.task;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 /**
  * Defines a period type.

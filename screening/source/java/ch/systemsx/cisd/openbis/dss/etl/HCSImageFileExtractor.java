@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.hcs.Location;

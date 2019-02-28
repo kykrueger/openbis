@@ -1,6 +1,6 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import { connect } from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
+import {connect} from 'react-redux'
 import flow from 'lodash/flow'
 
 import Grid from '@material-ui/core/Grid'
@@ -47,23 +47,23 @@ class TopBar extends React.Component {
         <Toolbar>
           <Grid container alignItems='center' spacing={8}>
 
-            <Grid item xs className={ classes.grid }>
+            <Grid item xs className={classes.grid}>
               <TextField
-                className = { classes.searchField }
+                className={classes.searchField}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <SearchIcon />
+                      <SearchIcon/>
                     </InputAdornment>
                   ),
                 }}/>
-            </Grid> 
+            </Grid>
 
             <Grid item>
               <Button
-                variant="contained" 
+                variant="contained"
                 color="primary">
-                <SearchIcon className={ classes.leftIcon } />
+                <SearchIcon className={classes.leftIcon}/>
                 <Hidden mdUp>
                   Adv.
                 </Hidden>
@@ -75,13 +75,13 @@ class TopBar extends React.Component {
 
             <Grid item>
               <Button
-                variant="contained" 
+                variant="contained"
                 color="primary"
-                onClick={ this.props.logout }>
-                <LogoutIcon />
+                onClick={this.props.logout}>
+                <LogoutIcon/>
               </Button>
             </Grid>
-  
+
           </Grid>
         </Toolbar>
       </AppBar>

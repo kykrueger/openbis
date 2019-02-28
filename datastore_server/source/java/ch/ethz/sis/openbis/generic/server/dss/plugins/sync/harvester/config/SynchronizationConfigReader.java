@@ -28,12 +28,11 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 
 /**
- * 
- *
  * @author Ganime Betul Akin
  */
 public class SynchronizationConfigReader
 {
+
     private static final String DEFAULT_HARVESTER_TEMP_DIR = "temp";
 
     private static final String DATA_SOURCE_URL_PROPERTY_NAME = "resource-list-url";
@@ -67,7 +66,7 @@ public class SynchronizationConfigReader
     private static final String EMAIL_ADDRESSES_PROPERTY_NAME = "email-addresses";
 
     private static final String TRANSLATE_USING_DATA_SOURCE_ALIAS_PROPERTY_NAME = "translate-using-data-source-alias";
-    
+
     private static final String FULL_SYNC_PROPERTY_NAME = "full-sync";
 
     private static final String FULL_SYNC_INTERVAL_PROPERTY_NAME = "full-sync-interval";
@@ -75,6 +74,10 @@ public class SynchronizationConfigReader
     private static final String DRY_RUN_PROPERTY_NAME = "dry-run";
 
     private static final String VERBOSE_PROPERTY_NAME = "verbose";
+
+    private static final String KEEP_ORIGINAL_TIMESTAMPS_AND_USERS_PROPERTY_NAME = "keep-original-timestamps-and-users";
+
+    private static final String KEEP_ORIGINAL_FROZEN_FLAGS_PROPERTY_NAME = "keep-original-frozen-flags";
 
     private static final String PARALLELIZED_EXECUTION_PREFS_MACHINE_LOAD_PROPERTY_NAME = "machine-load";
 
@@ -98,10 +101,7 @@ public class SynchronizationConfigReader
 
     private static final int DEFAULT_RETRIES_ON_FAILURE = 0;
 
-    private static final boolean DEFAULT_STOP_ON_FIRST_FAILURE = false;
-
     private static final String LOG_FILE_PROPERTY_NAME = "log-file";
-
 
     public static List<SyncConfig> readConfiguration(File harvesterConfigFile) throws IOException
     {
@@ -143,7 +143,7 @@ public class SynchronizationConfigReader
             }
 
             config.setHarvesterTempDir(reader.getString(section, HARVESTER_TEMP_DIR_PROPERTY_NAME, DEFAULT_HARVESTER_TEMP_DIR, false));
-            config.setTranslateUsingDataSourceAlias(reader.getBoolean(section, TRANSLATE_USING_DATA_SOURCE_ALIAS_PROPERTY_NAME, false));
+            config.setTranslateUsingDataSourceAlias(reader.getBoolean(section, TRANSLATE_USING_DATA_SOURCE_ALIAS_PROPERTY_NAME, true));
 
             // read full-sync configuration
             boolean fullSync = reader.getBoolean(section, FULL_SYNC_PROPERTY_NAME, false);
@@ -153,11 +153,13 @@ public class SynchronizationConfigReader
                 config.setFullSyncInterval(reader.getInt(section, FULL_SYNC_INTERVAL_PROPERTY_NAME, DEFAULT_FULL_SYNC_INTERVAL_IN_DAYS, false));
             }
 
-            String defaultLastSyncTimestampFilePath = DEFAULT_LAST_SYNC_TIMEESTAMP_FILE_PATH.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
+            String defaultLastSyncTimestampFilePath =
+                    DEFAULT_LAST_SYNC_TIMEESTAMP_FILE_PATH.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
             config.setLastSyncTimestampFileName(
                     reader.getString(section, HARVESTER_LAST_SYNC_TIMESTAMP_FILE_PROPERTY_NAME, defaultLastSyncTimestampFilePath, false));
 
-            String defaultNotSyncedEntitiesFilePath = DEFAULT_NOT_SYNCED_ENTITIES_FILE_PATH.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
+            String defaultNotSyncedEntitiesFilePath =
+                    DEFAULT_NOT_SYNCED_ENTITIES_FILE_PATH.replaceFirst(Pattern.quote("{alias}"), config.getDataSourceAlias());
             config.setNotSyncedDataSetsFileName(
                     reader.getString(section, HARVESTER_NOT_SYNCED_ENTITIES_FILE_NAME, defaultNotSyncedEntitiesFilePath, false));
             configs.add(config);
@@ -168,6 +170,8 @@ public class SynchronizationConfigReader
             {
                 config.setVerbose(true);
             }
+            config.setKeepOriginalTimestampsAndUsers(reader.getBoolean(section, KEEP_ORIGINAL_TIMESTAMPS_AND_USERS_PROPERTY_NAME, true));
+            config.setKeepOriginalFrozenFlags(reader.getBoolean(section, KEEP_ORIGINAL_FROZEN_FLAGS_PROPERTY_NAME, true));
 
             Double machineLoad = reader.getDouble(section, PARALLELIZED_EXECUTION_PREFS_MACHINE_LOAD_PROPERTY_NAME, DEFAULT_MACHINE_LOAD, false);
             Integer maxThreads =
@@ -175,7 +179,7 @@ public class SynchronizationConfigReader
             Integer retriesOnFailure =
                     reader.getInt(section, PARALLELIZED_EXECUTION_PREFS_RETRIES_ON_FAILURE_PROPERTY_NAME, DEFAULT_RETRIES_ON_FAILURE, false);
             Boolean stopOnFailure =
-                    reader.getBoolean(section, PARALLELIZED_EXECUTION_PREFS_STOP_ON_FIRST_FAILURE_PROPERTY_NAME, DEFAULT_STOP_ON_FIRST_FAILURE);
+                    reader.getBoolean(section, PARALLELIZED_EXECUTION_PREFS_STOP_ON_FIRST_FAILURE_PROPERTY_NAME, false);
             config.setParallelizedExecutionPrefs(machineLoad, maxThreads, retriesOnFailure, stopOnFailure);
 
         }

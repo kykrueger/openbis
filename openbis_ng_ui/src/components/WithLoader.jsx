@@ -1,11 +1,11 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import { connect } from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
+import {connect} from 'react-redux'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import flow from 'lodash/flow'
 
 const styles = {
-  loader: { 
+  loader: {
     position: 'absolute',
     paddingTop: '15%',
     width: '100%',
@@ -34,7 +34,7 @@ class WithLoader extends React.Component {
         {
           this.props.loading &&
           <div className={classes.loader}>
-            <CircularProgress className={classes.progress} />
+            <CircularProgress className={classes.progress}/>
           </div>
         }
         {this.props.children}

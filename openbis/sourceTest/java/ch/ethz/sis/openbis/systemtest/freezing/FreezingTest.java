@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.systemtest.freezing;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,39 +69,6 @@ public abstract class FreezingTest extends AbstractTest
     static final SpacePermId DEFAULT_SPACE_ID = new SpacePermId("CISD");
 
     static final ProjectIdentifier DEFAULT_PROJECT_ID = new ProjectIdentifier("CISD", "NEMO");
-
-    protected static Object[][] asCartesianProduct(List<?>... lists)
-    {
-        int size = 1;
-        for (List<?> list : lists)
-        {
-            size *= list.size();
-        }
-        List<Object[]> result = new ArrayList<>();
-        for (int i = 0; i < size; i++)
-        {
-            Object[] row = new Object[lists.length];
-            for (int j = 0, ii = i; j < lists.length; j++)
-            {
-                List<?> list = lists[j];
-                int listSize = list.size();
-                row[j] = list.get(ii % listSize);
-                ii /= list.size();
-            }
-            result.add(row);
-        }
-        return result.toArray(new Object[0][]);
-    }
-
-    protected static Object[][] merge(Object[][]... results)
-    {
-        List<Object[]> mergedResults = new ArrayList<>();
-        for (Object[][] result : results)
-        {
-            mergedResults.addAll(Arrays.asList(result));
-        }
-        return mergedResults.toArray(new Object[0][]);
-    }
 
     @Autowired
     protected SessionFactory sessionFactory;
@@ -267,13 +233,13 @@ public abstract class FreezingTest extends AbstractTest
         NativeQuery<?> query = session.createNativeQuery("update samples_all set frozen = :frozen, "
                 + "frozen_for_children = :frozenForChildren, "
                 + "frozen_for_parents = :frozenForParents, "
-                + "frozen_for_comp = :frozenForComponent, "
+                + "frozen_for_comp = :frozenForComponents, "
                 + "frozen_for_data = :frozenForDataSet "
                 + "where perm_id in :permIds")
                 .setParameter("frozen", frozenFlags.isFrozen())
                 .setParameter("frozenForChildren", frozenFlags.isFrozenForChildren())
                 .setParameter("frozenForParents", frozenFlags.isFrozenForParents())
-                .setParameter("frozenForComponent", frozenFlags.isFrozenForComponent())
+                .setParameter("frozenForComponents", frozenFlags.isFrozenForComponents())
                 .setParameter("frozenForDataSet", frozenFlags.isFrozenForDataSet())
                 .setParameter("permIds", samplePermIds.stream().map(SamplePermId::getPermId).collect(Collectors.toList()));
         query.executeUpdate();
@@ -355,9 +321,12 @@ public abstract class FreezingTest extends AbstractTest
         fetchOptions.withProperties();
         fetchOptions.withTags();
         fetchOptions.withChildren();
+        fetchOptions.withParents();
         fetchOptions.withComponents();
+        fetchOptions.withContainers();
         fetchOptions.withExperiment();
         fetchOptions.withSample();
+        fetchOptions.withLinkedData();
         return v3api.getDataSets(systemSessionToken, Arrays.asList(dataSetId), fetchOptions).get(dataSetId);
     }
 

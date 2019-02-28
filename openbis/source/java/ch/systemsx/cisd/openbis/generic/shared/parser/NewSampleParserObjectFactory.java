@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.shared.parser;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.parser.AbstractParserObjectFactory;
 import ch.systemsx.cisd.common.parser.IPropertyMapper;

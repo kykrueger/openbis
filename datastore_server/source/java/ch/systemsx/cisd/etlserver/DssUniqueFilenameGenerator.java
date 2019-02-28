@@ -19,7 +19,7 @@ package ch.systemsx.cisd.etlserver;
 import java.io.File;
 import java.util.GregorianCalendar;
 
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;

@@ -1,5 +1,5 @@
 import React from 'react'
-import { connect } from 'react-redux'
+import {connect} from 'react-redux'
 import flow from 'lodash/flow'
 
 import ErrorDialog from './ErrorDialog.jsx'
@@ -17,7 +17,7 @@ function mapDispatchToProps(dispatch) {
     closeError: () => dispatch(actions.closeError()),
   }
 }
-  
+
 
 class WithError extends React.Component {
 
@@ -27,7 +27,7 @@ class WithError extends React.Component {
       <div>
         {
           this.props.exception &&
-          <ErrorDialog exception={this.props.exception} onClose={this.props.closeError} />
+          <ErrorDialog exception={this.props.exception} onClose={this.props.closeError}/>
         }
         {this.props.children}
       </div>

@@ -22,7 +22,7 @@ import static org.testng.AssertJUnit.fail;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridRowModels;
@@ -79,7 +79,7 @@ public class SampleRegistrationTest extends GenericSystemTestCase
         assertEquals(CELL_PLATE, s.getSampleType().getCode());
         List<IEntityProperty> properties = s.getProperties();
         assertEquals("COMMENT", properties.get(0).getPropertyType().getCode());
-        assertEquals(StringEscapeUtils.escapeHtml("test samplé"), properties.get(0).getValue());
+        assertEquals(StringEscapeUtils.escapeHtml4("test samplé"), properties.get(0).getValue());
         assertEquals(1, properties.size());
         assertEquals(3, s.getParents().size());
         assertEquals("[/CISD/C1, /CISD/C2, /CISD/C3]",

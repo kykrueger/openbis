@@ -3,6 +3,7 @@ apply from: '../gradle/javaproject.gradle'
 dependencies {
     compile 'apache:commons-io:+',
             'apache:commons-lang:+',
+            'apache:commons-text:+',
 			'apache:log4j:+',
             'sis:sis-base:+',
 	        'rinn:restrictions:+'

@@ -42,9 +42,8 @@ public class SearchFileTest extends AbstractFileTest
         {
             if (dataSetFile.isDirectory() == false)
             {
-                assertEquals(
-                        dataSetFile.getPath().length() - 1 - dataSetFile.getPath().indexOf('/', "original/.".length()) + "file content of ".length(),
-                        dataSetFile.getFileLength());
+                String relativePath = dataSetFile.getPath().substring(("original/" + dataSetCode + "/").length());
+                assertEquals(createRandomContent(relativePath).length(), dataSetFile.getFileLength());
                 System.out.println(dataSetFile + ":" + dataSetFile.getChecksumCRC32());
             }
         }
@@ -63,7 +62,8 @@ public class SearchFileTest extends AbstractFileTest
         dss.searchFiles(sessionToken, c, fo);
 
         assertAccessLog(
-                "search-files  SEARCH_CRITERIA:\n'FILE\n    with dataset:\n        with attribute 'perm id' equal to '" + dataSetCode + "'\n'\nFETCH_OPTIONS:\n'DataSetFile\n'");
+                "search-files  SEARCH_CRITERIA:\n'FILE\n    with dataset:\n        with attribute 'perm id' equal to '" + dataSetCode
+                        + "'\n'\nFETCH_OPTIONS:\n'DataSetFile\n'");
     }
 
 }

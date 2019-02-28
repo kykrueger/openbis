@@ -34,25 +34,34 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.sql.DataSource;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.delete.MaterialDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.delete.ProjectDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
@@ -60,6 +69,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
@@ -75,6 +85,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.AttachmentsSynchronizer;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetRegistrationTaskExecutor;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor.DataSetSynchronizationSummary;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.PrefixBasedNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
@@ -93,6 +104,8 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
+import ch.systemsx.cisd.openbis.generic.server.batch.BatchOperationExecutor;
+import ch.systemsx.cisd.openbis.generic.server.batch.IBatchOperation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
@@ -131,6 +144,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifierF
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
+import net.lemnik.eodsql.QueryTool;
 
 /**
  * @author Ganime Betul Akin
@@ -144,7 +158,9 @@ public class EntitySynchronizer
     private final IEncapsulatedOpenBISService service;
 
     private final IApplicationServerApi v3Api;
-    
+
+    private final IDataStoreServerApi v3DssApi;
+
     private final DataSetProcessingContext context;
 
     private final Date lastSyncTimestamp;
@@ -167,6 +183,7 @@ public class EntitySynchronizer
     {
         service = synContext.getService();
         v3Api = synContext.getV3Api();
+        v3DssApi = synContext.getV3DssApi();
         dataStoreCode = synContext.getDataStoreCode();
         storeRoot = synContext.getStoreRoot();
         lastSyncTimestamp = synContext.getLastSyncTimestamp();
@@ -188,21 +205,345 @@ public class EntitySynchronizer
         registerMasterData(data.getMasterData());
         MultiKeyMap<String, String> newEntities = registerEntities(data);
         List<String> notSyncedAttachmentsHolders = registerAttachments(data, newEntities);
-
         registerDataSets(data, notSyncedAttachmentsHolders);
 
+        if (config.keepOriginalTimestampsAndUsers())
+        {
+            updateTimestampsAndUsers(data);
+        }
+        if (config.keepOriginalFrozenFlags())
+        {
+            updateFrozenFlags(data);
+        }
+
         return data.getResourceListTimestamp();
+    }
+
+    private void updateTimestampsAndUsers(ResourceListParserData data)
+    {
+        Monitor monitor = new Monitor("Update timestamps and users", operationLog);
+        createMissingUsers(data, monitor);
+        DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("openbis-db");
+        IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
+        Map<String, Long> userTechIdsByUserId = getUserTechIds(query);
+        updateMaterials(data.getMaterialsToProcess().values(), query, userTechIdsByUserId, monitor);
+        updateSpaces(data.getRelevantSpacesToProcess(), query, userTechIdsByUserId, monitor);
+        updateProjects(data.getProjectsToProcess().values(), query, userTechIdsByUserId, monitor);
+        updateExperiments(data.getExperimentsToProcess().values(), query, userTechIdsByUserId, monitor);
+        updateSamples(data.getSamplesToProcess().values(), query, userTechIdsByUserId, monitor);
+        updateDataSets(data.getDataSetsToProcess().values(), query, userTechIdsByUserId, monitor);
+    }
+
+    private Map<String, Long> getUserTechIds(IHarvesterQuery query)
+    {
+        Map<String, Long> userTechIdsByUserId = new HashMap<>();
+        List<PersonRecord> allUsers = query.listAllUsers();
+        for (PersonRecord personRecord : allUsers)
+        {
+            userTechIdsByUserId.put(personRecord.userId, personRecord.id);
+        }
+        return userTechIdsByUserId;
+    }
+
+    private void createMissingUsers(ResourceListParserData data, Monitor monitor)
+    {
+        Set<String> users = new HashSet<>();
+        addUsers(users, data.getMaterialsToProcess().values());
+        addUsers(users, data.getProjectsToProcess().values());
+        addUsers(users, data.getExperimentsToProcess().values());
+        addUsers(users, data.getSamplesToProcess().values());
+        addUsers(users, data.getDataSetsToProcess().values());
+        Set<String> knownPersons = v3Api.getPersons(service.getSessionToken(),
+                users.stream().map(PersonPermId::new).collect(Collectors.toList()),
+                new PersonFetchOptions()).keySet().stream().map(p -> p.toString()).collect(Collectors.toSet());
+        List<PersonCreation> personCreations = new ArrayList<>();
+        for (String user : users)
+        {
+            if (knownPersons.contains(user) == false)
+            {
+                PersonCreation personCreation = new PersonCreation();
+                personCreation.setUserId(user);
+                personCreations.add(personCreation);
+            }
+        }
+        monitor.log(personCreations.size() + " from " + users.size() + " users are new.");
+        if (personCreations.isEmpty() == false)
+        {
+            v3Api.createPersons(service.getSessionToken(), personCreations);
+        }
+    }
+
+    private void updateMaterials(Collection<IncomingMaterial> materials, IHarvesterQuery query,
+            Map<String, Long> userTechIdsByUserId, Monitor monitor)
+    {
+        monitor.log("update " + materials.size() + " materials");
+        List<MaterialTypeRecord> listAllMaterialTypes = query.listAllMaterialTypes();
+        Map<String, Long> materialTypeIdsByCode = new HashMap<>();
+        for (MaterialTypeRecord materialTypeRecord : listAllMaterialTypes)
+        {
+            materialTypeIdsByCode.put(materialTypeRecord.code, materialTypeRecord.id);
+        }
+        List<RegistrationDTO> registrations = new ArrayList<>();
+        for (IncomingMaterial incomingMaterial : materials)
+        {
+            NewMaterialWithType material = incomingMaterial.getMaterial();
+            Long typeId = materialTypeIdsByCode.get(material.getType());
+            addRegistration(registrations, material.getCode(), typeId, incomingMaterial, userTechIdsByUserId);
+        }
+        query.updateMaterialRegistrations(registrations);
+    }
+
+    private void updateSpaces(Collection<IncomingSpace> spaces, IHarvesterQuery query,
+            Map<String, Long> userTechIdsByUserId, Monitor monitor)
+    {
+        monitor.log("update " + spaces.size() + " spaces");
+        List<RegistrationDTO> registrations = new ArrayList<>();
+        for (IncomingSpace incomingSpace : spaces)
+        {
+            addRegistration(registrations, incomingSpace.getPermID(), incomingSpace, userTechIdsByUserId);
+        }
+        query.updateSpaceRegistrations(registrations);
+    }
+
+    private void updateProjects(Collection<IncomingProject> projects, IHarvesterQuery query,
+            Map<String, Long> userTechIdsByUserId, Monitor monitor)
+    {
+        monitor.log("update " + projects.size() + " projects");
+        List<RegistrationDTO> registrations = new ArrayList<>();
+        for (IncomingProject incomingProject : projects)
+        {
+            addRegistration(registrations, incomingProject.getPermID(), incomingProject, userTechIdsByUserId);
+        }
+        query.updateProjectRegistrations(registrations);
+    }
+    
+    private void updateExperiments(Collection<IncomingExperiment> experiments, IHarvesterQuery query,
+            Map<String, Long> userTechIdsByUserId, Monitor monitor)
+    {
+        monitor.log("update " + experiments.size() + " experiments");
+        List<RegistrationDTO> registrations = new ArrayList<>();
+        for (IncomingExperiment incomingExperiment : experiments)
+        {
+            addRegistration(registrations, incomingExperiment.getPermID(), incomingExperiment, userTechIdsByUserId);
+        }
+        query.updateExperimentRegistrations(registrations);
+    }
+
+    private void updateSamples(Collection<IncomingSample> samples, IHarvesterQuery query,
+            Map<String, Long> userTechIdsByUserId, Monitor monitor)
+    {
+        monitor.log("update " + samples.size() + " samples");
+        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingSample>()
+            {
+                @Override
+                public List<IncomingSample> getAllEntities()
+                {
+                    return new ArrayList<>(samples);
+                }
+
+                @Override
+                public void execute(List<IncomingSample> samples)
+                {
+                    List<RegistrationDTO> registrations = new ArrayList<>();
+                    for (IncomingSample incomingSamples : samples)
+                    {
+                        addRegistration(registrations, incomingSamples.getPermID(), incomingSamples, userTechIdsByUserId);
+                    }
+                    query.updateSampleRegistrations(registrations);
+                }
+
+                @Override
+                public String getEntityName()
+                {
+                    return "sample";
+                }
+
+                @Override
+                public String getOperationName()
+                {
+                    return "update registration";
+                }
+            });
+    }
+
+    private void updateDataSets(Collection<IncomingDataSet> dataSets, IHarvesterQuery query,
+            Map<String, Long> userTechIdsByUserId, Monitor monitor)
+    {
+        monitor.log("update " + dataSets.size() + " data sets");
+        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingDataSet>()
+            {
+                @Override
+                public List<IncomingDataSet> getAllEntities()
+                {
+                    return new ArrayList<>(dataSets);
+                }
+
+                @Override
+                public void execute(List<IncomingDataSet> dataSets)
+                {
+                    List<RegistrationDTO> registrations = new ArrayList<>();
+                    for (IncomingDataSet incomingDataSet : dataSets)
+                    {
+                        addRegistration(registrations, incomingDataSet.getFullDataSet().getMetadataCreation().getCode(),
+                                incomingDataSet, userTechIdsByUserId);
+                    }
+                    query.updateDataSetRegistrations(registrations);
+                }
+
+                @Override
+                public String getEntityName()
+                {
+                    return "data set";
+                }
+
+                @Override
+                public String getOperationName()
+                {
+                    return "update registration";
+                }
+            });
+    }
+
+    private void addRegistration(List<RegistrationDTO> registrations, String permID, AbstractTimestampsAndUserHolder entity,
+            Map<String, Long> userTechIdsByUserId)
+    {
+        addRegistration(registrations, permID, null, entity, userTechIdsByUserId);
+    }
+
+    private void addRegistration(List<RegistrationDTO> registrations, String permID, Long typeId, AbstractTimestampsAndUserHolder entity,
+            Map<String, Long> userTechIdsByUserId)
+    {
+        Long registratorId = userTechIdsByUserId.get(entity.getRegistrator());
+        if (registratorId != null)
+        {
+            RegistrationDTO registration = new RegistrationDTO();
+            registration.setPermId(permID);
+            registration.setTypeId(typeId);
+            registration.setModificationTimestamp(entity.getLastModificationDate());
+            registration.setModifierId(userTechIdsByUserId.get(entity.getModifier()));
+            registration.setRegistrationTimestamp(entity.getRegistrationTimestamp());
+            registration.setRegistratorId(registratorId);
+            registrations.add(registration);
+        }
+    }
+
+    private void addUsers(Set<String> users, Collection<? extends AbstractTimestampsAndUserHolder> timestampsAndUserHolders)
+    {
+        for (AbstractTimestampsAndUserHolder holder : timestampsAndUserHolders)
+        {
+            users.add(holder.getRegistrator());
+            String modifier = holder.getModifier();
+            if (modifier != null)
+            {
+                users.add(modifier);
+            }
+        }
+    }
+
+    private void updateFrozenFlags(ResourceListParserData data)
+    {
+        Monitor monitor = new Monitor("Update frozen flags", operationLog);
+        DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("openbis-db");
+        IHarvesterQuery query = QueryTool.getQuery(dataSource, IHarvesterQuery.class);
+        updateSpaceFrozenFlags(data.getRelevantSpacesToProcess(), query, monitor);
+        updateProjectFrozenFlags(data.getProjectsToProcess().values(), query, monitor);
+        updateExperimentFrozenFlags(data.getExperimentsToProcess().values(), query, monitor);
+        updateSampleFrozenFlags(data.getSamplesToProcess().values(), query, monitor);
+        updateDataSetFrozenFlags(data.getDataSetsToProcess().values(), query, monitor);
+    }
+
+    private void updateSpaceFrozenFlags(Collection<IncomingSpace> spaces, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + spaces.size() + " spaces.");
+        query.updateSpaceFrozenFlags(spaces.stream().map(IncomingSpace::getFrozenFlags).collect(Collectors.toList()));
+    }
+
+    private void updateProjectFrozenFlags(Collection<IncomingProject> projects, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + projects.size() + " projects.");
+        query.updateProjectFrozenFlags(projects.stream().map(IncomingProject::getFrozenFlags).collect(Collectors.toList()));
+    }
+
+    private void updateExperimentFrozenFlags(Collection<IncomingExperiment> experiments, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + experiments.size() + " experiments.");
+        query.updateExperimentFrozenFlags(experiments.stream().map(IncomingExperiment::getFrozenFlags).collect(Collectors.toList()));
+    }
+
+    private void updateSampleFrozenFlags(Collection<IncomingSample> samples, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + samples.size() + " samples.");
+        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingSample>()
+            {
+                @Override
+                public List<IncomingSample> getAllEntities()
+                {
+                    return new ArrayList<>(samples);
+                }
+
+                @Override
+                public void execute(List<IncomingSample> samples)
+                {
+                    query.updateSampleFrozenFlags(samples.stream().map(IncomingSample::getFrozenFlags).collect(Collectors.toList()));
+                }
+
+                @Override
+                public String getEntityName()
+                {
+                    return "sample";
+                }
+
+                @Override
+                public String getOperationName()
+                {
+                    return "update frozen flags";
+                }
+            });
+    }
+
+    private void updateDataSetFrozenFlags(Collection<IncomingDataSet> dataSets, IHarvesterQuery query, Monitor monitor)
+    {
+        monitor.log("Update frozen flags of " + dataSets.size() + " data sets.");
+        BatchOperationExecutor.executeInBatches(new IBatchOperation<IncomingDataSet>()
+            {
+                @Override
+                public List<IncomingDataSet> getAllEntities()
+                {
+                    return new ArrayList<>(dataSets);
+                }
+
+                @Override
+                public void execute(List<IncomingDataSet> dataSets)
+                {
+                    query.updateDataSetFrozenFlags(dataSets.stream().map(IncomingDataSet::getFrozenFlags).collect(Collectors.toList()));
+                }
+
+                @Override
+                public String getEntityName()
+                {
+                    return "data set";
+                }
+
+                @Override
+                public String getOperationName()
+                {
+                    return "update frozen flags";
+                }
+            });
     }
 
     private void registerDataSets(ResourceListParserData data, List<String> notSyncedAttachmentsHolders) throws IOException
     {
         Monitor monitor = new Monitor("Register data sets", operationLog);
+        operationLog.info("Registering data sets...");
+        registerLinkDataSets(data, monitor);
+
         // register physical data sets without any hierarchy
         // Note that container/component and parent/child relationships are established post-reg.
         // setParentDataSetsOnTheChildren(data);
         Map<String, IncomingDataSet> physicalDSMap =
-                data.filterPhysicalDataSetsByLastModificationDate(lastSyncTimestamp, dataSetsCodesToRetry, blackListedDataSetCodes);
-        operationLog.info("Registering data sets...");
+                data.filterByDataSetKindAndLastModificationDate(DataSetKind.PHYSICAL, lastSyncTimestamp, dataSetsCodesToRetry,
+                        blackListedDataSetCodes);
 
         if (config.isVerbose())
         {
@@ -235,8 +576,50 @@ public class EntitySynchronizer
         List<String> skippedDataSets = new ArrayList<String>();
         skippedDataSets.addAll(notRegisteredDataSetCodes);
         skippedDataSets.addAll(blackListedDataSetCodes);
-        establishDataSetRelationships(data.getDataSetsToProcess(), skippedDataSets, physicalDSMap);
+        Set<String> containerDataSets = data
+                .filterByDataSetKindAndLastModificationDate(DataSetKind.CONTAINER, lastSyncTimestamp, dataSetsCodesToRetry, blackListedDataSetCodes)
+                .keySet();
+        establishDataSetRelationships(data.getDataSetsToProcess(), skippedDataSets, containerDataSets);
         monitor.log();
+    }
+
+    private void registerLinkDataSets(ResourceListParserData data, Monitor monitor)
+    {
+        Map<String, IncomingDataSet> linkDataSets =
+                data.filterByDataSetKindAndLastModificationDate(DataSetKind.LINK, lastSyncTimestamp, dataSetsCodesToRetry, blackListedDataSetCodes);
+        monitor.log("Register " + linkDataSets.size() + " link data sets");
+        Collection<IncomingDataSet> values = linkDataSets.values();
+        List<DataSetPermId> dataSetIds =
+                values.stream().map(ds -> new DataSetPermId(ds.getFullDataSet().getMetadataCreation().getCode())).collect(Collectors.toList());
+        System.err.println("new data sets:" + dataSetIds);
+        Map<IDataSetId, DataSet> existingDataSets = v3Api.getDataSets(service.getSessionToken(), dataSetIds, new DataSetFetchOptions());
+        System.err.println("existing data sets:" + existingDataSets.keySet());
+        List<DataSetUpdate> updates = new ArrayList<>();
+        List<FullDataSetCreation> creations = new ArrayList<>();
+        for (IncomingDataSet incomingDataSet : values)
+        {
+            FullDataSetCreation fullDataSet = incomingDataSet.getFullDataSet();
+            DataSetCreation dataSet = fullDataSet.getMetadataCreation();
+            DataSetPermId permId = new DataSetPermId(dataSet.getCode());
+            if (existingDataSets.containsKey(permId))
+            {
+                DataSetUpdate update = new DataSetUpdate();
+                update.setDataSetId(permId);
+                update.setProperties(dataSet.getProperties());
+                updates.add(update);
+            } else
+            {
+                creations.add(fullDataSet);
+            }
+        }
+        if (updates.isEmpty() && config.isDryRun() == false)
+        {
+            v3Api.updateDataSets(service.getSessionToken(), updates);
+        }
+        if (creations.isEmpty() == false && config.isDryRun() == false)
+        {
+            v3DssApi.createDataSets(service.getSessionToken(), creations);
+        }
     }
 
     private List<String> registerAttachments(ResourceListParserData data, MultiKeyMap<String, String> newEntities)
@@ -303,12 +686,14 @@ public class EntitySynchronizer
 
     private void processSpaces(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
     {
-        for (String spaceCode : data.getHarvesterSpaceList())
+        List<IncomingSpace> list = data.getRelevantSpacesToProcess();
+        for (IncomingSpace incomingSpace : list)
         {
+            String spaceCode = incomingSpace.getPermID();
             Space space = service.tryGetSpace(new SpaceIdentifier(spaceCode));
             if (space == null)
             {
-                builder.space(new NewSpace(spaceCode, "Synchronized from: " + config.getDataSourceURI(), null));
+                builder.space(incomingSpace.getEntity());
             }
         }
     }
@@ -319,7 +704,11 @@ public class EntitySynchronizer
         // Parse the resource list: This sends back all projects,
         // experiments, samples and data sets contained in the XML together with their last modification date to be used for filtering
         operationLog.info("Parsing the resource list xml document...");
-        INameTranslator nameTranslator = new PrefixBasedNameTranslator(config.getDataSourceAlias());
+        INameTranslator nameTranslator = new DefaultNameTranslator();
+        if (config.isTranslateUsingDataSourceAlias())
+        {
+            nameTranslator = new PrefixBasedNameTranslator(config.getDataSourceAlias());
+        }
 
         ResourceListParser parser = ResourceListParser.create(nameTranslator, dataStoreCode);
         ResourceListParserData data = parser.parseResourceListDocument(doc, monitor);
@@ -387,7 +776,7 @@ public class EntitySynchronizer
                         continue;
                     }
                 }
-                operationLog.info(holder.getIdentifer());
+                operationLog.info(holder.getIdentifier());
             }
         }
     }
@@ -510,7 +899,7 @@ public class EntitySynchronizer
         }
     }
 
-    private AttachmentSynchronizationSummary processAttachments(List<IncomingEntity<?>> attachmentHoldersToProcess, 
+    private AttachmentSynchronizationSummary processAttachments(List<IncomingEntity<?>> attachmentHoldersToProcess,
             Monitor monitor)
     {
         AttachmentSynchronizationSummary synchronizationSummary = new AttachmentSynchronizationSummary();
@@ -520,9 +909,9 @@ public class EntitySynchronizer
         List<List<IncomingEntity<?>>> attachmentHoldersChunks = chunk(attachmentHoldersToProcess);
         IApplicationServerApi v3apiDataSource = ServiceUtils.createAsV3Api(config.getDataSourceOpenbisURL());
         String sessionTokenDataSource = v3apiDataSource.login(config.getUser(), config.getPassword());
-        ParallelizedExecutor.process(attachmentHoldersChunks, 
-                new AttachmentsSynchronizer(v3Api, service.getSessionToken(), v3apiDataSource, sessionTokenDataSource, 
-                        lastSyncTimestamp, synchronizationSummary, monitor), 
+        ParallelizedExecutor.process(attachmentHoldersChunks,
+                new AttachmentsSynchronizer(v3Api, service.getSessionToken(), v3apiDataSource, sessionTokenDataSource,
+                        lastSyncTimestamp, synchronizationSummary, monitor),
                 preferences.getMachineLoad(), preferences.getMaxThreads(), "process attachments", preferences.getRetriesOnFail(),
                 preferences.isStopOnFailure());
 
@@ -558,7 +947,7 @@ public class EntitySynchronizer
     // }
 
     private void establishDataSetRelationships(Map<String, IncomingDataSet> dataSetsToProcess,
-            List<String> skippedDataSets, Map<String, IncomingDataSet> physicalDSMap)
+            List<String> skippedDataSets, Set<String> containerDataSets)
     {
         // set parent and container data set codes before everything else
         // container and physical data sets can both be parents/children of each other
@@ -608,7 +997,7 @@ public class EntitySynchronizer
             {
                 if (blackListedDataSetCodes.contains(dataSet.getCode()) == false)
                 {
-                    if (physicalDSMap.containsKey(dataSet.getCode()) == false && service.tryGetDataSet(dataSet.getCode()) == null)
+                    if (containerDataSets.contains(dataSet.getCode()) && service.tryGetDataSet(dataSet.getCode()) == null)
                     {
                         builder.dataSet(dataSet);
                     } else
@@ -664,7 +1053,7 @@ public class EntitySynchronizer
             if (sampleIdentifier != null)
             {
                 Sample sampleWithExperiment = service.tryGetSampleWithExperiment(sampleIdentifier);
-//                dsBatchUpdatesDTO.setSampleIdentifierOrNull(SampleIdentifierFactory.parse(sampleWithExperiment.getIdentifier()));
+                // dsBatchUpdatesDTO.setSampleIdentifierOrNull(SampleIdentifierFactory.parse(sampleWithExperiment.getIdentifier()));
                 dsBatchUpdatesDTO.setSampleIdentifierOrNull(sampleIdentifier);
             } else
             {
@@ -676,7 +1065,7 @@ public class EntitySynchronizer
             if (expIdentifier != null)
             {
                 Experiment experiment = service.tryGetExperiment(expIdentifier);
-//                dsBatchUpdatesDTO.setExperimentIdentifierOrNull(ExperimentIdentifierFactory.parse(experiment.getIdentifier()));
+                // dsBatchUpdatesDTO.setExperimentIdentifierOrNull(ExperimentIdentifierFactory.parse(experiment.getIdentifier()));
                 dsBatchUpdatesDTO.setExperimentIdentifierOrNull(expIdentifier);
             } else
             {
@@ -810,7 +1199,7 @@ public class EntitySynchronizer
         Set<String> incomingExperimentPermIds = data.getExperimentsToProcess().keySet();
         Set<String> incomingSamplePermIds = data.getSamplesToProcess().keySet();
         Set<String> incomingDataSetCodes = data.getDataSetsToProcess().keySet();
-        MultiKeyMap<String, MaterialWithLastModificationDate> incomingMaterials = data.getMaterialsToProcess();
+        MultiKeyMap<String, IncomingMaterial> incomingMaterials = data.getMaterialsToProcess();
 
         // find projects, experiments, samples and data sets to be deleted
         Map<ProjectPermId, String> projectsToDelete = new HashMap<ProjectPermId, String>();
@@ -1060,7 +1449,7 @@ public class EntitySynchronizer
                     builder.experimentUpdate(expUpdate);
                 }
             }
-            handleExperimentConnections(data, exp, incomingExp);
+            // handleExperimentConnections(data, exp, incomingExp);
         }
     }
 
@@ -1103,8 +1492,8 @@ public class EntitySynchronizer
     private void processMaterials(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder)
     {
         // process materials
-        MultiKeyMap<String, MaterialWithLastModificationDate> materialsToProcess = data.getMaterialsToProcess();
-        for (MaterialWithLastModificationDate newMaterialWithType : materialsToProcess.values())
+        MultiKeyMap<String, IncomingMaterial> materialsToProcess = data.getMaterialsToProcess();
+        for (IncomingMaterial newMaterialWithType : materialsToProcess.values())
         {
             NewMaterialWithType incomingMaterial = newMaterialWithType.getMaterial();
             if (newMaterialWithType.getLastModificationDate().after(lastSyncTimestamp))
@@ -1158,38 +1547,6 @@ public class EntitySynchronizer
         }
     }
 
-    private void handleProjectConnections(ResourceListParserData data, IncomingProject prj)
-    {
-        Map<String, IncomingExperiment> experimentsToProcess = data.getExperimentsToProcess();
-        for (Connection conn : prj.getConnections())
-        {
-            String connectedExpPermId = conn.getToPermId();
-            // TODO we need to do the same check for samples to support project samples
-            if (experimentsToProcess.containsKey(connectedExpPermId))
-            {
-                // the project is connected to an experiment
-                IncomingExperiment exp = experimentsToProcess.get(connectedExpPermId);
-                NewExperiment newExp = exp.getExperiment();
-                Experiment experiment = service.tryGetExperimentByPermId(connectedExpPermId);
-                // check if our local graph has the same connection
-                if (service.tryGetExperiment(ExperimentIdentifierFactory.parse(newExp.getIdentifier())) == null)
-                {
-                    // add new edge
-                    String oldIdentifier = newExp.getIdentifier();
-                    int index = oldIdentifier.lastIndexOf('/');
-                    String expCode = oldIdentifier.substring(index + 1);
-                    newExp.setIdentifier(prj.getProject().getIdentifier() + "/" + expCode);
-                    // add new experiment node
-                }
-            } else
-            {
-                // This means the XML contains the connection but not the connected entity.
-                // This is an unlikely scenario.
-                operationLog.info("Connected experiment with permid : " + connectedExpPermId + " is missing");
-            }
-        }
-    }
-
     private ProjectUpdatesDTO createProjectUpdateDTO(NewProject incomingProject, Project project)
     {
         ProjectUpdatesDTO prjUpdate = new ProjectUpdatesDTO();
@@ -1203,7 +1560,7 @@ public class EntitySynchronizer
         prjUpdate.setSpaceCode(projectIdentifier.getSpaceCode());
         return prjUpdate;
     }
-    
+
     private void processSamples(ResourceListParserData data, AtomicEntityOperationDetailsBuilder builder, Monitor monitor)
     {
         // process samples
@@ -1217,7 +1574,7 @@ public class EntitySynchronizer
         {
             if (++count % 10000 == 0)
             {
-                monitor.log(String.format("%7d/%d sample: %s", count, n, sample.getIdentifer()));
+                monitor.log(String.format("%7d/%d sample: %s", count, n, sample.getIdentifier()));
             }
             NewSample incomingSample = sample.getSample();
             if (sample.getLastModificationDate().after(lastSyncTimestamp))

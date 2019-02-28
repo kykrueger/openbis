@@ -19,7 +19,7 @@ package ch.systemsx.cisd.common.converter;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.testng.annotations.Test;
 import static org.testng.AssertJUnit.*;
 

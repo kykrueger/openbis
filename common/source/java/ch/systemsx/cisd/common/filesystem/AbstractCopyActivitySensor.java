@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.common.filesystem;
 
-import org.apache.commons.lang.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.concurrent.InactivityMonitor.IDescribingActivitySensor;
@@ -146,7 +146,7 @@ public abstract class AbstractCopyActivitySensor implements IDescribingActivityS
         } else
         {
             final String inactivityPeriod =
-                    DurationFormatUtils.formatDurationHMS(now - timeOfLastConfirmedActivity);
+                    DurationFormatUtils.formatDuration(now - timeOfLastConfirmedActivity, "H:mm:ss.SSS");
             return "No write activity on " + getTargetDescription() + " for " + inactivityPeriod;
         }
     }

@@ -32,7 +32,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import ch.rinn.restrictions.Private;

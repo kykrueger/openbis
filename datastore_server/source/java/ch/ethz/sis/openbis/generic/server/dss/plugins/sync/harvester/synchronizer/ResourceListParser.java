@@ -23,6 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -40,13 +41,22 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.ContentCopyCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.LinkedDataCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreation;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.create.DataSetFileCreation;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
@@ -59,6 +69,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewExperiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewMaterialWithType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewProject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSpace;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewContainerDataSet;
@@ -235,13 +246,17 @@ public class ResourceListParser
         masterData.setExperimentTypesToProcess(mdParser.getExperimentTypes());
         masterData.setMaterialTypesToProcess(mdParser.getMaterialTypes());
         masterData.setPropertyAssignmentsToProcess(mdParser.getEntityPropertyAssignments());
+        masterData.setExternalDataManagementSystemsToProcess(mdParser.getExternalDataManagementSystems());
     }
 
     private void parseMetaData(String uri, Date lastModificationDate, Node xdNode) throws XPathExpressionException
     {
         String entityKind = xdNode.getAttributes().getNamedItem("kind").getTextContent();
 
-        if (SyncEntityKind.PROJECT.toString().equals(entityKind))
+        if (SyncEntityKind.SPACE.toString().equals(entityKind))
+        {
+            parseSpaceMetaData(xdNode, lastModificationDate);
+        } else if (SyncEntityKind.PROJECT.toString().equals(entityKind))
         {
             parseProjectMetaData(extractPermIdFromURI(uri), xdNode, lastModificationDate);
         } else if (SyncEntityKind.EXPERIMENT.toString().equals(entityKind))
@@ -290,41 +305,148 @@ public class ResourceListParser
 
     private void parseDataSetMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.CHILDREN, FrozenForType.PARENTS,
+                FrozenForType.COMPONENTS, FrozenForType.CONTAINERS);
         String code = extractCode(xdNode);
         String sampleIdentifier = extractAttribute(xdNode, "sample", true);
         String experimentIdentifier = extractAttribute(xdNode, "experiment", true);
         String type = extractType(xdNode);
         String dsKind = extractAttribute(xdNode, "dsKind");
-        NewExternalData ds = null;
+        NewExternalData ds = new NewExternalData();
+        FullDataSetCreation fullDataSet = new FullDataSetCreation();
+        DataSetCreation dataSet = new DataSetCreation();
+        fullDataSet.setMetadataCreation(dataSet);
         if (dsKind.equals(DataSetKind.CONTAINER.toString()))
         {
             ds = new NewContainerDataSet();
             ds.setDataSetKind(ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind.CONTAINER);
+            dataSet.setDataSetKind(DataSetKind.CONTAINER);
+        } else if (dsKind.equals(DataSetKind.LINK.toString()))
+        {
+            ds = new NewContainerDataSet();
+            parseLinkDataMetaData(fullDataSet, xdNode);
         } else if (dsKind.equals(DataSetKind.PHYSICAL.toString()))
         {
-            ds = new NewExternalData();
             ds.setDataSetKind(ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind.PHYSICAL);
+            dataSet.setDataSetKind(DataSetKind.PHYSICAL);
         } else
         {
             throw new IllegalArgumentException(dsKind + " data sets are currently not supported");
         }
         ds.setCode(code);
+        dataSet.setCode(code);
         ds.setDataSetType(new DataSetType(type));
+        dataSet.setTypeId(new EntityTypePermId(type, EntityKind.DATA_SET));
         ds.setDataStoreCode(this.dataStoreCode);
+        dataSet.setDataStoreId(new DataStorePermId(dataStoreCode));
 
-        ds.setSampleIdentifierOrNull(getSampleIdentifier(sampleIdentifier));
-        ds.setExperimentIdentifierOrNull(getExperimentIdentifier(experimentIdentifier));
+        SampleIdentifier sampleId = getSampleIdentifier(sampleIdentifier);
+        if (sampleId != null)
+        {
+            ds.setSampleIdentifierOrNull(sampleId);
+            dataSet.setSampleId(new ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier(sampleId.toString()));
+        }
+        ExperimentIdentifier experimentId = getExperimentIdentifier(experimentIdentifier);
+        if (experimentId != null)
+        {
+            ds.setExperimentIdentifierOrNull(experimentId);
+            dataSet.setExperimentId(new ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier(experimentId.toString()));
+        }
 
-        IncomingDataSet incomingDataSet = new IncomingDataSet(ds, lastModificationDate);
+        IncomingDataSet incomingDataSet = new IncomingDataSet(ds, frozenFlags, fullDataSet, lastModificationDate);
+        setTimestampsAndUsers(xdNode, incomingDataSet);
         data.getDataSetsToProcess().put(permId, incomingDataSet);
         incomingDataSet.setConnections(parseConnections(xdNode));
-        ds.setDataSetProperties(parseDataSetProperties(xdNode));
+        List<NewProperty> properties = parseDataSetProperties(xdNode);
+        ds.setDataSetProperties(properties);
+        Map<String, String> props = new HashMap<>();
+        for (NewProperty property : properties)
+        {
+            props.put(property.getPropertyCode(), property.getValue());
+        }
+        dataSet.setProperties(props);
+    }
+
+    public void parseLinkDataMetaData(FullDataSetCreation fullDataSet, Node xdNode)
+    {
+        DataSetCreation dataSet = fullDataSet.getMetadataCreation();
+        dataSet.setDataSetKind(DataSetKind.LINK);
+        LinkedDataCreation linkedData = new LinkedDataCreation();
+        Element docElement = (Element) xdNode;
+        NodeList binaryDataNode = docElement.getElementsByTagName("x:binaryData");
+        if (binaryDataNode.getLength() == 1)
+        {
+            Element binaryDataElement = (Element) binaryDataNode.item(0);
+            linkedData.setContentCopies(parseContentCopies(binaryDataElement));
+            fullDataSet.setFileMetadata(parseFileNodes(binaryDataElement));
+        }
+        dataSet.setLinkedData(linkedData);
+    }
+
+    public List<DataSetFileCreation> parseFileNodes(Element binaryDataElement)
+    {
+        List<DataSetFileCreation> fileCreations = new ArrayList<>();
+        NodeList fileNodes = binaryDataElement.getElementsByTagName("x:fileNode");
+        for (int i = 0; i < fileNodes.getLength(); i++)
+        {
+            Element fileElement = (Element) fileNodes.item(i);
+            DataSetFileCreation fileCreation = new DataSetFileCreation();
+            fileCreation.setPath(fileElement.getAttribute("path"));
+            fileCreation.setFileLength(Long.parseLong(fileElement.getAttribute("length")));
+            String crc32Checksum = fileElement.getAttribute("crc32checksum");
+            if (StringUtils.isNotBlank(crc32Checksum))
+            {
+                fileCreation.setChecksumCRC32(Integer.parseUnsignedInt(crc32Checksum));
+            }
+            String checksum = fileElement.getAttribute("checksum");
+            if (StringUtils.isNotBlank(checksum))
+            {
+                String[] splittedChecksum = checksum.split(":");
+                if (splittedChecksum.length == 2)
+                {
+                    fileCreation.setChecksumType(splittedChecksum[0]);
+                    fileCreation.setChecksum(splittedChecksum[1]);
+                }
+            }
+            fileCreations.add(fileCreation);
+        }
+        return fileCreations;
+    }
+
+    public List<ContentCopyCreation> parseContentCopies(Element binaryDataElement)
+    {
+        NodeList contentCopyNodes = binaryDataElement.getElementsByTagName("x:contentCopy");
+        List<ContentCopyCreation> contentCopyCreations = new ArrayList<>();
+        for (int i = 0; i < contentCopyNodes.getLength(); i++)
+        {
+            Element contentCopyElement = (Element) contentCopyNodes.item(i);
+            ContentCopyCreation contentCopyCreation = new ContentCopyCreation();
+            contentCopyCreation.setExternalDmsId(
+                    new ExternalDmsPermId(nameTranslator.translate(contentCopyElement.getAttribute("externalDMS"))));
+            contentCopyCreation.setExternalId(getAttributeOrNull(contentCopyElement, "externalCode"));
+            contentCopyCreation.setGitCommitHash(getAttributeOrNull(contentCopyElement, "gitCommitHash"));
+            contentCopyCreation.setGitRepositoryId(getAttributeOrNull(contentCopyElement, "gitRepositoryId"));
+            contentCopyCreation.setPath(getAttributeOrNull(contentCopyElement, "path"));
+            contentCopyCreations.add(contentCopyCreation);
+        }
+        return contentCopyCreations;
+    }
+
+    private String getAttributeOrNull(Element contentCopyElement, String name)
+    {
+        String attribute = contentCopyElement.getAttribute(name);
+        return StringUtils.isBlank(attribute) ? null : attribute;
+    }
+    
+    private boolean extractBooleanAttribute(Node xdNode, String attrName)
+    {
+        return "true".equals(extractAttribute(xdNode, attrName, true));
     }
 
     private String extractAttribute(Node xdNode, String attrName, boolean nullAllowed)
     {
-        String val = xdNode.getAttributes().getNamedItem(attrName).getTextContent();
-        if (StringUtils.isBlank(val) == true)
+        Node item = xdNode.getAttributes().getNamedItem(attrName);
+        if (item == null || StringUtils.isBlank(item.getTextContent()) == true)
         {
             if (nullAllowed == false)
             {
@@ -333,8 +455,8 @@ public class ResourceListParser
             {
                 return null;
             }
-        } 
-        return val;
+        }
+        return item.getTextContent();
     }
 
     private String extractAttribute(Node xdNode, String attrName) throws IllegalArgumentException
@@ -382,19 +504,42 @@ public class ResourceListParser
                 expCode);
     }
 
+    private void parseSpaceMetaData(Node xdNode, Date lastModificationDate)
+    {
+        String code = nameTranslator.translate(extractCode(xdNode));
+        FrozenFlags frozenFlags = extractFrozenFlags(code, xdNode, FrozenForType.PROJECTS, FrozenForType.SAMPLES);
+        String desc = extractAttribute(xdNode, "desc", true);
+        NewSpace space = new NewSpace(code, desc, null);
+        IncomingSpace incomingSpace = new IncomingSpace(space, frozenFlags, lastModificationDate);
+        data.getSpacesToProcess().add(incomingSpace);
+        setTimestampsAndUsers(xdNode, incomingSpace);
+    }
+    
     private void parseProjectMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
-
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.EXPERIMENTS, FrozenForType.SAMPLES);
         String code = extractCode(xdNode);
-        String desc = xdNode.getAttributes().getNamedItem("desc").getTextContent();
+        String desc = extractAttribute(xdNode, "desc", true);
         String space = extractSpace(xdNode, false);
         ProjectIdentifier projectIdentifier = createProjectIdentifier(code, space);
         NewProject newProject = new NewProject(projectIdentifier.toString(), desc);
         newProject.setPermID(permId);
-        IncomingProject incomingProject = new IncomingProject(newProject, lastModificationDate);
+        IncomingProject incomingProject = new IncomingProject(newProject, frozenFlags, lastModificationDate);
         data.getProjectsToProcess().put(permId, incomingProject);
         incomingProject.setConnections(parseConnections(xdNode));
         incomingProject.setHasAttachments(hasAttachments(xdNode));
+        setTimestampsAndUsers(xdNode, incomingProject);
+    }
+    
+    private FrozenFlags extractFrozenFlags(String permId, Node xdNode, FrozenForType...frozenForTypes)
+    {
+        FrozenFlags frozenFlags = new FrozenFlags(permId, extractBooleanAttribute(xdNode, "frozen"));
+        for (FrozenForType type : frozenForTypes)
+        {
+            boolean value = extractBooleanAttribute(xdNode, type.getAttributeName());
+            type.setFlag(frozenFlags, value);
+        }
+        return frozenFlags;
     }
 
     private ExperimentIdentifier createExperimentIdentifier(String spaceId, String prjCode, String expCode)
@@ -436,9 +581,9 @@ public class ResourceListParser
         String code = nameTranslator.translate(extractCode(xdNode));
         String type = extractType(xdNode);
         NewMaterialWithType newMaterial = new NewMaterialWithType(code, type);
-        MaterialWithLastModificationDate materialWithLastModDate =
-                new MaterialWithLastModificationDate(newMaterial, lastModificationDate);
-        data.getMaterialsToProcess().put(code, type, materialWithLastModDate);
+        IncomingMaterial incomingMaterial = new IncomingMaterial(newMaterial, lastModificationDate);
+        setTimestampsAndUsers(xdNode, incomingMaterial);
+        data.getMaterialsToProcess().put(code, type, incomingMaterial);
         newMaterial.setProperties(parseProperties(xdNode));
     }
 
@@ -547,6 +692,7 @@ public class ResourceListParser
 
     private void parseExperimentMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.DATA_SETS, FrozenForType.SAMPLES);
         String code = extractCode(xdNode);
         String type = extractType(xdNode);
         String project = extractAttribute(xdNode, "project");
@@ -554,15 +700,18 @@ public class ResourceListParser
         ExperimentIdentifier experimentIdentifier = createExperimentIdentifier(space, project, code);
         NewExperiment newExp = new NewExperiment(experimentIdentifier.toString(), type);
         newExp.setPermID(permId);
-        IncomingExperiment incomingExperiment = new IncomingExperiment(newExp, lastModificationDate);
+        IncomingExperiment incomingExperiment = new IncomingExperiment(newExp, frozenFlags, lastModificationDate);
         data.getExperimentsToProcess().put(permId, incomingExperiment);
         incomingExperiment.setConnections(parseConnections(xdNode));
         incomingExperiment.setHasAttachments(hasAttachments(xdNode));
+        setTimestampsAndUsers(xdNode, incomingExperiment);
         newExp.setProperties(parseProperties(xdNode));
     }
 
     private void parseSampleMetaData(String permId, Node xdNode, Date lastModificationDate)
     {
+        FrozenFlags frozenFlags = extractFrozenFlags(permId, xdNode, FrozenForType.COMPONENTS, FrozenForType.CHILDREN, 
+                FrozenForType.PARENTS, FrozenForType.DATA_SETS);
         String code = extractCode(xdNode);
         String type = extractType(xdNode);
         String experiment = extractAttribute(xdNode, "experiment", true);
@@ -595,11 +744,26 @@ public class ResourceListParser
         {
             newSample.setProjectIdentifier(createProjectIdentifier(project, space).toString());
         }
-        IncomingSample incomingSample = new IncomingSample(newSample, lastModificationDate);
+        IncomingSample incomingSample = new IncomingSample(newSample, frozenFlags, lastModificationDate);
         data.getSamplesToProcess().put(permId, incomingSample);
         incomingSample.setHasAttachments(hasAttachments(xdNode));
         incomingSample.setConnections(parseConnections(xdNode));
+        setTimestampsAndUsers(xdNode, incomingSample);
         newSample.setProperties(parseProperties(xdNode));
+    }
+
+    private void setTimestampsAndUsers(Node xdNode, AbstractTimestampsAndUserHolder timestampsAndUserHolder)
+    {
+        timestampsAndUserHolder.setRegistrator(extractAttribute(xdNode, "registrator"));
+        timestampsAndUserHolder.setModifier(extractAttribute(xdNode, "modifier", true));
+        String registrationTimestampAsString = extractAttribute(xdNode, "registration-timestamp");
+        try
+        {
+            timestampsAndUserHolder.setRegistrationTimestamp(convertFromW3CDate(registrationTimestampAsString));
+        } catch (ParseException e)
+        {
+            throw new IllegalArgumentException("Invalid registration-timestamp: " + registrationTimestampAsString);
+        }
     }
 
     private String extractType(Node xdNode)

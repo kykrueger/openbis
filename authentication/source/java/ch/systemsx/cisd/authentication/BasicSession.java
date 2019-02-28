@@ -18,7 +18,7 @@ package ch.systemsx.cisd.authentication;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 /**
  * Basic session object.
