@@ -30,7 +30,7 @@ from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
 from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
 from .property import PropertyHolder
-from .property_assignment import PropertyAssignments
+from .entity_types import EntityType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
 from .definitions import get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
@@ -2099,7 +2099,9 @@ class Openbis:
         return Things(self, 'tag', tags[attrs], 'permId')
 
 
-    def search_semantic_annotations(self, permId=None, entityType=None, propertyType=None, only_data = False):
+    def search_semantic_annotations(self, 
+        permId=None, entityType=None, propertyType=None, only_data=False
+    ):
         """ Get a list of semantic annotations for permId, entityType, propertyType or 
         property type assignment (DataFrame object).
         :param permId: permId of the semantic annotation.
@@ -2323,10 +2325,10 @@ class Openbis:
         """ Returns a list of all available sample types
         """
         return self._get_types_of(
-            "searchSampleTypes",
-            "Sample",
-            type,
-            ["generatedCodePrefix"]
+            method_name         = "searchSampleTypes",
+            entity              = "Sample",
+            type_name           = type,
+            optional_attributes = ["generatedCodePrefix"]
         )
 
     get_object_types = get_sample_types # Alias
@@ -2334,10 +2336,10 @@ class Openbis:
     def get_sample_type(self, type):
         try:
             property_asignments = self._get_types_of(
-                "searchSampleTypes",
-                "Sample",
-                type,
-                ["generatedCodePrefix", "validationPluginId"]
+                method_name         = "searchSampleTypes",
+                entity              = "Sample",
+                type_name           = type,
+                optional_attributes = ["generatedCodePrefix", "validationPluginId"]
             )
             return SampleType(self, property_asignments.data)
         except Exception:
@@ -2349,9 +2351,9 @@ class Openbis:
         """ Returns a list of all available experiment types
         """
         return self._get_types_of(
-            "searchExperimentTypes",
-            "Experiment",
-            type
+            method_name         = "searchExperimentTypes",
+            entity              = "Experiment",
+            type_name           = type
         )
 
     get_collection_types = get_experiment_types  # Alias
@@ -2359,9 +2361,9 @@ class Openbis:
     def get_experiment_type(self, type):
         try:
             return self._get_types_of(
-                "searchExperimentTypes",
-                "Experiment",
-                type
+                method_name         = "searchExperimentTypes",
+                entity              = "Experiment",
+                type_name           = type
             )
         except Exception:
            raise ValueError("No such experiment type: {}".format(type))
@@ -2371,11 +2373,19 @@ class Openbis:
     def get_material_types(self, type=None):
         """ Returns a list of all available material types
         """
-        return self._get_types_of("searchMaterialTypes", "Material", type)
+        return self._get_types_of(
+            method_name         = "searchMaterialTypes",
+            entity              = "Material",
+            type_name           = type
+        )
 
     def get_material_type(self, type):
         try:
-            return self._get_types_of("searchMaterialTypes", "Material", type)
+            return self._get_types_of(
+                method_name         = "searchMaterialTypes", 
+                entity              = "Material", 
+                type_name           = type
+            ) 
         except Exception:
             raise ValueError("No such material type: {}".format(type))
 
@@ -2386,7 +2396,12 @@ class Openbis:
 
     def get_dataset_type(self, type):
         try:
-            return self._get_types_of("searchDataSetTypes", "DataSet", type, optional_attributes=['kind'])
+            return self._get_types_of(
+                method_name         = "searchDataSetTypes", 
+                entity              = "DataSet",
+                type_name           = type,
+                optional_attributes = ['kind']
+            )
         except Exception:
             raise ValueError("No such dataSet type: {}".format(type))
 
@@ -2424,7 +2439,7 @@ class Openbis:
         parse_jackson(resp)
 
         if type_name is not None and len(resp['objects']) == 1:
-            return PropertyAssignments(
+            return EntityType(
                 openbis_obj = self,
                 data        = resp['objects'][0]
             )
