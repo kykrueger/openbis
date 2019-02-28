@@ -44,4 +44,6 @@ public interface IEntityPropertyHolder extends IIdHolder
      * Return untyped value or <code>null</code>.
      */
     public String tryGetUntypedValue();
+    
+    public boolean isEntityFrozen();
 }

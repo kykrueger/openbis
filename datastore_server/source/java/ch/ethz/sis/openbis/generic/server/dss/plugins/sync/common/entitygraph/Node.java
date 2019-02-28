@@ -24,13 +24,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IAttachmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IExperimentHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationDateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModifierHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IProjectHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistrationDateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IRegistratorHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISampleHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ISpaceHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -40,8 +37,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 
-public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistrationDateHolder & IRegistratorHolder & IPermIdHolder & ICodeHolder>
-        implements INode
+public class Node<T extends IRegistrationDateHolder & IPermIdHolder & ICodeHolder> implements INode
 {
     private final List<EdgeNodePair> connections;
 
@@ -56,6 +52,10 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
 
     public Node(T entity)
     {
+        if (entity == null)
+        {
+            throw new IllegalArgumentException("Unspecified entity");
+        }
         this.entity = entity;
         this.connections = new ArrayList<EdgeNodePair>();
         this.attachments = new ArrayList<Attachment>();
@@ -71,27 +71,14 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
     public boolean equals(Object obj)
     {
         if (this == obj)
+        {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Node<?> other = (Node<?>) obj;
-        if (entity == null)
-        {
-            if (other.entity != null)
-            {
-                return false;
-            }
-        } else if (this.getIdentifier().equals(other.getIdentifier()) == false)
+        }
+        if (obj instanceof Node == false)
         {
             return false;
         }
-        else if (getEntityKind().equals(other.getEntityKind()) == false)
-        {
-            return false;
-        }
-        return true;
+        return this.getIdentifier().equals(((Node<?>) obj).getIdentifier());
     }
 
     @Override
@@ -225,26 +212,25 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
     }
 
     @Override
-    public String getIdentifier()
+    public NodeIdentifier getIdentifier()
     {
         if (entity instanceof Project)
         {
-            return ((Project) entity).getIdentifier().getIdentifier();
+            return new NodeIdentifier(SyncEntityKind.PROJECT, ((Project) entity).getIdentifier().getIdentifier());
         }
         if (entity instanceof Experiment)
         {
-            return ((Experiment) entity).getIdentifier().getIdentifier();
+            return new NodeIdentifier(SyncEntityKind.EXPERIMENT, ((Experiment) entity).getIdentifier().getIdentifier());
         }
         if (entity instanceof Sample)
         {
-            return ((Sample) entity).getIdentifier().getIdentifier();
+            return new NodeIdentifier(SyncEntityKind.SAMPLE, ((Sample) entity).getIdentifier().getIdentifier());
         }
         else if (entity instanceof DataSet)
         {
-            return ((DataSet) entity).getPermId().toString();
+            return new NodeIdentifier(SyncEntityKind.DATA_SET, ((DataSet) entity).getPermId().toString());
         }
-        // TODO exception
-        return null;
+        throw new IllegalStateException("Entity " + entity + " is of invalid kind");
     }
 
     @Override
@@ -259,25 +245,24 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
     }
 
     @Override
-    public String getEntityKind()
+    public SyncEntityKind getEntityKind()
     {
         if (entity instanceof Project)
         {
-            return SyncEntityKind.PROJECT.getLabel();
+            return SyncEntityKind.PROJECT;
         }
         else if (entity instanceof Experiment)
         {
-            return SyncEntityKind.EXPERIMENT.getLabel();
+            return SyncEntityKind.EXPERIMENT;
         }
         else if (entity instanceof Sample)
         {
-            return SyncEntityKind.SAMPLE.getLabel();
+            return SyncEntityKind.SAMPLE;
         }
         else if (entity instanceof DataSet)
         {
-            return SyncEntityKind.DATA_SET.getLabel();
+            return SyncEntityKind.DATA_SET;
         }
-        // TODO exception
         return null;
     }
 
@@ -292,11 +277,6 @@ public class Node<T extends IModificationDateHolder & IModifierHolder & IRegistr
         {
             return null;
         }
-        Space space = ((ISpaceHolder) entity).getSpace();
-        if (space == null)
-        {
-            return null;
-        }
-        return space;
+        return ((ISpaceHolder) entity).getSpace();
     }
 }

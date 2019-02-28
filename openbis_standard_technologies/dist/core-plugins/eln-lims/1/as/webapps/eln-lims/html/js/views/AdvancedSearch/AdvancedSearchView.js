@@ -743,12 +743,12 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				sortable : !isGlobalSearch
 			}, {
 				label : 'Name',
-				property : 'NAME',
+				property : '$NAME',
 				isExportable: true,
 				sortable : !isGlobalSearch,
 				render : function(data) {
-					if(data.NAME) {
-						return getLinkOnClick(data.NAME, data);
+					if(data[profile.propertyReplacingCode]) {
+						return getLinkOnClick(data[profile.propertyReplacingCode], data);
 					} else {
 						return "";
 					}
@@ -870,7 +870,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				//2. Get columns
 				var propertyColumnsToSort = [];
 				for(var propertyCode in foundPropertyCodes) {
-					var propertiesToSkip = ["NAME", "XMLCOMMENTS", "ANNOTATIONS_STATE"];
+					var propertiesToSkip = ["$NAME", "$XMLCOMMENTS", "$ANNOTATIONS_STATE"];
 					if($.inArray(propertyCode, propertiesToSkip) !== -1) {
 						continue;
 					}

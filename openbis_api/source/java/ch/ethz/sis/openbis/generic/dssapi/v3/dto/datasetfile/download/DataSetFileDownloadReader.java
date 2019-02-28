@@ -63,10 +63,7 @@ public class DataSetFileDownloadReader implements Serializable
                     @Override
                     public int read() throws IOException
                     {
-                        if (lastDownload.getInputStream() != this)
-                        {
-                            throw new IllegalStateException("Input stream no longer valid");
-                        }
+                        assertValidInputStream();
 
                         if (bytesToRead > 0)
                         {
@@ -78,6 +75,30 @@ public class DataSetFileDownloadReader implements Serializable
                         }
                     }
 
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException
+                    {
+                        assertValidInputStream();
+
+                        int numberOfBytesRead = -1;
+                        if (bytesToRead > 0)
+                        {
+                            numberOfBytesRead = in.read(b, off, (int) Math.min(bytesToRead, (long) len));
+                            if (numberOfBytesRead > 0)
+                            {
+                                bytesToRead -= numberOfBytesRead;
+                            }
+                        }
+                        return numberOfBytesRead;
+                    }
+
+                    private void assertValidInputStream()
+                    {
+                        if (lastDownload.getInputStream() != this)
+                        {
+                            throw new IllegalStateException("Input stream no longer valid");
+                        }
+                    }
                 };
 
             lastDownload = new DataSetFileDownload(header, content);
@@ -136,15 +157,30 @@ public class DataSetFileDownloadReader implements Serializable
         }
 
         byte[] bytes = new byte[(int) objectSize];
-
-        for (int i = 0; i < objectSize; i++)
+        int numberOfBytesRead = read(in, bytes);
+        if (numberOfBytesRead < objectSize)
         {
-            bytes[i] = (byte) in.read();
+            throw new IllegalStateException("Only " + numberOfBytesRead + " bytes read instead of " + objectSize + " read.");
         }
-
         ByteArrayInputStream b = new ByteArrayInputStream(bytes);
         ObjectInputStream o = new ObjectInputStream(b);
         return o.readObject();
+    }
+
+    private static int read(final InputStream input, final byte[] buffer) throws IOException
+    {
+        int remaining = buffer.length;
+        while (remaining > 0)
+        {
+            final int location = buffer.length - remaining;
+            final int count = input.read(buffer, location, remaining);
+            if (-1 == count)
+            {
+                break;
+            }
+            remaining -= count;
+        }
+        return buffer.length - remaining;
     }
 
     @Override

@@ -23,7 +23,7 @@ import java.util.Arrays;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.RemoteConnectFailureException;
 

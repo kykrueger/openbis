@@ -35,7 +35,9 @@ public interface SpaceQuery extends ObjectQuery
     @Select(sql = "select s.id, s.code from spaces s where s.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<SpaceAuthorizationRecord> getAuthorizations(LongSet spaceIds);
 
-    @Select(sql = "select s.id, s.code, s.description, s.registration_timestamp as registrationDate from spaces s where s.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    @Select(sql = "select s.id, s.code, s.description, s.registration_timestamp as registrationDate, frozen, "
+            + "frozen_for_proj as frozenForProjects, frozen_for_samp as frozenForSamples "
+            + "from spaces s where s.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<SpaceBaseRecord> getSpaces(LongSet spaceIds);
 
     @Select(sql = "select s.space_id as objectId, s.id as relatedId from samples s where s.space_id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)

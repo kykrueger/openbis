@@ -18,7 +18,7 @@ package ch.systemsx.cisd.common.test;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 

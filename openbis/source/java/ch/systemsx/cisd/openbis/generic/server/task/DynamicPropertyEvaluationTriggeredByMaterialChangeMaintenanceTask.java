@@ -25,8 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.filesystem.FileUtilities;

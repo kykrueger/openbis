@@ -8,7 +8,7 @@ class TabContent extends React.Component {
   }
 }
 
-TabContent.propTypes ={
+TabContent.propTypes = {
   name: PropTypes.string.isRequired,
   dirty: PropTypes.bool.isRequired,
   onSelect: PropTypes.func.isRequired,

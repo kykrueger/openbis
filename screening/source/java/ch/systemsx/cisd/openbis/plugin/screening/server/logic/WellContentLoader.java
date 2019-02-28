@@ -29,7 +29,7 @@ import java.util.Set;
 
 import net.lemnik.eodsql.DataIterator;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.common.collection.IKeyExtractor;

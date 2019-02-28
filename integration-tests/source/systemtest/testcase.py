@@ -1,3 +1,4 @@
+import difflib
 import re
 import os
 import os.path
@@ -5,7 +6,7 @@ import shutil
 import time
 import traceback
 
-import util
+import systemtest.util as util
 
 INSTALLER_PROJECT = 'installation'
 OPENBIS_STANDARD_TECHNOLOGIES_PROJECT = 'openbis_standard_technologies'
@@ -82,7 +83,7 @@ class TestCase(object):
                 self.executeInDevMode()
             success = self.numberOfFailures == 0
         except:
-            traceback.print_exc()
+            util.printAndFlush(traceback.format_exc())
             success = False
         finally:
             duration = util.renderDuration(time.time() - startTime)
@@ -142,12 +143,47 @@ class TestCase(object):
         """
         rendered_expected = self._render(expected)
         if expected != actual:
-            self.fail("%s\n  expected: <%s>\n   but was: <%s>" % (itemName, rendered_expected, self._render(actual)))
+            rendered_actual = self._render(actual)
+            diff = difflib.ndiff(rendered_expected.splitlines(), rendered_actual.splitlines())
+            self.fail("%s\n  Differences:\n%s" % (itemName, '\n'.join(diff)))
             return False
         elif verbose:
             util.printAndFlush("%s as expected: <%s>" % (itemName, rendered_expected))
         return True
-    
+
+    def assertType(self, variableName, expectedType, variable):
+        self.assertEquals("Type of %s" % variableName, expectedType, type(variable))
+
+    def assertIn(self, itemsName, items, item):
+        if item not in items:
+            self.fail("Item %s not in %s" % (item, itemsName))
+        util.printAndFlush("%s as expected: contains <%s>" % (itemsName, item))
+
+    def assertNone(self, itemName, item):
+        self.assertEquals(itemName, None, item)
+
+    def assertNotNone(self, itemName, item):
+        if item is None:
+            self.fail("Item %s is None" % itemName)
+        util.printAndFlush("%s as expected: not None" % itemName)
+
+    def assertTrue(self, itemName, item):
+        self.assertEquals(itemName, True, item)
+
+    def assertFalse(self, itemName, item):
+        self.assertEquals(itemName, False, item)
+
+    def assertLength(self, itemsName, length, items):
+        self.assertEquals("Length of %s" % itemsName, length, len(items))
+
+    def assertEmpty(self, itemsName, items):
+        self.assertLength(itemsName, 0, items)
+
+    def assertNotEmpty(self, itemsName, items):
+        if len(items) == 0:
+            self.fail("%s is empty" % itemsName)
+        util.printAndFlush("%s as expected: not empty" % itemsName)
+
     def _render(self, item):
         if not isinstance(item, list):
             return str(item)
@@ -242,7 +278,21 @@ class TestCase(object):
         installPath = "%s/screeningAPI" % self.playgroundFolder
         util.unzip(zipFile, installPath)
         return ScreeningTestClient(self, installPath)
-    
+
+    def installPybis(self):
+        zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'pybis-')
+        installPath = "%s/pybis" % self.playgroundFolder
+        util.unzip(zipFile, installPath)
+        util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of pybis failed.")
+
+    def installObis(self):
+        zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'obis-')
+        installPath = "%s/obis" % self.playgroundFolder
+        util.unzip(zipFile, installPath)
+        print('pip install ' + installPath + '/src/python')
+        util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of obis failed.")
+
+
     def getTemplatesFolder(self):
         return "%s/%s" % (TEMPLATES, self.name)
     
@@ -456,6 +506,7 @@ class OpenbisController(_Controller):
         self.dssProperties['imaging-database.kind'] = self.databaseKind
         self.dssProperties['proteomics-database-kind'] = self.databaseKind
         self.dssPropertiesModified = True
+        self.passwdScript = "%s/servers/openBIS-server/jetty/bin/passwd.sh" % installPath
         if port != '8443':
             self.sslIniFile = "%s/servers/openBIS-server/jetty/start.d/ssl.ini" % installPath
             if os.path.exists(self.sslIniFile):
@@ -676,8 +727,10 @@ class OpenbisController(_Controller):
         monitor.addNotificationCondition(util.RegexCondition('post-registration'))
         numberOfRegisteredDataSets = 0
         while numberOfRegisteredDataSets < numberOfDataSets:
-            elements = monitor.waitUntilEvent(util.RegexCondition('Post registration of (\\d*). of \\1 data sets'))
-            numberOfRegisteredDataSets += int(elements[0])
+            condition1 = util.RegexCondition('Post registration of (\\d*). of \\1 data sets')
+            condition2 = util.RegexCondition('Paths inside data set .* successfully added to database')
+            elements = monitor.waitUntilEvent(util.ConditionSequence([condition1, condition2]))
+            numberOfRegisteredDataSets += int(elements[0][0])
             util.printAndFlush("%d of %d data sets registered" % (numberOfRegisteredDataSets, numberOfDataSets))
 
     def waitUntilDataSetRegistrationFailed(self, timeOutInMinutes = DEFAULT_TIME_OUT_IN_MINUTES):
@@ -697,11 +750,11 @@ class OpenbisController(_Controller):
     def createLogMonior(self, timeOutInMinutes = DEFAULT_TIME_OUT_IN_MINUTES):
         logFilePath = "%s/servers/datastore_server/log/datastore_server_log.txt" % self.installPath
         return util.LogMonitor("%s.DSS" % self.instanceName, logFilePath, timeOutInMinutes)
-        
+
     def assertFeatureVectorLabel(self, featureCode, expectedFeatureLabel):
-        data = self.queryDatabase('imaging',  "select distinct label from feature_defs where code = '%s'" % featureCode);
+        data = self.queryDatabase('imaging',  "select distinct label from feature_defs where code = '%s'" % featureCode)
         self.testCase.assertEquals("label of feature %s" % featureCode, [[expectedFeatureLabel]], data)
-        
+
     def _applyCorePlugins(self):
         source = "%s/core-plugins/%s" % (self.templatesFolder, self.instanceName)
         if os.path.exists(source):
@@ -719,8 +772,11 @@ class OpenbisController(_Controller):
         enabledModules = "%s, %s" % (enabledModules, pluginName) if len(enabledModules) > 0 else pluginName
         corePluginsProperties['enabled-modules'] = enabledModules
         util.writeProperties(corePluginsPropertiesFile, corePluginsProperties)
-        
-        
+
+    def addUser(self, name, password):
+        util.executeCommand([self.passwdScript, 'add', name, '-p', password], 
+            "Could not add user '%s' to instance '%s'." % (name, self.instanceName))
+
     def _setUpStore(self):
         templateStore = "%s/stores/%s" % (self.templatesFolder, self.instanceName)
         if os.path.isdir(templateStore):

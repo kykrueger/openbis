@@ -25,7 +25,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jmock.Mockery;
 import org.jmock.api.Action;
 import org.jmock.internal.Cardinality;

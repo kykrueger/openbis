@@ -1,12 +1,13 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { withStyles } from '@material-ui/core/styles'
+import {connect} from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty'
+import Collapse from '@material-ui/core/Collapse';
 import PropTypes from 'prop-types'
 
 
@@ -39,9 +40,11 @@ class BrowserList extends React.Component {
 
   icon(node) {
     if (node.expanded) {
-      return (<ExpandMoreIcon  onClick={ (e) => this.props.collapseNode(e, node) }/>)
+      return (<ListItemIcon><ExpandMoreIcon onClick={(e) => this.props.collapseNode(e, node)}/></ListItemIcon>)
+    } else if (node.loaded === false || (node.children !== null && node.children.length > 0)) {
+      return (<ListItemIcon><ChevronRightIcon onClick={(e) => this.props.expandNode(e, node)}/></ListItemIcon>)
     } else {
-      return (<ChevronRightIcon  onClick={ (e) => this.props.expandNode(e, node) }/>)
+      return null
     }
   }
 
@@ -51,28 +54,26 @@ class BrowserList extends React.Component {
     return (
       <List className={classes.noPadding}>
         {
-          this.props.nodes.map(node => 
+          this.props.nodes.map(node =>
+            node.filtered &&
             <div key={node.id}>
-              <ListItem 
+              <ListItem
                 button
-                selected={this.props.selectedNodeId ===  node.id}
+                selected={this.props.selectedNodeId === node.id}
                 key={node.id}
-                onClick = {() => this.props.onSelect(node)}
-                style={{ paddingLeft: '' + this.props.level * 20 + 'px' }}>
-                <ListItemIcon>
-                  {this.icon(node)}
-                </ListItemIcon>
-                { node.loading &&
+                onClick={() => this.props.onSelect(node)}
+                style={{paddingLeft: '' + this.props.level * 20 + 'px'}}>
+                {this.icon(node)}
+                {node.loading &&
                 <ListItemIcon>
                   <HourglassEmptyIcon/>
                 </ListItemIcon>
                 }
-                { this.props.renderNode(node) }
+                {this.props.renderNode(node)}
               </ListItem>
-              {
-                node.expanded &&
-                <BrowserList {...this.props} nodes={node.children} level={this.props.level+1}/>
-              }
+              <Collapse key={node.id + '-collapse'} in={node.expanded}>
+                <BrowserList {...this.props} nodes={node.children} level={this.props.level + 1}/>
+              </Collapse>
             </div>
           )
         }

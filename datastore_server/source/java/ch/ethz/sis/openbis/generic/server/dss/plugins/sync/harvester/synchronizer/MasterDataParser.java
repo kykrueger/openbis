@@ -35,6 +35,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.ExternalDmsPermId;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.DefaultNameTranslator;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
@@ -65,6 +68,7 @@ public class MasterDataParser
     
     private Map<String, Script> validationPlugins = new HashMap<String, Script>();
 
+    private Map<String, ExternalDms> externalDataManagementSystems = new HashMap<>();
     private Map<String, FileFormatType> fileFormatTypes = new HashMap<String, FileFormatType>();
 
     private Map<String, PropertyType> propertyTypes = new HashMap<String, PropertyType>();
@@ -122,6 +126,7 @@ public class MasterDataParser
         parseSampleTypes(docElement.getElementsByTagName("xmd:objectTypes"));
         parseDataSetTypes(docElement.getElementsByTagName("xmd:dataSetTypes"));
         parseExperimentTypes(docElement.getElementsByTagName("xmd:collectionTypes"));
+        parseExternalDataManagementSystems(docElement.getElementsByTagName("xmd:externalDataManagementSystems"));
     }
 
 
@@ -170,6 +175,11 @@ public class MasterDataParser
         return materialTypes;
     }
 
+    public Map<String, ExternalDms> getExternalDataManagementSystems()
+    {
+        return externalDataManagementSystems;
+    }
+
     private void parseValidationPlugins(NodeList validationPluginsNode) throws XPathExpressionException
     {
         if (validationPluginsNode.getLength() == 0)
@@ -196,6 +206,30 @@ public class MasterDataParser
         }
     }
 
+    private void parseExternalDataManagementSystems(NodeList edmsNode) throws XPathExpressionException
+    {
+        if (edmsNode.getLength() == 0)
+        {
+            return;
+        }
+        validateElementNode(edmsNode, "externalDataManagementSystems");
+
+        NodeList edmsNodes = ((Element) edmsNode.item(0)).getElementsByTagName("xmd:externalDataManagementSystem");
+
+        for (int i = 0; i < edmsNodes.getLength(); i++)
+        {
+            Element element = (Element) edmsNodes.item(i);
+            ExternalDms edms = new ExternalDms();
+            String code = nameTranslator.translate(getAttribute(element, "code"));
+            edms.setCode(code);
+            edms.setPermId(new ExternalDmsPermId(code));
+            edms.setLabel(getAttribute(element, "label"));
+            edms.setAddressType(ExternalDmsAddressType.valueOf(getAttribute(element, "addressType")));
+            edms.setAddress(getAttribute(element, "address"));
+            externalDataManagementSystems.put(code, edms);
+        }
+    }
+
     private void parseFileFormatTypes(NodeList fileFormatTypesNode) throws XPathExpressionException
     {
         if (fileFormatTypesNode.getLength() == 0)
@@ -203,14 +237,14 @@ public class MasterDataParser
             return;
         }
         validateElementNode(fileFormatTypesNode, "fileFormatTypes");
-
+        
         Element fileFormatTypesElement = (Element) fileFormatTypesNode.item(0);
         NodeList fileFormatTypeNodes = fileFormatTypesElement.getElementsByTagName("xmd:fileFormatType");
-
+        
         for (int i = 0; i < fileFormatTypeNodes.getLength(); i++)
         {
             Element typeElement = (Element) fileFormatTypeNodes.item(i);
-
+            
             FileFormatType type = new FileFormatType();
             String code = getAttribute(typeElement, "code");
             type.setCode(code);
@@ -219,7 +253,7 @@ public class MasterDataParser
             fileFormatTypes.put(code, type);
         }
     }
-
+    
     private void validateElementNode(NodeList nodeList, String tagName) throws XPathExpressionException
     {
         if (nodeList.getLength() != 1)
@@ -257,7 +291,7 @@ public class MasterDataParser
 
     private void parseVocabularyTerms(Element vocabElement, NewVocabulary newVocabulary)
     {
-        NodeList termNodes = vocabElement.getElementsByTagName("term");
+        NodeList termNodes = vocabElement.getElementsByTagName("xmd:term");
         for (int i = 0; i < termNodes.getLength(); i++)
         {
             Element termElement = (Element) termNodes.item(i);
@@ -274,11 +308,7 @@ public class MasterDataParser
     private String getAttribute(Element termElement, String attr)
     {
         Node node = termElement.getAttributes().getNamedItem(attr);
-        if (node != null)
-        {
-            return node.getTextContent().trim();
-        }
-        return null;
+        return node != null ? node.getTextContent() : null;
     }
 
     private void parseMaterialTypes(NodeList matTypesNode) throws XPathExpressionException
@@ -297,11 +327,7 @@ public class MasterDataParser
             MaterialType materialType = new MaterialType();
             materialType.setCode(nameTranslator.translate(getAttribute(materialTypeElement, "code")));
             materialType.setDescription(getAttribute(materialTypeElement, "description"));
-            String validationPluginName = getAttribute(materialTypeElement, "validationPlugin");
-            if (validationPluginName != null)
-            {
-                materialType.setValidationScript(validationPlugins.get(validationPluginName));
-            }
+            materialType.setValidationScript(getValidationPlugin(materialTypeElement));
             materialTypes.put(materialType.getCode(), materialType);
 
             parsePropertyAssignments(EntityKind.MATERIAL, materialType, materialTypeElement);
@@ -324,11 +350,7 @@ public class MasterDataParser
             ExperimentType expType = new ExperimentType();
             expType.setCode(nameTranslator.translate(getAttribute(expTypeElement, "code")));
             expType.setDescription(getAttribute(expTypeElement, "description"));
-            String validationPluginName = getAttribute(expTypeElement, "validationPlugin");
-            if (validationPluginName != null)
-            {
-                expType.setValidationScript(validationPlugins.get(validationPluginName));
-            }
+            expType.setValidationScript(getValidationPlugin(expTypeElement));
             experimentTypes.put(expType.getCode(), expType);
 
             parsePropertyAssignments(EntityKind.EXPERIMENT, expType, expTypeElement);
@@ -358,11 +380,7 @@ public class MasterDataParser
             sampleType.setSubcodeUnique(Boolean.valueOf(getAttribute(sampleTypeElement, "subcodeUnique")));
             sampleType.setAutoGeneratedCode(Boolean.valueOf(getAttribute(sampleTypeElement, "autoGeneratedCode")));
             sampleType.setGeneratedCodePrefix(getAttribute(sampleTypeElement, "generatedCodePrefix"));
-            String validationPluginName = getAttribute(sampleTypeElement, "validationPlugin");
-            if (validationPluginName != null)
-            {
-                sampleType.setValidationScript(validationPlugins.get(validationPluginName));
-            }
+            sampleType.setValidationScript(getValidationPlugin(sampleTypeElement));
             sampleTypes.put(sampleType.getCode(), sampleType);
 
             parsePropertyAssignments(EntityKind.SAMPLE, sampleType, sampleTypeElement);
@@ -396,15 +414,21 @@ public class MasterDataParser
                 dataSetType.setMainDataSetPath(mainDataSetPath);
             }
             dataSetType.setDeletionDisallow(Boolean.valueOf(getAttribute(dataSetTypeElement, "deletionDisallowed")));
-            String validationPluginName = getAttribute(dataSetTypeElement, "validationPlugin");
-            if (validationPluginName != null)
-            {
-                dataSetType.setValidationScript(validationPlugins.get(validationPluginName));
-            }
+            dataSetType.setValidationScript(getValidationPlugin(dataSetTypeElement));
             dataSetTypes.put(dataSetType.getCode(), dataSetType);
 
             parsePropertyAssignments(EntityKind.DATA_SET, dataSetType, dataSetTypeElement);
         }
+    }
+    
+    private Script getValidationPlugin(Element element)
+    {
+        String name = getAttribute(element, "validationPlugin");
+        if (StringUtils.isBlank(name))
+        {
+            return null;
+        }
+        return validationPlugins.get(nameTranslator.translate(name));
     }
 
     private void parsePropertyAssignments(EntityKind entityKind, EntityType entityType, Element entityTypeElement)
@@ -433,12 +457,14 @@ public class MasterDataParser
             assignment.setMandatory(Boolean.valueOf(getAttribute(propertyAssignmentElement, "mandatory")));
             assignment.setDefaultValue(ERROR_PROPERTY_PREFIX);
             assignment.setSection(getAttribute(propertyAssignmentElement, "section"));
-            assignment.setOrdinal(Long.valueOf(getAttribute(propertyAssignmentElement, "ordinal")));
+            // ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypePropertyTypeBO.createAssignment() increases
+            // the provided ordinal by one. Thus, we have to subtract 1 in order to get the same ordinal.
+            assignment.setOrdinal(Long.valueOf(getAttribute(propertyAssignmentElement, "ordinal")) - 1);
             assignment.setShownInEditView(Boolean.valueOf(getAttribute(propertyAssignmentElement, "showInEdit")));
             String pluginId = getAttribute(propertyAssignmentElement, "plugin");
             if (pluginId != null)
             {
-                assignment.setScriptName(pluginId);
+                assignment.setScriptName(nameTranslator.translate(pluginId));
                 String pluginType = getAttribute(propertyAssignmentElement, "pluginType");
                 assignment.setDynamic(ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType.DYNAMIC_PROPERTY.toString().equals(pluginType));
                 assignment.setManaged(ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType.MANAGED_PROPERTY.toString().equals(pluginType));

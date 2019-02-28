@@ -46,13 +46,13 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.ConfigReader;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SynchronizationConfigReader;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.EntitySynchronizer;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.SynchronizationContext;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.translator.INameTranslator;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.cifex.shared.basic.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
@@ -96,6 +96,8 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
 
     private IApplicationServerApi v3Api;
     
+    private IDataStoreServerApi v3DssApi;
+
     private DataSetProcessingContext context;
 
     private File harvesterConfigFile;
@@ -103,6 +105,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
     private IMailClient mailClient;
 
     private String dataStoreCode;
+
 
     private static class Timestamps
     {
@@ -123,6 +126,8 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
     {
         service = ServiceProvider.getOpenBISService();
         v3Api = ServiceProvider.getV3ApplicationService();
+        v3DssApi = ServiceProvider.getDssServiceInternalV3();
+
         context = new DataSetProcessingContext(null, null, null, null, null, null);
         dataStoreCode = getConfigProvider().getDataStoreCode();
         storeRoot = new File(DssPropertyParametersUtil.loadServiceProperties().getProperty(PluginTaskInfoProvider.STOREROOT_DIR_KEY));
@@ -216,6 +221,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         SynchronizationContext syncContext = new SynchronizationContext();
         syncContext.setService(service);
         syncContext.setV3Api(v3Api);
+        syncContext.setV3DssApi(v3DssApi);
         syncContext.setDataStoreCode(dataStoreCode);
         syncContext.setStoreRoot(storeRoot);
         syncContext.setLastSyncTimestamp(cutOffTimestamp);
@@ -370,9 +376,9 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
                     assert line != null : "Unspecified line";
                     final String trimmed = line.getText().trim();
                     return trimmed.length() > 0 && trimmed.startsWith("#") == false &&
-                            (trimmed.startsWith(SyncEntityKind.SAMPLE.getLabel()) == true
-                                    || trimmed.startsWith(SyncEntityKind.EXPERIMENT.getLabel()) == true
-                                    || trimmed.startsWith(SyncEntityKind.PROJECT.getLabel()) == true);
+                            (trimmed.startsWith(SyncEntityKind.SAMPLE.toString()) == true
+                                    || trimmed.startsWith(SyncEntityKind.EXPERIMENT.toString()) == true
+                                    || trimmed.startsWith(SyncEntityKind.PROJECT.toString()) == true);
                 }
             });
     }

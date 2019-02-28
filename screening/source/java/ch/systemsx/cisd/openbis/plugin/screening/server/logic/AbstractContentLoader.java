@@ -20,7 +20,7 @@ import java.util.Set;
 
 import net.lemnik.eodsql.QueryTool;
 
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;

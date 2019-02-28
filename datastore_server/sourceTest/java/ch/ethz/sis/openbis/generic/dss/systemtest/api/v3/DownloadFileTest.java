@@ -131,7 +131,7 @@ public class DownloadFileTest extends AbstractFileTest
         reader.read();
         DataSetFileDownload download3 = reader.read();
 
-        assertContent(IOUtils.toString(download3.getInputStream()), getPath("subdir1/file3.txt"));
+        assertContent(IOUtils.toString(download3.getInputStream()), download3.getDataSetFile().getPath());
     }
 
     @Test
@@ -210,7 +210,7 @@ public class DownloadFileTest extends AbstractFileTest
     private String getContent(String path)
     {
         String relativePath = path.substring(getPathPrefix().length());
-        return "file content of " + relativePath;
+        return createRandomContent(relativePath);
     }
 
     private String getPath(String path)

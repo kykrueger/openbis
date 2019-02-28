@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
@@ -30,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDele
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractDeleteEntityExecutor;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ITrashBO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DeletionPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
@@ -74,11 +76,18 @@ public class DeleteExperimentExecutor extends AbstractDeleteEntityExecutor<IDele
     @Override
     protected IDeletionId delete(IOperationContext context, Collection<ExperimentPE> entities, ExperimentDeletionOptions deletionOptions)
     {
-        ITrashBO trashBO = businessObjectFactory.createTrashBO(context.getSession());
-        trashBO.createDeletion(deletionOptions.getReason());
-        trashBO.trashExperiments(asTechIds(entities));
-        DeletionPE deletion = trashBO.getDeletion();
-        return new DeletionTechId(deletion.getId());
+        try
+        {
+            ITrashBO trashBO = businessObjectFactory.createTrashBO(context.getSession());
+            trashBO.createDeletion(deletionOptions.getReason());
+            trashBO.trashExperiments(asTechIds(entities));
+            DeletionPE deletion = trashBO.getDeletion();
+            return new DeletionTechId(deletion.getId());
+        } catch (DataAccessException e)
+        {
+            DataAccessExceptionTranslator.throwException(e, "deletion", null);
+            return null; // never called
+        }
     }
 
 }

@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.authentication.crowd;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 

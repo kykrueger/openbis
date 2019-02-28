@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -191,7 +191,7 @@ class ReflectingStringEscaperRestricted<T> extends ReflectingStringEscaperImpl<T
             }
             if (escapedProperties.contains(fieldOrNull.getName()))
             {
-                return StringEscapeUtils.escapeHtml(value);
+                return StringEscapeUtils.escapeHtml4(value);
             }
             return null;
         }
@@ -234,7 +234,7 @@ class ReflectingStringEscaperUnrestricted<T> extends ReflectingStringEscaperImpl
             if (null == fieldOrNull)
             {
                 // happens e.g. when array of strings is escaped
-                return StringEscapeUtils.escapeHtml(value);
+                return StringEscapeUtils.escapeHtml4(value);
             }
 
             // Don't escape the ones that are specified as not to be escaped
@@ -243,7 +243,7 @@ class ReflectingStringEscaperUnrestricted<T> extends ReflectingStringEscaperImpl
                 return null;
             }
 
-            return StringEscapeUtils.escapeHtml(value);
+            return StringEscapeUtils.escapeHtml4(value);
         }
     }
 

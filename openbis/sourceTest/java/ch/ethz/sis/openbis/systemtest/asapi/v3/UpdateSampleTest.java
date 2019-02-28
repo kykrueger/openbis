@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
@@ -34,6 +35,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCrea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.AttachmentFileName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
@@ -51,11 +56,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-
 import junit.framework.Assert;
 
 /**
@@ -63,6 +69,8 @@ import junit.framework.Assert;
  */
 public class UpdateSampleTest extends AbstractSampleTest
 {
+    private static final String PREFIX = "UST-";
+
     @Test
     public void testUpdateSharedSampleWithHomelessPowerUser()
     {
@@ -1512,6 +1520,208 @@ public class UpdateSampleTest extends AbstractSampleTest
 
         assertAccessLog(
                 "update-samples  SAMPLE_UPDATES('[SampleUpdate[sampleId=/CISD/CP-TEST-1], SampleUpdate[sampleId=201206191219327-1055]]')");
+    }
+
+    @Test
+    public void testFreeze()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId1 = new SampleIdentifier("/CISD/MP002-1:B11");
+        SampleUpdate update1 = new SampleUpdate();
+        update1.setSampleId(sampleId1);
+        update1.freeze();
+        SampleIdentifier sampleId2 = new SampleIdentifier("/CISD/MP002-1:B12");
+        SampleUpdate update2 = new SampleUpdate();
+        update2.setSampleId(sampleId2);
+        update2.freezeForComponents();
+        SampleIdentifier sampleId3 = new SampleIdentifier("/CISD/MP002-1:B13");
+        SampleUpdate update3 = new SampleUpdate();
+        update3.setSampleId(sampleId3);
+        update3.freezeForChildren();
+        SampleIdentifier sampleId4 = new SampleIdentifier("/CISD/MP002-1:B14");
+        SampleUpdate update4 = new SampleUpdate();
+        update4.setSampleId(sampleId4);
+        update4.freezeForParents();
+        SampleIdentifier sampleId5 = new SampleIdentifier("/CISD/MP002-1:B15");
+        SampleUpdate update5 = new SampleUpdate();
+        update5.setSampleId(sampleId5);
+        update5.freezeForDataSets();
+
+        // When
+        v3api.updateSamples(sessionToken, Arrays.asList(update1, update2, update3, update4, update5));
+
+        // Then
+        Map<ISampleId, Sample> samples = v3api.getSamples(sessionToken,
+                Arrays.asList(sampleId1, sampleId2, sampleId3, sampleId4, sampleId5), new SampleFetchOptions());
+        Sample sample1 = samples.get(sampleId1);
+        assertEquals(sample1.getIdentifier().getIdentifier(), sampleId1.getIdentifier());
+        assertEquals(sample1.isFrozen(), true);
+        assertEquals(sample1.isFrozenForComponents(), false);
+        assertEquals(sample1.isFrozenForChildren(), false);
+        assertEquals(sample1.isFrozenForParents(), false);
+        assertEquals(sample1.isFrozenForDataSets(), false);
+        assertFreezingEvent(TEST_USER, sample1.getIdentifier().getIdentifier(), EntityType.SAMPLE,
+                new FreezingFlags().freeze().freeze());
+        Sample sample2 = samples.get(sampleId2);
+        assertEquals(sample2.getIdentifier().getIdentifier(), sampleId2.getIdentifier());
+        assertEquals(sample2.isFrozen(), true);
+        assertEquals(sample2.isFrozenForComponents(), true);
+        assertEquals(sample2.isFrozenForChildren(), false);
+        assertEquals(sample2.isFrozenForParents(), false);
+        assertEquals(sample2.isFrozenForDataSets(), false);
+        assertFreezingEvent(TEST_USER, sample2.getIdentifier().getIdentifier(), EntityType.SAMPLE,
+                new FreezingFlags().freeze().freezeForComponents());
+        Sample sample3 = samples.get(sampleId3);
+        assertEquals(sample3.getIdentifier().getIdentifier(), sampleId3.getIdentifier());
+        assertEquals(sample3.isFrozen(), true);
+        assertEquals(sample3.isFrozenForComponents(), false);
+        assertEquals(sample3.isFrozenForChildren(), true);
+        assertEquals(sample3.isFrozenForParents(), false);
+        assertEquals(sample3.isFrozenForDataSets(), false);
+        assertFreezingEvent(TEST_USER, sample3.getIdentifier().getIdentifier(), EntityType.SAMPLE,
+                new FreezingFlags().freeze().freezeForChildren());
+        Sample sample4 = samples.get(sampleId4);
+        assertEquals(sample4.getIdentifier().getIdentifier(), sampleId4.getIdentifier());
+        assertEquals(sample4.isFrozen(), true);
+        assertEquals(sample4.isFrozenForComponents(), false);
+        assertEquals(sample4.isFrozenForChildren(), false);
+        assertEquals(sample4.isFrozenForParents(), true);
+        assertEquals(sample4.isFrozenForDataSets(), false);
+        assertFreezingEvent(TEST_USER, sample4.getIdentifier().getIdentifier(), EntityType.SAMPLE,
+                new FreezingFlags().freeze().freezeForParents());
+        Sample sample5 = samples.get(sampleId5);
+        assertEquals(sample5.getIdentifier().getIdentifier(), sampleId5.getIdentifier());
+        assertEquals(sample5.isFrozen(), true);
+        assertEquals(sample5.isFrozenForComponents(), false);
+        assertEquals(sample5.isFrozenForChildren(), false);
+        assertEquals(sample5.isFrozenForParents(), false);
+        assertEquals(sample5.isFrozenForDataSets(), true);
+        assertFreezingEvent(TEST_USER, sample5.getIdentifier().getIdentifier(), EntityType.SAMPLE,
+                new FreezingFlags().freeze().freezeForDataSets());
+    }
+
+    @Test
+    public void testFreezing()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freeze();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        SampleUpdate update2 = new SampleUpdate();
+        update2.setSampleId(sampleId);
+        update2.setProperty("DESCRIPTION", "a test");
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(sessionToken, Arrays.asList(update2)),
+                // Then
+                "ERROR: Operation INSERT PROPERTY is not allowed because sample C1 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForComponents()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freezeForComponents();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        SampleUpdate update2 = new SampleUpdate();
+        update2.setSampleId(sampleId);
+        update2.getComponentIds().remove(new SampleIdentifier("/CISD/C1:C01"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(sessionToken, Arrays.asList(update2)),
+                // Then
+                "ERROR: Operation REMOVE CONTAINER is not allowed because sample C1 is frozen for sample C01.");
+    }
+
+    @Test
+    public void testFreezingForChildren()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freezeForChildren();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        SampleUpdate update2 = new SampleUpdate();
+        update2.setSampleId(sampleId);
+        update2.getChildIds().add(new SampleIdentifier("/CISD/C2"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(sessionToken, Arrays.asList(update2)),
+                // Then
+                "ERROR: Operation INSERT is not allowed because sample C1 or C2 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForParents()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freezeForParents();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        SampleUpdate update2 = new SampleUpdate();
+        update2.setSampleId(sampleId);
+        update2.getParentIds().add(new SampleIdentifier("/CISD/C2"));
+
+        // When
+        assertUserFailureException(Void -> v3api.updateSamples(sessionToken, Arrays.asList(update2)),
+                // Then
+                "ERROR: Operation INSERT is not allowed because sample C2 or C1 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForDataSets()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freezeForDataSets();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        DataSetCreation dataSetCreation = new DataSetCreation();
+        dataSetCreation.setCode(PREFIX + "D1");
+        dataSetCreation.setTypeId(new EntityTypePermId("DELETION_TEST_CONTAINER", EntityKind.DATA_SET));
+        dataSetCreation.setDataStoreId(new DataStorePermId("STANDARD"));
+        dataSetCreation.setDataSetKind(DataSetKind.CONTAINER);
+        dataSetCreation.setSampleId(sampleId);
+
+        // When
+        assertUserFailureException(Void -> v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation)),
+                // Then
+                "ERROR: Operation SET SAMPLE is not allowed because sample C1 is frozen for data set UST-D1.");
+    }
+
+    @Test(dataProvider = "freezeMethods")
+    public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        freezeMethod.method.invoke(update);
+
+        // When
+        assertAuthorizationFailureException(Void -> v3api.updateSamples(sessionToken, Arrays.asList(update)), null);
+    }
+
+    @DataProvider(name = "freezeMethods")
+    public static Object[][] freezeMethods()
+    {
+        return asCartesianProduct(getFreezingMethods(SampleUpdate.class));
     }
 
 }

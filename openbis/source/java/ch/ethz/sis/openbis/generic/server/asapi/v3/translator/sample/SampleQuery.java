@@ -37,7 +37,9 @@ public interface SampleQuery extends ObjectQuery
 
     @Select(sql = "select s.id, s.code, s.perm_id as permId, sp.code as spaceCode, p.code as projectCode, "
             + "sc.code as containerCode, s.registration_timestamp as registrationDate, "
-            + "s.modification_timestamp as modificationDate "
+            + "s.modification_timestamp as modificationDate, s.frozen as frozen, s.frozen_for_comp as frozenForComponents, "
+            + "s.frozen_for_children as frozenForChildren, s.frozen_for_parents as frozenForParents, "
+            + "s.frozen_for_data as frozenForDataSets "
             + "from samples s left join spaces sp on s.space_id = sp.id "
             + "left join projects p on s.proj_id = p.id "
             + "left join samples sc on s.samp_id_part_of = sc.id "

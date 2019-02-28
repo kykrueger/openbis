@@ -20,10 +20,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import ch.systemsx.cisd.openbis.common.types.BooleanOrUnknown;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
@@ -418,7 +418,12 @@ public class NewExternalData implements Serializable
         builder.append("kind", getDataSetKind());
         builder.append("fileFormat", getFileFormatType());
         builder.append("properties", getDataSetProperties());
+        appendMore(builder);
         return builder.toString();
+    }
+    
+    protected void appendMore(ToStringBuilder builder)
+    {
     }
 
 }

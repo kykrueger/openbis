@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 
@@ -262,10 +262,12 @@ public class EntityTypePropertyTypeBO extends AbstractBusinessObject implements
         if (assignmentUpdates.isDynamic() != assignment.isDynamic())
         {
             throw new UserFailureException(String.format(
-                    "Changing assignment from '%s' to '%s' is not allowed. "
+                    "Changing assignment from '%s' to '%s' for %s.%s is not allowed. "
                             + "Please create a new assignment.",
                     describeDynamic(assignment.isDynamic()),
-                    describeDynamic(assignmentUpdates.isDynamic())));
+                    describeDynamic(assignmentUpdates.isDynamic()),
+                    assignmentUpdates.getEntityTypeCode(),
+                    assignmentUpdates.getPropertyTypeCode()));
         }
         boolean scriptChanged = false;
         if ((assignment.isDynamic() || assignment.isManaged())

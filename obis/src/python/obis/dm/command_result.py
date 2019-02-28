@@ -29,6 +29,8 @@ class CommandResult(object):
 
 
 class CommandException(Exception):
+    """ Instead of returning a CommandResult for all actions, we can also return 
+    a result normally and throw a CommandException instead on error. """
     
     def __init__(self, command_result):
         self.command_result = command_result

@@ -18,8 +18,8 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import ch.systemsx.cisd.common.parser.BeanProperty;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;

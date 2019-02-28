@@ -18,7 +18,7 @@ package ch.systemsx.cisd.common.properties;
 
 import java.util.Properties;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

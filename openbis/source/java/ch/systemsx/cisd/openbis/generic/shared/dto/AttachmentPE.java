@@ -33,9 +33,9 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.hibernate.search.annotations.ClassBridge;
@@ -88,9 +88,15 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
      */
     private ExperimentPE experimentParent;
 
+    private boolean experimentFrozen;
+
     private SamplePE sampleParent;
 
+    private boolean sampleFrozen;
+
     private ProjectPE projectParent;
+
+    private boolean projectFrozen;
 
     private String description;
 
@@ -102,8 +108,8 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
     public static class AttachmentSearchBridge implements FieldBridge
     {
         @Override
-        public void set(String name, Object/* AttachmentPE */value,
-                Document/* Lucene document */document, LuceneOptions luceneOptions)
+        public void set(String name, Object/* AttachmentPE */ value,
+                Document/* Lucene document */ document, LuceneOptions luceneOptions)
         {
             AttachmentPE attachment = (AttachmentPE) value;
             String attachmentName = attachment.getFileName();
@@ -190,6 +196,22 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
     public void setExperimentParentInternal(final ExperimentPE parent)
     {
         this.experimentParent = parent;
+        if (parent != null)
+        {
+            experimentFrozen = parent.isFrozen();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.EXPERIMENT_FROZEN_COLUMN, nullable = false)
+    public boolean isExperimentFrozen()
+    {
+        return experimentParent == null ? experimentFrozen : experimentParent.isFrozen();
+    }
+
+    public void setExperimentFrozen(boolean experimentFrozen)
+    {
+        this.experimentFrozen = experimentFrozen;
     }
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -298,6 +320,22 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
     public void setSampleParentInternal(final SamplePE parent)
     {
         this.sampleParent = parent;
+        if (parent != null)
+        {
+            sampleFrozen = parent.isFrozen();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.SAMPLE_FROZEN_COLUMN, nullable = false)
+    public boolean isSampleFrozen()
+    {
+        return sampleParent == null ? sampleFrozen : sampleParent.isFrozen();
+    }
+
+    public void setSampleFrozen(boolean sampleFrozen)
+    {
+        this.sampleFrozen = sampleFrozen;
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -315,6 +353,22 @@ public class AttachmentPE extends HibernateAbstractRegistrationHolder implements
     public void setProjectParentInternal(final ProjectPE parent)
     {
         this.projectParent = parent;
+        if (parent != null)
+        {
+            projectFrozen = parent.isFrozen();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.PROJECT_FROZEN_COLUMN, nullable = false)
+    public boolean isProjectFrozen()
+    {
+        return projectParent == null ? projectFrozen : projectParent.isFrozen();
+    }
+
+    public void setProjectFrozen(boolean projectFrozen)
+    {
+        this.projectFrozen = projectFrozen;
     }
 
     @Transient

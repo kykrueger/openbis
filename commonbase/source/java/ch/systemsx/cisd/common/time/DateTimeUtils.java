@@ -23,7 +23,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 /**
  * A suite of utilities surrounding the use of the {@link java.util.Calendar} and {@link java.util.Date} object.

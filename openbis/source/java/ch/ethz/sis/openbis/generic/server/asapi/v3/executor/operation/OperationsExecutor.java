@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.PersistenceException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -167,6 +169,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.ISearchVo
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.IUpdateVocabulariesOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.vocabulary.IUpdateVocabularyTermsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.utils.ExceptionUtils;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 
 /**
@@ -812,7 +815,14 @@ public class OperationsExecutor implements IOperationsExecutor
 
     protected void flushCurrentSession()
     {
-        daoFactory.getSessionFactory().getCurrentSession().flush();
+        try
+        {
+            daoFactory.getSessionFactory().getCurrentSession().flush();
+        } catch (PersistenceException e)
+        {
+            Throwable endOfChain = ch.systemsx.cisd.common.exceptions.ExceptionUtils.getEndOfChain(e);
+            throw new UserFailureException(endOfChain.getMessage(), endOfChain);
+        }
     }
 
 }

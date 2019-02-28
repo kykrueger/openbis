@@ -23,7 +23,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DocValuesType;
@@ -134,8 +134,8 @@ public class DetailedQueryBuilder
                                 fieldAnalyzer = PassThroughAnalyzer.INSTANCE;
                             } else
                             {
-                                fieldPattern = LuceneQueryBuilder.adaptQuery(value, useWildcardSearchMode);
-                                fieldAnalyzer = searchAnalyzer;
+                                fieldPattern = LuceneQueryBuilder.adaptQuery(value, useWildcardSearchMode, getFieldSplit(entityKind, fieldName));
+                                fieldAnalyzer = getFieldAnalyzer(entityKind, fieldName, searchAnalyzer);
                             }
 
                             fieldPatterns.add(fieldPattern);
@@ -309,6 +309,22 @@ public class DetailedQueryBuilder
             default:
                 throw InternalErr.error("unknown enum " + fieldKind);
         }
+    }
+
+    private static boolean getFieldSplit(EntityKind entityKind, String fieldName)
+    {
+        return isSampleOrExperimentIdentifierField(entityKind, fieldName) == false;
+    }
+
+    private static Analyzer getFieldAnalyzer(EntityKind entityKind, String fieldName, Analyzer defaultAnalyzer)
+    {
+        return isSampleOrExperimentIdentifierField(entityKind, fieldName) ? new IgnoreCaseAnalyzer() : defaultAnalyzer;
+    }
+
+    private static boolean isSampleOrExperimentIdentifierField(EntityKind entityKind, String fieldName)
+    {
+        return (EntityKind.SAMPLE.equals(entityKind) || EntityKind.EXPERIMENT.equals(entityKind))
+                && SearchFieldConstants.IDENTIFIER.equals(fieldName);
     }
 
 }

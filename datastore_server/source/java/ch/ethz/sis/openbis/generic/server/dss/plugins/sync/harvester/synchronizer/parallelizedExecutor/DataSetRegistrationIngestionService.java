@@ -17,11 +17,10 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +41,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Facade;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.io.IOUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -202,7 +202,7 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
         }
     }
 
-    private void downloadDataSetFiles(File dir, String dataSetCode) throws Exception
+    private void downloadDataSetFiles(File dir, String dataSetCode)
     {
         V3Facade v3FacadeToDataSource = new V3Facade(config);
         DataSetFileFetchOptions dsFileFetchOptions = new DataSetFileFetchOptions();
@@ -226,30 +226,31 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
         {
             DataSetFile orgFile = fileDownload.getDataSetFile();
             if (orgFile.getPath().equals(""))
+            {
                 continue;
-            // if (dsFile.getPath().equals("original"))
-            // continue;
-            String filePath = orgFile.getPath();// .substring("original/".length());
-            File output = new File(dir.getAbsolutePath(), filePath);
+            }
+            File output = new File(dir, orgFile.getPath());
             if (orgFile.isDirectory())
             {
                 output.mkdirs();
-            }
-            else
+            } else
             {
                 DataSetFilePermId filePermId = orgFile.getPermId();
                 FileDetails fileDetails = fileDetailsMap.get(filePermId);
-                Path path = Paths.get(dir.getAbsolutePath(), filePath);
-                InputStream inputStream = fileDownload.getInputStream();
-                OutputStream outputStream = Files.newOutputStream(path);
-                int checksumCRC32 = IOUtilities.copyAndGetChecksumCRC32(inputStream, outputStream);
-                File copiedFile = new File(path.normalize().toString());
-                if (checksumCRC32 != fileDetails.getCrc32checksum()
-                        || copiedFile.length() != fileDetails.getFileLength())
+                output.getParentFile().mkdirs();
+                try (OutputStream outputStream = new FileOutputStream(output))
                 {
-                    throw new RuntimeException("Crc32 or file length does not match for  " + orgFile.getPath() + " calculated:" + checksumCRC32
-                            + " expected:"
-                            + fileDetails.getCrc32checksum());
+                    int checksumCRC32 = IOUtilities.copyAndGetChecksumCRC32(fileDownload.getInputStream(), outputStream);
+                    if (checksumCRC32 != fileDetails.getCrc32checksum()
+                            || output.length() != fileDetails.getFileLength())
+                    {
+                        throw new RuntimeException("Crc32 or file length does not match for  " + orgFile.getPath() + " calculated:" + checksumCRC32
+                                + " expected:"
+                                + fileDetails.getCrc32checksum());
+                    }
+                } catch (IOException e)
+                {
+                    throw CheckedExceptionTunnel.wrapIfNecessary(e);
                 }
             }
         }

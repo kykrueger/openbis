@@ -16,8 +16,8 @@
 
 package ch.systemsx.cisd.openbis.common.conversation.client;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Stores information about a service conversation client manager.

@@ -26,6 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.PersistenceException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 
@@ -44,6 +46,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatchP
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.CheckAccessProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.CheckDataProgress;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 
@@ -90,6 +93,10 @@ public abstract class AbstractCreateEntityExecutor<CREATION extends ICreation, P
         {
             handleException(e);
             return null;
+        } catch (PersistenceException e)
+        {
+            Throwable endOfChain = ch.systemsx.cisd.common.exceptions.ExceptionUtils.getEndOfChain(e);
+            throw new UserFailureException(endOfChain.getMessage(), endOfChain);
         }
     }
 

@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeSuite;
@@ -241,11 +241,27 @@ public abstract class OAIPMHSystemTest extends GenericSystemTest
             String columnNames = "";
             for (QueryTableColumn queryTableColumn : columns)
             {
-                columnNames += queryTableColumn.getTitle() + ",";
+                if (columnNames.length() > 0)
+                {
+                    columnNames += ",";
+                }
+                columnNames += queryTableColumn.getTitle();
             }
 
-            Assert.assertEquals(columns.size(), 1, columnNames);
-            Assert.assertEquals(columns.get(0).getTitle(), "RESULT");
+            if ("RESULT".equals(columnNames) == false)
+            {
+                StringBuilder builder = new StringBuilder();
+                for (Serializable[] row : result.getRows())
+                {
+                    for (Serializable cell : row)
+                    {
+                        builder.append(cell).append(",");
+                    }
+                    builder.append('\n');
+                }
+                Assert.fail("Wrong columns names: " + columnNames+" of table:\n" + builder);
+            }
+            Assert.assertEquals(columnNames, "RESULT");
 
             List<Serializable[]> rows = result.getRows();
             Assert.assertEquals(rows.size(), 1);

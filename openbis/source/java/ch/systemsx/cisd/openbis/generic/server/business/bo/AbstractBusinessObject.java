@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.SessionFactory;
@@ -204,7 +204,7 @@ abstract class AbstractBusinessObject implements IDAOFactory
 
     protected void fillSpaceIdentifier(final SpaceIdentifier spaceIdentifier)
     {
-        if (org.apache.commons.lang.StringUtils.isBlank(spaceIdentifier.getSpaceCode()))
+        if (org.apache.commons.lang3.StringUtils.isBlank(spaceIdentifier.getSpaceCode()))
         {
             final SpacePE space =
                     SpaceIdentifierHelper.tryGetSpace(spaceIdentifier, findPerson(), this);

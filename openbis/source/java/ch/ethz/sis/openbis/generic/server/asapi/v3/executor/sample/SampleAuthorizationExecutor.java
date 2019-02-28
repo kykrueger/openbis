@@ -77,4 +77,10 @@ public class SampleAuthorizationExecutor implements ISampleAuthorizationExecutor
     {
     }
 
+    @Override
+    @RolesAllowed(RoleWithHierarchy.SPACE_ADMIN)
+    @Capability("FREEZE_SAMPLE")
+    public void canFreeze(IOperationContext context)
+    {
+    }
 }

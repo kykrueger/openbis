@@ -25,10 +25,12 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.collections4.iterators.IteratorChain;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -239,49 +241,83 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
     {
         getOpenBISService().checkSession(sessionToken);
 
+        Map<String, Set<String>> filesByDataSet = sortFilesByDataSets(fileIds);
+        
         IHierarchicalContentProvider contentProvider = getHierarchicalContentProvider(sessionToken);
         Map<IHierarchicalContentNode, String> contentNodes = new LinkedHashMap<IHierarchicalContentNode, String>();
-
-        for (IDataSetFileId fileId : fileIds)
+        boolean recursive = downloadOptions.isRecursive();
+        for (Entry<String, Set<String>> entry : filesByDataSet.entrySet())
         {
-            if (fileId instanceof DataSetFilePermId)
+            String dataSetCode = entry.getKey();
+            Status authorizationStatus = DssSessionAuthorizationHolder.getAuthorizer().checkDatasetAccess(sessionToken, dataSetCode);
+            if (authorizationStatus.isOK())
             {
-                DataSetFilePermId filePermId = (DataSetFilePermId) fileId;
-
-                if (filePermId.getDataSetId() instanceof DataSetPermId)
+                IHierarchicalContent content = contentProvider.asContent(dataSetCode);
+                IHierarchicalContentNode rootNode = content.getRootNode();
+                Map<String, IHierarchicalContentNode> nodesByPath = new TreeMap<>();
+                Set<String> paths = entry.getValue();
+                populate(nodesByPath, rootNode, paths);
+                for (String path : paths)
                 {
-                    String dataSetCode = ((DataSetPermId) filePermId.getDataSetId()).getPermId();
-                    Status authorizationStatus = DssSessionAuthorizationHolder.getAuthorizer().checkDatasetAccess(sessionToken, dataSetCode);
-
-                    if (authorizationStatus.isOK())
+                    IHierarchicalContentNode node = nodesByPath.get(path);
+                    if (node.isDirectory() && recursive)
                     {
-                        String filePath = filePermId.getFilePath();
-
-                        IHierarchicalContent content = contentProvider.asContent(dataSetCode);
-                        IHierarchicalContentNode node = content.getNode(filePath);
-
-                        if (node.isDirectory() && downloadOptions.isRecursive())
+                        for (IHierarchicalContentNode child : iterate(node))
                         {
-                            for (IHierarchicalContentNode child : iterate(node))
-                            {
-                                contentNodes.put(child, dataSetCode);
-                            }
-                        } else
-                        {
-                            contentNodes.put(node, dataSetCode);
+                            contentNodes.put(child, dataSetCode);
                         }
+                    } else
+                    {
+                        contentNodes.put(node, dataSetCode);
                     }
-                } else
-                {
-                    throw new IllegalArgumentException("Unsupported dataSetId: " + fileId);
                 }
-            } else
-            {
-                throw new IllegalArgumentException("Unsupported fileId: " + fileId);
             }
         }
 
         return new DataSetFileDownloadInputStream(contentNodes);
+    }
+    
+    private void populate(Map<String, IHierarchicalContentNode> nodesByPath, IHierarchicalContentNode node, Set<String> paths)
+    {
+        if (paths.contains(node.getRelativePath()))
+        {
+            nodesByPath.put(node.getRelativePath(), node);
+        }
+        if (node.isDirectory())
+        {
+            List<IHierarchicalContentNode> childNodes = node.getChildNodes();
+            for (IHierarchicalContentNode childNode : childNodes)
+            {
+                populate(nodesByPath, childNode, paths);
+            }
+        }
+    }
+
+    private Map<String, Set<String>> sortFilesByDataSets(List<? extends IDataSetFileId> fileIds)
+    {
+        Map<String, Set<String>> filesByDataSet = new TreeMap<>();
+        for (IDataSetFileId fileId : fileIds)
+        {
+            if (fileId instanceof DataSetFilePermId == false)
+            {
+                throw new IllegalArgumentException("Unsupported fileId: " + fileId);
+            }
+            DataSetFilePermId filePermId = (DataSetFilePermId) fileId;
+            if (filePermId.getDataSetId() instanceof DataSetPermId == false)
+            {
+                throw new IllegalArgumentException("Unsupported dataSetId: " + fileId);
+            }
+            String dataSetCode = ((DataSetPermId) filePermId.getDataSetId()).getPermId();
+            Set<String> ids = filesByDataSet.get(dataSetCode);
+            if (ids == null)
+            {
+                ids = new HashSet<>();
+                filesByDataSet.put(dataSetCode, ids);
+            }
+            String filePath = filePermId.getFilePath();
+            ids.add(filePath == null ? "" : filePath);
+        }
+        return filesByDataSet;
     }
 
     private Iterable<IHierarchicalContentNode> iterate(final IHierarchicalContentNode node)

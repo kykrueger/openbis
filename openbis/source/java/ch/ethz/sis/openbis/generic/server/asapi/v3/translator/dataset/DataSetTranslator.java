@@ -221,6 +221,11 @@ public class DataSetTranslator extends AbstractCachingTranslator<Long, DataSet, 
         result.setRegistrationDate(baseRecord.registrationDate);
         result.setPostRegistered(relations.get(IDataSetPostRegisteredTranslator.class, dataSetId));
         result.setKind(DataSetKind.valueOf(baseRecord.dataSetKind));
+        result.setFrozen(baseRecord.frozen);
+        result.setFrozenForChildren(baseRecord.frozenForChildren);
+        result.setFrozenForParents(baseRecord.frozenForParents);
+        result.setFrozenForComponents(baseRecord.frozenForComponents);
+        result.setFrozenForContainers(baseRecord.frozenForContainers);
 
         if (fetchOptions.hasType())
         {

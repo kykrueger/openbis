@@ -12,6 +12,9 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.permId = null;
 		prototype.code = null;
 		prototype.description = null;
+		prototype.frozen = null;
+		prototype.frozenForProjects = null;
+		prototype.frozenForSamples = null;
 		prototype.registrationDate = null;
 		prototype.modificationDate = null;
 		prototype.registrator = null;
@@ -42,6 +45,24 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setDescription = function(description) {
 			this.description = description;
 		};
+		prototype.isFrozen = function() {
+			return this.frozen;
+		}
+		prototype.setFrozen = function(frozen) {
+			this.frozen = frozen;
+		}
+		prototype.isFrozenForProjects = function() {
+			return this.frozenForProjects;
+		}
+		prototype.setFrozenForProjects = function(frozenForProjects) {
+			this.frozenForProjects = frozenForProjects;
+		}
+		prototype.isFrozenForSamples = function() {
+			return this.frozenForSamples;
+		}
+		prototype.setFrozenForSamples = function(frozenForSamples) {
+			this.frozenForSamples = frozenForSamples;
+		}
 		prototype.getRegistrationDate = function() {
 			return this.registrationDate;
 		};

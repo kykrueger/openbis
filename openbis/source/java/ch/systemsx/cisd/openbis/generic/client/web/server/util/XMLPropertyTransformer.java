@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.generic.client.web.server.util;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
@@ -52,9 +52,9 @@ public class XMLPropertyTransformer
                             String transformation = propertyType.getTransformation();
                             if (transformation != null)
                             {
-                                String xslt = StringEscapeUtils.unescapeHtml(transformation);
+                                String xslt = StringEscapeUtils.unescapeHtml4(transformation);
                                 String xmlString =
-                                        StringEscapeUtils.unescapeHtml(entityProperty.getValue());
+                                        StringEscapeUtils.unescapeHtml4(entityProperty.getValue());
                                 String renderedXMLString = XmlUtils.transform(xslt, xmlString);
                                 entityProperty.setValue(renderedXMLString);
                                 entityProperty.setOriginalValue(xmlString);

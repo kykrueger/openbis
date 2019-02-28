@@ -34,6 +34,12 @@ public class ProjectBaseRecord extends ObjectBaseRecord
 
     public String description;
 
+    public boolean frozen;
+
+    public boolean frozenForExperiments;
+
+    public boolean frozenForSamples;
+
     public Date registrationDate;
 
     public Date modificationDate;

@@ -16,7 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.shared;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 

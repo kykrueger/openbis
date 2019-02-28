@@ -108,10 +108,7 @@ test -f "$checksum_file" && cp -p "$checksum_file" "$base_folder"
 LIB_FOLDER="$openbis_webapp/WEB-INF/lib"
 rm -rf $LIB_FOLDER/native
 unzip -q $LIB_FOLDER/sis-base-*.jar -d $LIB_FOLDER native/*
-unzip -q $LIB_FOLDER/hdf5-macosx-*.jar -d $LIB_FOLDER native/*
-unzip -q $LIB_FOLDER/hdf5-linux-*.jar -d $LIB_FOLDER native/*
-unzip -q $LIB_FOLDER/hdf5-windows-*.jar -d $LIB_FOLDER native/*
-
+unzip -q $LIB_FOLDER/sis-jhdf5-*.jar -d $LIB_FOLDER native/*
 
 echo installing core-plugins
 if [ -f "$server_folder/../core-plugins/core-plugins.properties" ]; then

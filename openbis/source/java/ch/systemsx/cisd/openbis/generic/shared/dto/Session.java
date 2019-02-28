@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import ch.systemsx.cisd.authentication.BasicSession;
 import ch.systemsx.cisd.authentication.Principal;

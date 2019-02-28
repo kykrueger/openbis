@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +74,7 @@ public class UpdateAttachmentForEntityExecutor implements IUpdateAttachmentForEn
     @SuppressWarnings("unchecked")
     private void add(IOperationContext context, AttachmentHolderPE attachmentHolder, AttachmentListUpdateValue updates)
     {
-        Set<AttachmentCreation> added = new HashSet<AttachmentCreation>();
+        Set<AttachmentCreation> added = new LinkedHashSet<AttachmentCreation>();
 
         for (ListUpdateAction<?> action : updates.getActions())
         {

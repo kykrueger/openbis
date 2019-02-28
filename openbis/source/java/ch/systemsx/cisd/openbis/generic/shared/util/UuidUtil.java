@@ -19,7 +19,7 @@ package ch.systemsx.cisd.openbis.generic.shared.util;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 

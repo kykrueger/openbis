@@ -41,9 +41,9 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -52,6 +52,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OptimisticLock;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.ClassBridge;
 import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.DocumentId;
@@ -76,6 +77,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.IdentifierHelper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+import ch.systemsx.cisd.openbis.generic.shared.search.IgnoreCaseAnalyzer;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
@@ -103,7 +105,15 @@ public class ExperimentPE extends AttachmentHolderPE implements
 
     private String code;
 
+    private boolean frozen;
+
+    private boolean frozenForSample;
+
+    private boolean frozenForDataSet;
+
     private ProjectPE project;
+
+    private boolean projectFrozen;
 
     private ExperimentTypePE experimentType;
 
@@ -235,6 +245,42 @@ public class ExperimentPE extends AttachmentHolderPE implements
         this.code = code;
     }
 
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_COLUMN, nullable = false)
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, nullable = false)
+    public boolean isFrozenForSample()
+    {
+        return frozenForSample;
+    }
+
+    public void setFrozenForSample(boolean frozenForSample)
+    {
+        this.frozenForSample = frozenForSample;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_DATA_SET_COLUMN, nullable = false)
+    public boolean isFrozenForDataSet()
+    {
+        return frozenForDataSet;
+    }
+
+    public void setFrozenForDataSet(boolean frozenForDataSet)
+    {
+        this.frozenForDataSet = frozenForDataSet;
+    }
+
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull(message = ValidationMessages.PROJECT_NOT_NULL_MESSAGE)
     @JoinColumn(name = ColumnNames.PROJECT_COLUMN, updatable = true)
@@ -248,6 +294,10 @@ public class ExperimentPE extends AttachmentHolderPE implements
     void setProjectInternal(final ProjectPE project)
     {
         this.project = project;
+        if (project != null)
+        {
+            projectFrozen = project.isFrozen() && project.isFrozenForExperiment();
+        }
         this.experimentIdentifier = null;
     }
 
@@ -260,6 +310,18 @@ public class ExperimentPE extends AttachmentHolderPE implements
     public void setProject(final ProjectPE project)
     {
         project.addExperiment(this);
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.PROJECT_FROZEN_COLUMN, nullable = false)
+    public boolean isProjectFrozen()
+    {
+        return projectFrozen;
+    }
+
+    public void setProjectFrozen(boolean projectFrozen)
+    {
+        this.projectFrozen = projectFrozen;
     }
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -343,6 +405,7 @@ public class ExperimentPE extends AttachmentHolderPE implements
     public void addProperty(final EntityPropertyPE property)
     {
         property.setEntity(this);
+        property.setEntityFrozen(isFrozen());
         getExperimentProperties().add((ExperimentPropertyPE) property);
     }
 
@@ -520,7 +583,8 @@ public class ExperimentPE extends AttachmentHolderPE implements
 
     @Override
     @Transient
-    @Field(index = Index.NO, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
+    @Analyzer(impl = IgnoreCaseAnalyzer.class)
+    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
     public final String getIdentifier()
     {
         if (experimentIdentifier == null)

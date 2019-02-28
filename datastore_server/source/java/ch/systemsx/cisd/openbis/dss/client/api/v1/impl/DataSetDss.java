@@ -19,8 +19,8 @@ package ch.systemsx.cisd.openbis.dss.client.api.v1.impl;
 import java.io.File;
 import java.io.InputStream;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import ch.systemsx.cisd.common.api.retry.Retry;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;

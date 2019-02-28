@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.task;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecution;

@@ -77,4 +77,11 @@ public class ExperimentAuthorizationExecutor implements IExperimentAuthorization
     {
     }
 
+    @Override
+    @RolesAllowed(RoleWithHierarchy.SPACE_ADMIN)
+    @Capability("FREEZE_EXPERIMENT")
+    public void canFreeze(IOperationContext context)
+    {
+    }
+
 }

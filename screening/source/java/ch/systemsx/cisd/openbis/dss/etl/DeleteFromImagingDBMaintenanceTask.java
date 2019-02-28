@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.etlserver.plugins.DeleteFromExternalDBMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
@@ -81,7 +81,7 @@ public class DeleteFromImagingDBMaintenanceTask extends DeleteFromExternalDBMain
             {
                 sb.append(", ");
             }
-            sb.append("'" + StringEscapeUtils.escapeSql(dds.getId().toString()) + "'");
+            sb.append("'" + StringUtils.replace(dds.getId().toString(), "'", "''") + "'");
         }
         String ids = sb.toString();
         return ids;

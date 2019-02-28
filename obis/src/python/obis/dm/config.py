@@ -393,12 +393,12 @@ class SettingRule(object):
 class ClearPermIdRule(SettingRule):
     """ When the user sets a new id, the permId might be invalid, so it will be cleared. """
     def on_set(self, config_resolver, name, value, loc):
-        if name == "id" and value is not None:
+        if name == "id":
             config_resolver.set_value_for_parameter("permId", None, loc)
 
 
 class ClearIdentifierRule(SettingRule):
     """ When the user sets a new id, the permId might be invalid, so it will be cleared. """
     def on_set(self, config_resolver, name, value, loc):
-        if name == "permId" and value is not None:
+        if name == "permId":
             config_resolver.set_value_for_parameter("id", None, loc)

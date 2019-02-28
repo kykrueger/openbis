@@ -7,10 +7,22 @@ from .openbis_command import OpenbisCommand
 
 
 class OpenbisSync(OpenbisCommand):
-    """A command object for synchronizing with openBIS."""
+    """A command object for synchronizing with openBIS.
+    1) Checks that the previous data set exists.
+    2) Does nothing if the current git hash is already tracked in openBIS.
+    3) Ensures the repository id.
+    4) Ensures the external data management system.
+    5) Creates the data set in openBIS.
+    6) Updates the obis metadata.
+    """
 
 
     def __init__(self, dm, ignore_missing_parent=False):
+        """
+        :param ignore_missing_parent: Normally, there is an error if the data_set_id 
+            of the repository doesn't exist. If this flag is true, this error is ignored 
+            and the a new data set can be created.
+        """
         self.ignore_missing_parent = ignore_missing_parent
         super(OpenbisSync, self).__init__(dm)
 
@@ -133,6 +145,10 @@ class OpenbisSync(OpenbisCommand):
 
 
     def run(self, info_only=False):
+        """
+        :param info_only: If true, nothing is actually synced. We only get the info 
+            whether or not a sync is needed.
+        """
 
         ignore_parent = False
 

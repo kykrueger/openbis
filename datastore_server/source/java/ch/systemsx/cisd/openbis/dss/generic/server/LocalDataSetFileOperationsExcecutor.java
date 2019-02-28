@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.exceptions.ExceptionWithStatus;
@@ -300,7 +300,7 @@ public final class LocalDataSetFileOperationsExcecutor implements IDataSetFileOp
             }
 
             Collections.sort(inconsistencies);
-            return org.apache.commons.lang.StringUtils.join(inconsistencies, null);
+            return org.apache.commons.lang3.StringUtils.join(inconsistencies, null);
         }
     }
 

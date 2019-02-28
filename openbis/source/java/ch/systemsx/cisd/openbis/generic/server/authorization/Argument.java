@@ -1,6 +1,6 @@
 package ch.systemsx.cisd.openbis.generic.server.authorization;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.AuthorizationGuard;

@@ -1,9 +1,9 @@
 #import os
 import os.path
 import re
-import urllib
 import xml.dom.minidom
 
+from urllib.request import urlopen
 from systemtest.util import printAndFlush
 
 class ArtifactRepository():
@@ -86,7 +86,7 @@ class JenkinsArtifactRepository(ArtifactRepository):
         projectUrl = "%s/job/%s" % (self.baseUrl, project)
         apiUrl = "%s/lastSuccessfulBuild/api/xml?xpath=//artifact&wrapper=bag" % projectUrl
         printAndFlush("Get artifact info from %s" % apiUrl)
-        handle = urllib.urlopen(apiUrl)
+        handle = urlopen(apiUrl) # urllib.urlopen(apiUrl)
         url = None
         fileName = None
         dom = xml.dom.minidom.parseString(handle.read())
@@ -102,7 +102,7 @@ class JenkinsArtifactRepository(ArtifactRepository):
         if url == None:
             raise Exception("For pattern '%s' no artifact found in project '%s'." % (pattern, project))
         printAndFlush("Download %s to %s." % (url, self.localRepositoryFolder))
-        self._download(urllib.urlopen(url), fileName)
+        self._download(urlopen(url), fileName)
         return fileName
     
 class GitArtifactRepository(ArtifactRepository):
@@ -116,5 +116,5 @@ class GitArtifactRepository(ArtifactRepository):
     def downloadArtifact(self, project, pattern):
         url = "https://%s/%s/archive/%s" % (self.host, project, pattern)
         printAndFlush("Download %s to %s." % (url, self.localRepositoryFolder))
-        self._download(urllib.urlopen(url), pattern)
+        self._download(urlopen(url), pattern)
         return pattern

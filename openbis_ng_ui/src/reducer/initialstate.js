@@ -1,4 +1,3 @@
-
 function foldLeft(array, acc, reducer) {
   if (array.length === 0) {
     return acc
@@ -26,22 +25,26 @@ function randomString() {
 }
 
 function createEntity(id) {
-  const numStrings = Math.random()  * 3
-  const numInts = Math.random()  * 3
-  let entity = { Id: id }
-  entity = foldLeft(take(shuffle(stringColumns), numStrings), entity, (acc, a) => Object.assign({}, acc, { [a] : randomString() }))
-  entity = foldLeft(take(shuffle(intColumns), numInts), entity, (acc, a) => Object.assign({}, acc, { [a] : Math.floor(Math.random() * 100) }))
+  const numStrings = Math.random() * 3
+  const numInts = Math.random() * 3
+  let entity = {Id: id}
+  entity = foldLeft(take(shuffle(stringColumns), numStrings), entity, (acc, a) => Object.assign({}, acc, {[a]: randomString()}))
+  entity = foldLeft(take(shuffle(intColumns), numInts), entity, (acc, a) => Object.assign({}, acc, {[a]: Math.floor(Math.random() * 100)}))
   return entity
 }
 
 const data = [...Array(10000).keys()].map(i => createEntity(i + 1))
 
-let tableColumns = foldLeft(stringColumns, {}, (acc, a) => Object.assign({}, acc, { [a]: 'string'}))
-tableColumns = foldLeft(intColumns, tableColumns, (acc, a) => Object.assign({}, acc, { [a]: 'int'}))
-tableColumns = foldLeft(shuffle(Object.entries(tableColumns)), { Id: 'int' }, (acc, a) => Object.assign({}, acc, { [a[0]] : a[1] }))
+let tableColumns = foldLeft(stringColumns, {}, (acc, a) => Object.assign({}, acc, {[a]: 'string'}))
+tableColumns = foldLeft(intColumns, tableColumns, (acc, a) => Object.assign({}, acc, {[a]: 'int'}))
+tableColumns = foldLeft(shuffle(Object.entries(tableColumns)), {Id: 'int'}, (acc, a) => Object.assign({}, acc, {[a[0]]: a[1]}))
 
-// TODO split initialstate
+// TODO split initialstate when it becomes too big
 export default {
+
+  sessionActive: false,
+  mode: 'DATABASE',
+
   database: {
     spaces: {},
     projects: {},
@@ -53,21 +56,45 @@ export default {
       sortColumn: '',
       sortDirection: 'asc'
     },
+    browser: {
+      loaded: false,
+      filter: '',
+      nodes: []
+    },
+    openEntities: {
+      entities: [],
+      selectedEntity: null,
+    },
+    dirtyEntities: []
   },
 
-  types: {},
-  users: {},
+  types: {
+    browser: {
+      loaded: false,
+      filter: '',
+      nodes: []
+    },
+    openEntities: {
+      entities: [],
+      selectedEntity: null,
+    }
+  },
+
+  users: {
+    browser: {
+      loaded: false,
+      filter: '',
+      nodes: []
+    },
+    openEntities: {
+      entities: [],
+      selectedEntity: null,
+    }
+  },
+
   favourites: {},
   tools: {},
 
-  // TODO replace with generic tab description
-  openEntities: {
-    entities: [],
-    selectedEntity: null,
-  },
-  dirtyEntities: [],
-
-  loading: true,
-  // TODO generic tree
-  databaseTreeNodes: [],
+  loading: false,
+  exceptions: [],
 }

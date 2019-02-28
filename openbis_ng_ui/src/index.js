@@ -1,29 +1,26 @@
-/* eslint-disable */
-import "regenerator-runtime/runtime"
+import 'regenerator-runtime/runtime'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { createStore, applyMiddleware, compose } from 'redux'
 import { Provider } from 'react-redux'
-import createSagaMiddleware from 'redux-saga'
-import reducer from './reducer/reducer.js'
-import { watchInit, watchSetSpaces, watchSaveEntity, watchExpandNode } from './reducer/sagas'
 
-const sagaMiddleware = createSagaMiddleware()
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-export const store = createStore(reducer, composeEnhancers(applyMiddleware(sagaMiddleware)))
-
-sagaMiddleware.run(watchInit)
-sagaMiddleware.run(watchSetSpaces)
-sagaMiddleware.run(watchSaveEntity)
-sagaMiddleware.run(watchExpandNode)
 
 const render = () => {
   const App = require('./components/App.jsx').default
+  const WithLogin = require('./components/WithLogin.jsx').default
+  const WithLoader = require('./components/WithLoader.jsx').default
+  const WithError = require('./components/WithError.jsx').default
+  const store = require('./reducer/middleware.js').default.store
   ReactDOM.render(
     <Provider store = { store }>
-      <App />
+      <WithLoader>
+        <WithError>
+          <WithLogin>
+            <App />
+          </WithLogin>
+        </WithError>
+      </WithLoader>
     </Provider>,
-    document.getElementById("app")
+    document.getElementById('app')
   )
 }
 
@@ -32,6 +29,6 @@ if (module.hot) {
   module.hot.accept('./reducer/reducer.js', () => {
     const nextRootReducer = require('./reducer/reducer.js').default
     store.replaceReducer(nextRootReducer)
-  });
+  })
 }
 render()

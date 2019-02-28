@@ -35,7 +35,7 @@ def printAndFlush(data):
     Prints argument onto the standard console and flushes output.
     This is necessary to get Python output and bash output in sync on CI server.
     """
-    print data
+    print(data)
     sys.stdout.flush()
     
 
@@ -83,7 +83,7 @@ def executeCommand(commandWithArguments, failingMessage = None, consoleInput = N
         processOut = subprocess.PIPE if suppressStdOut else None
         # Setting the time zone is needed for sprint server otherwise Java log files have wrong time zone
         os.environ['TZ'] = time.tzname[0]
-        p = subprocess.Popen(commandWithArguments, stdin = processIn, stdout = processOut)
+        p = subprocess.Popen(commandWithArguments, stdin = processIn, stdout = processOut, encoding='utf8')
         if consoleInput != None:
             p.communicate(consoleInput)
         lines = []
@@ -282,7 +282,7 @@ class LogMonitor():
         """
         self.conditions.append(condition)
         
-    def waitUntilEvent(self, condition, startTime = None):
+    def waitUntilEvent(self, condition, startTime = None, delay = 0):
         """
         Waits until an event matches the specified condition. 
         Returns tuple with zero or more elements of matching log message.
@@ -293,6 +293,8 @@ class LogMonitor():
         self.printer.printMsg("\n>>>>> Start monitoring %s log at %s >>>>>>>>>>>>>>>>>>>>" 
                               % (self.logName, renderedStartTime))
         finalTime = startTime + self.timeOutInMinutes * 60
+        if delay > 0:
+            time.sleep(delay)
         try:
             alreadyPrintedLines = set()
             while True:
@@ -357,3 +359,19 @@ class RegexCondition():
     def match(self, eventType, message):
         match = re.search(self.regex, message)
         return match.groups() if match else None
+    
+class ConditionSequence():
+    def __init__(self, conditions):
+        self.conditions = conditions
+        self.matches = []
+        
+    def match(self, eventType, message):
+        match_count = len(self.matches)
+        if match_count == len(self.conditions):
+            return self.matches
+        result = self.conditions[match_count].match(eventType, message)
+        if result is not None:
+            self.matches.append(result)
+            if len(self.matches) == len(self.conditions):
+                return self.matches
+        return None

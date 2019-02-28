@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -40,8 +41,8 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
  * @author Izabela Adamczyk
  */
 @Entity
-@Table(name = TableNames.EXPERIMENT_PROPERTIES_TABLE, uniqueConstraints = @UniqueConstraint(columnNames =
-{ ColumnNames.EXPERIMENT_COLUMN, ColumnNames.EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN }))
+@Table(name = TableNames.EXPERIMENT_PROPERTIES_TABLE, uniqueConstraints = @UniqueConstraint(columnNames = { ColumnNames.EXPERIMENT_COLUMN,
+        ColumnNames.EXPERIMENT_TYPE_PROPERTY_TYPE_COLUMN }))
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ExperimentPropertyPE extends EntityPropertyPE
 {
@@ -83,4 +84,13 @@ public class ExperimentPropertyPE extends EntityPropertyPE
     {
         return (ExperimentPE) entity;
     }
+
+    @Override
+    @NotNull
+    @Column(name = ColumnNames.EXPERIMENT_FROZEN_COLUMN, nullable = false)
+    public boolean isEntityFrozen()
+    {
+        return entityFrozen;
+    }
+
 }

@@ -55,8 +55,16 @@ public class DataSetRelationshipPE implements Serializable
     private static final long serialVersionUID = IServer.VERSION;
 
     private DataPE parentDataSet;
+    
+    private boolean parentFrozen;
+    
+    private boolean containerFrozen;
 
     private DataPE childDataSet;
+    
+    private boolean childFrozen;
+    
+    private boolean componentFrozen;
 
     private PersonPE author;
 
@@ -84,8 +92,8 @@ public class DataSetRelationshipPE implements Serializable
     public DataSetRelationshipPE(DataPE parentDataSet, DataPE childDataSet, RelationshipTypePE relationshipType,
             Integer ordinal, PersonPE author)
     {
-        this.parentDataSet = parentDataSet;
-        this.childDataSet = childDataSet;
+        setParentDataSet(parentDataSet);
+        setChildDataSet(childDataSet);
         this.relationshipType = relationshipType;
         this.ordinal = ordinal;
         this.author = author;
@@ -103,6 +111,35 @@ public class DataSetRelationshipPE implements Serializable
     public void setParentDataSet(DataPE parentDataSet)
     {
         this.parentDataSet = parentDataSet;
+        if (parentDataSet != null)
+        {
+            parentFrozen = parentDataSet.isFrozen() && parentDataSet.isFrozenForChildren();
+            containerFrozen = parentDataSet.isFrozen() && parentDataSet.isFrozenForComponents();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.PARENT_FROZEN_COLUMN, nullable = false)
+    public boolean isParentFrozen()
+    {
+        return parentFrozen;
+    }
+
+    public void setParentFrozen(boolean parentFrozen)
+    {
+        this.parentFrozen = parentFrozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.CONTAINER_FROZEN_COLUMN, nullable = false)
+    public boolean isContainerFrozen()
+    {
+        return containerFrozen;
+    }
+
+    public void setContainerFrozen(boolean containerFrozen)
+    {
+        this.containerFrozen = containerFrozen;
     }
 
     @NotNull(message = ValidationMessages.CHILD_NOT_NULL_MESSAGE)
@@ -117,6 +154,35 @@ public class DataSetRelationshipPE implements Serializable
     public void setChildDataSet(DataPE childDataSet)
     {
         this.childDataSet = childDataSet;
+        if (childDataSet != null)
+        {
+            childFrozen = childDataSet.isFrozen() && childDataSet.isFrozenForParents();
+            componentFrozen = childDataSet.isFrozen() && childDataSet.isFrozenForContainers();
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.CHILD_FROZEN_COLUMN, nullable = false)
+    public boolean isChildFrozen()
+    {
+        return childFrozen;
+    }
+
+    public void setChildFrozen(boolean childFrozen)
+    {
+        this.childFrozen = childFrozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.COMPONENT_FROZEN_COLUMN, nullable = false)
+    public boolean isComponentFrozen()
+    {
+        return componentFrozen;
+    }
+
+    public void setComponentFrozen(boolean componentFrozen)
+    {
+        this.componentFrozen = componentFrozen;
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -26,5 +26,5 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
  */
 public enum EventType
 {
-    DELETION, MOVEMENT;
+    DELETION, MOVEMENT, FREEZING;
 }

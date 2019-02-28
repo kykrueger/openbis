@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -80,4 +81,13 @@ public class DataSetPropertyPE extends EntityPropertyPE
     {
         return (DataPE) entity;
     }
+
+    @Override
+    @NotNull
+    @Column(name = ColumnNames.DATA_SET_FROZEN_COLUMN, nullable = false)
+    public boolean isEntityFrozen()
+    {
+        return entityFrozen;
+    }
+
 }

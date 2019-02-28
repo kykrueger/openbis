@@ -1,37 +1,36 @@
 import React from 'react'
-import { connect } from 'react-redux'
+import {connect} from 'react-redux'
 import EntityDetails from './database/EntityDetails.jsx'
 import TabContainer from './TabContainer.jsx'
 import TabContent from './TabContent.jsx'
 import actions from '../reducer/actions.js'
-
+import {getTabState, getTabEntity} from '../reducer/selectors.js'
 
 /**
  * This component at the moment only makes tabs for entities.
- * In the future, it should be extended for other kinds of tabs 
+ * In the future, it should be extended for other kinds of tabs
  * (settings forms etc.).
  */
 
 function mapDispatchToProps(dispatch) {
   return {
-    selectEntity: (entityPermId) => dispatch(actions.selectEntity(entityPermId)),
-    closeEntity: (e, entityPermId) => {
+    selectEntity: (entityPermId, entityTypeId) => dispatch(actions.selectEntity(entityPermId, entityTypeId)),
+    closeEntity: (e, entityPermId, entityTypeId) => {
       e.stopPropagation()
-      dispatch(actions.closeEntity(entityPermId))
+      dispatch(actions.closeEntity(entityPermId, entityTypeId))
     }
   }
 }
 
 
 function mapStateToProps(state) {
-  const selectedEntity = state.openEntities.selectedEntity
-  const spaces = state.database.spaces
+  let tabState = getTabState(state)
   return {
-    openEntities: state.openEntities.entities
-      .filter(permId => permId in spaces)
-      .map(permId => spaces[permId]),
-    selectedEntity: selectedEntity,
-    dirtyEntities: state.dirtyEntities,
+    openEntities: tabState.openEntities.entities
+      .map(entity => getTabEntity(state, entity))
+      .filter(entity => entity),
+    selectedEntity: tabState.openEntities.selectedEntity,
+    dirtyEntities: tabState.dirtyEntities,
   }
 }
 
@@ -42,20 +41,25 @@ class TabPanel extends React.Component {
     if (this.props.openEntities.length === 0) {
       return null
     }
+
     return (
-      <TabContainer selectedKey={this.props.selectedEntity}>
+      <TabContainer selectedKey={this.props.selectedEntity.permId}>
         {
           this.props.openEntities.map(entity => {
-            return(
+            return (
               <TabContent
                 key={entity.permId.permId}
                 name={entity.code}
                 dirty={this.props.dirtyEntities.indexOf(entity.permId.permId) > -1}
-                onSelect={() => {this.props.selectEntity(entity.permId.permId)}}
-                onClose={(e) => {this.props.closeEntity(e, entity.permId.permId)}}
+                onSelect={() => {
+                  this.props.selectEntity(entity.permId.permId, entity['@type'])
+                }}
+                onClose={(e) => {
+                  this.props.closeEntity(e, entity.permId.permId, entity['@type'])
+                }}
               >
-                <EntityDetails 
-                  entity={entity} 
+                <EntityDetails
+                  entity={entity}
                 />
               </TabContent>
             )

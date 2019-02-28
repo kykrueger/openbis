@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -848,7 +848,7 @@ public class CreateUploadedDataSetsTest extends AbstractFileTest
             fail("Creation should have failed because of nonexistent 'IDONTEXIST' property");
         } catch (Exception e)
         {
-            String fullStackTrace = ExceptionUtils.getFullStackTrace(e);
+            String fullStackTrace = ExceptionUtils.getStackTrace(e);
             assertTrue(fullStackTrace, fullStackTrace.contains("Property type with code 'IDONTEXIST' does not exist!"));
         }
 
@@ -859,7 +859,7 @@ public class CreateUploadedDataSetsTest extends AbstractFileTest
             fail("Creation should have failed as uploaded file should have been removed during the first attempt");
         } catch (Exception e)
         {
-            String fullStackTrace = ExceptionUtils.getFullStackTrace(e);
+            String fullStackTrace = ExceptionUtils.getStackTrace(e);
             assertTrue(fullStackTrace, fullStackTrace.contains("No uploaded files found for upload id '" + uploadId + "'"));
         }
     }

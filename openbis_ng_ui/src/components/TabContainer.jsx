@@ -1,5 +1,5 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
+import {withStyles} from '@material-ui/core/styles'
 import AppBar from '@material-ui/core/AppBar'
 import CloseIcon from '@material-ui/icons/Close'
 import IconButton from '@material-ui/core/IconButton'
@@ -35,28 +35,28 @@ class TabContainer extends React.Component {
         <div>
           <AppBar position="static">
             <Toolbar>
-              <Tabs 
+              <Tabs
                 value={selectedTabIndex}
-                scrollable={ React.Children.count(this.props.children) > 0 }
+                scrollable={React.Children.count(this.props.children) > 0}
                 scrollButtons="auto"
-                className = { classes.entityTabs }>
+                className={classes.entityTabs}>
                 {
                   React.Children.map(this.props.children, child =>
-                    <Tab 
-                      component="div" 
+                    <Tab
+                      component="div"
                       label={
                         <div>
-                          <div className = { classes.inlineElement }>{child.props.name}</div>
-                          { child.props.dirty &&
-                            <div className = { classes.inlineElement }>*</div>
+                          <div className={classes.inlineElement}>{child.props.name}</div>
+                          {child.props.dirty &&
+                          <div className={classes.inlineElement}>*</div>
                           }
-                          <div className = { classes.inlineElement }>
-                            <IconButton onClick={ (e) => child.props.onClose(e) } >
+                          <div className={classes.inlineElement}>
+                            <IconButton onClick={(e) => child.props.onClose(e)}>
                               <CloseIcon/>
                             </IconButton>
                           </div>
                         </div>}
-                      onClick = {child.props.onSelect}/>
+                      onClick={child.props.onSelect}/>
                   )
                 }
               </Tabs>
@@ -67,7 +67,7 @@ class TabContainer extends React.Component {
           {
             React.Children.map(this.props.children, child => {
               return (
-                <div className={ selectedKey === child.key ? {} : classes.hidden }>
+                <div className={selectedKey === child.key ? {} : classes.hidden}>
                   {child}
                 </div>
               )

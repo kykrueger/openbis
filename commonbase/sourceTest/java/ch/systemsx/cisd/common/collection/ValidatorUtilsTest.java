@@ -23,7 +23,7 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.collection.IValidator;

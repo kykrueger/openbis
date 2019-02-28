@@ -44,9 +44,9 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -55,6 +55,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OptimisticLock;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.ClassBridge;
 import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.DocumentId;
@@ -79,6 +80,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.IdentifierHelper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+import ch.systemsx.cisd.openbis.generic.shared.search.IgnoreCaseAnalyzer;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
 import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
@@ -110,15 +112,33 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     private SampleTypePE sampleType;
 
+    private boolean frozen;
+
+    private boolean frozenForComponent;
+
+    private boolean frozenForChildren;
+
+    private boolean frozenForParents;
+
+    private boolean frozenForDataSet;
+
     private SpacePE space;
+
+    private boolean spaceFrozen;
 
     private SampleIdentifier sampleIdentifier;
 
     private SamplePE container;
 
+    private boolean containerFrozen;
+
     private ProjectPE project;
 
+    private boolean projectFrozen;
+
     private ExperimentPE experiment;
+
+    private boolean experimentFrozen;
 
     private String permId;
 
@@ -356,6 +376,23 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     public void setSpace(final SpacePE space)
     {
         this.space = space;
+        if (space != null)
+        {
+            spaceFrozen = space.isFrozen() && space.isFrozenForSample();
+            
+        }
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.SPACE_FROZEN_COLUMN, nullable = false)
+    public boolean isSpaceFrozen()
+    {
+        return spaceFrozen;
+    }
+
+    public void setSpaceFrozen(boolean spaceFrozen)
+    {
+        this.spaceFrozen = spaceFrozen;
     }
 
     public void setCode(final String code)
@@ -380,6 +417,66 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     public void setSampleType(final SampleTypePE sampleType)
     {
         this.sampleType = sampleType;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_COLUMN, nullable = false)
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_COMPONENT_COLUMN, nullable = false)
+    public boolean isFrozenForComponent()
+    {
+        return frozenForComponent;
+    }
+
+    public void setFrozenForComponent(boolean frozenForComponent)
+    {
+        this.frozenForComponent = frozenForComponent;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_CHILDREN_COLUMN, nullable = false)
+    public boolean isFrozenForChildren()
+    {
+        return frozenForChildren;
+    }
+
+    public void setFrozenForChildren(boolean frozenForChildren)
+    {
+        this.frozenForChildren = frozenForChildren;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_PARENTS_COLUMN, nullable = false)
+    public boolean isFrozenForParents()
+    {
+        return frozenForParents;
+    }
+
+    public void setFrozenForParents(boolean frozenForParents)
+    {
+        this.frozenForParents = frozenForParents;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_DATA_SET_COLUMN, nullable = false)
+    public boolean isFrozenForDataSet()
+    {
+        return frozenForDataSet;
+    }
+
+    public void setFrozenForDataSet(boolean frozenForDataSets)
+    {
+        this.frozenForDataSet = frozenForDataSets;
     }
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "entity", orphanRemoval = true)
@@ -424,8 +521,24 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     public void setContainer(final SamplePE container)
     {
         this.container = container;
+        if (container != null)
+        {
+            containerFrozen = container.isFrozen() && container.isFrozenForComponent();
+        }
         // identifier should be reevaluated after change of container
         this.sampleIdentifier = null;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.CONTAINER_FROZEN_COLUMN, nullable = false)
+    public boolean isContainerFrozen()
+    {
+        return containerFrozen;
+    }
+
+    public void setContainerFrozen(boolean containerFrozen)
+    {
+        this.containerFrozen = containerFrozen;
     }
 
     @Transient
@@ -496,6 +609,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
         if (projectSamplesEnabled)
         {
             this.project = project;
+            if (project != null)
+            {
+                projectFrozen = project.isFrozen() && project.isFrozenForSample();
+            }
         }
     }
 
@@ -505,6 +622,18 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     public ProjectPE getProject()
     {
         return project;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.PROJECT_FROZEN_COLUMN, nullable = false)
+    public boolean isProjectFrozen()
+    {
+        return projectFrozen;
+    }
+
+    public void setProjectFrozen(boolean projectFrozen)
+    {
+        this.projectFrozen = projectFrozen;
     }
 
     public void setExperiment(final ExperimentPE experiment)
@@ -531,6 +660,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     void setExperimentInternal(final ExperimentPE experiment)
     {
         this.experiment = experiment;
+        if (experiment != null)
+        {
+            experimentFrozen = experiment.isFrozen() && experiment.isFrozenForSample();
+        }
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -548,6 +681,18 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     private Long getExperimentId()
     {
         return getId(getExperimentInternal());
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.EXPERIMENT_FROZEN_COLUMN, nullable = false)
+    public boolean isExperimentFrozen()
+    {
+        return experimentFrozen;
+    }
+
+    public void setExperimentFrozen(boolean experimentFrozen)
+    {
+        this.experimentFrozen = experimentFrozen;
     }
 
     // used only by Hibernate Search
@@ -569,7 +714,7 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     {
         return getId(getSpace());
     }
-    
+
     private Long getId(IIdHolder idHolder)
     {
         Long result = null;
@@ -580,7 +725,7 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
         }
         return result;
     }
-    
+
     //
     // IIdAndCodeHolder
     //
@@ -761,6 +906,7 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     public void addProperty(final EntityPropertyPE property)
     {
         property.setEntity(this);
+        property.setEntityFrozen(isFrozen());
         getSampleProperties().add((SamplePropertyPE) property);
     }
 
@@ -807,7 +953,8 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     @Override
     @Transient
-    @Field(index = Index.NO, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
+    @Analyzer(impl = IgnoreCaseAnalyzer.class)
+    @Field(index = Index.YES, store = Store.YES, name = SearchFieldConstants.IDENTIFIER)
     public final String getIdentifier()
     {
         return getSampleIdentifier().toString();

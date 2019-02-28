@@ -36,9 +36,9 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
@@ -68,6 +68,12 @@ public final class SpacePE extends HibernateAbstractRegistrationHolder implement
     private transient Long id;
 
     private String code;
+
+    private boolean frozen;
+
+    private boolean frozenForProject;
+
+    private boolean frozenForSample;
 
     private String description;
 
@@ -121,6 +127,42 @@ public final class SpacePE extends HibernateAbstractRegistrationHolder implement
     public final void setHome(final Boolean home)
     {
         this.home = home;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_COLUMN, nullable = false)
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_PROJECT_COLUMN, nullable = false)
+    public boolean isFrozenForProject()
+    {
+        return frozenForProject;
+    }
+
+    public void setFrozenForProject(boolean frozenForProject)
+    {
+        this.frozenForProject = frozenForProject;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, nullable = false)
+    public boolean isFrozenForSample()
+    {
+        return frozenForSample;
+    }
+
+    public void setFrozenForSample(boolean frozenForSample)
+    {
+        this.frozenForSample = frozenForSample;
     }
 
     @Version

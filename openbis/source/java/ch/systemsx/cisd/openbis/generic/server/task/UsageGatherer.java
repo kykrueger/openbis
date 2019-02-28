@@ -16,7 +16,6 @@
 
 package ch.systemsx.cisd.openbis.generic.server.task;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,9 +53,12 @@ public class UsageGatherer
 
     private IApplicationServerInternalApi service;
 
-    public UsageGatherer(IApplicationServerInternalApi service)
+    private Set<String> spacesToBeIgnored;
+
+    public UsageGatherer(IApplicationServerInternalApi service, Set<String> spacesToBeIgnored)
     {
         this.service = service;
+        this.spacesToBeIgnored = spacesToBeIgnored;
     }
 
     public UsageAndGroupsInfo gatherUsageAndGroups(Period period, List<String> groupsOrNull)
@@ -142,27 +144,23 @@ public class UsageGatherer
         fetchOptions.withRegistrator();
         SampleFetchOptions sampleFetchOptions = fetchOptions.withSample();
         sampleFetchOptions.withSpace();
-        sampleFetchOptions.withRegistrator();
         ExperimentFetchOptions experimentFetchOptions = fetchOptions.withExperiment();
         experimentFetchOptions.withProject().withSpace();
-        experimentFetchOptions.withRegistrator();
         List<DataSet> dataSets = service.searchDataSets(sessionToken, searchCriteria, fetchOptions).getObjects();
-        List<IRegistratorHolder> entities = new ArrayList<>();
-        for (DataSet dataSet : dataSets)
-        {
-            Experiment experiment = dataSet.getExperiment();
-            Sample sample = dataSet.getSample();
-            if (experiment != null)
+        Function<DataSet, String> spaceExtractor = new Function<DataSet, String>()
             {
-                entities.add(experiment);
-            } else if (sample != null)
-            {
-                entities.add(sample);
-            }
-        }
-        Function<IRegistratorHolder, String> spaceExtractor = e -> e instanceof Sample ? ((Sample) e).getSpace().getCode()
-                : ((Experiment) e).getProject().getSpace().getCode();
-        gatherUsage(usageByUsersAndSpaces, entities, spaceExtractor, UsageInfo::addNewDataSet);
+                @Override
+                public String apply(DataSet dataSet)
+                {
+                    Experiment experiment = dataSet.getExperiment();
+                    if (experiment != null)
+                    {
+                        return experiment.getProject().getSpace().getCode();
+                    } 
+                    return dataSet.getSample().getSpace().getCode();
+                }
+            };
+        gatherUsage(usageByUsersAndSpaces, dataSets, spaceExtractor, UsageInfo::addNewDataSet);
     }
 
     private <T extends IRegistratorHolder> void gatherUsage(Map<String, Map<String, UsageInfo>> usageByUsersAndSpaces, List<T> entities,
@@ -175,13 +173,16 @@ public class UsageGatherer
             if (usageBySpaces != null)
             {
                 String space = spaceExtractor.apply(entity);
-                UsageInfo usageInfo = usageBySpaces.get(space);
-                if (usageInfo == null)
+                if (spacesToBeIgnored.contains(space) == false)
                 {
-                    usageInfo = new UsageInfo();
-                    usageBySpaces.put(space, usageInfo);
+                    UsageInfo usageInfo = usageBySpaces.get(space);
+                    if (usageInfo == null)
+                    {
+                        usageInfo = new UsageInfo();
+                        usageBySpaces.put(space, usageInfo);
+                    }
+                    consumer.accept(usageInfo);
                 }
-                consumer.accept(usageInfo);
             }
         }
     }

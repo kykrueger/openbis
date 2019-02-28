@@ -30,5 +30,5 @@ node {
   nodeModulesDir = file("${projectDir}")
 }
 
-// npm_run_build.dependsOn npm_run_test
+npm_run_build.dependsOn npm_run_test
 build.dependsOn npm_run_build

@@ -13,7 +13,9 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype['@type'] = 'as.dto.experiment.update.ExperimentUpdate';
 		constructor.serialVersionUID = 1;
 		prototype.experimentId = null;
-
+		prototype.freeze = null;
+		prototype.freezeForDataSets = null;
+		prototype.freezeForSamples = null;
 		prototype.properties = null;
 		prototype.projectId = null;
 		prototype.tagIds = null;
@@ -28,6 +30,26 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.setExperimentId = function(experimentId) {
 			this.experimentId = experimentId;
 		};
+		prototype.shouldBeFrozen = function() {
+			return this.freeze;
+		}
+		prototype.freeze = function() {
+			this.freeze = true;
+		}
+		prototype.shouldBeFrozenForDataSets = function() {
+			return this.freezeForDataSets;
+		}
+		prototype.freezeForDataSets = function() {
+			this.freeze = true;
+			this.freezeForDataSets = true;
+		}
+		prototype.shouldBeFrozenForSamples = function() {
+			return this.freezeForSamples;
+		}
+		prototype.freezeForSamples = function() {
+			this.freeze = true;
+			this.freezeForSamples = true;
+		}
 		prototype.getProperty = function(propertyName) {
 			return this.properties[propertyName];
 		};

@@ -37,7 +37,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -100,6 +102,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.ObjectNotFoundException;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.UnauthorizedObjectAccessException;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.FreezingFlags;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.IndexOperation;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.IndexState;
 import ch.ethz.sis.openbis.systemtest.asapi.v3.index.ReindexingState;
@@ -114,6 +117,9 @@ import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventPE.EntityType;
+import ch.systemsx.cisd.openbis.generic.shared.dto.EventType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Id;
 import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
@@ -122,7 +128,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.systemtest.SystemTestCase;
 import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
-
 import junit.framework.Assert;
 
 /**
@@ -691,6 +696,18 @@ public class AbstractTest extends SystemTestCase
         }
     }
 
+    protected void assertUserFailureException(Consumer<Void> action, String expectedMessage)
+    {
+        assertUserFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    action.accept(null);
+                }
+            }, expectedMessage);
+    }
+
     protected void assertUserFailureException(IDelegatedAction action, String expectedMessage)
     {
         assertUserFailureException(action, expectedMessage, null);
@@ -734,6 +751,18 @@ public class AbstractTest extends SystemTestCase
         assertAuthorizationFailureException(action, null);
     }
 
+    protected void assertAuthorizationFailureException(Consumer<Void> action, String expectedContextPattern)
+    {
+        assertAuthorizationFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    action.accept(null);
+                }
+            }, expectedContextPattern);
+    }
+
     protected void assertAuthorizationFailureException(IDelegatedAction action, String expectedContextPattern)
     {
         try
@@ -749,6 +778,19 @@ public class AbstractTest extends SystemTestCase
             }
             assertExceptionContext(e, expectedContextPattern);
         }
+    }
+
+    protected void assertUnauthorizedObjectAccessException(Consumer<Void> action, IObjectId expectedObjectId,
+            String expectedContextPattern)
+    {
+        assertUnauthorizedObjectAccessException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    action.accept(null);
+                }
+            }, expectedObjectId, expectedContextPattern);
     }
 
     protected void assertUnauthorizedObjectAccessException(IDelegatedAction action, IObjectId expectedObjectId)
@@ -1377,6 +1419,27 @@ public class AbstractTest extends SystemTestCase
         daoFactory.getMetaprojectDAO().createOrUpdateMetaproject(tag, person);
 
         return new TagPermId(owner, creation.getCode());
+    }
+
+    protected void assertFreezingEvent(String user, String identifier, EntityType entityType, FreezingFlags freezingFlags)
+    {
+        EventPE event = daoFactory.getEventDAO().tryFind(identifier, entityType, EventType.FREEZING);
+        if (event == null)
+        {
+            fail("No freezing event for " + entityType + " " + identifier);
+        }
+        assertEquals(event.getReason(), freezingFlags.asJson());
+        assertEquals(event.getRegistrator().getUserId(), user);
+        if (event.getRegistrationDate().getTime() < System.currentTimeMillis() - 2000)
+        {
+            fail("Event registration date " + event.getRegistrationDate() + " is more than 2 seconds in the past.");
+        }
+    }
+
+    protected static List<MethodWrapper> getFreezingMethods(Class<?> clazz)
+    {
+        return Arrays.asList(clazz.getMethods()).stream()
+                .filter(m -> m.getName().startsWith("freeze")).map(MethodWrapper::new).collect(Collectors.toList());
     }
 
 }

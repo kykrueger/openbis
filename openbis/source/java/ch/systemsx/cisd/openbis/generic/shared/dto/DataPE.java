@@ -93,7 +93,7 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         IEntityInformationWithPropertiesHolder, IMatchingEntity, IIdentifierHolder, IDeletablePE,
         IEntityWithMetaprojects, IModifierAndModificationDateBean, IIdentityHolder
 {
-	
+
     private static final long serialVersionUID = IServer.VERSION;
 
     public static final DataPE[] EMPTY_ARRAY = new DataPE[0];
@@ -101,6 +101,16 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     private transient Long id;
 
     private String code;
+
+    private boolean frozen;
+
+    private boolean frozenForChildren;
+
+    private boolean frozenForParents;
+
+    private boolean frozenForComponents;
+
+    private boolean frozenForContainers;
 
     private boolean isDerived;
 
@@ -118,7 +128,11 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     private ExperimentPE experiment;
 
+    private boolean experimentFrozen;
+
     private SamplePE sample;
+
+    private boolean sampleFrozen;
 
     private Date productionDate;
 
@@ -389,16 +403,76 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
 
     @Column(name = ColumnNames.DATA_SET_KIND_COLUMN, nullable = false)
     public String getDataSetKind()
-	{
-		return dataSetKind;
-	}
+    {
+        return dataSetKind;
+    }
 
-	public void setDataSetKind(String dataSetKind)
-	{
-		this.dataSetKind = dataSetKind;
-	}
+    public void setDataSetKind(String dataSetKind)
+    {
+        this.dataSetKind = dataSetKind;
+    }
 
-	/**
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_COLUMN, nullable = false)
+    public boolean isFrozen()
+    {
+        return frozen;
+    }
+
+    public void setFrozen(boolean frozen)
+    {
+        this.frozen = frozen;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_CHILDREN_COLUMN, nullable = false)
+    public boolean isFrozenForChildren()
+    {
+        return frozenForChildren;
+    }
+
+    public void setFrozenForChildren(boolean frozenForChildren)
+    {
+        this.frozenForChildren = frozenForChildren;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_PARENTS_COLUMN, nullable = false)
+    public boolean isFrozenForParents()
+    {
+        return frozenForParents;
+    }
+
+    public void setFrozenForParents(boolean frozenForParents)
+    {
+        this.frozenForParents = frozenForParents;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_COMPONENTS_COLUMN, nullable = false)
+    public boolean isFrozenForComponents()
+    {
+        return frozenForComponents;
+    }
+
+    public void setFrozenForComponents(boolean frozenForComponents)
+    {
+        this.frozenForComponents = frozenForComponents;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.FROZEN_FOR_CONTAINERS_COLUMN, nullable = false)
+    public boolean isFrozenForContainers()
+    {
+        return frozenForContainers;
+    }
+
+    public void setFrozenForContainers(boolean frozenForContainers)
+    {
+        this.frozenForContainers = frozenForContainers;
+    }
+
+    /**
      * Returns <code>true</code> if this data set is data set is derived from a sample (otherwise it is measured from a sample).
      */
     @Column(name = ColumnNames.IS_DERIVED)
@@ -470,10 +544,13 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         return sample;
     }
 
-    // TODO 2009-04-28, Tomasz Pylak: make @Private
     void setSampleInternal(final SamplePE sample)
     {
         this.sample = sample;
+        if (sample != null)
+        {
+            sampleFrozen = sample.isFrozen() && sample.isFrozenForDataSet();
+        }
     }
 
     // used only by Hibernate Search
@@ -490,6 +567,18 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
             assert result != null;
         }
         return result;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.SAMPLE_FROZEN_COLUMN, nullable = false)
+    public boolean isSampleFrozen()
+    {
+        return sampleFrozen;
+    }
+
+    public void setSampleFrozen(boolean sampleFrozen)
+    {
+        this.sampleFrozen = sampleFrozen;
     }
 
     /**
@@ -668,6 +757,10 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     void setExperimentInternal(final ExperimentPE experiment)
     {
         this.experiment = experiment;
+        if (experiment != null)
+        {
+            experimentFrozen = experiment.isFrozen() && experiment.isFrozenForDataSet();
+        }
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -691,6 +784,18 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
             assert result != null;
         }
         return result;
+    }
+
+    @NotNull
+    @Column(name = ColumnNames.EXPERIMENT_FROZEN_COLUMN, nullable = false)
+    public boolean isExperimentFrozen()
+    {
+        return experimentFrozen;
+    }
+
+    public void setExperimentFrozen(boolean experimentFrozen)
+    {
+        this.experimentFrozen = experimentFrozen;
     }
 
     private Set<DataSetPropertyPE> properties = new HashSet<DataSetPropertyPE>();
@@ -731,6 +836,7 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     public void addProperty(final EntityPropertyPE property)
     {
         property.setEntity(this);
+        property.setEntityFrozen(isFrozen());
         getDataSetProperties().add((DataSetPropertyPE) property);
     }
 

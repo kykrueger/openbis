@@ -85,4 +85,11 @@ public class SpaceAuthorizationExecutor implements ISpaceAuthorizationExecutor
     {
     }
 
+    @Override
+    @RolesAllowed(RoleWithHierarchy.SPACE_ADMIN)
+    @Capability("FREEZE_SPACE")
+    public void canFreeze(IOperationContext context)
+    {
+    }
+
 }

@@ -1,5 +1,8 @@
 export default {
-  // TODO setDirty for generic tabs
+  init: () => ({
+    type: 'INIT',
+  }),
+  // TODO setDirty for generic tabs instead of entities
   setDirty: (entityPermId, dirty) => ({
     type: 'SET-DIRTY',
     entityPermId: entityPermId,
@@ -18,13 +21,20 @@ export default {
     type: 'SET-SPACES',
     spaces: spaces,
   }),
-  selectEntity: entityPermId => ({
-    type: 'SELECT-ENTITY',
-    entityPermId: entityPermId
+  setProjects: (projects, spacePermId) => ({
+    type: 'SET-PROJECTS',
+    projects: projects,
+    spacePermId: spacePermId
   }),
-  closeEntity: entityPermId => ({
+  selectEntity: (entityPermId, entityType) => ({
+    type: 'SELECT-ENTITY',
+    entityPermId: entityPermId,
+    entityType: entityType
+  }),
+  closeEntity: (entityPermId, entityType) => ({
     type: 'CLOSE-ENTITY',
-    entityPermId: entityPermId
+    entityPermId: entityPermId,
+    entityType: entityType
   }),
   changePage: page => ({
     type: 'CHANGE-PAGE',
@@ -36,7 +46,16 @@ export default {
   }),
   setFilter: filter => ({
     type: 'SET-FILTER',
-    value: filter
+    filter: filter
+  }),
+  setMode: mode => ({
+    type: 'SET-MODE',
+    mode
+  }),
+  setModeDone: (mode, data) => ({
+    type: 'SET-MODE-DONE',
+    mode,
+    data
   }),
   moveEntity: (source, target) => ({
     type: 'MOVE-ENTITY',
@@ -46,5 +65,31 @@ export default {
   saveEntity: (entity) => ({
     type: 'SAVE-ENTITY',
     entity: entity
+  }),
+  saveEntityDone: (entity) => ({
+    type: 'SAVE-ENTITY-DONE',
+    entity: entity
+  }),
+  error: (exception) => ({
+    type: 'ERROR',
+    exception: exception
+  }),
+  closeError: () => ({
+    type: 'CLOSE-ERROR',
+  }),
+  // session
+  login: (username, password) => ({
+    type: 'LOGIN',
+    username: username,
+    password: password,
+  }),
+  loginDone: () => ({
+    type: 'LOGIN-DONE',
+  }),
+  logout: () => ({
+    type: 'LOGOUT'
+  }),
+  logoutDone: () => ({
+    type: 'LOGOUT-DONE',
   }),
 }

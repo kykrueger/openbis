@@ -70,18 +70,18 @@ class SingleOrAllExperimentsChooser extends LayoutContainer
         this.experimentCriteriaHolder = experimentCriteriaHolder;
         this.restrictGlobalScopeLinkToProject = restrictGlobalScopeLinkToProject;
         this.refreshAction = refreshAction;
-        ExperimentChooserFieldAdaptor singleExperimentChooser = createSingleExperimentChooser();
-        RadioGroup experimentRadioChooser = createExperimentRadio(singleExperimentChooser);
-
-        setWidth(380);
-        add(experimentRadioChooser);
-        add(singleExperimentChooser.getField());
         String experimentText = viewContext.getMessage(Dict.EXPERIMENT).toLowerCase();
         String experimentsText = viewContext.getMessage(Dict.EXPERIMENTS).toLowerCase();
         singleExperimentText = "Single " + experimentText;
         allExperimentsText = "All " + experimentsText;
         allExperimentsFromProjectText = "All " + experimentsText + " from ";
         chooseOneExperimentText = "Choose one " + experimentText + "...";
+        ExperimentChooserFieldAdaptor singleExperimentChooser = createSingleExperimentChooser();
+        RadioGroup experimentRadioChooser = createExperimentRadio(singleExperimentChooser);
+
+        setWidth(380);
+        add(experimentRadioChooser);
+        add(singleExperimentChooser.getField());
     }
 
     // without project restriction

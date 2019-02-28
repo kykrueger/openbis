@@ -287,7 +287,7 @@ public class DumpPreparator
             }
         };
 
-        private static final Pattern COPY_PATTERN = Pattern.compile("COPY (\\w*) \\((.*)\\).*");
+        private static final Pattern COPY_PATTERN = Pattern.compile("COPY public\\.(\\w*) \\((.*)\\).*");
 
         State processLine(String line, UploadFileManager manager)
         {

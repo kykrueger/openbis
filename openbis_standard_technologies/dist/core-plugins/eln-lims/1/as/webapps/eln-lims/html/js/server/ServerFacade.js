@@ -501,7 +501,12 @@ function ServerFacade(openbisServer) {
 		if(sampleToSend.id !== -1) { //Is V1 Sample
 			listDataSetsForV1Sample(sampleToSend);
 		} else { //Ask for a V1 Sample
-			this.searchWithUniqueId(sampleToSend.permId, function(sampleList) {
+			this.searchSamplesV1({
+				"samplePermId" : sampleToSend.permId,
+				"withProperties" : true,
+				"withParents" : true,
+				"withChildren" : true
+			}, function(sampleList) {
 				listDataSetsForV1Sample(sampleList[0]);
 			});
 		}
@@ -920,7 +925,8 @@ function ServerFacade(openbisServer) {
 					if(fetchOptions.withModifier) {
 						fetchOptions.withModifier();
 					}
-					if(fetchOptions.withProperties) {
+					var forceDisableWithProperties = advancedFetchOptions && advancedFetchOptions.withProperties === false;
+					if(fetchOptions.withProperties && !forceDisableWithProperties) {
 						fetchOptions.withProperties();
 					}
 					
@@ -950,12 +956,20 @@ function ServerFacade(openbisServer) {
 					}
 					var parentfetchOptions = jQuery.extend(true, {}, fetchOptions);
 					var childrenfetchOptions = jQuery.extend(true, {}, fetchOptions);
-					if(fetchOptions.withParents) {
-						parentfetchOptions.withParentsUsing(parentfetchOptions);
+					var forceDisableWithParents = advancedFetchOptions && advancedFetchOptions.withParents === false;
+					if(fetchOptions.withParents && !forceDisableWithParents) {
+						var forceDisableWithAncestors = advancedFetchOptions && advancedFetchOptions.withAncestors === false;
+						if(!forceDisableWithAncestors) {
+							parentfetchOptions.withParentsUsing(parentfetchOptions);
+						}
 						fetchOptions.withParentsUsing(parentfetchOptions);
 					}
-					if(fetchOptions.withChildren) {
-						childrenfetchOptions.withChildrenUsing(childrenfetchOptions);
+					var forceDisableWithChildren = advancedFetchOptions && advancedFetchOptions.withChildren === false;
+					if(fetchOptions.withChildren && !forceDisableWithChildren) {
+						var forceDisableWithDescendants = advancedFetchOptions && advancedFetchOptions.withDescendants === false;
+						if(!forceDisableWithDescendants) {
+							childrenfetchOptions.withChildrenUsing(childrenfetchOptions);
+						}
 						fetchOptions.withChildrenUsing(childrenfetchOptions);
 					}
 				} else if(advancedFetchOptions.minTableInfo) {
@@ -1536,6 +1550,10 @@ function ServerFacade(openbisServer) {
 		}
 		
 		// Attributes
+		if(sampleIdentifier) {
+			throw "Unexpected operation exception : v1 search by sampleIdentifier and samplePermId removed";
+		}
+		
 		if(samplePermId) {
 			matchClauses.push({
 				"@type":"AttributeMatchClause",
@@ -1543,10 +1561,6 @@ function ServerFacade(openbisServer) {
 				attribute : "PERM_ID",
 				desiredValue : samplePermId 
 			});
-		}
-		
-		if(sampleIdentifier) {
-			throw "Unexpected operation exception : v1 search by sampleIdentifier removed";
 		}
 		
 		if(sampleCode) {
@@ -1755,7 +1769,7 @@ function ServerFacade(openbisServer) {
 	{
 		if(profile.searchSamplesUsingV3OnDropbox) {
 			this.searchSamplesV3DSS(fechOptions, callbackFunction);
-		} else if(fechOptions["sampleIdentifier"]) {
+		} else if(fechOptions["sampleIdentifier"] || fechOptions["samplePermId"]) {
 			this.searchSamplesV1replacement(fechOptions, callbackFunction);
 		} else {
 			this.searchSamplesV1(fechOptions, callbackFunction);
@@ -1767,37 +1781,43 @@ function ServerFacade(openbisServer) {
 		var _this = this;
 		require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/id/SampleIdentifier", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
         function(SamplePermId, SampleIdentifier, SampleFetchOptions) {
+            //
+            // Main entity Block
+            //
             var fetchOptions = new SampleFetchOptions();
             fetchOptions.withSpace();
             fetchOptions.withType();
             fetchOptions.withRegistrator();
             fetchOptions.withModifier();
             fetchOptions.withExperiment();
-            
             if(fechOptions["withProperties"]) {
             		fetchOptions.withProperties();
             }
+            
+            
+            //
+            // Parents/Children Block
+            //
+            var parentfetchOptions = jQuery.extend(true, {}, fetchOptions);
+			var childrenfetchOptions = jQuery.extend(true, {}, fetchOptions);
+			
             if(fechOptions["withAncestors"]) {
-            		fetchOptions.withParentsUsing(fetchOptions);
+             	fechOptions["withParents"] = true;
             }
             if(fechOptions["withDescendants"]) {
-            		fetchOptions.withChildrenUsing(fetchOptions);
+            		fechOptions["withChildren"] = true;
             }
             if(fechOptions["withParents"]) {
-            		var pfo = fetchOptions.withParents();
-            		pfo.withSpace();
-            		pfo.withType();
-            		pfo.withRegistrator();
-            		pfo.withModifier();
-            		pfo.withExperiment();
+				fetchOptions.withParentsUsing(parentfetchOptions);
             }
             if(fechOptions["withChildren"]) {
-            		var cfo = fetchOptions.withChildren();
-            		cfo.withSpace();
-            		cfo.withType();
-            		cfo.withRegistrator();
-            		cfo.withModifier();
-            		cfo.withExperiment();
+            		fetchOptions.withChildrenUsing(childrenfetchOptions);
+            }
+            if(fechOptions["withAncestors"]) {
+             	parentfetchOptions.withParentsUsing(parentfetchOptions);
+            }
+            if(fechOptions["withDescendants"]) {
+            		childrenfetchOptions.withChildrenUsing(childrenfetchOptions);
             }
             
             var id = null;
@@ -1873,27 +1893,27 @@ function ServerFacade(openbisServer) {
 			"properyKeyValueList" : properyKeyValueList
 		}, callbackFunction);
 	}
-	
+
 	this.searchWithProperties = function(propertyTypeCodes, propertyValues, callbackFunction, isComplete, withParents)
-	{	
-		var properyKeyValueList = [];
-	
+	{
+		var advancedSearchCriteria = { rules : {} };
 		for(var i = 0; i < propertyTypeCodes.length ;i++) {
-			var propertyTypeCode = propertyTypeCodes[i];
+			var propertyTypeCode = propertyTypeCodes[i];			
 			var propertyTypeValue = propertyValues[i];
-			var newMap = {};
-				newMap[propertyTypeCode] = propertyTypeValue;
-				
-			properyKeyValueList.push(newMap);
+			advancedSearchCriteria.rules[Util.guid()] = { type : "Property", name : "PROP." + propertyTypeCode, value : propertyTypeValue, operator : "thatEqualsString" }
 		}
-		
-		this.searchSamples({
+		var advancedFetchOptions = {
 			"withProperties" : true,
 			"withAncestors" : isComplete,
 			"withDescendants" : isComplete,
 			"withParents" : withParents,
-			"properyKeyValueList" : properyKeyValueList
-		}, callbackFunction);
+			"withChildren" : false
+		}
+		
+		var _this = this;
+		this.searchForSamplesAdvanced(advancedSearchCriteria, advancedFetchOptions, function(results) {
+			callbackFunction(_this.getV3SamplesAsV1(results.objects));
+		});
 	}
 	
 	this.searchWithIdentifiers = function(sampleIdentifiers, callbackFunction)

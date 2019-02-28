@@ -20,6 +20,7 @@ import static org.testng.AssertJUnit.assertEquals;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -101,6 +102,8 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     protected static final String TEST_POWER_USER_CISD = "test_role";
 
     protected static final String TEST_INSTANCE_ETLSERVER = "etlserver";
+
+    protected static final String TEST_SPACE_ETLSERVER_TESTSPACE = "test_space_etl_server";
 
     protected static final String TEST_GROUP_OBSERVER = "observer";
 
@@ -585,6 +588,39 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     protected Object[][] provideBooleanBoolean()
     {
         return new Object[][] { { true, true }, { true, false }, { false, true }, { false, false } };
+    }
+
+    protected static Object[][] asCartesianProduct(List<?>... lists)
+    {
+        int size = 1;
+        for (List<?> list : lists)
+        {
+            size *= list.size();
+        }
+        List<Object[]> result = new ArrayList<>();
+        for (int i = 0; i < size; i++)
+        {
+            Object[] row = new Object[lists.length];
+            for (int j = 0, ii = i; j < lists.length; j++)
+            {
+                List<?> list = lists[j];
+                int listSize = list.size();
+                row[j] = list.get(ii % listSize);
+                ii /= list.size();
+            }
+            result.add(row);
+        }
+        return result.toArray(new Object[0][]);
+    }
+
+    protected static Object[][] merge(Object[][]... results)
+    {
+        List<Object[]> mergedResults = new ArrayList<>();
+        for (Object[][] result : results)
+        {
+            mergedResults.addAll(Arrays.asList(result));
+        }
+        return mergedResults.toArray(new Object[0][]);
     }
 
 }

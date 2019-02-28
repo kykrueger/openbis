@@ -25,6 +25,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
@@ -37,6 +38,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.authorization.AuthorizationDataProvider;
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.DeletionValidator;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDeletedDataSetTable;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDeletionTable;
@@ -47,6 +49,7 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DeletionPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
 /**
  * @author pkupczyk
@@ -154,31 +157,52 @@ public class ConfirmDeletionExecutor implements IConfirmDeletionExecutor
 
     private void deleteDataSets(IOperationContext context, DeletionPE deletion, boolean forceDeletion)
     {
-        IDeletionDAO deletionDAO = daoFactory.getDeletionDAO();
+        try
+        {
+            IDeletionDAO deletionDAO = daoFactory.getDeletionDAO();
 
-        List<TechId> deletionTechIds = Collections.singletonList(new TechId(deletion.getId()));
-        List<String> dataSetCodes = deletionDAO.findTrashedDataSetCodes(deletionTechIds);
+            List<TechId> deletionTechIds = Collections.singletonList(new TechId(deletion.getId()));
+            List<String> dataSetCodes = deletionDAO.findTrashedDataSetCodes(deletionTechIds);
 
-        IDeletedDataSetTable deletedDataSetTable =
-                businessObjectFactory.createDeletedDataSetTable(context.getSession());
-        deletedDataSetTable.loadByDataSetCodes(dataSetCodes);
-        deletedDataSetTable.permanentlyDeleteLoadedDataSets(deletion.getReason(), forceDeletion);
+            IDeletedDataSetTable deletedDataSetTable =
+                    businessObjectFactory.createDeletedDataSetTable(context.getSession());
+            deletedDataSetTable.loadByDataSetCodes(dataSetCodes);
+            deletedDataSetTable.permanentlyDeleteLoadedDataSets(deletion.getReason(), forceDeletion);
+        } catch (DataAccessException e)
+        {
+            DataAccessExceptionTranslator.throwException(e, "data set", EntityKind.DATA_SET);
+            return;
+        }
     }
 
     private void deleteSamples(IOperationContext context, DeletionPE deletion)
     {
-        ISampleDAO sampleDAO = daoFactory.getSampleDAO();
-        sampleDAO.deletePermanently(deletion, context.getSession().tryGetPerson());
+        try
+        {
+            ISampleDAO sampleDAO = daoFactory.getSampleDAO();
+            sampleDAO.deletePermanently(deletion, context.getSession().tryGetPerson());
+        } catch (DataAccessException e)
+        {
+            DataAccessExceptionTranslator.throwException(e, "sample", EntityKind.SAMPLE);
+            return;
+        }
     }
 
     private void deleteExperiments(IOperationContext context, DeletionPE deletion)
     {
-        IDeletionDAO deletionDAO = daoFactory.getDeletionDAO();
-        IExperimentBO experimentBO = businessObjectFactory.createExperimentBO(context.getSession());
+        try
+        {
+            IDeletionDAO deletionDAO = daoFactory.getDeletionDAO();
+            IExperimentBO experimentBO = businessObjectFactory.createExperimentBO(context.getSession());
 
-        List<TechId> deletionTechIds = Collections.singletonList(new TechId(deletion.getId()));
-        List<TechId> experimentTechIds = deletionDAO.findTrashedExperimentIds(deletionTechIds);
+            List<TechId> deletionTechIds = Collections.singletonList(new TechId(deletion.getId()));
+            List<TechId> experimentTechIds = deletionDAO.findTrashedExperimentIds(deletionTechIds);
 
-        experimentBO.deleteByTechIds(experimentTechIds, deletion.getReason());
+            experimentBO.deleteByTechIds(experimentTechIds, deletion.getReason());
+        } catch (DataAccessException e)
+        {
+            DataAccessExceptionTranslator.throwException(e, "experiment", EntityKind.EXPERIMENT);
+            return;
+        }
     }
 }

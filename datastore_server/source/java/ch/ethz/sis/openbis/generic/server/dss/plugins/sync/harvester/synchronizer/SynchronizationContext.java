@@ -23,6 +23,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
@@ -35,7 +36,7 @@ public class SynchronizationContext
     private IEncapsulatedOpenBISService service;
 
     private IApplicationServerApi v3Api;
-    
+
     private String dataStoreCode;
 
     private File storeRoot;
@@ -56,6 +57,8 @@ public class SynchronizationContext
 
     private Logger operationLog;
 
+    private IDataStoreServerApi v3DssApi;
+
     public IEncapsulatedOpenBISService getService()
     {
         return service;
@@ -74,6 +77,16 @@ public class SynchronizationContext
     public void setV3Api(IApplicationServerApi v3Api)
     {
         this.v3Api = v3Api;
+    }
+
+    public IDataStoreServerApi getV3DssApi()
+    {
+        return v3DssApi;
+    }
+
+    public void setV3DssApi(IDataStoreServerApi v3DssApi)
+    {
+        this.v3DssApi = v3DssApi;
     }
 
     public String getDataStoreCode()

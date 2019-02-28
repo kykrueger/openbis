@@ -29,6 +29,7 @@ dependencies {
 			'cisd:cisd-cifex:+',
 			'shriop:javacsv:+',
 			'cisd:cisd-image-readers:+',
+			'sis:sis-file-transfer:+',
 			'hjg:pngj:+',
 			'apache:commons-fileupload:+',
 			'lyncode:xoai-data-provider:+'
