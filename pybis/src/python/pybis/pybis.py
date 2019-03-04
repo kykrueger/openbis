@@ -2477,16 +2477,13 @@ class Openbis:
     get_object_types = get_sample_types # Alias
 
     def get_sample_type(self, type):
-        #try:
-            property_asignments = self._get_types_of(
-                method_name         = "searchSampleTypes",
-                entity              = "Sample",
-                type_name           = type,
-                optional_attributes = ["generatedCodePrefix", "validationPluginId"]
-            )
-            return SampleType(self, property_asignments.data)
-        #except Exception:
-        #    raise ValueError("no such sample type: {}".format(type))
+        property_asignments = self._get_types_of(
+            method_name         = "searchSampleTypes",
+            entity              = "Sample",
+            type_name           = type,
+            optional_attributes = ["generatedCodePrefix", "validationPluginId"]
+        )
+        return SampleType(self, property_asignments.data)
 
     get_object_type = get_sample_type # Alias
 
@@ -2547,15 +2544,12 @@ class Openbis:
         )
 
     def get_dataset_type(self, type):
-        try:
-            return self._get_types_of(
-                method_name         = "searchDataSetTypes", 
-                entity              = "DataSet",
-                type_name           = type,
-                optional_attributes = ['kind']
-            )
-        except Exception:
-            raise ValueError("No such dataSet type: {}".format(type))
+        return self._get_types_of(
+            method_name         = "searchDataSetTypes", 
+            entity              = "DataSet",
+            type_name           = type,
+            optional_attributes = ['kind']
+        )
 
     def _get_types_of(
         self, method_name, entity, type_name=None,
@@ -2601,11 +2595,16 @@ class Openbis:
         resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
 
-        if type_name is not None and len(resp['objects']) == 1:
-            return EntityType(
-                openbis_obj = self,
-                data        = resp['objects'][0]
-            )
+        if type_name is not None:
+            if len(resp['objects']) == 1:
+                return EntityType(
+                    openbis_obj = self,
+                    data        = resp['objects'][0]
+                )
+            elif len(resp['objects']) == 0:
+                raise ValueError("No such {} type: {}".format(entity, type_name))
+            else:
+                raise ValueError("There is more than one entry for entity={} and type={}".format(entity, type_name))
 
         types = []
         attrs = self._get_attributes(type_name, types, additional_attributes, optional_attributes)
