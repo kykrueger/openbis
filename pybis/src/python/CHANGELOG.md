@@ -1,3 +1,9 @@
+## Changes with pybis-1.8.0
+
+* better support for fetching entity-types (dataSetTypes, sampleTypes)
+* separation of propertyAssignments from entity-types
+* added .get_propertyAssignments() method to all entity-types
+
 ## Changes with pybis-1.7.6
 
 * bugfix dataset upload for relative files (e.g. ../../file or /User/username/file)
