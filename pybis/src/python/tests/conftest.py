@@ -4,8 +4,8 @@ import time
 from pybis import Openbis
 
 openbis_url = 'https://localhost:8443'
-admin_username = 'vermeul'
-admin_password = 'blabla'
+admin_username = 'admin'
+admin_password = 'changeit'
 
 @pytest.yield_fixture(scope="module")
 def openbis_instance():

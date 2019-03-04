@@ -110,7 +110,7 @@ def format_timestamp(ts):
 
 def is_identifier(ident):
     # assume we got a sample identifier e.g. /TEST/TEST-SAMPLE
-    match = re.match('/', ident)
+    match = re.search('/', ident)
     if match:
         return True
     else:
