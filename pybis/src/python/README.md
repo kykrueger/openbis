@@ -19,12 +19,22 @@ o.logout()
 ## Masterdata
 ```
 o.get_experiment_types()
+et = o.get_experiment_type('TEST')
+et.get_propertyAssignments()
+
 o.get_sample_types()
-o.get_sample_type('YEAST')
+st = o.get_sample_type('YEAST')
+et.get_propertyAssignments()
+
 o.get_material_types()
+mt = o.get_material_type('GENE')
+mt.get_propertyAssignments()
+
 o.get_dataset_types()
-o.get_dataset_types()[0]
-o.get_dataset_type('RAW_DATA')
+dst = o.get_dataset_types()[0]
+dst = o.get_dataset_type('RAW_DATA')
+dst.get_propertyAssignments()
+
 o.get_vocabularies()
 o.get_vocabulary('BACTERIAL_ANTIBIOTIC_RESISTANCE')
 o.get_terms(vocabulary='STORAGE')
