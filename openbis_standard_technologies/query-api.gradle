@@ -123,6 +123,7 @@ task apiV3Jar(type: Jar) {
 configurations.create('apiV3Dependencies')
 dependencies {
   apiV3Dependencies 'sis:sis-base:+',
+                    'sis:sis-file-transfer:+',
                     'apache:httpclient:+',
                     'apache:commons-lang3:+',
                     'springframework:spring-web:+',
