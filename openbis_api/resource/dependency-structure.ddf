@@ -5,7 +5,8 @@
 
 [common-api] = ${cisd}.common.exceptions.*Exception \
                ${cisd}.common.api.IRpcService \
-               ${cisd}.base.annotation.JsonObject
+               ${cisd}.base.annotation.JsonObject \
+               ${sis}.filetransfer.*
 
 [v3-api] = ${sis}.openbis.generic.asapi.v3.* \
            ${sis}.openbis.generic.dssapi.v3.*

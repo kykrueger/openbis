@@ -18,6 +18,8 @@ package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload;
 
 import java.io.Serializable;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+
 /**
  * Options for fast downloading.
  * 
@@ -35,11 +37,10 @@ public class FastDownloadSessionOptions implements Serializable
     }
 
     /**
-     * Sets the wished number of streams for parallel downloading. The actual number can be less than the
-     * wished number.
+     * Sets the wished number of streams for parallel downloading. The actual number can be less than the wished number.
      * 
-     *  @param wishedNumberOfStreams can be <code>null</code> if there is no wish (default behavior)
-     *  @return this instance.
+     * @param wishedNumberOfStreams can be <code>null</code> if there is no wish (default behavior)
+     * @return this instance.
      */
     public FastDownloadSessionOptions wishedNumberOfStreams(Integer wishedNumberOfStreams)
     {
@@ -49,6 +50,12 @@ public class FastDownloadSessionOptions implements Serializable
         }
         this.wishedNumberOfStreams = wishedNumberOfStreams;
         return this;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("wishedNumberOfStreams", wishedNumberOfStreams).toString();
     }
 
 }

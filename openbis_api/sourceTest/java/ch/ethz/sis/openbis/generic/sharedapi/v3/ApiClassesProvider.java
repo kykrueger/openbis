@@ -45,8 +45,8 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloader;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadResult;
+import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadResult;
+import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloader;
 
 /**
  * @author pkupczyk

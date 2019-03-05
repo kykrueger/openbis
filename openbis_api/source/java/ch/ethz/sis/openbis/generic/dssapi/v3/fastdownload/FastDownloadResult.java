@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload;
+package ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import ch.ethz.sis.filetransfer.DownloadClientDownload;
 import ch.ethz.sis.filetransfer.DownloadStatus;
 import ch.ethz.sis.filetransfer.IDownloadItemId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
@@ -112,6 +113,16 @@ public class FastDownloadResult
     public String getDownloadSessionId()
     {
         return downloadSessionId;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("status", status)
+                .append("fileTransferUserSessionId", fileTransferUserSessionId)
+                .append("number of files", pathsById.size())
+                .append("downloadSessionId", downloadSessionId)
+                .toString();
     }
 
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload;
+package ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -45,14 +45,17 @@ import ch.ethz.sis.filetransfer.IRetryProviderFactory;
 import ch.ethz.sis.filetransfer.IUserSessionId;
 import ch.ethz.sis.filetransfer.NullLogger;
 import ch.ethz.sis.filetransfer.UserSessionId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 
 /**
- * Helper class for downloading files by using an instance of a {@link FastDownloadSession} instance.
- * Typical usage:
+ * Helper class for downloading files by using an instance of a {@link FastDownloadSession} instance. Typical usage:
+ * 
  * <pre>
  * List<IDataSetFileId> fileIds = ...;
  * FastDownloadSessionOptions options = new FastDownloadSessionOptions().wishedNumberOfStreams(3);
@@ -71,7 +74,7 @@ public class FastDownloader
     private IDownloadServer downloadServer;
 
     private ILogger logger;
-    
+
     private List<IDownloadListener> listeners = new ArrayList<>();
 
     private IDownloadStoreFactory storeFactory;
@@ -104,7 +107,7 @@ public class FastDownloader
         userSessionId = new UserSessionId(FileTransferUserSessionId);
         downloadItems = files.stream().map(fid -> createId(fid)).collect(Collectors.toList());
     }
-    
+
     private static final IDownloadItemId createId(IDataSetFileId dataSetFileId)
     {
         if (dataSetFileId instanceof DataSetFilePermId == false)
@@ -133,8 +136,7 @@ public class FastDownloader
     }
 
     /**
-     * Sets the logger used by the internal download client. The default logger is an instance of {@link NullLogger}
-     * which logs nothing.
+     * Sets the logger used by the internal download client. The default logger is an instance of {@link NullLogger} which logs nothing.
      * 
      * @return this instance
      */
@@ -145,7 +147,7 @@ public class FastDownloader
     }
 
     /**
-     * Adds a download listener. The internal download client will send events to the listener during the download session. 
+     * Adds a download listener. The internal download client will send events to the listener during the download session.
      * 
      * @return this instance
      */
@@ -156,9 +158,8 @@ public class FastDownloader
     }
 
     /**
-     * Sets the factory for an {@link IDownloadStore}. By default the downloaded files are stored in the
-     * root folder (parameter of method {{@link #downloadTo(File)}) as follows:
-     * <data set code>/<file path in the data set>
+     * Sets the factory for an {@link IDownloadStore}. By default the downloaded files are stored in the root folder (parameter of method
+     * {{@link #downloadTo(File)}) as follows: <data set code>/<file path in the data set>
      * 
      * @return this instance
      */
@@ -169,8 +170,8 @@ public class FastDownloader
     }
 
     /**
-     * Sets the factory for an {@link IRetryProvider}. The default is {@link DefaultRetryProvider}
-     * with  maximumNumberOfRetries = 3, waitingTimeBetweenRetries = 1 sec, waitingTimeBetweenRetriesIncreasingFactor = 2.
+     * Sets the factory for an {@link IRetryProvider}. The default is {@link DefaultRetryProvider} with maximumNumberOfRetries = 3,
+     * waitingTimeBetweenRetries = 1 sec, waitingTimeBetweenRetriesIncreasingFactor = 2.
      * 
      * @return this instance
      */
@@ -219,14 +220,14 @@ public class FastDownloader
                         }
                     });
         config.setDeserializerProvider(new DefaultDeserializerProvider(actualLogger,
-                                new IDownloadItemIdDeserializer()
-                                    {
-                                        @Override
-                                        public IDownloadItemId deserialize(ByteBuffer buffer) throws DownloadException
-                                        {
-                                            return new DownloadItemId(new String(buffer.array(), buffer.position(), buffer.limit()));
-                                        }
-                                    }));
+                new IDownloadItemIdDeserializer()
+                    {
+                        @Override
+                        public IDownloadItemId deserialize(ByteBuffer buffer) throws DownloadException
+                        {
+                            return new DownloadItemId(new String(buffer.array(), buffer.position(), buffer.limit()));
+                        }
+                    }));
         config.setRetryProvider(retryProviderFactory != null ? retryProviderFactory.createRetryProvider(actualLogger)
                 : new DefaultRetryProvider(actualLogger, 3, 1000, 2));
         return new DownloadClient(config);
@@ -235,5 +236,11 @@ public class FastDownloader
     private DownloadPreferences createPreferences(FastDownloadSessionOptions options)
     {
         return new DownloadPreferences(options.getWishedNumberOfStreams());
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("downLoadUrl", downLoadUrl).append("userSessionId", userSessionId).toString();
     }
 }

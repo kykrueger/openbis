@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload;
+package ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -53,6 +53,8 @@ import ch.ethz.sis.filetransfer.IUserSessionId;
 import ch.ethz.sis.filetransfer.InvalidDownloadSessionException;
 import ch.ethz.sis.filetransfer.InvalidDownloadStreamException;
 import ch.ethz.sis.filetransfer.InvalidUserSessionException;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadMethod;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadParameter;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;

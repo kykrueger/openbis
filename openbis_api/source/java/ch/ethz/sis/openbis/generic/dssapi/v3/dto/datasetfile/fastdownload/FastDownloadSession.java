@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload;
 import java.io.Serializable;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 
 /**
@@ -62,6 +63,16 @@ public class FastDownloadSession implements Serializable
     public FastDownloadSessionOptions getOptions()
     {
         return options;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("downloadUrl", downloadUrl)
+                .append("fileTransferUserSessionId", fileTransferUserSessionId)
+                .append("number of files", files.size())
+                .append("options", options)
+                .toString();
     }
 
 }
