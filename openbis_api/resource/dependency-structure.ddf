@@ -5,7 +5,10 @@
 
 [common-api] = ${cisd}.common.exceptions.*Exception \
                ${cisd}.common.api.IRpcService \
+               ${cisd}.base.exceptions.* \
                ${cisd}.base.annotation.JsonObject \
+               ${cisd}.common.reflection.ClassUtils \
+               ${cisd}.common.shared.basic.string.CommaSeparatedListBuilder \
                ${sis}.filetransfer.*
 
 [v3-api] = ${sis}.openbis.generic.asapi.v3.* \
