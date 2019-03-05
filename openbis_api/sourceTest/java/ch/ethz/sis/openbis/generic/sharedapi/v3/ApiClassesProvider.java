@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadResult;
+import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadUtils;
 import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloader;
 
 /**
@@ -60,7 +61,7 @@ public class ApiClassesProvider
     };
 
     private static final Set<Class<?>> NON_SERIALIZABLE_CLASSES = 
-            new HashSet<>(Arrays.asList(FastDownloader.class, FastDownloadResult.class));;
+            new HashSet<>(Arrays.asList(FastDownloader.class, FastDownloadResult.class, FastDownloadUtils.class));;
 
     public static Collection<Class<?>> getPublicClasses()
     {

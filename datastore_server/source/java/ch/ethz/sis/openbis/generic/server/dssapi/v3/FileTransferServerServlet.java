@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -67,8 +68,11 @@ import ch.ethz.sis.filetransfer.LogLevel;
 import ch.ethz.sis.filetransfer.UserSessionId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadMethod;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadParameter;
+import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadUtils;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.download.IFileTransferSessionManager;
 import ch.systemsx.cisd.common.exceptions.Status;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
@@ -85,11 +89,12 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.authorization.Ds
  */
 public class FileTransferServerServlet extends HttpServlet
 {
-    public static final String SERVLET_NAME = "file-transfer";
-
-    private static final String METHOD_PARAMETER = "method";
-
     private static final long serialVersionUID = 1L;
+    
+    public static final String SERVLET_NAME = "file-transfer";
+    
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
+            FileTransferServerServlet.class);
 
     private IDownloadServer downloadServer;
 
@@ -114,29 +119,38 @@ public class FileTransferServerServlet extends HttpServlet
         config.setSerializerProvider(new DefaultSerializerProvider(logger));
         downloadServer = new DownloadServer(config);
         jsonFactory = new JsonFactory();
-
+        operationLog.info("Servlet initialized");
     }
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
-        Map<String, String[]> parameterMap = request.getParameterMap();
-        String method = request.getParameter(METHOD_PARAMETER);
-        if (FastDownloadMethod.START_DOWNLOAD_SESSION_METHOD.getMethodName().equals(method))
+        try
         {
-            handleStartDownloadSession(parameterMap, response);
-        } else if (FastDownloadMethod.QUEUE_METHOD.getMethodName().equals(method))
+            Map<String, String[]> parameterMap = request.getParameterMap();
+            String method = request.getParameter(FastDownloadParameter.METHOD_PARAMETER.getParameterName());
+            if (FastDownloadMethod.START_DOWNLOAD_SESSION_METHOD.getMethodName().equals(method))
+            {
+                handleStartDownloadSession(parameterMap, response);
+            } else if (FastDownloadMethod.QUEUE_METHOD.getMethodName().equals(method))
+            {
+                handleQueue(parameterMap, response);
+            } else if (FastDownloadMethod.DOWNLOAD_METHOD.getMethodName().equals(method))
+            {
+                handleDownload(parameterMap, response);
+            } else if (FastDownloadMethod.FINISH_DOWNLOAD_SESSION_METHOD.getMethodName().equals(method))
+            {
+                handleFinishDownloadSession(parameterMap, response);
+            } else
+            {
+                throw new IllegalArgumentException("Unknown method '" + method + "'.");
+            }
+        } catch (Exception e)
         {
-            handleQueue(parameterMap, response);
-        } else if (FastDownloadMethod.DOWNLOAD_METHOD.getMethodName().equals(method))
-        {
-            handleDownload(parameterMap, response);
-        } else if (FastDownloadMethod.FINISH_DOWNLOAD_SESSION_METHOD.getMethodName().equals(method))
-        {
-            handleFinishDownloadSession(parameterMap, response);
-        } else
-        {
-            throw new ServletException("Unknown method '" + method + "'.");
+            response.setContentType("application/json");
+            JsonGenerator jsonGenerator = jsonFactory.createGenerator(response.getWriter());
+            FastDownloadUtils.renderAsJson(jsonGenerator, e);
+            operationLog.error(e.getMessage(), e);
         }
     }
 
@@ -303,6 +317,7 @@ public class FileTransferServerServlet extends HttpServlet
         private ConcurrencyProvider(Properties properties)
         {
             maximumNumberOfAllowedStreams = PropertyUtils.getInt(properties, "api.v3.fast-download.maximum-number-of-allowed-streams", 10);
+            operationLog.info("max number of allowed streams: "+ maximumNumberOfAllowedStreams);
         }
 
         @Override
@@ -314,6 +329,7 @@ public class FileTransferServerServlet extends HttpServlet
             {
                 allowedNumberOfStreams -= downloadState.getCurrentNumberOfStreams();
             }
+            System.err.println("allowed number of streams:"+allowedNumberOfStreams+" "+downloadStates.size());
             return Math.min(wishedNumberOfStreams == null ? 1 : wishedNumberOfStreams, allowedNumberOfStreams);
         }
     }

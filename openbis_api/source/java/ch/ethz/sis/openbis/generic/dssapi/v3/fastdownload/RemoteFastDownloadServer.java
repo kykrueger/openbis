@@ -95,7 +95,7 @@ class RemoteFastDownloadServer implements IDownloadServer
                 .wishedNumberOfStreams(preferences.getWishedNumberOfStreams()).parameters);
         try
         {
-            ContentResponse response = request.send();
+            ContentResponse response = sendAndCheckResponse(request);
             String contentAsString = response.getContentAsString();
             JsonNode tree = objectMapper.readTree(contentAsString);
             DownloadSessionId downloadSessionId = createDownloadSessionId(getScalarValue(tree, "downloadSessionId"));
@@ -116,13 +116,7 @@ class RemoteFastDownloadServer implements IDownloadServer
                 .method(FastDownloadMethod.QUEUE_METHOD)
                 .downloadSession(downloadSessionId)
                 .ranges(ranges).parameters);
-        try
-        {
-            request.send();
-        } catch (Exception e)
-        {
-            throw CheckedExceptionTunnel.wrapIfNecessary(e);
-        }
+        sendAndCheckResponse(request);
     }
 
     @Override
@@ -150,7 +144,7 @@ class RemoteFastDownloadServer implements IDownloadServer
                             Request request = createRequest(builder.parameters);
                             try
                             {
-                                ContentResponse response = request.send();
+                                ContentResponse response = sendAndCheckResponse(request);
                                 byte[] content = response.getContent();
                                 if (content.length > 0)
                                 {
@@ -189,9 +183,25 @@ class RemoteFastDownloadServer implements IDownloadServer
         Request request = createRequest(new ParameterBuilder()
                 .method(FastDownloadMethod.FINISH_DOWNLOAD_SESSION_METHOD)
                 .downloadSession(downloadSessionId).parameters);
+        sendAndCheckResponse(request);
+    }
+
+    private ContentResponse sendAndCheckResponse(Request request)
+    {
         try
         {
-            request.send();
+            ContentResponse response = request.send();
+            String mediaType = response.getMediaType();
+            if (mediaType != null && mediaType.equals("application/json"))
+            {
+                JsonNode tree = objectMapper.readTree(response.getContentAsString());
+                RuntimeException exception = FastDownloadUtils.createExceptionFromJson(tree);
+                if (exception != null)
+                {
+                    throw exception;
+                }
+            }
+            return response;
         } catch (Exception e)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
