@@ -21,12 +21,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.ReflectionUtils;
@@ -43,6 +45,9 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloader;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadResult;
+
 /**
  * @author pkupczyk
  */
@@ -53,6 +58,9 @@ public class ApiClassesProvider
             "ch.ethz.sis.openbis.generic.dssapi.v3",
             "ch.ethz.sis.openbis.generic.asapi.v3"
     };
+
+    private static final Set<Class<?>> NON_SERIALIZABLE_CLASSES = 
+            new HashSet<>(Arrays.asList(FastDownloader.class, FastDownloadResult.class));;
 
     public static Collection<Class<?>> getPublicClasses()
     {
@@ -86,14 +94,17 @@ public class ApiClassesProvider
                 }
             });
         Collection<String> uniqueClassNames = new TreeSet<String>(nonInnerClassesAndTestClasses);
-        Collection<Class<?>> uniqueClasses = ImmutableSet.copyOf(ReflectionUtils.forNames(uniqueClassNames));
+        Collection<Class<?>> uniqueClasses = ImmutableSet.copyOf(ReflectionUtils.forNames(uniqueClassNames))
+                .stream().filter(c -> Modifier.isPublic(c.getModifiers())).collect(Collectors.toList());
         Set<Class<?>> nonSerializableConcreteClasses = new HashSet<Class<?>>();
 
         for (Class<?> uniqueClass : uniqueClasses)
         {
             System.out.println("Found V3 public class:\t" + uniqueClass.getName());
 
-            if (false == Modifier.isAbstract(uniqueClass.getModifiers()) && false == Serializable.class.isAssignableFrom(uniqueClass))
+            if (false == Modifier.isAbstract(uniqueClass.getModifiers())
+                    && false == Serializable.class.isAssignableFrom(uniqueClass)
+                    && false == NON_SERIALIZABLE_CLASSES.contains(uniqueClass))
             {
                 nonSerializableConcreteClasses.add(uniqueClass);
             }

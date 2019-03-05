@@ -30,6 +30,8 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreat
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.UploadedDataSetCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadOptions;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
@@ -58,6 +60,13 @@ public class DataStoreServerApiJson implements IDataStoreServerApi
     public InputStream downloadFiles(String sessionToken, List<? extends IDataSetFileId> fileIds, DataSetFileDownloadOptions downloadOptions)
     {
         throw new UnsupportedOperationException("This method is not supported in JSON API");
+    }
+
+    @Override
+    public FastDownloadSession createFastDownloadSession(String sessionToken, List<? extends IDataSetFileId> fileIds,
+            FastDownloadSessionOptions options)
+    {
+        return api.createFastDownloadSession(sessionToken, fileIds, options);
     }
 
     @Override

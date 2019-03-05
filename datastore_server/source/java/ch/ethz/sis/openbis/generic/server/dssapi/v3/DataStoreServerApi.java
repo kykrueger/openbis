@@ -26,8 +26,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.iterators.IteratorChain;
 import org.apache.commons.lang3.StringUtils;
@@ -52,11 +54,14 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.UploadedDataSetC
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.create.DataSetFileCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadOptions;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.download.DataSetFileDownloadInputStream;
+import ch.ethz.sis.openbis.generic.server.dssapi.v3.download.IFileTransferSessionManager;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.executor.ICreateUploadedDataSetExecutor;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.pathinfo.PathInfoFeeder;
 import ch.systemsx.cisd.common.exceptions.Status;
@@ -74,12 +79,13 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.authorization.DssSessionAuthorizationHolder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
+import ch.systemsx.cisd.openbis.generic.shared.basic.GenericSharedConstants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.IQueryApiServer;
-
 import net.lemnik.eodsql.QueryTool;
 
 /**
@@ -104,6 +110,9 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
 
     @Autowired
     private ICreateUploadedDataSetExecutor createUploadedDataSetExecutor;
+    
+    @Autowired
+    private IFileTransferSessionManager fileTransferSessionManager;
 
     /**
      * The designated constructor.
@@ -236,6 +245,36 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
     @Transactional(readOnly = true)
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
     @Override
+    public FastDownloadSession createFastDownloadSession(String sessionToken, List<? extends IDataSetFileId> fileIds,
+            FastDownloadSessionOptions options)
+    {
+        getOpenBISService().checkSession(sessionToken);
+        List<IDataSetFileId> files = new ArrayList<>();
+        for (Entry<String, Set<String>> entry : sortFilesByDataSets(fileIds).entrySet())
+        {
+            String dataSetCode = entry.getKey();
+            DataSetPermId dataSetId = new DataSetPermId(dataSetCode);
+            Status authorizationStatus = DssSessionAuthorizationHolder.getAuthorizer().checkDatasetAccess(sessionToken, dataSetCode);
+            if (authorizationStatus.isOK())
+            {
+                files.addAll(entry.getValue().stream().map(p -> new DataSetFilePermId(dataSetId, p)).collect(Collectors.toList()));
+            }
+        }
+        String fileTransferUserSessionId = fileTransferSessionManager.createFileTransferUserSessionId(sessionToken);
+        return new FastDownloadSession(getDownloadUrl(), fileTransferUserSessionId, files, options);
+    }
+
+    private String getDownloadUrl()
+    {
+        Properties serviceProperties = (Properties) ServiceProvider.getApplicationContext().getBean("configProperties");
+        return serviceProperties.getProperty("download-url") + "/" 
+                + GenericSharedConstants.DATA_STORE_SERVER_WEB_APPLICATION_NAME + "/"
+                + FileTransferServerServlet.SERVLET_NAME;
+    }
+
+    @Transactional(readOnly = true)
+    @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
+    @Override
     public InputStream downloadFiles(String sessionToken, List<? extends IDataSetFileId> fileIds,
             DataSetFileDownloadOptions downloadOptions)
     {
@@ -305,7 +344,7 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
             DataSetFilePermId filePermId = (DataSetFilePermId) fileId;
             if (filePermId.getDataSetId() instanceof DataSetPermId == false)
             {
-                throw new IllegalArgumentException("Unsupported dataSetId: " + fileId);
+                throw new IllegalArgumentException("Unsupported dataSetId: " + filePermId.getDataSetId());
             }
             String dataSetCode = ((DataSetPermId) filePermId.getDataSetId()).getPermId();
             Set<String> ids = filesByDataSet.get(dataSetCode);
