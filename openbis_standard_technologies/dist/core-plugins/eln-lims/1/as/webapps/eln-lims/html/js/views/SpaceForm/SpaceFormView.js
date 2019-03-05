@@ -39,6 +39,12 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 			_this._spaceFormController.createProject();
 		});
 		toolbarModel.push({ component : $createProj, tooltip: "Create Project" });
+
+		//Freeze
+		var isEntityFrozen = _this._spaceFormModel.v3_space.frozen;
+		var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+		var $freezeButton = FormUtil.getFreezeButton("SPACE", _this._spaceFormModel.v3_space.code, isEntityFrozen);
+		toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
 		
 		//Export
 		var $exportAll = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space.code, expand : true }], false);
