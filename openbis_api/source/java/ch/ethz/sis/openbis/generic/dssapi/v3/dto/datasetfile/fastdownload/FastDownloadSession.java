@@ -19,22 +19,30 @@ package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
+import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author Franz-Josef Elmer
  */
+@JsonObject("dss.dto.datasetfile.fastdownload.FastDownloadSession")
 public class FastDownloadSession implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
+    @JsonProperty
     private String downloadUrl;
 
+    @JsonProperty
     private String fileTransferUserSessionId;
 
+    @JsonProperty
     private List<IDataSetFileId> files;
 
+    @JsonProperty
     private FastDownloadSessionOptions options;
 
     public FastDownloadSession(String downloadUrl, String fileTransferUserSessionId, List<IDataSetFileId> files, FastDownloadSessionOptions options)
@@ -43,6 +51,12 @@ public class FastDownloadSession implements Serializable
         this.fileTransferUserSessionId = fileTransferUserSessionId;
         this.files = files;
         this.options = options;
+    }
+
+    // Needed by JSON RPC
+    @SuppressWarnings("unused")
+    private FastDownloadSession()
+    {
     }
 
     public String getDownloadUrl()

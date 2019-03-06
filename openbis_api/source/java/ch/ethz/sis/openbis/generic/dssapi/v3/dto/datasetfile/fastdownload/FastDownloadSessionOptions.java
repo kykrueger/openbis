@@ -18,17 +18,22 @@ package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * Options for fast downloading.
  * 
  * @author Franz-Josef Elmer
  */
+@JsonObject("dss.dto.datasetfile.fastdownload.FastDownloadSessionOptions")
 public class FastDownloadSessionOptions implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
+    @JsonProperty
     private Integer wishedNumberOfStreams;
 
     public Integer getWishedNumberOfStreams()
@@ -42,7 +47,7 @@ public class FastDownloadSessionOptions implements Serializable
      * @param wishedNumberOfStreams can be <code>null</code> if there is no wish (default behavior)
      * @return this instance.
      */
-    public FastDownloadSessionOptions wishedNumberOfStreams(Integer wishedNumberOfStreams)
+    public FastDownloadSessionOptions withWishedNumberOfStreams(Integer wishedNumberOfStreams)
     {
         if (wishedNumberOfStreams != null && wishedNumberOfStreams <= 0)
         {
