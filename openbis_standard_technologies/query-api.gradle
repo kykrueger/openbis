@@ -128,6 +128,7 @@ dependencies {
                     'sis:sis-file-transfer:+',
                     'apache:httpclient:+',
                     'apache:commons-lang3:+',
+                    'exclipse:jetty-client:+',
                     'springframework:spring-web:+',
                     'marathon:marathon-spring-util:+'
 }
