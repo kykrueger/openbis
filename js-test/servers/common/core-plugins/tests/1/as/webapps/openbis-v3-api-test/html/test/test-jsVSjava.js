@@ -31,7 +31,10 @@ define([ 'jquery', 'underscore', 'openbis', 'test/common' ], function($, _, open
 			"PhysicalDataCreation" : "Java class ignored: ",
 			"DataSetFileDownload" : "Java class not implemented in JS: ",
 			"DataSetFileDownloadOptions" : "Java class not implemented in JS: ",
-			"DataSetFileDownloadReader" : "Java class not implemented in JS: "
+			"FastDownloader" : "Java class not implemented in JS: ",
+			"FastDownloadResult" : "Java class not implemented in JS: ",
+			"FastDownloadUtils" : "Java class not implemented in JS: ",
+			"RemoteFastDownloadServer" : "Java class not implemented in JS: "
 		}
 
 		//
