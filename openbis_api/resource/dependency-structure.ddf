@@ -9,6 +9,7 @@
                ${cisd}.base.annotation.JsonObject \
                ${cisd}.common.reflection.ClassUtils \
                ${cisd}.common.shared.basic.string.CommaSeparatedListBuilder \
+               ${cisd}.common.http.* \
                ${sis}.filetransfer.*
 
 [v3-api] = ${sis}.openbis.generic.asapi.v3.* \

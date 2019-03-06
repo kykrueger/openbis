@@ -2286,7 +2286,7 @@ Fast Download Session Options
 get Files
 get File Transfer User Session Id
 get Wished Number Of Streams
-wished Number Of Streams
+with Wished Number Of Streams
 DOWNLOAD_ITEM_IDS_PARAMETER
 DOWNLOAD_METHOD
 DOWNLOAD_SESSION_ID_PARAMETER
