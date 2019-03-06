@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,6 +55,7 @@ import ch.ethz.sis.filetransfer.InvalidUserSessionException;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadMethod;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadParameter;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
+import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 
@@ -64,8 +64,6 @@ import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
  */
 class RemoteFastDownloadServer implements IDownloadServer
 {
-    private HttpClient httpClient;
-
     private String url;
 
     private int requestTimeoutInSeconds;
@@ -309,7 +307,8 @@ class RemoteFastDownloadServer implements IDownloadServer
 
     private Request createRequest(Map<FastDownloadParameter, String> parameters)
     {
-        return getHttpClient().newRequest(createUri(parameters)).timeout(requestTimeoutInSeconds, TimeUnit.SECONDS);
+        HttpClient httpClient = JettyHttpClientFactory.getHttpClient();
+        return httpClient.newRequest(createUri(parameters)).timeout(requestTimeoutInSeconds, TimeUnit.SECONDS);
     }
 
     private String createUri(Map<FastDownloadParameter, String> parameters)
@@ -335,24 +334,6 @@ class RemoteFastDownloadServer implements IDownloadServer
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
         }
-    }
-
-    private HttpClient getHttpClient()
-    {
-        if (httpClient == null)
-        {
-            SslContextFactory sslContextFactory = new SslContextFactory();
-            httpClient = new HttpClient(sslContextFactory);
-            httpClient.setIdleTimeout(120000);
-            try
-            {
-                httpClient.start();
-            } catch (Exception e)
-            {
-                throw CheckedExceptionTunnel.wrapIfNecessary(e);
-            }
-        }
-        return httpClient;
     }
 
     private static final class ParameterBuilder
