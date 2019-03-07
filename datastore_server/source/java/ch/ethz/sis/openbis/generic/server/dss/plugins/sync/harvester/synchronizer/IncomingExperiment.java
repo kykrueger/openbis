@@ -27,8 +27,8 @@ class IncomingExperiment extends IncomingEntity<NewExperiment>
     {
         return (NewExperiment) getEntity();
     }
-    IncomingExperiment(NewExperiment exp, Date lastModDate)
+    IncomingExperiment(NewExperiment exp, FrozenFlags frozenFlags, Date lastModDate)
     {
-        super(exp, SyncEntityKind.EXPERIMENT, lastModDate);
+        super(exp, frozenFlags, SyncEntityKind.EXPERIMENT, lastModDate);
     }
 }

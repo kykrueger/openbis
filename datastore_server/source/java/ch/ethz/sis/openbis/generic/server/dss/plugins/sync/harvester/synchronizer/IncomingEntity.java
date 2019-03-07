@@ -23,9 +23,9 @@ import java.util.List;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.SyncEntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Identifier;
 
-public class IncomingEntity<T extends Identifier<T>> extends AbstractTimestampsAndUserHolder
+public class IncomingEntity<T> extends AbstractTimestampsAndUserHolder
 {
-    private final Identifier<T> entity;
+    private final T entity;
 
     private final SyncEntityKind entityKind;
 
@@ -59,19 +59,24 @@ public class IncomingEntity<T extends Identifier<T>> extends AbstractTimestampsA
         this.hasAttachments = hasAttachments;
     }
 
-    public Identifier<T> getEntity()
+    public T getEntity()
     {
         return entity;
     }
 
-    public String getIdentifer()
+    public String getIdentifier()
     {
-        return getEntity().getIdentifier();
+        return identifier;
     }
 
     public String getPermID()
     {
-        return getEntity().getPermID();
+        return permId;
+    }
+
+    public FrozenFlags getFrozenFlags()
+    {
+        return frozenFlags;
     }
 
     public Date getLastModificationDate()
@@ -81,9 +86,45 @@ public class IncomingEntity<T extends Identifier<T>> extends AbstractTimestampsA
 
     private final Date lastModificationDate;
 
-    IncomingEntity(Identifier<T> entity, SyncEntityKind entityKind, Date lastModDate)
+    private FrozenFlags frozenFlags;
+
+    private String identifier;
+
+    private String permId;
+
+    IncomingEntity(T entity, FrozenFlags frozenFlags, SyncEntityKind entityKind, Date lastModDate)
+    {
+        this(entity, getIdentifier(entity), getPermId(entity), frozenFlags, entityKind, lastModDate);
+    }
+
+    @SuppressWarnings("unused")
+    private static String getIdentifier(Object entity)
+    {
+        if (entity instanceof Identifier)
+        {
+
+            return ((Identifier) entity).getIdentifier();
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unused")
+    private static String getPermId(Object entity)
+    {
+        if (entity instanceof Identifier)
+        {
+
+            return ((Identifier) entity).getPermID();
+        }
+        return null;
+    }
+
+    IncomingEntity(T entity, String identifier, String permId, FrozenFlags frozenFlags, SyncEntityKind entityKind, Date lastModDate)
     {
         this.entity = entity;
+        this.identifier = identifier;
+        this.permId = permId;
+        this.frozenFlags = frozenFlags;
         this.entityKind = entityKind;
         this.lastModificationDate = lastModDate;
     }

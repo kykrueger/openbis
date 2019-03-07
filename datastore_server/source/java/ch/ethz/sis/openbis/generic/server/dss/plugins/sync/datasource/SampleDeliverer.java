@@ -55,6 +55,11 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
                 startUrlElement(writer, "SAMPLE", permId, sample.getModificationDate());
                 startXdElement(writer);
                 writer.writeAttribute("code", sample.getCode());
+                addAttributeIfSet(writer, "frozen", sample.isFrozen());
+                addAttributeIfSet(writer, "frozenForChildren", sample.isFrozenForChildren());
+                addAttributeIfSet(writer, "frozenForParents", sample.isFrozenForParents());
+                addAttributeIfSet(writer, "frozenForComponents", sample.isFrozenForComponents());
+                addAttributeIfSet(writer, "frozenForDataSets", sample.isFrozenForDataSets());
                 addExperiment(writer, sample.getExperiment());
                 addKind(writer, EntityKind.SAMPLE);
                 addModifier(writer, sample);

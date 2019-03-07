@@ -359,3 +359,19 @@ class RegexCondition():
     def match(self, eventType, message):
         match = re.search(self.regex, message)
         return match.groups() if match else None
+    
+class ConditionSequence():
+    def __init__(self, conditions):
+        self.conditions = conditions
+        self.matches = []
+        
+    def match(self, eventType, message):
+        match_count = len(self.matches)
+        if match_count == len(self.conditions):
+            return self.matches
+        result = self.conditions[match_count].match(eventType, message)
+        if result is not None:
+            self.matches.append(result)
+            if len(self.matches) == len(self.conditions):
+                return self.matches
+        return None

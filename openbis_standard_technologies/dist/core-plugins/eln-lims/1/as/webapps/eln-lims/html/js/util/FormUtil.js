@@ -1458,7 +1458,7 @@ var FormUtil = new function() {
 	}
 
 	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
-			$export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
+			var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
 					Util.blockUI();
 					var facade = mainController.serverFacade;
 					facade.exportAll(exportConfig, (includeRoot)?true:false, metadataOnly, function(error, result) {
@@ -1474,4 +1474,20 @@ var FormUtil = new function() {
 			}
 			return $export;
 	};
+	
+	this.getFreezeButton = function(entityType, permId, isEntityFrozen) {
+		var $freezeButton = FormUtil.getButtonWithIcon("glyphicon-lock");
+		
+		if(isEntityFrozen) {
+			$freezeButton.attr("disabled", "disabled");
+		} else {
+			$freezeButton.click(function() {
+				//TO-DO
+//				Util.blockUI();
+//				mainController.serverFacade.freeze();
+			});
+		}
+		
+		return $freezeButton;
+	}
 }

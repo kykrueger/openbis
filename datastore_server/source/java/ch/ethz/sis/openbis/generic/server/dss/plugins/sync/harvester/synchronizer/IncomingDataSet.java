@@ -35,6 +35,13 @@ public class IncomingDataSet extends AbstractTimestampsAndUserHolder implements 
 
     private FullDataSetCreation fullDataSet;
 
+    private FrozenFlags frozenFlags;
+
+    public FrozenFlags getFrozenFlags()
+    {
+        return frozenFlags;
+    }
+
     public Date getLastModificationDate()
     {
         return lastModificationDate;
@@ -55,10 +62,11 @@ public class IncomingDataSet extends AbstractTimestampsAndUserHolder implements 
         return fullDataSet;
     }
 
-    IncomingDataSet(NewExternalData dataSet, FullDataSetCreation fullDataSet, Date lastModDate)
+    IncomingDataSet(NewExternalData dataSet, FrozenFlags frozenFlags, FullDataSetCreation fullDataSet, Date lastModDate)
     {
         super();
         this.dataSet = dataSet;
+        this.frozenFlags = frozenFlags;
         this.fullDataSet = fullDataSet;
         this.lastModificationDate = lastModDate;
     }

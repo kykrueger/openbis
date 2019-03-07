@@ -107,8 +107,20 @@ public class AbstractFileTest extends SystemTestCase
         for (String path : paths)
         {
             File f = new File(dataSetDir, path);
-            FileUtilities.writeToFile(f, "file content of " + path);
+            String content = createRandomContent(path);
+            FileUtilities.writeToFile(f, content);
         }
+    }
+
+    protected String createRandomContent(String path)
+    {
+        StringBuilder builder = new StringBuilder().append("file content of ").append(path).append("\n");
+        for (int i = 0; i < 30000; i++)
+        {
+            builder.append(UUID.nameUUIDFromBytes((path+ " "+i).getBytes()).toString()).append("\n");
+        }
+        String content = builder.toString();
+        return content;
     }
 
     public static Matcher<Collection<DataSetFile>> containsAll(Collection<String> files)

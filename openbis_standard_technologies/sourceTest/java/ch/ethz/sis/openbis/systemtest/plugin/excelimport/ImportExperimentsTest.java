@@ -63,6 +63,8 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     private static final String EXPERIMENT_TYPE = "experiments/experiment_type.xls";
 
+    private static final String EXPERIMENT_UPDATE = "experiments/update.xls";
+
     private static String FILES_DIR;
 
     private String sessionToken;
@@ -82,7 +84,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreated() throws IOException
+    public void testExperimentsAreCreated() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_XLS)));
@@ -97,7 +99,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedSecondExperiment() throws IOException
+    public void testExperimentsAreCreatedSecondExperiment() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_XLS)));
@@ -112,7 +114,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWithEverythingOnServer() throws IOException
+    public void testExperimentsAreCreatedWithEverythingOnServer() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
@@ -130,7 +132,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWithEverythingOnServerAndInXls() throws IOException
+    public void testExperimentsAreCreatedWithEverythingOnServerAndInXls() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
@@ -164,7 +166,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWithTypeOnServer() throws IOException
+    public void testExperimentsAreCreatedWithTypeOnServer() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
@@ -180,7 +182,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWithTypeOnServerAndInXls() throws IOException
+    public void testExperimentsAreCreatedWithTypeOnServerAndInXls() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
@@ -204,7 +206,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWhenNonMandatoryPropertiesAreNotProvided() throws IOException
+    public void testExperimentsAreCreatedWhenNonMandatoryPropertiesAreNotProvided() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_WITH_NON_MANDATORY_PROPERTY_MISSING)));
@@ -225,7 +227,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWithSpaceAndProjectOnServer() throws IOException
+    public void testExperimentsAreCreatedWithSpaceAndProjectOnServer() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
@@ -242,7 +244,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWithSpaceOnServer() throws IOException
+    public void testExperimentsAreCreatedWithSpaceOnServer() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACE)));
@@ -258,7 +260,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWithTypeAndSpaceOnServer() throws IOException
+    public void testExperimentsAreCreatedWithTypeAndSpaceOnServer() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
@@ -281,7 +283,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedIfMandatoryPropertyArePresent() throws IOException
+    public void testExperimentsAreCreatedIfMandatoryPropertyArePresent() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_WITH_MANDATORY_PROPERTY_PRESENT)));
@@ -296,7 +298,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWhenPropertiesAreAddressedByLabelsWithTypeInXls() throws IOException
+    public void testExperimentsAreCreatedWhenPropertiesAreAddressedByLabelsWithTypeInXls() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENTS_PROPERTIES_COLUMNS_AS_LABELS)));
@@ -311,7 +313,7 @@ public class ImportExperimentsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedWhenPropertiesAreAddressedByLabelsWithTypeOnServer() throws IOException
+    public void testExperimentsAreCreatedWhenPropertiesAreAddressedByLabelsWithTypeOnServer() throws IOException
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPE)));
@@ -325,5 +327,20 @@ public class ImportExperimentsTest extends AbstractImportTest
         assertEquals(experiment.getProperties().get("$NAME"), "Value");
         assertEquals(experiment.getProperties().get("DEFAULT_OBJECT_TYPE"), "OBJECT_TYPE");
     }
+
+//    @Test
+//    @DirtiesContext
+//    public void testExperimentsUpdate() throws Exception
+//    {
+//        // GIVEN
+//        TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_XLS)));
+//        // WHEN
+//        TestUtils.createFrom(v3api, sessionToken, TestUtils.getDynamicPluginMap(), UpdateMode.UPDATE_IF_EXISTS,
+//                Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_UPDATE)));
+//        Experiment experiment = TestUtils.getExperiment(v3api, sessionToken, "TEST_EXPERIMENT", "TEST_PROJECT", "TEST_SPACE");
+//        // THEN
+//        assertEquals(experiment.getProperties().get("$NAME"), "NameUpdate");
+//        assertEquals(experiment.getProperties().get("DEFAULT_OBJECT_TYPE"), "DefaultObjectTypeUpdate");
+//    }
 
 }

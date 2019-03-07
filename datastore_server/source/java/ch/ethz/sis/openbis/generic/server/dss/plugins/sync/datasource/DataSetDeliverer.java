@@ -60,6 +60,11 @@ public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
                 startXdElement(writer);
                 writer.writeAttribute("code", code);
                 writer.writeAttribute("dsKind", dataSet.getKind().toString());
+                addAttributeIfSet(writer, "frozen", dataSet.isFrozen());
+                addAttributeIfSet(writer, "frozenForChildren", dataSet.isFrozenForChildren());
+                addAttributeIfSet(writer, "frozenForParents", dataSet.isFrozenForParents());
+                addAttributeIfSet(writer, "frozenForComponents", dataSet.isFrozenForComponents());
+                addAttributeIfSet(writer, "frozenForContainers", dataSet.isFrozenForContainers());
                 addExperiment(writer, dataSet.getExperiment());
                 addKind(writer, EntityKind.DATA_SET);
                 addModifier(writer, dataSet);

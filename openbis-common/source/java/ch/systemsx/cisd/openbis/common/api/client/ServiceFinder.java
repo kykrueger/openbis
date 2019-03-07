@@ -23,13 +23,12 @@ import java.net.SocketTimeoutException;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.remoting.RemoteAccessException;
 
-import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.api.IRpcService;
-import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.common.ssl.SslCertificateHelper;
 
 /**
- * Helper to find a remote service exported by Spring's HttpInvoker.
+ * Helper to find a remote service exported by Spring's HttpInvoker or any other way for which 
+ * an implementation of {@link IServiceStubFactory} exists. Default is {@link HttpInvokerBasedServiceStubFactory}.
  * 
  * @author Chandrasekhar Ramakrishnan
  * @author Franz-Josef Elmer
@@ -44,17 +43,33 @@ public class ServiceFinder
 
     private final String urlServiceSuffix;
 
+    private final IServiceStubFactory serviceStubCreator;
+
     /**
-     * Creates an instance for specified application name and URL service suffix.
+     * Creates an instance for specified application name and URL service suffix. 
+     * Uses {@link HttpInvokerBasedServiceStubFactory} to create the service stub.
      * 
      * @param applicationName Name of the Web application.
      * @param urlServiceSuffix URL Suffix of the service.
      */
     public ServiceFinder(String applicationName, String urlServiceSuffix)
     {
+        this(applicationName, urlServiceSuffix, new HttpInvokerBasedServiceStubFactory());
+    }
+
+    /**
+     * Creates an instance for specified application name and URL service suffix.
+     * 
+     * @param applicationName Name of the Web application.
+     * @param urlServiceSuffix URL Suffix of the service.
+     * @param serviceStubCreator Factory which creates the service stub
+     */
+    public ServiceFinder(String applicationName, String urlServiceSuffix, IServiceStubFactory serviceStubCreator)
+    {
         this.applicationName = applicationName;
         this.urlServiceSuffix =
                 urlServiceSuffix.startsWith("/") ? urlServiceSuffix : "/" + urlServiceSuffix;
+        this.serviceStubCreator = serviceStubCreator;
     }
 
     /**
@@ -170,8 +185,7 @@ public class ServiceFinder
         storeCertificateIfNecessary(usedServerUrl);
         S service;
         service =
-                createServiceStub(serviceInterface, usedServerUrl + urlServiceSuffix,
-                        timeoutInMillis);
+                serviceStubCreator.createServiceStub(serviceInterface, usedServerUrl + urlServiceSuffix, timeoutInMillis);
         return service;
     }
 
@@ -201,12 +215,6 @@ public class ServiceFinder
     private boolean isRunningUnderWebstart()
     {
         return null != System.getProperty("javawebstart.version");
-    }
-
-    @Private
-    <S> S createServiceStub(Class<S> serviceClass, String serverUrl, long timeoutInMillis)
-    {
-        return HttpInvokerUtils.createServiceStub(serviceClass, serverUrl, timeoutInMillis);
     }
 
     private static <S> boolean canConnectToService(S service, IServicePinger<S> servicePinger)

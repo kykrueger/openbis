@@ -57,6 +57,9 @@ public class ExperimentDeliverer extends AbstractEntityWithPermIdDeliverer
                 startXdElement(writer);
                 writer.writeAttribute("code", experiment.getCode());
                 addKind(writer, EntityKind.EXPERIMENT);
+                addAttributeIfSet(writer, "frozen", experiment.isFrozen());
+                addAttributeIfSet(writer, "frozenForSamples", experiment.isFrozenForSamples());
+                addAttributeIfSet(writer, "frozenForDataSets", experiment.isFrozenForDataSets());
                 addModifier(writer, experiment);
                 addProject(writer, experiment.getProject());
                 addRegistrationDate(writer, experiment);

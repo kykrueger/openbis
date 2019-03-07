@@ -28,8 +28,8 @@ class IncomingProject extends IncomingEntity<NewProject>
         return (NewProject) getEntity();
     }
 
-    IncomingProject(NewProject project, Date lastModDate)
+    IncomingProject(NewProject project, FrozenFlags frozenFlags, Date lastModDate)
     {
-        super(project, SyncEntityKind.PROJECT, lastModDate);
+        super(project, frozenFlags, SyncEntityKind.PROJECT, lastModDate);
     }
 }

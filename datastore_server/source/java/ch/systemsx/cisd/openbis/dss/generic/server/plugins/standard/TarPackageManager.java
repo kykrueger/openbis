@@ -31,7 +31,6 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.tar.Untar;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
-import ch.systemsx.cisd.hdf5.hdf5lib.H5F;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.H5FolderFlags;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.TarBasedHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
@@ -129,8 +128,7 @@ public class TarPackageManager extends AbstractPackageManager
         List<H5FolderFlags> h5FolderFlags = extractH5FolderFlags(dataSets);
         if (onlyMetaData)
         {
-            final ISingleDataSetPathInfoProvider pathInfoProvider 
-                    = new TarBasedPathInfoProvider(packageFile, h5FolderFlags, bufferSize, logger);
+            final ISingleDataSetPathInfoProvider pathInfoProvider = new TarBasedPathInfoProvider(packageFile, h5FolderFlags, bufferSize, logger);
             return new PathInfoProviderBasedHierarchicalContent(pathInfoProvider, null, new IDelegatedAction()
                 {
                     @Override

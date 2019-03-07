@@ -8,7 +8,7 @@ dependencies {
                  'apache:commons-codec:+',
                  'apache:commons-io:+',
                  'apache:httpclient:+',
-                 'apache:commons-lang:+',
+                 'apache:commons-lang3:+',
                  'apache:commons-logging:+',
                  'apache:log4j:+',
                  'apache:geronimo-stax:+',

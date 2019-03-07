@@ -27,7 +27,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
  * 
  * @author Franz-Josef Elmer
  */
-class ApplicationContext
+public class ApplicationContext
 {
     private final IEncapsulatedOpenBISService dataSetService;
 

@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.testng.annotations.Test;
 
@@ -91,12 +93,14 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.create.DataSetFileC
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownload;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
+import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadUtils;
 
 /**
  * @author pkupczyk
  */
 public class ToStringCheck
 {
+    private static final Set<Class<?>> IGNORED_CLASSES = new HashSet<>(Arrays.asList(FastDownloadUtils.class));
 
     @Test
     public void testMissingToStringMethods() throws Exception
@@ -106,7 +110,7 @@ public class ToStringCheck
 
         for (Class<?> clazz : classes)
         {
-            if (Modifier.isPublic(clazz.getModifiers()) && false == Modifier.isAbstract(clazz.getModifiers()))
+            if (filter(clazz))
             {
                 Method method = clazz.getMethod("toString");
 
@@ -127,6 +131,12 @@ public class ToStringCheck
         }
 
         assertEquals(classesWithoutToString, Collections.emptyList());
+    }
+
+    private boolean filter(Class<?> clazz)
+    {
+        return Modifier.isPublic(clazz.getModifiers()) && false == Modifier.isAbstract(clazz.getModifiers()) 
+                && IGNORED_CLASSES.contains(clazz) == false;
     }
 
     @Test

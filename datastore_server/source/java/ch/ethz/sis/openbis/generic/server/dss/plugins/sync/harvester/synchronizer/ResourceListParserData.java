@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +27,6 @@ import java.util.Set;
 import org.apache.commons.collections4.map.MultiKeyMap;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Identifier;
 
 /**
  * @author Ganime Betul Akin
@@ -40,6 +40,8 @@ public class ResourceListParserData
     private Set<String> harvesterSpaceList = new HashSet<>();
 
     private MasterData masterData = new MasterData();
+
+    private List<IncomingSpace> spacesToProcess = new ArrayList<>();
 
     private Map<String, IncomingProject> projectsToProcess = new HashMap<String, IncomingProject>();
 
@@ -71,11 +73,29 @@ public class ResourceListParserData
         return harvesterSpaceList;
     }
 
+    public List<IncomingSpace> getSpacesToProcess()
+    {
+        return spacesToProcess;
+    }
+    
+    public List<IncomingSpace> getRelevantSpacesToProcess()
+    {
+        List<IncomingSpace> result = new ArrayList<>();
+        for (IncomingSpace incomingSpace : spacesToProcess)
+        {
+            if (harvesterSpaceList.contains(incomingSpace.getPermID()))
+            {
+                result.add(incomingSpace);
+            }
+        }
+        return result;
+    }
+
     public Map<String, IncomingProject> getProjectsToProcess()
     {
         return projectsToProcess;
     }
-
+    
     public Map<String, IncomingExperiment> getExperimentsToProcess()
     {
         return experimentsToProcess;
@@ -153,9 +173,8 @@ public class ResourceListParserData
      */
     private boolean syncAttachments(Date lastSyncTimestamp, Set<String> attachmentHoldersToRetry, IncomingEntity<?> incomingEntity)
     {
-        Identifier<?> entity = incomingEntity.getEntity();
         if (incomingEntity.getLastModificationDate().after(lastSyncTimestamp)
-                || attachmentHoldersToRetry.contains(incomingEntity.getEntityKind().toString() + "-" + entity.getPermID()))
+                || attachmentHoldersToRetry.contains(incomingEntity.getEntityKind().toString() + "-" + incomingEntity.getPermID()))
         {
             return true;
         }

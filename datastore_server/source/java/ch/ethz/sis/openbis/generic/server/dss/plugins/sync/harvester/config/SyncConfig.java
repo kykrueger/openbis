@@ -212,6 +212,8 @@ public class SyncConfig
 
     private boolean keepOriginalTimestampsAndUsers;
 
+    private boolean keepOriginalFrozenFlags;
+
     private List<String> dataSourceSpaces = new ArrayList<>();
 
     private List<String> harvesterSpaces = new ArrayList<>();
@@ -332,6 +334,16 @@ public class SyncConfig
     public void setKeepOriginalTimestampsAndUsers(boolean keepOriginalTimestampsAndUsers)
     {
         this.keepOriginalTimestampsAndUsers = keepOriginalTimestampsAndUsers;
+    }
+
+    public boolean keepOriginalFrozenFlags()
+    {
+        return keepOriginalFrozenFlags;
+    }
+
+    public void setKeepOriginalFrozenFlags(boolean keepOriginalFrozenFlags)
+    {
+        this.keepOriginalFrozenFlags = keepOriginalFrozenFlags;
     }
 
     public void setParallelizedExecutionPrefs(double machineLoad, int maxThreads, int retriesOnFailure, boolean stopOnFailure)

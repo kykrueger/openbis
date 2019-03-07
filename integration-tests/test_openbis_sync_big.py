@@ -46,6 +46,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_data_source = self._setupOpenbisDataSource()
         openbis_data_source.allUp()
         self._drop_test_examples(openbis_data_source)
+        self._freeze_some_entities(openbis_data_source)
 
         openbis_harvester = self._setupOpenbisHarvester()
         openbis_harvester.allUp()
@@ -56,14 +57,37 @@ class TestCase(systemtest.testcase.TestCase):
 
     def executeInDevMode(self):
         openbis_data_source = self.createOpenbisController('data_source', port=DATA_SOURCE_AS_PORT, dropDatabases=False)
+        
 #        self._drop_test_examples(openbis_data_source)
         openbis_harvester = self.createOpenbisController('harvester', port=HARVESTER_AS_PORT, dropDatabases=False)
 #        openbis_harvester = self._setupOpenbisHarvester()
 #        openbis_harvester.allUp()
-        
 #        self._waitUntilSyncIsFinished(openbis_harvester)
+        self._freeze_some_entities(openbis_data_source)
         self._checkData(openbis_data_source, openbis_harvester)
 
+    def _freeze_some_entities(self, openbis_data_source):
+        util.printAndFlush("Freeze some entities")
+        openbis_data_source.queryDatabase("openbis", 
+              "update spaces set frozen = 't', frozen_for_proj = 't', frozen_for_samp = 't' where code = 'DEFAULT'")
+        openbis_data_source.queryDatabase("openbis", 
+              "update projects set frozen = 't', frozen_for_exp = 't', frozen_for_samp = 't' where code = 'DEFAULT'")
+        openbis_data_source.queryDatabase("openbis", 
+              "update experiments set frozen = 't', frozen_for_data = 't' where code = 'MICROSCOPY-EXP1_181511081915722000'")
+        openbis_data_source.queryDatabase("openbis", 
+              "update experiments set frozen = 't', frozen_for_samp = 't' where code = 'TEST-EXPERIMENT'")
+        openbis_data_source.queryDatabase("openbis", 
+              "update samples set frozen = 't', frozen_for_children = 't', frozen_for_comp = 't', frozen_for_data = 't' "
+              + "where code = 'BSSE-QGF-RAW-6'")
+        openbis_data_source.queryDatabase("openbis", 
+              "update samples set frozen = 't', frozen_for_parents = 't', frozen_for_comp = 't', frozen_for_data = 't' "
+              + "where code = 'BSSE-QGF-RAW-8'")
+        openbis_data_source.queryDatabase("openbis", 
+              "update data set frozen = 't', frozen_for_children = 't', frozen_for_parents = 't', "
+              + "frozen_for_comps = 't', frozen_for_conts = 't' "
+              + "where code in ('20181115081535015-7', '20181115081535299-10', '20181115081918773-62', '20181115081918773-63')")
+        
+        
     def _drop_test_examples(self, openbis):
         incoming = "%s/data/incoming-test" % openbis.installPath
         if not os.path.exists(incoming):
@@ -74,7 +98,7 @@ class TestCase(systemtest.testcase.TestCase):
         for example_file in example_files:
             with open("%s/.MARKER_is_finished_%s" % (incoming, example_file), 'w') as f:
                 pass
-        openbis.waitUntilDataSetRegistrationFinished(2, timeOutInMinutes = 10)
+        openbis.waitUntilDataSetRegistrationFinished(2, timeOutInMinutes = 20)
         
     def _drop_big_file(self, incoming):
         big_file = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'openBIS-installation')
@@ -206,12 +230,21 @@ class TestCase(systemtest.testcase.TestCase):
                                "select '{0}' || name as name, description, script_type, plugin_type, entity_kind, is_available, "
                                + "  length(script) as script_length, md5(script) as script_hash "
                                + "from scripts where name like '{1}%' order by name")
+        # Space STORAGE will be ignored because it is empty
+        self._compareDataBases("Spaces", openbis_data_source, openbis_harvester, "openbis", 
+                               "select '{0}' || s.code as code, s.description, "
+                               + " ur.user_id as registrator, "
+                               + "to_char(s.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS') as registration_timestamp, "
+                               + "s.frozen, s.frozen_for_proj, s.frozen_for_samp "
+                               + "from spaces s join persons ur on s.pers_id_registerer = ur.id "
+                               + "where s.code like '{1}%' and not s.code = '{1}STORAGE' order by s.code")
         self._compareDataBases("Projects", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || s.code as space, p.code as project, p.description, "
                                + " ur.user_id as registrator, "
                                + "to_char(p.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS') as registration_timestamp, "
                                + " um.user_id as modifier, "
-                               + "to_char(p.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') as modification_timestamp "
+                               + "to_char(p.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') as modification_timestamp, "
+                               + "p.frozen, p.frozen_for_exp, p.frozen_for_samp, p.space_frozen "
                                + "from projects p join spaces s on p.space_id = s.id "
                                + "join persons ur on p.pers_id_registerer = ur.id "
                                + "join persons um on p.pers_id_modifier = um.id "
@@ -236,7 +269,8 @@ class TestCase(systemtest.testcase.TestCase):
                                + " ur.user_id as registrator, "
                                + "to_char(e.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS') as registration_timestamp, "
                                + " um.user_id as modifier, "
-                               + "to_char(e.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') as modification_timestamp "
+                               + "to_char(e.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') as modification_timestamp, "
+                               + "e.frozen, e.frozen_for_data, e.frozen_for_samp, e.proj_frozen "
                                + "from experiments e join experiment_properties ep on ep.expe_id = e.id "
                                + "left join controlled_vocabulary_terms cvt on ep.cvte_id = cvt.id "
                                + "left join materials m on ep.mate_prop_id = m.id "
@@ -277,7 +311,9 @@ class TestCase(systemtest.testcase.TestCase):
                                + "where t.code <> '{1}BENCHMARK_OBJECT' and s.code != 'DEFAULT' order by s.code, s.perm_id")
         self._compareDataBases("Sample properties", openbis_data_source, openbis_harvester, "openbis",
                                "select s.code as sample, '{0}' || t.code as type, '{0}' || pt.code as property, "
-                               + "  concat(sp.value, cvt.code, m.code) as value "
+                               + "  concat(sp.value, cvt.code, m.code) as value, "
+                               + "s.frozen, s.frozen_for_data, s.frozen_for_children, s.frozen_for_parents, s.frozen_for_comp, "
+                               + "s.space_frozen, s.proj_frozen, s.expe_frozen, s.cont_frozen "
                                + "from samples s join sample_properties sp on sp.samp_id = s.id "
                                + "left join controlled_vocabulary_terms cvt on sp.cvte_id = cvt.id "
                                + "left join materials m on sp.mate_prop_id = m.id "
@@ -287,7 +323,8 @@ class TestCase(systemtest.testcase.TestCase):
                                + "where expe_id in (select id from experiments where code = 'TEST-EXPERIMENT') "
                                + "order by s.code, pt.code")
         self._compareDataBases("Sample relationships", openbis_data_source, openbis_harvester, "openbis",
-                               "select p.code as parent, c.code as child, t.code as relationship "
+                               "select p.code as parent, c.code as child, t.code as relationship, "
+                               + "r.parent_frozen, r.child_frozen "
                                + "from sample_relationships r join relationship_types t on r.relationship_id = t.id "
                                + "join samples p on r.sample_id_parent = p.id "
                                + "join samples c on r.sample_id_child = c.id order by p.code, c.code")
@@ -301,7 +338,9 @@ class TestCase(systemtest.testcase.TestCase):
                                + " ur.user_id as registrator, "
                                + "to_char(d.registration_timestamp, 'YYYY-MM-DD HH24:MI:SS') as registration_timestamp, "
                                + " um.user_id as modifier, "
-                               + "to_char(d.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') as modification_timestamp "
+                               + "to_char(d.modification_timestamp, 'YYYY-MM-DD HH24:MI:SS') as modification_timestamp, "
+                               + "d.frozen, d.frozen_for_comps, d.frozen_for_conts, d.frozen_for_children, d.frozen_for_parents, "
+                               + "d.expe_frozen, d.samp_frozen "
                                + "from data d join data_set_properties dp on dp.ds_id = d.id "
                                + "left join controlled_vocabulary_terms cvt on dp.cvte_id = cvt.id "
                                + "left join materials m on dp.mate_prop_id = m.id "
@@ -316,7 +355,8 @@ class TestCase(systemtest.testcase.TestCase):
                                + "from data_set_files f join data_sets d on f.dase_id=d.id where parent_id is null "
                                + "order by d.code")
         self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
-                                "select p.code as parent, c.code as child, t.code as relationship_type "
+                                "select p.code as parent, c.code as child, t.code as relationship_type, "
+                                + "r.parent_frozen, r.child_frozen, r.cont_frozen, r.comp_frozen "
                                 + "from data_set_relationships r join data p on r.data_id_parent = p.id "
                                 + "join data c on r.data_id_child = c.id "
                                 + "join relationship_types t on r.relationship_id = t.id order by p.code, c.code")

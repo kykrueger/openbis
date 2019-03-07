@@ -126,7 +126,7 @@ public class SearchSampleTest extends AbstractSampleTest
         testSearch(TEST_USER, criteria, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3");
 
         SampleSearchCriteria criteria2 = new SampleSearchCriteria();
-        criteria2.withIdentifier().thatStartsWith("/CISD/*-TEST");
+        criteria2.withIdentifier().thatStartsWith("/CISD/*-test");
         testSearch(TEST_USER, criteria2, "/CISD/CP-TEST-1", "/CISD/CP-TEST-2", "/CISD/CP-TEST-3", "/CISD/DYNA-TEST-1");
     }
 

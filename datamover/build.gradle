@@ -9,7 +9,6 @@ dependencies {
     
     libJars 'sis:sis-base:+',
         'cisd:cisd-args4j:+',
-        'apache:commons-lang:+',
         'apache:log4j:+',
         'javax:activation:+',
         'javax:mail:+'

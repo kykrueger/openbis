@@ -134,7 +134,7 @@ public class SearchExperimentTest extends AbstractExperimentTest
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP1");
 
         ExperimentSearchCriteria criteria2 = new ExperimentSearchCriteria();
-        criteria2.withIdentifier().thatEquals("/CISD/NEMO/EXP1*");
+        criteria2.withIdentifier().thatEquals("/cisd/Nemo/Exp1*");
         testSearch(TEST_USER, criteria2, "/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP11");
 
         ExperimentSearchCriteria criteria3 = new ExperimentSearchCriteria();

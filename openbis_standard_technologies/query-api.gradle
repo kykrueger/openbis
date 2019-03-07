@@ -80,7 +80,7 @@ dependencies {
                         'springframework:spring-webmvc:+',
                         'springframework:spring-expression:+',
                         'apache:commons-logging:+',
-                        'apache:commons-lang:+',
+                        'apache:commons-lang3:+',
                         'marathon:marathon-spring-util:+',
                         'aopalliance:aopalliance:+'
 }
@@ -111,6 +111,8 @@ task apiV3Jar(type: Jar) {
           include "ch/systemsx/cisd/common/http/*.class"
           include "ch/systemsx/cisd/common/api/**/*.class"
           exclude "ch/systemsx/cisd/common/api/server/**/*.class"
+          include "ch/systemsx/cisd/common/reflection/*.class"
+          include "ch/systemsx/cisd/common/shared/basic/string/*.class"
           include "ch/systemsx/cisd/openbis/common/api/**/*.class"
           exclude "ch/systemsx/cisd/openbis/common/api/server/**/*.class"
           include "ch/ethz/sis/openbis/generic/asapi/v3/**/*.class"
@@ -123,8 +125,10 @@ task apiV3Jar(type: Jar) {
 configurations.create('apiV3Dependencies')
 dependencies {
   apiV3Dependencies 'sis:sis-base:+',
+                    'sis:sis-file-transfer:+',
                     'apache:httpclient:+',
-                    'apache:commons-lang:+',
+                    'apache:commons-lang3:+',
+                    'eclipse:jetty-client:+',
                     'springframework:spring-web:+',
                     'marathon:marathon-spring-util:+'
 }
