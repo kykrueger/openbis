@@ -21,12 +21,20 @@ function ProjectFormController(mainController, mode, project) {
 	
 	this.init = function(views) {
 		var _this = this;
-		this._mainController.getUserRole({
-			space: _this._projectFormModel.project.spaceCode,
-			project: _this._projectFormModel.project.code,
-		}, function(roles){
-			_this._projectFormModel.roles = roles;
-			_this._projectFormView.repaint(views);
+		
+		require([ "as/dto/project/id/ProjectPermId", "as/dto/project/fetchoptions/ProjectFetchOptions" ],
+				function(ProjectPermId, ProjectFetchOptions) {
+				var id = new ProjectPermId(project.permId);
+				mainController.openbisV3.getProjects([ id ], new ProjectFetchOptions()).done(function(map) {
+	                _this._projectFormModel.v3_project = map[id];
+	                _this._mainController.getUserRole({
+	        			space: _this._projectFormModel.project.spaceCode,
+	        			project: _this._projectFormModel.project.code,
+	        		}, function(roles){
+	        			_this._projectFormModel.roles = roles;
+	        			_this._projectFormView.repaint(views);
+	        		});
+	            });		
 		});
 	}
 	

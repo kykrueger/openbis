@@ -43,7 +43,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		//Freeze
 		var isEntityFrozen = _this._spaceFormModel.v3_space.frozen;
 		var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-		var $freezeButton = FormUtil.getFreezeButton("SPACE", _this._spaceFormModel.v3_space.code, isEntityFrozen);
+		var $freezeButton = FormUtil.getFreezeButton("SPACE", _this._spaceFormModel.v3_space.permId.permId, isEntityFrozen);
 		toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
 		
 		//Export
