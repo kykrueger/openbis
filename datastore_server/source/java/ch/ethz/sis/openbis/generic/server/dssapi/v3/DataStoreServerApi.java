@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.iterators.IteratorChain;
@@ -350,7 +351,7 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
             Set<String> ids = filesByDataSet.get(dataSetCode);
             if (ids == null)
             {
-                ids = new HashSet<>();
+                ids = new TreeSet<>();
                 filesByDataSet.put(dataSetCode, ids);
             }
             String filePath = filePermId.getFilePath();

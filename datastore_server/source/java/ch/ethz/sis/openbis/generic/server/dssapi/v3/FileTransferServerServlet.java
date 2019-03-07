@@ -85,14 +85,15 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.authorization.Ds
 
 /**
  * Servlet which provides download service of data set files using the file-transfer protocol.
+ * 
  * @author Franz-Josef Elmer
  */
 public class FileTransferServerServlet extends HttpServlet
 {
     private static final long serialVersionUID = 1L;
-    
+
     public static final String SERVLET_NAME = "file-transfer";
-    
+
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             FileTransferServerServlet.class);
 
@@ -268,7 +269,7 @@ public class FileTransferServerServlet extends HttpServlet
     private DownloadSessionId getDownloadSessionId(Map<String, String[]> parameterMap) throws ServletException
     {
         DownloadSessionId downloadSessionId = new DownloadSessionId();
-        ClassUtils.setFieldValue(downloadSessionId, "id", getParameters(parameterMap, 
+        ClassUtils.setFieldValue(downloadSessionId, "id", getParameters(parameterMap,
                 FastDownloadParameter.DOWNLOAD_SESSION_ID_PARAMETER).get(0));
         return downloadSessionId;
     }
@@ -317,20 +318,24 @@ public class FileTransferServerServlet extends HttpServlet
         private ConcurrencyProvider(Properties properties)
         {
             maximumNumberOfAllowedStreams = PropertyUtils.getInt(properties, "api.v3.fast-download.maximum-number-of-allowed-streams", 10);
-            operationLog.info("max number of allowed streams: "+ maximumNumberOfAllowedStreams);
+            operationLog.info("max number of allowed streams: " + maximumNumberOfAllowedStreams);
         }
 
         @Override
         public int getAllowedNumberOfStreams(IUserSessionId userSessionId, Integer wishedNumberOfStreams, List<DownloadState> downloadStates)
                 throws DownloadException
         {
-            int allowedNumberOfStreams = maximumNumberOfAllowedStreams;
-            for (DownloadState downloadState : downloadStates)
+            int currentNumberOfStreams = downloadStates.stream().collect(Collectors.summingInt(DownloadState::getCurrentNumberOfStreams));
+            int freeNumberOfStreams = maximumNumberOfAllowedStreams - currentNumberOfStreams;
+            int allowedNumberOfStreams = freeNumberOfStreams / 2;
+            if (wishedNumberOfStreams != null && wishedNumberOfStreams < allowedNumberOfStreams)
             {
-                allowedNumberOfStreams -= downloadState.getCurrentNumberOfStreams();
+                allowedNumberOfStreams = wishedNumberOfStreams;
             }
-            System.err.println("allowed number of streams:"+allowedNumberOfStreams+" "+downloadStates.size());
-            return Math.min(wishedNumberOfStreams == null ? 1 : wishedNumberOfStreams, allowedNumberOfStreams);
+            operationLog.info("current number of streams: " + currentNumberOfStreams + ", wished number of streams: "
+                    + (wishedNumberOfStreams == null ? "unspecified" : wishedNumberOfStreams)
+                    + ", allowed number of streams: " + allowedNumberOfStreams);
+            return allowedNumberOfStreams;
         }
     }
 

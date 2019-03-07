@@ -115,7 +115,7 @@ public class AbstractFileTest extends SystemTestCase
     protected String createRandomContent(String path)
     {
         StringBuilder builder = new StringBuilder().append("file content of ").append(path).append("\n");
-        for (int i = 0; i < 10000; i++)
+        for (int i = 0; i < 30000; i++)
         {
             builder.append(UUID.nameUUIDFromBytes((path+ " "+i).getBytes()).toString()).append("\n");
         }

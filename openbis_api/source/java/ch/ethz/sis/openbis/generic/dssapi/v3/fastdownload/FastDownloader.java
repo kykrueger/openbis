@@ -30,6 +30,7 @@ import ch.ethz.sis.filetransfer.DownloadClientConfig;
 import ch.ethz.sis.filetransfer.DownloadClientDownload;
 import ch.ethz.sis.filetransfer.DownloadException;
 import ch.ethz.sis.filetransfer.DownloadItemId;
+import ch.ethz.sis.filetransfer.DownloadItemNotFoundException;
 import ch.ethz.sis.filetransfer.DownloadPreferences;
 import ch.ethz.sis.filetransfer.DownloadSessionId;
 import ch.ethz.sis.filetransfer.FileSystemDownloadStore;
@@ -37,8 +38,6 @@ import ch.ethz.sis.filetransfer.IDownloadItemId;
 import ch.ethz.sis.filetransfer.IDownloadItemIdDeserializer;
 import ch.ethz.sis.filetransfer.IDownloadListener;
 import ch.ethz.sis.filetransfer.IDownloadServer;
-import ch.ethz.sis.filetransfer.IDownloadStore;
-import ch.ethz.sis.filetransfer.IDownloadStoreFactory;
 import ch.ethz.sis.filetransfer.ILogger;
 import ch.ethz.sis.filetransfer.IRetryProvider;
 import ch.ethz.sis.filetransfer.IRetryProviderFactory;
@@ -76,8 +75,6 @@ public class FastDownloader
     private ILogger logger;
 
     private List<IDownloadListener> listeners = new ArrayList<>();
-
-    private IDownloadStoreFactory storeFactory;
 
     private IRetryProviderFactory retryProviderFactory;
 
@@ -158,18 +155,6 @@ public class FastDownloader
     }
 
     /**
-     * Sets the factory for an {@link IDownloadStore}. By default the downloaded files are stored in the root folder (parameter of method
-     * {{@link #downloadTo(File)}) as follows: <data set code>/<file path in the data set>
-     * 
-     * @return this instance
-     */
-    public FastDownloader withDownloadStoreFactory(IDownloadStoreFactory storeFactory)
-    {
-        this.storeFactory = storeFactory;
-        return this;
-    }
-
-    /**
      * Sets the factory for an {@link IRetryProvider}. The default is {@link DefaultRetryProvider} with maximumNumberOfRetries = 3,
      * waitingTimeBetweenRetries = 1 sec, waitingTimeBetweenRetriesIncreasingFactor = 2.
      * 
@@ -207,18 +192,31 @@ public class FastDownloader
         DownloadClientConfig config = new DownloadClientConfig();
         config.setServer(getDownloadServer());
         config.setLogger(actualLogger);
-        config.setStore(storeFactory != null ? storeFactory.createStore(actualLogger, root)
-                : new FileSystemDownloadStore(actualLogger, root)
+        config.setStore(new FileSystemDownloadStore(actualLogger, root)
+            {
+                @Override
+                protected Path getItemDirectory(IUserSessionId userSessionId, DownloadSessionId downloadSessionId,
+                        IDownloadItemId itemId) throws DownloadException
+                {
+                    String[] splitted = itemId.getId().split("/", 2);
+                    String dataSetCode = splitted[0];
+                    return root.resolve(dataSetCode);
+                }
+
+                @Override
+                public Path getItemPath(IUserSessionId userSessionId, DownloadSessionId downloadSessionId, IDownloadItemId itemId)
+                        throws DownloadException
+                {
+                    Path itemDirectory = getItemDirectory(userSessionId, downloadSessionId, itemId);
+                    String[] splitted = itemId.getId().split("/", 2);
+                    Path itemPath = itemDirectory.resolve(splitted[1]);
+                    if (itemPath.toFile().exists())
                     {
-                        @Override
-                        protected Path getItemDirectory(IUserSessionId userSessionId, DownloadSessionId downloadSessionId,
-                                IDownloadItemId itemId) throws DownloadException
-                        {
-                            String[] splitted = itemId.getId().split("/", 2);
-                            String dataSetCode = splitted[0];
-                            return root.resolve(dataSetCode);
-                        }
-                    });
+                        return itemPath;
+                    }
+                    throw new DownloadItemNotFoundException("Store does not contain any files for download item id: " + itemId);
+                }
+            });
         config.setDeserializerProvider(new DefaultDeserializerProvider(actualLogger,
                 new IDownloadItemIdDeserializer()
                     {
