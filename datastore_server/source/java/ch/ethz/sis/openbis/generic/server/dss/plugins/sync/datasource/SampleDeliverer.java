@@ -48,6 +48,7 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
         XMLStreamWriter writer = context.getWriter();
         String sessionToken = context.getSessionToken();
         Set<String> spaces = context.getSpaces();
+        Set<String> fileServicePaths = context.getFileServicePaths();
         IApplicationServerApi v3api = getV3Api();
         List<SamplePermId> permIds = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
         Collection<Sample> fullSamples = v3api.getSamples(sessionToken, permIds, createFullFetchOptions()).values();
@@ -73,7 +74,7 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
                 addRegistrator(writer, sample);
                 addSpace(writer, sample.getSpace());
                 addType(writer, sample.getType());
-                addProperties(writer, sample.getProperties());
+                addProperties(writer, sample.getProperties(), fileServicePaths);
                 ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
                 connectionsBuilder.addConnections(sample.getDataSets());
                 connectionsBuilder.addChildren(sample.getChildren());

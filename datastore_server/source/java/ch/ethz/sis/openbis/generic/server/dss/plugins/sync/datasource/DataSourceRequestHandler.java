@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -76,6 +77,7 @@ public class DataSourceRequestHandler implements IRequestHandler
                 executionContext.setSessionToken(sessionToken);
                 executionContext.setSpaces(requestedSpaces);
                 executionContext.setWriter(context.getWriter());
+                executionContext.setFileServicePaths(context.getFileServicePaths());
                 deliverer.deliverEntities(executionContext);
             }
         };
@@ -168,6 +170,8 @@ public class DataSourceRequestHandler implements IRequestHandler
         deliveryContext.setServletPath(new File(PropertyUtils.getMandatoryProperty(properties, "path")).getParent());
         deliveryContext.setServerUrl(PropertyUtils.getMandatoryProperty(properties, "server-url"));
         deliveryContext.setDownloadUrl(PropertyUtils.getMandatoryProperty(properties, "download-url"));
+        String fileServiceRepositoryPath = PropertyUtils.getMandatoryProperty(properties, "file-service-repository-path");
+        deliveryContext.setFileServiceRepository(new File(fileServiceRepositoryPath));
         deliveryContext.setV3api(ServiceProvider.getV3ApplicationService());
         deliveryContext.setContentProvider(ServiceProvider.getHierarchicalContentProvider());
         deliveryContext.setOpenBisDataSourceName(properties.getProperty("openbis-data-source-name", "openbis-db"));
@@ -179,6 +183,7 @@ public class DataSourceRequestHandler implements IRequestHandler
         deliverers.addDeliverer(new ExperimentDeliverer(deliveryContext));
         deliverers.addDeliverer(new SampleDeliverer(deliveryContext));
         deliverers.addDeliverer(new DataSetDeliverer(deliveryContext));
+        deliverers.addDeliverer(new FileDeliverer(deliveryContext));
         deliverer = deliverers;
     }
 
@@ -277,6 +282,8 @@ public class DataSourceRequestHandler implements IRequestHandler
         private String sessionToken;
 
         private Date requestTimestamp;
+        
+        private Set<String> fileServicePaths = new TreeSet<>();
 
         public XMLStreamWriter getWriter()
         {
@@ -346,6 +353,11 @@ public class DataSourceRequestHandler implements IRequestHandler
         public void setRequestTimestamp(Date requestTimestamp)
         {
             this.requestTimestamp = requestTimestamp;
+        }
+
+        public Set<String> getFileServicePaths()
+        {
+            return fileServicePaths;
         }
     }
 }

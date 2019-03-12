@@ -48,6 +48,7 @@ public class ExperimentDeliverer extends AbstractEntityWithPermIdDeliverer
         XMLStreamWriter writer = context.getWriter();
         String sessionToken = context.getSessionToken();
         Set<String> spaces = context.getSpaces();
+        Set<String> fileServicePaths = context.getFileServicePaths();
         IApplicationServerApi v3api = getV3Api();
         List<ExperimentPermId> permIds = experiments.stream().map(ExperimentPermId::new).collect(Collectors.toList());
         Collection<Experiment> fullExperiments = v3api.getExperiments(sessionToken, permIds, createFullFetchOptions()).values();
@@ -70,7 +71,7 @@ public class ExperimentDeliverer extends AbstractEntityWithPermIdDeliverer
                 addRegistrator(writer, experiment);
                 addSpace(writer, experiment.getProject().getSpace());
                 addType(writer, experiment.getType());
-                addProperties(writer, experiment.getProperties());
+                addProperties(writer, experiment.getProperties(), fileServicePaths);
 //                ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
 //                connectionsBuilder.addConnections(experiment.getSamples());
 //                connectionsBuilder.addConnections(experiment.getDataSets());

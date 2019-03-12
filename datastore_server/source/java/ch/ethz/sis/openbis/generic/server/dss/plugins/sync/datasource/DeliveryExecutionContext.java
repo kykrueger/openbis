@@ -38,6 +38,8 @@ class DeliveryExecutionContext
 
     private Date requestTimestamp;
 
+    private Set<String> fileServicePaths;
+
     public XMLStreamWriter getWriter()
     {
         return writer;
@@ -86,5 +88,15 @@ class DeliveryExecutionContext
     public void setRequestTimestamp(Date requestTimestamp)
     {
         this.requestTimestamp = requestTimestamp;
+    }
+
+    public Set<String> getFileServicePaths()
+    {
+        return fileServicePaths;
+    }
+
+    public void setFileServicePaths(Set<String> fileServicePaths)
+    {
+        this.fileServicePaths = fileServicePaths;
     }
 }

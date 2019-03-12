@@ -60,6 +60,7 @@ public class MaterialDeliverer extends AbstractEntityDeliverer<Material>
     {
         XMLStreamWriter writer = context.getWriter();
         String sessionToken = context.getSessionToken();
+        Set<String> fileServicePaths = context.getFileServicePaths();
         IApplicationServerApi v3api = getV3Api();
         List<MaterialPermId> permIds = materials.stream().map(Material::getPermId).collect(Collectors.toList());
         Collection<Material> fullMaterials = v3api.getMaterials(sessionToken, permIds, createFullFetchOptions()).values();
@@ -84,7 +85,7 @@ public class MaterialDeliverer extends AbstractEntityDeliverer<Material>
             {
                 allProperties.put(entity.getKey(), entity.getValue().getPermId().toString());
             }
-            addProperties(writer, allProperties);
+            addProperties(writer, allProperties, fileServicePaths);
             writer.writeEndElement();
             writer.writeEndElement();
         }

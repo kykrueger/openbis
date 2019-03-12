@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -40,6 +42,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.server.FileServiceServlet;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -53,6 +56,9 @@ import ch.systemsx.cisd.openbis.generic.server.batch.IBatchOperation;
 abstract class AbstractEntityDeliverer<T> implements IDeliverer
 {
     private static final int CHUNK_SIZE = 1000;
+    
+    private static final Pattern FILE_SERVICE_PATTERN = Pattern.compile("openbis/" + FileServiceServlet.FILE_SERVICE_PATH
+            + "/([^\"']*)");
 
     private static interface IConsumer<T>
     {
@@ -95,7 +101,7 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
         return context.getV3api();
     }
 
-    protected void addProperties(XMLStreamWriter writer, Map<String, String> properties) throws XMLStreamException
+    protected void addProperties(XMLStreamWriter writer, Map<String, String> properties, Set<String> fileServicePaths) throws XMLStreamException
     {
         if (properties.isEmpty() == false)
         {
@@ -108,7 +114,13 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
                 writer.writeCharacters(entry.getKey());
                 writer.writeEndElement();
                 writer.writeStartElement("x:value");
-                writer.writeCharacters(entry.getValue());
+                String value = entry.getValue();
+                Matcher matcher = FILE_SERVICE_PATTERN.matcher(value);
+                while (matcher.find())
+                {
+                    fileServicePaths.add(matcher.group(1));
+                }
+                writer.writeCharacters(value);
                 writer.writeEndElement();
                 writer.writeEndElement();
             }

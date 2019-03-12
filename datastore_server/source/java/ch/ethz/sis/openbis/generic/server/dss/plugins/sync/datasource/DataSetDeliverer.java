@@ -52,6 +52,7 @@ public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
         XMLStreamWriter writer = context.getWriter();
         String sessionToken = context.getSessionToken();
         Set<String> spaces = context.getSpaces();
+        Set<String> fileServicePaths = context.getFileServicePaths();
         IApplicationServerApi v3api = getV3Api();
         List<DataSetPermId> permIds = dataSets.stream().map(DataSetPermId::new).collect(Collectors.toList());
         Collection<DataSet> fullDataSets = v3api.getDataSets(sessionToken, permIds, createDataSetFetchOptions()).values();
@@ -77,7 +78,7 @@ public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
                 addRegistrator(writer, dataSet);
                 addSample(writer, dataSet.getSample());
                 addType(writer, dataSet.getType());
-                addProperties(writer, dataSet.getProperties());
+                addProperties(writer, dataSet.getProperties(), fileServicePaths);
                 addPhysicalData(writer, dataSet, code);
                 addLinkedData(writer, dataSet, code);
                 ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
