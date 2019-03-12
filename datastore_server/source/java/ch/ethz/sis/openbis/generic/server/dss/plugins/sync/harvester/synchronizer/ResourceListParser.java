@@ -22,6 +22,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -271,6 +272,9 @@ public class ResourceListParser
         } else if (SyncEntityKind.MATERIAL.toString().equals(entityKind))
         {
             parseMaterialMetaData(extractMaterialCodeFromURI(uri), xdNode, lastModificationDate);
+        } else if (SyncEntityKind.FILE.toString().equals(entityKind))
+        {
+            parseFileData(xdNode, lastModificationDate);
         }
     }
 
@@ -504,6 +508,14 @@ public class ResourceListParser
                 expCode);
     }
 
+    private void parseFileData(Node xdNode, Date lastModificationDate)
+    {
+        String path = extractAttribute(xdNode, "path", false);
+        String base64EncodedFileContent = xdNode.getTextContent();
+        byte[] content = Base64.getDecoder().decode(base64EncodedFileContent);
+        data.getFileToProcess().put(path, content);
+    }
+    
     private void parseSpaceMetaData(Node xdNode, Date lastModificationDate)
     {
         String code = nameTranslator.translate(extractCode(xdNode));

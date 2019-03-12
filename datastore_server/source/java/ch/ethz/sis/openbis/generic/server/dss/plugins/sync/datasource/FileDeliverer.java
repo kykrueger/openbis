@@ -17,12 +17,9 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;

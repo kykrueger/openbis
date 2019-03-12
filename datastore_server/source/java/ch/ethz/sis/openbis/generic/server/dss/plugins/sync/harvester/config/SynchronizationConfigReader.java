@@ -59,6 +59,8 @@ public class SynchronizationConfigReader
 
     private static final String HARVESTER_TEMP_DIR_PROPERTY_NAME = "harvester-tmp-dir";
 
+    private static final String FILE_SERVICE_REPOSITORY_PATH_PROPERTY_NAME = "file-service-repository-path";
+
     private static final String HARVESTER_LAST_SYNC_TIMESTAMP_FILE_PROPERTY_NAME = "last-sync-timestamp-file";
 
     private static final String HARVESTER_NOT_SYNCED_ENTITIES_FILE_NAME = "not-synced-entities-file";
@@ -143,6 +145,7 @@ public class SynchronizationConfigReader
             }
 
             config.setHarvesterTempDir(reader.getString(section, HARVESTER_TEMP_DIR_PROPERTY_NAME, DEFAULT_HARVESTER_TEMP_DIR, false));
+            config.setFileServiceReporitoryPath(reader.getString(section, FILE_SERVICE_REPOSITORY_PATH_PROPERTY_NAME, null, true));
             config.setTranslateUsingDataSourceAlias(reader.getBoolean(section, TRANSLATE_USING_DATA_SOURCE_ALIAS_PROPERTY_NAME, true));
 
             // read full-sync configuration
