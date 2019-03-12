@@ -581,6 +581,10 @@ class Openbis:
             "get_experiments()",
             "get_experiment_type('type')",
             "get_experiment_types()",
+            "get_collection('permId', withAttachments=False)",
+            "get_collections()",
+            "get_collection_type('type')",
+            "get_collection_types()",
             "get_external_data_management_system(permId)",
             "get_material_type('type')",
             "get_material_types()",
@@ -618,6 +622,7 @@ class Openbis:
             'new_space(name, description)',
             'new_project(space, code, description, attachments)',
             'new_experiment(type, code, project, props={})',
+            'new_collection(type, code, project, props={})',
             'new_sample(type, space, project, experiment, parents)',
             'new_object(type, space, project, experiment, parents)', # 'new_sample(type, space, project, experiment)' alias
             'new_dataset(type, parent, experiment, sample, files=[], folder, props={})',
@@ -1530,6 +1535,7 @@ class Openbis:
             start_with = start_with,
             count = count,
         )
+    get_collections = get_experiments  # Alias
 
 
     def get_datasets(
@@ -1638,6 +1644,8 @@ class Openbis:
                     type = self.get_experiment_type(resp[expId]["type"]["code"]),
                     data = resp[id]
                 )
+    get_collection = get_experiment  # Alias
+
 
     def new_experiment(self, type, code, project, props=None, **kwargs):
         """ Creates a new experiment of a given experiment type.
@@ -1651,6 +1659,8 @@ class Openbis:
             code = code,
             **kwargs
         )
+    new_collection = new_experiment  # Alias
+
 
     def update_experiment(self, experimentId, properties=None, tagIds=None, attachments=None):
         params = {
@@ -1675,6 +1685,7 @@ class Openbis:
             ]
         }
         self._post_request(self.as_v3, request)
+    update_collection = update_experiment  # Alias
 
 
     def create_external_data_management_system(self, code, label, address, address_type='FILE_SYSTEM'):
@@ -2483,8 +2494,8 @@ class Openbis:
             optional_attributes = ["generatedCodePrefix", "validationPluginId"]
         )
         return SampleType(self, property_asignments.data)
-
     get_object_type = get_sample_type # Alias
+
 
     def get_experiment_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available experiment types
@@ -2496,8 +2507,8 @@ class Openbis:
             start_with          = start_with,
             count               = count,
         )
-
     get_collection_types = get_experiment_types  # Alias
+
 
     def get_experiment_type(self, type):
         try:
@@ -2508,8 +2519,8 @@ class Openbis:
             )
         except Exception:
            raise ValueError("No such experiment type: {}".format(type))
-
     get_collection_type = get_experiment_type  # Alias
+
 
     def get_material_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available material types
@@ -3010,6 +3021,9 @@ class Openbis:
     def new_sample(self, type, project=None, props=None, **kwargs):
         """ Creates a new sample of a given sample type.
         """
+        if 'collection' in kwargs:
+            kwargs['experiment'] = kwargs['collection']
+            kwargs.pop('collection', None)
         return Sample(self, type=self.get_sample_type(type), project=project, data=None, props=props, **kwargs)
 
     new_object = new_sample # Alias
@@ -3019,6 +3033,12 @@ class Openbis:
         """
 
         type_obj = self.get_dataset_type(type.upper())
+        if 'object' in kwargs:
+            kwargs['sample'] = kwargs['object']
+            kwargs.pop('object', None)
+        if 'collection' in kwargs:
+            kwargs['experiment'] = kwargs['collection']
+            kwargs.pop('collection', None)
 
         return DataSet(self, type=type_obj, kind=kind, files=files, folder=folder, props=props, **kwargs)
     
