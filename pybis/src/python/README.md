@@ -2,17 +2,38 @@
 pyBIS is a Python module for interacting with openBIS, designed to be used in Jupyter. It offers a sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
 
 
+# Requirements and organization
 
-# SYNOPSIS
+### Dependencies and Requirements
+- pyBIS relies the openBIS API v3; openBIS version 16.05.2 or newer 
+- pyBIS uses Python 3.3 and pandas
 
-## connecting to OpenBIS
+### Installation
+
+```
+pip install pybis
+```
+That's it!
+
+# Usage
+
+## connect to from OpenBIS
+
 ```
 from pybis import Openbis
 o = Openbis('https://example.com:8443', verify_certificates=False)
-o.login('username', 'password', save_token=True)   # saves the session token in ~/.pybis/example.com.token
+
+import getpass
+password = getpass.getpass()
+
+o.login('username', password, save_token=True)   # saves the session token in ~/.pybis/example.com.token
+```
+
+Check whether the session token is still valid and log out:
+
+```
 o.token
 o.is_session_active()
-o.get_datastores()
 o.logout()
 ```
 
@@ -34,6 +55,7 @@ o.get_dataset_types()
 dst = o.get_dataset_types()[0]
 dst = o.get_dataset_type('RAW_DATA')
 dst.get_propertyAssignments()
+dst.get_propertyAssignments(with_vocabulary=True)
 
 o.get_vocabularies()
 o.get_vocabulary('BACTERIAL_ANTIBIOTIC_RESISTANCE')
@@ -75,13 +97,16 @@ ra = o.get_role_assignment(techId)
 ra.delete()
 ```
 
-
 ## Spaces
+
 ```
 space = o.new_space(code='space_name', description='')
 space.save()
 space.delete('reason for deletion')
-o.get_spaces()
+o.get_spaces(
+    start_with = 1,                   # start_with and count
+    count = 7,                        # enable paging
+)
 o.get_space('MY_SPACE')
 ```
 
@@ -95,7 +120,11 @@ project = o.new_project(
 project = space.new_project( code='project_code', description='project description')
 project.save()
 
-o.get_projects()
+o.get_projects(
+    space = 'MY_SPACE',               # show only projects in MY_SPACE
+    start_with = 1,                   # start_with and count
+    count = 7,                        # enable paging
+)
 o.get_projects(space='MY_SPACE')
 space.get_projects()
 
@@ -108,10 +137,13 @@ project.download_attachments()
 ## Samples
 Samples are nowadays called **Objects** in openBIS. pyBIS is not yet thoroughly supporting this term in all methods where «sample» occurs.
 
+NOTE: In openBIS, `samples` entities have recently been renamed to `objects`. All methods have synonyms using the term `object`, e.g. `get_object`, `new_object`, `get_object_types`.
+
 ```
 sample = o.new_sample(
     type     = 'YEAST', 
-    space    = 'MY_SPACE', 
+    space    = 'MY_SPACE',
+    experiment = '/MY_SPACE/MY_PROJECT/EXPERIMENT_1',
     parents  = [parent_sample, '/MY_SPACE/YEA66'], 
     children = [child_sample],
     props    = {"name": "some name", "description": "something interesting"}
@@ -185,18 +217,21 @@ samples = o.get_samples(
     space ='MY_SPACE',
     type  ='YEAST',
     tags  =['*'],                     # only sample with existing tags
+    start_with = 1,                   # start_with and count
+    count = 7,                        # enable paging
     NAME  = 'some name',              # properties are always uppercase 
                                       # to distinguish them from attributes
     **{ "SOME.WEIRD:PROP": "value"}   # property name contains a dot or a
                                       # colon: cannot be passed as an argument 
     props=['NAME', 'MATING_TYPE']     # show these properties in the result
 )
-samples.df                            # returns a pandas dataframe object
+samples.df                            # returns a pandas DataFrame object
 samples.get_datasets(type='ANALYZED_DATA')
 ```
 
-
 ## Experiments
+
+NOTE: In openBIS, `experiment` entities have recently been renamed to `collection`. All methods have synonyms using the term `collection`, e.g. `get_collections`, `new_collection`, `get_collection_types`.
 
 ```
 o.new_experiment
@@ -204,6 +239,7 @@ o.new_experiment
     space='MY_SPACE',
     project='YEASTS'
 )
+
 o.get_experiments(
     project='YEASTS',
     space='MY_SPACE', 
@@ -212,7 +248,9 @@ o.get_experiments(
     finished_flag=False,
     props=['name', 'finished_flag']
 )
+project.get_experiments()
 exp = o.get_experiment('/MY_SPACE/MY_PROJECT/MY_EXPERIMENT')
+
 
 exp.props
 exp.p                              # same thing as .props
@@ -222,9 +260,9 @@ exp.p + TAB                        # in IPython or Jupyter: show list of availab
 exp.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 
 exp.attrs
-exp.a     # same as exp.attrs
-exp.attrs.tags = ['some', 'extra', 'tags']
-exp.tags = ['some', 'extra', 'tags']          # same thing
+exp.a                              # same thing
+exp.attrs.tags = ['some', 'tags']
+exp.tags = ['some', 'tags']        # same thing
 exp.save()
 ```
 
@@ -423,34 +461,3 @@ term = o.new_term(
 term.save()
 ```
 
-**fetching Vocabulary and VocabularyTerms**
-
-
-
-
-# Requirements and organization
-
-### Dependencies and Requirements
-- pyBIS relies the openBIS API v3; openBIS version 16.05.2 or newer 
-- pyBIS uses Python 3.3 and pandas
-- pyBIS needs the jupyter-api to be installed, in order to register new datasets
-
-### Installation
-
-- locate the `jupyter-api` folder found in `pybis/src/coreplugins`
-- copy this folder to `openbis/servers/core-plugins` in your openBIS installation
-- register the plugin by editing `openbis/servers/core-plugins/core-plugins.properties` :
-- `enabled-modules = jupyter-api` (separate multiple plugins with comma)
-- restart your DSS to activate the plugin
-
-
-### Project Organization
-This project is devided in several parts:
-
-- src/python/**PyBis** Python module which holds all the method to interact with OpenBIS
-- src/python/**OBis** a command-line tool to register large datasets in OpenBIS without actually copying the data. Uses git annex for version control and OpenBIS linkedDataSet objects to register the metadata.
-- src/python/**JupyterBis** a JupyterHub authenticator module which uses pyBIS for authenticating against openBIS, validating and storing the session token
-- src/core-plugins/**jupyter-api**, an ingestion plug-in for openBIS, allowing people to upload new datasets
-- src/vagrant/**jupyter-bis/Vagrantfile** to set up JupyterHub on a virtual machine (CentOS 7), which uses the JupyterBis authenticator module
-- src/vagrant/**obis/Vagrantfile** to set up a complete OpenBIS instance on a virtual machine (CentOS 7)
-- 
