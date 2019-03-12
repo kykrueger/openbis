@@ -38,8 +38,10 @@ class EntityType():
     def __ne__(self, other):
         return str(self) != str(other)
 
-    def get_propertyAssignments(self):
+    def get_propertyAssignments(self, including_vocabulary=False):
         attrs = ['code', 'label', 'description', 'dataType', 'mandatory', 'showInEditView', 'ordinal']
+        if including_vocabulary:
+            attrs.append('vocabulary')
         pas = [ {**pa['propertyType'], **pa} for pa in self.data['propertyAssignments'] ]
         return DataFrame(pas, columns=attrs)
 
