@@ -4,6 +4,8 @@ from .openbis_object import OpenBisObject
 from .definitions import openbis_definitions
 from .utils import VERBOSE
 
+sample_definitions = openbis_definitions('Sample')
+
 class Sample(OpenBisObject):
     """ A Sample is one of the most commonly used objects in openBIS.
     """
@@ -26,6 +28,8 @@ class Sample(OpenBisObject):
 
         if kwargs is not None:
             for key in kwargs:
+                if key not in sample_definitions['attrs_new']:
+                    raise ValueError("{} is not a valid attribute for a Sample".format(key))
                 setattr(self, key, kwargs[key])
 
         if getattr(self, 'parents') is None:
