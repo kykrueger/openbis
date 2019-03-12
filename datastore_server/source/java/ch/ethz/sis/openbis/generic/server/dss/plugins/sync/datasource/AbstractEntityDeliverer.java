@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationDateHolder;
@@ -72,21 +73,26 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
     }
 
     @Override
-    public void deliverEntities(XMLStreamWriter writer, IDataSourceQueryService queryService, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    public void deliverEntities(DeliveryExecutionContext context) throws XMLStreamException
     {
+        IDataSourceQueryService queryService = context.getQueryService();
+        String sessionToken = context.getSessionToken();
         List<T> allEntities = getAllEntities(queryService, sessionToken);
-        executeInBatches(allEntities, entities -> deliverEntities(writer, sessionToken, spaces, entities));
+        executeInBatches(allEntities, entities -> deliverEntities(context, entities));
     }
-
+    
     protected List<T> getAllEntities(IDataSourceQueryService queryService, String sessionToken)
     {
         return Collections.emptyList();
     }
 
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<T> entities)
-            throws XMLStreamException
+    protected void deliverEntities(DeliveryExecutionContext context, List<T> entities) throws XMLStreamException
     {
+    }
 
+    protected IApplicationServerApi getV3Api()
+    {
+        return context.getV3api();
     }
 
     protected void addProperties(XMLStreamWriter writer, Map<String, String> properties) throws XMLStreamException
@@ -188,12 +194,12 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
             addAttribute(writer, attributeName, value);
         }
     }
-    
+
     protected void addAttribute(XMLStreamWriter writer, String attributeName, Boolean value) throws XMLStreamException
     {
         addAttribute(writer, attributeName, value, v -> String.valueOf(v));
     }
-    
+
     protected <O> void addAttribute(XMLStreamWriter writer, String attributeName, O object, Function<O, String> mapper) throws XMLStreamException
     {
         if (object != null)

@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LinkedData;
@@ -46,10 +47,14 @@ public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
     }
 
     @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> dataSets) throws XMLStreamException
+    protected void deliverEntities(DeliveryExecutionContext context, List<String> dataSets) throws XMLStreamException
     {
+        XMLStreamWriter writer = context.getWriter();
+        String sessionToken = context.getSessionToken();
+        Set<String> spaces = context.getSpaces();
+        IApplicationServerApi v3api = getV3Api();
         List<DataSetPermId> permIds = dataSets.stream().map(DataSetPermId::new).collect(Collectors.toList());
-        Collection<DataSet> fullDataSets = context.getV3api().getDataSets(sessionToken, permIds, createDataSetFetchOptions()).values();
+        Collection<DataSet> fullDataSets = v3api.getDataSets(sessionToken, permIds, createDataSetFetchOptions()).values();
         int count = 0;
         for (DataSet dataSet : fullDataSets)
         {

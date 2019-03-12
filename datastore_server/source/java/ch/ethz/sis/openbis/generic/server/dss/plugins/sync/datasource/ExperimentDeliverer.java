@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
@@ -42,11 +43,14 @@ public class ExperimentDeliverer extends AbstractEntityWithPermIdDeliverer
     }
 
     @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> experiments)
-            throws XMLStreamException
+    protected void deliverEntities(DeliveryExecutionContext context, List<String> experiments) throws XMLStreamException
     {
+        XMLStreamWriter writer = context.getWriter();
+        String sessionToken = context.getSessionToken();
+        Set<String> spaces = context.getSpaces();
+        IApplicationServerApi v3api = getV3Api();
         List<ExperimentPermId> permIds = experiments.stream().map(ExperimentPermId::new).collect(Collectors.toList());
-        Collection<Experiment> fullExperiments = context.getV3api().getExperiments(sessionToken, permIds, createFullFetchOptions()).values();
+        Collection<Experiment> fullExperiments = v3api.getExperiments(sessionToken, permIds, createFullFetchOptions()).values();
         int count = 0;
         for (Experiment experiment : fullExperiments)
         {
