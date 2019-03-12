@@ -16,6 +16,7 @@ translate-using-data-source-alias = true
 
 email-addresses = openbis@id.ethz.ch
 harvester-tmp-dir = harvester-tmp
+file-service-repository-path = ../../data/file-server
 last-sync-timestamp-file = ../../last-sync-timestamp-file_HRVSTR.txt
 log-file = ../../synchronization.log
 
