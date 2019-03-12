@@ -33,7 +33,6 @@ class PropertyHolder():
             value = getattr(self, code)
             if value is not None:
                 props[code] = value
-
         return props
 
     def __getattr__(self, name):
