@@ -293,7 +293,7 @@ ds_new = o.new_dataset(
     experiment = '/SPACE/PROJECT/EXP1', 
     sample     = '/SPACE/SAMP1',
     files      = ['my_analyzed_data.dat'], 
-    props      = {'name': 'some good name', 'description': '...' })
+    props      = {'name': 'some good name', 'description': '...' }
 )
 
 # DataSet CONTAINER (contains other DataSets, but no files)
@@ -302,7 +302,7 @@ ds_new = o.new_dataset(
     experiment = '/SPACE/PROJECT/EXP1', 
     sample     = '/SPACE/SAMP1',
     kind       = 'CONTAINER',
-    props      = {'name': 'some good name', 'description': '...' })
+    props      = {'name': 'some good name', 'description': '...' }
 )
 
 ds_new.save()
