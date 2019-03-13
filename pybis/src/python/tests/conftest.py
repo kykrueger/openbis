@@ -16,11 +16,6 @@ def openbis_instance():
     instance.logout()
     print("LOGGED OUT...")
 
-@pytest.yield_fixture(scope="module")
-def role_assignment_person():
-    # this user has to be present in the openBIS instance
-    yield 'admin'
-
 
 @pytest.yield_fixture(scope="module")
 def space():
