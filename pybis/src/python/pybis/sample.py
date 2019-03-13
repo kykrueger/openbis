@@ -28,8 +28,6 @@ class Sample(OpenBisObject):
 
         if kwargs is not None:
             for key in kwargs:
-                if key not in sample_definitions['attrs_new']:
-                    raise ValueError("{} is not a valid attribute for a Sample".format(key))
                 setattr(self, key, kwargs[key])
 
         if getattr(self, 'parents') is None:
