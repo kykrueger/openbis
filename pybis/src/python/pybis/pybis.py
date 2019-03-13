@@ -572,7 +572,7 @@ class Openbis:
             "get_server_information()",
             "get_dataset('permId')",
             "get_datasets()",
-            "get_dataset_type('raw_data')",
+            "get_dataset_type('type')",
             "get_dataset_types()",
             "get_datastores()",
             "gen_code(entity, prefix)",
@@ -594,8 +594,8 @@ class Openbis:
             "get_object('id')", # "get_sample('id')" alias
             "get_samples()",
             "get_objects()", # "get_samples()" alias
-            "get_sample_type(type))",
-            "get_object_type(type))", # "get_sample_type(type))" alias
+            "get_sample_type('type')",
+            "get_object_type('type')", # "get_sample_type(type))" alias
             "get_sample_types()",
             "get_object_types()", # "get_sample_types()" alias
             "get_semantic_annotations()",
