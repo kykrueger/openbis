@@ -1,32 +1,44 @@
 # Welcome to pyBIS!
-pyBIS is a Python module for interacting with openBIS, designed to be used in Jupyter. It offers a sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
+pyBIS is a Python module for interacting with openBIS, designed to be used in Jupyter. It offers some sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
 
-
-# Requirements and organization
-
-### Dependencies and Requirements
-- pyBIS relies the openBIS API v3; openBIS version 16.05.2 or newer 
+## Dependencies and Requirements
+- pyBIS relies the openBIS API v3
+- openBIS version 16.05.2 or newer is required
+- 18.06.2 or later is recommended
 - pyBIS uses Python 3.3 and pandas
 
-### Installation
+## Installation
 
 ```
 pip install pybis
 ```
-That's it!
+That command will download install pybis and all its dependencies.
+
+If you haven't done yet, install Jupyter Notebook:
+
+```
+pip install jupyter
+```
 
 # Usage
+
+## Tab completition and other hints
+Used in a Jupyter Notebook environment, pybis helps you to enter the commands. After every dot `.` you might hit the `TAB` key in order to look at the available commands.
+
+If you are unsure what parameters to add to a , add a question mark right after the method and hit `SHIFT+ENTER`. Jupyter will then look up the signature of the method and show some helpful docstring.
+
+When working with properties of entities, they might use a **controlled vocabulary** or are of a specific **property type**. Add an underscore `_` character right after the property and hit `SHIFT+ENTER` to show the valid values. When a property only acceps a controlled vocabulary, you will be shown the valid terms in a nicely formatted table.
 
 ## connect to from OpenBIS
 
 ```
 from pybis import Openbis
-o = Openbis('https://example.com:8443', verify_certificates=False)
+o = Openbis('https://example.com', verify_certificates=False)
 
 import getpass
 password = getpass.getpass()
 
-o.login('username', password, save_token=True)   # saves the session token in ~/.pybis/example.com.token
+o.login('username', password, save_token=True)   # save the session token in ~/.pybis/example.com.token
 ```
 
 Check whether the session token is still valid and log out:
@@ -37,7 +49,7 @@ o.is_session_active()
 o.logout()
 ```
 
-## Masterdata
+## browsing masterdata
 ```
 o.get_experiment_types()
 et = o.get_experiment_type('TEST')
@@ -415,16 +427,16 @@ tag.get_samples()
 tag.delete()
 ```
 
-## Vocabualry and VocabularyTerms
+## Vocabulary and VocabularyTerms
 
-An entity such as Sample (Object), Experiment (Collection), Material or DataSet can be of a specific type:
+An entity such as Sample (Object), Experiment (Collection), Material or DataSet can be of a specific *entity type*:
 
 * Sample Type
 * Experiment Type
 * DataSet Type
 * Material Type
 
-Every type defines which Properties may be defined. Properties are like Attributes, but they are Type specific. Properties can contain all sorts of information, such as free text, XML, Hyperlink, Boolean and also *Controlled Vocabulary*. Such a Controlled Vocabulary consists of many VocabularyTerms. They are used to check the terms entered in a Property field.
+Every type defines which **Properties** may be defined. Properties act like **Attributes**, but they are type-specific. Properties can contain all sorts of information, such as free text, XML, Hyperlink, Boolean and also **Controlled Vocabulary**. Such a Controlled Vocabulary consists of many **VocabularyTerms**. These terms are used to only allow certain values entered in a Property field.
 
 So for example, you want to add a property called **Animal** to a Sample and you want to control which terms are entered in this Property field. For this you need to do a couple of steps:
 
@@ -458,7 +470,7 @@ term = o.new_term(
 	code='TERM_CODE_XXX', 
 	vocabularyCode='BBB', 
 	label='here comes a label',
-	description='here is a meandingful description'
+	description='here might appear a meaningful description'
 )
 term.save()
 ```
