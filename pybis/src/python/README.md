@@ -45,7 +45,7 @@ et.get_propertyAssignments()
 
 o.get_sample_types()
 st = o.get_sample_type('YEAST')
-et.get_propertyAssignments()
+st.get_propertyAssignments()
 
 o.get_material_types()
 mt = o.get_material_type('GENE')
@@ -304,14 +304,15 @@ ds_new = o.new_dataset(
     kind       = 'CONTAINER',
     props      = {'name': 'some good name', 'description': '...' }
 )
-
 ds_new.save()
 
+# get, set, add and remove parent datasets
 dataset.get_parents()
 dataset.set_parents(['20170115220259155-412'])
 dataset.add_parents(['20170115220259155-412'])
 dataset.del_parents(['20170115220259155-412'])
 
+# get, set, add and remove child datasets
 dataset.get_children()
 dataset.set_children(['20170115220259155-412'])
 dataset.add_children(['20170115220259155-412'])
@@ -350,7 +351,8 @@ datasets.df                       # get a pandas dataFrame object
 
 # use it in a for-loop:
 for dataset in datasets:
-    print(ds.permID)
+    print(dataset.permID)
+    dataset.delete('give me a reason')
 ```
 
 ## Semantic Annotations
