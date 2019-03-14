@@ -1,3 +1,13 @@
+## Changes with pybis-1.8.1
+* revised documentation
+* improved DataSet creation
+* added missing delete function for DataSets
+* wrong entity attributes will now immediately throw an error
+* more DataSet creation tests
+* paging tests added
+* `collection` is now alias for `experiment`
+* `object` is alias for `sample`
+
 ## Changes with pybis-1.8.0
 
 * better support for fetching entity-types (dataSetTypes, sampleTypes)

@@ -64,6 +64,7 @@ class OpenBisObject():
             return self.openbis.get_experiment(self._experiment['identifier'])
         except Exception:
             pass
+    collection = experiment  # Alias
 
     @property
     def sample(self):
@@ -71,7 +72,6 @@ class OpenBisObject():
             return self.openbis.get_sample(self._sample['identifier'])
         except Exception:
             pass
-
     object = sample # Alias
 
     def __getattr__(self, name):

@@ -6,11 +6,11 @@ class PropertyHolder():
 
     def __init__(self, openbis_obj, type=None):
         self.__dict__['_openbis'] = openbis_obj
-        self.__dict__['_property_names'] = []
+        self.__dict__['_property_names'] = {}
         if type is not None:
             self.__dict__['_type'] = type
             for prop in type.data['propertyAssignments']:
-                self._property_names.append(prop['propertyType']['code'].lower())
+                self._property_names[prop['propertyType']['code'].lower()]=prop['propertyType']
 
     def _get_terms(self, vocabulary):
         return self._openbis.get_terms(vocabulary)
@@ -33,13 +33,15 @@ class PropertyHolder():
             value = getattr(self, code)
             if value is not None:
                 props[code] = value
-
         return props
 
     def __getattr__(self, name):
         """ attribute syntax can be found out by
             adding an underscore at the end of the property name
         """ 
+        if name == '_ipython_canary_method_should_not_exist_':
+            # make Jupyter use the _repr_html_ method
+            return
         if name.endswith('_'):
             name = name.rstrip('_')
             if name in self._type.prop:
@@ -51,13 +53,18 @@ class PropertyHolder():
                     if property_type["dataType"] == "TIMESTAMP":
                         syntax['syntax'] = 'YYYY-MM-DD HH:MIN:SS'
                     return syntax
-            return None
+            else:
+                return
 
 
     def __setattr__(self, name, value):
         if name not in self._property_names:
-            raise KeyError("No such property: '{}'. Allowed properties are: {}".format(name, self._property_names)) 
-        property_type = self._type.prop[name]['propertyType']
+            raise KeyError(
+                "No such property: '{}'. Allowed properties are: {}".format(
+                    name, self._property_names.keys()
+                )
+            )
+        property_type = self._property_names[name]
         data_type = property_type['dataType']
         if data_type == 'CONTROLLEDVOCABULARY':
             voc = self._get_terms(property_type['vocabulary']['code'])

@@ -37,7 +37,7 @@ class Space(OpenBisObject):
     def get_samples(self, **kwargs):
         return self.openbis.get_samples(space=self.code, **kwargs)
 
-    get_objects = get_samples #Alias
+    get_objects = get_samples  # Alias
 
     def get_sample(self, sample_code, project_code=None):
         if is_identifier(sample_code) or is_permid(sample_code):
@@ -47,6 +47,7 @@ class Space(OpenBisObject):
                 return self.openbis.get_sample('/{}/{}'.format(self.code,sample_code) )
             else:
                 return self.openbis.get_sample('/{}/{}/{}'.format(self.code, project_code, sample_code) )
+    get_object = get_sample  # Alias
 
 
     def get_projects(self, **kwargs):

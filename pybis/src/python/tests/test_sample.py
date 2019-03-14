@@ -81,4 +81,6 @@ def test_parent_child(space):
     ex_sample_child = ex_sample_children[0]
     assert ex_sample_child.identifier == '/DEFAULT/{}'.format(child_code).upper()
 
+    sample_parent.delete('sample parent-child creation test on '+timestamp)
+    sample_child.delete('sample parent-child creation test on '+timestamp)
 

@@ -1,22 +1,55 @@
 # Welcome to pyBIS!
-pyBIS is a Python module for interacting with openBIS, designed to be used in Jupyter. It offers a sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
+pyBIS is a Python module for interacting with openBIS, designed to be used in Jupyter. It offers some sort of IDE for openBIS, supporting TAB completition and input checks, making the life of a researcher hopefully easier.
 
+## Dependencies and Requirements
+- pyBIS relies the openBIS API v3
+- openBIS version 16.05.2 or newer is required
+- 18.06.2 or later is recommended
+- pyBIS uses Python 3.3 and pandas
 
+## Installation
 
-# SYNOPSIS
+```
+pip install pybis
+```
+That command will download install pybis and all its dependencies.
 
-## connecting to OpenBIS
+If you haven't done yet, install Jupyter Notebook:
+
+```
+pip install jupyter
+```
+
+# Usage
+
+## Tab completition and other hints
+Used in a Jupyter Notebook environment, pybis helps you to enter the commands. After every dot `.` you might hit the `TAB` key in order to look at the available commands.
+
+If you are unsure what parameters to add to a , add a question mark right after the method and hit `SHIFT+ENTER`. Jupyter will then look up the signature of the method and show some helpful docstring.
+
+When working with properties of entities, they might use a **controlled vocabulary** or are of a specific **property type**. Add an underscore `_` character right after the property and hit `SHIFT+ENTER` to show the valid values. When a property only acceps a controlled vocabulary, you will be shown the valid terms in a nicely formatted table.
+
+## connect to from OpenBIS
+
 ```
 from pybis import Openbis
-o = Openbis('https://example.com:8443', verify_certificates=False)
-o.login('username', 'password', save_token=True)   # saves the session token in ~/.pybis/example.com.token
+o = Openbis('https://example.com', verify_certificates=False)
+
+import getpass
+password = getpass.getpass()
+
+o.login('username', password, save_token=True)   # save the session token in ~/.pybis/example.com.token
+```
+
+Check whether the session token is still valid and log out:
+
+```
 o.token
 o.is_session_active()
-o.get_datastores()
 o.logout()
 ```
 
-## Masterdata
+## browsing masterdata
 ```
 o.get_experiment_types()
 et = o.get_experiment_type('TEST')
@@ -24,7 +57,7 @@ et.get_propertyAssignments()
 
 o.get_sample_types()
 st = o.get_sample_type('YEAST')
-et.get_propertyAssignments()
+st.get_propertyAssignments()
 
 o.get_material_types()
 mt = o.get_material_type('GENE')
@@ -34,6 +67,7 @@ o.get_dataset_types()
 dst = o.get_dataset_types()[0]
 dst = o.get_dataset_type('RAW_DATA')
 dst.get_propertyAssignments()
+dst.get_propertyAssignments(with_vocabulary=True)
 
 o.get_vocabularies()
 o.get_vocabulary('BACTERIAL_ANTIBIOTIC_RESISTANCE')
@@ -75,13 +109,16 @@ ra = o.get_role_assignment(techId)
 ra.delete()
 ```
 
-
 ## Spaces
+
 ```
 space = o.new_space(code='space_name', description='')
 space.save()
 space.delete('reason for deletion')
-o.get_spaces()
+o.get_spaces(
+    start_with = 1,                   # start_with and count
+    count = 7,                        # enable paging
+)
 o.get_space('MY_SPACE')
 ```
 
@@ -95,7 +132,11 @@ project = o.new_project(
 project = space.new_project( code='project_code', description='project description')
 project.save()
 
-o.get_projects()
+o.get_projects(
+    space = 'MY_SPACE',               # show only projects in MY_SPACE
+    start_with = 1,                   # start_with and count
+    count = 7,                        # enable paging
+)
 o.get_projects(space='MY_SPACE')
 space.get_projects()
 
@@ -108,10 +149,13 @@ project.download_attachments()
 ## Samples
 Samples are nowadays called **Objects** in openBIS. pyBIS is not yet thoroughly supporting this term in all methods where «sample» occurs.
 
+NOTE: In openBIS, `samples` entities have recently been renamed to `objects`. All methods have synonyms using the term `object`, e.g. `get_object`, `new_object`, `get_object_types`.
+
 ```
 sample = o.new_sample(
     type     = 'YEAST', 
-    space    = 'MY_SPACE', 
+    space    = 'MY_SPACE',
+    experiment = '/MY_SPACE/MY_PROJECT/EXPERIMENT_1',
     parents  = [parent_sample, '/MY_SPACE/YEA66'], 
     children = [child_sample],
     props    = {"name": "some name", "description": "something interesting"}
@@ -185,18 +229,21 @@ samples = o.get_samples(
     space ='MY_SPACE',
     type  ='YEAST',
     tags  =['*'],                     # only sample with existing tags
+    start_with = 1,                   # start_with and count
+    count = 7,                        # enable paging
     NAME  = 'some name',              # properties are always uppercase 
                                       # to distinguish them from attributes
     **{ "SOME.WEIRD:PROP": "value"}   # property name contains a dot or a
                                       # colon: cannot be passed as an argument 
     props=['NAME', 'MATING_TYPE']     # show these properties in the result
 )
-samples.df                            # returns a pandas dataframe object
+samples.df                            # returns a pandas DataFrame object
 samples.get_datasets(type='ANALYZED_DATA')
 ```
 
-
 ## Experiments
+
+NOTE: In openBIS, `experiment` entities have recently been renamed to `collection`. All methods have synonyms using the term `collection`, e.g. `get_collections`, `new_collection`, `get_collection_types`.
 
 ```
 o.new_experiment
@@ -204,6 +251,7 @@ o.new_experiment
     space='MY_SPACE',
     project='YEASTS'
 )
+
 o.get_experiments(
     project='YEASTS',
     space='MY_SPACE', 
@@ -212,7 +260,9 @@ o.get_experiments(
     finished_flag=False,
     props=['name', 'finished_flag']
 )
+project.get_experiments()
 exp = o.get_experiment('/MY_SPACE/MY_PROJECT/MY_EXPERIMENT')
+
 
 exp.props
 exp.p                              # same thing as .props
@@ -222,9 +272,9 @@ exp.p + TAB                        # in IPython or Jupyter: show list of availab
 exp.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 
 exp.attrs
-exp.a     # same as exp.attrs
-exp.attrs.tags = ['some', 'extra', 'tags']
-exp.tags = ['some', 'extra', 'tags']          # same thing
+exp.a                              # same thing
+exp.attrs.tags = ['some', 'tags']
+exp.tags = ['some', 'tags']        # same thing
 exp.save()
 ```
 
@@ -255,7 +305,7 @@ ds_new = o.new_dataset(
     experiment = '/SPACE/PROJECT/EXP1', 
     sample     = '/SPACE/SAMP1',
     files      = ['my_analyzed_data.dat'], 
-    props      = {'name': 'some good name', 'description': '...' })
+    props      = {'name': 'some good name', 'description': '...' }
 )
 
 # DataSet CONTAINER (contains other DataSets, but no files)
@@ -264,16 +314,17 @@ ds_new = o.new_dataset(
     experiment = '/SPACE/PROJECT/EXP1', 
     sample     = '/SPACE/SAMP1',
     kind       = 'CONTAINER',
-    props      = {'name': 'some good name', 'description': '...' })
+    props      = {'name': 'some good name', 'description': '...' }
 )
-
 ds_new.save()
 
+# get, set, add and remove parent datasets
 dataset.get_parents()
 dataset.set_parents(['20170115220259155-412'])
 dataset.add_parents(['20170115220259155-412'])
 dataset.del_parents(['20170115220259155-412'])
 
+# get, set, add and remove child datasets
 dataset.get_children()
 dataset.set_children(['20170115220259155-412'])
 dataset.add_children(['20170115220259155-412'])
@@ -312,7 +363,8 @@ datasets.df                       # get a pandas dataFrame object
 
 # use it in a for-loop:
 for dataset in datasets:
-    print(ds.permID)
+    print(dataset.permID)
+    dataset.delete('give me a reason')
 ```
 
 ## Semantic Annotations
@@ -375,16 +427,16 @@ tag.get_samples()
 tag.delete()
 ```
 
-## Vocabualry and VocabularyTerms
+## Vocabulary and VocabularyTerms
 
-An entity such as Sample (Object), Experiment (Collection), Material or DataSet can be of a specific type:
+An entity such as Sample (Object), Experiment (Collection), Material or DataSet can be of a specific *entity type*:
 
 * Sample Type
 * Experiment Type
 * DataSet Type
 * Material Type
 
-Every type defines which Properties may be defined. Properties are like Attributes, but they are Type specific. Properties can contain all sorts of information, such as free text, XML, Hyperlink, Boolean and also *Controlled Vocabulary*. Such a Controlled Vocabulary consists of many VocabularyTerms. They are used to check the terms entered in a Property field.
+Every type defines which **Properties** may be defined. Properties act like **Attributes**, but they are type-specific. Properties can contain all sorts of information, such as free text, XML, Hyperlink, Boolean and also **Controlled Vocabulary**. Such a Controlled Vocabulary consists of many **VocabularyTerms**. These terms are used to only allow certain values entered in a Property field.
 
 So for example, you want to add a property called **Animal** to a Sample and you want to control which terms are entered in this Property field. For this you need to do a couple of steps:
 
@@ -418,39 +470,8 @@ term = o.new_term(
 	code='TERM_CODE_XXX', 
 	vocabularyCode='BBB', 
 	label='here comes a label',
-	description='here is a meandingful description'
+	description='here might appear a meaningful description'
 )
 term.save()
 ```
 
-**fetching Vocabulary and VocabularyTerms**
-
-
-
-
-# Requirements and organization
-
-### Dependencies and Requirements
-- pyBIS relies the openBIS API v3; openBIS version 16.05.2 or newer 
-- pyBIS uses Python 3.3 and pandas
-- pyBIS needs the jupyter-api to be installed, in order to register new datasets
-
-### Installation
-
-- locate the `jupyter-api` folder found in `pybis/src/coreplugins`
-- copy this folder to `openbis/servers/core-plugins` in your openBIS installation
-- register the plugin by editing `openbis/servers/core-plugins/core-plugins.properties` :
-- `enabled-modules = jupyter-api` (separate multiple plugins with comma)
-- restart your DSS to activate the plugin
-
-
-### Project Organization
-This project is devided in several parts:
-
-- src/python/**PyBis** Python module which holds all the method to interact with OpenBIS
-- src/python/**OBis** a command-line tool to register large datasets in OpenBIS without actually copying the data. Uses git annex for version control and OpenBIS linkedDataSet objects to register the metadata.
-- src/python/**JupyterBis** a JupyterHub authenticator module which uses pyBIS for authenticating against openBIS, validating and storing the session token
-- src/core-plugins/**jupyter-api**, an ingestion plug-in for openBIS, allowing people to upload new datasets
-- src/vagrant/**jupyter-bis/Vagrantfile** to set up JupyterHub on a virtual machine (CentOS 7), which uses the JupyterBis authenticator module
-- src/vagrant/**obis/Vagrantfile** to set up a complete OpenBIS instance on a virtual machine (CentOS 7)
-- 
