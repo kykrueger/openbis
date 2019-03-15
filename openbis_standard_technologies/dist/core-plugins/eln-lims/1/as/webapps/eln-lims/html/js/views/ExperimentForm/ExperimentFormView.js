@@ -105,7 +105,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			}
 			
 			//Freeze
-			if(_this._experimentFormModel.v3_experiment.frozen !== undefined) { //Freezing available on the API
+			if(_this._experimentFormModel.v3_experiment && _this._experimentFormModel.v3_experiment.frozen !== undefined) { //Freezing available on the API
 				var isEntityFrozen = _this._experimentFormModel.v3_experiment.frozen;
 				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
 				var $freezeButton = FormUtil.getFreezeButton("EXPERIMENT", this._experimentFormModel.v3_experiment.permId.permId, isEntityFrozen);

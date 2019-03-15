@@ -94,7 +94,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			}
 			
 			//Freeze
-			if(_this._projectFormModel.v3_project.frozen !== undefined) { //Freezing available on the API
+			if(_this._projectFormModel.v3_project && _this._projectFormModel.v3_project.frozen !== undefined) { //Freezing available on the API
 				var isEntityFrozen = _this._projectFormModel.v3_project.frozen;
 				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
 				var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, isEntityFrozen);

@@ -17,7 +17,6 @@
 function SampleFormModel(mode, sample, paginationInfo) {
 	this.mode = mode;
 	this.sample = sample;
-	this.v3_sample;
 	this.datasets = [];
 	
 	this.isFormDirty = false;
