@@ -1,4 +1,11 @@
+## Changes with pybis-1.8.2
+
+* added key-lookup and setting for properties that contain either dots or dashes
+* sample.props['some-weird.property-name'] = "some value"
+* check for mandatory properties in samples (objects), datasets and experiments (collections)
+
 ## Changes with pybis-1.8.1
+
 * revised documentation
 * improved DataSet creation
 * added missing delete function for DataSets
