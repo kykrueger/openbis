@@ -220,6 +220,7 @@ sample.p                              # same thing as .props
 sample.p.my_property = "some value"   # set the value of a property (value is checked)
 sample.p + TAB                        # in IPython or Jupyter: show list of available properties
 sample.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
+sample.p['my-weird.property-name']    # accessing properties containing a dash or a dot
 
 sample.get_attachments()
 sample.download_attachments()
@@ -263,13 +264,14 @@ o.get_experiments(
 project.get_experiments()
 exp = o.get_experiment('/MY_SPACE/MY_PROJECT/MY_EXPERIMENT')
 
-
+exp.set_props({ key: value})
 exp.props
 exp.p                              # same thing as .props
 exp.p.finished_flag=True
 exp.p.my_property = "some value"   # set the value of a property (value is checked)
 exp.p + TAB                        # in IPython or Jupyter: show list of available properties
 exp.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
+exp.p['my-weird.property-name']    # accessing properties containing a dash or a dot
 
 exp.attrs
 exp.a                              # same thing
@@ -345,12 +347,13 @@ dataset.set_components(['20170115220259155-412'])
 dataset.add_components(['20170115220259155-412'])
 dataset.del_components(['20170115220259155-412'])
 
-ds.set_properties({...})
+ds.set_props({ key: value})
 ds.props
 ds.p                              # same thing as .props
 ds.p.my_property = "some value"   # set the value of a property
 ds.p + TAB                        # show list of available properties
 ds.p.my_property_ + TAB           # show datatype or controlled vocabulary
+ds.p['my-weird.property-name']    # accessing properties containing a dash or a dot
 
 # complex query with chaining.
 # properties must be in UPPERCASE

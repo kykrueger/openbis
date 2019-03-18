@@ -74,7 +74,7 @@ class PropertyHolder():
         if name not in self._property_names:
             raise KeyError(
                 "No such property: '{}'. Allowed properties are: {}".format(
-                    name, self._property_names.keys()
+                    name, ", ".join(self._property_names.keys())
                 )
             )
         property_type = self._property_names[name]
