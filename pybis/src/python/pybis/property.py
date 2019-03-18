@@ -10,7 +10,10 @@ class PropertyHolder():
         if type is not None:
             self.__dict__['_type'] = type
             for prop in type.data['propertyAssignments']:
-                self._property_names[prop['propertyType']['code'].lower()]=prop['propertyType']
+                property_name = prop['propertyType']['code'].lower()
+                self._property_names[property_name]=prop['propertyType']
+                self._property_names[property_name]['mandatory'] = prop['mandatory']
+                self._property_names[property_name]['showInEditView'] = prop['showInEditView']
 
     def _get_terms(self, vocabulary):
         return self._openbis.get_terms(vocabulary)
@@ -22,6 +25,8 @@ class PropertyHolder():
         return props
 
     def all(self):
+        """Returns the properties as an array
+        """
         props = {}
         for code in self._type.codes():
             props[code] = getattr(self, code)
@@ -35,6 +40,12 @@ class PropertyHolder():
                 props[code] = value
         return props
 
+    def __getitem__(self, key):
+        """For properties that contain either a dot or a dash or any other non-valid method character,
+        a user can use a key-lookup instead, e.g. sample.props['my-weird.property-name']
+        """
+        return getattr(self, key)
+
     def __getattr__(self, name):
         """ attribute syntax can be found out by
             adding an underscore at the end of the property name
@@ -44,8 +55,8 @@ class PropertyHolder():
             return
         if name.endswith('_'):
             name = name.rstrip('_')
-            if name in self._type.prop:
-                property_type = self._type.prop[name]['propertyType']
+            if name in self._property_names:
+                property_type = self._property_names[name]
                 if property_type['dataType'] == 'CONTROLLEDVOCABULARY':
                     return self._get_terms(property_type['vocabulary']['code'])
                 else:
@@ -56,8 +67,10 @@ class PropertyHolder():
             else:
                 return
 
-
     def __setattr__(self, name, value):
+        """This special method allows a PropertyHolder object
+        to check the attributes that are assigned to that object
+        """
         if name not in self._property_names:
             raise KeyError(
                 "No such property: '{}'. Allowed properties are: {}".format(
@@ -78,6 +91,12 @@ class PropertyHolder():
                 raise ValueError("Value must be of type {}".format(data_type))
         self.__dict__[name] = value
 
+    def __setitem__(self, key, value):
+        """For properties that contain either a dot or a dash or any other non-valid method character,
+        a user can use a key instead, e.g. sample.props['my-weird.property-name']
+        """
+        return setattr(self, key, value)
+
     def __dir__(self):
         return self._property_names
 
@@ -96,14 +115,20 @@ class PropertyHolder():
                 <tr style="text-align: right;">
                 <th>property</th>
                 <th>value</th>
+                <th>description</th>
+                <th>type</th>
+                <th>mandatory</th>
                 </tr>
             </thead>
             <tbody>
         """
 
-        for prop in self._property_names:
-            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
-                prop, nvl(getattr(self, prop, ''),'')
+        for prop_name, prop in self._property_names.items():
+            html += "<tr> <td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td> </tr>".format(
+                prop_name, nvl(getattr(self, prop_name, ''),''),
+                prop.get('description'),
+                prop.get('dataType'),
+                prop.get('mandatory'),
             )
 
         html += """
@@ -122,7 +147,7 @@ class PropertyHolder():
                 return False
             return str(val)
 
-        headers = ['property', 'value']
+        headers = ['property', 'value', 'mandatory']
 
         lines = []
         for prop_name in self._property_names:
