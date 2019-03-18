@@ -427,12 +427,16 @@ class DataSet(OpenBisObject):
         if VERBOSE: print("DataSet {} successfully deleted.".format(self.permId))
 
     def save(self):
+        for prop_name, prop in self.props._property_names.items():
+            if prop['mandatory']:
+                if getattr(self.props, prop_name) is None or getattr(self.props, prop_name) == "":
+                    raise ValueError("Property '{}' is mandatory and must not be None".format(prop_name))
 
         if self.is_new:
             datastores = self.openbis.get_datastores()
             permId = None
 
-
+ 
             if self.sample is None and self.experiment is None:
                 raise ValueError('A DataSet must be either connected to a Sample or an Experiment')
 
