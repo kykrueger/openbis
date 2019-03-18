@@ -2277,3 +2277,42 @@ should Be Frozen For Samples
 
 Identifier Search Criteria
 with Identifier
+
+create Fast Download Session
+download To
+Fast Downloader
+Fast Download Session
+Fast Download Session Options
+get Files
+get File Transfer User Session Id
+get Wished Number Of Streams
+with Wished Number Of Streams
+DOWNLOAD_ITEM_IDS_PARAMETER
+DOWNLOAD_METHOD
+DOWNLOAD_SESSION_ID_PARAMETER
+DOWNLOAD_STREAM_ID_PARAMETER
+Fast Download Result
+Fast Download Method
+Fast Download Parameter
+FINISH_DOWNLOAD_SESSION_METHOD
+get Download Server
+get Download Session Id
+get Method Name
+get Parameter Name
+get Paths By Id
+METHOD_PARAMETER
+NUMBER_OF_CHUNKS_PARAMETER
+QUEUE_METHOD
+RANGES_PARAMETER
+START_DOWNLOAD_SESSION_METHOD
+USER_SESSION_ID_PARAMETER
+WISHED_NUMBER_OF_STREAMS_PARAMETER
+with Deserializer Provider Factory
+with Download Store Factory
+with Listener
+with Logger
+with Retry Provider Factory
+Fast Download Utils
+create Exception From Json
+render As Json
+

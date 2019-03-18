@@ -9,9 +9,24 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create import CreateVoc
 from ..definition_to_creation import VocabularyDefinitionToCreationParser, PropertyTypeDefinitionToCreationParser, SampleTypeDefinitionToCreationParser, \
                     ExperimentTypeDefinitionToCreationParser, DatasetTypeDefinitionToCreationParser, SpaceDefinitionToCreationParser, \
                     ProjectDefinitionToCreationParser, ExperimentDefinitionToCreationParser, ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
+from ..creation_to_update import VocabularyCreationToUpdateParser, VocabularyTermCreationToUpdateParser, \
+                        PropertyTypeCreationToUpdateParser, SampleTypeCreationToUpdateParser, ExperimentTypeCreationToUpdateParser, \
+                        DatasetTypeCreationToUpdateParser, SpaceCreationToUpdateParser, ProjectCreationToUpdateParser, ExperimentCreationToUpdateParser, \
+                        SampleCreationToUpdateParser, ScriptCreationToUpdateParser
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update import UpdateVocabulariesOperation, \
+    UpdateVocabularyTermsOperation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update import UpdatePropertyTypesOperation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update import UpdateSampleTypesOperation, \
+    UpdateSamplesOperation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update import UpdateExperimentTypesOperation, \
+    UpdateExperimentsOperation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update import UpdateDataSetTypesOperation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update import UpdateSpacesOperation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update import UpdateProjectsOperation
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.update import UpdatePluginsOperation
 
 
-class CreationToOperationParser(object):
+class CreationOrUpdateToOperationParser(object):
 
     @staticmethod
     def parse(creations):
@@ -36,4 +51,27 @@ class CreationToOperationParser(object):
             creation_operations.append(CreateSamplesOperation(creations[SampleDefinitionToCreationParser.type]))
         if ScriptDefinitionToCreationParser.type in creations:
             creation_operations.append(CreatePluginsOperation(creations[ScriptDefinitionToCreationParser.type]))
+        if VocabularyCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateVocabulariesOperation(creations[VocabularyCreationToUpdateParser.type]))
+        if VocabularyTermCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateVocabularyTermsOperation(creations[VocabularyTermCreationToUpdateParser.type]))
+        if PropertyTypeCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdatePropertyTypesOperation(creations[PropertyTypeCreationToUpdateParser.type]))
+        if SampleTypeCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateSampleTypesOperation(creations[SampleTypeCreationToUpdateParser.type]))
+        if ExperimentTypeCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateExperimentTypesOperation(creations[ExperimentTypeCreationToUpdateParser.type]))
+        if DatasetTypeCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateDataSetTypesOperation(creations[DatasetTypeCreationToUpdateParser.type]))
+        if SpaceCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateSpacesOperation(creations[SpaceCreationToUpdateParser.type]))
+        if ProjectCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateProjectsOperation(creations[ProjectCreationToUpdateParser.type]))
+        if ExperimentCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateExperimentsOperation(creations[ExperimentCreationToUpdateParser.type]))
+        if SampleCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdateSamplesOperation(creations[SampleCreationToUpdateParser.type]))
+        if ScriptCreationToUpdateParser.type in creations:
+            creation_operations.append(UpdatePluginsOperation(creations[ScriptCreationToUpdateParser.type]))
+
         return creation_operations

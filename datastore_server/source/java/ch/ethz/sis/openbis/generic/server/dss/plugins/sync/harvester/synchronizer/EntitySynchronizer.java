@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -205,6 +206,7 @@ public class EntitySynchronizer
         registerMasterData(data.getMasterData());
         MultiKeyMap<String, String> newEntities = registerEntities(data);
         List<String> notSyncedAttachmentsHolders = registerAttachments(data, newEntities);
+        populateFileServiceRepository(data);
         registerDataSets(data, notSyncedAttachmentsHolders);
 
         if (config.keepOriginalTimestampsAndUsers())
@@ -648,6 +650,26 @@ public class EntitySynchronizer
         }
         monitor.log();
         return notSyncedAttachmentsHolders;
+    }
+    
+    private void populateFileServiceRepository(ResourceListParserData data)
+    {
+        Monitor monitor = new Monitor("Populate file service repository", operationLog);
+        operationLog.info("Processing files...");
+        File fileRepo = new File(config.getFileServiceReporitoryPath());
+        int count = 0;
+        long totalSize = 0;
+        for (Entry<String, byte[]> entry : data.getFileToProcess().entrySet())
+        {
+            String path = entry.getKey();
+            byte[] fileContent = entry.getValue();
+            File file = new File(fileRepo, path);
+            file.getParentFile().mkdirs();
+            FileUtilities.writeToFile(file, fileContent);
+            count++;
+            totalSize += fileContent.length;
+        }
+        monitor.log(count + " files (total size: " + FileUtilities.byteCountToDisplaySize(totalSize) + ") have been saved.");
     }
 
     private MultiKeyMap<String, String> registerEntities(ResourceListParserData data)

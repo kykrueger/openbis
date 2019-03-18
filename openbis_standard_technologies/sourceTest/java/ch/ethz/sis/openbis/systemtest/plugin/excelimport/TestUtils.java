@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
@@ -27,6 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentType
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
@@ -52,6 +55,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi
 
 public class TestUtils
 {
+    private static final String UPDATE_MODE = "update_mode";
 
     public static final String XLS_PARAM = "xls";
 
@@ -291,11 +295,18 @@ public class TestUtils
         }
         CustomASServiceExecutionOptions options = new CustomASServiceExecutionOptions();
         options.withParameter(XLS_PARAM, excels);
+        options.withParameter(UPDATE_MODE, UpdateMode.IGNORE_EXISTING.name());
         return (String) v3api.executeCustomASService(sessionToken, new CustomASServiceCode(XLS_IMPORT_API), options);
     }
 
     static String createFrom(IApplicationServerInternalApi v3api, String sessionToken, Map<String, String> scripts, Path... xls_paths)
             throws IOException
+    {
+        return TestUtils.createFrom(v3api, sessionToken, scripts, UpdateMode.IGNORE_EXISTING, xls_paths);
+    }
+
+    static String createFrom(IApplicationServerInternalApi v3api, String sessionToken, Map<String, String> scripts, UpdateMode updateMode,
+            Path... xls_paths) throws IOException
     {
         List<byte[]> excels = new ArrayList<>();
         for (Path xls_path : xls_paths)
@@ -306,6 +317,7 @@ public class TestUtils
         CustomASServiceExecutionOptions options = new CustomASServiceExecutionOptions();
         options.withParameter(XLS_PARAM, excels);
         options.withParameter(SCRIPTS_PARAM, scripts);
+        options.withParameter(UPDATE_MODE, updateMode.name());
         return (String) v3api.executeCustomASService(sessionToken, new CustomASServiceCode(XLS_IMPORT_API), options);
     }
 
@@ -343,6 +355,24 @@ public class TestUtils
         String permId = result.substring(result.indexOf("CreateSamplesOperationResult") + "CreateSamplesOperationResult".length());
         permId = StringUtils.strip(permId, "[]");
         return permId;
+    }
+
+    static List<PropertyAssignment> extractAndSortPropertyAssignmentsPerGivenPropertyName(IEntityType rawData, List<String> propertyNames)
+            throws Exception
+    {
+        List<PropertyAssignment> propertyAssignments = rawData.getPropertyAssignments();
+        List<PropertyAssignment> sortedPropertyAssignments = propertyNames.stream().map(propertyName -> {
+            return propertyAssignments.stream().filter(prop -> prop.getPropertyType().getPermId().toString().equals(propertyName)).findFirst().get();
+        }).collect(Collectors.toList());
+
+        if (sortedPropertyAssignments.stream().anyMatch(property -> property == null))
+        {
+            throw new Exception("Some properties are missing"
+                    + "\nFollowing properties are expected " + Arrays.toString(propertyNames.toArray())
+                    + "\n Available properties are: " + Arrays.toString(propertyAssignments.toArray()));
+        }
+
+        return sortedPropertyAssignments;
     }
 
     private static byte[] readData(Path xls_path) throws IOException

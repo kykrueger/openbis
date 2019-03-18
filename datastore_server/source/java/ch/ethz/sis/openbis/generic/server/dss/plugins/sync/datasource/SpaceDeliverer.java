@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
@@ -41,10 +42,14 @@ public class SpaceDeliverer extends AbstractEntityWithPermIdDeliverer
     }
 
     @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> allSpaces) throws XMLStreamException
+    protected void deliverEntities(DeliveryExecutionContext context, List<String> allSpaces) throws XMLStreamException
     {
+        XMLStreamWriter writer = context.getWriter();
+        String sessionToken = context.getSessionToken();
+        Set<String> spaces = context.getSpaces();
+        IApplicationServerApi v3api = getV3Api();
         List<SpacePermId> permIds = allSpaces.stream().map(SpacePermId::new).collect(Collectors.toList());
-        Collection<Space> fullSpaces = context.getV3api().getSpaces(sessionToken, permIds, createSpaceFetchOptions()).values();
+        Collection<Space> fullSpaces = v3api.getSpaces(sessionToken, permIds, createSpaceFetchOptions()).values();
         int count = 0;
         for (Space space : fullSpaces)
         {

@@ -52,6 +52,8 @@ public class ResourceListParserData
     private Map<String, IncomingDataSet> dataSetsToProcess = new HashMap<String, IncomingDataSet>();
 
     private MultiKeyMap<String, IncomingMaterial> materialsToProcess = new MultiKeyMap<String, IncomingMaterial>();
+    
+    private Map<String, byte[]> filesToProcess = new HashMap<>();
 
     public MasterData getMasterData()
     {
@@ -66,6 +68,11 @@ public class ResourceListParserData
     public void setResourceListTimestamp(Date resourceListTimestamp)
     {
         this.resourceListTimestamp = resourceListTimestamp;
+    }
+    
+    public Map<String, byte[]> getFileToProcess()
+    {
+        return filesToProcess;
     }
 
     public Set<String> getHarvesterSpaceList()

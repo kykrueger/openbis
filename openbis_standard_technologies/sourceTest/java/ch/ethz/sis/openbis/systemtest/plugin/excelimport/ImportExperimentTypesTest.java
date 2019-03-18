@@ -1,9 +1,13 @@
 package ch.ethz.sis.openbis.systemtest.plugin.excelimport;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +20,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -32,6 +38,8 @@ public class ImportExperimentTypesTest extends AbstractImportTest
     private static final String PASSWORD = "password";
 
     private static final String EXPERIMENT_TYPES_XLS = "experiment_types/normal_experiment.xls";
+
+    private static final String EXPERIMENT_TYPES_UPDATE = "experiment_types/normal_experiment_update.xls";
 
     private static final String EXPERIMENT_NO_CODE = "experiment_types/no_code.xls";
 
@@ -56,14 +64,66 @@ public class ImportExperimentTypesTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testNormalExperimentTypesAreCreated() throws IOException
+    public void testNormalExperimentTypesAreCreated() throws Exception
     {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPES_XLS)));
         // WHEN
         ExperimentType collection = TestUtils.getExperimentType(v3api, sessionToken, "COLLECTION");
+        List<String> propertyNames = Arrays.asList("$NAME", "DEFAULT_OBJECT_TYPE");
+        List<PropertyAssignment> propertyAssignments = TestUtils.extractAndSortPropertyAssignmentsPerGivenPropertyName(collection, propertyNames);
+        PropertyAssignment nameProperty = propertyAssignments.get(0);
+        PropertyAssignment defaultObjectTypeProperty = propertyAssignments.get(1);
         // THEN
         assertEquals(collection.getCode(), "COLLECTION");
+        assertEquals(collection.getPropertyAssignments().size(), 2);
+        assertFalse(nameProperty.isMandatory());
+        assertTrue(nameProperty.isShowInEditView());
+        assertEquals(nameProperty.getSection(), "General information");
+        assertEquals(nameProperty.getPropertyType().getLabel(), "Name");
+        assertEquals(nameProperty.getPropertyType().getDataType(), DataType.VARCHAR);
+        assertEquals(nameProperty.getPropertyType().getDescription(), "Name");
+        assertEquals(nameProperty.getPlugin(), null);
+        assertFalse(defaultObjectTypeProperty.isMandatory());
+        assertTrue(defaultObjectTypeProperty.isShowInEditView());
+        assertEquals(defaultObjectTypeProperty.getSection(), "General information");
+        assertEquals(defaultObjectTypeProperty.getPropertyType().getLabel(), "Default");
+        assertEquals(defaultObjectTypeProperty.getPropertyType().getDataType(), DataType.VARCHAR);
+        assertEquals(defaultObjectTypeProperty.getPropertyType().getDescription(),
+                "Enter the code of the object type for which the collection is used");
+        assertEquals(defaultObjectTypeProperty.getPlugin(), null);
+    }
+
+    @Test
+    @DirtiesContext
+    public void testExperimentTypesUpdate() throws Exception
+    {
+        // GIVEN
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPES_XLS)));
+        // WHEN
+        TestUtils.createFrom(v3api, sessionToken, TestUtils.getDynamicPluginMap(), UpdateMode.UPDATE_IF_EXISTS,
+                Paths.get(FilenameUtils.concat(FILES_DIR, EXPERIMENT_TYPES_UPDATE)));
+        ExperimentType collection = TestUtils.getExperimentType(v3api, sessionToken, "COLLECTION");
+        List<String> propertyNames = Arrays.asList("$NAME", "DEFAULT_OBJECT_TYPE");
+        List<PropertyAssignment> propertyAssignments = TestUtils.extractAndSortPropertyAssignmentsPerGivenPropertyName(collection, propertyNames);
+        PropertyAssignment nameProperty = propertyAssignments.get(0);
+        PropertyAssignment defaultObjectTypeProperty = propertyAssignments.get(1);
+        // THEN
+        assertTrue(nameProperty.isMandatory());
+        assertFalse(nameProperty.isShowInEditView());
+        assertEquals(nameProperty.getSection(), "Comments");
+        assertEquals(nameProperty.getPropertyType().getLabel(), "NameUpdate");
+        assertEquals(nameProperty.getPropertyType().getDataType(), DataType.VARCHAR);
+        assertEquals(nameProperty.getPropertyType().getDescription(), "NameUpdateDescription");
+        assertEquals(nameProperty.getPlugin().getName().toUpperCase(), "$NAME.DYNAMIC");
+        assertFalse(defaultObjectTypeProperty.isMandatory());
+        assertTrue(defaultObjectTypeProperty.isShowInEditView());
+        assertEquals(defaultObjectTypeProperty.getSection(), "General information");
+        assertEquals(defaultObjectTypeProperty.getPropertyType().getLabel(), "Default");
+        assertEquals(defaultObjectTypeProperty.getPropertyType().getDataType(), DataType.VARCHAR);
+        assertEquals(defaultObjectTypeProperty.getPropertyType().getDescription(),
+                "Enter the code of the object type for which the collection is used");
+        assertEquals(defaultObjectTypeProperty.getPlugin(), null);
     }
 
     @Test

@@ -10,6 +10,8 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreat
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.UploadedDataSetCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadOptions;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
@@ -48,6 +50,14 @@ public class DataStoreServerApiLogger extends AbstractServerLogger implements
             DataSetFileDownloadOptions downloadOptions)
     {
         logAccess(sessionToken, "download-files", "FILE_IDS(%s) DOWNLOAD_OPTIONS(%s)", fileIds, downloadOptions);
+        return null;
+    }
+
+    @Override
+    public FastDownloadSession createFastDownloadSession(String sessionToken, List<? extends IDataSetFileId> fileIds,
+            FastDownloadSessionOptions options)
+    {
+        logAccess(sessionToken, "create-fast-download-session", "FILE_IDS(%s) DOWNLOAD_OPTIONS(%s)", fileIds, options);
         return null;
     }
 
