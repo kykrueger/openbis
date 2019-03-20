@@ -128,10 +128,12 @@ public class V3APIReport
     private Collection<Class<?>> getPublicClasses()
     {
         List<ClassLoader> classLoadersList = new LinkedList<ClassLoader>();
-        classLoadersList.add(ClasspathHelper.getContextClassLoader());
-        classLoadersList.add(ClasspathHelper.getStaticClassLoader());
+        classLoadersList.add(ClasspathHelper.contextClassLoader());
+        classLoadersList.add(ClasspathHelper.staticClassLoader());
 
-        SubTypesScanner subTypesScanner = new SubTypesScanner();
+        // There is some magic (or may be a bug in reflections 0.9.11: The original SubTypeScanner 
+        // retrieves unwanted classes like java.util.Collection. But the anonymous subclass works.
+        SubTypesScanner subTypesScanner = new SubTypesScanner() {};
         subTypesScanner.filterResultsBy(new FilterBuilder().include(".*"));
 
         FilterBuilder filterBuilder = new FilterBuilder();
@@ -145,7 +147,7 @@ public class V3APIReport
                 .setUrls(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0])))
                 .filterInputsBy(filterBuilder));
 
-        Multimap<String, String> map = reflections.getStore().get(SubTypesScanner.class);
+        Multimap<String, String> map = reflections.getStore().get(subTypesScanner.getClass().getSimpleName());
         Collection<String> uniqueClassNames = new TreeSet<String>(map.values());
         Collection<Class<?>> uniqueClasses = ImmutableSet.copyOf(ReflectionUtils.forNames(uniqueClassNames));
         Collection<Class<?>> filteredClasses = new LinkedHashSet<Class<?>>(uniqueClasses);
