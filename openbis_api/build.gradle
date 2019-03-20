@@ -11,6 +11,6 @@ dependencies {
 			
 	testCompile project(path: ':common', configuration: 'tests'),
 			'fjelmer:classycle:+',
-			'reflections:reflections:+'
+			'reflections:reflections:0.9.10'
 			
 } 
