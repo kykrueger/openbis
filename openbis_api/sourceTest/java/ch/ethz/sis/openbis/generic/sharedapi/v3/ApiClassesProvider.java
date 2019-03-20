@@ -69,9 +69,7 @@ public class ApiClassesProvider
         classLoadersList.add(ClasspathHelper.contextClassLoader());
         classLoadersList.add(ClasspathHelper.staticClassLoader());
 
-        // There is some magic (or may be a bug in reflections 0.9.11: The original SubTypeScanner 
-        // retrieves unwanted classes like java.util.Collection. But the anonymous subclass works.
-        SubTypesScanner subTypesScanner = new SubTypesScanner() {};
+        SubTypesScanner subTypesScanner = new SubTypesScanner();
         subTypesScanner.filterResultsBy(new FilterBuilder().include(".*"));
 
         FilterBuilder filterBuilder = new FilterBuilder();
