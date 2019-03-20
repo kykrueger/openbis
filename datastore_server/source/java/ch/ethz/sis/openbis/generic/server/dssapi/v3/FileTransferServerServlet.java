@@ -64,12 +64,13 @@ import ch.ethz.sis.filetransfer.IDownloadItemId;
 import ch.ethz.sis.filetransfer.IDownloadServer;
 import ch.ethz.sis.filetransfer.ILogger;
 import ch.ethz.sis.filetransfer.IUserSessionId;
-import ch.ethz.sis.filetransfer.LogLevel;
+import ch.ethz.sis.filetransfer.IUserSessionManager;
+import ch.ethz.sis.filetransfer.InvalidUserSessionException;
 import ch.ethz.sis.filetransfer.UserSessionId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadMethod;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadParameter;
 import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadUtils;
-import ch.ethz.sis.openbis.generic.server.dssapi.v3.download.IFileTransferSessionManager;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -79,6 +80,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.server.ApplicationContext;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.authorization.DssSessionAuthorizationHolder;
@@ -101,7 +103,7 @@ public class FileTransferServerServlet extends HttpServlet
 
     private JsonFactory jsonFactory;
 
-    private IFileTransferSessionManager sessionManager;
+    private IDataStoreServiceInternal dataStoreService;
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException
@@ -110,16 +112,27 @@ public class FileTransferServerServlet extends HttpServlet
         ServletContext context = servletConfig.getServletContext();
         ApplicationContext applicationContext = (ApplicationContext) context.getAttribute(DataStoreServer.APPLICATION_CONTEXT_KEY);
         DownloadServerConfig config = new DownloadServerConfig();
-        ILogger logger = new Log4jBaseFileTransferLogger(LogLevel.INFO);
+        ILogger logger = new Log4jBaseFileTransferLogger();
         config.setLogger(logger);
-        sessionManager = ServiceProvider.getApplicationContext().getBean(IFileTransferSessionManager.class);
-        config.setSessionManager(sessionManager);
+        config.setSessionManager(new IUserSessionManager()
+            {
+                @Override
+                public void validateDuringDownload(IUserSessionId userSessionId) throws InvalidUserSessionException
+                {
+                }
+
+                @Override
+                public void validateBeforeDownload(IUserSessionId userSessionId) throws InvalidUserSessionException
+                {
+                }
+            });
         Properties properties = applicationContext.getConfigParameters().getProperties();
         config.setChunkProvider(new DataSetChunkProvider(applicationContext, FileUtils.ONE_MB, logger));
         config.setConcurrencyProvider(new ConcurrencyProvider(properties));
         config.setSerializerProvider(new DefaultSerializerProvider(logger));
         downloadServer = new DownloadServer(config);
         jsonFactory = new JsonFactory();
+        dataStoreService = ServiceProvider.getDataStoreService();
         operationLog.info("Servlet initialized");
     }
 
@@ -158,11 +171,12 @@ public class FileTransferServerServlet extends HttpServlet
     private void handleStartDownloadSession(Map<String, String[]> parameterMap, HttpServletResponse response) throws ServletException, IOException
     {
         IUserSessionId userSessionId = getUserSessionId(parameterMap);
-        String sessionToken = sessionManager.getSessionToken(userSessionId.getId());
+        String sessionToken = userSessionId.getId();
         List<IDownloadItemId> itemIds = filterByAccessRights(getDownloadItemIds(parameterMap), sessionToken);
         Integer wishedNumberOfStreams = getInteger(parameterMap, FastDownloadParameter.WISHED_NUMBER_OF_STREAMS_PARAMETER);
         DownloadPreferences preferences = new DownloadPreferences(wishedNumberOfStreams);
         DownloadSession downloadSession = downloadServer.startDownloadSession(userSessionId, itemIds, preferences);
+        addCleanupAction(sessionToken, downloadSession);
         response.setContentType("application/json");
         JsonGenerator jsonGenerator = jsonFactory.createGenerator(response.getWriter());
         jsonGenerator.setPrettyPrinter(new DefaultPrettyPrinter());
@@ -185,6 +199,19 @@ public class FileTransferServerServlet extends HttpServlet
         jsonGenerator.writeEndArray();
         jsonGenerator.writeEndObject();
         jsonGenerator.flush();
+    }
+
+    private void addCleanupAction(String sessionToken, DownloadSession downloadSession)
+    {
+        DownloadSessionId downloadSessionId = downloadSession.getDownloadSessionId();
+        dataStoreService.addCleanupAction(sessionToken, new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    downloadServer.finishDownloadSession(downloadSessionId);
+                }
+            });
     }
 
     private List<IDownloadItemId> filterByAccessRights(List<IDownloadItemId> itemIds, String sessionToken)

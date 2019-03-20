@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.dssapi.v3;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ch.ethz.sis.filetransfer.AbstractLogger;
+import ch.ethz.sis.filetransfer.ILogger;
 import ch.ethz.sis.filetransfer.LogLevel;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -27,7 +27,7 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 /**
  * @author Franz-Josef Elmer
  */
-public class Log4jBaseFileTransferLogger extends AbstractLogger
+public class Log4jBaseFileTransferLogger implements ILogger
 {
 
     private static final Level toLog4jPriority(final LogLevel level)
@@ -49,19 +49,20 @@ public class Log4jBaseFileTransferLogger extends AbstractLogger
         }
     }
 
-    public Log4jBaseFileTransferLogger(LogLevel logLevel)
+    @Override
+    public boolean isEnabled(LogLevel level)
     {
-        super(logLevel);
+        return true;
     }
 
     @Override
-    public void doLog(Class<?> clazz, LogLevel level, String message)
+    public void log(Class<?> clazz, LogLevel level, String message)
     {
         getLogger(clazz).log(toLog4jPriority(level), message);
     }
 
     @Override
-    public void doLog(Class<?> clazz, LogLevel level, String message, Throwable throwable)
+    public void log(Class<?> clazz, LogLevel level, String message, Throwable throwable)
     {
         getLogger(clazz).log(toLog4jPriority(level), message, throwable);
     }

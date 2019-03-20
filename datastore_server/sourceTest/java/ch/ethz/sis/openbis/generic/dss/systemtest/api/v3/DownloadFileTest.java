@@ -19,6 +19,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.filetransfer.DownloadException;
+import ch.ethz.sis.filetransfer.DownloadListenerAdapter;
 import ch.ethz.sis.filetransfer.DownloadStatus;
 import ch.ethz.sis.filetransfer.IDownloadItemId;
 import ch.ethz.sis.filetransfer.IDownloadListener;
@@ -40,6 +41,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloader;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.ExceptionUtils;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 
 public class DownloadFileTest extends AbstractFileTest
 {
@@ -158,6 +160,39 @@ public class DownloadFileTest extends AbstractFileTest
                 + "onChunkDownloaded: 5\n"
                 + "onItemFinished: " + id2 + " " + path2 + "\n"
                 + "onDownloadFinished: [" + id2 + "=" + path2 + "]\n", listener.toString());
+    }
+
+    @Test
+    public void testInterruptedFastDownloadAFolder()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DataSetFilePermId folder = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("subdir1"));
+        List<DataSetFilePermId> fileIds = Arrays.asList(folder);
+        FastDownloadSessionOptions options = new FastDownloadSessionOptions().withWishedNumberOfStreams(1);
+        List<Exception> exceptions = new ArrayList<>();
+        IDownloadListener listener = new DownloadListenerAdapter()
+            {
+
+                @Override
+                public void onChunkDownloaded(int chunkSequenceNumber)
+                {
+                    ServiceProvider.getDataStoreService().cleanupSession(sessionToken);
+                }
+
+                @Override
+                public void onDownloadFailed(Collection<Exception> e)
+                {
+                    exceptions.addAll(e);
+                }
+            };
+
+        // When
+        FastDownloadSession downloadSession = dss.createFastDownloadSession(sessionToken, fileIds, options);
+        FastDownloadResult downloadResult = new FastDownloader(downloadSession).withListener(listener).downloadTo(target);
+
+        // Then
+        assertEquals(DownloadStatus.FAILED, downloadResult.getStatus());
     }
 
     @Test
@@ -397,7 +432,6 @@ public class DownloadFileTest extends AbstractFileTest
 
     private void assertDownloads(String sessionToken, Map<IDataSetFileId, Path> pathsById, List<DataSetFilePermId> fileIds)
     {
-        System.out.println("PATHS BY ID:" + pathsById);
         List<IDataSetId> dataSetIds = new ArrayList<>(fileIds.stream().map(DataSetFilePermId::getDataSetId).collect(Collectors.toSet()));
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withPhysicalData();
