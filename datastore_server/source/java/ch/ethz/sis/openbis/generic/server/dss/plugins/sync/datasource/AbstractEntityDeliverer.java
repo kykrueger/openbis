@@ -101,7 +101,7 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
         return context.getV3api();
     }
 
-    protected void addProperties(XMLStreamWriter writer, Map<String, String> properties, Set<String> fileServicePaths) throws XMLStreamException
+    protected void addProperties(XMLStreamWriter writer, Map<String, String> properties, DeliveryExecutionContext context) throws XMLStreamException
     {
         if (properties.isEmpty() == false)
         {
@@ -115,17 +115,24 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
                 writer.writeEndElement();
                 writer.writeStartElement("x:value");
                 String value = entry.getValue();
-                Matcher matcher = FILE_SERVICE_PATTERN.matcher(value);
-                while (matcher.find())
-                {
-                    fileServicePaths.add(matcher.group(1));
-                }
+                extractFileServicePath(context, value);
                 writer.writeCharacters(value);
                 writer.writeEndElement();
                 writer.writeEndElement();
             }
             writer.writeEndElement();
         }
+    }
+    
+    protected void extractFileServicePath(DeliveryExecutionContext context, String value)
+    {
+        Set<String> fileServicePaths = context.getFileServicePaths();
+        Matcher matcher = FILE_SERVICE_PATTERN.matcher(value);
+        while (matcher.find())
+        {
+            fileServicePaths.add(matcher.group(1));
+        }
+
     }
 
     protected void addAttachments(XMLStreamWriter writer, List<Attachment> attachments) throws XMLStreamException
@@ -194,11 +201,17 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
         addAttribute(writer, "registration-timestamp", dateHolder.getRegistrationDate(), h -> DataSourceUtils.convertToW3CDate(h));
     }
 
+    protected void addAttributeAndExtractFilePaths(DeliveryExecutionContext context, XMLStreamWriter writer, String attributeName, String value) throws XMLStreamException
+    {
+        addAttribute(writer, attributeName, value, v -> v);
+        extractFileServicePath(context, value);
+    }
+
     protected void addAttribute(XMLStreamWriter writer, String attributeName, String value) throws XMLStreamException
     {
         addAttribute(writer, attributeName, value, v -> v);
     }
-
+    
     protected void addAttributeIfSet(XMLStreamWriter writer, String attributeName, Boolean value) throws XMLStreamException
     {
         if (Boolean.TRUE.equals(value))
