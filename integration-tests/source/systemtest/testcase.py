@@ -519,6 +519,7 @@ class OpenbisController(_Controller):
             util.dropDatabase(PSQL_EXE, "imaging_%s" % self.databaseKind)
             util.dropDatabase(PSQL_EXE, "proteomics_%s" % self.databaseKind)
             self._setUpStore()
+            self._setUpFileServer()
         for databaseToDrop in databasesToDrop:
             util.dropDatabase(PSQL_EXE, "%s_%s" % (databaseToDrop, self.databaseKind))
         self._applyCorePlugins()
@@ -784,6 +785,14 @@ class OpenbisController(_Controller):
             util.printAndFlush("Set up initial data store by copying content of %s to %s" % (templateStore, storeFolder))
             shutil.rmtree(storeFolder, ignore_errors=True)
             shutil.copytree(templateStore, storeFolder)
+        
+    def _setUpFileServer(self):
+        templateFileServer = "%s/file-servers/%s" % (self.templatesFolder, self.instanceName)
+        if os.path.isdir(templateFileServer):
+            fileServiceFolder = "%s/data/file-server" % self.installPath
+            util.printAndFlush("Set up initial file server by copying content of %s to %s" % (templateFileServer, fileServiceFolder))
+            shutil.rmtree(fileServiceFolder, ignore_errors=True)
+            shutil.copytree(templateFileServer, fileServiceFolder)
         
     def _saveAsPropertiesIfModified(self):
         if self.asPropertiesModified:

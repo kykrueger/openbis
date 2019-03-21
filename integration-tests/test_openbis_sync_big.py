@@ -63,7 +63,7 @@ class TestCase(systemtest.testcase.TestCase):
 #        openbis_harvester = self._setupOpenbisHarvester()
 #        openbis_harvester.allUp()
 #        self._waitUntilSyncIsFinished(openbis_harvester)
-        self._freeze_some_entities(openbis_data_source)
+#        self._freeze_some_entities(openbis_data_source)
         self._checkData(openbis_data_source, openbis_harvester)
 
     def _freeze_some_entities(self, openbis_data_source):
@@ -360,6 +360,38 @@ class TestCase(systemtest.testcase.TestCase):
                                 + "from data_set_relationships r join data p on r.data_id_parent = p.id "
                                 + "join data c on r.data_id_child = c.id "
                                 + "join relationship_types t on r.relationship_id = t.id order by p.code, c.code")
+        data_source_paths = self._gatherFilePaths(openbis_data_source);
+        harvester_paths = self._gatherFilePaths(openbis_harvester);
+        self.assertEquals("file service paths", data_source_paths, harvester_paths)
+        self._compareFiles(openbis_data_source, openbis_harvester, data_source_paths)
+        
+    def _compareFiles(self, openbis_data_source, openbis_harvester, file_paths):
+        template = "%s/data/file-server/%s"
+        data_source_install_path = openbis_data_source.installPath
+        harvester_install_path = openbis_harvester.installPath
+        for file_path in file_paths:
+            data_source_path = template % (data_source_install_path, file_path)
+            harvester_path = template % (harvester_install_path, file_path)
+            self.assertEquals("file size", os.path.getsize(data_source_path), os.path.getsize(harvester_path))
+        
+    def _gatherFilePaths(self, openbis):
+        paths = []
+        self._gatherFilePathsOfTable(paths, openbis, "value", "experiment_properties")
+        self._gatherFilePathsOfTable(paths, openbis, "value", "sample_properties")
+        self._gatherFilePathsOfTable(paths, openbis, "value", "data_set_properties")
+        self._gatherFilePathsOfTable(paths, openbis, "value", "material_properties")
+        self._gatherFilePathsOfTable(paths, openbis, "description", "projects")
+        self._gatherFilePathsOfTable(paths, openbis, "description", "spaces")
+        paths.sort()
+        return paths
+    
+    def _gatherFilePathsOfTable(self, paths, openbis, column, table):
+        template = "select array_to_string(regexp_matches(%s, 'file-service/([^\"'']*)', 'g'), ',') from %s"
+        result = openbis.queryDatabase("openbis", template % (column, table))
+        for row in result:
+            for cell in row:
+                for path in cell.split(","):
+                    paths.append(path)
 
     def _compareDataBases(self, name, openbis_data_source, openbis_harvester, databaseType, sql):
         expectedContent = openbis_data_source.queryDatabase(databaseType, sql.format(TYPE_PREFIX, ""), showHeaders = True)
