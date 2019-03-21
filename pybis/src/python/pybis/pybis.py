@@ -1795,9 +1795,11 @@ class Openbis:
         search_criteria = {
             "@type": "as.dto.deletion.search.DeletionSearchCriteria"
         }
-        fetchopts = fetch_option['deletedObjects']
-        fetchopts['from'] = start_with
-        fetchopts['count'] = count
+        fetchopts = fetch_option['deletion']
+        fetchoptsDeleted = fetch_option['deletedObjects']
+        fetchoptsDeleted['from'] = start_with
+        fetchoptsDeleted['count'] = count
+        fetchopts['deletedObjects'] = fetchoptsDeleted
 
         request = {
             "method": "searchDeletions",
