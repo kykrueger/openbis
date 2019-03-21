@@ -65,6 +65,9 @@ public class FileDeliverer extends AbstractEntityDeliverer<String>
                 writer.writeEndElement();
                 count++;
                 totalSize += content.length;
+            } else
+            {
+                operationLog.warn("File expected but does not exists: " + file.getAbsolutePath());
             }
         }
         operationLog.info(count + " files (total size: " + FileUtilities.byteCountToDisplaySize(totalSize) + ") have been delivered.");
