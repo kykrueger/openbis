@@ -516,9 +516,12 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             QueueingPathRemoverService.removeRecursively(sessionWorkspace);
         }
         List<IDelegatedAction> actions = cleanupActions.remove(userSessionToken);
-        for (IDelegatedAction action : actions)
+        if (actions != null)
         {
-            action.execute();
+            for (IDelegatedAction action : actions)
+            {
+                action.execute();
+            }
         }
 
         getPutDataSetService().cleanupSession(userSessionToken);
