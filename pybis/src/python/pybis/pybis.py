@@ -1617,8 +1617,9 @@ class Openbis:
         }
 
         search_request = _type_for_id(expId, 'experiment')
-        for option in ['tags', 'properties', 'attachments', 'project', 'samples']:
+        for option in ['tags', 'properties', 'attachments', 'project', 'samples', 'registrator', 'modifier']:
             fetchopts[option] = fetch_option[option]
+
 
         if withAttachments:
             fetchopts['attachments'] = fetch_option['attachmentsWithContent']
@@ -1635,6 +1636,7 @@ class Openbis:
         if len(resp) == 0:
             raise ValueError("No such experiment: %s" % expId)
 
+        parse_jackson(resp)
         for id in resp:
             if only_data:
                 return resp[id]
@@ -2700,7 +2702,7 @@ class Openbis:
         fetchopts = fetch_option['dataSet']
 
         for option in ['tags', 'properties', 'dataStore', 'physicalData', 'linkedData',
-                       'experiment', 'sample']:
+                       'experiment', 'sample', 'registrator', 'modifier']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -2796,7 +2798,7 @@ class Openbis:
 
         fetchopts = {"type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}}
 
-        options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'dataSets']
+        options = ['tags', 'properties', 'attachments', 'space', 'experiment', 'registrator', 'modifier', 'dataSets']
         if self.get_server_information().project_samples_enabled:
             options.append('project')
         for option in options:
