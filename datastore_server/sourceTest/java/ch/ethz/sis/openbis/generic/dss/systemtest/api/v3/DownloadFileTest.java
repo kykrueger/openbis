@@ -1,24 +1,50 @@
 package ch.ethz.sis.openbis.generic.dss.systemtest.api.v3;
 
+import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.filetransfer.DownloadException;
+import ch.ethz.sis.filetransfer.DownloadStatus;
+import ch.ethz.sis.filetransfer.IDownloadItemId;
+import ch.ethz.sis.filetransfer.IDownloadListener;
+import ch.ethz.sis.filetransfer.ILogger;
+import ch.ethz.sis.filetransfer.LogLevel;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownload;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadReader;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
+import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadResult;
+import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloader;
+import ch.systemsx.cisd.common.collection.SimpleComparator;
+import ch.systemsx.cisd.common.exceptions.ExceptionUtils;
+import ch.systemsx.cisd.common.filesystem.FileUtilities;
 
 public class DownloadFileTest extends AbstractFileTest
 {
+
+    private File target;
 
     @Override
     @BeforeClass
@@ -26,6 +52,152 @@ public class DownloadFileTest extends AbstractFileTest
     {
         super.beforeClass();
         registerDataSet();
+    }
+
+    @BeforeMethod
+    public void setUp()
+    {
+        target = new File(workingDirectory, "file-downloads");
+        FileUtilities.deleteRecursively(target);
+    }
+
+    @Test
+    public void testFastDownloadOfACompleteDataSet()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DataSetFilePermId root = new DataSetFilePermId(new DataSetPermId(dataSetCode), "");
+        List<DataSetFilePermId> fileIds = Arrays.asList(root);
+        FastDownloadSessionOptions options = new FastDownloadSessionOptions().withWishedNumberOfStreams(1);
+
+        // When
+        FastDownloadSession downloadSession = dss.createFastDownloadSession(sessionToken, fileIds, options);
+        FastDownloadResult downloadResult = new FastDownloader(downloadSession).downloadTo(target);
+
+        // Then
+        assertEquals(DownloadStatus.FINISHED, downloadResult.getStatus());
+        assertDownloads(sessionToken, downloadResult.getPathsById(), fileIds);
+    }
+
+    @Test
+    public void testFastDownloadOfAFileWithLogger()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DataSetFilePermId fileId = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("subdir3/file6.txt"));
+        List<DataSetFilePermId> fileIds = Arrays.asList(fileId);
+        FastDownloadSessionOptions options = new FastDownloadSessionOptions().withWishedNumberOfStreams(1);
+        ILogger logger = new RecordingLogger();
+
+        // When
+        FastDownloadSession downloadSession = dss.createFastDownloadSession(sessionToken, fileIds, options);
+        FastDownloadResult downloadResult = new FastDownloader(downloadSession).withLogger(logger)
+                .downloadTo(target);
+
+        // Then
+        assertEquals(DownloadStatus.FINISHED, downloadResult.getStatus());
+        assertDownloads(sessionToken, downloadResult.getPathsById(), fileIds);
+        assertEquals("log: class ch.ethz.sis.filetransfer.DownloadClientDownload INFO Download state changed to: STARTED\n"
+                + "log: class ch.ethz.sis.filetransfer.DownloadClientDownload INFO Download state changed to: FINISHED\n",
+                logger.toString());
+    }
+
+    @Test
+    public void testFastDownloadAFileWithListener()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DataSetFilePermId file = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("file1.txt"));
+        List<DataSetFilePermId> fileIds = Arrays.asList(file);
+        FastDownloadSessionOptions options = new FastDownloadSessionOptions().withWishedNumberOfStreams(1);
+        IDownloadListener listener = new RecordingListener();
+
+        // When
+        FastDownloadSession downloadSession = dss.createFastDownloadSession(sessionToken, fileIds, options);
+        FastDownloadResult downloadResult = new FastDownloader(downloadSession).withListener(listener).downloadTo(target);
+
+        // Then
+        assertEquals(DownloadStatus.FINISHED, downloadResult.getStatus());
+        assertDownloads(sessionToken, downloadResult.getPathsById(), fileIds);
+        String id1 = "DownloadItemId[id=" + dataSetCode + "/" + file.getFilePath() + "]";
+        String path1 = "targets/unit-test-wd/SystemTests/file-downloads/" + dataSetCode + "/" + file.getFilePath();
+        assertEquals("onDownloadStarted:\n"
+                + "onItemStarted: " + id1 + "\n"
+                + "onChunkDownloaded: 0\n"
+                + "onChunkDownloaded: 1\n"
+                + "onItemFinished: " + id1 + " " + path1 + "\n"
+                + "onDownloadFinished: [" + id1 + "=" + path1 + "]\n", listener.toString());
+    }
+
+    @Test
+    public void testFastDownloadAFolderWithListener()
+    {
+        // Given
+        String sessionToken = as.login(TEST_USER, PASSWORD);
+        DataSetFilePermId folder = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("subdir1"));
+        List<DataSetFilePermId> fileIds = Arrays.asList(folder);
+        FastDownloadSessionOptions options = new FastDownloadSessionOptions().withWishedNumberOfStreams(1);
+        IDownloadListener listener = new RecordingListener();
+
+        // When
+        FastDownloadSession downloadSession = dss.createFastDownloadSession(sessionToken, fileIds, options);
+        FastDownloadResult downloadResult = new FastDownloader(downloadSession).withListener(listener).downloadTo(target);
+
+        // Then
+        assertEquals(DownloadStatus.FINISHED, downloadResult.getStatus());
+        assertDownloads(sessionToken, downloadResult.getPathsById(), fileIds);
+        String id2 = "DownloadItemId[id=" + dataSetCode + "/" + folder.getFilePath() + "]";
+        String path2 = "targets/unit-test-wd/SystemTests/file-downloads/" + dataSetCode + "/" + folder.getFilePath();
+        assertEquals("onDownloadStarted:\n"
+                + "onItemStarted: " + id2 + "\n"
+                + "onChunkDownloaded: 0\n"
+                + "onChunkDownloaded: 1\n"
+                + "onChunkDownloaded: 2\n"
+                + "onChunkDownloaded: 3\n"
+                + "onChunkDownloaded: 4\n"
+                + "onChunkDownloaded: 5\n"
+                + "onItemFinished: " + id2 + " " + path2 + "\n"
+                + "onDownloadFinished: [" + id2 + "=" + path2 + "]\n", listener.toString());
+    }
+
+    @Test
+    public void testFastDownloadUnauthorized()
+    {
+        // Given
+        String sessionToken = as.login(TEST_SPACE_USER, PASSWORD);
+        DataSetFilePermId folder = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("subdir1"));
+        List<DataSetFilePermId> fileIds = Arrays.asList(folder);
+        FastDownloadSessionOptions options = new FastDownloadSessionOptions().withWishedNumberOfStreams(1);
+
+        // When
+        FastDownloadSession downloadSession = dss.createFastDownloadSession(sessionToken, fileIds, options);
+
+        // Then
+        assertEquals("[]", downloadSession.getFiles().toString());
+    }
+
+    @Test
+    public void testFastDownloadUnauthorizedByCheating()
+    {
+        // Given
+        String sessionToken = as.login(TEST_SPACE_USER, PASSWORD);
+        DataSetFilePermId folder = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("subdir1"));
+        List<DataSetFilePermId> fileIds = Arrays.asList(folder);
+        FastDownloadSessionOptions options = new FastDownloadSessionOptions().withWishedNumberOfStreams(1);
+        FastDownloadSession downloadSession = dss.createFastDownloadSession(sessionToken, fileIds, options);
+        assertEquals(0, downloadSession.getFiles().size());
+        downloadSession.getFiles().add(folder);
+
+        try
+        {
+            // When
+            new FastDownloader(downloadSession).downloadTo(target);
+            fail("DownloadException expected");
+        } catch (DownloadException e)
+        {
+            // Then
+            assertEquals("java.lang.IllegalArgumentException: Item ids cannot be null or empty", ExceptionUtils.getEndOfChain(e).getMessage());
+        }
     }
 
     @Test
@@ -221,5 +393,161 @@ public class DownloadFileTest extends AbstractFileTest
     private String getPathPrefix()
     {
         return "original/" + dataSetCode + "/";
+    }
+
+    private void assertDownloads(String sessionToken, Map<IDataSetFileId, Path> pathsById, List<DataSetFilePermId> fileIds)
+    {
+        System.out.println("PATHS BY ID:" + pathsById);
+        List<IDataSetId> dataSetIds = new ArrayList<>(fileIds.stream().map(DataSetFilePermId::getDataSetId).collect(Collectors.toSet()));
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withPhysicalData();
+        Map<IDataSetId, DataSet> dataSets = as.getDataSets(sessionToken, dataSetIds, fetchOptions);
+        for (DataSetFilePermId fileId : fileIds)
+        {
+            String location = dataSets.get(fileId.getDataSetId()).getPhysicalData().getLocation();
+            File expectedFile = new File(store, "1/" + location + "/" + fileId.getFilePath());
+            Path path = pathsById.get(fileId);
+            assertNotNull("Path for file " + fileId, path);
+            File actualFile = path.toFile();
+            assertSameContent(expectedFile, actualFile);
+        }
+        assertEquals(fileIds.size(), pathsById.size());
+    }
+
+    private void assertSameContent(File expectedFile, File actualFile)
+    {
+        assertEquals(expectedFile.getName(), actualFile.getName());
+        assertEquals(actualFile + " exists", expectedFile.exists(), actualFile.exists());
+        assertEquals(actualFile + " is directory", expectedFile.isDirectory(), actualFile.isDirectory());
+        if (actualFile.isDirectory())
+        {
+            List<File> expectedChildren = Arrays.asList(expectedFile.listFiles());
+            Collections.sort(expectedChildren);
+            List<String> expectedChildrenNames = expectedChildren.stream().map(File::getName).collect(Collectors.toList());
+            List<File> actualChildren = Arrays.asList(actualFile.listFiles());
+            Collections.sort(actualChildren);
+            List<String> actualChildrenNames = actualChildren.stream().map(File::getName).collect(Collectors.toList());
+            assertEquals(expectedChildrenNames, actualChildrenNames);
+            for (int i = 0, n = expectedChildren.size(); i < n; i++)
+            {
+                assertSameContent(expectedChildren.get(i), actualChildren.get(i));
+            }
+        } else
+        {
+            assertEquals(FileUtilities.loadToString(expectedFile), FileUtilities.loadToString(actualFile));
+        }
+    }
+
+    private static final class RecordingLogger implements ILogger
+    {
+        private List<Event> events = new ArrayList<>();
+
+        @Override
+        public boolean isEnabled(LogLevel level)
+        {
+            return LogLevel.INFO.compareTo(level) <= 0;
+        }
+
+        @Override
+        public void log(Class<?> clazz, LogLevel level, String message)
+        {
+            events.add(new Event("log", clazz, level, message));
+        }
+
+        @Override
+        public void log(Class<?> clazz, LogLevel level, String message, Throwable throwable)
+        {
+            events.add(new Event("logWithThrowable", clazz, level, message, throwable));
+        }
+
+        @Override
+        public String toString()
+        {
+            return render(events);
+        }
+    }
+
+    private static final class RecordingListener implements IDownloadListener
+    {
+        private List<Event> events = new ArrayList<>();
+
+        @Override
+        public void onDownloadStarted()
+        {
+            events.add(new Event("onDownloadStarted"));
+        }
+
+        @Override
+        public void onDownloadFinished(Map<IDownloadItemId, Path> itemPaths)
+        {
+            List<Entry<IDownloadItemId, Path>> list = new ArrayList<>(itemPaths.entrySet());
+            Collections.sort(list, new SimpleComparator<Entry<IDownloadItemId, Path>, String>()
+                {
+                    @Override
+                    public String evaluate(Entry<IDownloadItemId, Path> item)
+                    {
+                        return item.getKey().getId();
+                    }
+                });
+            events.add(new Event("onDownloadFinished", list));
+        }
+
+        @Override
+        public void onDownloadFailed(Collection<Exception> e)
+        {
+            events.add(new Event("onDownloadFailed", e));
+        }
+
+        @Override
+        public void onItemStarted(IDownloadItemId itemId)
+        {
+            events.add(new Event("onItemStarted", itemId));
+        }
+
+        @Override
+        public void onItemFinished(IDownloadItemId itemId, Path itemPath)
+        {
+            events.add(new Event("onItemFinished", itemId, itemPath));
+        }
+
+        @Override
+        public void onChunkDownloaded(int sequenceNumber)
+        {
+            events.add(new Event("onChunkDownloaded", sequenceNumber));
+        }
+
+        @Override
+        public String toString()
+        {
+            return render(events);
+        }
+    }
+
+    private static final class Event
+    {
+        private String type;
+
+        private Object[] parameters;
+
+        Event(String type, Object... parameters)
+        {
+            this.type = type;
+            this.parameters = parameters;
+        }
+    }
+
+    private static final String render(List<Event> events)
+    {
+        StringBuilder builder = new StringBuilder();
+        for (Event event : events)
+        {
+            builder.append(event.type).append(":");
+            for (Object parameter : event.parameters)
+            {
+                builder.append(" ").append(parameter);
+            }
+            builder.append("\n");
+        }
+        return builder.toString();
     }
 }

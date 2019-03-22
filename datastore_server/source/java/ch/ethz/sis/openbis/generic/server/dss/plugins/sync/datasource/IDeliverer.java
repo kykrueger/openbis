@@ -16,13 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
-import java.util.Date;
-import java.util.Set;
-
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 
 /**
  * @author Franz-Josef Elmer
@@ -32,7 +26,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQuery
 interface IDeliverer
 {
 
-    void deliverEntities(XMLStreamWriter writer, IDataSourceQueryService queryService, String sessionToken, 
-            Set<String> spaces, Date requestTimestamp) throws XMLStreamException;
+    void deliverEntities(DeliveryExecutionContext context) throws XMLStreamException;
 
 }

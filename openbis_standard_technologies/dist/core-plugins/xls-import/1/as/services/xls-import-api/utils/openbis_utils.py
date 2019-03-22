@@ -11,8 +11,8 @@ def get_script_name_for(owner_code, script_path):
 
 
 def create_sample_identifier_string(sample_creation):
-    spaceId = sample_creation.spaceId.creationId if sample_creation.spaceId is not None else None
-    projectId = sample_creation.projectId.creationId if sample_creation.projectId is not None else None
+    spaceId = str(sample_creation.spaceId) if sample_creation.spaceId is not None else None
+    projectId = str(sample_creation.projectId) if sample_creation.projectId is not None else None
     code = sample_creation.code
     sample_identifier = SampleIdentifier(spaceId, projectId, None, code)
     return sample_identifier.identifier

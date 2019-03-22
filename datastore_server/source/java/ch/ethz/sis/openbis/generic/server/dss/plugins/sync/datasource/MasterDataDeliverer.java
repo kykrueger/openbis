@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import static ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant.INTERNAL_NAMESPACE_PREFIX;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -90,14 +89,15 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
     }
 
     @Override
-    public void deliverEntities(XMLStreamWriter writer, IDataSourceQueryService queryService, 
-            String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    public void deliverEntities(DeliveryExecutionContext context) throws XMLStreamException
     {
+        XMLStreamWriter writer = context.getWriter();
         startUrlElement(writer);
         addLocation(writer, "MASTER_DATA", "MASTER_DATA");
-        addLastModificationDate(writer, requestTimestamp);
+        addLastModificationDate(writer, context.getRequestTimestamp());
         writer.writeStartElement("xmd:masterData");
-        addFileFormatTypes(writer, queryService, sessionToken);
+        String sessionToken = context.getSessionToken();
+        addFileFormatTypes(writer, context.getQueryService(), sessionToken);
         addValidationPlugins(writer, sessionToken);
         addVocabularies(writer, sessionToken);
         addPropertyTypes(writer, sessionToken);

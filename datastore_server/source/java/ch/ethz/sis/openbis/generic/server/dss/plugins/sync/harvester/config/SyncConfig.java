@@ -124,6 +124,16 @@ public class SyncConfig
         }
     }
 
+    public String getFileServiceReporitoryPath()
+    {
+        return fileServiceReporitoryPath;
+    }
+
+    public void setFileServiceReporitoryPath(String fileServiceReporitoryPath)
+    {
+        this.fileServiceReporitoryPath = fileServiceReporitoryPath;
+    }
+
     public String getHarvesterTempDir()
     {
         return harvesterTempDir;
@@ -219,6 +229,8 @@ public class SyncConfig
     private List<String> harvesterSpaces = new ArrayList<>();
 
     private String harvesterTempDir;
+
+    private String fileServiceReporitoryPath;
 
     private List<EMailAddress> emailAddresses = new ArrayList<>();
 

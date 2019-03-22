@@ -17,14 +17,9 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 
 /**
  * @author Franz-Josef Elmer
@@ -39,11 +34,11 @@ public class Deliverers implements IDeliverer
     }
 
     @Override
-    public void deliverEntities(XMLStreamWriter writer, IDataSourceQueryService queryService, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    public void deliverEntities(DeliveryExecutionContext context) throws XMLStreamException
     {
         for (IDeliverer deliverer : deliverers)
         {
-            deliverer.deliverEntities(writer, queryService, sessionToken, spaces, requestTimestamp);
+            deliverer.deliverEntities(context);
         }
     }
 

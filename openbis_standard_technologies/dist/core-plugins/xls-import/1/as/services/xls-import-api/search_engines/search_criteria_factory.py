@@ -66,17 +66,17 @@ class SampleCreationSampleSearchCriteria(object):
             if creation.code is not None:
                 search_criteria.withCode().thatEquals(creation.code)
                 if creation.experimentId is not None:
-                    search_criteria.withExperiment().withCode().thatEquals(creation.experimentId.creationId)
+                    search_criteria.withExperiment().withCode().thatEquals(str(creation.experimentId))
                 else:
                     search_criteria.withoutExperiment()
 
                 if creation.projectId is not None:
-                    search_criteria.withProject().withCode().thatEquals(creation.projectId.creationId)
+                    search_criteria.withProject().withCode().thatEquals(str(creation.projectId))
                 else:
                     search_criteria.withoutProject()
 
                 if creation.spaceId is not None:
-                    search_criteria.withSpace().withCode().thatEquals(creation.spaceId.creationId)
+                    search_criteria.withSpace().withCode().thatEquals(str(creation.spaceId))
                 else:
                     search_criteria.withoutSpace()
                 search_criterias.append(search_criteria)

@@ -20,7 +20,16 @@ function ExperimentFormController(mainController, mode, experiment) {
 	this._experimentFormView = new ExperimentFormView(this, this._experimentFormModel);
 	
 	this.init = function(views) {
-		this._experimentFormView.repaint(views);
+		var _this = this;
+		
+		require([ "as/dto/experiment/id/ExperimentPermId", "as/dto/experiment/fetchoptions/ExperimentFetchOptions" ],
+				function(ExperimentPermId, ExperimentFetchOptions) {
+				var id = new ExperimentPermId(experiment.permId);
+				mainController.openbisV3.getExperiments([ id ], new ExperimentFetchOptions()).done(function(map) {
+	                _this._experimentFormModel.v3_experiment = map[id];
+	                _this._experimentFormView.repaint(views);
+	            });		
+		});
 	}
 	
 	this.isDirty = function() {

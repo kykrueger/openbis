@@ -34,7 +34,7 @@ def _extract_creations_with_properties(creations_map):
     return dict((key, value) for (key, value) in creations_map.iteritems() if key in property_types_with_properties)
 
 
-def getValue(dictionary, key):
+def get_value(dictionary, key):
     if not key in dictionary:
         dictionary[key] = {}
     return dictionary[key]
@@ -45,7 +45,7 @@ def _fill_properties_from_existing_entity_types(properties, entity_types_map):
         for entity_type in entity_types:
             entity_kind = entity_and_type_uniform_mapping[creation_type]
             new_key = entity_kind, entity_type.code
-            props = getValue(properties, new_key)
+            props = get_value(properties, new_key)
             for property_assignment in entity_type.propertyAssignments:
                 property_type = property_assignment.propertyType
                 props[property_type.label.lower()] = property_type
@@ -90,7 +90,7 @@ def _fill_properties_from_creations(properties, creations, existing_vocabularies
         for creation in creationsList:
             entity_kind = entity_and_type_uniform_mapping[creations_type]
             new_key = entity_kind, creation.code
-            props = getValue(properties, new_key)
+            props = get_value(properties, new_key)
             if creations_type == PropertyTypeDefinitionToCreationParser.type:
                 props[creation.label.lower()] = creation
                 props[creation.code.lower()] = creation

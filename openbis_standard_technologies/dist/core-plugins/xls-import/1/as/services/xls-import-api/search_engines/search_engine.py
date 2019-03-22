@@ -100,13 +100,21 @@ class SearchEngine():
     def find_all_existing_elements(self, creations):
         property_type_fetch_options = PropertyTypeFetchOptions()
         property_type_fetch_options.withVocabulary().withTerms()
+        vocabulary_fetch_options = VocabularyFetchOptions()
+        vocabulary_fetch_options.withTerms()
+        sample_type_fetch_options = SampleTypeFetchOptions()
+        sample_type_fetch_options.withPropertyAssignments().withPropertyType()
+        experiment_type_fetch_options = ExperimentTypeFetchOptions()
+        experiment_type_fetch_options.withPropertyAssignments().withPropertyType()
+        dataset_type_fetch_options = DataSetTypeFetchOptions()
+        dataset_type_fetch_options.withPropertyAssignments().withPropertyType()
         search_strategy = [
             {
             'creations_type': VocabularyDefinitionToCreationParser.type,
             'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
             'search_criteria_class' : VocabularySearchCriteria,
             'search_operation':SearchVocabulariesOperation,
-            'fetch_options':VocabularyFetchOptions()
+            'fetch_options':vocabulary_fetch_options
             },
             {
             'creations_type': SampleDefinitionToCreationParser.type,
@@ -127,21 +135,21 @@ class SearchEngine():
             'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
             'search_criteria_class' : SampleTypeSearchCriteria,
             'search_operation': SearchSampleTypesOperation,
-            'fetch_options': SampleTypeFetchOptions()
+            'fetch_options': sample_type_fetch_options
             },
             {
             'creations_type': ExperimentTypeDefinitionToCreationParser.type,
             'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
             'search_criteria_class' : ExperimentTypeSearchCriteria,
             'search_operation': SearchExperimentTypesOperation,
-            'fetch_options': ExperimentTypeFetchOptions()
+            'fetch_options': experiment_type_fetch_options
             },
             {
             'creations_type': DatasetTypeDefinitionToCreationParser.type,
             'search_criteria_build_strategy' : DefaultCreationElementSearchCriteria,
             'search_criteria_class' : DataSetTypeSearchCriteria,
             'search_operation': SearchDataSetTypesOperation,
-            'fetch_options': DataSetTypeFetchOptions()
+            'fetch_options': dataset_type_fetch_options
             },
             {
             'creations_type': SpaceDefinitionToCreationParser.type,

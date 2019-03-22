@@ -21,12 +21,24 @@ function SpaceFormController(mainController, space) {
 
 	this.init = function(views) {
 		var _this = this;
-		this._mainController.getUserRole({
-			space: _this._spaceFormModel.space.code
-		}, function(roles){
-			_this._spaceFormModel.roles = roles;
-			_this._spaceFormView.repaint(views);
+		
+		require([ "as/dto/space/id/SpacePermId", "as/dto/space/fetchoptions/SpaceFetchOptions" ],
+			function(SpacePermId, SpaceFetchOptions) {
+			var id = new SpacePermId(space.code);
+			mainController.openbisV3.getSpaces([ id ], new SpaceFetchOptions()).done(function(map) {
+                _this._spaceFormModel.v3_space = map[id];
+                _this._mainController.getUserRole({
+        			space: _this._spaceFormModel.space.code
+        		}, function(roles){
+        			_this._spaceFormModel.roles = roles;
+        			_this._spaceFormView.repaint(views);
+        		});
+            });
+			
+			
 		});
+		
+		
 	}
 
 	this.createProject = function() {

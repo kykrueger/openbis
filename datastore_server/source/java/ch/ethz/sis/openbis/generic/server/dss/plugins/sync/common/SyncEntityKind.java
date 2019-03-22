@@ -23,7 +23,7 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common;
  */
 public enum SyncEntityKind
 {
-    SPACE("SP"), PROJECT("P"), EXPERIMENT("E"), SAMPLE("S"), DATA_SET("D"), MATERIAL("M");
+    SPACE("SP"), PROJECT("P"), EXPERIMENT("E"), SAMPLE("S"), DATA_SET("D"), MATERIAL("M"), FILE("F");
 
     private final String abbreviation;
 

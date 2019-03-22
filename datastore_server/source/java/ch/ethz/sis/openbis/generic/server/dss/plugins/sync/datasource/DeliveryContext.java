@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.datasource;
 
+import java.io.File;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 
@@ -35,6 +37,8 @@ class DeliveryContext
     private IHierarchicalContentProvider contentProvider;
 
     private String openBisDataSourceName;
+
+    private File fileServiceRepository;
 
     public String getServerUrl()
     {
@@ -94,6 +98,16 @@ class DeliveryContext
     public void setOpenBisDataSourceName(String openBisDataSourceName)
     {
         this.openBisDataSourceName = openBisDataSourceName;
+    }
+
+    public File getFileServiceRepository()
+    {
+        return fileServiceRepository;
+    }
+
+    public void setFileServiceRepository(File fileServiceRepository)
+    {
+        this.fileServiceRepository = fileServiceRepository;
     }
 
 }

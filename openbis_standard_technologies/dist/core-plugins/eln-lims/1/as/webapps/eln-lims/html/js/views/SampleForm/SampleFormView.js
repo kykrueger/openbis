@@ -145,6 +145,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				}
 			}
 			
+			//Freeze
+			if(_this._sampleFormModel.v3_sample && _this._sampleFormModel.v3_sample.frozen !== undefined) { //Freezing available on the API
+				var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
+				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+				var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
+				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+			}
+			
 			//Edit
 			if(this._sampleFormModel.mode === FormMode.VIEW) {
 				var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
