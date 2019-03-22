@@ -28,3 +28,5 @@ It follows the next format, including quotes, one tag per line:
 
 This file is a sql script that needs to be executed.
 It migrates the audit data from the translated experiments to samples.
+
+psql -U postgres -d openbis_standard -a -f openbis_audit_data_update.sql 
