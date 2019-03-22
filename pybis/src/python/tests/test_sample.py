@@ -36,8 +36,12 @@ def test_create_delete_sample(space):
     sample_by_permId = space.get_sample(sample.permId)
     assert sample_by_permId is not None
 
+    assert sample_by_permId.registrator is not None
+    assert sample_by_permId.registrationDate is not None
+    # check date format: 2019-03-22 11:36:40 
+    assert re.search('^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$', sample_by_permId.registrationDate) is not None
 
-    # get it by identifier
+    # get sample by identifier
     sample_by_identifier = o.get_sample(sample.identifier)
     assert sample_by_identifier is not None
 
