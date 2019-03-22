@@ -1,7 +1,7 @@
 from pandas import DataFrame, Series
 from tabulate import tabulate
 from .definitions import openbis_definitions, fetch_option
-from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl
+from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_person
 from .attachment import Attachment
 
 import copy
@@ -87,8 +87,16 @@ class AttrHolder():
             elif attr in ["tags"]:
                 self.add_tags(data[attr])
 
+            elif attr.endswith('Date'):
+                self.__dict__['_'+attr] = format_timestamp(data.get(attr))
+
+            elif attr in ['registrator', 'modifier', 'dataProducer']:
+                self.__dict__['_'+attr] = extract_person(data.get(attr))
+
             else:
                 self.__dict__['_' + attr] = data.get(attr, None)
+
+
 
     def _new_attrs(self, method_name=None):
         """Returns the Python-equivalent JSON request when a new object is created.
@@ -345,11 +353,6 @@ class AttrHolder():
                     })
                 return ras
 
-            elif int_name in ['_registrator', '_modifier', '_dataProducer']:
-                return self.__dict__[int_name].get('userId', None)
-
-            elif int_name in ['_registrationDate', '_modificationDate', '_accessDate', '_dataProductionDate']:
-                return format_timestamp(self.__dict__[int_name])
 
             # if the attribute contains a list, 
             # return a list of either identifiers, codes or
@@ -838,6 +841,17 @@ class AttrHolder():
                 att.write(content)
             file_list.append(filename)
         return file_list
+
+
+    def all(self):
+        """Return all attributes of an entity in a dict
+        """
+        attrs = {}
+        for attr in self._allowed_attrs:
+            if attr == 'attachments':
+                continue
+            attrs[attr] = getattr(self, attr)
+        return attrs
 
     def _repr_html_(self):
         def nvl(val, string=''):

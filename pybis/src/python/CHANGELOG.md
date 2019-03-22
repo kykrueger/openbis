@@ -1,3 +1,9 @@
+## Changes with pybis-1.8.3
+
+* new method for attributes: .attrs.all() will return a dict, much like .props.all()
+* attributes like registrator and modifier are now returned by default
+
+
 ## Changes with pybis-1.8.2
 
 * added key-lookup and setting for properties that contain either dots or dashes

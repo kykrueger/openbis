@@ -62,6 +62,11 @@ def test_create_delete_dataset(space):
     assert dataset_by_permId.p.name == 'some good name'
     assert dataset_by_permId.p.notes == 'my notes'
 
+    assert dataset_by_permId.registrator is not None
+    assert dataset_by_permId.registrationDate is not None
+    # check date format: 2019-03-22 11:36:40 
+    assert re.search('^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$', dataset_by_permId.registrationDate) is not None
+
     # delete datasets
     dataset.delete('dataset creation test on '+timestamp)
 
