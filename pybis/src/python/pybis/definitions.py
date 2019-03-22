@@ -11,7 +11,7 @@ def openbis_definitions(entity):
         "Space": {
             "attrs_new": "code description".split(),
             "attrs_up": "description".split(),
-            "attrs": "code permId description registrator registrationDate modificationDate".split(),
+            "attrs": "code permId description registrator registrationDate modifier modificationDate".split(),
             "multi": "".split(),
             "identifier": "spaceId",
             "create": { "@type": "as.dto.space.create.SpaceCreation"},
@@ -29,14 +29,14 @@ def openbis_definitions(entity):
         "Experiment": {
             "attrs_new": "code type project tags attachments".split(),
             "attrs_up": "project tags attachments".split(),
-            "attrs": "code permId identifier type project tags attachments".split(),
+            "attrs": "code permId identifier type project tags registrator registrationDate modifier modificationDate attachments".split(),
             "multi": "tags attachments".split(),
             "identifier": "experimentId",
         },
         "Sample": {
             "attrs_new": "code type project parents children container components space experiment tags attachments".split(),
             "attrs_up": "project parents children container components space experiment tags attachments".split(),
-            "attrs": "code permId identifier type project parents children components space experiment tags attachments container".split(),
+            "attrs": "code permId identifier type project parents children components space experiment tags registrator registrationDate modifier modificationDate attachments container".split(),
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
                 'childIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
@@ -79,7 +79,7 @@ def openbis_definitions(entity):
         "Material": {
             "attrs_new": "code description type creation tags".split(),
             "attrs_up": "description type creation tags".split(),
-            "attrs": "code description type creation registrator tags".split(),
+            "attrs": "code description type creation registrator registrationDate modifier modificationDate tags".split(),
             "multi": "".split(),
             "identifier": "materialId",
         },
@@ -93,7 +93,7 @@ def openbis_definitions(entity):
         "Vocabulary": {
             "attrs_new": "code description managedInternally internalNameSpace chosenFromList urlTemplate".split(),
             "attrs_up": "description managedInternally internalNameSpace chosenFromList urlTemplate".split(),
-            "attrs": "code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modificationDate".split(),
+            "attrs": "code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modifier modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyId",
             "search": { "@type": "as.dto.vocabulary.search.VocabularySearchCriteria" },
@@ -105,7 +105,7 @@ def openbis_definitions(entity):
         "VocabularyTerm": {
             "attrs_new": "code vocabularyCode label description official ordinal".split(),
             "attrs_up": "label description official ordinal".split(),
-            "attrs": "code vocabularyCode label description official ordinal registrationDate modificationDate registrator".split(),
+            "attrs": "code vocabularyCode label description official ordinal registrator registrationDate modifier modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyTermId",
             "create": { "@type": "as.dto.vocabulary.create.VocabularyTermCreation"},
