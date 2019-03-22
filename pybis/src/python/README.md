@@ -119,7 +119,14 @@ o.get_spaces(
     start_with = 1,                   # start_with and count
     count = 7,                        # enable paging
 )
-o.get_space('MY_SPACE')
+space = o.get_space('MY_SPACE')
+space.code
+space.description
+space.registrator
+space.registrationDate
+space.modifier
+space.modificationDate
+space.attrs.all()                     # returns a dict containing all attributes
 ```
 
 ## Projects
@@ -144,6 +151,14 @@ project.get_experiments()
 project.get_attachments()
 p.add_attachment(fileName='testfile', description= 'another file', title= 'one more attachment')
 project.download_attachments()
+
+project.code
+project.description
+project.registrator
+project.registrationDate
+project.modifier
+project.modificationDate
+project.attrs.all()                   # returns a dict containing all attributes
 ```
 
 ## Samples
@@ -185,6 +200,8 @@ enabled
 sample.tags
 sample.tags = ['guten_tag', 'zahl_tag' ]
 
+sample.attrs.all()         # returns a dict of all attributes
+
 sample.get_parents()
 sample.set_parents(['/MY_SPACE/PARENT_SAMPLE_NAME')
 sample.add_parents('/MY_SPACE/PARENT_SAMPLE_NAME')
@@ -221,6 +238,9 @@ sample.p.my_property = "some value"   # set the value of a property (value is ch
 sample.p + TAB                        # in IPython or Jupyter: show list of available properties
 sample.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 sample.p['my-weird.property-name']    # accessing properties containing a dash or a dot
+
+sample.attrs.all()                    # returns all attributes as a dict
+sample.props.all()                    # returns all properties as a dict
 
 sample.get_attachments()
 sample.download_attachments()
@@ -273,11 +293,19 @@ exp.p + TAB                        # in IPython or Jupyter: show list of availab
 exp.p.my_property_ + TAB           # in IPython or Jupyter: show datatype or controlled vocabulary
 exp.p['my-weird.property-name']    # accessing properties containing a dash or a dot
 
-exp.attrs
-exp.a                              # same thing
+exp.attrs.all()                    # returns all attributes as a dict
+exp.props.all()                    # returns all properties as a dict
+
 exp.attrs.tags = ['some', 'tags']
 exp.tags = ['some', 'tags']        # same thing
 exp.save()
+
+exp.code
+exp.description
+exp.registrator
+exp.registrationDate
+exp.modifier
+exp.modificationDate
 ```
 
 ## Datasets
@@ -294,6 +322,9 @@ ds.status              # AVAILABLE LOCKED ARCHIVED
                        # UNARCHIVE_PENDING ARCHIVE_PENDING BACKUP_PENDING
 ds.archive()
 ds.unarchive()
+
+ds.attrs.all()                    # returns all attributes as a dict
+ds.props.all()                    # returns all properties as a dict
 
 ds.get_files(start_folder="/")
 ds.file_list
@@ -354,6 +385,9 @@ ds.p.my_property = "some value"   # set the value of a property
 ds.p + TAB                        # show list of available properties
 ds.p.my_property_ + TAB           # show datatype or controlled vocabulary
 ds.p['my-weird.property-name']    # accessing properties containing a dash or a dot
+
+ds.attrs.all()                    # returns all attributes as a dict
+ds.props.all()                    # returns all properties as a dict
 
 # complex query with chaining.
 # properties must be in UPPERCASE
