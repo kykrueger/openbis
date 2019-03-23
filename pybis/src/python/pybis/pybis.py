@@ -1036,6 +1036,7 @@ class Openbis:
             identifier_name='techId',
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
 
     def get_role_assignment(self, techId, only_data=False):
@@ -1194,6 +1195,7 @@ class Openbis:
             identifier_name='permId',
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
 
 
@@ -1236,6 +1238,7 @@ class Openbis:
             identifier_name='permId',
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
 
 
@@ -1314,6 +1317,7 @@ class Openbis:
             df = spaces[attrs],
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
 
 
@@ -1441,6 +1445,7 @@ class Openbis:
             props=props,
             start_with=start_with,
             count=count,
+            totalCount=resp['totalCount'],
         )
 
 
@@ -1534,6 +1539,7 @@ class Openbis:
             identifier_name ='identifier',
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
     get_collections = get_experiments  # Alias
 
@@ -1602,6 +1608,7 @@ class Openbis:
             props=props,
             start_with=start_with,
             count=count,
+            totalCount=resp['totalCount'],
         )
 
 
@@ -1922,6 +1929,7 @@ class Openbis:
             identifier_name = 'identifier',
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
 
 
@@ -2006,6 +2014,7 @@ class Openbis:
             additional_identifier='vocabularyCode',
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
         
 
@@ -2127,6 +2136,7 @@ class Openbis:
             identifier_name = 'code',
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
             )
 
 
@@ -2167,7 +2177,7 @@ class Openbis:
         }
 
         resp = self._post_request(self.as_v3, request)
-        return self._tag_list_for_response(response=resp['objects'])
+        return self._tag_list_for_response(response=resp['objects'], totalCount=resp['totalCount'])
 
 
     def get_tag(self, permId, only_data=False):
@@ -2208,9 +2218,9 @@ class Openbis:
                 else:
                     return Tag(self, data=resp[permId])
         else:
-            return self._tag_list_for_response(response=list(resp.values()))
+            return self._tag_list_for_response( response=list(resp.values()) )
 
-    def _tag_list_for_response(self, response):
+    def _tag_list_for_response(self, response, totalCount=0):
 
         parse_jackson(response)
         attrs = ['permId', 'code', 'description', 'owner', 'private', 'registrationDate']
@@ -2228,6 +2238,7 @@ class Openbis:
             entity = 'tag',
             df = tags[attrs],
             identifier_name ='permId',
+            totalCount = totalCount,
         )
 
 
@@ -2296,8 +2307,6 @@ class Openbis:
             entity = 'semantic_annotation',
             df = annotations[attrs],
             identifier_name = 'permId',
-            start_with = start_with,
-            count = count,
         )
 
     def _search_semantic_annotations(self, criteria):
@@ -2360,8 +2369,6 @@ class Openbis:
             entity = 'semantic_annotation',
             df = annotations[attrs],
             identifier_name = 'permId',
-            start_with = start_with,
-            count = count,
         )
 
     def get_semantic_annotation(self, permId, only_data = False):
@@ -2416,6 +2423,7 @@ class Openbis:
             identifier_name = 'name',
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
 
 
@@ -2633,6 +2641,7 @@ class Openbis:
             df = types[attrs],
             start_with = start_with,
             count = count,
+            totalCount = resp.get('totalCount'),
         )
 
 
@@ -2734,7 +2743,10 @@ class Openbis:
             return self._dataset_list_for_response(response=list(resp.values()), props=props)
 
 
-    def _dataset_list_for_response(self, response, props=None, start_with=None, count=None):
+    def _dataset_list_for_response(
+        self, response, props=None, 
+        start_with=None, count=None, totalCount=0
+    ):
         """returns a Things object, containing a DataFrame plus some additional information
         """
 
@@ -2773,6 +2785,7 @@ class Openbis:
             identifier_name = 'permId',
             start_with=start_with,
             count=count,
+            totalCount=totalCount,
         )
 
 
@@ -2841,7 +2854,10 @@ class Openbis:
                 props=props,
             )
 
-    def _sample_list_for_response(self, response, props=None, start_with=None, count=None):
+    def _sample_list_for_response(
+        self, response, props=None,
+        start_with=None, count=None, totalCount=0
+    ):
         """returns a Things object, containing a DataFrame plus some additional information
         """
 
@@ -2875,6 +2891,7 @@ class Openbis:
             identifier_name = 'identifier',
             start_with=start_with,
             count=count,
+            totalCount=totalCount,
         )
 
 

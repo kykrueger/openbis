@@ -1,3 +1,9 @@
+## Changes with pybis-1.8.4
+
+* totalCount attribute added in every Things object
+* totalCount will return the total number of elements matching a search
+* bugfix in get_semantic_annotation method
+
 ## Changes with pybis-1.8.3
 
 * new method for attributes: .attrs.all() will return a dict, much like .props.all()

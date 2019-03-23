@@ -22,8 +22,11 @@ class Things():
     
     """
 
-    def __init__(self, openbis_obj, entity, df, 
-        identifier_name='code', additional_identifier=None, start_with=None, count=None):
+    def __init__(
+        self, openbis_obj, entity, df, 
+        identifier_name='code', additional_identifier=None, 
+        start_with=None, count=None, totalCount=None
+    ):
         self.openbis = openbis_obj
         self.entity = entity
         self.df = df
@@ -31,6 +34,7 @@ class Things():
         self.additional_identifier = additional_identifier
         self.start_with = start_with
         self.count = count
+        self.totalCount=totalCount
 
     def __repr__(self):
         return tabulate(self.df, headers=list(self.df))
