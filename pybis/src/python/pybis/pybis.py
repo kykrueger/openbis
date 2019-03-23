@@ -2369,8 +2369,6 @@ class Openbis:
             entity = 'semantic_annotation',
             df = annotations[attrs],
             identifier_name = 'permId',
-            start_with = start_with,
-            count = count,
         )
 
     def get_semantic_annotation(self, permId, only_data = False):
