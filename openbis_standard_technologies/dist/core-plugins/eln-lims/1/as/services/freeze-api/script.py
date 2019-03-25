@@ -51,7 +51,7 @@ def process(context, parameters):
 		isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode);
 		
 		# 3. Create Freeze List
-		freezeList = freezeIfSameSpaceAndChildPolicy(context.applicationService, sessionToken, entity, spaceCode);
+		defaultFreezeList = freezeIfSameSpaceAndChildPolicy(context.applicationService, sessionToken, entity, spaceCode);
 		result = "OK"
 		
 		# Debug Info
@@ -62,7 +62,7 @@ def process(context, parameters):
 		print "spaceCode: " + spaceCode
 		print "userId: " + userId
 		print "isAdminOfSpace: " + str(isAdminOfSpace)
-		print "freezeList: " + str(freezeList)
+		print "defaultFreezeList: " + str(defaultFreezeList)
 		
 		
 #	except Exception as e:
@@ -83,21 +83,22 @@ def isUserAdminOnSpace(service, sessionToken, userId, spaceCode):
 	return False
 
 def freezeIfSameSpaceAndChildPolicy(service, sessionToken, entity, spaceCode):
-	entitiesToFreeze = [];
+	entitiesToFreeze = {};
 	entitiesToExpand = {};
-	entitiesToExpand[entity.getPermId().getPermId()] = entity;
+	entitiesToExpand[entity.__class__.__name__ +"+"+ entity.getPermId().getPermId()] = entity;
 
 	while entitiesToExpand:
 		id = next(iter(entitiesToExpand));
 		entityToExpand = entitiesToExpand[id];
 		del entitiesToExpand[id];
+		id = id.split("+")[1];
 		entityToExpandSpaceCode = getSpace(entityToExpand);
 		if entityToExpandSpaceCode == spaceCode:
 			# Add entity without repetitions
-			entityToFreeze = {
+			entitiesToFreeze[entityToExpand.__class__.__name__ +"+"+ entityToExpand.getPermId().getPermId()] = {
 				"type" : entityToExpand.__class__.__name__,
 				"permId" : entityToExpand.getPermId().getPermId(),
-				"displayName" : None
+				"displayName" : getDisplayName(entityToExpand)
 			};
 			
 			searchResults = None
@@ -112,12 +113,14 @@ def freezeIfSameSpaceAndChildPolicy(service, sessionToken, entity, spaceCode):
 				experimentSearchCriteria.withProject().withPermId().thatEquals(id);
 				experimentFetchOptions = ExperimentFetchOptions();
 				experimentFetchOptions.withProject().withSpace();
+				experimentFetchOptions.withProperties();
 				searchResults = service.searchExperiments(sessionToken, experimentSearchCriteria, experimentFetchOptions).getObjects();
 			if isinstance(entityToExpand, Experiment):
 				sampleSearchCriteria = SampleSearchCriteria();
 				sampleSearchCriteria.withExperiment().withPermId().thatEquals(id);
 				sampleFetchOptions = SampleFetchOptions();
 				sampleFetchOptions.withSpace();
+				sampleFetchOptions.withProperties();
 				searchResults = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
 				
 				dataSetSearchCriteria = DataSetSearchCriteria();
@@ -125,6 +128,7 @@ def freezeIfSameSpaceAndChildPolicy(service, sessionToken, entity, spaceCode):
 				dataSetFetchOptions = DataSetFetchOptions();
 				dataSetFetchOptions.withExperiment().withProject().withSpace();
 				dataSetFetchOptions.withSample().withSpace();
+				dataSetFetchOptions.withProperties();
 				searchResults2 = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
 				
 				searchResults3 = ArrayList(searchResults)
@@ -136,6 +140,7 @@ def freezeIfSameSpaceAndChildPolicy(service, sessionToken, entity, spaceCode):
 				sampleSearchCriteria.withParents().withPermId().thatEquals(id);
 				sampleFetchOptions = SampleFetchOptions();
 				sampleFetchOptions.withSpace();
+				sampleFetchOptions.withProperties();
 				searchResults = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
 				
 				dataSetSearchCriteria = DataSetSearchCriteria();
@@ -143,6 +148,7 @@ def freezeIfSameSpaceAndChildPolicy(service, sessionToken, entity, spaceCode):
 				dataSetFetchOptions = DataSetFetchOptions();
 				dataSetFetchOptions.withExperiment().withProject().withSpace();
 				dataSetFetchOptions.withSample().withSpace();
+				dataSetFetchOptions.withProperties();
 				searchResults2 = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
 				
 				searchResults3 = ArrayList(searchResults)
@@ -154,12 +160,12 @@ def freezeIfSameSpaceAndChildPolicy(service, sessionToken, entity, spaceCode):
 				dataSetFetchOptions = DataSetFetchOptions();
 				dataSetFetchOptions.withExperiment().withProject().withSpace();
 				dataSetFetchOptions.withSample().withSpace();
+				dataSetFetchOptions.withProperties();
 				searchResults = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
 			
 			# Add results without repetitions
-			entitiesToFreeze.append(entityToFreeze);
 			for objectResult in searchResults:
-				entitiesToExpand[objectResult.getPermId().getPermId()] = objectResult;
+				entitiesToExpand[objectResult.__class__.__name__ +"+"+ objectResult.getPermId().getPermId()] = objectResult;
 
 	return entitiesToFreeze
 
@@ -179,12 +185,14 @@ def getEntity(service, sessionToken, type, permId):
 	if type == "EXPERIMENT":
 		experimentFetchOptions = ExperimentFetchOptions();
 		experimentFetchOptions.withProject().withSpace();
+		experimentFetchOptions.withProperties();
 		id = ExperimentPermId(permId);
 		entities = service.getExperiments(sessionToken, [id], experimentFetchOptions);
 		entity = entities[id];
 	if type == "SAMPLE":
 		sampleFetchOptions = SampleFetchOptions();
 		sampleFetchOptions.withSpace();
+		sampleFetchOptions.withProperties();
 		id = SamplePermId(permId);
 		entities = service.getSamples(sessionToken, [id], sampleFetchOptions);
 		entity = entities[id];
@@ -192,10 +200,21 @@ def getEntity(service, sessionToken, type, permId):
 		dataSetFetchOptions = DataSetFetchOptions();
 		dataSetFetchOptions.withExperiment().withProject().withSpace();
 		dataSetFetchOptions.withSample().withSpace();
+		dataSetFetchOptions.withProperties();
 		id = DataSetPermId(permId);
 		entities = service.getDataSets(sessionToken, [id], dataSetFetchOptions);
 		entity = entities[id];
 	return entity
+
+def getDisplayName(entity):
+	displayName = None;
+	if hasattr(entity, 'properties') and "$NAME" in entity.properties and entity.properties["$NAME"]:
+		displayName = entity.properties["$NAME"];
+	elif hasattr(entity, 'code') and entity.getCode():
+		displayName = entity.getCode();
+	elif hasattr(permId, 'permId'):
+		displayName = entity.getPermId().getPermId();
+	return displayName
 
 def getSpace(entity):
 	spaceCode = None;
