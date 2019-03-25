@@ -1,13 +1,21 @@
 const autoBind = require('auto-bind')
 
-class Openbis {
+export class Openbis {
 
   constructor() {
     autoBind(this)
+  }
+
+  init(){
     let _this = this
-    /* eslint-disable-next-line no-undef */
-    requirejs(['openbis'], openbis => {
-      _this.v3 = new openbis()
+    return new Promise((resolve, reject) => {
+      /* eslint-disable-next-line no-undef */
+      requirejs(['openbis'], openbis => {
+        _this.v3 = new openbis()
+        resolve()
+      }, error => {
+        reject(error)
+      })
     })
   }
 
@@ -79,6 +87,7 @@ class Openbis {
 
   getDataSetTypes() {
     let v3 = this.v3
+    /* eslint-disable-next-line no-undef */
     return new Promise((resolve, reject) => {
       /* eslint-disable-next-line no-undef */
       requirejs(
@@ -103,4 +112,4 @@ class Openbis {
 
 }
 
-export const openbis = new Openbis()
+export default new Openbis()

@@ -51,7 +51,7 @@ Debugging tests
 
   2. put the following snippet of code in a line where the debugger should stop:
 
-    /*eslint no-debugger: "info"*/
+    /*eslint no-debugger: 0*/
     debugger
 
   3. open "chrome://inspect" in Chrome and choose "Open dedicated DevTools for Node" to start debugging

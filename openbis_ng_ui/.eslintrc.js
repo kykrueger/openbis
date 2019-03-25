@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  parser: "babel-eslint",
+  parser: 'babel-eslint',
   parserOptions: {
     ecmaVersion: 2017,
     sourceType: 'module',
@@ -11,6 +11,7 @@ module.exports = {
   env: {
     browser: true,
     jest: true,
+    es6: true
   },
   extends: [
     'eslint:recommended',
@@ -21,25 +22,26 @@ module.exports = {
   ],
   settings: {
     react: {
-      createClass: "createReactClass",
-      pragma: "React",
-      version: "16.4.2"
+      createClass: 'createReactClass',
+      pragma: 'React',
+      version: '16.4.2'
     },
-    propWrapperFunctions: ["forbidExtraProps"]
+    propWrapperFunctions: ['forbidExtraProps']
   },
   rules: {
-    "react/jsx-uses-react": "error",
-    "react/jsx-uses-vars": "error",
+    'react/jsx-uses-react': 'error',
+    'react/jsx-uses-vars': 'error',
 
-    "indent": ["error", 2],
-    "linebreak-style": ["error", "unix"],
-    "quotes": ["error", "single"],
-    "semi": ["error", "never"],
-    "eqeqeq": ["error", "always"],
+    'indent': ['error', 2, { 'SwitchCase': 1 }],
+    'key-spacing': ["error", { "mode": "strict" }],
+    'linebreak-style': ['error', 'unix'],
+    'quotes': ['error', 'single'],
+    'semi': ['error', 'never'],
+    'eqeqeq': ['error', 'always'],
 
-    "react/prop-types": "off",
+    'react/prop-types': 'off',
 
     // override default options for rules from base configurations
-    "no-cond-assign": ["error", "always"],
+    'no-cond-assign': ['error', 'always'],
   }
-};
+}
