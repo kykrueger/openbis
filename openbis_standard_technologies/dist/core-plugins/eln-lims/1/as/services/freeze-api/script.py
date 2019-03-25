@@ -1,3 +1,5 @@
+import java.util.ArrayList as ArrayList
+
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames as ComponentNames
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
 
@@ -5,18 +7,22 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId as SpacePermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space as Space
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria as ProjectSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions as ProjectFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId as ProjectPermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project as Project
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria as ExperimentSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions as ExperimentFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId as ExperimentPermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment as Experiment
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria as SampleSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions as SampleFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId as SamplePermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample as Sample
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria as DataSetSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions as DataSetFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId as DataSetPermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet as DataSet
@@ -39,12 +45,13 @@ def process(context, parameters):
 		permId = parameters.get("permId");
 		entity = getEntity(context.applicationService, sessionToken, type, permId);
 		spaceCode = getSpace(entity);
-		
+
 		# 2. Verify that the user is an admin in such space
 		userId = sessionToken.split("-")[0];
-		isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode)
+		isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode);
 		
 		# 3. Create Freeze List
+		freezeList = freezeIfSameSpaceAndChildPolicy(context.applicationService, sessionToken, entity, spaceCode);
 		result = "OK"
 		
 		# Debug Info
@@ -55,7 +62,7 @@ def process(context, parameters):
 		print "spaceCode: " + spaceCode
 		print "userId: " + userId
 		print "isAdminOfSpace: " + str(isAdminOfSpace)
-		
+		print "freezeList: " + str(freezeList)
 		
 		
 #	except Exception as e:
@@ -74,6 +81,87 @@ def isUserAdminOnSpace(service, sessionToken, userId, spaceCode):
 		if roleAssignment.getRole() == Role.ADMIN and roleAssignment.getRoleLevel() == RoleLevel.SPACE and roleAssignment.getSpace().getCode() == spaceCode:
 			return True
 	return False
+
+def freezeIfSameSpaceAndChildPolicy(service, sessionToken, entity, spaceCode):
+	entitiesToFreeze = [];
+	entitiesToExpand = {};
+	entitiesToExpand[entity.getPermId().getPermId()] = entity;
+
+	while entitiesToExpand:
+		id = next(iter(entitiesToExpand));
+		entityToExpand = entitiesToExpand[id];
+		del entitiesToExpand[id];
+		entityToExpandSpaceCode = getSpace(entityToExpand);
+		if entityToExpandSpaceCode == spaceCode:
+			# Add entity without repetitions
+			entityToFreeze = {
+				"type" : entityToExpand.__class__.__name__,
+				"permId" : entityToExpand.getPermId().getPermId(),
+				"displayName" : None
+			};
+			
+			searchResults = None
+			if isinstance(entityToExpand, Space):
+				projectSearchCriteria = ProjectSearchCriteria();
+				projectSearchCriteria.withSpace().withCode().thatEquals(id);
+				projectFetchOptions = ProjectFetchOptions();
+				projectFetchOptions.withSpace();
+				searchResults = service.searchProjects(sessionToken, projectSearchCriteria, projectFetchOptions).getObjects();
+			if isinstance(entityToExpand, Project):
+				experimentSearchCriteria = ExperimentSearchCriteria();
+				experimentSearchCriteria.withProject().withPermId().thatEquals(id);
+				experimentFetchOptions = ExperimentFetchOptions();
+				experimentFetchOptions.withProject().withSpace();
+				searchResults = service.searchExperiments(sessionToken, experimentSearchCriteria, experimentFetchOptions).getObjects();
+			if isinstance(entityToExpand, Experiment):
+				sampleSearchCriteria = SampleSearchCriteria();
+				sampleSearchCriteria.withExperiment().withPermId().thatEquals(id);
+				sampleFetchOptions = SampleFetchOptions();
+				sampleFetchOptions.withSpace();
+				searchResults = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
+				
+				dataSetSearchCriteria = DataSetSearchCriteria();
+				dataSetSearchCriteria.withExperiment().withPermId().thatEquals(id);
+				dataSetFetchOptions = DataSetFetchOptions();
+				dataSetFetchOptions.withExperiment().withProject().withSpace();
+				dataSetFetchOptions.withSample().withSpace();
+				searchResults2 = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
+				
+				searchResults3 = ArrayList(searchResults)
+				searchResults3.addAll(searchResults2)
+				searchResults = searchResults3;
+			if isinstance(entityToExpand, Sample):
+				sampleSearchCriteria = SampleSearchCriteria();
+				sampleSearchCriteria.withSpace().withCode().thatEquals(spaceCode);
+				sampleSearchCriteria.withParents().withPermId().thatEquals(id);
+				sampleFetchOptions = SampleFetchOptions();
+				sampleFetchOptions.withSpace();
+				searchResults = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
+				
+				dataSetSearchCriteria = DataSetSearchCriteria();
+				dataSetSearchCriteria.withSample().withPermId().thatEquals(id);
+				dataSetFetchOptions = DataSetFetchOptions();
+				dataSetFetchOptions.withExperiment().withProject().withSpace();
+				dataSetFetchOptions.withSample().withSpace();
+				searchResults2 = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
+				
+				searchResults3 = ArrayList(searchResults)
+				searchResults3.addAll(searchResults2)
+				searchResults = searchResults3;
+			if isinstance(entityToExpand, DataSet):
+				dataSetSearchCriteria = DataSetSearchCriteria();
+				dataSetSearchCriteria.withParents().withPermId().thatEquals(id);
+				dataSetFetchOptions = DataSetFetchOptions();
+				dataSetFetchOptions.withExperiment().withProject().withSpace();
+				dataSetFetchOptions.withSample().withSpace();
+				searchResults = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
+			
+			# Add results without repetitions
+			entitiesToFreeze.append(entityToFreeze);
+			for objectResult in searchResults:
+				entitiesToExpand[objectResult.getPermId().getPermId()] = objectResult;
+
+	return entitiesToFreeze
 
 def getEntity(service, sessionToken, type, permId):
 	entity = None;
