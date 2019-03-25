@@ -1,0 +1,54 @@
+obis
+====
+
+prerequisite:
+$ brew install git-annex
+
+Install obis
+$ cd openbis/obis/src/python
+$ pip install -e .
+
+Remove global settings (global and local settings are getting merged)
+$ rm -rf ~./obis
+
+
+Create global settings
+$ obis config -g set openbis_url=http://localhost:8334 # replace with actual url
+$ obis config -g set user=admin
+$ obis config -g set verify_certificates=false # in case of https
+$ obis config -g set allow_only_https=false # in case of http
+$ obis data_set -g set type=UNKNOWN
+
+Start a data-folder
+$ obis init my_data1
+$ cd my_data1
+
+++ test conection when doing the settings
+++ linkedData needs to be added to pybis
+++ rename data_set.py or get rid of it altogther --> move it to obis
+++ if dss is down, create better error message
+++ crc32 checksum is default in openBIS but can be changed --> implement in pybis
+++ .private should be deleted in config.py (used to place .obis within .git folder)
+++ publish obis on pypi.org
+++ git lfs instead of git annex?
+++ check on windows
+
+++ Iber group is using it -- we are waiting for feedback from them
+
+
+Here are some links as a reminder:
+
+Wiki pages:
+
+https://wiki-bsse.ethz.ch/display/CISDInt/obis+Manual+Tests
+https://wiki-bsse.ethz.ch/display/openBISDoc/Big+Data+Link
+
+
+Web UI repository:
+
+https://sissource.ethz.ch/sis/iber_edms
+
+Obis and pybis integration tests:
+
+https://sissource.ethz.ch/sispub/openbis/blob/master/integration-tests/test_obis.py
+https://sissource.ethz.ch/sispub/openbis/blob/master/integration-tests/test_pybis.py

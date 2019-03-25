@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
@@ -42,10 +43,14 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
     }
 
     @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> samplePermIds) throws XMLStreamException
+    protected void deliverEntities(DeliveryExecutionContext context, List<String> samplePermIds) throws XMLStreamException
     {
+        XMLStreamWriter writer = context.getWriter();
+        String sessionToken = context.getSessionToken();
+        Set<String> spaces = context.getSpaces();
+        IApplicationServerApi v3api = getV3Api();
         List<SamplePermId> permIds = samplePermIds.stream().map(SamplePermId::new).collect(Collectors.toList());
-        Collection<Sample> fullSamples = context.getV3api().getSamples(sessionToken, permIds, createFullFetchOptions()).values();
+        Collection<Sample> fullSamples = v3api.getSamples(sessionToken, permIds, createFullFetchOptions()).values();
         int count = 0;
         for (Sample sample : fullSamples)
         {
@@ -68,7 +73,7 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
                 addRegistrator(writer, sample);
                 addSpace(writer, sample.getSpace());
                 addType(writer, sample.getType());
-                addProperties(writer, sample.getProperties());
+                addProperties(writer, sample.getProperties(), context);
                 ConnectionsBuilder connectionsBuilder = new ConnectionsBuilder();
                 connectionsBuilder.addConnections(sample.getDataSets());
                 connectionsBuilder.addChildren(sample.getChildren());

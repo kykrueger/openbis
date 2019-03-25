@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
@@ -55,11 +56,13 @@ public class MaterialDeliverer extends AbstractEntityDeliverer<Material>
     }
 
     @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<Material> materials)
-            throws XMLStreamException
+    protected void deliverEntities(DeliveryExecutionContext context, List<Material> materials) throws XMLStreamException
     {
+        XMLStreamWriter writer = context.getWriter();
+        String sessionToken = context.getSessionToken();
+        IApplicationServerApi v3api = getV3Api();
         List<MaterialPermId> permIds = materials.stream().map(Material::getPermId).collect(Collectors.toList());
-        Collection<Material> fullMaterials = context.getV3api().getMaterials(sessionToken, permIds, createFullFetchOptions()).values();
+        Collection<Material> fullMaterials = v3api.getMaterials(sessionToken, permIds, createFullFetchOptions()).values();
         for (Material material : fullMaterials)
         {
             startUrlElement(writer);
@@ -81,7 +84,7 @@ public class MaterialDeliverer extends AbstractEntityDeliverer<Material>
             {
                 allProperties.put(entity.getKey(), entity.getValue().getPermId().toString());
             }
-            addProperties(writer, allProperties);
+            addProperties(writer, allProperties, context);
             writer.writeEndElement();
             writer.writeEndElement();
         }

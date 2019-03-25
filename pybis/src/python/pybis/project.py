@@ -32,6 +32,7 @@ class Project(OpenBisObject):
 
     def get_samples(self, **kwargs):
         return self.openbis.get_samples(project=self.permId, **kwargs)
+    get_objects = get_samples # Alias
 
     def get_sample(self, sample_code):
         if is_identifier(sample_code) or is_permid(sample_code):
@@ -39,11 +40,12 @@ class Project(OpenBisObject):
         else:
             # we assume we just got the code
             return self.openbis.get_sample(project=self, code=sample_code)
+    get_object = get_sample # Alias
 
-    get_objects = get_samples # Alias
 
     def get_experiments(self):
         return self.openbis.get_experiments(project=self.permId)
+    get_collections = get_experiments  # Alias
 
     def get_datasets(self):
         return self.openbis.get_datasets(project=self.permId)

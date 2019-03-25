@@ -81,7 +81,7 @@ public class JsonReflectionsBaseTypeToSubTypesMapping implements IJsonBaseTypeTo
 
         Reflections reflections = new Reflections(configBuilder);
 
-        Set<Class<?>> types = reflections.getTypesAnnotatedWith(JsonObject.class);
+        Set<Class<?>> types = reflections.getTypesAnnotatedWith(JsonObject.class, true);
         Map<Class<?>, Set<NamedType>> subTypesMap = new HashMap<Class<?>, Set<NamedType>>();
 
         if (types != null)

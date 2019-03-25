@@ -23,12 +23,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IModificationDateHolder;
@@ -39,6 +42,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.server.FileServiceServlet;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -52,6 +56,9 @@ import ch.systemsx.cisd.openbis.generic.server.batch.IBatchOperation;
 abstract class AbstractEntityDeliverer<T> implements IDeliverer
 {
     private static final int CHUNK_SIZE = 1000;
+    
+    private static final Pattern FILE_SERVICE_PATTERN = Pattern.compile("openbis/" + FileServiceServlet.FILE_SERVICE_PATH
+            + "/([^\"']*)");
 
     private static interface IConsumer<T>
     {
@@ -72,24 +79,29 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
     }
 
     @Override
-    public void deliverEntities(XMLStreamWriter writer, IDataSourceQueryService queryService, String sessionToken, Set<String> spaces, Date requestTimestamp) throws XMLStreamException
+    public void deliverEntities(DeliveryExecutionContext context) throws XMLStreamException
     {
+        IDataSourceQueryService queryService = context.getQueryService();
+        String sessionToken = context.getSessionToken();
         List<T> allEntities = getAllEntities(queryService, sessionToken);
-        executeInBatches(allEntities, entities -> deliverEntities(writer, sessionToken, spaces, entities));
+        executeInBatches(allEntities, entities -> deliverEntities(context, entities));
     }
-
+    
     protected List<T> getAllEntities(IDataSourceQueryService queryService, String sessionToken)
     {
         return Collections.emptyList();
     }
 
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<T> entities)
-            throws XMLStreamException
+    protected void deliverEntities(DeliveryExecutionContext context, List<T> entities) throws XMLStreamException
     {
-
     }
 
-    protected void addProperties(XMLStreamWriter writer, Map<String, String> properties) throws XMLStreamException
+    protected IApplicationServerApi getV3Api()
+    {
+        return context.getV3api();
+    }
+
+    protected void addProperties(XMLStreamWriter writer, Map<String, String> properties, DeliveryExecutionContext context) throws XMLStreamException
     {
         if (properties.isEmpty() == false)
         {
@@ -102,11 +114,26 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
                 writer.writeCharacters(entry.getKey());
                 writer.writeEndElement();
                 writer.writeStartElement("x:value");
-                writer.writeCharacters(entry.getValue());
+                String value = entry.getValue();
+                extractFileServicePath(context, value);
+                writer.writeCharacters(value);
                 writer.writeEndElement();
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+        }
+    }
+    
+    protected void extractFileServicePath(DeliveryExecutionContext context, String value)
+    {
+        if (value != null)
+        {
+            Set<String> fileServicePaths = context.getFileServicePaths();
+            Matcher matcher = FILE_SERVICE_PATTERN.matcher(value);
+            while (matcher.find())
+            {
+                fileServicePaths.add(matcher.group(1));
+            }
         }
     }
 
@@ -176,11 +203,17 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
         addAttribute(writer, "registration-timestamp", dateHolder.getRegistrationDate(), h -> DataSourceUtils.convertToW3CDate(h));
     }
 
+    protected void addAttributeAndExtractFilePaths(DeliveryExecutionContext context, XMLStreamWriter writer, String attributeName, String value) throws XMLStreamException
+    {
+        addAttribute(writer, attributeName, value, v -> v);
+        extractFileServicePath(context, value);
+    }
+
     protected void addAttribute(XMLStreamWriter writer, String attributeName, String value) throws XMLStreamException
     {
         addAttribute(writer, attributeName, value, v -> v);
     }
-
+    
     protected void addAttributeIfSet(XMLStreamWriter writer, String attributeName, Boolean value) throws XMLStreamException
     {
         if (Boolean.TRUE.equals(value))
@@ -188,12 +221,12 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
             addAttribute(writer, attributeName, value);
         }
     }
-    
+
     protected void addAttribute(XMLStreamWriter writer, String attributeName, Boolean value) throws XMLStreamException
     {
         addAttribute(writer, attributeName, value, v -> String.valueOf(v));
     }
-    
+
     protected <O> void addAttribute(XMLStreamWriter writer, String attributeName, O object, Function<O, String> mapper) throws XMLStreamException
     {
         if (object != null)

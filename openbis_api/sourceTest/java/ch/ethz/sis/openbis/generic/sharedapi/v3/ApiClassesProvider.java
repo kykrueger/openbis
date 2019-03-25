@@ -61,13 +61,13 @@ public class ApiClassesProvider
     };
 
     private static final Set<Class<?>> NON_SERIALIZABLE_CLASSES = 
-            new HashSet<>(Arrays.asList(FastDownloader.class, FastDownloadResult.class, FastDownloadUtils.class));;
+            new HashSet<>(Arrays.asList(FastDownloader.class, FastDownloadResult.class, FastDownloadUtils.class));
 
     public static Collection<Class<?>> getPublicClasses()
     {
         List<ClassLoader> classLoadersList = new LinkedList<ClassLoader>();
-        classLoadersList.add(ClasspathHelper.getContextClassLoader());
-        classLoadersList.add(ClasspathHelper.getStaticClassLoader());
+        classLoadersList.add(ClasspathHelper.contextClassLoader());
+        classLoadersList.add(ClasspathHelper.staticClassLoader());
 
         SubTypesScanner subTypesScanner = new SubTypesScanner();
         subTypesScanner.filterResultsBy(new FilterBuilder().include(".*"));
@@ -83,7 +83,7 @@ public class ApiClassesProvider
                 .setUrls(ClasspathHelper.forClassLoader(classLoadersList.toArray(new ClassLoader[0])))
                 .filterInputsBy(filterBuilder));
 
-        Multimap<String, String> map = reflections.getStore().get(SubTypesScanner.class);
+        Multimap<String, String> map = reflections.getStore().get(subTypesScanner.getClass().getSimpleName());
 
         Collection<String> nonInnerClassesAndTestClasses = Collections2.filter(map.values(), new Predicate<String>()
             {

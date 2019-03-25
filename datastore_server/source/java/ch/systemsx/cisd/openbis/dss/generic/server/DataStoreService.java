@@ -29,6 +29,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.cifex.rpc.client.ICIFEXComponent;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.InvalidAuthenticationException;
@@ -112,6 +113,8 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
     private PutDataSetService putService;
 
     private IConfigProvider config;
+
+    private final Map<String, List<IDelegatedAction>> cleanupActions = new HashMap<>();
 
     public DataStoreService(SessionTokenManager sessionTokenManager, OpenbisSessionTokenCache sessionTokenCache,
             MailClientParameters mailClientParameters, IPluginTaskInfoProvider pluginTaskParameters,
@@ -512,8 +515,28 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
         {
             QueueingPathRemoverService.removeRecursively(sessionWorkspace);
         }
+        List<IDelegatedAction> actions = cleanupActions.remove(userSessionToken);
+        if (actions != null)
+        {
+            for (IDelegatedAction action : actions)
+            {
+                action.execute();
+            }
+        }
 
         getPutDataSetService().cleanupSession(userSessionToken);
+    }
+
+    @Override
+    public void addCleanupAction(String userSessionToken, IDelegatedAction action)
+    {
+        List<IDelegatedAction> actions = cleanupActions.get(userSessionToken);
+        if (actions == null)
+        {
+            actions = new ArrayList<>();
+            cleanupActions.put(userSessionToken, actions);
+        }
+        actions.add(action);
     }
 
     @Override

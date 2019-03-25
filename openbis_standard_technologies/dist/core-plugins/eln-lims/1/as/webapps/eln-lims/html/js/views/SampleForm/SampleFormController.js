@@ -25,14 +25,22 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		// Loading datasets
 		var _this = this;
 		if(mode !== FormMode.CREATE) {
-			mainController.serverFacade.listDataSetsForSample(this._sampleFormModel.sample, true, function(datasets) {
-				if(!datasets.error) {
-					_this._sampleFormModel.datasets = datasets.result;
-				}
-				
-				//Load view
-				_this._sampleFormView.repaint(views);
-				Util.unblockUI();
+			require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
+					function(SamplePermId, SampleFetchOptions) {
+					var id = new SamplePermId(sample.permId);
+					mainController.openbisV3.getSamples([ id ], new SampleFetchOptions()).done(function(map) {
+		                _this._sampleFormModel.v3_sample = map[id];
+		                //
+		                mainController.serverFacade.listDataSetsForSample(_this._sampleFormModel.sample, true, function(datasets) {
+		    				if(!datasets.error) {
+		    					_this._sampleFormModel.datasets = datasets.result;
+		    				}
+		    				
+		    				//Load view
+		    				_this._sampleFormView.repaint(views);
+		    				Util.unblockUI();
+		    			});
+		            });		
 			});
 		} else {
 			if(sample.sampleTypeCode === "ORDER") {

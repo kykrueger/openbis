@@ -4,6 +4,8 @@ from .openbis_object import OpenBisObject
 from .definitions import openbis_definitions
 from .utils import VERBOSE
 
+sample_definitions = openbis_definitions('Sample')
+
 class Sample(OpenBisObject):
     """ A Sample is one of the most commonly used objects in openBIS.
     """
@@ -146,6 +148,11 @@ class Sample(OpenBisObject):
     set_props = set_properties
 
     def save(self):
+        for prop_name, prop in self.props._property_names.items():
+            if prop['mandatory']:
+                if getattr(self.props, prop_name) is None or getattr(self.props, prop_name) == "":
+                    raise ValueError("Property '{}' is mandatory and must not be None".format(prop_name))
+
         props = self.p._all_props()
 
         if self.is_new:

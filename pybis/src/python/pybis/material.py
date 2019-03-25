@@ -35,6 +35,11 @@ class Material(OpenBisObject):
 
 
     def save(self):
+        for prop_name, prop in self.props._property_names.items():
+            if prop['mandatory']:
+                if getattr(self.props, prop_name) is None or getattr(self.props, prop_name) == "":
+                    raise ValueError("Property '{}' is mandatory and must not be None".format(prop_name))
+
         props = self.p._all_props()
 
         if self.is_new:

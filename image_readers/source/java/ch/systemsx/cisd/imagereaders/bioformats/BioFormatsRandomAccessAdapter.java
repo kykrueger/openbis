@@ -52,6 +52,18 @@ final class BioFormatsRandomAccessAdapter implements IRandomAccess
     }
 
     @Override
+    public boolean exists() throws IOException
+    {
+        return true;
+    }
+
+    @Override
+    public long skipBytes(long arg0) throws IOException
+    {
+        return randomAccessFile.skipBytes((int) arg0);
+    }
+
+    @Override
     public int read(byte[] b) throws IOException
     {
         try

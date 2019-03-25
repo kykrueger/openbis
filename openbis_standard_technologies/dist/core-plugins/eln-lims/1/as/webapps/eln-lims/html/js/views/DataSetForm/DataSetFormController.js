@@ -35,6 +35,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 							            var fetchOptions = new DataSetFetchOptions();
 							            fetchOptions.withLinkedData().withExternalDms();
 							            mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+							            	_this._dataSetFormModel.v3_dataset = map[datasetPermId];
 							            	_this._dataSetFormModel.linkedData = map[datasetPermId].linkedData;
 							            	_this._dataSetFormView.repaint(views);
 							            });

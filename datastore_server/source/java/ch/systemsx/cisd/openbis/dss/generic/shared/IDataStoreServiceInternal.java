@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 import java.util.List;
 import java.util.Map;
 
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.resource.IInitializable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.ISessionWorkspaceProvider;
@@ -77,4 +78,10 @@ public interface IDataStoreServiceInternal extends IInitializable, IDataStoreSer
      * Returns the put data set service.
      */
     IPutDataSetService getPutDataSetService();
+
+    /**
+     * Adds an action for the specified sessionToken which will be invoked when the session is expired.
+     */
+    void addCleanupAction(String userSessionToken, IDelegatedAction action);
+
 }

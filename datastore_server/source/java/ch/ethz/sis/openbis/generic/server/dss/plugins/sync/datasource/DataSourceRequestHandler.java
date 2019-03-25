@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -57,16 +58,27 @@ public class DataSourceRequestHandler implements IRequestHandler
         RESOURCE_LIST("resourcelist", CAPABILITY_LIST, true)
         {
             @Override
-            void writeUrls(XMLStreamWriter writer, DeliveryContext context, IDataSourceQueryService queryService, IDeliverer deliverer,
-                    Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
+            void writeUrls(WritingContext context) throws XMLStreamException
             {
                 SpaceSearchCriteria searchCriteria = new SpaceSearchCriteria();
                 SpaceFetchOptions fetchOptions = new SpaceFetchOptions();
-                List<Space> spaces = context.getV3api().searchSpaces(sessionToken, searchCriteria, fetchOptions).getObjects();
+                DeliveryContext deliveryContext = context.getDeliveryContext();
+                String sessionToken = context.getSessionToken();
+                List<Space> spaces = deliveryContext.getV3api().searchSpaces(sessionToken, searchCriteria, fetchOptions).getObjects();
                 List<String> spaceCodes = spaces.stream().map(Space::getCode).collect(Collectors.toList());
+                Map<String, List<String>> parameterMap = context.getParameterMap();
                 Set<String> requestedSpaces = DataSourceUtils.getRequestedAndAllowedSubSet(spaceCodes,
                         parameterMap.get("white_list"), parameterMap.get("black_list"));
-                deliverer.deliverEntities(writer, queryService, sessionToken, requestedSpaces, requestTimestamp);
+                IDeliverer deliverer = context.getDeliverer();
+                IDataSourceQueryService queryService = context.getQueryService();
+                DeliveryExecutionContext executionContext = new DeliveryExecutionContext();
+                executionContext.setQueryService(queryService);
+                executionContext.setRequestTimestamp(context.getRequestTimestamp());
+                executionContext.setSessionToken(sessionToken);
+                executionContext.setSpaces(requestedSpaces);
+                executionContext.setWriter(context.getWriter());
+                executionContext.setFileServicePaths(context.getFileServicePaths());
+                deliverer.deliverEntities(executionContext);
             }
         };
 
@@ -109,30 +121,31 @@ public class DataSourceRequestHandler implements IRequestHandler
             return name + ".xml";
         }
 
-        void write(XMLStreamWriter writer, DeliveryContext context, IDataSourceQueryService queryService, IDeliverer deliverer,
-                Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
+        void write(WritingContext context) throws XMLStreamException
         {
+            XMLStreamWriter writer = context.getWriter();
             writer.writeStartElement("rs:ln");
             String verb = up == null ? asVerb() : up.asVerb();
-            writer.writeAttribute("href", createDownloadUrl(context, verb));
+            writer.writeAttribute("href", createDownloadUrl(context.getDeliveryContext(), verb));
             writer.writeAttribute("rel", up == null ? "describedby" : "up");
             writer.writeEndElement();
             writer.writeStartElement("rs:md");
             if (withAt)
             {
+                Date requestTimestamp = context.getRequestTimestamp();
                 writer.writeAttribute("at", DataSourceUtils.convertToW3CDate(requestTimestamp));
             }
             writer.writeAttribute("capability", capabilityAttribute);
             writer.writeEndElement();
-            writeUrls(writer, context, queryService, deliverer, parameterMap, sessionToken, requestTimestamp);
+            writeUrls(context);
         }
 
-        void writeUrls(XMLStreamWriter writer, DeliveryContext context, IDataSourceQueryService queryService, IDeliverer deliverer,
-                Map<String, List<String>> parameterMap, String sessionToken, Date requestTimestamp) throws XMLStreamException
+        void writeUrls(WritingContext context) throws XMLStreamException
         {
+            XMLStreamWriter writer = context.getWriter();
             writer.writeStartElement("url");
             writer.writeStartElement("loc");
-            writer.writeCharacters(createDownloadUrl(context, down.asVerb()));
+            writer.writeCharacters(createDownloadUrl(context.getDeliveryContext(), down.asVerb()));
             writer.writeEndElement();
             writer.writeStartElement("rs:md");
             writer.writeAttribute("capability", down.name);
@@ -157,6 +170,8 @@ public class DataSourceRequestHandler implements IRequestHandler
         deliveryContext.setServletPath(new File(PropertyUtils.getMandatoryProperty(properties, "path")).getParent());
         deliveryContext.setServerUrl(PropertyUtils.getMandatoryProperty(properties, "server-url"));
         deliveryContext.setDownloadUrl(PropertyUtils.getMandatoryProperty(properties, "download-url"));
+        String fileServiceRepositoryPath = PropertyUtils.getMandatoryProperty(properties, "file-service-repository-path");
+        deliveryContext.setFileServiceRepository(new File(fileServiceRepositoryPath));
         deliveryContext.setV3api(ServiceProvider.getV3ApplicationService());
         deliveryContext.setContentProvider(ServiceProvider.getHierarchicalContentProvider());
         deliveryContext.setOpenBisDataSourceName(properties.getProperty("openbis-data-source-name", "openbis-db"));
@@ -168,6 +183,7 @@ public class DataSourceRequestHandler implements IRequestHandler
         deliverers.addDeliverer(new ExperimentDeliverer(deliveryContext));
         deliverers.addDeliverer(new SampleDeliverer(deliveryContext));
         deliverers.addDeliverer(new DataSetDeliverer(deliveryContext));
+        deliverers.addDeliverer(new FileDeliverer(deliveryContext));
         deliverer = deliverers;
     }
 
@@ -193,7 +209,15 @@ public class DataSourceRequestHandler implements IRequestHandler
             Date requestTimestamp = getRequestTimestamp(queryService);
             Set<String> verbs = new HashSet<>(parameterMap.get("verb"));
             Capability capability = findMatchingCapability(verbs);
-            capability.write(writer, deliveryContext, queryService, deliverer, parameterMap, sessionToken, requestTimestamp);
+            WritingContext writingContext = new WritingContext();
+            writingContext.setWriter(writer);
+            writingContext.setDeliveryContext(deliveryContext);
+            writingContext.setQueryService(queryService);
+            writingContext.setDeliverer(deliverer);
+            writingContext.setParameterMap(parameterMap);
+            writingContext.setSessionToken(sessionToken);
+            writingContext.setRequestTimestamp(requestTimestamp);
+            capability.write(writingContext);
             writer.writeEndElement();
             writer.writeEndDocument();
         } catch (Exception e)
@@ -243,4 +267,97 @@ public class DataSourceRequestHandler implements IRequestHandler
         return parameterMap;
     }
 
+    private static final class WritingContext
+    {
+        private XMLStreamWriter writer;
+
+        private DeliveryContext context;
+
+        private IDataSourceQueryService queryService;
+
+        private IDeliverer deliverer;
+
+        private Map<String, List<String>> parameterMap;
+
+        private String sessionToken;
+
+        private Date requestTimestamp;
+        
+        private Set<String> fileServicePaths = new TreeSet<>();
+
+        public XMLStreamWriter getWriter()
+        {
+            return writer;
+        }
+
+        public void setWriter(XMLStreamWriter writer)
+        {
+            this.writer = writer;
+        }
+
+        public DeliveryContext getDeliveryContext()
+        {
+            return context;
+        }
+
+        public void setDeliveryContext(DeliveryContext context)
+        {
+            this.context = context;
+        }
+
+        public IDataSourceQueryService getQueryService()
+        {
+            return queryService;
+        }
+
+        public void setQueryService(IDataSourceQueryService queryService)
+        {
+            this.queryService = queryService;
+        }
+
+        public IDeliverer getDeliverer()
+        {
+            return deliverer;
+        }
+
+        public void setDeliverer(IDeliverer deliverer)
+        {
+            this.deliverer = deliverer;
+        }
+
+        public Map<String, List<String>> getParameterMap()
+        {
+            return parameterMap;
+        }
+
+        public void setParameterMap(Map<String, List<String>> parameterMap)
+        {
+            this.parameterMap = parameterMap;
+        }
+
+        public String getSessionToken()
+        {
+            return sessionToken;
+        }
+
+        public void setSessionToken(String sessionToken)
+        {
+            this.sessionToken = sessionToken;
+        }
+
+        public Date getRequestTimestamp()
+        {
+            return requestTimestamp;
+        }
+
+        public void setRequestTimestamp(Date requestTimestamp)
+        {
+            this.requestTimestamp = requestTimestamp;
+        }
+
+        public Set<String> getFileServicePaths()
+        {
+            return fileServicePaths;
+        }
+    }
 }

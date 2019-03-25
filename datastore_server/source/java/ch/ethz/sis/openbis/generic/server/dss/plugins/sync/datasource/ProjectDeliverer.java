@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
@@ -41,10 +42,14 @@ public class ProjectDeliverer extends AbstractEntityWithPermIdDeliverer
     }
 
     @Override
-    protected void deliverEntities(XMLStreamWriter writer, String sessionToken, Set<String> spaces, List<String> projectPermIds) throws XMLStreamException
+    protected void deliverEntities(DeliveryExecutionContext context, List<String> projectPermIds) throws XMLStreamException
     {
+        XMLStreamWriter writer = context.getWriter();
+        String sessionToken = context.getSessionToken();
+        Set<String> spaces = context.getSpaces();
+        IApplicationServerApi v3api = getV3Api();
         List<ProjectPermId> permIds = projectPermIds.stream().map(ProjectPermId::new).collect(Collectors.toList());
-        Collection<Project> fullProjects = context.getV3api().getProjects(sessionToken, permIds, createFullFetchOptions()).values();
+        Collection<Project> fullProjects = v3api.getProjects(sessionToken, permIds, createFullFetchOptions()).values();
         int count = 0;
         for (Project project : fullProjects)
         {
@@ -54,7 +59,7 @@ public class ProjectDeliverer extends AbstractEntityWithPermIdDeliverer
                 startUrlElement(writer, "PROJECT", permId, project.getModificationDate());
                 startXdElement(writer);
                 writer.writeAttribute("code", project.getCode());
-                addAttribute(writer, "desc", project.getDescription());
+                addAttributeAndExtractFilePaths(context, writer, "desc", project.getDescription());
                 addAttributeIfSet(writer, "frozen", project.isFrozen());
                 addAttributeIfSet(writer, "frozenForExperiments", project.isFrozenForExperiments());
                 addAttributeIfSet(writer, "frozenForSamples", project.isFrozenForSamples());

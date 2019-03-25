@@ -28,6 +28,8 @@ class AttrHolder():
             self.__dict__['_type'] = type.data
 
         self.__dict__['_allowed_attrs'] = openbis_definitions(entity)['attrs']
+        self.__dict__['_allowed_attrs_new'] = openbis_definitions(entity)['attrs_new']
+        self.__dict__['_allowed_attrs_up'] = openbis_definitions(entity)['attrs_up']
         self.__dict__['_identifier'] = None
         self.__dict__['_is_new'] = True
         self.__dict__['_tags'] = []
@@ -295,13 +297,13 @@ class AttrHolder():
             array of values, whereas attachments, users (of groups) and
             roleAssignments are returned as an array of dictionaries.
         """
-        #if name == 'parents':
-        #    import pdb; pdb.set_trace()
-
 
         name_map = {
-            'group': 'authorizationGroup',
-            'roles': 'roleAssignments'
+            'group'      : 'authorizationGroup',
+            'roles'      : 'roleAssignments',
+            'permid'     : 'permId',
+            'collection' : 'experiment',
+            'object'     : 'sample'
         }
         if name in name_map:
             name = name_map[name]
@@ -391,20 +393,25 @@ class AttrHolder():
             new_sample.space = 'MATERIALS'
             new_sample.parents = ['/MATERIALS/YEAST747']
         """
-        #allowed_attrs = []
-        #if self.is_new:
-        #    allowed_attrs = openbis_definitions(self.entity)['attrs_new']
-        #else:
-        #    allowed_attrs = openbis_definitions(self.entity)['attrs_up']
 
-        #if name not in allowed_attrs:
-        #    raise ValueError("{} is not in the list of changeable attributes ({})".format(name, ", ".join(allowed_attrs) ) )
+        # experiment aka collection, sample aka object
+        name_map = {
+            'collection' : 'experiment',
+            'object'     : 'sample',
+            'parent'     : 'parents',
+            'child'      : 'children',
+        }
+        if name in name_map:
+            name = name_map[name]
 
-        if name in ["parents", "parent", "children", "child", "components"]:
-            if name == "parent":
-                name = "parents"
-            if name == "child":
-                name = "children"
+        if self._is_new:
+            if name not in self._allowed_attrs_new:
+                raise ValueError("No such attribute: «{}» for entity: {}".format(name, self.entity))
+        else:
+            if name not in self._allowed_attrs_up:
+                raise ValueError("No such attribute: «{}» for entity: {}".format(name, self.entity))
+
+        if name in ["parents", "children", "components"]:
 
             if not isinstance(value, list):
                 value = [value]

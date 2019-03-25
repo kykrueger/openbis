@@ -1476,18 +1476,98 @@ var FormUtil = new function() {
 	};
 	
 	this.getFreezeButton = function(entityType, permId, isEntityFrozen) {
+		var _this = this;
 		var $freezeButton = FormUtil.getButtonWithIcon("glyphicon-lock");
 		
 		if(isEntityFrozen) {
 			$freezeButton.attr("disabled", "disabled");
 		} else {
 			$freezeButton.click(function() {
-				//TO-DO
-//				Util.blockUI();
-//				mainController.serverFacade.freeze();
+				_this.showFreezeForm(entityType, permId);
 			});
 		}
 		
 		return $freezeButton;
+	}
+	
+	this.showFreezeForm = function(entityType, permId) {
+		var _this = this;
+		var $window = $('<form>', {
+			'action' : 'javascript:void(0);'
+		});
+		
+		$window.append($('<legend>').append("Freeze Entity"));
+		
+		//
+		// Warning
+		//
+		$window.append($("<p>")
+				.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
+				.append(" Enter your password to freeze the entity, after is frozen no more changes will be allowed:"));
+		
+		//
+		// Password
+		//
+		var $passField = FormUtil._getInputField('password', null, 'Password', null, true);
+		var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Password", null);
+		$window.append($passwordGroup);
+		
+		//
+		// Buttons
+		//
+		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+
+		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+		$btnCancel.click(function() {
+			Util.unblockUI();
+		});
+		
+		$window.append($('<br>'));
+		
+		$window.append($btnAccept).append('&nbsp;').append($btnCancel);
+		
+		var css = {
+				'text-align' : 'left',
+				'top' : '15%',
+				'width' : '70%',
+				'left' : '15%',
+				'right' : '20%',
+				'overflow' : 'hidden'
+		};
+		
+		$window.submit(function() {
+			var username = mainController.serverFacade.getUserId();
+			var password = $passField.val();
+			mainController.serverFacade.login(
+					username, 
+					password, 
+					function(data) { 
+						if(data.result == null) {
+							Util.showUserError('The given password is not correct.');
+						} else {
+							var sessionToken = data.result;
+							var parameters = {
+									"method" : "freeze",
+									"sessionToken" : sessionToken,
+									"entityType" : entityType,
+									"permId" : permId
+							}
+							mainController.serverFacade.customASService(parameters, function(result) {
+								if(result === "OK") {
+									Util.showSuccess("Freezing succeeded.", function() {
+										Util.unblockUI();
+									});
+								} else {
+									Util.showUserError('Freezing failed.', function() {
+										Util.unblockUI();
+									});
+								}
+							}, "freeze-api");
+						}
+					});
+			Util.blockUI();
+		});
+		
+		Util.blockUI($window, css);
 	}
 }

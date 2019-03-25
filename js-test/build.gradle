@@ -35,7 +35,7 @@ configurations.create('externalDss')
 
 dependencies {
 
-	compile 'reflections:reflections:+', 
+	compile 'reflections:reflections:0.9.10', 
 	'testng:testng:+', 
 	'fasterxml:jackson-core:+',
 	'fasterxml:jackson-annotations:+',
@@ -45,7 +45,7 @@ dependencies {
 	
 	testRuntime project(':screening'), project(':rtd_phosphonetx')
 	
-	testRuntimeFirst 'javax:servlet-api:+', 'reflections:reflections:+'
+	testRuntimeFirst 'javax:servlet-api:+', 'reflections:reflections:0.9.10'
 	
 	testRuntimeSecond 'google:gwt-user:+'
 
