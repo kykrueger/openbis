@@ -126,13 +126,15 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
     
     protected void extractFileServicePath(DeliveryExecutionContext context, String value)
     {
-        Set<String> fileServicePaths = context.getFileServicePaths();
-        Matcher matcher = FILE_SERVICE_PATTERN.matcher(value);
-        while (matcher.find())
+        if (value != null)
         {
-            fileServicePaths.add(matcher.group(1));
+            Set<String> fileServicePaths = context.getFileServicePaths();
+            Matcher matcher = FILE_SERVICE_PATTERN.matcher(value);
+            while (matcher.find())
+            {
+                fileServicePaths.add(matcher.group(1));
+            }
         }
-
     }
 
     protected void addAttachments(XMLStreamWriter writer, List<Attachment> attachments) throws XMLStreamException
