@@ -3,18 +3,23 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonSe
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions as SpaceFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId as SpacePermId
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space as Space
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions as ProjectFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId as ProjectPermId
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project as Project
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions as ExperimentFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId as ExperimentPermId
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment as Experiment
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions as SampleFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId as SamplePermId
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample as Sample
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions as DataSetFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId as DataSetPermId
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet as DataSet
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions as PersonFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId as PersonPermId
@@ -32,7 +37,8 @@ def process(context, parameters):
 		sessionToken = parameters.get("sessionToken");
 		type = parameters.get("entityType");
 		permId = parameters.get("permId");
-		spaceCode = getSpace(context.applicationService, sessionToken, type, permId);
+		entity = getEntity(context.applicationService, sessionToken, type, permId);
+		spaceCode = getSpace(entity);
 		
 		# 2. Verify that the user is an admin in such space
 		userId = sessionToken.split("-")[0];
@@ -40,6 +46,15 @@ def process(context, parameters):
 		
 		# 3. Create Freeze List
 		result = "OK"
+		
+		# Debug Info
+		print "sessionToken: " + sessionToken
+		print "type: " + type
+		print "permId: " + permId
+		print "entity: " + str(entity)
+		print "spaceCode: " + spaceCode
+		print "userId: " + userId
+		print "isAdminOfSpace: " + str(isAdminOfSpace)
 		
 		
 		
@@ -60,39 +75,53 @@ def isUserAdminOnSpace(service, sessionToken, userId, spaceCode):
 			return True
 	return False
 
-def getSpace(service, sessionToken, type, permId):
-	spaceCode = None;
+def getEntity(service, sessionToken, type, permId):
+	entity = None;
 	if type == "SPACE":
 		spaceFetchOptions = SpaceFetchOptions();
 		id = SpacePermId(permId);
 		entities = service.getSpaces(sessionToken, [id], spaceFetchOptions);
-		spaceCode = entities[id].getCode();
+		entity = entities[id];
 	if type == "PROJECT":
 		projectFetchOptions = ProjectFetchOptions();
 		projectFetchOptions.withSpace();
 		id = ProjectPermId(permId)
 		entities = service.getProjects(sessionToken, [id], projectFetchOptions);
-		spaceCode = entities[id].getSpace().getCode();
+		entity = entities[id];
 	if type == "EXPERIMENT":
 		experimentFetchOptions = ExperimentFetchOptions();
 		experimentFetchOptions.withProject().withSpace();
 		id = ExperimentPermId(permId);
 		entities = service.getExperiments(sessionToken, [id], experimentFetchOptions);
-		spaceCode = entities[id].getProject().getSpace().getCode();
+		entity = entities[id];
 	if type == "SAMPLE":
 		sampleFetchOptions = SampleFetchOptions();
 		sampleFetchOptions.withSpace();
 		id = SamplePermId(permId);
 		entities = service.getSamples(sessionToken, [id], sampleFetchOptions);
-		spaceCode = entities[id].getSpace().getCode();
+		entity = entities[id];
 	if type == "DATASET":
 		dataSetFetchOptions = DataSetFetchOptions();
 		dataSetFetchOptions.withExperiment().withProject().withSpace();
 		dataSetFetchOptions.withSample().withSpace();
 		id = DataSetPermId(permId);
 		entities = service.getDataSets(sessionToken, [id], dataSetFetchOptions);
-		if entities[id].getSample() is not None:
-			spaceCode = entities[id].getSample().getSpace().getCode();
-		if entities[id].getExperiment() is not None:
-			spaceCode = entities[id].getExperiment().getProject().getSpace().getCode();
+		entity = entities[id];
+	return entity
+
+def getSpace(entity):
+	spaceCode = None;
+	if isinstance(entity, Space):
+		spaceCode = entity.getCode();
+	if isinstance(entity, Project):
+		spaceCode = entity.getSpace().getCode();
+	if isinstance(entity, Experiment):
+		spaceCode = entity.getProject().getSpace().getCode();
+	if isinstance(entity, Sample):
+		spaceCode = entity.getSpace().getCode();
+	if isinstance(entity, DataSet):
+		if entity.getSample() is not None:
+			spaceCode = entity.getSample().getSpace().getCode();
+		if entity.getExperiment() is not None:
+			spaceCode = entity.getExperiment().getProject().getSpace().getCode();
 	return spaceCode
