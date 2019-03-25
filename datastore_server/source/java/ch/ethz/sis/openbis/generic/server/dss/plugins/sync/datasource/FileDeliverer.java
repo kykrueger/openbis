@@ -57,6 +57,7 @@ public class FileDeliverer extends AbstractEntityDeliverer<String>
             {
                 startUrlElement(writer, "FILE", path, new Date(file.lastModified()));
                 startXdElement(writer);
+                addKind(writer, "FILE");
                 writer.writeAttribute("path", path);
                 byte[] content = FileUtilities.loadToByteArray(file);
                 String contentAsBase64String = Base64.getEncoder().encodeToString(content);
