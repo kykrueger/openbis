@@ -3,25 +3,35 @@ import java.util.ArrayList as ArrayList
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames as ComponentNames
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider as CommonServiceProvider
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.UpdateSpacesOperation as UpdateSpacesOperation
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate as SpaceUpdate
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions as SpaceFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId as SpacePermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space as Space
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.UpdateProjectsOperation as UpdateProjectsOperation
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate as ProjectUpdate
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria as ProjectSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions as ProjectFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId as ProjectPermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project as Project
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.UpdateExperimentsOperation as UpdateExperimentsOperation
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate as ExperimentUpdate
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria as ExperimentSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions as ExperimentFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId as ExperimentPermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment as Experiment
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.UpdateSamplesOperation as UpdateSamplesOperation
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate as SampleUpdate
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria as SampleSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions as SampleFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId as SamplePermId
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample as Sample
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.UpdateDataSetsOperation as UpdateDataSetsOperation
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate as DataSetUpdate
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria as DataSetSearchCriteria
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions as DataSetFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId as DataSetPermId
@@ -32,6 +42,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId as Person
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role as Role
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel as RoleLevel
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.OperationExecutionPermId as OperationExecutionPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions as SynchronousOperationExecutionOptions;
 
 def process(context, parameters):
 	method = parameters.get("method");
@@ -51,9 +63,15 @@ def process(context, parameters):
 		isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode);
 		
 		# 3. Create Freeze List
-		defaultFreezeList = freezeIfSameSpaceAndChildPolicy(context.applicationService, sessionToken, entity, spaceCode);
-		result = "OK"
+		defaultFreezeList = getFreezeList(context.applicationService, sessionToken, entity, spaceCode);
 		
+		# 4. Freeze
+		freezeOperations = getFreezeOperations(defaultFreezeList);
+		
+		freezeOptions = SynchronousOperationExecutionOptions();
+		freezeOptions.setExecutionId(OperationExecutionPermId());
+		context.applicationService.executeOperations(sessionToken, freezeOperations, freezeOptions);
+	
 		# Debug Info
 		print "sessionToken: " + sessionToken
 		print "type: " + type
@@ -63,11 +81,74 @@ def process(context, parameters):
 		print "userId: " + userId
 		print "isAdminOfSpace: " + str(isAdminOfSpace)
 		print "defaultFreezeList: " + str(defaultFreezeList)
+		print "freezeOperations: " + str(freezeOperations)
+		
+		result = "OK"
 		
 		
 #	except Exception as e:
 #		result = str(e)
 	return result;
+
+def getFreezeOperations(toFreezeMap):
+	spaceUpdates = [];
+	projectUpdates = [];
+	experimentUpdates = [];
+	sampleUpdates = [];
+	dataSetUpdates = [];
+	for toFreezeKey in toFreezeMap:
+		toFreeze = toFreezeMap[toFreezeKey];
+		if toFreeze["type"] == "Space":
+			spaceUpdate = SpaceUpdate();
+			spaceUpdate.setSpaceId(SpacePermId(toFreeze["permId"]));
+			spaceUpdate.freeze();
+			spaceUpdate.freezeForProjects();
+			spaceUpdate.freezeForSamples();
+			spaceUpdates.append(spaceUpdate);
+		if toFreeze["type"] == "Project":
+			projectUpdate = ProjectUpdate();
+			projectUpdate.setProjectId(ProjectPermId(toFreeze["permId"]));
+			projectUpdate.freeze();
+			projectUpdate.freezeForExperiments();
+			projectUpdate.freezeForSamples();
+			projectUpdates.append(projectUpdate);
+		if toFreeze["type"] == "Experiment":
+			experimentUpdate = ExperimentUpdate();
+			experimentUpdate.setExperimentId(ExperimentPermId(toFreeze["permId"]));
+			experimentUpdate.freeze();
+			experimentUpdate.freezeForSamples();
+			experimentUpdate.freezeForDataSets();
+			experimentUpdates.append(experimentUpdate);
+		if toFreeze["type"] == "Sample":
+			sampleUpdate = SampleUpdate();
+			sampleUpdate.setSampleId(SamplePermId(toFreeze["permId"]));
+			sampleUpdate.freeze();
+			sampleUpdate.freezeForComponents();
+			sampleUpdate.freezeForDataSets();
+			sampleUpdate.freezeForParents();
+			# sampleUpdate.freezeForChildren();
+			sampleUpdates.append(sampleUpdate);
+		if toFreeze["type"] == "DataSet":
+			dataSetUpdate = DataSetUpdate();
+			dataSetUpdate.setDataSetId(DataSetPermId(toFreeze["permId"]));
+			dataSetUpdate.freeze();
+			dataSetUpdate.freezeForComponents();
+			dataSetUpdate.freezeForContainers();
+			dataSetUpdate.freezeForParents();
+			# dataSetUpdate.freezeForChildren();
+			dataSetUpdates.append(dataSetUpdate);
+	operations = [];
+	if spaceUpdates:
+		operations.append(UpdateSpacesOperation(spaceUpdates));
+	if projectUpdates:
+		operations.append(UpdateProjectsOperation(projectUpdates));
+	if experimentUpdates:
+		operations.append(UpdateExperimentsOperation(experimentUpdates));
+	if sampleUpdates:
+		operations.append(UpdateSamplesOperation(sampleUpdates));
+	if dataSetUpdates:
+		operations.append(UpdateDataSetsOperation(dataSetUpdates));
+	return operations;
 
 def isUserAdminOnSpace(service, sessionToken, userId, spaceCode):
 	id = PersonPermId(userId);
@@ -82,7 +163,8 @@ def isUserAdminOnSpace(service, sessionToken, userId, spaceCode):
 			return True
 	return False
 
-def freezeIfSameSpaceAndChildPolicy(service, sessionToken, entity, spaceCode):
+# Same Space and child policy
+def getFreezeList(service, sessionToken, entity, spaceCode):
 	entitiesToFreeze = {};
 	entitiesToExpand = {};
 	entitiesToExpand[entity.__class__.__name__ +"+"+ entity.getPermId().getPermId()] = entity;
