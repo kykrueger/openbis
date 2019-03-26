@@ -49,45 +49,43 @@ def process(context, parameters):
 	method = parameters.get("method");
 	result = None;
 	
-#	try:
-	if method == "freeze":
-		# 1. Get entity by type to verify existence and obtain its space code
-		sessionToken = parameters.get("sessionToken");
-		type = parameters.get("entityType");
-		permId = parameters.get("permId");
-		entity = getEntity(context.applicationService, sessionToken, type, permId);
-		spaceCode = getSpace(entity);
-
-		# 2. Verify that the user is an admin in such space
-		userId = sessionToken.split("-")[0];
-		isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode);
-		
-		# 3. Create Freeze List
-		defaultFreezeList = getFreezeList(context.applicationService, sessionToken, entity, spaceCode);
-		
-		# 4. Freeze
-		freezeOperations = getFreezeOperations(defaultFreezeList);
-		
-		freezeOptions = SynchronousOperationExecutionOptions();
-		freezeOptions.setExecutionId(OperationExecutionPermId());
-		context.applicationService.executeOperations(sessionToken, freezeOperations, freezeOptions);
+	try:
+		if method == "freeze":
+			# 1. Get entity by type to verify existence and obtain its space code
+			sessionToken = parameters.get("sessionToken");
+			type = parameters.get("entityType");
+			permId = parameters.get("permId");
+			entity = getEntity(context.applicationService, sessionToken, type, permId);
+			spaceCode = getSpace(entity);
 	
-		# Debug Info
-		print "sessionToken: " + sessionToken
-		print "type: " + type
-		print "permId: " + permId
-		print "entity: " + str(entity)
-		print "spaceCode: " + spaceCode
-		print "userId: " + userId
-		print "isAdminOfSpace: " + str(isAdminOfSpace)
-		print "defaultFreezeList: " + str(defaultFreezeList)
-		print "freezeOperations: " + str(freezeOperations)
+			# 2. Verify that the user is an admin in such space
+			userId = sessionToken.split("-")[0];
+			isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode);
+			
+			# 3. Create Freeze List
+			defaultFreezeList = getFreezeList(context.applicationService, sessionToken, entity, spaceCode);
+			
+			# 4. Freeze
+			freezeOperations = getFreezeOperations(defaultFreezeList);
+			
+			freezeOptions = SynchronousOperationExecutionOptions();
+			freezeOptions.setExecutionId(OperationExecutionPermId());
+			context.applicationService.executeOperations(sessionToken, freezeOperations, freezeOptions);
 		
-		result = "OK"
-		
-		
-#	except Exception as e:
-#		result = str(e)
+			# Debug Info
+			print "sessionToken: " + sessionToken
+			print "type: " + type
+			print "permId: " + permId
+			print "entity: " + str(entity)
+			print "spaceCode: " + spaceCode
+			print "userId: " + userId
+			print "isAdminOfSpace: " + str(isAdminOfSpace)
+			print "defaultFreezeList: " + str(defaultFreezeList)
+			print "freezeOperations: " + str(freezeOperations)
+			
+			result = "OK"
+	except Exception, value:
+		result = str(value)
 	return result;
 
 def getFreezeOperations(toFreezeMap):
@@ -138,16 +136,16 @@ def getFreezeOperations(toFreezeMap):
 			# dataSetUpdate.freezeForChildren();
 			dataSetUpdates.append(dataSetUpdate);
 	operations = [];
-	if spaceUpdates:
-		operations.append(UpdateSpacesOperation(spaceUpdates));
-	if projectUpdates:
-		operations.append(UpdateProjectsOperation(projectUpdates));
-	if experimentUpdates:
-		operations.append(UpdateExperimentsOperation(experimentUpdates));
-	if sampleUpdates:
-		operations.append(UpdateSamplesOperation(sampleUpdates));
 	if dataSetUpdates:
 		operations.append(UpdateDataSetsOperation(dataSetUpdates));
+	if sampleUpdates:
+		operations.append(UpdateSamplesOperation(sampleUpdates));
+	if experimentUpdates:
+		operations.append(UpdateExperimentsOperation(experimentUpdates));
+	if projectUpdates:
+		operations.append(UpdateProjectsOperation(projectUpdates));
+	if spaceUpdates:
+		operations.append(UpdateSpacesOperation(spaceUpdates));
 	return operations;
 
 def isUserAdminOnSpace(service, sessionToken, userId, spaceCode):
