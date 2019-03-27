@@ -19,17 +19,17 @@ package ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.xoai;
 import java.util.Date;
 import java.util.List;
 
-import com.lyncode.xoai.dataprovider.exceptions.IdDoesNotExistException;
-import com.lyncode.xoai.dataprovider.exceptions.OAIException;
-import com.lyncode.xoai.dataprovider.filter.ScopedFilter;
-import com.lyncode.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
-import com.lyncode.xoai.dataprovider.handlers.results.ListItemsResults;
-import com.lyncode.xoai.dataprovider.model.Item;
-import com.lyncode.xoai.dataprovider.repository.ItemRepository;
+import org.dspace.xoai.dataprovider.exceptions.IdDoesNotExistException;
+import org.dspace.xoai.dataprovider.exceptions.OAIException;
+import org.dspace.xoai.dataprovider.filter.ScopedFilter;
+import org.dspace.xoai.dataprovider.handlers.results.ListItemIdentifiersResult;
+import org.dspace.xoai.dataprovider.handlers.results.ListItemsResults;
+import org.dspace.xoai.dataprovider.model.Item;
+import org.dspace.xoai.dataprovider.repository.ItemRepository;
 
 /**
  * <p>
- * Simple implementation of {@link com.lyncode.xoai.dataprovider.repository.ItemRepository} that reduces the number of methods that have to
+ * Simple implementation of {@link org.dspace.xoai.dataprovider.repository.ItemRepository} that reduces the number of methods that have to
  * implemented. It delegates all the calls to the overloaded versions of getItemIdentifiersXXX and getItemsXXX methods down to:
  * {@link #doGetItemIdentifiers(List, int, int, String, Date, Date)} and {@link #doGetItems(List, int, int, String, Date, Date)}.
  * </p>
