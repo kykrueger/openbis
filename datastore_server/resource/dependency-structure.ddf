@@ -9,6 +9,10 @@
 {etlserver} = ${root}.etlserver
 
 ######################################################################
+# Check that old commons lang (aka lang2) isn't used
+check ch.* independentOf org.apache.commons.lang.*
+
+######################################################################
 # Check dependencies to openbis
 
 [etlserver] = ${etlserver}.*
