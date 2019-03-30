@@ -5,7 +5,6 @@ export const BROWSER_NODE_SELECTED = 'BROWSER_NODE_SELECTED'
 export const BROWSER_NODE_EXPANDED = 'BROWSER_NODE_EXPANDED'
 export const BROWSER_NODE_COLLAPSED = 'BROWSER_NODE_COLLAPSED'
 
-export const BROWSER_SET_INITIALIZED = 'BROWSER_SET_INITIALIZED'
 export const BROWSER_SET_FILTER = 'BROWSER_SET_FILTER'
 export const BROWSER_SET_NODES = 'BROWSER_SET_NODES'
 export const BROWSER_SET_SELECTED_NODE = 'BROWSER_SET_SELECTED_NODE'
@@ -57,14 +56,6 @@ export const browserNodeCollapsed = (page, id) => ({
   payload: {
     page,
     id
-  }
-})
-
-export const browserSetInitialized = (page, initialized) => ({
-  type: BROWSER_SET_INITIALIZED,
-  payload: {
-    page,
-    initialized
   }
 })
 

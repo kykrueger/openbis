@@ -12,15 +12,19 @@ export default function* app() {
 
 function* init() {
   try{
+    yield put(actions.setLoading(true))
     yield putAndWait(actions.apiRequest({method: 'init'}))
-    yield put(actions.setInitialized(true))
   }catch(e){
     yield put(actions.setError(e))
+  }finally{
+    yield put(actions.setLoading(false))
   }
 }
 
 function* login(action) {
   try{
+    yield put(actions.setLoading(true))
+
     let loginResponse = yield putAndWait(actions.apiRequest({method: 'login', params: [action.payload.username, action.payload.password]}))
 
     if(loginResponse.payload.result){
@@ -31,15 +35,20 @@ function* login(action) {
     }
   }catch(e){
     yield put(actions.setError(e))
+  }finally{
+    yield put(actions.setLoading(false))
   }
 }
 
 function* logout() {
   try{
+    yield put(actions.setLoading(true))
     yield putAndWait(actions.apiRequest({method: 'logout'}))
     yield put(actions.init())
   }catch(e){
     yield put(actions.setError(e))
+  }finally{
+    yield put(actions.setLoading(false))
   }
 }
 

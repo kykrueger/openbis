@@ -19,6 +19,8 @@ export default function* browser() {
 }
 
 function* browserInit(action) {
+  yield put(actions.setLoading(true))
+
   let page = action.payload.page
   let impl = yield getBrowserImpl(page)
 
@@ -28,13 +30,13 @@ function* browserInit(action) {
 
   yield put(actions.browserSetNodes(page, nodes))
   yield put(actions.browserSetVisibleNodes(page, filteredNodes))
-  yield put(actions.browserSetInitialized(page, true))
+
+  yield put(actions.setLoading(false))
 }
 
 function* browserRelease(action){
   let page = action.payload.page
   yield put(actions.browserSetNodes(page, []))
-  yield put(actions.browserSetInitialized(page, false))
 }
 
 function* browserFilterChanged(action){

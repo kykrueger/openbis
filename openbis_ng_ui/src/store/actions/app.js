@@ -4,7 +4,7 @@ export const LOGOUT = 'LOGOUT'
 export const CURRENT_PAGE_CHANGED = 'CURRENT_PAGE_CHANGED'
 export const ERROR_CHANGED = 'ERROR_CHANGED'
 
-export const SET_INITIALIZED = 'SET_INITIALIZED'
+export const SET_LOADING = 'SET_LOADING'
 export const SET_SESSION = 'SET_SESSION'
 export const SET_CURRENT_PAGE = 'SET_PAGE'
 export const SET_ERROR = 'SET_ERROR'
@@ -39,10 +39,10 @@ export const errorChanged = (error) => ({
   }
 })
 
-export const setInitialized = (initialized) => ({
-  type: SET_INITIALIZED,
+export const setLoading = (loading) => ({
+  type: SET_LOADING,
   payload: {
-    initialized
+    loading
   }
 })
 

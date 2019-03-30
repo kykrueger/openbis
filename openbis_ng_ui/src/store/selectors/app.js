@@ -1,5 +1,5 @@
-export const getInitialized = (state) => {
-  return state.ui.initialized
+export const getLoading = (state) => {
+  return state.ui.loading
 }
 
 export const getCurrentPage = (state) => {

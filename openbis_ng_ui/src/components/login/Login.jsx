@@ -9,6 +9,7 @@ import CardContent from '@material-ui/core/CardContent'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 
+import logger from '../../common/logger.js'
 import * as actions from '../../store/actions/actions.js'
 
 const styles = {
@@ -66,6 +67,8 @@ class WithLogin extends React.Component {
   }
 
   render() {
+    logger.log(logger.DEBUG, 'Login.render')
+
     const classes = this.props.classes
 
     return (

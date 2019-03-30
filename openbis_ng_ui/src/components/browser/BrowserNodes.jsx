@@ -7,6 +7,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Collapse from '@material-ui/core/Collapse'
 import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import logger from '../../common/logger.js'
 
 const styles = () => ({
   browserList: {
@@ -18,6 +19,8 @@ const styles = () => ({
 class BrowserNodes extends React.Component {
 
   render() {
+    logger.log(logger.DEBUG, 'BrowserNodes.render')
+
     const classes = this.props.classes
 
     return (<List className={classes.browserList}>
@@ -55,6 +58,7 @@ class BrowserNodes extends React.Component {
   }
 
   renderText(node){
+    logger.log(logger.DEBUG, 'BrowserNode.renderText "' + node.text + '"')
     return <ListItemText primary={node.text} inset={true} onClick={() => this.props.nodeSelected(node.id)} />
   }
 

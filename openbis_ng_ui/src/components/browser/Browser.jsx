@@ -1,5 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
+import logger from '../../common/logger.js'
 import store from '../../store/store.js'
 import * as selectors from '../../store/selectors/selectors.js'
 import * as actions from '../../store/actions/actions.js'
@@ -16,7 +17,6 @@ function mapStateToProps(state){
   let currentPage = getCurrentPage()
   return {
     currentPage: currentPage,
-    initialized: selectors.getBrowserInitialized(state, currentPage),
     filter: selectors.getBrowserFilter(state, currentPage),
     nodes: selectors.getBrowserNodes(state, currentPage)
   }
@@ -47,8 +47,10 @@ class Browser extends React.PureComponent {
   }
 
   render() {
+    logger.log(logger.DEBUG, 'Browser.render')
+    
     return (
-      <Loading loading={!this.props.initialized}>
+      <Loading loading={this.props.loading}>
         <BrowserFilter
           filter={this.props.filter}
           filterChanged={this.props.filterChanged}

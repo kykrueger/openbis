@@ -1,23 +1,30 @@
 import React from 'react'
 import {withStyles} from '@material-ui/core/styles'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import logger from '../../common/logger.js'
 
 const styles = {
   loader: {
     position: 'absolute',
-    paddingTop: '15%',
     width: '100%',
     height: '100%',
     zIndex: 1000,
     backgroundColor: '#FFFFFF',
-    opacity: 0.5,
+    opacity: 0.8,
     textAlign: 'center',
+  },
+  progress: {
+    position: 'absolute',
+    top: '20%',
+    left: 'calc(50% - 20px)'
   }
 }
 
 class Loading extends React.Component {
 
   render() {
+    logger.log(logger.DEBUG, 'Loading.render')
+    
     const classes = this.props.classes
 
     return (

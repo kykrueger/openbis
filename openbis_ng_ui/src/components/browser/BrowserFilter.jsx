@@ -3,6 +3,7 @@ import {withStyles} from '@material-ui/core/styles'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import FilterIcon from '@material-ui/icons/FilterList'
+import logger from '../../common/logger.js'
 
 const styles = () => ({
   browserFilter: {
@@ -13,6 +14,8 @@ const styles = () => ({
 class BrowserFilter extends React.Component {
 
   render() {
+    logger.log(logger.DEBUG, 'BrowserFilter.render')
+
     const classes = this.props.classes
 
     return (

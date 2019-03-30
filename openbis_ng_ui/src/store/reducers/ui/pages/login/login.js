@@ -1,4 +1,3 @@
-export default function login(){
-  return {
-  }
+export default function login(state = {}){
+  return state
 }

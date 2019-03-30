@@ -1,5 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
+import logger from '../common/logger.js'
 import * as actions from '../store/actions/actions.js'
 import * as selectors from '../store/selectors/selectors.js'
 
@@ -11,7 +12,7 @@ import Browser from './browser/Browser.jsx'
 
 function mapStateToProps(state){
   return {
-    initialized: selectors.getInitialized(state),
+    loading: selectors.getLoading(state),
     session: selectors.getSession(state),
     error: selectors.getError(state)
   }
@@ -31,8 +32,10 @@ class App extends React.Component {
   }
 
   render() {
+    logger.log(logger.DEBUG, 'App.render')
+
     return (
-      <Loading loading={!this.props.initialized}>
+      <Loading loading={this.props.loading}>
         <Error error={this.props.error} errorClosed={this.props.errorClosed}>
           {this.renderPage()}
         </Error>
