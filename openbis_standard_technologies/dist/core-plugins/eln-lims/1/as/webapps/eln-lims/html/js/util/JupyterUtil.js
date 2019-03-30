@@ -146,7 +146,7 @@ var JupyterUtil = new function() {
 			if(dataSets[cIdx].sample) {
 				content.push(this.getCodeCell(["s" + cIdx + " = o.get_object('" + dataSets[cIdx].sample.permId.permId + "')\n", "s" + cIdx ]));
 			} else if(dataSets[cIdx].experiment) {
-				content.push(this.getCodeCell(["s" + cIdx + " = o.get_experiment('" + dataSets[cIdx].sample.permId.permId + "')\n", "s" + cIdx + ".attrs" ]));
+				content.push(this.getCodeCell(["s" + cIdx + " = o.get_experiment('" + dataSets[cIdx].experiment.permId.permId + "')\n", "s" + cIdx + ".attrs" ]));
 			}
 			content.push(this.getMarkdownCell("Dataset " + dataSetIds[cIdx] + ":"));
 			content.push(this.getCodeCell(["ds" + cIdx + " = o.get_dataset('" + dataSetIds[cIdx] + "')\n", "ds" + cIdx + ".attrs" ]));

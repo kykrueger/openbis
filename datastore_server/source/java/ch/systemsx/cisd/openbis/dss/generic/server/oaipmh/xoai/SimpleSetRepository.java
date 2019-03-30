@@ -19,13 +19,13 @@ package ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.xoai;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.lyncode.xoai.dataprovider.handlers.results.ListSetsResult;
-import com.lyncode.xoai.dataprovider.model.Set;
-import com.lyncode.xoai.dataprovider.repository.SetRepository;
+import org.dspace.xoai.dataprovider.handlers.results.ListSetsResult;
+import org.dspace.xoai.dataprovider.model.Set;
+import org.dspace.xoai.dataprovider.repository.SetRepository;
 
 /**
  * <p>
- * Simple implementation of {@link com.lyncode.xoai.dataprovider.repository.SetRepository} that allows adding new sets via {@link #addSet(Set)}.
+ * Simple implementation of {@link org.dspace.xoai.dataprovider.repository.SetRepository} that allows adding new sets via {@link #addSet(Set)}.
  * method. If no sets are defined then the repository {@link #supportSets()} method returns false.
  * </p>
  * 

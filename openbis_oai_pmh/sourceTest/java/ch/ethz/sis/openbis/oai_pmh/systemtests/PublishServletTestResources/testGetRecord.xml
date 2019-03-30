@@ -16,7 +16,7 @@
 					<dc:identifier>Some publication Id</dc:identifier>
 					<dc:title>Some publication Title</dc:title>
 					<dc:creator>Some author</dc:creator>
-					<maintainer_email>some@authoremail.com</maintainer_email>
+					<maintainer_email xmlns="">some@authoremail.com</maintainer_email>
 					<dc:description>Some notes</dc:description>
 					<dc:rights>NONE</dc:rights>
 					<dc:subject>Viruses;B04</dc:subject>

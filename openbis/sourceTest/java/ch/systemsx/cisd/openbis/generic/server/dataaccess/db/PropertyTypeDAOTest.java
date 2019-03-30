@@ -23,12 +23,17 @@ import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPropertyTypeDAO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
@@ -41,8 +46,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
  * 
  * @author Christian Ribeaud
  */
-@Test(groups =
-{ "db", "propertyType" })
+@Test(groups = { "db", "propertyType" })
 public final class PropertyTypeDAOTest extends AbstractDAOTest
 {
 
@@ -110,8 +114,7 @@ public final class PropertyTypeDAOTest extends AbstractDAOTest
     @DataProvider
     private final Object[][] getEntityDataType()
     {
-        return new Object[][]
-        {
+        return new Object[][] {
                 { DataTypeCode.BOOLEAN },
                 { DataTypeCode.INTEGER },
                 { DataTypeCode.REAL },
@@ -153,6 +156,53 @@ public final class PropertyTypeDAOTest extends AbstractDAOTest
         final IPropertyTypeDAO propertyTypeDAO = daoFactory.getPropertyTypeDAO();
         propertyTypeDAO.createPropertyType(createPropertyType(
                 propertyTypeDAO.getDataTypeByCode(entityDataType), code, null, null));
+    }
+
+    @Test
+    public void testCreateUpdatePropertyTypeMetaData()
+    {
+        // Given 1: Creation
+        IPropertyTypeDAO propertyTypeDAO = daoFactory.getPropertyTypeDAO();
+        String code = "PT-" + System.currentTimeMillis();
+        PropertyTypePE propertyType = createPropertyType(propertyTypeDAO.getDataTypeByCode(DataTypeCode.VARCHAR), code, null, null);
+        HashMap<String, String> metaData = new HashMap<String, String>();
+        metaData.put("greetings", "hello");
+        metaData.put("pi", Double.toString(Math.PI));
+        propertyType.setMetaData(metaData);
+
+        // When 1
+        propertyTypeDAO.createPropertyType(propertyType);
+
+        // Then 1
+        Map<String, String> metaData2 = propertyTypeDAO.tryFindPropertyTypeByCode(code).getMetaData();
+        assertEquals("[greetings=hello, pi=3.141592653589793]", getSortedEntries(metaData2).toString());
+
+        // Given 2: Update
+        metaData2.remove("pi");
+        metaData2.put("greetings", "hello test");
+        metaData2.put("name", "Test");
+
+        // When 2
+        propertyTypeDAO.flush();
+
+        // Then 2
+        Map<String, String> metaData3 = propertyTypeDAO.tryFindPropertyTypeByCode(code).getMetaData();
+        assertEquals("[greetings=hello test, name=Test]", getSortedEntries(metaData3).toString());
+    }
+
+    private List<Entry<String, String>> getSortedEntries(Map<String, String> map)
+    {
+        List<Entry<String, String>> result = new ArrayList<>(map.entrySet());
+        Collections.sort(result, new SimpleComparator<Entry<String, String>, String>()
+            {
+
+                @Override
+                public String evaluate(Entry<String, String> item)
+                {
+                    return item.getKey();
+                }
+            });
+        return result;
     }
 
     @Test

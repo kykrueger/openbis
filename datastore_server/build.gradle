@@ -31,7 +31,7 @@ dependencies {
 			'cisd:cisd-image-readers:+',
 			'hjg:pngj:+',
 			'apache:commons-fileupload:+',
-			'lyncode:xoai-data-provider:+'
+			'dspace:xoai-data-provider:+'
 
   runtime 'bioformats:bioformats:6.0.0'
 

@@ -145,7 +145,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         for (Plugin plugin : plugins)
         {
             writer.writeStartElement("xmd:validationPlugin");
-            addAttributeAndExtractFilePaths(executionContext, writer, "desc", plugin.getDescription());
+            addAttributeAndExtractFilePaths(executionContext, writer, "description", plugin.getDescription());
             addAttribute(writer, "entityKind", getEntityKind(plugin));
             addAttribute(writer, "isAvailable", String.valueOf(plugin.isAvailable()));
             addAttribute(writer, "name", plugin.getName());
