@@ -20,119 +20,121 @@ beforeEach(() => {
   store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
 })
 
-test('browser init', () => {
-  openbis.getUsers.mockReturnValue({
-    objects: [ fixture.TEST_USER_OBJECT, fixture.ANOTHER_USER_OBJECT ]
-  })
+describe('browser', () => {
+  test('init', () => {
+    openbis.getUsers.mockReturnValue({
+      objects: [ fixture.TEST_USER_OBJECT, fixture.ANOTHER_USER_OBJECT ]
+    })
 
-  openbis.getGroups.mockReturnValue({
-    objects: [ fixture.TEST_GROUP_OBJECT, fixture.ANOTHER_GROUP_OBJECT, fixture.ALL_USERS_GROUP_OBJECT ]
-  })
+    openbis.getGroups.mockReturnValue({
+      objects: [ fixture.TEST_GROUP_OBJECT, fixture.ANOTHER_GROUP_OBJECT, fixture.ALL_USERS_GROUP_OBJECT ]
+    })
 
-  store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.browserInit(pages.USERS))
 
-  const state = store.getState()
-  expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
-    node(['users'], false, false, [
-      node(['users', fixture.ANOTHER_USER_OBJECT.userId], false, false, [
-        node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ALL_USERS_GROUP_OBJECT.code]),
-        node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ANOTHER_GROUP_OBJECT.code])
+    const state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users'], false, false, [
+        node(['users', fixture.ANOTHER_USER_OBJECT.userId], false, false, [
+          node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ALL_USERS_GROUP_OBJECT.code]),
+          node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ANOTHER_GROUP_OBJECT.code])
+        ]),
+        node(['users', fixture.TEST_USER_OBJECT.userId], false, false, [
+          node(['users', fixture.TEST_USER_OBJECT.userId, fixture.ALL_USERS_GROUP_OBJECT.code]),
+          node(['users', fixture.TEST_USER_OBJECT.userId, fixture.TEST_GROUP_OBJECT.code])
+        ])
       ]),
-      node(['users', fixture.TEST_USER_OBJECT.userId], false, false, [
-        node(['users', fixture.TEST_USER_OBJECT.userId, fixture.ALL_USERS_GROUP_OBJECT.code]),
-        node(['users', fixture.TEST_USER_OBJECT.userId, fixture.TEST_GROUP_OBJECT.code])
+      node(['groups'], false, false, [
+        node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code], false, false, [
+          node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code, fixture.ANOTHER_USER_OBJECT.userId]),
+          node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code, fixture.TEST_USER_OBJECT.userId])
+        ]),
+        node(['groups', fixture.ANOTHER_GROUP_OBJECT.code], false, false, [
+          node(['groups', fixture.ANOTHER_GROUP_OBJECT.code, fixture.ANOTHER_USER_OBJECT.userId])
+        ]),
+        node(['groups', fixture.TEST_GROUP_OBJECT.code], false, false, [
+          node(['groups', fixture.TEST_GROUP_OBJECT.code, fixture.TEST_USER_OBJECT.userId])
+        ])
       ])
-    ]),
-    node(['groups'], false, false, [
-      node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code], false, false, [
-        node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code, fixture.ANOTHER_USER_OBJECT.userId]),
-        node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code, fixture.TEST_USER_OBJECT.userId])
+    ])
+  })
+
+  test('filter', () => {
+    openbis.getUsers.mockReturnValue({
+      objects: [ fixture.TEST_USER_OBJECT, fixture.ANOTHER_USER_OBJECT ]
+    })
+
+    openbis.getGroups.mockReturnValue({
+      objects: [ fixture.TEST_GROUP_OBJECT, fixture.ANOTHER_GROUP_OBJECT, fixture.ALL_USERS_GROUP_OBJECT ]
+    })
+
+    store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.browserFilterChanged(pages.USERS, fixture.ANOTHER_GROUP_OBJECT.code.toUpperCase()))
+
+    const state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users'], true, false, [
+        node(['users', fixture.ANOTHER_USER_OBJECT.userId], true, false, [
+          node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ANOTHER_GROUP_OBJECT.code])
+        ])
       ]),
-      node(['groups', fixture.ANOTHER_GROUP_OBJECT.code], false, false, [
-        node(['groups', fixture.ANOTHER_GROUP_OBJECT.code, fixture.ANOTHER_USER_OBJECT.userId])
+      node(['groups'], true, false, [
+        node(['groups', fixture.ANOTHER_GROUP_OBJECT.code])
+      ])
+    ])
+  })
+
+  test('selectNode', () => {
+    openbis.getUsers.mockReturnValue({
+      objects: [ fixture.TEST_USER_OBJECT ]
+    })
+
+    openbis.getGroups.mockReturnValue({
+      objects: []
+    })
+
+    store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.browserNodeSelected(pages.USERS, nodeId(['users', fixture.TEST_USER_OBJECT.userId])))
+
+    const state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users'], false, false, [
+        node(['users', fixture.TEST_USER_OBJECT.userId], false, true)
       ]),
-      node(['groups', fixture.TEST_GROUP_OBJECT.code], false, false, [
-        node(['groups', fixture.TEST_GROUP_OBJECT.code, fixture.TEST_USER_OBJECT.userId])
+      node(['groups'])
+    ])
+  })
+
+  test('expandNode collapseNode', () => {
+    openbis.getUsers.mockReturnValue({
+      objects: []
+    })
+
+    openbis.getGroups.mockReturnValue({
+      objects: [ fixture.TEST_GROUP_OBJECT ]
+    })
+
+    store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.browserNodeExpanded(pages.USERS, nodeId(['groups'])))
+
+    let state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users']),
+      node(['groups'], true, false, [
+        node(['groups', fixture.TEST_GROUP_OBJECT.code])
       ])
     ])
-  ])
-})
 
-test('browser filter', () => {
-  openbis.getUsers.mockReturnValue({
-    objects: [ fixture.TEST_USER_OBJECT, fixture.ANOTHER_USER_OBJECT ]
-  })
+    store.dispatch(actions.browserNodeCollapsed(pages.USERS, nodeId(['groups'])))
 
-  openbis.getGroups.mockReturnValue({
-    objects: [ fixture.TEST_GROUP_OBJECT, fixture.ANOTHER_GROUP_OBJECT, fixture.ALL_USERS_GROUP_OBJECT ]
-  })
-
-  store.dispatch(actions.browserInit(pages.USERS))
-  store.dispatch(actions.browserFilterChanged(pages.USERS, fixture.ANOTHER_GROUP_OBJECT.code.toUpperCase()))
-
-  const state = store.getState()
-  expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
-    node(['users'], true, false, [
-      node(['users', fixture.ANOTHER_USER_OBJECT.userId], true, false, [
-        node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ANOTHER_GROUP_OBJECT.code])
+    state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users']),
+      node(['groups'], false, false, [
+        node(['groups', fixture.TEST_GROUP_OBJECT.code])
       ])
-    ]),
-    node(['groups'], true, false, [
-      node(['groups', fixture.ANOTHER_GROUP_OBJECT.code])
     ])
-  ])
-})
-
-test('browser selectNode', () => {
-  openbis.getUsers.mockReturnValue({
-    objects: [ fixture.TEST_USER_OBJECT ]
   })
-
-  openbis.getGroups.mockReturnValue({
-    objects: []
-  })
-
-  store.dispatch(actions.browserInit(pages.USERS))
-  store.dispatch(actions.browserNodeSelected(pages.USERS, nodeId(['users', fixture.TEST_USER_OBJECT.userId])))
-
-  const state = store.getState()
-  expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
-    node(['users'], false, false, [
-      node(['users', fixture.TEST_USER_OBJECT.userId], false, true)
-    ]),
-    node(['groups'])
-  ])
-})
-
-test('browser expandNode collapseNode', () => {
-  openbis.getUsers.mockReturnValue({
-    objects: []
-  })
-
-  openbis.getGroups.mockReturnValue({
-    objects: [ fixture.TEST_GROUP_OBJECT ]
-  })
-
-  store.dispatch(actions.browserInit(pages.USERS))
-  store.dispatch(actions.browserNodeExpanded(pages.USERS, nodeId(['groups'])))
-
-  let state = store.getState()
-  expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
-    node(['users']),
-    node(['groups'], true, false, [
-      node(['groups', fixture.TEST_GROUP_OBJECT.code])
-    ])
-  ])
-
-  store.dispatch(actions.browserNodeCollapsed(pages.USERS, nodeId(['groups'])))
-
-  state = store.getState()
-  expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
-    node(['users']),
-    node(['groups'], false, false, [
-      node(['groups', fixture.TEST_GROUP_OBJECT.code])
-    ])
-  ])
 })
 
 function nodeId(idParts){

@@ -14,33 +14,35 @@ beforeEach(() => {
   store = createStore()
 })
 
-test('login successful', () => {
-  openbis.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
+describe('app', () => {
+  test('login successful', () => {
+    openbis.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
 
-  store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
+    store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
 
-  const state = store.getState()
-  expect(selectors.getSession(state)).toEqual(fixture.TEST_SESSION_TOKEN)
-  expect(selectors.getCurrentPage(state)).toEqual(pages.USERS)
-})
+    const state = store.getState()
+    expect(selectors.getSession(state)).toEqual(fixture.TEST_SESSION_TOKEN)
+    expect(selectors.getCurrentPage(state)).toEqual(pages.TYPES)
+  })
 
-test('login failed', () => {
-  openbis.login.mockReturnValue(null)
+  test('login failed', () => {
+    openbis.login.mockReturnValue(null)
 
-  store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
+    store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
 
-  const state = store.getState()
-  expect(selectors.getSession(state)).toBeNull()
-  expect(selectors.getError(state)).toEqual({ message: 'Incorrect used or password' })
-})
+    const state = store.getState()
+    expect(selectors.getSession(state)).toBeNull()
+    expect(selectors.getError(state)).toEqual({ message: 'Incorrect used or password' })
+  })
 
-test('logout', () => {
-  openbis.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
+  test('logout', () => {
+    openbis.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
 
-  store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
-  store.dispatch(actions.logout())
+    store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
+    store.dispatch(actions.logout())
 
-  const state = store.getState()
-  expect(selectors.getSession(state)).toBeNull()
-  expect(selectors.getError(state)).toBeNull()
+    const state = store.getState()
+    expect(selectors.getSession(state)).toBeNull()
+    expect(selectors.getError(state)).toBeNull()
+  })
 })
