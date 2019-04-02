@@ -121,6 +121,10 @@ public class SampleRelationshipPE implements Serializable
     @Column(name = ColumnNames.PARENT_FROZEN_COLUMN, nullable = false)
     public boolean isParentFrozen()
     {
+        if (parentSample != null)
+        {
+            parentFrozen = parentSample.isFrozen() && parentSample.isFrozenForChildren();
+        }
         return parentFrozen;
     }
 
@@ -150,6 +154,10 @@ public class SampleRelationshipPE implements Serializable
     @Column(name = ColumnNames.CHILD_FROZEN_COLUMN, nullable = false)
     public boolean isChildFrozen()
     {
+        if (childSample != null)
+        {
+            childFrozen = childSample.isFrozen() && childSample.isFrozenForParents();
+        }
         return childFrozen;
     }
 

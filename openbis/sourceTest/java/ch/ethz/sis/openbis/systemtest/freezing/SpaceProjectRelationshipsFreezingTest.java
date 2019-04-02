@@ -25,10 +25,15 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.UpdateProjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.UpdateSpacesOperation;
 
 /**
  * @author Franz-Josef Elmer
@@ -201,5 +206,27 @@ public class SpaceProjectRelationshipsFreezingTest extends FreezingTest
 
         // Then
         assertEquals(getProject(id).getSpace().getCode(), SPACE_1);
+    }
+
+    @Test
+    public void testFreezeSpaceAndProject()
+    {
+        // Given
+        SpaceUpdate spaceUpdate = new SpaceUpdate();
+        spaceUpdate.setSpaceId(spaceOfProject);
+        spaceUpdate.freeze();
+        spaceUpdate.freezeForProjects();
+        ProjectUpdate projectUpdate = new ProjectUpdate();
+        projectUpdate.setProjectId(project);
+        projectUpdate.freeze();
+        IOperationExecutionOptions op = new SynchronousOperationExecutionOptions();
+
+        // When
+        v3api.executeOperations(systemSessionToken, Arrays.asList(
+                new UpdateSpacesOperation(spaceUpdate), new UpdateProjectsOperation(projectUpdate)), op);
+
+        // Then
+        assertEquals(getProject(project).getSpace().isFrozen(), true);
+        assertEquals(getProject(project).isFrozen(), true);
     }
 }

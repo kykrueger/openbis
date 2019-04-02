@@ -29,9 +29,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.UpdateDataSetsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.UpdateExperimentsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.UpdateSamplesOperation;
 
 /**
  * @author Franz-Josef Elmer
@@ -460,5 +467,49 @@ public class ExperimentSampleDataSetRelationshipsFreezingTest extends FreezingTe
 
         // Then
         assertEquals(getDataSet(id).getExperiment().getCode(), EXPERIMENT_1);
+    }
+
+    @Test
+    public void testFreezeExperimentAndDataSet()
+    {
+        // Given
+        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
+        experimentUpdate.setExperimentId(experimentOfDataSet);
+        experimentUpdate.freeze();
+        experimentUpdate.freezeForDataSets();
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSetExp);
+        dataSetUpdate.freeze();
+        IOperationExecutionOptions op = new SynchronousOperationExecutionOptions();
+
+        // When
+        v3api.executeOperations(systemSessionToken, Arrays.asList(
+                new UpdateExperimentsOperation(experimentUpdate), new UpdateDataSetsOperation(dataSetUpdate)), op);
+
+        // Then
+        assertEquals(getExperiment(experimentOfDataSet).isFrozen(), true);
+        assertEquals(getDataSet(dataSetExp).isFrozen(), true);
+    }
+
+    @Test
+    public void testFreezeSampleAndDataSet()
+    {
+        // Given
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(sampleOfDataSet);
+        sampleUpdate.freeze();
+        sampleUpdate.freezeForDataSets();
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSetSamp);
+        dataSetUpdate.freeze();
+        IOperationExecutionOptions op = new SynchronousOperationExecutionOptions();
+
+        // When
+        v3api.executeOperations(systemSessionToken, Arrays.asList(
+                new UpdateSamplesOperation(sampleUpdate), new UpdateDataSetsOperation(dataSetUpdate)), op);
+
+        // Then
+        assertEquals(getSample(sampleOfDataSet).isFrozen(), true);
+        assertEquals(getDataSet(dataSetSamp).isFrozen(), true);
     }
 }
