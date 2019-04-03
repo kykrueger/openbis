@@ -17,12 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.parallelizedExecutor;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -30,21 +25,17 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownload;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadOptions;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadReader;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
+import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloader;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.DSPropertyUtils;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Facade;
-import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.common.io.IOUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.etlserver.DefaultStorageProcessor;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSet;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetRegistrationTransactionV2;
 import ch.systemsx.cisd.etlserver.registrator.api.v2.IDataSetUpdatable;
@@ -62,15 +53,11 @@ import ch.systemsx.cisd.openbis.generic.shared.util.SimpleTableModelBuilder;
 class DataSetRegistrationIngestionService extends IngestionService<DataSetInformation>
 {
     private static final long serialVersionUID = 1L;
-    
+
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, DataSetRegistrationIngestionService.class);
- 
+
     private final NewExternalData dataSet;
-
-    private final String loginUser;
-
-    private final String loginPass;
 
     private final String harvesterTempDir;
 
@@ -79,12 +66,17 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
     public DataSetRegistrationIngestionService(SyncConfig config, File storeRoot, NewExternalData ds,
             Logger operationLog)
     {
-        super(new Properties(), storeRoot);
+        super(createIngestionServiceProperties(), storeRoot);
         this.config = config;
         this.dataSet = ds;
-        this.loginUser = config.getUser();
-        this.loginPass = config.getPassword();
         this.harvesterTempDir = config.getHarvesterTempDir();
+    }
+    
+    private static Properties createIngestionServiceProperties()
+    {
+        Properties properties = new Properties();
+        properties.setProperty(DefaultStorageProcessor.DO_NOT_CREATE_ORIGINAL_DIR_KEY, "true");
+        return properties;
     }
 
     @Override
@@ -136,8 +128,7 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
                 transaction.moveFile(f.getAbsolutePath(), ds);
             }
             return summaryTableModel(parameters, "Added");
-        }
-        else
+        } else
         {
             // UPDATE data set meta data excluding the container/contained relationships
             dataSetForUpdate.setSample(sample);
@@ -204,55 +195,11 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
 
     private void downloadDataSetFiles(File dir, String dataSetCode)
     {
-        V3Facade v3FacadeToDataSource = new V3Facade(config);
-        DataSetFileFetchOptions dsFileFetchOptions = new DataSetFileFetchOptions();
-        SearchResult<DataSetFile> result = v3FacadeToDataSource.searchWithDataSetCode(dataSetCode, dsFileFetchOptions);
-        List<DataSetFile> files = result.getObjects();
-
-        List<IDataSetFileId> fileIds = new LinkedList<IDataSetFileId>();
-        Map<DataSetFilePermId, FileDetails> fileDetailsMap = new HashMap<DataSetFilePermId, FileDetails>();
-        for (DataSetFile f : files)
-        {
-            fileIds.add(f.getPermId());
-            fileDetailsMap.put(f.getPermId(), new FileDetails(f.getChecksumCRC32(), f.getFileLength()));
-        }
-        // Download the files & print the contents
-        DataSetFileDownloadOptions options = new DataSetFileDownloadOptions();
-        options.setRecursive(false);
-        InputStream stream = v3FacadeToDataSource.downloadFiles(fileIds, options);
-        DataSetFileDownloadReader reader = new DataSetFileDownloadReader(stream);
-        DataSetFileDownload fileDownload = null;
-        while ((fileDownload = reader.read()) != null)
-        {
-            DataSetFile orgFile = fileDownload.getDataSetFile();
-            if (orgFile.getPath().equals(""))
-            {
-                continue;
-            }
-            File output = new File(dir, orgFile.getPath());
-            if (orgFile.isDirectory())
-            {
-                output.mkdirs();
-            } else
-            {
-                DataSetFilePermId filePermId = orgFile.getPermId();
-                FileDetails fileDetails = fileDetailsMap.get(filePermId);
-                output.getParentFile().mkdirs();
-                try (OutputStream outputStream = new FileOutputStream(output))
-                {
-                    int checksumCRC32 = IOUtilities.copyAndGetChecksumCRC32(fileDownload.getInputStream(), outputStream);
-                    if (checksumCRC32 != fileDetails.getCrc32checksum()
-                            || output.length() != fileDetails.getFileLength())
-                    {
-                        throw new RuntimeException("Crc32 or file length does not match for  " + orgFile.getPath() + " calculated:" + checksumCRC32
-                                + " expected:"
-                                + fileDetails.getCrc32checksum());
-                    }
-                } catch (IOException e)
-                {
-                    throw CheckedExceptionTunnel.wrapIfNecessary(e);
-                }
-            }
-        }
+        V3Facade v3Facade = new V3Facade(config);
+        FastDownloadSessionOptions options = new FastDownloadSessionOptions();
+        options.withWishedNumberOfStreams(2);
+        DataSetFilePermId filePermId = new DataSetFilePermId(new DataSetPermId(dataSetCode), "");
+        FastDownloadSession downloadSession = v3Facade.createFastDownloadSession(Arrays.asList(filePermId), options);
+        new FastDownloader(downloadSession).downloadTo(dir.getParentFile());
     }
 }

@@ -52,7 +52,7 @@ public class DefaultStorageProcessor extends AbstractStorageProcessor implements
 
     // the following flag is introduced to be used in cases like openbis sync where we download the data set files including the 'original' folder
     // and then move all of them to the data store. This way, the thumbnail archives in screening instances will also be handled.
-    static final String DO_NOT_CREATE_ORIGINAL_DIR_KEY = "do-not-create-original-dir";
+    public static final String DO_NOT_CREATE_ORIGINAL_DIR_KEY = "do-not-create-original-dir";
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             DefaultStorageProcessor.class);
