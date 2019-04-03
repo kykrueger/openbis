@@ -351,7 +351,7 @@ class TestCase(systemtest.testcase.TestCase):
                                + "join persons um on d.pers_id_modifier = um.id "
                                + "order by d.code, pt.code")
         self._compareDataBases("Data set sizes", openbis_data_source, openbis_harvester, "pathinfo",
-                               "select d.code as data_set, relative_path, size_in_bytes "
+                               "select d.code as data_set, file_name, size_in_bytes "
                                + "from data_set_files f join data_sets d on f.dase_id=d.id where parent_id is null "
                                + "order by d.code")
         self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
