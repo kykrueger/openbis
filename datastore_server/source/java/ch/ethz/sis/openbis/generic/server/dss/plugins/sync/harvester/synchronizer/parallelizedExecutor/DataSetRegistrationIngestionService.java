@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
@@ -116,7 +117,8 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
                 return errorTableModel(parameters, e);
             }
 
-            IDataSet ds = transaction.createNewDataSet(dataSet.getTypeId().toString(), dataSetCode);
+            String dataSetType = ((EntityTypePermId) dataSet.getTypeId()).getPermId();
+            IDataSet ds = transaction.createNewDataSet(dataSetType, dataSetCode);
             ds.setDataSetKind(DataSetKind.valueOf(dataSet.getDataSetKind().toString()));
             ds.setSample(sample);
             ds.setExperiment(experiment);
