@@ -22,10 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermId;
@@ -44,8 +47,8 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.IExperimentImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISampleImmutable;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
-import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewProperty;
 import ch.systemsx.cisd.openbis.generic.shared.util.IRowBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimpleTableModelBuilder;
@@ -57,21 +60,21 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, DataSetRegistrationIngestionService.class);
 
-    private final NewExternalData dataSet;
+    private final DataSetCreation dataSet;
 
     private final String harvesterTempDir;
 
     private SyncConfig config;
 
-    public DataSetRegistrationIngestionService(SyncConfig config, File storeRoot, NewExternalData ds,
+    public DataSetRegistrationIngestionService(SyncConfig config, File storeRoot, DataSetCreation dataSetCreation,
             Logger operationLog)
     {
         super(createIngestionServiceProperties(), storeRoot);
         this.config = config;
-        this.dataSet = ds;
+        this.dataSet = dataSetCreation;
         this.harvesterTempDir = config.getHarvesterTempDir();
     }
-    
+
     private static Properties createIngestionServiceProperties()
     {
         Properties properties = new Properties();
@@ -84,17 +87,17 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
     {
         String dataSetCode = dataSet.getCode();
         ISampleImmutable sample = null;
-        if (dataSet.getSampleIdentifierOrNull() != null)
+        if (dataSet.getSampleId() != null)
         {
-            sample = transaction.getSampleForUpdate(dataSet.getSampleIdentifierOrNull().toString());
+            sample = transaction.getSampleForUpdate(dataSet.getSampleId().toString());
         }
         IExperimentImmutable experiment = null;
-        if (dataSet.getExperimentIdentifierOrNull() != null)
+        if (dataSet.getExperimentId() != null)
         {
-            experiment = transaction.getExperimentForUpdate(dataSet.getExperimentIdentifierOrNull().toString());
+            experiment = transaction.getExperimentForUpdate(dataSet.getExperimentId().toString());
         }
 
-        List<NewProperty> dataSetProperties = dataSet.getDataSetProperties();
+        List<NewProperty> dataSetProperties = getProperties(dataSet);
 
         IDataSetUpdatable dataSetForUpdate = transaction.getDataSetForUpdate(dataSetCode);
         if (dataSetForUpdate == null)
@@ -108,14 +111,14 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
 
             try
             {
-                downloadDataSetFiles(dir, dataSetCode);
+                downloadDataSetFiles(temp, dataSetCode);
             } catch (Exception e)
             {
                 return errorTableModel(parameters, e);
             }
 
-            IDataSet ds = transaction.createNewDataSet(dataSet.getDataSetType().getCode(), dataSet.getCode());
-            ds.setDataSetKind(dataSet.getDataSetKind());
+            IDataSet ds = transaction.createNewDataSet(dataSet.getTypeId().toString(), dataSetCode);
+            ds.setDataSetKind(DataSetKind.valueOf(dataSet.getDataSetKind().toString()));
             ds.setSample(sample);
             ds.setExperiment(experiment);
             for (NewProperty newProperty : dataSetProperties)
@@ -133,7 +136,11 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
             // UPDATE data set meta data excluding the container/contained relationships
             dataSetForUpdate.setSample(sample);
             dataSetForUpdate.setExperiment(experiment);
-            dataSetForUpdate.setParentDatasets(dataSet.getParentDataSetCodes());
+            List<? extends IDataSetId> parentIds = dataSet.getParentIds();
+            if (parentIds != null)
+            {
+                dataSetForUpdate.setParentDatasets(parentIds.stream().map(Object::toString).collect(Collectors.toList()));
+            }
 
             // synchronize property changes including properties that were set to empty values
             List<String> existingPropertyCodes = dataSetForUpdate.getAllPropertyCodes();
@@ -152,6 +159,13 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
         }
     }
 
+    private List<NewProperty> getProperties(DataSetCreation metadata)
+    {
+        return metadata.getProperties().entrySet().stream()
+                .map(e -> new NewProperty(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+    }
+
     @Override
     protected TableModel errorTableModel(Map<String, Object> parameters, Throwable e)
     {
@@ -167,30 +181,6 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
         IRowBuilder row = builder.addRow();
         row.setCell("Parameters", parameters.toString());
         return builder.getTableModel();
-    }
-
-    class FileDetails
-    {
-        final int crc32checksum;
-
-        final long fileLength;
-
-        public FileDetails(int crc32checksum, long fileLength)
-        {
-            super();
-            this.crc32checksum = crc32checksum;
-            this.fileLength = fileLength;
-        }
-
-        public int getCrc32checksum()
-        {
-            return crc32checksum;
-        }
-
-        public long getFileLength()
-        {
-            return fileLength;
-        }
     }
 
     private void downloadDataSetFiles(File dir, String dataSetCode)
