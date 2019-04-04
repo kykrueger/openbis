@@ -16,8 +16,8 @@
 
 package ch.systemsx.cisd.openbis.installer.izpack;
 
-import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_PROTEOMICS;
-import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_SCREENING;
+import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_FLOW_CYTOMETRY;
+import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_MICROSCOPY;
 import static ch.systemsx.cisd.openbis.installer.izpack.SetEnableTechnologiesVariableAction.ENABLED_TECHNOLOGIES_VARNAME;
 import static ch.systemsx.cisd.openbis.installer.izpack.SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY;
 
@@ -64,23 +64,23 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     }
 
     @Test
-    public void testFirstInstallation()
+    public void testFirstInstallationFlowCytometryOnly()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_PROTEOMICS, "true");
-        variables.setProperty(TECHNOLOGY_SCREENING, "false");
+        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "true");
+        variables.setProperty(TECHNOLOGY_MICROSCOPY, "false");
 
         AutomatedInstallData data = updateEnabledTechnologyProperties(variables, true);
 
-        assertEquals("proteomics", data.getVariable(ENABLED_TECHNOLOGIES_VARNAME));
+        assertEquals("flow", data.getVariable(ENABLED_TECHNOLOGIES_VARNAME));
     }
 
     @Test
-    public void testFirstInstallationScreeningOnly()
+    public void testFirstInstallation()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_PROTEOMICS, "false");
-        variables.setProperty(TECHNOLOGY_SCREENING, "false");
+        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "false");
+        variables.setProperty(TECHNOLOGY_MICROSCOPY, "false");
 
         AutomatedInstallData data = updateEnabledTechnologyProperties(variables, true);
 
@@ -91,11 +91,11 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateMissingConfigFile()
     {
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_PROTEOMICS, "false");
-        variables.setProperty(TECHNOLOGY_SCREENING, "true");
+        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "false");
+        variables.setProperty(TECHNOLOGY_MICROSCOPY, "true");
 
         updateEnabledTechnologyProperties(variables, false);
-        assertEquals("[, enabled-modules = " + MODULES + ", screening]",
+        assertEquals("[, enabled-modules = " + MODULES + ", microscopy, shared]",
                 FileUtilities.loadToStringList(corePluginsProperties).toString());
     }
 
@@ -103,14 +103,14 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateInstallationWithOtherEnabledTechnologiesInAs()
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
-                + "=" + MODULES + ", proteomics, my-tech");
+                + "=" + MODULES + ", flow, shared, my-tech");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_PROTEOMICS, "true");
-        variables.setProperty(TECHNOLOGY_SCREENING, "false");
+        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "true");
+        variables.setProperty(TECHNOLOGY_MICROSCOPY, "false");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", proteomics, my-tech]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", flow, shared, my-tech]",
                 FileUtilities.loadToStringList(corePluginsProperties).toString());
     }
 
@@ -118,14 +118,14 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateUnchangedProperty()
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
-                + "=" + MODULES + ", proteomics");
+                + "=" + MODULES + ", flow, shared");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_PROTEOMICS, "true");
-        variables.setProperty(TECHNOLOGY_SCREENING, "false");
+        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "true");
+        variables.setProperty(TECHNOLOGY_MICROSCOPY, "false");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", proteomics]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + "=" + MODULES + ", flow, shared]",
                 FileUtilities
                         .loadToStringList(corePluginsProperties).toString());
     }
@@ -134,14 +134,14 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateChangeProperty()
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123\n" + ENABLED_TECHNOLOGIES_KEY
-                + "=screening\nanswer = 42\n");
+                + "=microscopy\nanswer = 42\n");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_PROTEOMICS, "true");
-        variables.setProperty(TECHNOLOGY_SCREENING, "true");
+        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "true");
+        variables.setProperty(TECHNOLOGY_MICROSCOPY, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", proteomics, screening, answer = 42]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", microscopy, shared, flow, answer = 42]",
                 FileUtilities
                         .loadToStringList(corePluginsProperties).toString());
     }
@@ -151,12 +151,12 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     {
         FileUtilities.writeToFile(corePluginsProperties, "abc = 123");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_PROTEOMICS, "false");
-        variables.setProperty(TECHNOLOGY_SCREENING, "true");
+        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "false");
+        variables.setProperty(TECHNOLOGY_MICROSCOPY, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", screening]",
+        assertEquals("[abc = 123, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", microscopy, shared]",
                 FileUtilities
                         .loadToStringList(corePluginsProperties).toString());
     }
@@ -165,14 +165,14 @@ public class SetEnableTechnologiesVariableActionTest extends AbstractFileSystemT
     public void testUpdateEnabledTechnologiesForSwitchedTechnologies()
     {
         FileUtilities.writeToFile(corePluginsProperties, "a = b\n" + ENABLED_TECHNOLOGIES_KEY
-                + "= proteomics\n" + "gamma = alpha");
+                + "= flow\n" + "gamma = alpha");
         Properties variables = new Properties();
-        variables.setProperty(TECHNOLOGY_PROTEOMICS, "false");
-        variables.setProperty(TECHNOLOGY_SCREENING, "true");
+        variables.setProperty(TECHNOLOGY_FLOW_CYTOMETRY, "false");
+        variables.setProperty(TECHNOLOGY_MICROSCOPY, "true");
 
         updateEnabledTechnologyProperties(variables, false);
 
-        assertEquals("[a = b, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", screening, gamma = alpha]",
+        assertEquals("[a = b, " + ENABLED_TECHNOLOGIES_KEY + " = " + MODULES + ", microscopy, shared, gamma = alpha]",
                 FileUtilities.loadToStringList(corePluginsProperties).toString());
     }
 

@@ -20,6 +20,7 @@ import static ch.systemsx.cisd.openbis.installer.izpack.SetTechnologyCheckBoxesA
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 
@@ -92,10 +93,10 @@ public class SetEnableTechnologiesVariableAction implements PanelAction
     private void modifyPropertyEnabledTechnologies(File configFile, AutomatedInstallData data)
     {
         Set<String> allTechnologies = new HashSet<String>();
-        CommaSeparatedListBuilder builder = new CommaSeparatedListBuilder();
+        Set<String> enabledModules = new LinkedHashSet<>();
         for (String module : MODULES)
         {
-            builder.append(module);
+            enabledModules.add(module);
             allTechnologies.add(module);
         }
 
@@ -106,13 +107,13 @@ public class SetEnableTechnologiesVariableAction implements PanelAction
             String technologyFlag = data.getVariable(technology);
             if (Boolean.TRUE.toString().equalsIgnoreCase(technologyFlag))
             {
-                builder.append(lowerCasedTechnology);
+                enabledModules.add(lowerCasedTechnology);
 
                 if (technology == GlobalInstallationContext.TECHNOLOGY_MICROSCOPY ||
                         technology == GlobalInstallationContext.TECHNOLOGY_FLOW_CYTOMETRY)
                 {
                     String lowerCasedTechnologyShared = GlobalInstallationContext.TECHNOLOGY_SHARED_MICROSCOPY_FLOW_CYTOMETRY.toLowerCase();
-                    builder.append(lowerCasedTechnologyShared);
+                    enabledModules.add(lowerCasedTechnologyShared);
                     allTechnologies.add(lowerCasedTechnologyShared);
                 }
             }
@@ -130,12 +131,12 @@ public class SetEnableTechnologiesVariableAction implements PanelAction
                     String trimmedTerm = term.trim();
                     if (allTechnologies.contains(trimmedTerm) == false)
                     {
-                        builder.append(trimmedTerm);
+                        enabledModules.add(trimmedTerm);
                     }
                 }
             }
         }
-        Utils.updateOrAppendProperty(configFile, ENABLED_TECHNOLOGIES_KEY, builder.toString());
+        Utils.updateOrAppendProperty(configFile, ENABLED_TECHNOLOGIES_KEY, String.join(", ", enabledModules));
     }
 
 }

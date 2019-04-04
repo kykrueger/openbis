@@ -16,8 +16,8 @@
 
 package ch.systemsx.cisd.openbis.installer.izpack;
 
-import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_PROTEOMICS;
-import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_SCREENING;
+import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_FLOW_CYTOMETRY;
+import static ch.systemsx.cisd.openbis.installer.izpack.GlobalInstallationContext.TECHNOLOGY_MICROSCOPY;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -49,8 +49,8 @@ public class SetTechnologyCheckBoxesActionTest extends AssertJUnit
     {
         SetTechnologyCheckBoxesAction action = new SetTechnologyCheckBoxesAction();
 
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_PROTEOMICS));
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_SCREENING));
+        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_FLOW_CYTOMETRY));
+        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_MICROSCOPY));
         assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, "blabla"));
     }
 
@@ -58,12 +58,12 @@ public class SetTechnologyCheckBoxesActionTest extends AssertJUnit
     public void testDisabledTechnologiesPropertyPresent() throws Exception
     {
         Properties properties = new Properties();
-        properties.setProperty(SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY, "proteomics");
+        properties.setProperty(SetTechnologyCheckBoxesAction.ENABLED_TECHNOLOGIES_KEY, "flow");
         saveProperties(properties, Utils.CORE_PLUGINS_PROPERTIES_PATH);
         SetTechnologyCheckBoxesAction action = new SetTechnologyCheckBoxesAction();
 
-        assertEquals(true, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_PROTEOMICS));
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_SCREENING));
+        assertEquals(true, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_FLOW_CYTOMETRY));
+        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_MICROSCOPY));
         assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, "blabla"));
     }
 
@@ -75,8 +75,8 @@ public class SetTechnologyCheckBoxesActionTest extends AssertJUnit
         saveProperties(properties, Utils.SERVICE_PROPERTIES_PATH);
         SetTechnologyCheckBoxesAction action = new SetTechnologyCheckBoxesAction();
 
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_PROTEOMICS));
-        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_SCREENING));
+        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_FLOW_CYTOMETRY));
+        assertEquals(false, action.isTechnologyEnabled(TEST_FOLDER, TECHNOLOGY_MICROSCOPY));
     }
 
     private void saveProperties(Properties properties, String path) throws IOException

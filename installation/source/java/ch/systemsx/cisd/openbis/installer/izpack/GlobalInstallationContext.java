@@ -44,10 +44,6 @@ public class GlobalInstallationContext
 
     public static final String BACKUP_FOLDER_VARNAME = "BACKUP_FOLDER";
 
-    public static final String TECHNOLOGY_PROTEOMICS = "PROTEOMICS";
-
-    public static final String TECHNOLOGY_SCREENING = "SCREENING";
-
     public static final String TECHNOLOGY_ILLUMINA_NGS = "ILLUMINA-NGS";
 
     public static final String TECHNOLOGY_ELN_LIMS = "ELN-LIMS";
@@ -61,7 +57,7 @@ public class GlobalInstallationContext
     public static final String TECHNOLOGY_SHARED_MICROSCOPY_FLOW_CYTOMETRY = "SHARED";
 
     public static final String[] TECHNOLOGIES =
-            { TECHNOLOGY_PROTEOMICS, TECHNOLOGY_SCREENING, TECHNOLOGY_ILLUMINA_NGS, TECHNOLOGY_ELN_LIMS, TECHNOLOGY_MICROSCOPY,
+            { TECHNOLOGY_ILLUMINA_NGS, TECHNOLOGY_ELN_LIMS, TECHNOLOGY_MICROSCOPY,
                     TECHNOLOGY_FLOW_CYTOMETRY, TECHNOLOGY_ELN_LIMS_LIFE_SCIENCES };
 
     /**
