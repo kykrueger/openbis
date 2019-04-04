@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -465,7 +466,7 @@ public class FileTransferServerServlet extends HttpServlet
                 inputStream.skip(getFileOffset());
                 int payloadLength = getPayloadLength();
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream(payloadLength);
-                IOUtils.copyLarge(inputStream, outputStream, 0, payloadLength);
+                copyLarge(inputStream, outputStream, payloadLength, new byte[payloadLength]);
                 return new ByteArrayInputStream(outputStream.toByteArray());
             } catch (IOException e)
             {
@@ -476,5 +477,36 @@ public class FileTransferServerServlet extends HttpServlet
             }
         }
 
+        /**
+         * This is copied from org.apache.commons.io.IOUtils (apache commons io version 2.6).
+         * Even though we ship datastore server with commons-io-2.6.jar the bioformats 5.9.2 has and
+         * older version of this library which hasn't the new copyLarge method.
+         */
+        private long copyLarge(final InputStream input, final OutputStream output,
+                final long length, final byte[] buffer) throws IOException
+        {
+            if (length == 0)
+            {
+                return 0;
+            }
+            final int bufferLength = buffer.length;
+            int bytesToRead = bufferLength;
+            if (length > 0 && length < bufferLength)
+            {
+                bytesToRead = (int) length;
+            }
+            int read;
+            long totalRead = 0;
+            while (bytesToRead > 0 && IOUtils.EOF != (read = input.read(buffer, 0, bytesToRead)))
+            {
+                output.write(buffer, 0, read);
+                totalRead += read;
+                if (length > 0)
+                {
+                    bytesToRead = (int) Math.min(length - totalRead, bufferLength);
+                }
+            }
+            return totalRead;
+        }
     }
 }
