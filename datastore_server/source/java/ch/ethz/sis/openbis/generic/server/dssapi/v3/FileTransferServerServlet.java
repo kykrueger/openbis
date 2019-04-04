@@ -131,7 +131,7 @@ public class FileTransferServerServlet extends HttpServlet
                 }
             });
         Properties properties = applicationContext.getConfigParameters().getProperties();
-        config.setChunkProvider(new DataSetChunkProvider(applicationContext, 40 * FileUtils.ONE_KB, logger));
+        config.setChunkProvider(new DataSetChunkProvider(applicationContext, FileUtils.ONE_MB, logger));
         config.setConcurrencyProvider(new ConcurrencyProvider(properties));
         config.setSerializerProvider(new DefaultSerializerProvider(logger));
         downloadServer = new DownloadServer(config);
