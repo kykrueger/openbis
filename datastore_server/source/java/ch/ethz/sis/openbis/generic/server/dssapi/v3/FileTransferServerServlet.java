@@ -413,7 +413,7 @@ public class FileTransferServerServlet extends HttpServlet
                 IDownloadItemId itemId)
         {
             boolean directory = node.isDirectory();
-            if (directory)
+            if (directory && node.getName().endsWith(".h5ar") == false)
             {
                 for (IHierarchicalContentNode childNode : node.getChildNodes())
                 {
