@@ -16,6 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.dssapi.v3;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -66,6 +69,7 @@ import ch.ethz.sis.filetransfer.ILogger;
 import ch.ethz.sis.filetransfer.IUserSessionId;
 import ch.ethz.sis.filetransfer.IUserSessionManager;
 import ch.ethz.sis.filetransfer.InvalidUserSessionException;
+import ch.ethz.sis.filetransfer.LogLevel;
 import ch.ethz.sis.filetransfer.UserSessionId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadMethod;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadParameter;
@@ -127,7 +131,7 @@ public class FileTransferServerServlet extends HttpServlet
                 }
             });
         Properties properties = applicationContext.getConfigParameters().getProperties();
-        config.setChunkProvider(new DataSetChunkProvider(applicationContext, FileUtils.ONE_MB, logger));
+        config.setChunkProvider(new DataSetChunkProvider(applicationContext, 40 * FileUtils.ONE_KB, logger));
         config.setConcurrencyProvider(new ConcurrencyProvider(properties));
         config.setSerializerProvider(new DefaultSerializerProvider(logger));
         downloadServer = new DownloadServer(config);
@@ -386,7 +390,6 @@ public class FileTransferServerServlet extends HttpServlet
                 throws DownloadItemNotFoundException, DownloadException
         {
             IHierarchicalContentProvider contentProvider = applicationContext.getHierarchicalContentProvider(null);
-
             Map<IDownloadItemId, List<Chunk>> result = new HashMap<IDownloadItemId, List<Chunk>>();
             AtomicInteger sequenceNumber = new AtomicInteger(0);
 
@@ -422,12 +425,56 @@ public class FileTransferServerServlet extends HttpServlet
                 do
                 {
                     int payloadLength = (int) (Math.min(fileOffset + chunkSize, fileSize) - fileOffset);
-                    chunks.add(new FileChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
-                            fileOffset, payloadLength, node.getFile().toPath(), logger));
+                    File file = node.tryGetFile();
+                    Chunk chunk;
+                    if (file != null)
+                    {
+                        chunk = new FileChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
+                                fileOffset, payloadLength, file.toPath(), logger);
+                    } else
+                    {
+                        chunk = new InputStreamBasedChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
+                                fileOffset, payloadLength, node.getInputStream(), logger);
+                    }
+                    chunks.add(chunk);
                     fileOffset += chunkSize;
                 } while (fileOffset < fileSize);
             }
         }
     }
 
+    private static class InputStreamBasedChunk extends Chunk
+    {
+        private InputStream inputStream;
+
+        private ILogger logger;
+
+        public InputStreamBasedChunk(int sequenceNumber, IDownloadItemId downloadItemId, String filePath,
+                long fileOffset, int payloadLength, InputStream inputStream, ILogger logger)
+        {
+            super(sequenceNumber, downloadItemId, false, filePath, fileOffset, payloadLength);
+            this.inputStream = inputStream;
+            this.logger = logger;
+        }
+
+        @Override
+        public InputStream getPayload() throws DownloadException
+        {
+            try
+            {
+                inputStream.skip(getFileOffset());
+                int payloadLength = getPayloadLength();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream(payloadLength);
+                IOUtils.copyLarge(inputStream, outputStream, 0, payloadLength);
+                return new ByteArrayInputStream(outputStream.toByteArray());
+            } catch (IOException e)
+            {
+                DownloadException downloadException = new DownloadException("Can not get payload for chunk "
+                        + getSequenceNumber() + " staring at " + getFileOffset() + " of " + getFilePath(), e, false);
+                logger.log(InputStreamBasedChunk.class, LogLevel.ERROR, downloadException.getMessage());
+                throw downloadException;
+            }
+        }
+
+    }
 }
