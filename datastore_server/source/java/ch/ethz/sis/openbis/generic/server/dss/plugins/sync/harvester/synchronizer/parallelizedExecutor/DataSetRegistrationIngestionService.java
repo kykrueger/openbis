@@ -108,7 +108,6 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
             temp.mkdirs();
             File dir = new File(temp, dataSetCode);
             dir.mkdirs();
-
             try
             {
                 downloadDataSetFiles(temp, dataSetCode);
@@ -188,8 +187,8 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
         V3Facade v3Facade = new V3Facade(config);
         FastDownloadSessionOptions options = new FastDownloadSessionOptions();
         options.withWishedNumberOfStreams(2);
-        DataSetFilePermId filePermId = new DataSetFilePermId(new DataSetPermId(dataSetCode), "");
+        DataSetFilePermId filePermId = new DataSetFilePermId(new DataSetPermId(dataSetCode));
         FastDownloadSession downloadSession = v3Facade.createFastDownloadSession(Arrays.asList(filePermId), options);
-        new FastDownloader(downloadSession).downloadTo(dir.getParentFile());
+        new FastDownloader(downloadSession).downloadTo(dir);
     }
 }
