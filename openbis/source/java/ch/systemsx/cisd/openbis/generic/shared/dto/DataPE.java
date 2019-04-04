@@ -573,6 +573,10 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     @Column(name = ColumnNames.SAMPLE_FROZEN_COLUMN, nullable = false)
     public boolean isSampleFrozen()
     {
+        if (sample != null)
+        {
+            sampleFrozen = sample.isFrozen() && sample.isFrozenForDataSet();
+        }
         return sampleFrozen;
     }
 
@@ -790,6 +794,10 @@ public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
     @Column(name = ColumnNames.EXPERIMENT_FROZEN_COLUMN, nullable = false)
     public boolean isExperimentFrozen()
     {
+        if (experiment != null)
+        {
+            experimentFrozen = experiment.isFrozen() && experiment.isFrozenForDataSet();
+        }
         return experimentFrozen;
     }
 

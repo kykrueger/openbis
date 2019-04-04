@@ -106,7 +106,7 @@ public class JsonAnnotationTest
                 .add("ch.systemsx.cisd.openbis.common.api.server.json.object.ObjectWithTypeBIllegalDuplicate");
 
         Map<String, Collection<Class<?>>> names = new HashMap<String, Collection<Class<?>>>();
-        for (Class<?> clazz : ClassReferences.ref.getTypesAnnotatedWith(JsonObject.class))
+        for (Class<?> clazz : ClassReferences.ref.getTypesAnnotatedWith(JsonObject.class, true))
         {
             if (whiteList.contains(clazz.getCanonicalName()) == false && clazz.getCanonicalName().contains(".v3.") == false)
             {
@@ -129,7 +129,7 @@ public class JsonAnnotationTest
                 .add("ch.systemsx.cisd.openbis.common.api.server.json.object.ObjectWithTypeBIllegalDuplicate");
 
         Map<String, Collection<Class<?>>> names = new HashMap<String, Collection<Class<?>>>();
-        for (Class<?> clazz : ClassReferences.ref.getTypesAnnotatedWith(JsonObject.class))
+        for (Class<?> clazz : ClassReferences.ref.getTypesAnnotatedWith(JsonObject.class, true))
         {
             if (whiteList.contains(clazz.getCanonicalName()) == false && clazz.getCanonicalName().contains(".v3."))
             {

@@ -34,7 +34,7 @@ dependencies {
 	testCompile project(':datastore_server'),
 			'selenium:selenium-java:+'
 			
-	testRuntimeFirst 'javax:servlet-api:+', 'reflections:reflections:+'
+	testRuntimeFirst 'javax:servlet-api:+', 'reflections:reflections:0.9.10'
 
 	testRuntimeSecond 'google:gwt-user:+'
 	

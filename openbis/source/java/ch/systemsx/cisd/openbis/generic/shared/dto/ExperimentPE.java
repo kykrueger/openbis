@@ -316,6 +316,10 @@ public class ExperimentPE extends AttachmentHolderPE implements
     @Column(name = ColumnNames.PROJECT_FROZEN_COLUMN, nullable = false)
     public boolean isProjectFrozen()
     {
+        if (project != null)
+        {
+            projectFrozen = project.isFrozen() && project.isFrozenForExperiment();
+        }
         return projectFrozen;
     }
 

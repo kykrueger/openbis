@@ -8,10 +8,10 @@ module.exports = {
     path: __dirname + '/build/npm-build/',
     filename: 'bundle.js'
   },
-  
+
   devServer: {
     host: "0.0.0.0",
-    port: 8124, 
+    port: 8124,
     inline: true,
     contentBase: "./src",
     https: false,
@@ -21,7 +21,7 @@ module.exports = {
     },
     proxy: {
       "/openbis": {
-        "target": 'http://192.168.222.2:8888',
+        "target": 'http://localhost:8888',
         "pathRewrite": {'^/openbis/resources' : '/openbis-test/resources'},
         "changeOrigin": true,
         "secure": false,

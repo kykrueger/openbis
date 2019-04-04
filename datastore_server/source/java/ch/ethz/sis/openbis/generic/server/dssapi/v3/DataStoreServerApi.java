@@ -62,7 +62,6 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.DataSetFilePermI
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.download.DataSetFileDownloadInputStream;
-import ch.ethz.sis.openbis.generic.server.dssapi.v3.download.IFileTransferSessionManager;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.executor.ICreateUploadedDataSetExecutor;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.pathinfo.PathInfoFeeder;
 import ch.systemsx.cisd.common.exceptions.Status;
@@ -111,9 +110,6 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
 
     @Autowired
     private ICreateUploadedDataSetExecutor createUploadedDataSetExecutor;
-    
-    @Autowired
-    private IFileTransferSessionManager fileTransferSessionManager;
 
     /**
      * The designated constructor.
@@ -261,14 +257,13 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
                 files.addAll(entry.getValue().stream().map(p -> new DataSetFilePermId(dataSetId, p)).collect(Collectors.toList()));
             }
         }
-        String fileTransferUserSessionId = fileTransferSessionManager.createFileTransferUserSessionId(sessionToken);
-        return new FastDownloadSession(getDownloadUrl(), fileTransferUserSessionId, files, options);
+        return new FastDownloadSession(getDownloadUrl(), sessionToken, files, options);
     }
 
     private String getDownloadUrl()
     {
         Properties serviceProperties = (Properties) ServiceProvider.getApplicationContext().getBean("configProperties");
-        return serviceProperties.getProperty("download-url") + "/" 
+        return serviceProperties.getProperty("download-url") + "/"
                 + GenericSharedConstants.DATA_STORE_SERVER_WEB_APPLICATION_NAME + "/"
                 + FileTransferServerServlet.SERVLET_NAME;
     }
@@ -282,7 +277,7 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
         getOpenBISService().checkSession(sessionToken);
 
         Map<String, Set<String>> filesByDataSet = sortFilesByDataSets(fileIds);
-        
+
         IHierarchicalContentProvider contentProvider = getHierarchicalContentProvider(sessionToken);
         Map<IHierarchicalContentNode, String> contentNodes = new LinkedHashMap<IHierarchicalContentNode, String>();
         boolean recursive = downloadOptions.isRecursive();
@@ -316,7 +311,7 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
 
         return new DataSetFileDownloadInputStream(contentNodes);
     }
-    
+
     private void populate(Map<String, IHierarchicalContentNode> nodesByPath, IHierarchicalContentNode node, Set<String> paths)
     {
         if (paths.contains(node.getRelativePath()))

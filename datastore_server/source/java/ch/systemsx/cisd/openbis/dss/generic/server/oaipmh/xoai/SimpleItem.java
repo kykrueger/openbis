@@ -19,13 +19,13 @@ package ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.xoai;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.lyncode.xoai.dataprovider.model.Item;
-import com.lyncode.xoai.model.oaipmh.About;
-import com.lyncode.xoai.model.oaipmh.Metadata;
+import org.dspace.xoai.dataprovider.model.Item;
+import org.dspace.xoai.model.oaipmh.About;
+import org.dspace.xoai.model.oaipmh.Metadata;
 
 /**
  * <p>
- * Simple implementation of {@link com.lyncode.xoai.dataprovider.model.Item} with setters and getters.
+ * Simple implementation of {@link org.dspace.xoai.dataprovider.model.Item} with setters and getters.
  * </p>
  * 
  * @author pkupczyk

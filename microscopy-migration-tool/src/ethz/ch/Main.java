@@ -32,13 +32,9 @@ import ethz.ch.ssl.SslCertificateHelper;
 import ethz.ch.tag.Tag2SampleTranslator;
 
 public class Main
-{
-    
+{   
     private static final String OPENBIS_LOCAL_DEV = "http://localhost:8888";
     private static final String DSS_LOCAL_DEV = "http://localhost:8889";
-//    private static final String OPENBIS_LOCAL_PROD = "https://localhost:8443";
-//    private static final String OPENBIS_SCU = "https://openbis-scu.ethz.ch";
-//    private static final String OPENBIS_SCU_TEST = "https://bs-lamp09.ethz.ch:8443/";
     
     private static final int TIMEOUT = Integer.MAX_VALUE;
     
@@ -46,21 +42,21 @@ public class Main
     
     public static void main(String[] args) throws Exception
     {
-        if(args.length == 7) {
-            boolean COMMIT_CHANGES_TO_OPENBIS = Boolean.parseBoolean(args[0]);
-            String AS_URL = args[1] + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL;
-            String DSS_URL = args[2] + "/datastore_server" + IDataStoreServerApi.SERVICE_URL;
-            DatasetCreationHelper.setDssURL(args[2]);
-            String user = args[3];
-            String pass = args[4];
-            doTheWork(COMMIT_CHANGES_TO_OPENBIS, AS_URL, DSS_URL, user, pass, true, true, true);
+        if(args.length == 4) {
+            String AS_URL = args[0] + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL;
+            String DSS_URL = args[1] + "/datastore_server" + IDataStoreServerApi.SERVICE_URL;
+            DatasetCreationHelper.setDssURL(args[1]);
+            String user = args[2];
+            String pass = args[3];
+            
+            System.out.println("AS_URL : [" + AS_URL +"]");
+            System.out.println("DSS_URL : [" + DSS_URL +"]");
+            System.out.println("user : [" + user +"]");
+            System.out.println("pass : [" + pass +"]");
+            
+            doTheWork(true, AS_URL, DSS_URL, user, pass, true, true, true);
         } else {
-            System.out.println("Example: java -jar microscopy_migration_tool.jar https://openbis-domain.ethz.ch user password");
-            DatasetCreationHelper.setDssURL(DSS_LOCAL_DEV);
-            doTheWork(true, 
-                    OPENBIS_LOCAL_DEV + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL, 
-                    DSS_LOCAL_DEV + "/datastore_server" + IDataStoreServerApi.SERVICE_URL, 
-                    "pontia", "migrationtool", true, true, true);
+            System.out.println("Example: java -jar microscopy_migration_tool.jar https://openbis-as-domain.ethz.ch https://openbis-dss-domain.ethz.ch user password");
         }
     }
     
@@ -71,6 +67,7 @@ public class Main
         IApplicationServerApi v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, AS_URL, TIMEOUT);
         IDataStoreServerApi v3dss = HttpInvokerUtils.createServiceStub(IDataStoreServerApi.class, DSS_URL, TIMEOUT);
         String sessionToken = v3.login(userId, pass);
+        System.out.println("userId, pass, sessionToken : [" + userId +"][" + pass +"][" + sessionToken +"]");
         Map<String, String> serverInfo = v3.getServerInformation(sessionToken);
         
         if(serverInfo.containsKey("project-samples-enabled") && serverInfo.get("project-samples-enabled").equals("true")) {

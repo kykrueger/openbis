@@ -3,13 +3,13 @@ from java.util import Date
 from java.text import SimpleDateFormat
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element, SubElement
-from com.lyncode.xoai.dataprovider import DataProvider
-from com.lyncode.xoai.dataprovider.model import Context, MetadataFormat, Item
-from com.lyncode.xoai.dataprovider.repository import Repository, RepositoryConfiguration
-from com.lyncode.xoai.dataprovider.parameters import OAIRequest
-from com.lyncode.xoai.dataprovider.handlers.results import ListItemIdentifiersResult, ListItemsResults
-from com.lyncode.xoai.model.oaipmh import OAIPMH, DeletedRecord, Granularity, Metadata
-from com.lyncode.xoai.xml import XmlWriter
+from org.dspace.xoai.dataprovider import DataProvider
+from org.dspace.xoai.dataprovider.model import Context, MetadataFormat, Item
+from org.dspace.xoai.dataprovider.repository import Repository, RepositoryConfiguration
+from org.dspace.xoai.dataprovider.parameters import OAIRequest
+from org.dspace.xoai.dataprovider.handlers.results import ListItemIdentifiersResult, ListItemsResults
+from org.dspace.xoai.model.oaipmh import OAIPMH, DeletedRecord, Granularity, Metadata
+from org.dspace.xoai.xml import XmlWriter
 from ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.xoai import SimpleItemIdentifier, SimpleItem, SimpleItemRepository, SimpleSetRepository
 from ch.systemsx.cisd.openbis.generic.shared.api.v1.dto import SearchCriteria
 from ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.SearchCriteria import MatchClause, MatchClauseAttribute, MatchClauseTimeAttribute, CompareMode

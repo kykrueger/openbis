@@ -98,14 +98,14 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeStartElement("xmd:masterData");
         String sessionToken = context.getSessionToken();
         addFileFormatTypes(writer, context.getQueryService(), sessionToken);
-        addValidationPlugins(writer, sessionToken);
-        addVocabularies(writer, sessionToken);
-        addPropertyTypes(writer, sessionToken);
-        addSampleTypes(writer, sessionToken);
-        addExperimentTypes(writer, sessionToken);
-        addDataSetTypes(writer, sessionToken);
-        addMaterialTypes(writer, sessionToken);
-        addExternalDataManagementSystems(writer, sessionToken);
+        addValidationPlugins(context, writer, sessionToken);
+        addVocabularies(context, writer, sessionToken);
+        addPropertyTypes(context, writer, sessionToken);
+        addSampleTypes(context, writer, sessionToken);
+        addExperimentTypes(context, writer, sessionToken);
+        addDataSetTypes(context, writer, sessionToken);
+        addMaterialTypes(context, writer, sessionToken);
+        addExternalDataManagementSystems(context, writer, sessionToken);
         writer.writeEndElement();
         writer.writeEndElement();
     }
@@ -131,7 +131,8 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         }
     }
 
-    private void addValidationPlugins(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addValidationPlugins(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
+            String sessionToken) throws XMLStreamException
     {
         PluginFetchOptions fetchOptions = new PluginFetchOptions();
         fetchOptions.withScript();
@@ -144,7 +145,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         for (Plugin plugin : plugins)
         {
             writer.writeStartElement("xmd:validationPlugin");
-            addAttribute(writer, "description", plugin.getDescription());
+            addAttributeAndExtractFilePaths(executionContext, writer, "description", plugin.getDescription());
             addAttribute(writer, "entityKind", getEntityKind(plugin));
             addAttribute(writer, "isAvailable", String.valueOf(plugin.isAvailable()));
             addAttribute(writer, "name", plugin.getName());
@@ -174,7 +175,8 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         return entityKind;
     }
 
-    private void addVocabularies(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addVocabularies(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
+            String sessionToken) throws XMLStreamException
     {
         VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
         fetchOptions.withTerms();
@@ -201,7 +203,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             {
                 writer.writeStartElement("xmd:term");
                 addAttribute(writer, "code", term.getCode());
-                addAttribute(writer, "description", term.getDescription());
+                addAttributeAndExtractFilePaths(executionContext, writer, "description", term.getDescription());
                 addAttribute(writer, "label", term.getLabel());
                 addAttribute(writer, "ordinal", String.valueOf(term.getOrdinal()));
                 addAttribute(writer, "url", vocabulary.getUrlTemplate(),
@@ -214,7 +216,8 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addPropertyTypes(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addPropertyTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
+            String sessionToken) throws XMLStreamException
     {
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
         fetchOptions.withMaterialType();
@@ -237,7 +240,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
             writer.writeStartElement("xmd:propertyType");
             addAttribute(writer, "code", code);
             addAttribute(writer, "dataType", propertyType.getDataType(), t -> t.name());
-            addAttribute(writer, "description", propertyType.getDescription());
+            addAttributeAndExtractFilePaths(executionContext, writer, "description", propertyType.getDescription());
             addAttribute(writer, "internalNamespace", internalNameSpace);
             addAttribute(writer, "label", propertyType.getLabel());
             addAttribute(writer, "managedInternally", propertyType.isManagedInternally());
@@ -260,7 +263,8 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addSampleTypes(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addSampleTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
+            String sessionToken) throws XMLStreamException
     {
         SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -274,7 +278,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeStartElement("xmd:objectTypes");
         for (SampleType type : types)
         {
-            writeTypeElement(writer, "xmd:objectType", type);
+            writeTypeElement(executionContext, writer, "xmd:objectType", type);
             addAttribute(writer, "autoGeneratedCode", type.isAutoGeneratedCode());
             addAttribute(writer, "generatedCodePrefix", type.getGeneratedCodePrefix());
             addAttribute(writer, "listable", type.isListable());
@@ -289,7 +293,8 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addExperimentTypes(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addExperimentTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
+            String sessionToken) throws XMLStreamException
     {
         ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -304,7 +309,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeStartElement("xmd:collectionTypes");
         for (ExperimentType type : types)
         {
-            writeTypeElement(writer, "xmd:collectionType", type);
+            writeTypeElement(executionContext, writer, "xmd:collectionType", type);
             addAttribute(writer, "validationPlugin", type.getValidationPlugin(), p -> p.getName());
             addPropertyAssignments(writer, type.getPropertyAssignments());
             writer.writeEndElement();
@@ -312,7 +317,8 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addDataSetTypes(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addDataSetTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
+            String sessionToken) throws XMLStreamException
     {
         DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -326,7 +332,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeStartElement("xmd:dataSetTypes");
         for (DataSetType type : types)
         {
-            writeTypeElement(writer, "xmd:dataSetType", type);
+            writeTypeElement(executionContext, writer, "xmd:dataSetType", type);
             addAttribute(writer, "deletionDisallowed", type.isDisallowDeletion());
             addAttribute(writer, "mainDataSetPath", type.getMainDataSetPath());
             addAttribute(writer, "mainDataSetPattern", type.getMainDataSetPattern());
@@ -337,7 +343,8 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addMaterialTypes(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addMaterialTypes(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
+            String sessionToken) throws XMLStreamException
     {
         MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
         fetchOptions.withPropertyAssignments().withPropertyType();
@@ -351,7 +358,7 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeStartElement("xmd:materialTypes");
         for (MaterialType type : types)
         {
-            writeTypeElement(writer, "xmd:materialType", type);
+            writeTypeElement(executionContext, writer, "xmd:materialType", type);
             addAttribute(writer, "validationPlugin", type.getValidationPlugin(), p -> p.getName());
             addPropertyAssignments(writer, type.getPropertyAssignments());
             writer.writeEndElement();
@@ -359,7 +366,8 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
         writer.writeEndElement();
     }
 
-    private void addExternalDataManagementSystems(XMLStreamWriter writer, String sessionToken) throws XMLStreamException
+    private void addExternalDataManagementSystems(DeliveryExecutionContext executionContext, XMLStreamWriter writer, 
+            String sessionToken) throws XMLStreamException
     {
         ExternalDmsSearchCriteria searchCriteria = new ExternalDmsSearchCriteria();
         ExternalDmsFetchOptions fetchOptions = new ExternalDmsFetchOptions();
@@ -382,11 +390,11 @@ public class MasterDataDeliverer extends AbstractEntityDeliverer<Object>
     }
 
     private <T extends ICodeHolder & IDescriptionHolder & IPropertyAssignmentsHolder> void writeTypeElement(
-            XMLStreamWriter writer, String elementType, T type) throws XMLStreamException
+            DeliveryExecutionContext executionContext, XMLStreamWriter writer, String elementType, T type) throws XMLStreamException
     {
         writer.writeStartElement(elementType);
         addAttribute(writer, "code", type.getCode());
-        addAttribute(writer, "description", type.getDescription());
+        addAttributeAndExtractFilePaths(executionContext, writer, "description", type.getDescription());
     }
 
     private void addPropertyAssignments(XMLStreamWriter writer, List<PropertyAssignment> propertyAssignments) throws XMLStreamException

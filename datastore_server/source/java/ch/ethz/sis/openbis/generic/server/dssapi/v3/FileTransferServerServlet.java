@@ -16,8 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.dssapi.v3;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,12 +68,14 @@ import ch.ethz.sis.filetransfer.IDownloadItemId;
 import ch.ethz.sis.filetransfer.IDownloadServer;
 import ch.ethz.sis.filetransfer.ILogger;
 import ch.ethz.sis.filetransfer.IUserSessionId;
+import ch.ethz.sis.filetransfer.IUserSessionManager;
+import ch.ethz.sis.filetransfer.InvalidUserSessionException;
 import ch.ethz.sis.filetransfer.LogLevel;
 import ch.ethz.sis.filetransfer.UserSessionId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadMethod;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadParameter;
 import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloadUtils;
-import ch.ethz.sis.openbis.generic.server.dssapi.v3.download.IFileTransferSessionManager;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -79,6 +85,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.server.ApplicationContext;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.authorization.DssSessionAuthorizationHolder;
@@ -101,7 +108,7 @@ public class FileTransferServerServlet extends HttpServlet
 
     private JsonFactory jsonFactory;
 
-    private IFileTransferSessionManager sessionManager;
+    private IDataStoreServiceInternal dataStoreService;
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException
@@ -110,16 +117,27 @@ public class FileTransferServerServlet extends HttpServlet
         ServletContext context = servletConfig.getServletContext();
         ApplicationContext applicationContext = (ApplicationContext) context.getAttribute(DataStoreServer.APPLICATION_CONTEXT_KEY);
         DownloadServerConfig config = new DownloadServerConfig();
-        ILogger logger = new Log4jBaseFileTransferLogger(LogLevel.INFO);
+        ILogger logger = new Log4jBaseFileTransferLogger();
         config.setLogger(logger);
-        sessionManager = ServiceProvider.getApplicationContext().getBean(IFileTransferSessionManager.class);
-        config.setSessionManager(sessionManager);
+        config.setSessionManager(new IUserSessionManager()
+            {
+                @Override
+                public void validateDuringDownload(IUserSessionId userSessionId) throws InvalidUserSessionException
+                {
+                }
+
+                @Override
+                public void validateBeforeDownload(IUserSessionId userSessionId) throws InvalidUserSessionException
+                {
+                }
+            });
         Properties properties = applicationContext.getConfigParameters().getProperties();
         config.setChunkProvider(new DataSetChunkProvider(applicationContext, FileUtils.ONE_MB, logger));
         config.setConcurrencyProvider(new ConcurrencyProvider(properties));
         config.setSerializerProvider(new DefaultSerializerProvider(logger));
         downloadServer = new DownloadServer(config);
         jsonFactory = new JsonFactory();
+        dataStoreService = ServiceProvider.getDataStoreService();
         operationLog.info("Servlet initialized");
     }
 
@@ -158,11 +176,12 @@ public class FileTransferServerServlet extends HttpServlet
     private void handleStartDownloadSession(Map<String, String[]> parameterMap, HttpServletResponse response) throws ServletException, IOException
     {
         IUserSessionId userSessionId = getUserSessionId(parameterMap);
-        String sessionToken = sessionManager.getSessionToken(userSessionId.getId());
+        String sessionToken = userSessionId.getId();
         List<IDownloadItemId> itemIds = filterByAccessRights(getDownloadItemIds(parameterMap), sessionToken);
         Integer wishedNumberOfStreams = getInteger(parameterMap, FastDownloadParameter.WISHED_NUMBER_OF_STREAMS_PARAMETER);
         DownloadPreferences preferences = new DownloadPreferences(wishedNumberOfStreams);
         DownloadSession downloadSession = downloadServer.startDownloadSession(userSessionId, itemIds, preferences);
+        addCleanupAction(sessionToken, downloadSession);
         response.setContentType("application/json");
         JsonGenerator jsonGenerator = jsonFactory.createGenerator(response.getWriter());
         jsonGenerator.setPrettyPrinter(new DefaultPrettyPrinter());
@@ -185,6 +204,19 @@ public class FileTransferServerServlet extends HttpServlet
         jsonGenerator.writeEndArray();
         jsonGenerator.writeEndObject();
         jsonGenerator.flush();
+    }
+
+    private void addCleanupAction(String sessionToken, DownloadSession downloadSession)
+    {
+        DownloadSessionId downloadSessionId = downloadSession.getDownloadSessionId();
+        dataStoreService.addCleanupAction(sessionToken, new IDelegatedAction()
+            {
+                @Override
+                public void execute()
+                {
+                    downloadServer.finishDownloadSession(downloadSessionId);
+                }
+            });
     }
 
     private List<IDownloadItemId> filterByAccessRights(List<IDownloadItemId> itemIds, String sessionToken)
@@ -359,7 +391,6 @@ public class FileTransferServerServlet extends HttpServlet
                 throws DownloadItemNotFoundException, DownloadException
         {
             IHierarchicalContentProvider contentProvider = applicationContext.getHierarchicalContentProvider(null);
-
             Map<IDownloadItemId, List<Chunk>> result = new HashMap<IDownloadItemId, List<Chunk>>();
             AtomicInteger sequenceNumber = new AtomicInteger(0);
 
@@ -382,7 +413,7 @@ public class FileTransferServerServlet extends HttpServlet
                 IDownloadItemId itemId)
         {
             boolean directory = node.isDirectory();
-            if (directory)
+            if (directory && node.getName().endsWith(".h5ar") == false)
             {
                 for (IHierarchicalContentNode childNode : node.getChildNodes())
                 {
@@ -395,12 +426,87 @@ public class FileTransferServerServlet extends HttpServlet
                 do
                 {
                     int payloadLength = (int) (Math.min(fileOffset + chunkSize, fileSize) - fileOffset);
-                    chunks.add(new FileChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
-                            fileOffset, payloadLength, node.getFile().toPath(), logger));
+                    File file = node.tryGetFile();
+                    Chunk chunk;
+                    if (file != null)
+                    {
+                        chunk = new FileChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
+                                fileOffset, payloadLength, file.toPath(), logger);
+                    } else
+                    {
+                        chunk = new InputStreamBasedChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
+                                fileOffset, payloadLength, node.getInputStream(), logger);
+                    }
+                    chunks.add(chunk);
                     fileOffset += chunkSize;
                 } while (fileOffset < fileSize);
             }
         }
     }
 
+    private static class InputStreamBasedChunk extends Chunk
+    {
+        private InputStream inputStream;
+
+        private ILogger logger;
+
+        public InputStreamBasedChunk(int sequenceNumber, IDownloadItemId downloadItemId, String filePath,
+                long fileOffset, int payloadLength, InputStream inputStream, ILogger logger)
+        {
+            super(sequenceNumber, downloadItemId, false, filePath, fileOffset, payloadLength);
+            this.inputStream = inputStream;
+            this.logger = logger;
+        }
+
+        @Override
+        public InputStream getPayload() throws DownloadException
+        {
+            try
+            {
+                inputStream.skip(getFileOffset());
+                int payloadLength = getPayloadLength();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream(payloadLength);
+                copyLarge(inputStream, outputStream, payloadLength, new byte[payloadLength]);
+                return new ByteArrayInputStream(outputStream.toByteArray());
+            } catch (IOException e)
+            {
+                DownloadException downloadException = new DownloadException("Can not get payload for chunk "
+                        + getSequenceNumber() + " staring at " + getFileOffset() + " of " + getFilePath(), e, false);
+                logger.log(InputStreamBasedChunk.class, LogLevel.ERROR, downloadException.getMessage());
+                throw downloadException;
+            }
+        }
+
+        /**
+         * This is copied from org.apache.commons.io.IOUtils (apache commons io version 2.6).
+         * Even though we ship datastore server with commons-io-2.6.jar the bioformats 5.9.2 has and
+         * older version of this library which hasn't the new copyLarge method.
+         */
+        private long copyLarge(final InputStream input, final OutputStream output,
+                final long length, final byte[] buffer) throws IOException
+        {
+            if (length == 0)
+            {
+                return 0;
+            }
+            final int bufferLength = buffer.length;
+            int bytesToRead = bufferLength;
+            if (length > 0 && length < bufferLength)
+            {
+                bytesToRead = (int) length;
+            }
+            int read;
+            long totalRead = 0;
+            while (bytesToRead > 0 && IOUtils.EOF != (read = input.read(buffer, 0, bytesToRead)))
+            {
+                output.write(buffer, 0, read);
+                totalRead += read;
+                if (length > 0)
+                {
+                    bytesToRead = (int) Math.min(length - totalRead, bufferLength);
+                }
+            }
+            return totalRead;
+        }
+    }
 }

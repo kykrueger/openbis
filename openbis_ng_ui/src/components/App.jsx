@@ -1,91 +1,60 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
-import HTML5Backend from 'react-dnd-html5-backend'
-import {DragDropContext} from 'react-dnd'
-import flow from 'lodash/flow'
+import {connect} from 'react-redux'
+import logger from '../common/logger.js'
+import * as actions from '../store/actions/actions.js'
+import * as selectors from '../store/selectors/selectors.js'
 
-import Hidden from '@material-ui/core/Hidden'
+import Loading from './loading/Loading.jsx'
+import Error from './error/Error.jsx'
+import Login from './login/Login.jsx'
+import Menu from './menu/Menu.jsx'
+import Browser from './browser/Browser.jsx'
 
-import Browser from './Browser.jsx'
-import BrowserFilter from './BrowserFilter.jsx'
-import BrowserButtons from './BrowserButtons.jsx'
-import ModeBar from './ModeBar.jsx'
-import TabPanel from './TabPanel.jsx'
-import TopBar from './TopBar.jsx'
+function mapStateToProps(state){
+  return {
+    loading: selectors.getLoading(state),
+    session: selectors.getSession(state),
+    error: selectors.getError(state)
+  }
+}
 
-
-const drawerWidth = 400
-
-const styles = {
-  right: {
-    width: `calc(100% - ${drawerWidth + 4 + 4 + 1}px)`,
-    paddingLeft: 4,
-    marginLeft: drawerWidth + 5,
-  },
-
-  left: {
-    float: 'left',
-    width: drawerWidth,
-    paddingRight: 4,
-    borderRight: '1px dotted',
-    borderColor: '#e3e5ea',
-    height: '100%',
-    position: 'absolute',
-  },
-
-  browser: {
-    height: 'calc(100% - 160px)',
-    overflow: 'auto'
-  },
-
-  topMargin: {
-    marginTop: 8
-  },
+function mapDispatchToProps(dispatch){
+  return {
+    init: () => { dispatch(actions.init()) },
+    errorClosed: () => { dispatch(actions.errorChanged(null)) }
+  }
 }
 
 class App extends React.Component {
 
+  componentDidMount(){
+    this.props.init()
+  }
+
   render() {
-    const classes = this.props.classes
+    logger.log(logger.DEBUG, 'App.render')
 
     return (
-      <div>
-
-        <Hidden mdUp>
-          <TopBar/>
-          <div className={classes.topMargin}>
-            <ModeBar/>
-          </div>
-          <BrowserFilter/>
-          <Browser/>
-          <BrowserButtons/>
-          <div className={classes.topMargin}>
-            <TabPanel/>
-          </div>
-        </Hidden>
-
-        <Hidden smDown>
-          <div className={classes.left}>
-            <ModeBar/>
-            <BrowserFilter/>
-            <div className={classes.browser}>
-              <Browser/>
-            </div>
-            <BrowserButtons/>
-          </div>
-          <div className={classes.right}>
-            <TopBar/>
-            <div className={classes.topMargin}>
-              <TabPanel/>
-            </div>
-          </div>
-        </Hidden>
-      </div>
+      <Loading loading={this.props.loading}>
+        <Error error={this.props.error} errorClosed={this.props.errorClosed}>
+          {this.renderPage()}
+        </Error>
+      </Loading>
     )
+  }
+
+  renderPage(){
+    if(this.props.session){
+      return (
+        <div>
+          <Menu/>
+          <Browser/>
+        </div>
+      )
+    }else{
+      return <Login/>
+    }
   }
 }
 
-export default flow(
-  withStyles(styles),
-  DragDropContext(HTML5Backend)
-)(App)
+export default connect(mapStateToProps, mapDispatchToProps)(App)

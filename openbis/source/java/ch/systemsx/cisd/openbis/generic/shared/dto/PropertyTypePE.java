@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -39,6 +40,9 @@ import javax.validation.constraints.Pattern;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.Length;
 
 import ch.systemsx.cisd.common.collection.UnmodifiableSetDecorator;
@@ -46,6 +50,7 @@ import ch.systemsx.cisd.openbis.generic.client.web.client.application.GenericCon
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
+import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 
 /**
  * Persistence entity representing property type.
@@ -60,6 +65,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 @Table(name = TableNames.PROPERTY_TYPES_TABLE, uniqueConstraints =
 { @UniqueConstraint(columnNames =
 { ColumnNames.CODE_COLUMN, ColumnNames.IS_INTERNAL_NAMESPACE }) })
+@TypeDefs( {@TypeDef( name= "JsonMap", typeClass = JsonMapUserType.class)})
 public final class PropertyTypePE extends HibernateAbstractRegistrationHolder implements
         Comparable<PropertyTypePE>, IIdAndCodeHolder, IIdentityHolder
 {
@@ -74,6 +80,8 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
     private String description;
 
     private String label;
+    
+    private Map<String, String> metaData;
 
     /** can be null. Is always null when {@link #materialType} is not null. */
     private VocabularyPE vocabulary;
@@ -234,6 +242,18 @@ public final class PropertyTypePE extends HibernateAbstractRegistrationHolder im
     public final void setLabel(final String label)
     {
         this.label = label;
+    }
+
+    @Column(name = "meta_data")
+    @Type(type = "JsonMap")
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
     }
 
     @Column(name = ColumnNames.SCHEMA_COLUMN)

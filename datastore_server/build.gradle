@@ -28,10 +28,10 @@ dependencies {
 			'jfree:jfreechart:+',
 			'cisd:cisd-cifex:+',
 			'shriop:javacsv:+',
-			'cisd:cisd-image-readers:+',
+			'cisd:cisd-image-readers:r34325',
 			'hjg:pngj:+',
 			'apache:commons-fileupload:+',
-			'lyncode:xoai-data-provider:+'
+			'dspace:xoai-data-provider:+'
 
   runtime 'bioformats:bioformats:5.9.2'
 

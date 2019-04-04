@@ -83,6 +83,7 @@ public class SampleFreezingTest extends FreezingTest
         tagCreation.setCode("blue");
         tagCreation.setSampleIds(Arrays.asList(sampleComp));
         blueTag = v3api.createTags(systemSessionToken, Arrays.asList(tagCreation)).get(0);
+        System.err.println("examples created");
     }
 
     @Test
@@ -672,7 +673,7 @@ public class SampleFreezingTest extends FreezingTest
         // Then
         assertEquals(getSample(id).getParents().get(0).getCode(), SAMPLE_1);
     }
-    
+
     @DataProvider(name = "liquidParent")
     public static Object[][] liquidParent()
     {
@@ -681,7 +682,7 @@ public class SampleFreezingTest extends FreezingTest
         combinationsForLiquidParent.add(new FrozenFlags(false).freezeForChildren());
         return asCartesianProduct(combinationsForLiquidParent);
     }
-    
+
     @Test
     public void testInvalidAddSampleToParent()
     {
@@ -720,14 +721,14 @@ public class SampleFreezingTest extends FreezingTest
         setFrozenFlagsForSamples(frozenFlagsForChild, sample1);
         SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
         sampleCreation.setChildIds(Arrays.asList(sample1));
-        
+
         // When
         SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
-        
+
         // Then
         assertEquals(getSample(id).getChildren().get(0).getCode(), SAMPLE_1);
     }
-    
+
     @DataProvider(name = "liquidChild")
     public static Object[][] liquidChild()
     {
@@ -736,7 +737,7 @@ public class SampleFreezingTest extends FreezingTest
         combinationsForLiquidChild.add(new FrozenFlags(false).freezeForChildren());
         return asCartesianProduct(combinationsForLiquidChild);
     }
-    
+
     @Test
     public void testInvalidAddSampleToChild()
     {
@@ -744,14 +745,14 @@ public class SampleFreezingTest extends FreezingTest
         setFrozenFlagsForSamples(new FrozenFlags(true).freezeForParents(), sample1);
         SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
         sampleCreation.setChildIds(Arrays.asList(sample1));
-        
+
         // When
         assertUserFailureException(Void -> v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)),
                 // Then
                 "ERROR: Operation INSERT is not allowed because sample " + sampleCreation.getCode()
-                + " or " + SAMPLE_1 + " is frozen.");
+                        + " or " + SAMPLE_1 + " is frozen.");
     }
-    
+
     @Test
     public void testInvalidAddSampleToChildAfterMelting()
     {
@@ -760,12 +761,53 @@ public class SampleFreezingTest extends FreezingTest
         setFrozenFlagsForSamples(new FrozenFlags(true).freezeForParents().melt(), sample1);
         SampleCreation sampleCreation = cellPlate(PREFIX + "S2");
         sampleCreation.setChildIds(Arrays.asList(sample1));
-        
+
         // When
         SamplePermId id = v3api.createSamples(systemSessionToken, Arrays.asList(sampleCreation)).iterator().next();
-        
+
         // Then
         assertEquals(getSample(id).getChildren().get(0).getCode(), SAMPLE_1);
     }
-    
+
+    @Test
+    public void testFreezeChildAndParent()
+    {
+        // Given
+        SampleUpdate update1 = new SampleUpdate();
+        update1.setSampleId(sampleChild);
+        update1.freeze();
+        update1.freezeForParents();
+        SampleUpdate update2 = new SampleUpdate();
+        update2.setSampleId(sampleParentCont);
+        update2.freeze();
+        update2.freezeForChildren();
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(update1, update2));
+
+        // Then
+        assertEquals(getSample(sampleChild).isFrozen(), true);
+        assertEquals(getSample(sampleParentCont).isFrozen(), true);
+    }
+
+    @Test
+    public void testFreezeComponentAndContainer()
+    {
+        // Given
+        SampleUpdate update1 = new SampleUpdate();
+        update1.setSampleId(sampleComp);
+        update1.freeze();
+        SampleUpdate update2 = new SampleUpdate();
+        update2.setSampleId(sampleParentCont);
+        update2.freeze();
+        update2.freezeForComponents();
+
+        // When
+        v3api.updateSamples(systemSessionToken, Arrays.asList(update1, update2));
+
+        // Then
+        assertEquals(getSample(sampleComp).isFrozen(), true);
+        assertEquals(getSample(sampleParentCont).isFrozen(), true);
+    }
+
 }

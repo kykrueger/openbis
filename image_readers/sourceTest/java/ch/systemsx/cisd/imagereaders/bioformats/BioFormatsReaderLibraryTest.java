@@ -46,12 +46,12 @@ public class BioFormatsReaderLibraryTest extends ImageReaderTestCase
         assertEquals("[0-0-0-0, 0-1-0-0]", imageIDs.toString());
 
         BufferedImage image0 = reader.readImage(imageFile, imageIDs.get(0), null);
-        assertEquals(459, image0.getWidth());
-        assertEquals(435, image0.getHeight());
+        assertEquals(1356, image0.getWidth());
+        assertEquals(547, image0.getHeight());
 
         BufferedImage image1 = reader.readImage(imageFile, imageIDs.get(1), null);
-        assertEquals(459, image1.getWidth());
-        assertEquals(435, image1.getHeight());
+        assertEquals(1356, image1.getWidth());
+        assertEquals(547, image1.getHeight());
 
         int depth =
                 reader.readColorDepth(

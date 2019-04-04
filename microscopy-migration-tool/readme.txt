@@ -9,7 +9,10 @@ dss-rpc.put.ATTACHMENT = eln-lims-dropbox
 
 The information can be retrieved from the database using the next SQL:
 
-SELECT m.name as "tag", ea.perm_id as "experiment" 
+psql -U postgres -d openbis_standard
+\o tags.txt
+
+SELECT '"' || m.name || '"	"' || ea.perm_id ||'"'
 FROM metaproject_assignments_all ma 
 LEFT JOIN metaprojects m ON (m.id = ma.mepr_id) 
 LEFT JOIN experiments_all ea ON (ea.id = ma.expe_id);
@@ -25,3 +28,5 @@ It follows the next format, including quotes, one tag per line:
 
 This file is a sql script that needs to be executed.
 It migrates the audit data from the translated experiments to samples.
+
+psql -U postgres -d openbis_standard -a -f openbis_audit_data_update.sql 

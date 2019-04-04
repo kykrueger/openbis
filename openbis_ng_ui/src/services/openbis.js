@@ -1,14 +1,21 @@
 const autoBind = require('auto-bind')
 
-
-export default class Openbis {
+export class Openbis {
 
   constructor() {
     autoBind(this)
+  }
+
+  init(){
     let _this = this
-    /* eslint-disable-next-line no-undef */
-    requirejs(['openbis'], openbis => {
-      _this.v3 = new openbis()
+    return new Promise((resolve, reject) => {
+      /* eslint-disable-next-line no-undef */
+      requirejs(['openbis'], openbis => {
+        _this.v3 = new openbis()
+        resolve()
+      }, error => {
+        reject(error)
+      })
     })
   }
 
@@ -25,50 +32,6 @@ export default class Openbis {
     let v3 = this.v3
     return new Promise((resolve, reject) => {
       v3.logout().done(resolve).fail(reject)
-    })
-  }
-
-  getSpaces() {
-    let v3 = this.v3
-    return new Promise((resolve, reject) => {
-      /* eslint-disable-next-line no-undef */
-      requirejs(
-        ['as/dto/space/search/SpaceSearchCriteria', 'as/dto/space/fetchoptions/SpaceFetchOptions'],
-        (SpaceSearchCriteria, SpaceFetchOptions) =>
-          v3.searchSpaces(new SpaceSearchCriteria(), new SpaceFetchOptions()).done(resolve).fail(reject)
-      )
-    })
-  }
-
-  updateSpace(permId, description) {
-    let v3 = this.v3
-    return new Promise((resolve, reject) => {
-      /* eslint-disable-next-line no-undef */
-      requirejs(
-        ['as/dto/space/update/SpaceUpdate'],
-        (SpaceUpdate) => {
-          let spaceUpdate = new SpaceUpdate()
-          spaceUpdate.setSpaceId(permId)
-          spaceUpdate.setDescription(description)
-          v3.updateSpaces([spaceUpdate]).done(resolve).fail(reject)
-        }
-      )
-    })
-  }
-
-  searchProjects(spacePermId) {
-    let v3 = this.v3
-    return new Promise((resolve, reject) => {
-      /* eslint-disable-next-line no-undef */
-      requirejs(
-        ['as/dto/project/search/ProjectSearchCriteria', 'as/dto/project/fetchoptions/ProjectFetchOptions'],
-        (ProjectSearchCriteria, ProjectFetchOptions) => {
-          let searchCriteria = new ProjectSearchCriteria()
-          searchCriteria.withSpace().withPermId().thatEquals(spacePermId)
-          let fetchOptions = new ProjectFetchOptions()
-          v3.searchProjects(searchCriteria, fetchOptions).done(resolve).fail(reject)
-        }
-      )
     })
   }
 
@@ -124,6 +87,7 @@ export default class Openbis {
 
   getDataSetTypes() {
     let v3 = this.v3
+    /* eslint-disable-next-line no-undef */
     return new Promise((resolve, reject) => {
       /* eslint-disable-next-line no-undef */
       requirejs(
@@ -147,3 +111,5 @@ export default class Openbis {
   }
 
 }
+
+export default new Openbis()

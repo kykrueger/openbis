@@ -7,7 +7,7 @@ module.exports = {
     path: __dirname + '/build/',
     filename: 'bundle.[hash].js'
   },
-  
+
   mode: 'production',
 
   module: {

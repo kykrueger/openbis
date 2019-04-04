@@ -3,6 +3,10 @@
 {root} = ch.systemsx.cisd.openbis
 {screening} = ${root}.plugin.screening
 
+
+# -------- Check that old commons lang (aka lang2) isn't used
+check ch.* independentOf org.apache.commons.lang.*
+
 # -------- check that screening openbis is indendent of the DSS code
 
 [screening_openbis] = ${screening}.*

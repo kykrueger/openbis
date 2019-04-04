@@ -20,12 +20,12 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.lyncode.xoai.dataprovider.model.ItemIdentifier;
-import com.lyncode.xoai.dataprovider.model.Set;
+import org.dspace.xoai.dataprovider.model.ItemIdentifier;
+import org.dspace.xoai.dataprovider.model.Set;
 
 /**
  * <p>
- * Simple implementation of {@link com.lyncode.xoai.dataprovider.model.ItemIdentifier} with setters and getters.
+ * Simple implementation of {@link org.dspace.xoai.dataprovider.model.ItemIdentifier} with setters and getters.
  * </p>
  * 
  * @author pkupczyk

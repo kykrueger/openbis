@@ -44,17 +44,23 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
 
     static final String SHARES_MAPPING_FILE_PATH_PROPERTY = "shares-mapping-file-path";
 
+    static final String LDAP_FILTER_KEY_PROPERTY = "filter-key";
+
+    static final String DEFAULT_LDAP_FILTER_KEY = "ou";
+
     private File auditLogFile;
 
     private LDAPAuthenticationService ldapService;
 
     private File shareIdsMappingFile;
-    
+
+    private String filterKey;
+
     public UserManagementMaintenanceTask()
     {
         super(true);
     }
-    
+
     @Override
     protected void setUpSpecific(Properties properties)
     {
@@ -70,6 +76,7 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
                     + "At least 'ldap.server.url', 'ldap.security.principal.distinguished.name', "
                     + "'ldap.security.principal.password' have to be specified in 'service.properties'.");
         }
+        filterKey = properties.getProperty(LDAP_FILTER_KEY_PROPERTY, DEFAULT_LDAP_FILTER_KEY);
         String shareIdsMappingFilePath = properties.getProperty(SHARES_MAPPING_FILE_PATH_PROPERTY);
         if (shareIdsMappingFilePath != null)
         {
@@ -163,7 +170,7 @@ public class UserManagementMaintenanceTask extends AbstractMaintenanceTask
 
     protected List<Principal> getUsersOfGroup(String ldapGroupKey)
     {
-        return ldapService.listPrincipalsByKeyValue("ou", ldapGroupKey);
+        return ldapService.listPrincipalsByKeyValue(filterKey, ldapGroupKey);
     }
 
     protected LDAPAuthenticationService getLdapAuthenticationService()

@@ -26,11 +26,18 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.UpdateExperimentsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.UpdateSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.UpdateSpacesOperation;
 
 /**
  * @author Franz-Josef Elmer
@@ -90,7 +97,7 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
         p3.setSpaceId(spaceOfSample);
         p3.setExperimentId(expOfSample);
         List<SamplePermId> samples = v3api.createSamples(systemSessionToken, Arrays.asList(p1, p2, p3));
-        ;
+
         sharedSample = samples.get(0);
         spaceSample = samples.get(1);
         experimentSample = samples.get(2);
@@ -632,5 +639,49 @@ public class SpaceExperimentSampleRelationshipsFreezingTest extends FreezingTest
 
         // Then
         assertEquals(getSample(id).getExperiment().getCode(), EXPERIMENT_1);
+    }
+
+    @Test
+    public void testFreezeSpaceAndSample()
+    {
+        // Given
+        SpaceUpdate spaceUpdate = new SpaceUpdate();
+        spaceUpdate.setSpaceId(spaceOfSample);
+        spaceUpdate.freeze();
+        spaceUpdate.freezeForSamples();
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(spaceSample);
+        sampleUpdate.freeze();
+        IOperationExecutionOptions op = new SynchronousOperationExecutionOptions();
+
+        // When
+        v3api.executeOperations(systemSessionToken, Arrays.asList(
+                new UpdateSpacesOperation(spaceUpdate), new UpdateSamplesOperation(sampleUpdate)), op);
+
+        // Then
+        assertEquals(getSpace(spaceOfSample).isFrozen(), true);
+        assertEquals(getSample(spaceSample).isFrozen(), true);
+    }
+
+    @Test
+    public void testFreezeExperimentAndSample()
+    {
+        // Given
+        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
+        experimentUpdate.setExperimentId(expOfSample);
+        experimentUpdate.freeze();
+        experimentUpdate.freezeForSamples();
+        SampleUpdate sampleUpdate = new SampleUpdate();
+        sampleUpdate.setSampleId(experimentSample);
+        sampleUpdate.freeze();
+        IOperationExecutionOptions op = new SynchronousOperationExecutionOptions();
+
+        // When
+        v3api.executeOperations(systemSessionToken, Arrays.asList(
+                new UpdateExperimentsOperation(experimentUpdate), new UpdateSamplesOperation(sampleUpdate)), op);
+
+        // Then
+        assertEquals(getExperiment(expOfSample).isFrozen(), true);
+        assertEquals(getSample(experimentSample).isFrozen(), true);
     }
 }
