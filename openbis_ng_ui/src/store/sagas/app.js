@@ -6,8 +6,8 @@ export default function* app() {
   yield takeEvery(actions.INIT, init)
   yield takeEvery(actions.LOGIN, login)
   yield takeEvery(actions.LOGOUT, logout)
-  yield takeEvery(actions.CURRENT_PAGE_CHANGED, currentPageChanged)
-  yield takeEvery(actions.ERROR_CHANGED, errorChanged)
+  yield takeEvery(actions.CURRENT_PAGE_CHANGE, currentPageChange)
+  yield takeEvery(actions.ERROR_CHANGE, errorChange)
 }
 
 function* init() {
@@ -52,10 +52,10 @@ function* logout() {
   }
 }
 
-function* currentPageChanged(action){
+function* currentPageChange(action){
   yield put(actions.setCurrentPage(action.payload.currentPage))
 }
 
-function* errorChanged(action){
+function* errorChange(action){
   yield put(actions.setError(action.payload.error))
 }

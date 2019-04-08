@@ -48,9 +48,9 @@ class BrowserNodes extends React.Component {
   renderIcon(node){
     if(node.children && node.children.length > 0){
       if(node.expanded){
-        return (<ListItemIcon><ExpandMoreIcon onClick={() => this.props.nodeCollapsed(node.id)}/></ListItemIcon>)
+        return (<ListItemIcon><ExpandMoreIcon onClick={() => this.props.nodeCollapse(node.id)}/></ListItemIcon>)
       }else{
-        return (<ListItemIcon><ChevronRightIcon onClick={() => this.props.nodeExpanded(node.id)}/></ListItemIcon>)
+        return (<ListItemIcon><ChevronRightIcon onClick={() => this.props.nodeExpand(node.id)}/></ListItemIcon>)
       }
     }else{
       return null
@@ -59,7 +59,7 @@ class BrowserNodes extends React.Component {
 
   renderText(node){
     logger.log(logger.DEBUG, 'BrowserNode.renderText "' + node.text + '"')
-    return <ListItemText primary={node.text} inset={true} onClick={() => this.props.nodeSelected(node.id)} />
+    return <ListItemText primary={node.text} inset={true} onClick={() => this.props.nodeSelect(node.id, node.object)} />
   }
 
 }

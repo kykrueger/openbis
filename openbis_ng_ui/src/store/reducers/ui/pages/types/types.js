@@ -1,10 +1,14 @@
 import { combineReducers } from 'redux'
 import * as pages from '../../../../consts/pages.js'
-import { browser, isBrowserAction } from '../common/browser.js'
+import * as page from '../common/page.js'
 
 export default function types(state = {}, action){
-  if(isBrowserAction(pages.TYPES, action)){
-    return combineReducers({browser})(state, action)
+  if(page.isPageAction(pages.TYPES, action)){
+    return combineReducers({
+      browser: page.browser,
+      openObjects: page.openObjects,
+      selectedObject: page.selectedObject
+    })(state, action)
   }else{
     return state
   }

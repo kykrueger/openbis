@@ -26,7 +26,7 @@ function mapStateToProps(state){
 
 function mapDispatchToProps(dispatch){
   return {
-    currentPageChanged: (event, value) => dispatch(actions.currentPageChanged(value)),
+    currentPageChange: (event, value) => dispatch(actions.currentPageChange(value)),
     logout: () => dispatch(actions.logout())
   }
 }
@@ -41,7 +41,7 @@ class Menu extends React.Component {
       <AppBar position="static">
         <Toolbar>
           <Tabs value={this.props.currentPage}
-            onChange={this.props.currentPageChanged}
+            onChange={this.props.currentPageChange}
             classes={{root: classes.tabs}}>
             <Tab value={pages.TYPES} label="Types"/>
             <Tab value={pages.USERS} label="Users"/>

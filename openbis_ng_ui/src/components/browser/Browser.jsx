@@ -26,10 +26,10 @@ function mapDispatchToProps(dispatch){
   return {
     init: (page) => { dispatch(actions.browserInit(page)) },
     release: (page) => { dispatch(actions.browserRelease(page)) },
-    filterChanged: (event) => { dispatch(actions.browserFilterChanged(getCurrentPage(), event.currentTarget.value)) },
-    nodeSelected: (id) => { dispatch(actions.browserNodeSelected(getCurrentPage(), id)) },
-    nodeExpanded: (id) => { dispatch(actions.browserNodeExpanded(getCurrentPage(), id)) },
-    nodeCollapsed: (id) => { dispatch(actions.browserNodeCollapsed(getCurrentPage(), id)) }
+    filterChange: (event) => { dispatch(actions.browserFilterChange(getCurrentPage(), event.currentTarget.value)) },
+    nodeSelect: (id, object) => { dispatch(actions.browserNodeSelect(getCurrentPage(), id, object)) },
+    nodeExpand: (id) => { dispatch(actions.browserNodeExpand(getCurrentPage(), id)) },
+    nodeCollapse: (id) => { dispatch(actions.browserNodeCollapse(getCurrentPage(), id)) }
   }
 }
 
@@ -48,18 +48,18 @@ class Browser extends React.PureComponent {
 
   render() {
     logger.log(logger.DEBUG, 'Browser.render')
-    
+
     return (
       <Loading loading={this.props.loading}>
         <BrowserFilter
           filter={this.props.filter}
-          filterChanged={this.props.filterChanged}
+          filterChange={this.props.filterChange}
         />
         <BrowserNodes
           nodes={this.props.nodes}
-          nodeSelected={this.props.nodeSelected}
-          nodeExpanded={this.props.nodeExpanded}
-          nodeCollapsed={this.props.nodeCollapsed}
+          nodeSelect={this.props.nodeSelect}
+          nodeExpand={this.props.nodeExpand}
+          nodeCollapse={this.props.nodeCollapse}
           level={0}
         />
       </Loading>)

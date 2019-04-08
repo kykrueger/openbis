@@ -1,5 +1,7 @@
 import React from 'react'
+import _ from 'lodash'
 import {connect} from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
 import logger from '../common/logger.js'
 import * as actions from '../store/actions/actions.js'
 import * as selectors from '../store/selectors/selectors.js'
@@ -9,6 +11,13 @@ import Error from './error/Error.jsx'
 import Login from './login/Login.jsx'
 import Menu from './menu/Menu.jsx'
 import Browser from './browser/Browser.jsx'
+import Content from './content/Content.jsx'
+
+const styles = () => ({
+  contentContainer: {
+    display: 'flex'
+  }
+})
 
 function mapStateToProps(state){
   return {
@@ -21,7 +30,7 @@ function mapStateToProps(state){
 function mapDispatchToProps(dispatch){
   return {
     init: () => { dispatch(actions.init()) },
-    errorClosed: () => { dispatch(actions.errorChanged(null)) }
+    errorClosed: () => { dispatch(actions.errorChange(null)) }
   }
 }
 
@@ -44,11 +53,18 @@ class App extends React.Component {
   }
 
   renderPage(){
+    const classes = this.props.classes
+
     if(this.props.session){
       return (
         <div>
-          <Menu/>
-          <Browser/>
+          <div className={classes.topContainer}>
+            <Menu/>
+          </div>
+          <div className={classes.contentContainer}>
+            <Browser/>
+            <Content/>
+          </div>
         </div>
       )
     }else{
@@ -57,4 +73,7 @@ class App extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(App)
+export default _.flow(
+  connect(mapStateToProps, mapDispatchToProps),
+  withStyles(styles)
+)(App)

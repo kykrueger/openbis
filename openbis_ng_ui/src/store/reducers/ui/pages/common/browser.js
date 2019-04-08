@@ -2,10 +2,6 @@ import _ from 'lodash'
 import { combineReducers } from 'redux'
 import * as actions from '../../../../actions/actions.js'
 
-export function isBrowserAction(page, action){
-  return action.type === actions.INIT || page === (action.payload && action.payload.page)
-}
-
 export const browser = combineReducers({
   initialized,
   filter,

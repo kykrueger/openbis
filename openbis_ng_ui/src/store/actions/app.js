@@ -1,8 +1,8 @@
 export const INIT = 'INIT'
 export const LOGIN = 'LOGIN'
 export const LOGOUT = 'LOGOUT'
-export const CURRENT_PAGE_CHANGED = 'CURRENT_PAGE_CHANGED'
-export const ERROR_CHANGED = 'ERROR_CHANGED'
+export const CURRENT_PAGE_CHANGE = 'CURRENT_PAGE_CHANGE'
+export const ERROR_CHANGE = 'ERROR_CHANGE'
 
 export const SET_LOADING = 'SET_LOADING'
 export const SET_SESSION = 'SET_SESSION'
@@ -25,15 +25,15 @@ export const logout = () => ({
   type: LOGOUT
 })
 
-export const currentPageChanged = (currentPage) => ({
-  type: CURRENT_PAGE_CHANGED,
+export const currentPageChange = (currentPage) => ({
+  type: CURRENT_PAGE_CHANGE,
   payload: {
     currentPage
   }
 })
 
-export const errorChanged = (error) => ({
-  type: ERROR_CHANGED,
+export const errorChange = (error) => ({
+  type: ERROR_CHANGE,
   payload: {
     error
   }

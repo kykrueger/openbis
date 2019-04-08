@@ -23,11 +23,11 @@ beforeEach(() => {
 describe('browser', () => {
   test('init', () => {
     openbis.getUsers.mockReturnValue({
-      objects: [ fixture.TEST_USER_OBJECT, fixture.ANOTHER_USER_OBJECT ]
+      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
     openbis.getGroups.mockReturnValue({
-      objects: [ fixture.TEST_GROUP_OBJECT, fixture.ANOTHER_GROUP_OBJECT, fixture.ALL_USERS_GROUP_OBJECT ]
+      objects: [ fixture.TEST_GROUP_DTO, fixture.ANOTHER_GROUP_DTO, fixture.ALL_USERS_GROUP_DTO ]
     })
 
     store.dispatch(actions.browserInit(pages.USERS))
@@ -35,74 +35,104 @@ describe('browser', () => {
     const state = store.getState()
     expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
       node(['users'], false, false, [
-        node(['users', fixture.ANOTHER_USER_OBJECT.userId], false, false, [
-          node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ALL_USERS_GROUP_OBJECT.code]),
-          node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ANOTHER_GROUP_OBJECT.code])
+        node(['users', fixture.ANOTHER_USER_DTO.userId], false, false, [
+          node(['users', fixture.ANOTHER_USER_DTO.userId, fixture.ALL_USERS_GROUP_DTO.code]),
+          node(['users', fixture.ANOTHER_USER_DTO.userId, fixture.ANOTHER_GROUP_DTO.code])
         ]),
-        node(['users', fixture.TEST_USER_OBJECT.userId], false, false, [
-          node(['users', fixture.TEST_USER_OBJECT.userId, fixture.ALL_USERS_GROUP_OBJECT.code]),
-          node(['users', fixture.TEST_USER_OBJECT.userId, fixture.TEST_GROUP_OBJECT.code])
+        node(['users', fixture.TEST_USER_DTO.userId], false, false, [
+          node(['users', fixture.TEST_USER_DTO.userId, fixture.ALL_USERS_GROUP_DTO.code]),
+          node(['users', fixture.TEST_USER_DTO.userId, fixture.TEST_GROUP_DTO.code])
         ])
       ]),
       node(['groups'], false, false, [
-        node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code], false, false, [
-          node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code, fixture.ANOTHER_USER_OBJECT.userId]),
-          node(['groups', fixture.ALL_USERS_GROUP_OBJECT.code, fixture.TEST_USER_OBJECT.userId])
+        node(['groups', fixture.ALL_USERS_GROUP_DTO.code], false, false, [
+          node(['groups', fixture.ALL_USERS_GROUP_DTO.code, fixture.ANOTHER_USER_DTO.userId]),
+          node(['groups', fixture.ALL_USERS_GROUP_DTO.code, fixture.TEST_USER_DTO.userId])
         ]),
-        node(['groups', fixture.ANOTHER_GROUP_OBJECT.code], false, false, [
-          node(['groups', fixture.ANOTHER_GROUP_OBJECT.code, fixture.ANOTHER_USER_OBJECT.userId])
+        node(['groups', fixture.ANOTHER_GROUP_DTO.code], false, false, [
+          node(['groups', fixture.ANOTHER_GROUP_DTO.code, fixture.ANOTHER_USER_DTO.userId])
         ]),
-        node(['groups', fixture.TEST_GROUP_OBJECT.code], false, false, [
-          node(['groups', fixture.TEST_GROUP_OBJECT.code, fixture.TEST_USER_OBJECT.userId])
+        node(['groups', fixture.TEST_GROUP_DTO.code], false, false, [
+          node(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId])
         ])
       ])
     ])
+
+    let selectedObject = selectors.getSelectedObject(state, pages.USERS)
+    let openObjects = selectors.getOpenObjects(state, pages.USERS)
+
+    expect(selectedObject).toEqual(null)
+    expect(openObjects).toEqual([])
   })
 
   test('filter', () => {
     openbis.getUsers.mockReturnValue({
-      objects: [ fixture.TEST_USER_OBJECT, fixture.ANOTHER_USER_OBJECT ]
+      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
     openbis.getGroups.mockReturnValue({
-      objects: [ fixture.TEST_GROUP_OBJECT, fixture.ANOTHER_GROUP_OBJECT, fixture.ALL_USERS_GROUP_OBJECT ]
+      objects: [ fixture.TEST_GROUP_DTO, fixture.ANOTHER_GROUP_DTO, fixture.ALL_USERS_GROUP_DTO ]
     })
 
     store.dispatch(actions.browserInit(pages.USERS))
-    store.dispatch(actions.browserFilterChanged(pages.USERS, fixture.ANOTHER_GROUP_OBJECT.code.toUpperCase()))
+    store.dispatch(actions.browserFilterChange(pages.USERS, fixture.ANOTHER_GROUP_DTO.code.toUpperCase()))
 
     const state = store.getState()
     expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
       node(['users'], true, false, [
-        node(['users', fixture.ANOTHER_USER_OBJECT.userId], true, false, [
-          node(['users', fixture.ANOTHER_USER_OBJECT.userId, fixture.ANOTHER_GROUP_OBJECT.code])
+        node(['users', fixture.ANOTHER_USER_DTO.userId], true, false, [
+          node(['users', fixture.ANOTHER_USER_DTO.userId, fixture.ANOTHER_GROUP_DTO.code])
         ])
       ]),
       node(['groups'], true, false, [
-        node(['groups', fixture.ANOTHER_GROUP_OBJECT.code])
+        node(['groups', fixture.ANOTHER_GROUP_DTO.code])
       ])
     ])
+
+    let selectedObject = selectors.getSelectedObject(state, pages.USERS)
+    let openObjects = selectors.getOpenObjects(state, pages.USERS)
+
+    expect(selectedObject).toEqual(null)
+    expect(openObjects).toEqual([])
   })
 
   test('selectNode', () => {
     openbis.getUsers.mockReturnValue({
-      objects: [ fixture.TEST_USER_OBJECT ]
+      objects: [ fixture.TEST_USER_DTO ]
     })
 
     openbis.getGroups.mockReturnValue({
       objects: []
     })
 
-    store.dispatch(actions.browserInit(pages.USERS))
-    store.dispatch(actions.browserNodeSelected(pages.USERS, nodeId(['users', fixture.TEST_USER_OBJECT.userId])))
+    let object = fixture.object('user', fixture.TEST_USER_DTO.userId)
 
-    const state = store.getState()
+    store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId]), object))
+
+    let state = store.getState()
     expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
       node(['users'], false, false, [
-        node(['users', fixture.TEST_USER_OBJECT.userId], false, true)
+        node(['users', fixture.TEST_USER_DTO.userId], false, true)
       ]),
       node(['groups'])
     ])
+
+    expect(selectors.getSelectedObject(state, pages.USERS)).toEqual(object)
+    expect(selectors.getOpenObjects(state, pages.USERS)).toEqual([object])
+
+    store.dispatch(actions.objectClose(pages.USERS, object.type, object.id))
+
+    state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users'], false, false, [
+        node(['users', fixture.TEST_USER_DTO.userId], false, false)
+      ]),
+      node(['groups'])
+    ])
+
+    expect(selectors.getSelectedObject(state, pages.USERS)).toEqual(null)
+    expect(selectors.getOpenObjects(state, pages.USERS)).toEqual([])
   })
 
   test('expandNode collapseNode', () => {
@@ -111,30 +141,37 @@ describe('browser', () => {
     })
 
     openbis.getGroups.mockReturnValue({
-      objects: [ fixture.TEST_GROUP_OBJECT ]
+      objects: [ fixture.TEST_GROUP_DTO ]
     })
 
     store.dispatch(actions.browserInit(pages.USERS))
-    store.dispatch(actions.browserNodeExpanded(pages.USERS, nodeId(['groups'])))
+    store.dispatch(actions.browserNodeExpand(pages.USERS, nodeId(['groups'])))
 
     let state = store.getState()
     expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
       node(['users']),
       node(['groups'], true, false, [
-        node(['groups', fixture.TEST_GROUP_OBJECT.code])
+        node(['groups', fixture.TEST_GROUP_DTO.code])
       ])
     ])
 
-    store.dispatch(actions.browserNodeCollapsed(pages.USERS, nodeId(['groups'])))
+    store.dispatch(actions.browserNodeCollapse(pages.USERS, nodeId(['groups'])))
 
     state = store.getState()
     expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
       node(['users']),
       node(['groups'], false, false, [
-        node(['groups', fixture.TEST_GROUP_OBJECT.code])
+        node(['groups', fixture.TEST_GROUP_DTO.code])
       ])
     ])
+
+    let selectedObject = selectors.getSelectedObject(state, pages.USERS)
+    let openObjects = selectors.getOpenObjects(state, pages.USERS)
+
+    expect(selectedObject).toEqual(null)
+    expect(openObjects).toEqual([])
   })
+
 })
 
 function nodeId(idParts){

@@ -12,15 +12,14 @@ import * as usersBrowser from './users.js'
 export default function* browser() {
   yield takeEvery(actions.BROWSER_INIT, browserInit)
   yield takeEvery(actions.BROWSER_RELEASE, browserRelease)
-  yield takeEvery(actions.BROWSER_FILTER_CHANGED, browserFilterChanged)
-  yield takeEvery(actions.BROWSER_NODE_SELECTED, browserNodeSelected)
-  yield takeEvery(actions.BROWSER_NODE_EXPANDED, browserNodeExpanded)
-  yield takeEvery(actions.BROWSER_NODE_COLLAPSED, browserNodeCollapsed)
+  yield takeEvery(actions.BROWSER_FILTER_CHANGE, browserFilterChange)
+  yield takeEvery(actions.BROWSER_NODE_SELECT, browserNodeSelect)
+  yield takeEvery(actions.BROWSER_NODE_EXPAND, browserNodeExpand)
+  yield takeEvery(actions.BROWSER_NODE_COLLAPSE, browserNodeCollapse)
+  yield takeEvery(actions.SET_SELECTED_OBJECT, setSelectedObject)
 }
 
 function* browserInit(action) {
-  yield put(actions.setLoading(true))
-
   let page = action.payload.page
   let impl = yield getBrowserImpl(page)
 
@@ -30,8 +29,6 @@ function* browserInit(action) {
 
   yield put(actions.browserSetNodes(page, nodes))
   yield put(actions.browserSetVisibleNodes(page, filteredNodes))
-
-  yield put(actions.setLoading(false))
 }
 
 function* browserRelease(action){
@@ -39,7 +36,7 @@ function* browserRelease(action){
   yield put(actions.browserSetNodes(page, []))
 }
 
-function* browserFilterChanged(action){
+function* browserFilterChange(action){
   let page = action.payload.page
   let filter = action.payload.filter
 
@@ -65,16 +62,31 @@ function* browserFilterChanged(action){
   yield put(actions.browserSetFilter(page, action.payload.filter))
 }
 
-function* browserNodeSelected(action){
-  yield put(actions.browserSetSelectedNode(action.payload.page, action.payload.id))
+function* browserNodeSelect(action){
+  let {page, id, object} = action.payload
+  yield put(actions.browserSetSelectedNode(page, id))
+  if(object){
+    yield put(actions.objectOpen(page, object.type, object.id))
+  }
 }
 
-function* browserNodeExpanded(action){
+function* browserNodeExpand(action){
   yield put(actions.browserAddExpandedNodes(action.payload.page, [action.payload.id]))
 }
 
-function* browserNodeCollapsed(action){
+function* browserNodeCollapse(action){
   yield put(actions.browserRemoveExpandedNodes(action.payload.page, [action.payload.id]))
+}
+
+function* setSelectedObject(action){
+  let {page, type, id} = action.payload
+  let allNodes = yield select(selectors.getAllBrowserNodes, page)
+  let allNodesAllLevels = common.getAllNodes(allNodes)
+
+  let nodeToSelect = _.find(allNodesAllLevels, node => {
+    return node.object && node.object.type === type && node.object.id === id
+  })
+  yield put(actions.browserSetSelectedNode(page, nodeToSelect ? nodeToSelect.id : null))
 }
 
 function browserFilter(nodes, filter){

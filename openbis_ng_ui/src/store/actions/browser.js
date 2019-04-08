@@ -1,9 +1,9 @@
 export const BROWSER_INIT = 'BROWSER_INIT'
 export const BROWSER_RELEASE = 'BROWSER_RELEASE'
-export const BROWSER_FILTER_CHANGED = 'BROWSER_FILTERER_CHANGED'
-export const BROWSER_NODE_SELECTED = 'BROWSER_NODE_SELECTED'
-export const BROWSER_NODE_EXPANDED = 'BROWSER_NODE_EXPANDED'
-export const BROWSER_NODE_COLLAPSED = 'BROWSER_NODE_COLLAPSED'
+export const BROWSER_FILTER_CHANGE = 'BROWSER_FILTERER_CHANGE'
+export const BROWSER_NODE_SELECT = 'BROWSER_NODE_SELECT'
+export const BROWSER_NODE_EXPAND = 'BROWSER_NODE_EXPAND'
+export const BROWSER_NODE_COLLAPSE = 'BROWSER_NODE_COLLAPSE'
 
 export const BROWSER_SET_FILTER = 'BROWSER_SET_FILTER'
 export const BROWSER_SET_NODES = 'BROWSER_SET_NODES'
@@ -27,32 +27,33 @@ export const browserRelease = (page) => ({
   }
 })
 
-export const browserFilterChanged = (page, filter) => ({
-  type: BROWSER_FILTER_CHANGED,
+export const browserFilterChange = (page, filter) => ({
+  type: BROWSER_FILTER_CHANGE,
   payload: {
     page,
     filter
   }
 })
 
-export const browserNodeSelected = (page, id) => ({
-  type: BROWSER_NODE_SELECTED,
+export const browserNodeSelect = (page, id, object) => ({
+  type: BROWSER_NODE_SELECT,
+  payload: {
+    page,
+    id,
+    object
+  }
+})
+
+export const browserNodeExpand = (page, id) => ({
+  type: BROWSER_NODE_EXPAND,
   payload: {
     page,
     id
   }
 })
 
-export const browserNodeExpanded = (page, id) => ({
-  type: BROWSER_NODE_EXPANDED,
-  payload: {
-    page,
-    id
-  }
-})
-
-export const browserNodeCollapsed = (page, id) => ({
-  type: BROWSER_NODE_COLLAPSED,
+export const browserNodeCollapse = (page, id) => ({
+  type: BROWSER_NODE_COLLAPSE,
   payload: {
     page,
     id

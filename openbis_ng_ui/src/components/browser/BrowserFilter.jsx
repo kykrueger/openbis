@@ -23,7 +23,7 @@ class BrowserFilter extends React.Component {
         className={classes.browserFilter}
         placeholder="Filter"
         value={this.props.filter}
-        onChange={this.props.filterChanged}
+        onChange={this.props.filterChange}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
