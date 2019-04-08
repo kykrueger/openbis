@@ -185,7 +185,7 @@ public final class ThreadParameters
     public ThreadParameters(final Properties threadProperties, final String threadName)
     {
         this.incomingDataDirectory = extractIncomingDataDir(threadProperties, threadName);
-        this.h5Folders = PropertyUtils.getBoolean(threadProperties, H5_FOLDERS, true);
+        this.h5Folders = PropertyUtils.getBoolean(threadProperties, H5_FOLDERS, false);
         this.h5arFolders = PropertyUtils.getBoolean(threadProperties, H5AR_FOLDERS, true);
         this.createIncomingDirectories =
                 PropertyUtils.getBoolean(threadProperties, INCOMING_DIR_CREATE, true);
