@@ -59,7 +59,7 @@ class BrowserNodes extends React.Component {
 
   renderText(node){
     logger.log(logger.DEBUG, 'BrowserNode.renderText "' + node.text + '"')
-    return <ListItemText primary={node.text} inset={true} onClick={() => this.props.nodeSelect(node.id, node.object)} />
+    return <ListItemText primary={node.text} inset={true} onClick={() => this.props.nodeSelect(node.id)} />
   }
 
 }

@@ -1,5 +1,6 @@
 import * as actions from '../../../src/store/actions/actions.js'
 import * as selectors from '../../../src/store/selectors/selectors.js'
+import * as objectType from '../../../src/store/consts/objectType.js'
 import * as pages from '../../../src/store/consts/pages.js'
 import { createStore } from '../../../src/store/store.js'
 import * as fixture from './fixture.js'
@@ -16,9 +17,9 @@ beforeEach(() => {
 describe('page', () => {
 
   test('objectOpen objectClose', () => {
-    let object1 = fixture.object('user', fixture.TEST_USER_DTO.userId)
-    let object2 = fixture.object('user', fixture.ANOTHER_USER_DTO.userId)
-    let object3 = fixture.object('group', fixture.TEST_GROUP_DTO.code)
+    let object1 = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
+    let object2 = fixture.object(objectType.USER, fixture.ANOTHER_USER_DTO.userId)
+    let object3 = fixture.object(objectType.GROUP, fixture.TEST_GROUP_DTO.code)
 
     store.dispatch(actions.objectOpen(pages.USERS, object1.type, object1.id))
 

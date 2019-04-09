@@ -3,6 +3,7 @@ import openbis from '../../../src/services/openbis.js'
 import * as actions from '../../../src/store/actions/actions.js'
 import * as selectors from '../../../src/store/selectors/selectors.js'
 import * as pages from '../../../src/store/consts/pages.js'
+import * as objectType from '../../../src/store/consts/objectType.js'
 import * as common from '../../../src/store/common/browser.js'
 import { createStore } from '../../../src/store/store.js'
 import * as fixture from './fixture.js'
@@ -105,10 +106,10 @@ describe('browser', () => {
       objects: []
     })
 
-    let object = fixture.object('user', fixture.TEST_USER_DTO.userId)
+    let object = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
 
     store.dispatch(actions.browserInit(pages.USERS))
-    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId]), object))
+    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
 
     let state = store.getState()
     expectNodes(selectors.getBrowserNodes(state, pages.USERS), [

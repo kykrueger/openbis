@@ -35,12 +35,11 @@ export const browserFilterChange = (page, filter) => ({
   }
 })
 
-export const browserNodeSelect = (page, id, object) => ({
+export const browserNodeSelect = (page, id) => ({
   type: BROWSER_NODE_SELECT,
   payload: {
     page,
-    id,
-    object
+    id
   }
 })
 

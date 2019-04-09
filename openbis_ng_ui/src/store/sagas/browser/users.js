@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import {putAndWait} from './../effects.js'
+import * as objectType from '../../consts/objectType.js'
 import * as actions from '../../actions/actions.js'
 import * as common from '../../common/browser.js'
 
@@ -10,13 +11,13 @@ export function* createNodes() {
     return {
       id: `users/${user.userId}`,
       text: user.userId,
-      object: { type: 'user', id: user.userId },
+      object: { type: objectType.USER, id: user.userId },
       children: user.groupIds.map(groupId => {
         let group = groups[groupId]
         return {
           id: `users/${user.userId}/${group.code}`,
           text: group.code,
-          object: { type: 'group', id: group.code }
+          object: { type: objectType.GROUP, id: group.code }
         }
       })
     }
@@ -28,13 +29,13 @@ export function* createNodes() {
     return {
       id: `groups/${group.code}`,
       text: group.code,
-      object: { type: 'group', id: group.code },
+      object: { type: objectType.GROUP, id: group.code },
       children: group.userIds.map(userId => {
         let user = users[userId]
         return {
           id: `groups/${group.code}/${user.userId}`,
           text: user.userId,
-          object: { type: 'user', id: user.userId }
+          object: { type: objectType.USER, id: user.userId }
         }
       })
     }

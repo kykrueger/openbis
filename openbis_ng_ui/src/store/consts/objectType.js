@@ -1,0 +1,6 @@
+export const OBJECT_TYPE = 'objectType'
+export const COLLECTION_TYPE = 'collectionType'
+export const DATA_SET_TYPE = 'dataSetType'
+export const MATERIAL_TYPE = 'materialType'
+export const USER = 'user'
+export const GROUP = 'group'

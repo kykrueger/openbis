@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import {putAndWait} from './../effects.js'
+import * as objectType from '../../consts/objectType.js'
 import * as actions from '../../actions/actions.js'
 import * as common from '../../common/browser.js'
 
@@ -16,10 +17,10 @@ export function* createNodes() {
     })
   }
 
-  let objectTypeNodes = convert(objectTypes, 'objectType')
-  let collectionTypeNodes = convert(collectionTypes, 'collectionType')
-  let dataSetTypeNodes = convert(dataSetTypes, 'dataSetType')
-  let materialTypeNodes = convert(materialTypes, 'materialType')
+  let objectTypeNodes = convert(objectTypes, objectType.OBJECT_TYPE)
+  let collectionTypeNodes = convert(collectionTypes, objectType.COLLECTION_TYPE)
+  let dataSetTypeNodes = convert(dataSetTypes, objectType.DATA_SET_TYPE)
+  let materialTypeNodes = convert(materialTypes, objectType.MATERIAL_TYPE)
 
   common.sortNodes(objectTypeNodes)
   common.sortNodes(collectionTypeNodes)

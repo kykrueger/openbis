@@ -27,7 +27,7 @@ function mapDispatchToProps(dispatch){
     init: (page) => { dispatch(actions.browserInit(page)) },
     release: (page) => { dispatch(actions.browserRelease(page)) },
     filterChange: (event) => { dispatch(actions.browserFilterChange(getCurrentPage(), event.currentTarget.value)) },
-    nodeSelect: (id, object) => { dispatch(actions.browserNodeSelect(getCurrentPage(), id, object)) },
+    nodeSelect: (id) => { dispatch(actions.browserNodeSelect(getCurrentPage(), id)) },
     nodeExpand: (id) => { dispatch(actions.browserNodeExpand(getCurrentPage(), id)) },
     nodeCollapse: (id) => { dispatch(actions.browserNodeCollapse(getCurrentPage(), id)) }
   }

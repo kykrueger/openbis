@@ -63,10 +63,17 @@ function* browserFilterChange(action){
 }
 
 function* browserNodeSelect(action){
-  let {page, id, object} = action.payload
-  yield put(actions.browserSetSelectedNode(page, id))
-  if(object){
-    yield put(actions.objectOpen(page, object.type, object.id))
+  let {page, id} = action.payload
+  let allNodes = yield select(selectors.getAllBrowserNodes, page)
+  let allNodesAllLevels = common.getAllNodes(allNodes)
+
+  let nodeToSelect = _.find(allNodesAllLevels, node => {
+    return node.id === id
+  })
+  yield put(actions.browserSetSelectedNode(page, nodeToSelect ? nodeToSelect.id : null))
+
+  if(nodeToSelect && nodeToSelect.object){
+    yield put(actions.objectOpen(page, nodeToSelect.object.type, nodeToSelect.object.id))
   }
 }
 
