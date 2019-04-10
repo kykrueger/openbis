@@ -19,6 +19,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.semanticAnnotations = null;
 		prototype.registrator = null;
 		prototype.registrationDate = null;
+		prototype.metaData = null;
 
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
@@ -125,6 +126,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setRegistrationDate = function(registrationDate) {
 			this.registrationDate = registrationDate;
+		};
+		prototype.getMetaData = function() {
+			return this.metaData;
+		};
+		prototype.setMetaData = function(metaData) {
+			this.metaData = metaData;
 		};
 	}, {
 		fetchOptions : "PropertyTypeFetchOptions",

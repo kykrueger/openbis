@@ -178,6 +178,7 @@ public class CreatePropertyTypeExecutor
                     propertyType.setRegistrator(person);
                     propertyType.setSchema(creation.getSchema());
                     propertyType.setTransformation(creation.getTransformation());
+                    propertyType.setMetaData(creation.getMetaData());
                     propertyTypes.add(propertyType);
                 }
 

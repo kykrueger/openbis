@@ -16,6 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update;
 
+import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,6 +26,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -48,6 +53,9 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
 
     @JsonProperty
     private FieldUpdateValue<String> transformation = new FieldUpdateValue<String>();
+    
+    @JsonProperty
+    private ListUpdateValue<Map<String, String>, String, Map<String, String>, Object> metaData = new ListUpdateValue<>();
 
     @Override
     @JsonIgnore
@@ -114,6 +122,18 @@ public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeI
     public void setTransformation(String transformation)
     {
         this.transformation.setValue(transformation);
+    }
+
+    @JsonIgnore
+    public ListUpdateValue<Map<String, String>, String, Map<String, String>, Object> getMetaData()
+    {
+        return metaData;
+    }
+
+    @JsonIgnore
+    public void setMetaDataActions(List<ListUpdateAction<Object>> actions)
+    {
+        metaData.setActions(actions);
     }
 
     @Override

@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -65,6 +67,9 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
     @JsonProperty
     private String transformation;
 
+    @JsonProperty
+    private Map<String, String> metaData;
+    
     @JsonIgnore
     public String getCode()
     {
@@ -173,6 +178,17 @@ public class PropertyTypeCreation implements ICreation, IObjectCreation
     public void setTransformation(String transformation)
     {
         this.transformation = transformation;
+    }
+
+    @JsonIgnore
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
     }
 
     @Override

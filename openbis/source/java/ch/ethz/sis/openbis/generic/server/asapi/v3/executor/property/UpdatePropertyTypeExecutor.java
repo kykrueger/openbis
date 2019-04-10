@@ -17,14 +17,20 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.property;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateActionAdd;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateActionRemove;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateActionSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
@@ -106,6 +112,62 @@ public class UpdatePropertyTypeExecutor
                     propertyType.setSchema(getNewValue(update.getSchema(), propertyType.getSchema()));
                     CreatePropertyTypeExecutor.validateTransformationAndDataType(dataType, update.getTransformation().getValue());
                     propertyType.setTransformation(getNewValue(update.getTransformation(), propertyType.getTransformation()));
+                    updateMetaData(propertyType, update);
+                }
+
+                @SuppressWarnings("unchecked")
+                private void updateMetaData(PropertyTypePE propertyType, PropertyTypeUpdate update)
+                {
+                    Map<String, String> metaData = new HashMap<>();
+                    if (propertyType.getMetaData() != null)
+                    {
+                        metaData.putAll(propertyType.getMetaData());
+                    }
+                    ListUpdateActionSet<?> lastSetAction = null;
+                    AtomicBoolean metaDataChanged = new AtomicBoolean(false);
+                    for (ListUpdateAction<Object> action : update.getMetaData().getActions())
+                    {
+                        if (action instanceof ListUpdateActionAdd<?>)
+                        {
+                            addTo(metaData, action, metaDataChanged);
+                        }
+                        if (action instanceof ListUpdateActionRemove<?>)
+                        {
+                            for (String key : (Collection<String>) action.getItems())
+                            {
+                                metaDataChanged.set(true);
+                                metaData.remove(key);
+                            }
+                        }
+                        if (action instanceof ListUpdateActionSet<?>)
+                        {
+                            lastSetAction = (ListUpdateActionSet<?>) action;
+                        }
+                    }
+                    if (lastSetAction != null)
+                    {
+                        metaData.clear();
+                        addTo(metaData, lastSetAction, metaDataChanged);
+                        
+                    }
+                    if (metaDataChanged.get())
+                    {
+                        propertyType.setMetaData(metaData);
+                    }
+                }
+
+                @SuppressWarnings("unchecked")
+                private void addTo(Map<String, String> metaData, ListUpdateAction<?> lastSetAction, AtomicBoolean metaDataChanged)
+                {
+                    Collection<Map<String, String>> maps = (Collection<Map<String, String>>) lastSetAction.getItems();
+                    for (Map<String, String> map : maps)
+                    {
+                        if (map.isEmpty() == false)
+                        {
+                            metaDataChanged.set(true);
+                            metaData.putAll(map);
+                        }
+                    }
                 }
 
                 @Override
