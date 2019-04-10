@@ -130,16 +130,14 @@ public class UpdatePropertyTypeExecutor
                         if (action instanceof ListUpdateActionAdd<?>)
                         {
                             addTo(metaData, action, metaDataChanged);
-                        }
-                        if (action instanceof ListUpdateActionRemove<?>)
+                        } else if (action instanceof ListUpdateActionRemove<?>)
                         {
                             for (String key : (Collection<String>) action.getItems())
                             {
                                 metaDataChanged.set(true);
                                 metaData.remove(key);
                             }
-                        }
-                        if (action instanceof ListUpdateActionSet<?>)
+                        } else if (action instanceof ListUpdateActionSet<?>)
                         {
                             lastSetAction = (ListUpdateActionSet<?>) action;
                         }
@@ -152,7 +150,7 @@ public class UpdatePropertyTypeExecutor
                     }
                     if (metaDataChanged.get())
                     {
-                        propertyType.setMetaData(metaData);
+                        propertyType.setMetaData(metaData.isEmpty() ? null : metaData);
                     }
                 }
 

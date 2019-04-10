@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -111,6 +112,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getLabel(), creation.getLabel());
         assertEquals(propertyType.isInternalNameSpace().booleanValue(), creation.isInternalNameSpace());
         assertEquals(propertyType.isManagedInternally().booleanValue(), creation.isManagedInternally());
+        assertEquals(propertyType.getMetaData().toString(), "{}");
         assertEquals(types.size(), 1);
 
         v3api.logout(sessionToken);
@@ -168,6 +170,9 @@ public class CreatePropertyTypeTest extends AbstractTest
         creation.setDescription("only for testing");
         creation.setDataType(DataType.REAL);
         creation.setInternalNameSpace(false);
+        HashMap<String, String> metaData = new HashMap<>();
+        metaData.put("greeting", "hello { meta data }");
+        creation.setMetaData(metaData);
 
         List<PropertyTypePermId> ids = v3api.createPropertyTypes(sessionToken, Arrays.asList(creation));
         assertEquals(ids.toString(), "[TEST-PROPERTY]");
@@ -181,6 +186,7 @@ public class CreatePropertyTypeTest extends AbstractTest
         assertEquals(propertyType.getCode(), creation.getCode().toUpperCase());
         assertEquals(propertyType.getDataType(), creation.getDataType());
         assertEquals(propertyType.isInternalNameSpace(), (Boolean) creation.isInternalNameSpace());
+        assertEquals(propertyType.getMetaData().toString(), "{greeting=hello { meta data }}");
     }
 
     @Test(groups = "broken")

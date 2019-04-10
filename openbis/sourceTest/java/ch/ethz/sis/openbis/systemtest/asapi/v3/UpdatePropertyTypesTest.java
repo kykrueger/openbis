@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -78,6 +79,75 @@ public class UpdatePropertyTypesTest extends AbstractTest
         assertEquals(propertyType.getDescription(), "Any other comments");
         assertEquals(propertyType.getLabel(), update.getLabel().getValue());
         assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
+
+        v3api.logout(sessionToken);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testAddMetaData()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId id = new PropertyTypePermId("COMMENT");
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(id);
+        update.getMetaData().add(Collections.singletonMap("greetings", "hello world"));
+
+        // When
+        v3api.updatePropertyTypes(sessionToken, Arrays.asList(update));
+
+        // Then
+        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+        PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(id), fetchOptions).get(id);
+        assertEquals(propertyType.getDescription(), "Any other comments");
+        assertEquals(propertyType.getLabel(), "Comment");
+        assertEquals(propertyType.isInternalNameSpace().booleanValue(), false);
+        assertEquals(propertyType.getMetaData().toString(), "{greetings=hello world}");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testRemoveMetaData()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId id = new PropertyTypePermId("DESCRIPTION");
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(id);
+        update.getMetaData().remove("answer");
+
+        // When
+        v3api.updatePropertyTypes(sessionToken, Arrays.asList(update));
+
+        // Then
+        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+        PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(id), fetchOptions).get(id);
+        assertEquals(propertyType.getMetaData().toString(), "{}");
+
+        v3api.logout(sessionToken);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSetMetaData()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId id = new PropertyTypePermId("DESCRIPTION");
+        PropertyTypeUpdate update = new PropertyTypeUpdate();
+        update.setTypeId(id);
+        update.getMetaData().add(Collections.singletonMap("greetings", "hello world"));
+        update.getMetaData().set(Collections.singletonMap("new key", "new value"));
+
+        // When
+        v3api.updatePropertyTypes(sessionToken, Arrays.asList(update));
+
+        // Then
+        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+        PropertyType propertyType = v3api.getPropertyTypes(sessionToken, Arrays.asList(id), fetchOptions).get(id);
+        assertEquals(propertyType.getMetaData().toString(), "{new key=new value}");
 
         v3api.logout(sessionToken);
     }
