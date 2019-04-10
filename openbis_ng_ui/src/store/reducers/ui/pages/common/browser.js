@@ -6,7 +6,7 @@ export const browser = combineReducers({
   initialized,
   filter,
   nodes,
-  selectedNode,
+  selectedNodes,
   visibleNodes,
   expandedNodes
 })
@@ -46,13 +46,13 @@ function nodes(state = [], action){
   }
 }
 
-function selectedNode(state = null, action){
+function selectedNodes(state = [], action){
   switch(action.type){
-    case actions.BROWSER_SET_SELECTED_NODE:
-      if(_.isEqual(state, action.payload.id)){
+    case actions.BROWSER_SET_SELECTED_NODES:
+      if(_.isEqual(state, action.payload.ids)){
         return state
       }else{
-        return action.payload.id
+        return action.payload.ids
       }
     default:
       return state

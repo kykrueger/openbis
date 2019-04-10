@@ -7,7 +7,7 @@ export const BROWSER_NODE_COLLAPSE = 'BROWSER_NODE_COLLAPSE'
 
 export const BROWSER_SET_FILTER = 'BROWSER_SET_FILTER'
 export const BROWSER_SET_NODES = 'BROWSER_SET_NODES'
-export const BROWSER_SET_SELECTED_NODE = 'BROWSER_SET_SELECTED_NODE'
+export const BROWSER_SET_SELECTED_NODES = 'BROWSER_SET_SELECTED_NODES'
 export const BROWSER_SET_VISIBLE_NODES = 'BROWSER_SET_VISIBLE_NODES'
 export const BROWSER_SET_EXPANDED_NODES = 'BROWSER_SET_EXPANDED_NODES'
 export const BROWSER_ADD_EXPANDED_NODES = 'BROWSER_ADD_EXPANDED_NODES'
@@ -75,11 +75,11 @@ export const browserSetNodes = (page, nodes) => ({
   }
 })
 
-export const browserSetSelectedNode = (page, id) => ({
-  type: BROWSER_SET_SELECTED_NODE,
+export const browserSetSelectedNodes = (page, ids) => ({
+  type: BROWSER_SET_SELECTED_NODES,
   payload: {
     page,
-    id
+    ids
   }
 })
 

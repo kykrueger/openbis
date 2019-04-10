@@ -22,6 +22,7 @@ beforeEach(() => {
 })
 
 describe('browser', () => {
+
   test('init', () => {
     openbis.getUsers.mockReturnValue({
       objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
@@ -59,11 +60,8 @@ describe('browser', () => {
       ])
     ])
 
-    let selectedObject = selectors.getSelectedObject(state, pages.USERS)
-    let openObjects = selectors.getOpenObjects(state, pages.USERS)
-
-    expect(selectedObject).toEqual(null)
-    expect(openObjects).toEqual([])
+    expectSelectedObject(pages.USERS, null)
+    expectOpenObjects(pages.USERS, [])
   })
 
   test('filter', () => {
@@ -90,23 +88,20 @@ describe('browser', () => {
       ])
     ])
 
-    let selectedObject = selectors.getSelectedObject(state, pages.USERS)
-    let openObjects = selectors.getOpenObjects(state, pages.USERS)
-
-    expect(selectedObject).toEqual(null)
-    expect(openObjects).toEqual([])
+    expectSelectedObject(pages.USERS, null)
+    expectOpenObjects(pages.USERS, [])
   })
 
-  test('selectNode', () => {
+  test('select node', () => {
     openbis.getUsers.mockReturnValue({
-      objects: [ fixture.TEST_USER_DTO ]
+      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
     openbis.getGroups.mockReturnValue({
       objects: []
     })
 
-    let object = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
+    let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
 
     store.dispatch(actions.browserInit(pages.USERS))
     store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
@@ -114,29 +109,122 @@ describe('browser', () => {
     let state = store.getState()
     expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
       node(['users'], false, false, [
+        node(['users', fixture.ANOTHER_USER_DTO.userId], false, false),
         node(['users', fixture.TEST_USER_DTO.userId], false, true)
       ]),
       node(['groups'])
     ])
 
-    expect(selectors.getSelectedObject(state, pages.USERS)).toEqual(object)
-    expect(selectors.getOpenObjects(state, pages.USERS)).toEqual([object])
+    expectSelectedObject(pages.USERS, testUserObject)
+    expectOpenObjects(pages.USERS, [testUserObject])
+  })
 
-    store.dispatch(actions.objectClose(pages.USERS, object.type, object.id))
+  test('select another node', () => {
+    openbis.getUsers.mockReturnValue({
+      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
+    })
 
-    state = store.getState()
+    openbis.getGroups.mockReturnValue({
+      objects: []
+    })
+
+    let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
+    let anotherUserObject = fixture.object(objectType.USER, fixture.ANOTHER_USER_DTO.userId)
+
+    store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
+    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.ANOTHER_USER_DTO.userId])))
+
+    let state = store.getState()
     expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
       node(['users'], false, false, [
+        node(['users', fixture.ANOTHER_USER_DTO.userId], false, true),
         node(['users', fixture.TEST_USER_DTO.userId], false, false)
       ]),
       node(['groups'])
     ])
 
-    expect(selectors.getSelectedObject(state, pages.USERS)).toEqual(null)
-    expect(selectors.getOpenObjects(state, pages.USERS)).toEqual([])
+    expectSelectedObject(pages.USERS, anotherUserObject)
+    expectOpenObjects(pages.USERS, [testUserObject, anotherUserObject])
   })
 
-  test('expandNode collapseNode', () => {
+  test('select virtual node', () => {
+    openbis.getUsers.mockReturnValue({
+      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
+    })
+
+    openbis.getGroups.mockReturnValue({
+      objects: []
+    })
+
+    store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users'])))
+
+    let state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users'], false, true, [
+        node(['users', fixture.ANOTHER_USER_DTO.userId], false, false),
+        node(['users', fixture.TEST_USER_DTO.userId], false, false)
+      ]),
+      node(['groups'])
+    ])
+
+    expectSelectedObject(pages.USERS, null)
+    expectOpenObjects(pages.USERS, [])
+  })
+
+  test('select two nodes that represent the same object', () => {
+    openbis.getUsers.mockReturnValue({
+      objects: [ fixture.TEST_USER_DTO ]
+    })
+
+    openbis.getGroups.mockReturnValue({
+      objects: [ fixture.TEST_GROUP_DTO ]
+    })
+
+    let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
+
+    store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
+
+    let state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users'], false, false, [
+        node(['users', fixture.TEST_USER_DTO.userId], false, true, [
+          node(['users', fixture.TEST_USER_DTO.userId, fixture.TEST_GROUP_DTO.code], false, false)
+        ])
+      ]),
+      node(['groups'], false, false, [
+        node(['groups', fixture.TEST_GROUP_DTO.code], false, false, [
+          node(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId], false, true)
+        ])
+      ])
+    ])
+
+    expectSelectedObject(pages.USERS, testUserObject)
+    expectOpenObjects(pages.USERS, [testUserObject])
+
+    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId])))
+
+    state = store.getState()
+    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+      node(['users'], false, false, [
+        node(['users', fixture.TEST_USER_DTO.userId], false, true, [
+          node(['users', fixture.TEST_USER_DTO.userId, fixture.TEST_GROUP_DTO.code], false, false)
+        ])
+      ]),
+      node(['groups'], false, false, [
+        node(['groups', fixture.TEST_GROUP_DTO.code], false, false, [
+          node(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId], false, true)
+        ])
+      ])
+    ])
+
+    expectSelectedObject(pages.USERS, testUserObject)
+    expectOpenObjects(pages.USERS, [testUserObject])
+  })
+
+  test('expand and collapse node', () => {
     openbis.getUsers.mockReturnValue({
       objects: []
     })
@@ -156,6 +244,9 @@ describe('browser', () => {
       ])
     ])
 
+    expectSelectedObject(pages.USERS, null)
+    expectOpenObjects(pages.USERS, [])
+
     store.dispatch(actions.browserNodeCollapse(pages.USERS, nodeId(['groups'])))
 
     state = store.getState()
@@ -166,11 +257,8 @@ describe('browser', () => {
       ])
     ])
 
-    let selectedObject = selectors.getSelectedObject(state, pages.USERS)
-    let openObjects = selectors.getOpenObjects(state, pages.USERS)
-
-    expect(selectedObject).toEqual(null)
-    expect(openObjects).toEqual([])
+    expectSelectedObject(pages.USERS, null)
+    expectOpenObjects(pages.USERS, [])
   })
 
 })
@@ -207,4 +295,12 @@ function expectNodes(actualNodes, expectedNodes){
   })
 
   expect(actualNodesClone).toEqual(expectedNodes)
+}
+
+function expectSelectedObject(page, object){
+  expect(selectors.getSelectedObject(store.getState(), page)).toEqual(object)
+}
+
+function expectOpenObjects(page, objects){
+  expect(selectors.getOpenObjects(store.getState(), page)).toEqual(objects)
 }

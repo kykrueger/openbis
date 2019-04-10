@@ -34,14 +34,14 @@ export const getBrowserNodes = createSelector(
   browser => {
     logger.log(logger.DEBUG, 'browserSelector.getBrowserNodes')
 
-    let selectedNode = browser.selectedNode
+    let selectedNodes = new Set(browser.selectedNodes)
     let visibleNodes = new Set(browser.visibleNodes)
     let expandedNodes = new Set(browser.expandedNodes)
     let nodes = browser.nodes
 
     nodes = common.mapNodes(null, nodes, (parent, node) => {
       if(visibleNodes.has(node.id)){
-        let selected = selectedNode === node.id
+        let selected = selectedNodes.has(node.id)
         let expanded = expandedNodes.has(node.id)
         return Object.assign({ selected, expanded }, node)
       }else{

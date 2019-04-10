@@ -67,13 +67,22 @@ function* browserNodeSelect(action){
   let allNodes = yield select(selectors.getAllBrowserNodes, page)
   let allNodesAllLevels = common.getAllNodes(allNodes)
 
-  let nodeToSelect = _.find(allNodesAllLevels, node => {
+  let nodeWithId = _.find(allNodesAllLevels, node => {
     return node.id === id
   })
-  yield put(actions.browserSetSelectedNode(page, nodeToSelect ? nodeToSelect.id : null))
 
-  if(nodeToSelect && nodeToSelect.object){
-    yield put(actions.objectOpen(page, nodeToSelect.object.type, nodeToSelect.object.id))
+  if(nodeWithId && nodeWithId.object){
+    let idsToSelect = _.reduce(allNodesAllLevels, (array, node) => {
+      if(_.isEqual(nodeWithId.object, node.object)){
+        array.push(node.id)
+      }
+      return array
+    }, [])
+    yield put(actions.browserSetSelectedNodes(page, idsToSelect))
+    yield put(actions.objectOpen(page, nodeWithId.object.type, nodeWithId.object.id))
+  }else{
+    let idsToSelect = nodeWithId ? [nodeWithId.id] : []
+    yield put(actions.browserSetSelectedNodes(page, idsToSelect))
   }
 }
 
@@ -87,13 +96,18 @@ function* browserNodeCollapse(action){
 
 function* setSelectedObject(action){
   let {page, type, id} = action.payload
+  let selectedObject = { type, id }
   let allNodes = yield select(selectors.getAllBrowserNodes, page)
   let allNodesAllLevels = common.getAllNodes(allNodes)
 
-  let nodeToSelect = _.find(allNodesAllLevels, node => {
-    return node.object && node.object.type === type && node.object.id === id
-  })
-  yield put(actions.browserSetSelectedNode(page, nodeToSelect ? nodeToSelect.id : null))
+  let idsToSelect = _.reduce(allNodesAllLevels, (array, node) => {
+    if(_.isEqual(selectedObject, node.object)){
+      array.push(node.id)
+    }
+    return array
+  }, [])
+
+  yield put(actions.browserSetSelectedNodes(page, idsToSelect))
 }
 
 function browserFilter(nodes, filter){
