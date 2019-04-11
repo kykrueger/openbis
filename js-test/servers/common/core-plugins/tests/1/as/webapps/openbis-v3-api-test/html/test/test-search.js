@@ -1152,14 +1152,14 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.DataSetTypeSearchCriteria();
 				criteria.withOrOperator();
 				criteria.withCode().thatStartsWith("T");
-				criteria.withCode().thatContains("V");
+				criteria.withCode().thatContains("RV");
 				var fetchOptions = new c.DataSetTypeFetchOptions();
 				return facade.searchDataSetTypes(criteria, fetchOptions);
 			}
 			
 			var fCheck = function(facade, dataSetTypes) {
 				dataSetTypes.sort();
-				c.assertEqual(dataSetTypes.toString(), "HCS_IMAGE_OVERVIEW,MICROSCOPY_IMG_OVERVIEW,QUALITY_SVG,THUMBNAILS,TSV", "Data set types");
+				c.assertEqual(dataSetTypes.toString(), "HCS_IMAGE_OVERVIEW,MICROSCOPY_IMG_OVERVIEW,THUMBNAILS,TSV", "Data set types");
 			}
 			
 			testSearch(c, fSearch, fCheck);
@@ -1322,7 +1322,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				var criteria = new c.MaterialTypeSearchCriteria();
 				criteria.withOrOperator();
 				criteria.withCode().thatStartsWith("C");
-				criteria.withCode().thatContains("R");
+				criteria.withCode().thatContains("IR");
 				var fetchOptions = new c.MaterialTypeFetchOptions();
 				return facade.searchMaterialTypes(criteria, fetchOptions);
 			}
@@ -1555,6 +1555,73 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(vocabulary.isManagedInternally(), true, "Managed internally");
 				c.assertEqual(vocabulary.isInternalNameSpace(), true, "Internal namespace");
 				c.assertEqual(vocabulary.getTerms().length, 2, "# of terms");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchVocabularies() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.VocabularySearchCriteria();
+				criteria.withCodes().thatIn(["END_TYPE", "KIT", "BLABLA"]);
+				return facade.searchVocabularies(criteria, c.createVocabularyFetchOptions());
+			}
+			
+			var fCheck = function(facade, vocabularies) {
+				var codes = [];
+				for (var i = 0; i < vocabularies.length; i++) {
+					codes.push(vocabularies[i].getCode());
+				}
+				codes.sort();
+				c.assertEqual(codes.toString(), "END_TYPE,KIT", "Vocabularies");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchVocabularies() with and operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.VocabularySearchCriteria();
+				criteria.withAndOperator();
+				criteria.withCode().thatEndsWith("KIT");
+				criteria.withCode().thatContains("LE");
+				return facade.searchVocabularies(criteria, c.createVocabularyFetchOptions());
+			}
+			
+			var fCheck = function(facade, vocabularies) {
+				var codes = [];
+				for (var i = 0; i < vocabularies.length; i++) {
+					codes.push(vocabularies[i].getCode());
+				}
+				codes.sort();
+				c.assertEqual(codes.toString(), "AGILENT_KIT", "Vocabularies");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchVocabularies() with or operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.VocabularySearchCriteria();
+				criteria.withOrOperator();
+				criteria.withCode().thatEndsWith("KIT");
+				criteria.withCode().thatContains("LE");
+				return facade.searchVocabularies(criteria, c.createVocabularyFetchOptions());
+			}
+			
+			var fCheck = function(facade, vocabularies) {
+				var codes = [];
+				for (var i = 0; i < vocabularies.length; i++) {
+					codes.push(vocabularies[i].getCode());
+				}
+				codes.sort();
+				c.assertEqual(codes.toString(), "AGILENT_KIT,KIT,SAMPLE_TYPE", "Vocabularies");
 			}
 			
 			testSearch(c, fSearch, fCheck);
