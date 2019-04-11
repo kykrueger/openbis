@@ -339,12 +339,14 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
-		QUnit.test("searchExperimentTypes()", function(assert) {
+		QUnit.test("searchExperimentTypes() with and operator", function(assert) {
 			var c = new common(assert, openbis);
 
 			var fSearch = function(facade) {
 				var criteria = new c.ExperimentTypeSearchCriteria();
-				criteria.withCode().thatStartsWith("HT");
+				criteria.withAndOperator();
+				criteria.withCode().thatStartsWith("H");
+				criteria.withCode().thatContains("SEQUENCING");
 				var fetchOptions = new c.ExperimentTypeFetchOptions();
 				fetchOptions.withPropertyAssignments().withPropertyType();
 				return facade.searchExperimentTypes(criteria, fetchOptions);
@@ -370,6 +372,26 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchExperimentTypes() with or operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.ExperimentTypeSearchCriteria();
+				criteria.withOrOperator();
+				criteria.withCode().thatStartsWith("H");
+				criteria.withCode().thatContains("PLATONIC");
+				var fetchOptions = new c.ExperimentTypeFetchOptions();
+				return facade.searchExperimentTypes(criteria, fetchOptions);
+			}
+			
+			var fCheck = function(facade, experimentTypes) {
+				experimentTypes.sort();
+				c.assertEqual(experimentTypes.toString(), "HCS_PLATONIC,HT_SEQUENCING,MICROSCOPY_PLATONIC", "Experiment types");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchExperimentTypes() with vocabularies", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -721,6 +743,46 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchSampleTypes() with and operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleTypeSearchCriteria();
+				criteria.withAndOperator();
+				criteria.withCode().thatStartsWith("ILL");
+				criteria.withCode().thatEndsWith("LL");
+				var fetchOptions = new c.SampleTypeFetchOptions();
+				return facade.searchSampleTypes(criteria, fetchOptions);
+			}
+			
+			var fCheck = function(facade, sampleTypes) {
+				c.assertEqual(sampleTypes.toString(), "ILLUMINA_FLOW_CELL", "Sample types");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		
+		QUnit.test("searchSampleTypes() with or operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleTypeSearchCriteria();
+				criteria.withOrOperator();
+				criteria.withCode().thatStartsWith("ILL");
+				criteria.withCode().thatEndsWith("LL");
+				var fetchOptions = new c.SampleTypeFetchOptions();
+				return facade.searchSampleTypes(criteria, fetchOptions);
+			}
+			
+			var fCheck = function(facade, sampleTypes) {
+				sampleTypes.sort();
+				c.assertEqual(sampleTypes.toString(), "CONTROL_WELL,ILLUMINA_FLOW_CELL,ILLUMINA_FLOW_LANE,SIRNA_WELL", "Sample types");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchSampleTypes() withSemanticAnnotations", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1064,6 +1126,45 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchDataSetTypes() with and operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.DataSetTypeSearchCriteria();
+				criteria.withAndOperator();
+				criteria.withCode().thatStartsWith("T");
+				criteria.withCode().thatContains("V");
+				var fetchOptions = new c.DataSetTypeFetchOptions();
+				return facade.searchDataSetTypes(criteria, fetchOptions);
+			}
+			
+			var fCheck = function(facade, dataSetTypes) {
+				c.assertEqual(dataSetTypes.toString(), "TSV", "Data set types");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchDataSetTypes() with or operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.DataSetTypeSearchCriteria();
+				criteria.withOrOperator();
+				criteria.withCode().thatStartsWith("T");
+				criteria.withCode().thatContains("V");
+				var fetchOptions = new c.DataSetTypeFetchOptions();
+				return facade.searchDataSetTypes(criteria, fetchOptions);
+			}
+			
+			var fCheck = function(facade, dataSetTypes) {
+				dataSetTypes.sort();
+				c.assertEqual(dataSetTypes.toString(), "HCS_IMAGE_OVERVIEW,MICROSCOPY_IMG_OVERVIEW,QUALITY_SVG,THUMBNAILS,TSV", "Data set types");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchMaterials()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1195,6 +1296,45 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchMaterialTypes() with and operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.MaterialTypeSearchCriteria();
+				criteria.withAndOperator();
+				criteria.withCode().thatStartsWith("C");
+				criteria.withCode().thatContains("R");
+				var fetchOptions = new c.MaterialTypeFetchOptions();
+				return facade.searchMaterialTypes(criteria, fetchOptions);
+			}
+			
+			var fCheck = function(facade, materialTypes) {
+				c.assertEqual(materialTypes.toString(), "CONTROL", "Material types");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchMaterialTypes() with or operator", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.MaterialTypeSearchCriteria();
+				criteria.withOrOperator();
+				criteria.withCode().thatStartsWith("C");
+				criteria.withCode().thatContains("R");
+				var fetchOptions = new c.MaterialTypeFetchOptions();
+				return facade.searchMaterialTypes(criteria, fetchOptions);
+			}
+			
+			var fCheck = function(facade, materialTypes) {
+				materialTypes.sort();
+				c.assertEqual(materialTypes.toString(), "COMPOUND,CONTROL,SIRNA", "Material types");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchGlobally() withText thatContains", function(assert) {
 			var c = new common(assert, openbis);
 

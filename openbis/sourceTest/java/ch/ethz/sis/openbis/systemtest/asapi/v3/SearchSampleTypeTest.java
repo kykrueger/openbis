@@ -77,6 +77,44 @@ public class SearchSampleTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithAndOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleTypeSearchCriteria searchCriteria = new SampleTypeSearchCriteria();
+        searchCriteria.withAndOperator();
+        searchCriteria.withCode().thatContains("ION");
+        searchCriteria.withCode().thatContains("PLATE");
+        SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
+
+        SearchResult<SampleType> searchResult = v3api.searchSampleTypes(sessionToken, searchCriteria, fetchOptions);
+
+        List<SampleType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[DILUTION_PLATE]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithOrOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleTypeSearchCriteria searchCriteria = new SampleTypeSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withCode().thatContains("ION");
+        searchCriteria.withCode().thatContains("PLATE");
+        SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
+
+        SearchResult<SampleType> searchResult = v3api.searchSampleTypes(sessionToken, searchCriteria, fetchOptions);
+
+        List<SampleType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[CELL_PLATE, DELETION_TEST, DILUTION_PLATE, DYNAMIC_PLATE, MASTER_PLATE, REINFECT_PLATE]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchWithIdThatEquals()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
