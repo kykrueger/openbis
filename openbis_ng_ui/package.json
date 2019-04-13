@@ -50,7 +50,9 @@
     "url-loader": "1.1.1",
     "webpack": "4.6.0",
     "webpack-cli": "2.0.14",
-    "webpack-dev-server": "^3.1.14"
+    "webpack-dev-server": "^3.1.14",
+    "enzyme": "3.9.0",
+    "enzyme-adapter-react-16": "1.12.1"
   },
   "scripts": {
     "dev": "webpack-dev-server --hot --config webpack.config.dev.js",
@@ -65,6 +67,7 @@
     "reporters": [
       "default",
       "jest-junit"
-    ]
+    ],
+    "setupTestFrameworkScriptFile": "<rootDir>srcTest/setupTests.js"
   }
 }

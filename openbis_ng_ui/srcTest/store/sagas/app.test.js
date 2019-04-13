@@ -3,7 +3,7 @@ import * as actions from '../../../src/store/actions/actions.js'
 import * as selectors from '../../../src/store/selectors/selectors.js'
 import * as pages from '../../../src/store/consts/pages.js'
 import { createStore } from '../../../src/store/store.js'
-import * as fixture from './fixture.js'
+import * as fixture from '../../common/fixture.js'
 
 jest.mock('../../../src/services/openbis.js')
 

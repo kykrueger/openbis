@@ -2,7 +2,6 @@ import React from 'react'
 import ContentTabs from './ContentTabs.jsx'
 import {connect} from 'react-redux'
 import logger from '../../common/logger.js'
-import store from '../../store/store.js'
 import * as objectType from '../../store/consts/objectType.js'
 import * as selectors from '../../store/selectors/selectors.js'
 import * as actions from '../../store/actions/actions.js'
@@ -23,26 +22,30 @@ const objectTypeToComponent = {
   [objectType.GROUP]: Group,
 }
 
-function getCurrentPage(){
-  return selectors.getCurrentPage(store.getState())
-}
-
 function mapStateToProps(state){
-  let currentPage = getCurrentPage()
+  let currentPage = selectors.getCurrentPage(state)
   return {
+    currentPage: currentPage,
     openObjects: selectors.getOpenObjects(state, currentPage),
     selectedObject: selectors.getSelectedObject(state, currentPage)
   }
 }
 
-function mapDispatchToProps(dispatch){
-  return {
-    objectSelect: (type, id) => { dispatch(actions.objectOpen(getCurrentPage(), type, id)) },
-    objectClose: (type, id) => { dispatch(actions.objectClose(getCurrentPage(), type, id)) }
-  }
-}
-
 class Content extends React.Component {
+
+  constructor(props){
+    super(props)
+    this.objectSelect = this.objectSelect.bind(this)
+    this.objectClose = this.objectClose.bind(this)
+  }
+
+  objectSelect(type, id){
+    this.props.dispatch(actions.objectOpen(this.props.currentPage, type, id))
+  }
+
+  objectClose(type, id){
+    this.props.dispatch(actions.objectClose(this.props.currentPage, type, id))
+  }
 
   render() {
     logger.log(logger.DEBUG, 'Content.render')
@@ -54,10 +57,10 @@ class Content extends React.Component {
         <ContentTabs
           objects={this.props.openObjects}
           selectedObject={this.props.selectedObject}
-          objectSelect={this.props.objectSelect}
-          objectClose={this.props.objectClose} />
+          objectSelect={this.objectSelect}
+          objectClose={this.objectClose} />
         {ObjectContent &&
-          <ObjectContent />
+          <ObjectContent objectId={this.props.selectedObject.id} />
         }
       </div>
     )
@@ -65,4 +68,4 @@ class Content extends React.Component {
 
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Content)
+export default connect(mapStateToProps, null)(Content)
