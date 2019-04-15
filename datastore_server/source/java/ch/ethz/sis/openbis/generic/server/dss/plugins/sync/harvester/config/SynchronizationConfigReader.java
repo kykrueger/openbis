@@ -80,7 +80,8 @@ public class SynchronizationConfigReader
     private static final String KEEP_ORIGINAL_TIMESTAMPS_AND_USERS_PROPERTY_NAME = "keep-original-timestamps-and-users";
 
     private static final String KEEP_ORIGINAL_FROZEN_FLAGS_PROPERTY_NAME = "keep-original-frozen-flags";
-    private static final String WISHED_NUMBER_OF_STREAMS_PROPERTY_NAME = "whished-number-of-streamss";
+
+    private static final String WISHED_NUMBER_OF_STREAMS_PROPERTY_NAME = "whished-number-of-streams";
 
     private static final String PARALLELIZED_EXECUTION_PREFS_MACHINE_LOAD_PROPERTY_NAME = "machine-load";
 
