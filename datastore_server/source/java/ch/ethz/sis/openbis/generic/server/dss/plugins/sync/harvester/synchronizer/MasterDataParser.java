@@ -200,7 +200,16 @@ public class MasterDataParser
             String entityKind = getAttribute(pluginElement, "entityKind").trim();
             plugin.setScriptType(ScriptType.valueOf(getAttribute(pluginElement, "type")));
             plugin.setPluginType(PluginType.JYTHON);
-            plugin.setEntityKind((entityKind.equals("") || entityKind.equals("All")) ? null : new EntityKind[] { EntityKind.valueOf(entityKind) });
+            if (entityKind.equals("") == false &&  entityKind.equals("All") == false)
+            {
+                String[] splittedEntityKinds = entityKind.split(",");
+                EntityKind[] entityKinds = new EntityKind[splittedEntityKinds.length];
+                for (int j = 0; j < splittedEntityKinds.length; j++)
+                {
+                    entityKinds[j] = EntityKind.valueOf(splittedEntityKinds[j].trim());
+                }
+                plugin.setEntityKind(entityKinds);
+            }
             plugin.setScript(pluginElement.getTextContent());
             validationPlugins.put(plugin.getName(), plugin);
         }
