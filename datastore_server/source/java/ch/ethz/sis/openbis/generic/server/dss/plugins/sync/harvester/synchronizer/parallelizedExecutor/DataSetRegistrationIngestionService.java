@@ -188,7 +188,7 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
     {
         V3Facade v3Facade = new V3Facade(config);
         FastDownloadSessionOptions options = new FastDownloadSessionOptions();
-        options.withWishedNumberOfStreams(2);
+        options.withWishedNumberOfStreams(config.getWishedNumberOfStreams());
         DataSetFilePermId filePermId = new DataSetFilePermId(new DataSetPermId(dataSetCode));
         FastDownloadSession downloadSession = v3Facade.createFastDownloadSession(Arrays.asList(filePermId), options);
         new FastDownloader(downloadSession).downloadTo(dir);

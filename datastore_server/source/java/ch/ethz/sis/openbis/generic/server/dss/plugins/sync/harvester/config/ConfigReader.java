@@ -146,7 +146,7 @@ public class ConfigReader
         return val.trim();
     }
 
-    public int getInt(String section, String key, int defaultvalue, boolean mandatory)
+    public Integer getInt(String section, String key, Integer defaultvalue, boolean mandatory)
     {
         String val = getValue(section, key);
         if (val == null)

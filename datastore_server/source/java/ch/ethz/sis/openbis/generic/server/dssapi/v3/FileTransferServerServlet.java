@@ -101,6 +101,10 @@ public class FileTransferServerServlet extends HttpServlet
 
     public static final String SERVLET_NAME = "file-transfer";
 
+    private static final String MAXIMUM_NUMBER_OF_ALLOWED_STREAMS_PROPERTY = "api.v3.fast-download.maximum-number-of-allowed-streams";
+
+    private static final int DEFAULT_MAXIMUM_NUMBER_OF_ALLOWED_STREAMS = 50;
+
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             FileTransferServerServlet.class);
 
@@ -349,7 +353,8 @@ public class FileTransferServerServlet extends HttpServlet
 
         private ConcurrencyProvider(Properties properties)
         {
-            maximumNumberOfAllowedStreams = PropertyUtils.getInt(properties, "api.v3.fast-download.maximum-number-of-allowed-streams", 10);
+            maximumNumberOfAllowedStreams =
+                    PropertyUtils.getInt(properties, MAXIMUM_NUMBER_OF_ALLOWED_STREAMS_PROPERTY, DEFAULT_MAXIMUM_NUMBER_OF_ALLOWED_STREAMS);
             operationLog.info("max number of allowed streams: " + maximumNumberOfAllowedStreams);
         }
 
@@ -478,9 +483,8 @@ public class FileTransferServerServlet extends HttpServlet
         }
 
         /**
-         * This is copied from org.apache.commons.io.IOUtils (apache commons io version 2.6).
-         * Even though we ship datastore server with commons-io-2.6.jar the bioformats 5.9.2 has and
-         * older version of this library which hasn't the new copyLarge method.
+         * This is copied from org.apache.commons.io.IOUtils (apache commons io version 2.6). Even though we ship datastore server with
+         * commons-io-2.6.jar the bioformats 5.9.2 has and older version of this library which hasn't the new copyLarge method.
          */
         private long copyLarge(final InputStream input, final OutputStream output,
                 final long length, final byte[] buffer) throws IOException
