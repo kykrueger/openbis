@@ -20,8 +20,12 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 
@@ -32,6 +36,9 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
  */
 public class Hdf5AwareHierarchicalContentFactory implements IHierarchicalContentFactory
 {
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
+            Hdf5AwareHierarchicalContentFactory.class);
+
     private H5FolderChecker folderChecker;
 
     public Hdf5AwareHierarchicalContentFactory(boolean h5Folders, boolean h5arFolders)
@@ -72,7 +79,7 @@ public class Hdf5AwareHierarchicalContentFactory implements IHierarchicalContent
                 }
             } catch (Exception e)
             {
-                // Could not open file as HDF5
+                operationLog.warn("File " + file + " can not be opened as HDF5 container: " + e);
             }
         }
         return new DefaultFileBasedHierarchicalContentNode(this, rootContent, file);

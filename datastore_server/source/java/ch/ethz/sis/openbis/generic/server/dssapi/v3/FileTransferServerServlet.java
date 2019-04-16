@@ -418,7 +418,8 @@ public class FileTransferServerServlet extends HttpServlet
                 IDownloadItemId itemId)
         {
             boolean directory = node.isDirectory();
-            if (directory && node.getName().endsWith(".h5ar") == false)
+            boolean isH5ar = node.getName().endsWith(".h5ar");
+            if (directory && isH5ar == false)
             {
                 for (IHierarchicalContentNode childNode : node.getChildNodes())
                 {
@@ -426,7 +427,7 @@ public class FileTransferServerServlet extends HttpServlet
                 }
             } else
             {
-                long fileSize = node.getFileLength();
+                long fileSize = isH5ar ? node.getFile().length() : node.getFileLength();
                 long fileOffset = 0;
                 do
                 {
