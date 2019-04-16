@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import {putAndWait} from './../effects.js'
+import {dto} from '../../../services/openbis.js'
 import * as objectType from '../../consts/objectType.js'
 import * as actions from '../../actions/actions.js'
 import * as common from '../../common/browser.js'
@@ -50,10 +51,22 @@ export function* createNodes() {
 
 function* getTypes(){
   let responses = yield putAndWait({
-    objectTypes: actions.apiRequest({method: 'getObjectTypes'}),
-    collectionTypes: actions.apiRequest({method: 'getCollectionTypes'}),
-    dataSetTypes: actions.apiRequest({method: 'getDataSetTypes'}),
-    materialTypes: actions.apiRequest({method: 'getMaterialTypes'})
+    objectTypes: actions.apiRequest({
+      method: 'searchSampleTypes',
+      params: [new dto.SampleTypeSearchCriteria(), new dto.SampleTypeFetchOptions()]
+    }),
+    collectionTypes: actions.apiRequest({
+      method: 'searchExperimentTypes',
+      params: [new dto.ExperimentTypeSearchCriteria(), new dto.ExperimentTypeFetchOptions()]
+    }),
+    dataSetTypes: actions.apiRequest({
+      method: 'searchDataSetTypes',
+      params: [new dto.DataSetTypeSearchCriteria(), new dto.DataSetTypeFetchOptions()]
+    }),
+    materialTypes: actions.apiRequest({
+      method: 'searchMaterialTypes',
+      params: [new dto.MaterialTypeSearchCriteria(), new dto.MaterialTypeFetchOptions()]
+    })
   })
 
   let convert = function(response){

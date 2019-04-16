@@ -1,7 +1,7 @@
 import React from 'react'
 import { mount } from 'enzyme'
 import Browser from '../../../src/components/browser/Browser.jsx'
-import openbis from '../../../src/services/openbis.js'
+import { facade, dto } from '../../../src/services/openbis.js'
 import * as actions from '../../../src/store/actions/actions.js'
 import * as pages from '../../../src/store/consts/pages.js'
 import { createStore } from '../../../src/store/store.js'
@@ -19,12 +19,18 @@ beforeEach(() => {
 describe('browser', () => {
 
   test('test', () => {
-    openbis.getUsers.mockReturnValue({
+    facade.searchPersons.mockReturnValue({
       objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
-    openbis.getGroups.mockReturnValue({
+    facade.searchAuthorizationGroups.mockReturnValue({
       objects: [ fixture.TEST_GROUP_DTO, fixture.ANOTHER_GROUP_DTO, fixture.ALL_USERS_GROUP_DTO ]
+    })
+
+    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
+      return {
+        withUsers: function(){}
+      }
     })
 
     store.dispatch(actions.currentPageChange(pages.USERS))

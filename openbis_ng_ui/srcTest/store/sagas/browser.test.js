@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import openbis from '../../../src/services/openbis.js'
+import { facade, dto } from '../../../src/services/openbis.js'
 import * as actions from '../../../src/store/actions/actions.js'
 import * as selectors from '../../../src/store/selectors/selectors.js'
 import * as pages from '../../../src/store/consts/pages.js'
@@ -15,7 +15,7 @@ let store = null
 beforeEach(() => {
   jest.resetAllMocks()
 
-  openbis.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
+  facade.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
 
   store = createStore()
   store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
@@ -24,12 +24,18 @@ beforeEach(() => {
 describe('browser', () => {
 
   test('init', () => {
-    openbis.getUsers.mockReturnValue({
+    facade.searchPersons.mockReturnValue({
       objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
-    openbis.getGroups.mockReturnValue({
+    facade.searchAuthorizationGroups.mockReturnValue({
       objects: [ fixture.TEST_GROUP_DTO, fixture.ANOTHER_GROUP_DTO, fixture.ALL_USERS_GROUP_DTO ]
+    })
+
+    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
+      return {
+        withUsers: function(){}
+      }
     })
 
     store.dispatch(actions.browserInit(pages.USERS))
@@ -65,12 +71,18 @@ describe('browser', () => {
   })
 
   test('filter', () => {
-    openbis.getUsers.mockReturnValue({
+    facade.searchPersons.mockReturnValue({
       objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
-    openbis.getGroups.mockReturnValue({
+    facade.searchAuthorizationGroups.mockReturnValue({
       objects: [ fixture.TEST_GROUP_DTO, fixture.ANOTHER_GROUP_DTO, fixture.ALL_USERS_GROUP_DTO ]
+    })
+
+    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
+      return {
+        withUsers: function(){}
+      }
     })
 
     store.dispatch(actions.browserInit(pages.USERS))
@@ -93,12 +105,18 @@ describe('browser', () => {
   })
 
   test('select node', () => {
-    openbis.getUsers.mockReturnValue({
+    facade.searchPersons.mockReturnValue({
       objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
-    openbis.getGroups.mockReturnValue({
+    facade.searchAuthorizationGroups.mockReturnValue({
       objects: []
+    })
+
+    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
+      return {
+        withUsers: function(){}
+      }
     })
 
     let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
@@ -120,12 +138,18 @@ describe('browser', () => {
   })
 
   test('select another node', () => {
-    openbis.getUsers.mockReturnValue({
+    facade.searchPersons.mockReturnValue({
       objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
-    openbis.getGroups.mockReturnValue({
+    facade.searchAuthorizationGroups.mockReturnValue({
       objects: []
+    })
+
+    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
+      return {
+        withUsers: function(){}
+      }
     })
 
     let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
@@ -149,12 +173,18 @@ describe('browser', () => {
   })
 
   test('select virtual node', () => {
-    openbis.getUsers.mockReturnValue({
+    facade.searchPersons.mockReturnValue({
       objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
     })
 
-    openbis.getGroups.mockReturnValue({
+    facade.searchAuthorizationGroups.mockReturnValue({
       objects: []
+    })
+
+    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
+      return {
+        withUsers: function(){}
+      }
     })
 
     store.dispatch(actions.browserInit(pages.USERS))
@@ -174,12 +204,18 @@ describe('browser', () => {
   })
 
   test('select two nodes that represent the same object', () => {
-    openbis.getUsers.mockReturnValue({
+    facade.searchPersons.mockReturnValue({
       objects: [ fixture.TEST_USER_DTO ]
     })
 
-    openbis.getGroups.mockReturnValue({
+    facade.searchAuthorizationGroups.mockReturnValue({
       objects: [ fixture.TEST_GROUP_DTO ]
+    })
+
+    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
+      return {
+        withUsers: function(){}
+      }
     })
 
     let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
@@ -225,12 +261,18 @@ describe('browser', () => {
   })
 
   test('expand and collapse node', () => {
-    openbis.getUsers.mockReturnValue({
+    facade.searchPersons.mockReturnValue({
       objects: []
     })
 
-    openbis.getGroups.mockReturnValue({
+    facade.searchAuthorizationGroups.mockReturnValue({
       objects: [ fixture.TEST_GROUP_DTO ]
+    })
+
+    dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
+      return {
+        withUsers: function(){}
+      }
     })
 
     store.dispatch(actions.browserInit(pages.USERS))

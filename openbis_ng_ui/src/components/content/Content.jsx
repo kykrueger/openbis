@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import React from 'react'
 import ContentTabs from './ContentTabs.jsx'
 import {connect} from 'react-redux'
@@ -50,8 +51,6 @@ class Content extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'Content.render')
 
-    let ObjectContent = this.props.selectedObject ? objectTypeToComponent[this.props.selectedObject.type] : null
-
     return (
       <div>
         <ContentTabs
@@ -59,8 +58,13 @@ class Content extends React.Component {
           selectedObject={this.props.selectedObject}
           objectSelect={this.objectSelect}
           objectClose={this.objectClose} />
-        {ObjectContent &&
-          <ObjectContent objectId={this.props.selectedObject.id} />
+        {
+          this.props.openObjects.map(object => {
+            let ObjectContent = objectTypeToComponent[object.type]
+            return (
+              <ObjectContent key={object.id} objectId={object.id} visible={_.isEqual(object, this.props.selectedObject)} />
+            )
+          })
         }
       </div>
     )

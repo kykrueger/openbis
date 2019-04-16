@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import {putAndWait} from './../effects.js'
+import {dto} from '../../../services/openbis.js'
 import * as objectType from '../../consts/objectType.js'
 import * as actions from '../../actions/actions.js'
 import * as common from '../../common/browser.js'
@@ -57,8 +58,18 @@ export function* createNodes() {
 }
 
 function* getUsersAndGroups(){
-  let getUsersReponse = yield putAndWait(actions.apiRequest({method: 'getUsers'}))
-  let getGroupsReponse = yield putAndWait(actions.apiRequest({method: 'getGroups'}))
+  let getUsersReponse = yield putAndWait(actions.apiRequest({
+    method: 'searchPersons',
+    params: [new dto.PersonSearchCriteria(), new dto.PersonFetchOptions()]
+  }))
+
+  let groupFetchOptions = new dto.AuthorizationGroupFetchOptions()
+  groupFetchOptions.withUsers()
+
+  let getGroupsReponse = yield putAndWait(actions.apiRequest({
+    method: 'searchAuthorizationGroups',
+    params: [new dto.AuthorizationGroupSearchCriteria(), groupFetchOptions]
+  }))
 
   let users = {}
   let groups = {}
