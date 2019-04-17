@@ -7,10 +7,10 @@ import Button from '@material-ui/core/Button'
 import LogoutIcon from '@material-ui/icons/PowerSettingsNew'
 import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
-import logger from '../../common/logger.js'
-import * as actions from '../../store/actions/actions.js'
-import * as selectors from '../../store/selectors/selectors.js'
-import * as pages from '../../store/consts/pages.js'
+import logger from '../../../common/logger.js'
+import * as actions from '../../../store/actions/actions.js'
+import * as selectors from '../../../store/selectors/selectors.js'
+import * as pages from '../../../store/consts/pages.js'
 
 const styles = () => ({
   tabs: {

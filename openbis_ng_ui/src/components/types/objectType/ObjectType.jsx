@@ -3,18 +3,8 @@ import React from 'react'
 import TextField from '@material-ui/core/TextField'
 import Checkbox from '@material-ui/core/Checkbox'
 import Button from '@material-ui/core/Button'
-import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 import {facade, dto} from '../../../services/openbis.js'
-
-const styles = () => ({
-  visible: {
-    display: 'flex'
-  },
-  hidden: {
-    display: 'none'
-  }
-})
 
 class ObjectType extends React.Component {
 
@@ -34,7 +24,7 @@ class ObjectType extends React.Component {
           return {
             loaded: true,
             fields: {
-              description: objectType.description,
+              description: objectType.description || '',
               listable: objectType.listable
             }
           }
@@ -72,12 +62,11 @@ class ObjectType extends React.Component {
       return <div></div>
     }
 
-    let classes = this.props.classes
     let { description, listable } = this.state.fields
 
     return (
-      <div className={this.props.visible ? classes.visible : classes.hidden}>
-        {this.props.objectId}
+      <div>
+        <div>{this.props.objectId}</div>
         <form>
           <div>
             <TextField label='Description' value={description} onChange={this.handleChange('description')} />
@@ -95,6 +84,4 @@ class ObjectType extends React.Component {
 
 }
 
-export default _.flow(
-  withStyles(styles)
-)(ObjectType)
+export default ObjectType

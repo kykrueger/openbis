@@ -3,26 +3,37 @@ import _ from 'lodash'
 import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../common/logger.js'
+import * as pages from '../store/consts/pages.js'
 import * as actions from '../store/actions/actions.js'
 import * as selectors from '../store/selectors/selectors.js'
 
-import Loading from './loading/Loading.jsx'
-import Error from './error/Error.jsx'
-import Login from './login/Login.jsx'
-import Menu from './menu/Menu.jsx'
-import Browser from './browser/Browser.jsx'
-import Content from './content/Content.jsx'
+import Loading from './common/loading/Loading.jsx'
+import Error from './common/error/Error.jsx'
+import Menu from './common/menu/Menu.jsx'
 
-const styles = () => ({
-  contentContainer: {
-    display: 'flex'
+import Login from './login/Login.jsx'
+import Users from './users/Users.jsx'
+import Types from './types/Types.jsx'
+
+const styles = {
+  visible: {
+    display: 'block'
+  },
+  hidden: {
+    display: 'none',
   }
-})
+}
+
+const pageToComponent = {
+  [pages.TYPES]: Types,
+  [pages.USERS]: Users,
+}
 
 function mapStateToProps(state){
   return {
     loading: selectors.getLoading(state),
     session: selectors.getSession(state),
+    currentPage: selectors.getCurrentPage(state),
     error: selectors.getError(state)
   }
 }
@@ -58,13 +69,17 @@ class App extends React.Component {
     if(this.props.session){
       return (
         <div>
-          <div className={classes.topContainer}>
-            <Menu/>
-          </div>
-          <div className={classes.contentContainer}>
-            <Browser/>
-            <Content/>
-          </div>
+          <Menu/>
+          {
+            _.map(pageToComponent, (PageComponent, page) => {
+              let visible = this.props.currentPage === page
+              return (
+                <div key={page} className={visible ? classes.visible : classes.hidden}>
+                  <PageComponent />
+                </div>
+              )
+            })
+          }
         </div>
       )
     }else{

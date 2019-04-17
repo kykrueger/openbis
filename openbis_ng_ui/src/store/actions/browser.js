@@ -1,5 +1,4 @@
 export const BROWSER_INIT = 'BROWSER_INIT'
-export const BROWSER_RELEASE = 'BROWSER_RELEASE'
 export const BROWSER_FILTER_CHANGE = 'BROWSER_FILTERER_CHANGE'
 export const BROWSER_NODE_SELECT = 'BROWSER_NODE_SELECT'
 export const BROWSER_NODE_EXPAND = 'BROWSER_NODE_EXPAND'
@@ -15,13 +14,6 @@ export const BROWSER_REMOVE_EXPANDED_NODES = 'BROWSER_REMOVE_EXPANDED_NODES'
 
 export const browserInit = (page) => ({
   type: BROWSER_INIT,
-  payload: {
-    page
-  }
-})
-
-export const browserRelease = (page) => ({
-  type: BROWSER_RELEASE,
   payload: {
     page
   }

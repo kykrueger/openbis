@@ -3,7 +3,7 @@ import React from 'react'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CloseIcon from '@material-ui/icons/Close'
-import logger from '../../common/logger.js'
+import logger from '../../../common/logger.js'
 
 class ContentTabs extends React.Component {
 

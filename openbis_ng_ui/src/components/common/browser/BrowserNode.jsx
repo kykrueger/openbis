@@ -6,7 +6,7 @@ import Collapse from '@material-ui/core/Collapse'
 import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import BrowserNodes from './BrowserNodes.jsx'
-import logger from '../../common/logger.js'
+import logger from '../../../common/logger.js'
 
 class BrowserNode extends React.Component {
 
