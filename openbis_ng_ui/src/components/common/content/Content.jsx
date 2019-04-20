@@ -3,12 +3,19 @@ import _ from 'lodash'
 import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
+import * as util from '../../../common/util.js'
 import * as selectors from '../../../store/selectors/selectors.js'
 import * as actions from '../../../store/actions/actions.js'
 
 import ContentTabs from './ContentTabs.jsx'
 
 const styles = {
+  container: {
+    margin: '0px 12px'
+  },
+  component: {
+    margin: '12px 0px'
+  },
   visible: {
     display: 'block'
   },
@@ -39,7 +46,7 @@ class Content extends React.Component {
     const classes = this.props.classes
 
     return (
-      <div>
+      <div className={classes.container}>
         <ContentTabs
           objects={this.props.openObjects}
           selectedObject={this.props.selectedObject}
@@ -51,7 +58,7 @@ class Content extends React.Component {
             let key = object.type + '/' + object.id
             let visible = _.isEqual(object, this.props.selectedObject)
             return (
-              <div key={key} className={visible ? classes.visible : classes.hidden}>
+              <div key={key} className={util.classNames(classes.component, visible ? classes.visible : classes.hidden)}>
                 <ObjectComponent objectId={object.id} />
               </div>
             )

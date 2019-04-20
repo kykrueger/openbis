@@ -1,11 +1,19 @@
 import React from 'react'
+import _ from 'lodash'
 import {connect} from 'react-redux'
+import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 import * as selectors from '../../../store/selectors/selectors.js'
 import * as actions from '../../../store/actions/actions.js'
 
 import BrowserFilter from './BrowserFilter.jsx'
 import BrowserNodes from './BrowserNodes.jsx'
+
+const styles = {
+  container: {
+    'min-width': '300px'
+  }
+}
 
 function mapStateToProps(state, ownProps){
   return {
@@ -33,8 +41,10 @@ class Browser extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'Browser.render')
 
+    const classes = this.props.classes
+
     return (
-      <div>
+      <div className={classes.container}>
         <BrowserFilter
           filter={this.props.filter}
           filterChange={this.props.filterChange}
@@ -52,4 +62,7 @@ class Browser extends React.PureComponent {
 
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Browser)
+export default _.flow(
+  connect(mapStateToProps, mapDispatchToProps),
+  withStyles(styles)
+)(Browser)

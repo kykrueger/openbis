@@ -21,7 +21,14 @@ class BrowserNodes extends React.Component {
     return (<List className={classes.browserList}>
       {
         this.props.nodes.map(node => {
-          return <BrowserNode {...this.props} key={node.id} node={node} level={this.props.level} />
+          return <BrowserNode
+            key={node.id}
+            node={node}
+            nodeSelect={this.props.nodeSelect}
+            nodeCollapse={this.props.nodeCollapse}
+            nodeExpand={this.props.nodeExpand}
+            level={this.props.level}
+          />
         })
       }
     </List>)
