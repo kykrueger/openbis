@@ -1606,6 +1606,23 @@ var FormUtil = new function() {
 										if(result.status === "OK") {
 											Util.showSuccess("Freezing succeeded.", function() {
 												Util.unblockUI();
+												switch(entityType) {
+													case "SPACE":
+														mainController.changeView('showSpacePage', permId);
+														break;
+													case "PROJECT":
+														mainController.changeView('showProjectPageFromPermId', permId);
+														break;
+													case "EXPERIMENT":
+														mainController.changeView('showExperimentPageFromPermId', permId);
+														break;
+													case "SAMPLE":
+														mainController.changeView('showViewSamplePageFromPermId', permId);
+														break;
+													case "DATASET":
+														mainController.changeView('showViewDataSetPageFromPermId', permId);
+														break;
+												}
 											});
 										} else {
 											Util.showUserError('Freezing failed.', function() {
