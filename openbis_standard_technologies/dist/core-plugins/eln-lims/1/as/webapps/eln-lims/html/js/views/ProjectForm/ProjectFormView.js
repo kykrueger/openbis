@@ -101,17 +101,19 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
 			}
 			
-			//Edit
-			var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
-				_this._projectFormController.enableEditing();
-			});
-			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+			if(!_this._projectFormModel.v3_project.frozen) {
+				//Edit
+				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+					_this._projectFormController.enableEditing();
+				});
+				toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
 			
-			//Delete
-			var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
-				_this._projectFormController.deleteProject(reason);
-			}, true);
-			toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
+				//Delete
+				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
+					_this._projectFormController.deleteProject(reason);
+				}, true);
+				toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
+			}
 			
 			//Export
 			var $exportAll = FormUtil.getExportButton([{ type: "PROJECT", permId : _this._projectFormModel.project.permId, expand : true }], false);
