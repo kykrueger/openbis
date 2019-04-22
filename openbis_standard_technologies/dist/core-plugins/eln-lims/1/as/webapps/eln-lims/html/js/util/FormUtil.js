@@ -1531,21 +1531,28 @@ var FormUtil = new function() {
 										.append($("<th>").append("Name"))
 								);
 					
+				entityTypeOrder = ["Space", "Project", "Experiment", "Sample", "DataSet"];
 				entityMap = result.result;
-				for (key in entityMap) {
-					entity = entityMap[key];
-					$table.append($("<tr>")
-						.append($("<td>").append(_this._getBooleanField('freezing-form-' + key.replace("+", "-"), entity.displayName, true)))
-						.append($("<td>").append(entity.type))
-						.append($("<td>").append(entity.permId))
-						.append($("<td>").append(entity.displayName))
-					);
+				for(var typeOrder = 0 ; typeOrder < entityTypeOrder.length ; typeOrder++) {
+					for (key in entityMap) {
+						entity = entityMap[key];
+						if(entity.type == entityTypeOrder[typeOrder]) {
+							$table.append($("<tr>")
+									.append($("<td>").append(_this._getBooleanField('freezing-form-' + key.replace("+", "-"), entity.displayName, true)))
+									.append($("<td>").append(entity.type))
+									.append($("<td>").append(entity.permId))
+									.append($("<td>").append(entity.displayName))
+							);
+						}
+					}
 				}
+				
 				$window.append($table);
 				
 				//
 				// Warning
 				//
+				$window.append("<br>");
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
 						.append(" Enter your password to freeze the entities, after they are frozen no more changes will be allowed:"));
