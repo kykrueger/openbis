@@ -5,13 +5,13 @@ if (System.getProperty("openbis.development-build") != null) {
 	}
 	
 	dependencies {
-	    gwt 'reveregroup:gwt-image-loader:+',
-	    	'google:gwt-dev:+',
-	    	'google:gwt-user:+',
-	    	'google:gwt-debug-panel:+',
-	    	'sencha:gxt:+',
-            'sis:sis-base:+',
-			'fasterxml:jackson-annotations:+',    	
+	    gwt 'reveregroup:gwt-image-loader:1.1.4',
+	    	'google:gwt-dev:2.4',
+	    	'google:gwt-user:2.4',
+	    	'google:gwt-debug-panel:1.0',
+	    	'sencha:gxt:2.2.5',
+            'sis:sis-base:18.09.0',
+			'fasterxml:jackson-annotations:2.9.7',    	
 	    	project(':common'),
 	    	project(path:':common', configuration: 'archives'),
 	    	project(':commonbase'),
