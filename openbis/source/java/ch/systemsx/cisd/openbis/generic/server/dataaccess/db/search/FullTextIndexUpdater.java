@@ -31,7 +31,6 @@ import ch.systemsx.cisd.common.collection.IExtendedBlockingQueue;
 import ch.systemsx.cisd.common.io.PersistentExtendedBlockingQueueFactory;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.openbis.generic.server.util.ShutdownManager;
 
 /**
  * A <i>full-text</i> index updater.
@@ -55,8 +54,6 @@ public final class FullTextIndexUpdater extends HibernateDaoSupport implements
 
     private final IExtendedBlockingQueue<IndexUpdateOperation> updaterQueue;
 
-    private final ShutdownManager shutdownManager;
-
     public FullTextIndexUpdater(final SessionFactory sessionFactory,
             final HibernateSearchContext context)
     {
@@ -65,7 +62,6 @@ public final class FullTextIndexUpdater extends HibernateDaoSupport implements
         this.context = context;
         operationLog.debug(String.format("Hibernate search context: %s.", context));
         fullTextIndexer = new DefaultFullTextIndexer(context.getBatchSize());
-        shutdownManager = new ShutdownManager(operationLog);
 
         final IndexMode indexMode = context.getIndexMode();
         if (indexMode == IndexMode.NO_INDEX)
@@ -172,10 +168,9 @@ public final class FullTextIndexUpdater extends HibernateDaoSupport implements
             }
             try
             {
-                while (shutdownManager.isShutdown() == false)
+                while (true)
                 {
                     final IndexUpdateOperation operation = updaterQueue.peekWait();
-                    shutdownManager.notReadyForShutdown();
                     if (operationLog.isInfoEnabled())
                     {
                         operationLog.info("Update: " + operation);
@@ -215,7 +210,6 @@ public final class FullTextIndexUpdater extends HibernateDaoSupport implements
                         }
                     }
                     updaterQueue.take();
-                    shutdownManager.readyForShutdown();
                 }
             } catch (final InterruptedException e)
             {

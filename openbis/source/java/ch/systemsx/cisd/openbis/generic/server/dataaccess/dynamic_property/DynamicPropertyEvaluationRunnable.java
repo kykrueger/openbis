@@ -34,7 +34,6 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDynamicPropertyEvaluationSchedulerWithQueue;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IFullTextIndexUpdateScheduler;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.IndexUpdateOperation;
-import ch.systemsx.cisd.openbis.generic.server.util.ShutdownManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityInformationWithPropertiesHolder;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 
@@ -59,8 +58,6 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
 
     private final IBatchDynamicPropertyEvaluator evaluator;
 
-    private final ShutdownManager shutdownManager;
-
     public DynamicPropertyEvaluationRunnable(final SessionFactory sessionFactory,
             final IDAOFactory daoFactory,
             final IFullTextIndexUpdateScheduler fullTextIndexUpdateScheduler,
@@ -74,7 +71,6 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
         evaluator =
                 new DefaultBatchDynamicPropertyEvaluator(BATCH_SIZE, daoFactory,
                         dynamicPropertyCalculatorFactory, managedPropertyEvaluatorFactory);
-        shutdownManager = new ShutdownManager(operationLog);
     }
 
     //
@@ -88,10 +84,9 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
         operationLog.info("Start dynamic properties evaluator queue.");
         try
         {
-            while (shutdownManager.isShutdown() == false)
+            while (true)
             {
                 final DynamicPropertyEvaluationOperation operation = evaluationQueue.peekWait();
-                shutdownManager.notReadyForShutdown();
                 if (operationLog.isInfoEnabled())
                 {
                     operationLog.info("Update: " + operation);
@@ -163,7 +158,6 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
                     }
                 }
                 evaluationQueue.take();
-                shutdownManager.readyForShutdown();
             }
         } catch (final InterruptedException e)
         {
