@@ -73,7 +73,15 @@ public class MockContent implements IHierarchicalContent
                 node.name = path.substring(lastIndexOfDelim + 1);
             }
             node.size = Long.parseLong(splittedDescription[1]);
-            node.checksum = (int) Long.parseLong(splittedDescription[2], 16);
+            node.crc32Checksum = (int) Long.parseLong(splittedDescription[2], 16);
+            if (splittedDescription.length > 3)
+            {
+                node.content = splittedDescription[3];
+                if (splittedDescription.length == 6)
+                {
+                    node.checksum = splittedDescription[4] + ":" + splittedDescription[5];
+                }
+            }
         }
     }
 
