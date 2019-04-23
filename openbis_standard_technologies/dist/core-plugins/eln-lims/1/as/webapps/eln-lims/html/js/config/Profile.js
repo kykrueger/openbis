@@ -1091,6 +1091,15 @@ $.extend(DefaultProfile.prototype, {
 					this.hideTypes["sampleTypeCodes"].push(sampleTypeCode);
 				}
 			}
+			
+			// don't show sample types before definition extension is created
+			var sampleTypes = this.getAllSampleTypes();
+			for(var sIdx = 0; sIdx < sampleTypes.length; sIdx++) {
+				var sampleTypeCode = sampleTypes[sIdx].code;
+				if(!this.sampleTypeDefinitionsExtension[sampleTypeCode]) {
+					this.hideTypes["sampleTypeCodes"].push(sampleTypeCode);
+				}
+			}
 		
 			var settingsManager = new SettingsManager(this.serverFacade);
 			settingsManager.loadSettingsAndApplyToProfile((function() {

@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
@@ -186,11 +187,14 @@ class DataSetRegistrationIngestionService extends IngestionService<DataSetInform
 
     private void downloadDataSetFiles(File dir, String dataSetCode)
     {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         V3Facade v3Facade = new V3Facade(config);
         FastDownloadSessionOptions options = new FastDownloadSessionOptions();
-        options.withWishedNumberOfStreams(2);
+        options.withWishedNumberOfStreams(config.getWishedNumberOfStreams());
         DataSetFilePermId filePermId = new DataSetFilePermId(new DataSetPermId(dataSetCode));
         FastDownloadSession downloadSession = v3Facade.createFastDownloadSession(Arrays.asList(filePermId), options);
         new FastDownloader(downloadSession).downloadTo(dir);
+        operationLog.info("Download time for data set " + dataSetCode + " to " + dir + ": " + stopWatch);
     }
 }

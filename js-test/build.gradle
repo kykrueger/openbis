@@ -36,18 +36,18 @@ configurations.create('externalDss')
 dependencies {
 
 	compile 'reflections:reflections:0.9.10', 
-	'testng:testng:+', 
-	'fasterxml:jackson-core:+',
-	'fasterxml:jackson-annotations:+',
-	'fasterxml:jackson-databind:+'
+	'testng:testng:6.8-CISD', 
+	'fasterxml:jackson-core:2.9.7',
+	'fasterxml:jackson-annotations:2.9.7',
+	'fasterxml:jackson-databind:2.9.7'
 
 	testCompile project(path: ':ui-test', configuration: 'tests')
 	
 	testRuntime project(':screening'), project(':rtd_phosphonetx')
 	
-	testRuntimeFirst 'javax:servlet-api:+', 'reflections:reflections:0.9.10'
+	testRuntimeFirst 'javax:servlet-api:3.1.0', 'reflections:reflections:0.9.10'
 	
-	testRuntimeSecond 'google:gwt-user:+'
+	testRuntimeSecond 'google:gwt-user:2.4'
 
 	externalDss project(':screening'), project(':rtd_phosphonetx')
 } 

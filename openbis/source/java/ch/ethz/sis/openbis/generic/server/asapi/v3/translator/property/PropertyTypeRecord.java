@@ -43,4 +43,6 @@ public class PropertyTypeRecord extends ObjectBaseRecord
 
     public Date registration_timestamp;
 
+    public String meta_data;
+
 }

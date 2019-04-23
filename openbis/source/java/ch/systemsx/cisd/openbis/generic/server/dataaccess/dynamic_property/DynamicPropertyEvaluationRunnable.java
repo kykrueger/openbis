@@ -79,7 +79,7 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
 
     @Override
     @SuppressWarnings("unchecked")
-    public final void run()
+    public final synchronized void run()
     {
         operationLog.info("Start dynamic properties evaluator queue.");
         try
@@ -159,10 +159,16 @@ public final class DynamicPropertyEvaluationRunnable extends HibernateDaoSupport
                 }
                 evaluationQueue.take();
             }
+        } catch (final InterruptedException e)
+        {
+            operationLog.warn(e);
         } catch (final Throwable th)
         {
             notificationLog
                     .error("A problem has occurred while evaluating dynamic properties.", th);
+        } finally
+        {
+            operationLog.info("Evaluation closed");
         }
     }
 }

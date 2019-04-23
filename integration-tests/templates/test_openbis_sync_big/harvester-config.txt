@@ -15,6 +15,7 @@ harvester-pass = admin
 translate-using-data-source-alias = true
 
 email-addresses = openbis@id.ethz.ch
+max-threads = 1
 harvester-tmp-dir = harvester-tmp
 file-service-repository-path = ../../data/file-server
 last-sync-timestamp-file = ../../last-sync-timestamp-file_HRVSTR.txt

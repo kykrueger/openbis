@@ -153,28 +153,82 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
 			}
 			
-			//Edit
-			if(this._sampleFormModel.mode === FormMode.VIEW) {
-				var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
-					var args = {
-							permIdOrIdentifier : _this._sampleFormModel.sample.permId,
-							paginationInfo : _this._sampleFormModel.paginationInfo
+			if(!_this._sampleFormModel.v3_sample.frozen) {
+				//Edit
+				if(this._sampleFormModel.mode === FormMode.VIEW) {
+					var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+						var args = {
+								permIdOrIdentifier : _this._sampleFormModel.sample.permId,
+								paginationInfo : _this._sampleFormModel.paginationInfo
+						}
+						
+						mainController.changeView('showEditSamplePageFromPermId', args);
+					});
+					if(toolbarConfig.EDIT) {
+						toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+					}
+				}
+				
+				//Move
+				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+					var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
+					moveEntityController.init();
+				});
+				if(toolbarConfig.MOVE) {
+					toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+				}
+				
+				//Delete
+				var warningText = null;
+				if(this._sampleFormModel.sample.children.length > 0 || this._sampleFormModel.datasets.length > 0) {
+					warningText = ""
+					var childrenThatAreNotPositions = 0;
+					for(var idx = 0; idx < this._sampleFormModel.sample.children.length; idx++) {
+						var child = this._sampleFormModel.sample.children[idx];
+						if(child.sampleTypeCode !== "STORAGE_POSITION") {
+							childrenThatAreNotPositions++;
+						}
 					}
 					
-					mainController.changeView('showEditSamplePageFromPermId', args);
-				});
-				if(toolbarConfig.EDIT) {
-					toolbarModel.push({ component : $editButton, tooltip: "Edit" });
+					if(this._sampleFormModel.sample.children.length > 0) {
+						warningText += "The sample has " + childrenThatAreNotPositions + " children samples, these relationships will be broken but the children will remain:\n";
+						var numChildrenToShow = childrenThatAreNotPositions;
+						if(numChildrenToShow > 10) {
+							numChildrenToShow = 10;
+						}
+						for(var cIdx = 0 ; cIdx < numChildrenToShow; cIdx++) {
+							var child = this._sampleFormModel.sample.children[cIdx];
+							if(child.sampleTypeCode !== "STORAGE_POSITION") {
+								warningText += "\n\t" + child.code;
+							}
+						}
+						if(numChildrenToShow > 10) {
+							warningText += "\n\t...";
+						}
+					}
+					if(this._sampleFormModel.datasets.length > 0) {
+						warningText += "\n\nThe " + ELNDictionary.sample + " has " + this._sampleFormModel.datasets.length + " datasets, these will be deleted with the " + ELNDictionary.sample + ":\n";
+						var numDatasetsToShow = this._sampleFormModel.datasets.length;
+						if(numDatasetsToShow > 10) {
+							numDatasetsToShow = 10;
+						}
+						for(var cIdx = 0 ; cIdx < numDatasetsToShow; cIdx++) {
+							warningText += "\n\t" + this._sampleFormModel.datasets[cIdx].code;
+						}
+						if(numDatasetsToShow > 10) {
+							warningText += "\n\t...";
+						}
+					}
 				}
-			}
+				
+				var $deleteButton = FormUtil.getDeleteButton(function(reason) {
+					_this._sampleFormController.deleteSample(reason);
+				}, true, warningText);
+				
+				if(toolbarConfig.DELETE) {
+					toolbarModel.push({ component : $deleteButton, tooltip: "Delete" });
+				}
 			
-			//Move
-			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-				var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
-				moveEntityController.init();
-			});
-			if(toolbarConfig.MOVE) {
-				toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
 			}
 			
 			//Copy
@@ -183,57 +237,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$copyButton.click(_this._getCopyButtonEvent());
 			if(toolbarConfig.COPY) {
 				toolbarModel.push({ component : $copyButton, tooltip: "Copy" });
-			}
-			
-			//Delete
-			var warningText = null;
-			if(this._sampleFormModel.sample.children.length > 0 || this._sampleFormModel.datasets.length > 0) {
-				warningText = ""
-				var childrenThatAreNotPositions = 0;
-				for(var idx = 0; idx < this._sampleFormModel.sample.children.length; idx++) {
-					var child = this._sampleFormModel.sample.children[idx];
-					if(child.sampleTypeCode !== "STORAGE_POSITION") {
-						childrenThatAreNotPositions++;
-					}
-				}
-				
-				if(this._sampleFormModel.sample.children.length > 0) {
-					warningText += "The sample has " + childrenThatAreNotPositions + " children samples, these relationships will be broken but the children will remain:\n";
-					var numChildrenToShow = childrenThatAreNotPositions;
-					if(numChildrenToShow > 10) {
-						numChildrenToShow = 10;
-					}
-					for(var cIdx = 0 ; cIdx < numChildrenToShow; cIdx++) {
-						var child = this._sampleFormModel.sample.children[cIdx];
-						if(child.sampleTypeCode !== "STORAGE_POSITION") {
-							warningText += "\n\t" + child.code;
-						}
-					}
-					if(numChildrenToShow > 10) {
-						warningText += "\n\t...";
-					}
-				}
-				if(this._sampleFormModel.datasets.length > 0) {
-					warningText += "\n\nThe " + ELNDictionary.sample + " has " + this._sampleFormModel.datasets.length + " datasets, these will be deleted with the " + ELNDictionary.sample + ":\n";
-					var numDatasetsToShow = this._sampleFormModel.datasets.length;
-					if(numDatasetsToShow > 10) {
-						numDatasetsToShow = 10;
-					}
-					for(var cIdx = 0 ; cIdx < numDatasetsToShow; cIdx++) {
-						warningText += "\n\t" + this._sampleFormModel.datasets[cIdx].code;
-					}
-					if(numDatasetsToShow > 10) {
-						warningText += "\n\t...";
-					}
-				}
-			}
-			
-			var $deleteButton = FormUtil.getDeleteButton(function(reason) {
-				_this._sampleFormController.deleteSample(reason);
-			}, true, warningText);
-			
-			if(toolbarConfig.DELETE) {
-				toolbarModel.push({ component : $deleteButton, tooltip: "Delete" });
 			}
 			
 			//Print

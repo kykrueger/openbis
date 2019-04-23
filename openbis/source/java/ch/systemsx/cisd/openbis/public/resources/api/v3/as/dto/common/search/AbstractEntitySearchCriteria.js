@@ -65,6 +65,12 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 			var AnyFieldSearchCriteria = require("as/dto/common/search/AnyFieldSearchCriteria");
 			return this.addCriteria(new AnyFieldSearchCriteria());
 		};
+		prototype.withOrOperator = function() {
+			return this.withOperator(SearchOperator.OR);
+		};
+		prototype.withAndOperator = function() {
+			return this.withOperator(SearchOperator.AND);
+		};
 	}, {
 		operator : {
 			name : "Enum",

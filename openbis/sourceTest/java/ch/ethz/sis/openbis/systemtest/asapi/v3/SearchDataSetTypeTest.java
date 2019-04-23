@@ -86,6 +86,46 @@ public class SearchDataSetTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithAndOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetTypeSearchCriteria searchCriteria = new DataSetTypeSearchCriteria();
+        searchCriteria.withAndOperator();
+        searchCriteria.withCode().thatContains("ELE");
+        searchCriteria.withCode().thatContains("CONT");
+        DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().sortBy().code();
+
+        SearchResult<DataSetType> searchResult = v3api.searchDataSetTypes(sessionToken, searchCriteria, fetchOptions);
+
+        List<DataSetType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[DELETION_TEST_CONTAINER]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithOrOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        DataSetTypeSearchCriteria searchCriteria = new DataSetTypeSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withCode().thatContains("ELE");
+        searchCriteria.withCode().thatContains("CONT");
+        DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().sortBy().code();
+
+        SearchResult<DataSetType> searchResult = v3api.searchDataSetTypes(sessionToken, searchCriteria, fetchOptions);
+
+        List<DataSetType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[CONTAINER_TYPE, DELETION_TEST, DELETION_TEST_CONTAINER, VALIDATED_CONTAINER_TYPE]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchAllWithVocabularies()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

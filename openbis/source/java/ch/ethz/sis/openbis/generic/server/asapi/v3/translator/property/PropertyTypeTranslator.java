@@ -17,10 +17,14 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
@@ -30,6 +34,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnot
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationResults;
+import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 
 /**
@@ -117,6 +122,7 @@ public class PropertyTypeTranslator extends AbstractCachingTranslator<Long, Prop
         result.setSchema(baseRecord.schema);
         result.setTransformation(baseRecord.transformation);
         result.setRegistrationDate(baseRecord.registration_timestamp);
+        result.setMetaData(getMetaData(baseRecord));
 
         if (fetchOptions.hasVocabulary())
         {
@@ -142,6 +148,22 @@ public class PropertyTypeTranslator extends AbstractCachingTranslator<Long, Prop
             result.getFetchOptions().withSemanticAnnotationsUsing(fetchOptions.withSemanticAnnotations());
         }
 
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> getMetaData(PropertyTypeRecord baseRecord)
+    {
+        if (baseRecord.meta_data == null)
+        {
+            return new HashMap<>();
+        }
+        try
+        {
+            return new ObjectMapper().readValue(baseRecord.meta_data.getBytes("UTF-8"), HashMap.class);
+        } catch (Exception e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
     }
 
 }

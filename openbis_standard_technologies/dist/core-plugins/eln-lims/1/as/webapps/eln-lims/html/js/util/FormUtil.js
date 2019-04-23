@@ -739,8 +739,12 @@ var FormUtil = new function() {
 	//
 	// Form Fields
 	//
-	this._getBooleanField = function(id, alt) {
-		return $('<div>', {'class' : 'checkbox'}).append($('<label>').append($('<input>', {'type' : 'checkbox', 'id' : id, 'alt' : alt, 'placeholder' : alt })));
+	this._getBooleanField = function(id, alt, checked) {
+		var attr = {'type' : 'checkbox', 'id' : id, 'alt' : alt, 'placeholder' : alt };
+		if(checked) {
+			attr['checked'] = '';
+		}
+		return $('<div>', {'class' : 'checkbox'}).append($('<label>').append($('<input>', attr)));
 	}
 	
 	this.getDropDownForTerms = function(id, terms, alt, isRequired) {
@@ -1492,82 +1496,161 @@ var FormUtil = new function() {
 	
 	this.showFreezeForm = function(entityType, permId) {
 		var _this = this;
-		var $window = $('<form>', {
-			'action' : 'javascript:void(0);'
-		});
 		
-		$window.append($('<legend>').append("Freeze Entity"));
+		Util.blockUI();
 		
-		//
-		// Warning
-		//
-		$window.append($("<p>")
-				.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-				.append(" Enter your password to freeze the entity, after is frozen no more changes will be allowed:"));
+		var parameters = {
+				"method" : "freezelist",
+				"sessionToken" : mainController.serverFacade.openbisServer.getSession(),
+				"entityType" : entityType,
+				"permId" : permId
+		}
 		
-		//
-		// Password
-		//
-		var $passField = FormUtil._getInputField('password', null, 'Password', null, true);
-		var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Password", null);
-		$window.append($passwordGroup);
-		
-		//
-		// Buttons
-		//
-		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
-
-		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
-		$btnCancel.click(function() {
-			Util.unblockUI();
-		});
-		
-		$window.append($('<br>'));
-		
-		$window.append($btnAccept).append('&nbsp;').append($btnCancel);
-		
-		var css = {
-				'text-align' : 'left',
-				'top' : '15%',
-				'width' : '70%',
-				'left' : '15%',
-				'right' : '20%',
-				'overflow' : 'hidden'
-		};
-		
-		$window.submit(function() {
-			var username = mainController.serverFacade.getUserId();
-			var password = $passField.val();
-			mainController.serverFacade.login(
-					username, 
-					password, 
-					function(data) { 
-						if(data.result == null) {
-							Util.showUserError('The given password is not correct.');
-						} else {
-							var sessionToken = data.result;
-							var parameters = {
-									"method" : "freeze",
-									"sessionToken" : sessionToken,
-									"entityType" : entityType,
-									"permId" : permId
-							}
-							mainController.serverFacade.customASService(parameters, function(result) {
-								if(result === "OK") {
-									Util.showSuccess("Freezing succeeded.", function() {
-										Util.unblockUI();
-									});
-								} else {
-									Util.showUserError('Freezing failed.', function() {
-										Util.unblockUI();
-									});
-								}
-							}, "freeze-api");
+		mainController.serverFacade.customASService(parameters, function(result) {
+			if(result.status === "OK") {
+				Util.unblockUI();
+				
+				var $window = $('<form>', {
+					'action' : 'javascript:void(0);'
+				});
+				
+				$window.append($('<legend>').append("Freeze Entity"));
+				
+				//
+				// List
+				//
+				$window.append($("<p>")
+						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
+						.append(" Choose the entities to freeze (all by default):"));
+				
+				var $table = $("<table>", { class : "popup-table" } )
+								.append($("<tr>")
+										.append($("<th>").append("Selected"))
+										.append($("<th>").append("Type"))
+										.append($("<th>").append("PermId"))
+										.append($("<th>").append("Name"))
+								);
+					
+				entityTypeOrder = ["Space", "Project", "Experiment", "Sample", "DataSet"];
+				entityMap = result.result;
+				for(var typeOrder = 0 ; typeOrder < entityTypeOrder.length ; typeOrder++) {
+					for (key in entityMap) {
+						entity = entityMap[key];
+						if(entity.type == entityTypeOrder[typeOrder]) {
+							$table.append($("<tr>")
+									.append($("<td>").append(_this._getBooleanField('freezing-form-' + key.replace("+", "-"), entity.displayName, true)))
+									.append($("<td>").append(entity.type))
+									.append($("<td>").append(entity.permId))
+									.append($("<td>").append(entity.displayName))
+							);
 						}
-					});
-			Util.blockUI();
-		});
-		
-		Util.blockUI($window, css);
+					}
+				}
+				
+				$window.append($table);
+				
+				//
+				// Warning
+				//
+				$window.append("<br>");
+				$window.append($("<p>")
+						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
+						.append(" Enter your password to freeze the entities, after they are frozen no more changes will be allowed:"));
+				
+				//
+				// Password
+				//
+				var $passField = FormUtil._getInputField('password', null, 'Password', null, true);
+				var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Password", null);
+				$window.append($passwordGroup);
+				
+				//
+				// Buttons
+				//
+				var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+
+				var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+				$btnCancel.click(function() {
+					Util.unblockUI();
+				});
+				
+				$window.append($('<br>'));
+				
+				$window.append($btnAccept).append('&nbsp;').append($btnCancel);
+				
+				$window.submit(function() {
+					var username = mainController.serverFacade.getUserId();
+					var password = $passField.val();					
+					mainController.serverFacade.login(
+							username, 
+							password, 
+							function(data) { 
+								if(data.result == null) {
+									Util.showUserError('The given password is not correct.');
+								} else {
+									var sessionToken = data.result;
+									
+									
+									for (key in entityMap) {
+										if(!$('#freezing-form-' + key.replace("+", "-"))[0].checked) {
+											delete entityMap[key];
+										}
+									}
+									
+									var parameters = {
+											"method" : "freeze",
+											"sessionToken" : sessionToken,
+											"freezeList" : entityMap
+									}
+									mainController.serverFacade.customASService(parameters, function(result) {
+										if(result.status === "OK") {
+											Util.showSuccess("Freezing succeeded.", function() {
+												Util.unblockUI();
+												switch(entityType) {
+													case "SPACE":
+														mainController.changeView('showSpacePage', permId);
+														break;
+													case "PROJECT":
+														mainController.changeView('showProjectPageFromPermId', permId);
+														break;
+													case "EXPERIMENT":
+														mainController.changeView('showExperimentPageFromPermId', permId);
+														break;
+													case "SAMPLE":
+														mainController.changeView('showViewSamplePageFromPermId', permId);
+														break;
+													case "DATASET":
+														mainController.changeView('showViewDataSetPageFromPermId', permId);
+														break;
+												}
+											});
+										} else {
+											Util.showUserError('Freezing failed.', function() {
+												Util.unblockUI();
+											});
+										}
+									}, "freeze-api");
+								}
+							});
+					Util.blockUI();
+				});
+					
+				var css = {
+						'text-align' : 'left',
+						'top' : '15%',
+						'width' : '70%',
+						'height' : '400px',
+						'left' : '15%',
+						'right' : '20%',
+						'overflow' : 'auto'
+				};
+				
+				Util.blockUI($window, css);
+			} else {
+				Util.showUserError('List of entities for freezing failed to .', function() {
+					Util.unblockUI();
+				});
+			}
+		}, "freeze-api");
 	}
 }

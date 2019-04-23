@@ -66,6 +66,44 @@ public class SearchExperimentTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithAndOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentTypeSearchCriteria searchCriteria = new ExperimentTypeSearchCriteria();
+        searchCriteria.withAndOperator();
+        searchCriteria.withCode().thatContains("I");
+        searchCriteria.withCode().thatContains("HCS");
+        ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
+
+        SearchResult<ExperimentType> searchResult = v3api.searchExperimentTypes(sessionToken, searchCriteria, fetchOptions);
+
+        List<ExperimentType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[SIRNA_HCS]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithOrOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentTypeSearchCriteria searchCriteria = new ExperimentTypeSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withCode().thatContains("I");
+        searchCriteria.withCode().thatContains("HCS");
+        ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();
+
+        SearchResult<ExperimentType> searchResult = v3api.searchExperimentTypes(sessionToken, searchCriteria, fetchOptions);
+
+        List<ExperimentType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[COMPOUND_HCS, DELETION_TEST, SIRNA_HCS]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchExactCode()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

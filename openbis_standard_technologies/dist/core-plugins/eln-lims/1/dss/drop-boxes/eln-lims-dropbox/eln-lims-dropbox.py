@@ -84,7 +84,7 @@ def process(transaction):
 			dataSet = transaction.createNewDataSet();
 		
 		if name is not None:
-			dataSet.setPropertyValue("NAME", name); #Set name if found
+			dataSet.setPropertyValue("$NAME", name); #Set name if found
 		
 		# Set sample or experiment
 		if sample is not None:

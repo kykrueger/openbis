@@ -39,7 +39,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
  * 
  * @author Franz-Josef Elmer
  */
-final class PathInfo
+public final class PathInfo
 {
     private static final List<PathInfo> NO_CHILDREN = Collections.emptyList();
 
@@ -87,7 +87,7 @@ final class PathInfo
         setChecksum(pathInfo, node.getInputStream(), computeChecksum, checksumType);
     }
     
-    static void setChecksum(PathInfo pathInfo, InputStream inputStream, boolean computeChecksum, String checksumType)
+    public static void setChecksum(PathInfo pathInfo, InputStream inputStream, boolean computeChecksum, String checksumType)
     {
         if (computeChecksum)
         {

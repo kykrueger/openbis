@@ -50,14 +50,14 @@ def process(context, parameters):
 	result = None;
 	
 	try:
-		if method == "freeze":
+		if method == "freezelist":
 			# 1. Get entity by type to verify existence and obtain its space code
 			sessionToken = parameters.get("sessionToken");
 			type = parameters.get("entityType");
 			permId = parameters.get("permId");
 			entity = getEntity(context.applicationService, sessionToken, type, permId);
 			spaceCode = getSpace(entity);
-	
+			
 			# 2. Verify that the user is an admin in such space
 			userId = sessionToken.split("-")[0];
 			isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode);
@@ -65,25 +65,36 @@ def process(context, parameters):
 			# 3. Create Freeze List
 			defaultFreezeList = getFreezeList(context.applicationService, sessionToken, entity, spaceCode);
 			
+			result = {
+				"status" : "OK",
+				"result" : defaultFreezeList
+			}
+		if method == "freeze":
 			# 4. Freeze
-			freezeOperations = getFreezeOperations(defaultFreezeList);
+			sessionToken = parameters.get("sessionToken");
+			freezeList = parameters.get("freezeList");
+			
+			# print "freezeList: " + str(freezeList)
+			freezeOperations = getFreezeOperations(freezeList);
 			
 			freezeOptions = SynchronousOperationExecutionOptions();
 			freezeOptions.setExecutionId(OperationExecutionPermId());
 			context.applicationService.executeOperations(sessionToken, freezeOperations, freezeOptions);
-		
-			# Debug Info
-			print "sessionToken: " + sessionToken
-			print "type: " + type
-			print "permId: " + permId
-			print "entity: " + str(entity)
-			print "spaceCode: " + spaceCode
-			print "userId: " + userId
-			print "isAdminOfSpace: " + str(isAdminOfSpace)
-			print "defaultFreezeList: " + str(defaultFreezeList)
-			print "freezeOperations: " + str(freezeOperations)
 			
-			result = "OK"
+			# Debug Info
+			# print "sessionToken: " + sessionToken
+			# print "type: " + type
+			# print "permId: " + permId
+			# print "entity: " + str(entity)
+			# print "spaceCode: " + spaceCode
+			# print "userId: " + userId
+			# print "isAdminOfSpace: " + str(isAdminOfSpace)
+			# print "freezeList: " + str(freezeList)
+			# print "freezeOperations: " + str(freezeOperations)
+			
+			result = {
+				"status" : "OK"
+			}
 	except Exception, value:
 		result = str(value)
 	return result;

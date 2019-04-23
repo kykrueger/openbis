@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.AbstractEntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -24,6 +25,16 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 public class SampleTypeSearchCriteria extends AbstractEntityTypeSearchCriteria
 {
     private static final long serialVersionUID = 1L;
+
+    public SampleTypeSearchCriteria withOrOperator()
+    {
+        return (SampleTypeSearchCriteria) withOperator(SearchOperator.OR);
+    }
+
+    public SampleTypeSearchCriteria withAndOperator()
+    {
+        return (SampleTypeSearchCriteria) withOperator(SearchOperator.AND);
+    }
 
     public ListableSampleTypeSearchCriteria withListable()
     {

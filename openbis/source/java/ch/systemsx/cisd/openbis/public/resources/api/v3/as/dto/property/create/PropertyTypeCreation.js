@@ -14,6 +14,7 @@ define([ "stjs" ], function(stjs) {
 		prototype.materialTypeId = null;
 		prototype.schema = null;
 		prototype.transformation = null;
+		prototype.metaData = null;
 
 		prototype.getCode = function() {
 			return this.code;
@@ -74,6 +75,12 @@ define([ "stjs" ], function(stjs) {
 		};
 		prototype.setTransformation = function(transformation) {
 			this.transformation = transformation;
+		};
+		prototype.getMetaData = function() {
+			return this.metaData;
+		};
+		prototype.setMetaData = function(metaData) {
+			this.metaData = metaData;
 		};
 	}, {
 		dataType : "DataType",
