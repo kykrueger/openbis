@@ -31,3 +31,35 @@ SELECT unfreeze('PROJECT', '20190315142144019-2');
 SELECT unfreeze('EXPERIMENT', '20190315142144019-8');
 SELECT unfreeze('SAMPLE', '20190315142144019-15');
 SELECT unfreeze('DATA_SET', '20190315150656866-20');
+
+
+CREATE OR REPLACE FUNCTION unfreeze_all() RETURNS INT LANGUAGE plpgsql AS $$
+DECLARE
+	numberOfUpdates INT := 0;
+	partialNumberOfUpdates INT := 0;
+BEGIN
+	UPDATE spaces SET frozen = FALSE, frozen_for_proj = FALSE, frozen_for_samp = FALSE;
+	GET DIAGNOSTICS partialNumberOfUpdates = ROW_COUNT;
+	numberOfUpdates := numberOfUpdates + partialNumberOfUpdates;
+	
+	UPDATE projects SET frozen = FALSE, frozen_for_exp = FALSE, frozen_for_samp = FALSE;
+	GET DIAGNOSTICS partialNumberOfUpdates = ROW_COUNT;
+	numberOfUpdates := numberOfUpdates + partialNumberOfUpdates;
+	
+	UPDATE experiments_all SET frozen = FALSE, frozen_for_samp = FALSE, frozen_for_data = FALSE;
+	GET DIAGNOSTICS partialNumberOfUpdates = ROW_COUNT;
+	numberOfUpdates := numberOfUpdates + partialNumberOfUpdates;
+	
+	UPDATE samples_all SET frozen = FALSE, frozen_for_comp = FALSE, frozen_for_children = FALSE, frozen_for_parents = FALSE, frozen_for_data = FALSE;
+	GET DIAGNOSTICS partialNumberOfUpdates = ROW_COUNT;
+	numberOfUpdates := numberOfUpdates + partialNumberOfUpdates;
+	
+	UPDATE data_all SET frozen = FALSE, frozen_for_children = FALSE, frozen_for_parents = FALSE, frozen_for_comps = FALSE, frozen_for_conts = FALSE;
+	GET DIAGNOSTICS partialNumberOfUpdates = ROW_COUNT;
+	numberOfUpdates := numberOfUpdates + partialNumberOfUpdates;
+	
+	RETURN numberOfUpdates;
+END
+$$;
+
+SELECT unfreeze_all();
