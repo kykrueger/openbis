@@ -28,6 +28,7 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.etlserver.IDataSetPathsInfoFeeder;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
+import ch.systemsx.cisd.openbis.dss.generic.shared.dto.PathInfo;
 
 /**
  * Data set paths info feeder feeding a data base.

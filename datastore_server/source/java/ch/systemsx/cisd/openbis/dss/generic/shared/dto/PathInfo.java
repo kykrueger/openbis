@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.systemsx.cisd.etlserver.path;
+package ch.systemsx.cisd.openbis.dss.generic.shared.dto;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +43,7 @@ public final class PathInfo
 {
     private static final List<PathInfo> NO_CHILDREN = Collections.emptyList();
 
-    static PathInfo createPathInfo(IHierarchicalContentNode node, boolean computeChecksum, String checksumType)
+    public static PathInfo createPathInfo(IHierarchicalContentNode node, boolean computeChecksum, String checksumType)
     {
         if (node.exists() == false)
         {
