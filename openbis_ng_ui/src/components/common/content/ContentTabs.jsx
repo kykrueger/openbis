@@ -20,8 +20,8 @@ const styles = {
     minHeight: '48px'
   },
   iconRoot: {
-    paddingLeft: '10px',
-    paddingRight: '20px'
+    paddingLeft: '6px',
+    paddingRight: '12px'
   }
 }
 

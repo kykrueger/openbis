@@ -14,7 +14,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
-    width: '600px',
+    width: '100px',
     margin: '0px 12px'
   },
   component: {
