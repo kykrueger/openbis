@@ -8,20 +8,20 @@ import logger from '../../../common/logger.js'
 
 const styles = {
   tabRoot: {
-    'text-transform': 'none'
+    textTransform: 'none'
   },
   tabWrapper: {
-    'flex-direction': 'row-reverse'
+    flexDirection: 'row-reverse'
   },
   tabLabelContainer: {
-    'padding-right': '0px'
+    paddingRight: '0px'
   },
   tabLabelIcon: {
-    'min-height': '48px'
+    minHeight: '48px'
   },
   iconRoot: {
-    'padding-left': '10px',
-    'padding-right': '20px'
+    paddingLeft: '10px',
+    paddingRight: '20px'
   }
 }
 
@@ -45,8 +45,8 @@ class ContentTabs extends React.Component {
     return (
       <Tabs
         value={_.findIndex(this.props.objects, this.props.selectedObject)}
-        variant="scrollable"
-        scrollButtons="auto"
+        scrollable
+        scrollButtons="off"
         onChange={this.handleTabChange}
       >
         {this.props.objects.map(object =>

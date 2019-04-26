@@ -15,7 +15,7 @@ const styles = {
     margin: '0px 8px'
   },
   text: {
-    'margin-left': '-16px'
+    marginLeft: '-16px'
   }
 }
 

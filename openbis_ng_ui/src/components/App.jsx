@@ -3,6 +3,7 @@ import _ from 'lodash'
 import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../common/logger.js'
+import * as util from '../common/util.js'
 import * as pages from '../store/consts/pages.js'
 import * as actions from '../store/actions/actions.js'
 import * as selectors from '../store/selectors/selectors.js'
@@ -16,8 +17,18 @@ import Users from './users/Users.jsx'
 import Types from './types/Types.jsx'
 
 const styles = {
+  container: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  page: {
+    flex: '1 1 100%',
+    display: 'flex',
+    overflow: 'hidden'
+  },
   visible: {
-    display: 'block'
+    display: 'flex'
   },
   hidden: {
     display: 'none',
@@ -68,13 +79,13 @@ class App extends React.Component {
 
     if(this.props.session){
       return (
-        <div>
+        <div className={classes.container}>
           <Menu/>
           {
             _.map(pageToComponent, (PageComponent, page) => {
               let visible = this.props.currentPage === page
               return (
-                <div key={page} className={visible ? classes.visible : classes.hidden}>
+                <div key={page} className={util.classNames(classes.page, visible ? classes.visible : classes.hidden)}>
                   <PageComponent />
                 </div>
               )

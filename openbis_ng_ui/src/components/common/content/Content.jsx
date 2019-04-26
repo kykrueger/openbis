@@ -11,13 +11,18 @@ import ContentTabs from './ContentTabs.jsx'
 
 const styles = {
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    width: '600px',
     margin: '0px 12px'
   },
   component: {
-    margin: '12px 0px'
+    margin: '12px 0px',
+    overflowY: 'auto'
   },
   visible: {
-    display: 'block'
+    display: 'flex'
   },
   hidden: {
     display: 'none',

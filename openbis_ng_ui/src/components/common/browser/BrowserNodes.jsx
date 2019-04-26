@@ -3,9 +3,14 @@ import {withStyles} from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import BrowserNode from './BrowserNode.jsx'
 import logger from '../../../common/logger.js'
+import * as util from '../../../common/util.js'
 
 const styles = () => ({
-  browserList: {
+  container: {
+    flex: '1 1 100%',
+    overflowY: 'auto'
+  },
+  list: {
     paddingTop: '0',
     paddingBottom: '0',
   },
@@ -18,20 +23,22 @@ class BrowserNodes extends React.Component {
 
     const classes = this.props.classes
 
-    return (<List className={classes.browserList}>
-      {
-        this.props.nodes.map(node => {
-          return <BrowserNode
-            key={node.id}
-            node={node}
-            nodeSelect={this.props.nodeSelect}
-            nodeCollapse={this.props.nodeCollapse}
-            nodeExpand={this.props.nodeExpand}
-            level={this.props.level}
-          />
-        })
-      }
-    </List>)
+    return (
+      <List className={util.classNames(classes.list, this.props.level === 0 ? classes.container : null)}>
+        {
+          this.props.nodes.map(node => {
+            return <BrowserNode
+              key={node.id}
+              node={node}
+              nodeSelect={this.props.nodeSelect}
+              nodeCollapse={this.props.nodeCollapse}
+              nodeExpand={this.props.nodeExpand}
+              level={this.props.level}
+            />
+          })
+        }
+      </List>
+    )
   }
 
 }

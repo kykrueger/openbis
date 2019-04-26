@@ -14,7 +14,7 @@ import * as pages from '../../../store/consts/pages.js'
 
 const styles = () => ({
   tabs: {
-    'flex-grow': '8',
+    flexGrow: 1,
   }
 })
 

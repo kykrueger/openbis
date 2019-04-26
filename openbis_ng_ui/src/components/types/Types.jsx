@@ -13,8 +13,9 @@ import DataSetType from './dataSetType/DataSetType.jsx'
 import MaterialType from './materialType/MaterialType.jsx'
 
 const styles = () => ({
-  pageContainer: {
-    display: 'flex'
+  container: {
+    display: 'flex',
+    width: '100%'
   },
 })
 
@@ -33,7 +34,7 @@ class Types extends React.Component {
     const classes = this.props.classes
 
     return (
-      <div className={classes.pageContainer}>
+      <div className={classes.container}>
         <Browser page={pages.TYPES}/>
         <Content page={pages.TYPES} objectTypeToComponent={objectTypeToComponent}/>
       </div>

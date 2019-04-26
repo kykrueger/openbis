@@ -11,8 +11,9 @@ import User from './user/User.jsx'
 import Group from './group/Group.jsx'
 
 const styles = () => ({
-  pageContainer: {
-    display: 'flex'
+  container: {
+    display: 'flex',
+    width: '100%'
   },
 })
 
@@ -29,7 +30,7 @@ class Users extends React.Component {
     const classes = this.props.classes
 
     return (
-      <div className={classes.pageContainer}>
+      <div className={classes.container}>
         <Browser page={pages.USERS}/>
         <Content page={pages.USERS} objectTypeToComponent={objectTypeToComponent}/>
       </div>

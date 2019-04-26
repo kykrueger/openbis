@@ -1,3 +1,3 @@
 export function classNames(...classNames){
-  return classNames.join(' ')
+  return classNames.filter(className => className).join(' ')
 }

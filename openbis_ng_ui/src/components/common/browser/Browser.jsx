@@ -11,7 +11,9 @@ import BrowserNodes from './BrowserNodes.jsx'
 
 const styles = {
   container: {
-    'min-width': '300px'
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: '300px'
   }
 }
 
