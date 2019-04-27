@@ -1,6 +1,6 @@
 import React from 'react'
 import { mount } from 'enzyme'
-import Browser from '../../../src/components/browser/Browser.jsx'
+import Browser from '../../../src/components/common/browser/Browser.jsx'
 import { facade, dto } from '../../../src/services/openbis.js'
 import * as actions from '../../../src/store/actions/actions.js'
 import * as pages from '../../../src/store/consts/pages.js'
@@ -33,10 +33,9 @@ describe('browser', () => {
       }
     })
 
-    store.dispatch(actions.currentPageChange(pages.USERS))
-    store.dispatch(actions.browserInit(pages.USERS))
+    store.dispatch(actions.init())
 
-    let wrapper = mount(<Browser store={store}/>)
+    let wrapper = mount(<Browser store={store} page={pages.USERS}/>)
     expectFilter(wrapper, '')
     expectNodes(wrapper, [
       { level: 0, text: 'Users'},
