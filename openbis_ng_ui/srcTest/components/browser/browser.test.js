@@ -36,6 +36,7 @@ describe('browser', () => {
     store.dispatch(actions.init())
 
     let wrapper = mount(<Browser store={store} page={pages.USERS}/>)
+
     expectFilter(wrapper, '')
     expectNodes(wrapper, [
       { level: 0, text: 'Users'},
@@ -43,6 +44,7 @@ describe('browser', () => {
     ])
 
     simulateNodeIconClick(wrapper, 'users')
+    wrapper.update()
 
     expectFilter(wrapper, '')
     expectNodes(wrapper, [
@@ -70,7 +72,7 @@ describe('browser', () => {
 function simulateNodeIconClick(wrapper, id){
   wrapper.findWhere(node => {
     return node.name() === 'BrowserNode' && node.prop('node').id === id
-  }).find('ListItemIcon').first().simulate('click')
+  }).find('ListItemIcon').find('SvgIcon').first().simulate('click')
 }
 
 function simulateFilterChange(wrapper, filter){

@@ -45,7 +45,7 @@ class ContentTabs extends React.Component {
     return (
       <Tabs
         value={_.findIndex(this.props.objects, this.props.selectedObject)}
-        scrollable
+        variant="scrollable"
         scrollButtons="off"
         onChange={this.handleTabChange}
       >
