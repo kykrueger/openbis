@@ -137,8 +137,7 @@ class RemoteFastDownloadServer implements IDownloadServer
                             ParameterBuilder builder = new ParameterBuilder()
                                     .method(FastDownloadMethod.DOWNLOAD_METHOD)
                                     .downloadSession(downloadSessionId)
-                                    .downloadStream(streamId)
-                                    .numberOfChunks(1);
+                                    .downloadStream(streamId);
                             Request request = createRequest(builder.parameters);
                             try
                             {
