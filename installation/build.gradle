@@ -52,13 +52,16 @@ println "installerDir:${installerDistDir}"
 println "buildDir:${buildDir}"
 println "installer:${project.projectDir}/resource/installer"
 
-task copyResources(type: Copy, dependsOn: [compileJava, ':openbis_standard_technologies:zip', ':openbis_standard_technologies:zipDss', 'openbis_standard_technologies:zipBdlServer']) { 
+task copyResources(type: Copy, dependsOn: [compileJava, ':openbis_standard_technologies:zip', ':openbis_standard_technologies:zipDss', 'openbis_standard_technologies:zipBdlServer']) {
     from "${project.projectDir}/resource/installer"
     from "${project.projectDir}/../openbis_standard_technologies/dist/tarball/installer"
     from zipTree(project(':openbis_standard_technologies').zipDss.archivePath)
     into installerDistDir
     from zipTree(project(':openbis_standard_technologies').zipBdlServer.archivePath)
     into installerDistDir
+    from ("${buildDir}/classes/main/InstallerVariableAccess.class") {
+        into 'bin'
+    }
     from (zipTree(project(':openbis_standard_technologies').zip.archivePath)) {
         into "openBIS-server"
     }
