@@ -16,6 +16,12 @@ if [ ${BASE#/} == ${BASE} ]; then
     BASE="`pwd`/${BASE}"
 fi
 
+INSTALLER_JAR=`ps aux|grep openBIS-installer.jar|grep -v grep|awk '{for(i=1;i<=NF;i++){if($i~/openBIS-installer\.jar/){print $i}}}'`
+OPENBIS_UPGRADE_VERSION_NUMBER=`java -cp $BASE InstallerVariableAccess $INSTALLER_JAR version.number`
+OPENBIS_UPGRADE_REVISION_NUMBER=`java -cp $BASE InstallerVariableAccess $INSTALLER_JAR revision.number`
+echo "existing version: $OPENBIS_VERSION_NUMBER:$OPENBIS_UPGRADE_NUMBER"
+echo "installer jar: $INSTALLER_JAR, version: $OPENBIS_UPGRADE_VERSION_NUMBER:$OPENBIS_UPGRADE_REVISION_NUMBER"
+
 BACKUP_DIR=$1
 if [ "$BACKUP_DIR" == "" ]; then
 	echo ERROR: directory in which configuration should be stored has not been specified! 

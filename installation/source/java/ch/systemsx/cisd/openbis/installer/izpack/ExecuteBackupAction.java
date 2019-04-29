@@ -48,6 +48,8 @@ public class ExecuteBackupAction extends AbstractScriptExecutor
 
         Map<String, String> env = new HashMap<String, String>();
         env.put("PGPASSWORD", password == null ? "" : password);
+        env.put("OPENBIS_VERSION_NUMBER", data.getVariable("VERSION_NUMBER"));
+        env.put("OPENBIS_REVISION_NUMBER", data.getVariable("REVESION_NUMBER"));
 
         if (dataBasesToBackup == null)
         {
