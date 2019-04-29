@@ -17,10 +17,17 @@ if [ ${BASE#/} == ${BASE} ]; then
 fi
 
 INSTALLER_JAR=`ps aux|grep openBIS-installer.jar|grep -v grep|awk '{for(i=1;i<=NF;i++){if($i~/openBIS-installer\.jar/){print $i}}}'`
-OPENBIS_UPGRADE_VERSION_NUMBER=`java -cp $BASE InstallerVariableAccess $INSTALLER_JAR version.number`
-OPENBIS_UPGRADE_REVISION_NUMBER=`java -cp $BASE InstallerVariableAccess $INSTALLER_JAR revision.number`
-echo "existing version: $OPENBIS_VERSION_NUMBER:$OPENBIS_UPGRADE_NUMBER"
-echo "installer jar: $INSTALLER_JAR, version: $OPENBIS_UPGRADE_VERSION_NUMBER:$OPENBIS_UPGRADE_REVISION_NUMBER"
+UPGRADE_VERSION=`java -cp $BASE InstallerVariableAccess $INSTALLER_JAR version.number`
+UPGRADE_REVISION=`java -cp $BASE InstallerVariableAccess $INSTALLER_JAR revision.number`
+BUILD_INFO=`cat BUILD-installation.INFO`
+VERSION_REVISION=${BUILD_INFO%*:*}
+VERSION=${VERSION_REVISION%:*}
+REVISION=${VERSION_REVISION#*:}
+echo "existing version: $VERSION-r$REVISION"
+echo "installer jar: $INSTALLER_JAR, version: $UPGRADE_VERSION-r$UPGRADE_REVISION"
+if [[ $UPGRADE_VERSION < $VERSION || ($UPGRADE_VERSION == $VERSION && $UPGRADE_REVISION .lt. $REVISION)]]; then
+    echo "ERROR: Can not upgrade to an older version: Current version is $VERSION-r$REVISION and upgrade version is $UPGRADE_VERSION-r$UPGRADE_REVISION"
+fi
 
 BACKUP_DIR=$1
 if [ "$BACKUP_DIR" == "" ]; then
