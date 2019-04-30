@@ -28,11 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.FutureResponseListener;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -137,6 +141,7 @@ class RemoteFastDownloadServer implements IDownloadServer
                             ParameterBuilder builder = new ParameterBuilder()
                                     .method(FastDownloadMethod.DOWNLOAD_METHOD)
                                     .downloadSession(downloadSessionId)
+                                    .numberOfChunks(1000)
                                     .downloadStream(streamId);
                             Request request = createRequest(builder.parameters);
                             try
@@ -187,7 +192,8 @@ class RemoteFastDownloadServer implements IDownloadServer
     {
         try
         {
-            ContentResponse response = request.send();
+            ContentResponse response = send(request);
+//            ContentResponse response = request.send();
             String mediaType = response.getMediaType();
             if (mediaType != null && mediaType.equals("application/json"))
             {
@@ -202,6 +208,32 @@ class RemoteFastDownloadServer implements IDownloadServer
         } catch (Exception e)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
+    }
+
+    private ContentResponse send(Request request) throws InterruptedException, TimeoutException, ExecutionException
+    {
+        FutureResponseListener listener = new FutureResponseListener(request, (int) (FileUtils.ONE_GB));
+        request.send(listener);
+        // The following code has been copied from HttpRequest.send()
+        try
+        {
+            return listener.get();
+        } catch (ExecutionException x)
+        {
+            if (x.getCause() instanceof TimeoutException)
+            {
+                TimeoutException t = (TimeoutException) (x.getCause());
+                request.abort(t);
+                throw t;
+            }
+
+            request.abort(x);
+            throw x;
+        } catch (Throwable x)
+        {
+            request.abort(x);
+            throw x;
         }
     }
 
