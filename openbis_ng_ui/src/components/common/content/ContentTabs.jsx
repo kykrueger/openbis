@@ -7,21 +7,26 @@ import CloseIcon from '@material-ui/icons/Close'
 import logger from '../../../common/logger.js'
 
 const styles = {
+  tabsRoot: {
+    height: '48px'
+  },
+  tabsScrollable: {
+    overflow: 'auto',
+    marginBottom: '0px !important'
+  },
+  tabsScrollButtons: {
+    height: '48px'
+  },
   tabRoot: {
     textTransform: 'none'
   },
-  tabWrapper: {
-    flexDirection: 'row-reverse'
-  },
-  tabLabelContainer: {
-    paddingRight: '0px'
-  },
-  tabLabelIcon: {
-    minHeight: '48px'
-  },
   iconRoot: {
-    paddingLeft: '6px',
-    paddingRight: '12px'
+    marginLeft: '6px',
+  },
+  tabLabel: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    marginRight: '-16px'
   }
 }
 
@@ -46,23 +51,28 @@ class ContentTabs extends React.Component {
       <Tabs
         value={_.findIndex(this.props.objects, this.props.selectedObject)}
         variant="scrollable"
-        scrollButtons="off"
+        scrollButtons="on"
+        classes={{
+          root: classes.tabsRoot,
+          scrollable: classes.tabsScrollable,
+          scrollButtons: classes.tabsScrollButtons
+        }}
         onChange={this.handleTabChange}
       >
         {this.props.objects.map(object =>
           <Tab key={`${object.type}/${object.id}`}
-            label={object.id}
-            icon={this.renderIcon(object)}
+            label={this.renderLabel(object)}
             classes={{
-              root: classes.tabRoot,
-              wrapper: classes.tabWrapper,
-              labelContainer: classes.tabLabelContainer,
-              labelIcon: classes.tabLabelIcon
+              root: classes.tabRoot
             }}
           />
         )}
       </Tabs>
     )
+  }
+
+  renderLabel(object){
+    return <span className={this.props.classes.tabLabel}>{object.id}{this.renderIcon(object)}</span>
   }
 
   renderIcon(object){

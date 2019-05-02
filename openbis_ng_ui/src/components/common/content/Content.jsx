@@ -14,12 +14,12 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
-    width: '100px',
-    margin: '0px 12px'
+    width: '100px'
   },
   component: {
-    margin: '12px 0px',
-    overflowY: 'auto'
+    margin: '12px 0px 0px 12px',
+    overflowY: 'auto',
+    flex: '1 1 100%'
   },
   visible: {
     display: 'flex'
