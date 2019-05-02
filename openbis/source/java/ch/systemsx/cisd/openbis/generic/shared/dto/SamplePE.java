@@ -379,7 +379,6 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
         if (space != null)
         {
             spaceFrozen = space.isFrozen() && space.isFrozenForSample();
-            
         }
     }
 
@@ -387,6 +386,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @Column(name = ColumnNames.SPACE_FROZEN_COLUMN, nullable = false)
     public boolean isSpaceFrozen()
     {
+        if (space != null)
+        {
+            spaceFrozen = space.isFrozen() && space.isFrozenForSample();
+        }
         return spaceFrozen;
     }
 
@@ -533,6 +536,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @Column(name = ColumnNames.CONTAINER_FROZEN_COLUMN, nullable = false)
     public boolean isContainerFrozen()
     {
+        if (container != null)
+        {
+            containerFrozen = container.isFrozen() && container.isFrozenForComponent();
+        }
         return containerFrozen;
     }
 
@@ -628,6 +635,10 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @Column(name = ColumnNames.PROJECT_FROZEN_COLUMN, nullable = false)
     public boolean isProjectFrozen()
     {
+        if (project != null)
+        {
+            projectFrozen = project.isFrozen() && project.isFrozenForSample();
+        }
         return projectFrozen;
     }
 
@@ -687,11 +698,19 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
     @Column(name = ColumnNames.EXPERIMENT_FROZEN_COLUMN, nullable = false)
     public boolean isExperimentFrozen()
     {
+        if (experiment != null)
+        {
+            experimentFrozen = experiment.isFrozen() && experiment.isFrozenForSample();
+        }
         return experimentFrozen;
     }
 
     public void setExperimentFrozen(boolean experimentFrozen)
     {
+        if (experiment != null)
+        {
+            experimentFrozen = experiment.isFrozen() && experiment.isFrozenForSample();
+        }
         this.experimentFrozen = experimentFrozen;
     }
 

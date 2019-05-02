@@ -25,23 +25,23 @@ buildscript {
     repositories repositoryConfig
     
     dependencies {
-        classpath 'izpack:izpack:+', 
-            'apache:commons-io:+',
-            'apache:commons-lang:+'
+        classpath 'izpack:izpack:5.0-beta9-SNAPSHOT', 
+            'apache:commons-io:2.6',
+            'apache:commons-lang:2.4'
     }
 }
 
 dependencies {
     compile project(':common')
     
-    compile 'izpack:izpack:+'
+    compile 'izpack:izpack:5.0-beta9-SNAPSHOT'
     
     testCompile project(path: ':common', configuration: 'tests')
     
-    archives 'apache:commons-io:+',
-            'apache:log4j:+',
-            'sis:sis-base:+',
-            'postgresql:postgresql:+'
+    archives 'apache:commons-io:2.6',
+            'apache:log4j:1.2.15',
+            'sis:sis-base:18.09.0',
+            'postgresql:postgresql:42.1.4.jre7'
             
 }
 
@@ -52,13 +52,19 @@ println "installerDir:${installerDistDir}"
 println "buildDir:${buildDir}"
 println "installer:${project.projectDir}/resource/installer"
 
-task copyResources(type: Copy, dependsOn: [compileJava, ':openbis_standard_technologies:zip', ':openbis_standard_technologies:zipDss', 'openbis_standard_technologies:zipBdlServer']) { 
+task copyResources(type: Copy, dependsOn: [compileJava, ':openbis_standard_technologies:zip', ':openbis_standard_technologies:zipDss', 'openbis_standard_technologies:zipBdlServer']) {
     from "${project.projectDir}/resource/installer"
     from "${project.projectDir}/../openbis_standard_technologies/dist/tarball/installer"
     from zipTree(project(':openbis_standard_technologies').zipDss.archivePath)
     into installerDistDir
     from zipTree(project(':openbis_standard_technologies').zipBdlServer.archivePath)
     into installerDistDir
+    from ("${installerDistDir}/../BUILD-installation.INFO") {
+        into 'bin'
+    }
+    from ("${buildDir}/classes/main/InstallerVariableAccess.class") {
+        into 'bin'
+    }
     from (zipTree(project(':openbis_standard_technologies').zip.archivePath)) {
         into "openBIS-server"
     }

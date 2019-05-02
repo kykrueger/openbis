@@ -37,14 +37,9 @@
     ${INSTALL_BIN_PATH}/init_database.sh pathinfo_prod openbis
   </div> 
 
-  Imaging database (required only if technology 'screening' is enabled)
+  Imaging database (required only if technology 'microscopy' is enabled)
   <div class="sourcecode">
     ${INSTALL_BIN_PATH}/init_database.sh imaging_prod openbis
-  </div> 
-  
-  Proteomics database (required only if technology 'proteomics' is enabled)
-  <div class="sourcecode">
-    ${INSTALL_BIN_PATH}/init_database.sh proteomics_productive openbis
   </div> 
   
   <div class="text"> 
@@ -73,56 +68,6 @@
   </ol>
 
   <p></p>
-
-  <h4 class="proteomics">Proteomics</h4>
-
-  <p>Here are the steps to get an example prot.XML into openBIS.</p>
-
-  <ol>
-    <li>Log in to <a href="https://${HOSTNAME}:8443/openbis">openBIS</a> as admin.
-    </li>
-
-    <li>Open space browser by clicking on menu item Admin -&gt; Spaces.</li>
-
-    <li>Create a space named TEST by using Add Space button.</li>
-
-    <li>Create a project named PROT inside space TEST by using menu item New -&gt; Project.</li>
-
-    <li>At the console execute the command:
-
-      <div class="sourcecode">
-        cp -R ${DSS_ROOT_DIR}/examples/test+prot ${DSS_ROOT_DIR}/incoming-ms-search
-      </div>
-    </li>
-  </ol>
-
-  <div class="text">
-    It will create an collection in project /TEST/PROT which shows a list of proteins. We challenge you to go find it
-    in the running application !
-  </div>
-
-  <p></p>
-
-  <h4 class="screening">Screening</h4>You could import a minimalistic example by doing the following:
-
-  <ol>
-    <li>Log in to <a href="https://${HOSTNAME}:8443/openbis">openBIS</a> as admin.
-    </li>
-
-    <li>Open collection type browser by clicking on menu item Admin -&gt; Types -&gt; Collection Types.</li>
-
-    <li>Create collection type SIRNA_HCS.</li>
-
-    <li>At the console execute the command:
-
-      <div class="sourcecode">
-        cp -R ${DSS_ROOT_DIR}/examples/PLATE1 ${DSS_ROOT_DIR}/incoming-hcs
-      </div>
-
-      <div class="text"></div>
-    </li>
-  </ol>It will create a plate with code <em>PLATE</em> with images data for one of its wells. We challenge you to go find it in
-  the running application !
 
   <h4 class="illumina-ngs">Illumina NGS (ETH BSSE Setup)</h4>
 

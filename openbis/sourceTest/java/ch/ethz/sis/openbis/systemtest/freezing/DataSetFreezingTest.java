@@ -871,4 +871,56 @@ public class DataSetFreezingTest extends FreezingTest
         // Then
         assertEquals(getDataSet(id).getComponents().get(0).getCode(), DATA_SET_2);
     }
+
+    @Test
+    public void testFreezeContainerAndComponent()
+    {
+        // Given
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSet1);
+        dataSetUpdate.getComponentIds().add(dataSet2);
+        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
+        assertEquals(getDataSet(dataSet1).getComponents().get(0).getPermId(), dataSet2);
+        DataSetUpdate dataSetUpdate1 = new DataSetUpdate();
+        dataSetUpdate1.setDataSetId(dataSet1);
+        dataSetUpdate1.freeze();
+        dataSetUpdate1.freezeForComponents();
+        DataSetUpdate dataSetUpdate2 = new DataSetUpdate();
+        dataSetUpdate2.setDataSetId(dataSet2);
+        dataSetUpdate2.freeze();
+        dataSetUpdate2.freezeForContainers();
+        
+        // When
+        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate1, dataSetUpdate2));
+
+        // Then
+        assertEquals(getDataSet(dataSet1).isFrozen(), true);
+        assertEquals(getDataSet(dataSet2).isFrozen(), true);
+    }
+
+    @Test
+    public void testFreezeParentAndChild()
+    {
+        // Given
+        DataSetUpdate dataSetUpdate = new DataSetUpdate();
+        dataSetUpdate.setDataSetId(dataSet1);
+        dataSetUpdate.getChildIds().add(dataSet2);
+        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate));
+        assertEquals(getDataSet(dataSet1).getChildren().get(0).getPermId(), dataSet2);
+        DataSetUpdate dataSetUpdate1 = new DataSetUpdate();
+        dataSetUpdate1.setDataSetId(dataSet1);
+        dataSetUpdate1.freeze();
+        dataSetUpdate1.freezeForChildren();
+        DataSetUpdate dataSetUpdate2 = new DataSetUpdate();
+        dataSetUpdate2.setDataSetId(dataSet2);
+        dataSetUpdate2.freeze();
+        dataSetUpdate2.freezeForParents();
+
+        // When
+        v3api.updateDataSets(systemSessionToken, Arrays.asList(dataSetUpdate1, dataSetUpdate2));
+
+        // Then
+        assertEquals(getDataSet(dataSet1).isFrozen(), true);
+        assertEquals(getDataSet(dataSet2).isFrozen(), true);
+    }
 }

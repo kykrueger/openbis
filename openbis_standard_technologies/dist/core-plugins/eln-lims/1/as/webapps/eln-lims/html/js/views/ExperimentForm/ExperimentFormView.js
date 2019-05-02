@@ -112,24 +112,26 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
 			}
 			
-			//Edit
-			var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
-				mainController.changeView("showEditExperimentPageFromIdentifier", _this._experimentFormModel.experiment.identifier);
-			});
-			toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
-			
-			//Move
-			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-				var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId);
-				moveEntityController.init();
-			});
-			toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
-			
-			//Delete
-			var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
-				_this._experimentFormController.deleteExperiment(reason);
-			}, true);
-			toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
+			if(!_this._experimentFormModel.v3_experiment.frozen) {
+				//Edit
+				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+					mainController.changeView("showEditExperimentPageFromIdentifier", _this._experimentFormModel.experiment.identifier);
+				});
+				toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+				
+				//Move
+				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+					var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId);
+					moveEntityController.init();
+				});
+				toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+				
+				//Delete
+				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
+					_this._experimentFormController.deleteExperiment(reason);
+				}, true);
+				toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
+			}
 			
 			//Create Dataset
 			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {

@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.AbstractEntityTypeSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -29,6 +30,16 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 public class MaterialTypeSearchCriteria extends AbstractEntityTypeSearchCriteria
 {
     private static final long serialVersionUID = 1L;
+
+    public MaterialTypeSearchCriteria withOrOperator()
+    {
+        return (MaterialTypeSearchCriteria) withOperator(SearchOperator.OR);
+    }
+
+    public MaterialTypeSearchCriteria withAndOperator()
+    {
+        return (MaterialTypeSearchCriteria) withOperator(SearchOperator.AND);
+    }
 
     @Override
     protected SearchCriteriaToStringBuilder createBuilder()

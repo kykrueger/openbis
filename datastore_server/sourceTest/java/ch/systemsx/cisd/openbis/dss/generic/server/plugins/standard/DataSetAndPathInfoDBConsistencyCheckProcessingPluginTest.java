@@ -313,6 +313,8 @@ public class DataSetAndPathInfoDBConsistencyCheckProcessingPluginTest extends
                         oneOf(pathInfoChildNode).isChecksumCRC32Precalculated();
                         will(returnValue(false));
                     }
+                    allowing(fileChildNode).getChecksum();
+                    allowing(pathInfoChildNode).getChecksum();
                 }
 
                 protected void getChildFileLength()

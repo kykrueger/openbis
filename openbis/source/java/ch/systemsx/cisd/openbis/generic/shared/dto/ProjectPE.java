@@ -190,6 +190,10 @@ public final class ProjectPE extends AttachmentHolderPE implements Comparable<Pr
     @Column(name = ColumnNames.SPACE_FROZEN_COLUMN, nullable = false)
     public boolean isSpaceFrozen()
     {
+        if (space != null)
+        {
+            spaceFrozen = space.isFrozen() && space.isFrozenForProject();
+        }
         return spaceFrozen;
     }
 

@@ -16,11 +16,15 @@
 
 package ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,9 +34,12 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.util.Callback;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -121,56 +128,81 @@ class RemoteFastDownloadServer implements IDownloadServer
     public InputStream download(DownloadSessionId downloadSessionId, DownloadStreamId streamId, Integer numberOfChunksOrNull)
             throws InvalidUserSessionException, InvalidDownloadSessionException, InvalidDownloadStreamException, DownloadException
     {
+        ParameterBuilder builder = new ParameterBuilder()
+                .method(FastDownloadMethod.DOWNLOAD_METHOD)
+                .downloadSession(downloadSessionId)
+                .numberOfChunks(numberOfChunksOrNull)
+                .downloadStream(streamId);
+        Request request = createRequest(builder.parameters);
+        PipedInputStream pipedInputStream = new PipedInputStream((int) FileUtils.ONE_MB);
+        try
+        {
+            PipedOutputStream pipedOutputStream = new PipedOutputStream(pipedInputStream);
+            WritableByteChannel channel = Channels.newChannel(pipedOutputStream);
+            request.send(new Response.Listener.Adapter()
+                {
+                    @Override
+                    public void onContent(Response response, ByteBuffer content, Callback callback)
+                    {
+                        try
+                        {
+                            channel.write(content);
+                            callback.succeeded();
+                        } catch (IOException e)
+                        {
+                            callback.failed(e);
+                        }
+                    }
+
+                    @Override
+                    public void onSuccess(Response response)
+                    {
+                        try
+                        {
+                            channel.close();
+
+                        } catch (IOException e)
+                        {
+                            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Response response, Throwable failure)
+                    {
+                        try
+                        {
+                            channel.close();
+                        } catch (IOException e)
+                        {
+                            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+                        }
+                    }
+                });
+        } catch (Exception e)
+        {
+            throw CheckedExceptionTunnel.wrapIfNecessary(e);
+        }
         return new AbstractBulkInputStream()
             {
-                InputStream currentChunkStream = null;
-
-                int currentChunkNumber = 0;
-
                 @Override
                 public int read(byte[] b, int off, int len) throws IOException
                 {
-                    if (currentChunkStream == null)
+                    int numberOfBytesRead = 0;
+                    int offset = off;
+                    int numberOfBytesToRead = len;
+                    while (numberOfBytesRead < len)
                     {
-                        if (numberOfChunksOrNull == null || currentChunkNumber < numberOfChunksOrNull)
-                        {
-                            ParameterBuilder builder = new ParameterBuilder()
-                                    .method(FastDownloadMethod.DOWNLOAD_METHOD)
-                                    .downloadSession(downloadSessionId)
-                                    .downloadStream(streamId)
-                                    .numberOfChunks(1);
-                            Request request = createRequest(builder.parameters);
-                            try
-                            {
-                                ContentResponse response = sendAndCheckResponse(request);
-                                byte[] content = response.getContent();
-                                if (content.length > 0)
-                                {
-                                    currentChunkStream = new ByteArrayInputStream(content);
-                                    currentChunkNumber++;
-                                    return read(b, off, len);
-                                } else
-                                {
-                                    return -1;
-                                }
-                            } catch (Exception e)
-                            {
-                                throw CheckedExceptionTunnel.wrapIfNecessary(e);
-                            }
-                        } else
+                        int numberOBytes = pipedInputStream.read(b, offset, numberOfBytesToRead);
+                        if (numberOBytes < 0)
                         {
                             return -1;
                         }
-                    } else
-                    {
-                        int numberOfReadBytes = currentChunkStream.read(b, off, len);
-                        if (numberOfReadBytes < 0)
-                        {
-                            currentChunkStream = null;
-                            return read(b, off, len);
-                        }
-                        return numberOfReadBytes;
+                        numberOfBytesRead += numberOBytes;
+                        offset += numberOBytes;
+                        numberOfBytesToRead -= numberOBytes;
                     }
+                    return numberOfBytesRead;
                 }
             };
     }

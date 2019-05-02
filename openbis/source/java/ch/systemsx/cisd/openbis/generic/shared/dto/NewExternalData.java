@@ -83,7 +83,7 @@ public class NewExternalData implements Serializable
 
     private String samplePermIdOrNull;
 
-    private boolean h5Folders = true;
+    private boolean h5Folders = false;
 
     private boolean h5arFolders = true;
 

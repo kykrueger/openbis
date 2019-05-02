@@ -90,7 +90,7 @@ public final class ExternalDataPE extends DataPE
     // to have true initialy.
     private boolean storageConfirmation = false;
 
-    private boolean h5Folders = true;
+    private boolean h5Folders = false;
 
     private boolean h5arFolders = true;
 

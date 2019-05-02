@@ -45,6 +45,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.DssServiceRpcGenericFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IDssServiceRpcGenericFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBOnlyHierarchicalContentFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.dto.PathInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 
 /**
@@ -92,7 +93,7 @@ public class DataSetAndPathInfoDBConsistencyChecker
             checkDataSet(location.getDataSetCode());
         }
     }
-    
+
     public void checkDataSet(String dataSetCode)
     {
         dataSets.add(dataSetCode);
@@ -118,7 +119,8 @@ public class DataSetAndPathInfoDBConsistencyChecker
         {
             operationLog.error(
                     "Couldn't check consistency of the file system and the path info database for a data set: "
-                            + dataSetCode, e);
+                            + dataSetCode,
+                    e);
             status.addDatasetStatus(
                     dataSetCode,
                     Status.createError("Couldn't check consistency of the file system and the path info database for a data set: "
@@ -255,45 +257,76 @@ public class DataSetAndPathInfoDBConsistencyChecker
 
         if (fileNode.isDirectory() && pathInfoNode.isDirectory())
         {
-            Children children = new Children(fileNode, pathInfoNode);
-
-            // compare children nodes that exist both in the file system and the path info database
-            for (String commonPath : children.getCommonPaths())
-            {
-                compare(children.getFileNode(commonPath), children.getPathInfoNode(commonPath),
-                        diffs);
-            }
-
-            // report differences for nodes that exist only in one place
-            for (IHierarchicalContentNode uncommonNode : children.getFileUncommonNodes())
-            {
-                diffs.add(new NodeChildrenDifference(uncommonNode.getRelativePath(), true));
-            }
-            for (IHierarchicalContentNode uncommonNode : children.getPathInfoUncommonNodes())
-            {
-                diffs.add(new NodeChildrenDifference(uncommonNode.getRelativePath(), false));
-            }
+            compareDirectories(fileNode, pathInfoNode, diffs);
 
         } else if (fileNode.isDirectory() == false && pathInfoNode.isDirectory() == false)
         {
-            // check file lengths
-            if (fileNode.getFileLength() != pathInfoNode.getFileLength())
-            {
-                diffs.add(new SizeDifference(fileNode.getRelativePath(), fileNode
-                        .getFileLength(), pathInfoNode.getFileLength()));
-            }
-            // check checksums if stored in path Info db
-            if (pathInfoNode.isChecksumCRC32Precalculated()
-                    && (fileNode.getChecksumCRC32() != pathInfoNode.getChecksumCRC32()))
-            {
-                diffs.add(new ChecksumDifference(fileNode.getRelativePath(), fileNode
-                        .getChecksumCRC32(), pathInfoNode.getChecksumCRC32()));
-            }
+            compareFiles(fileNode, pathInfoNode, diffs);
         } else
         {
             // report a difference if one node is a directory and the other is a file
             diffs.add(new DirectoryDifference(fileNode.getRelativePath(), fileNode
                     .isDirectory()));
+        }
+    }
+
+    private void compareDirectories(IHierarchicalContentNode fileNode, IHierarchicalContentNode pathInfoNode, List<Difference> diffs)
+    {
+        Children children = new Children(fileNode, pathInfoNode);
+
+        // compare children nodes that exist both in the file system and the path info database
+        for (String commonPath : children.getCommonPaths())
+        {
+            compare(children.getFileNode(commonPath), children.getPathInfoNode(commonPath),
+                    diffs);
+        }
+
+        // report differences for nodes that exist only in one place
+        for (IHierarchicalContentNode uncommonNode : children.getFileUncommonNodes())
+        {
+            diffs.add(new NodeChildrenDifference(uncommonNode.getRelativePath(), true));
+        }
+        for (IHierarchicalContentNode uncommonNode : children.getPathInfoUncommonNodes())
+        {
+            diffs.add(new NodeChildrenDifference(uncommonNode.getRelativePath(), false));
+        }
+    }
+
+    private void compareFiles(IHierarchicalContentNode fileNode, IHierarchicalContentNode pathInfoNode, List<Difference> diffs)
+    {
+        // check file lengths
+        if (fileNode.getFileLength() != pathInfoNode.getFileLength())
+        {
+            diffs.add(new SizeDifference(fileNode.getRelativePath(), fileNode
+                    .getFileLength(), pathInfoNode.getFileLength()));
+        }
+        // check CRC32 checksums if stored in path Info db
+        if (pathInfoNode.isChecksumCRC32Precalculated()
+                && (fileNode.getChecksumCRC32() != pathInfoNode.getChecksumCRC32()))
+        {
+            diffs.add(new CRC32Difference(fileNode.getRelativePath(), fileNode
+                    .getChecksumCRC32(), pathInfoNode.getChecksumCRC32()));
+        }
+        // check other checksum (if defined)
+        if (pathInfoNode.getChecksum() != null)
+        {
+            String pathInfoChecksum = pathInfoNode.getChecksum();
+            String checksum = fileNode.getChecksum();
+            if (checksum == null)
+            {
+                String[] splittedPathInfoChecksum = pathInfoChecksum.split(":");
+                if (splittedPathInfoChecksum.length > 1)
+                {
+
+                    PathInfo pathInfo = new PathInfo();
+                    PathInfo.setChecksum(pathInfo, fileNode.getInputStream(), true, splittedPathInfoChecksum[0]);
+                    checksum = pathInfo.getChecksum();
+                }
+            }
+            if (checksum != null && pathInfoChecksum.equals(checksum) == false)
+            {
+                diffs.add(new ChecksumDifference(fileNode.getRelativePath(), checksum, pathInfoChecksum));
+            }
         }
     }
 
@@ -442,7 +475,6 @@ public class DataSetAndPathInfoDBConsistencyChecker
 
     private class SizeDifference extends Difference
     {
-
         private long sizeInFS;
 
         private long sizeInDB;
@@ -460,17 +492,15 @@ public class DataSetAndPathInfoDBConsistencyChecker
             return "'" + getPath() + "' size in the file system = " + sizeInFS
                     + " bytes but in the path info database = " + sizeInDB + " bytes.";
         }
-
     }
 
-    private class ChecksumDifference extends Difference
+    private class CRC32Difference extends Difference
     {
-
         private int checksumInFS;
 
         private int checksumInDB;
 
-        public ChecksumDifference(String path, int checksumInFS, int checksumInDB)
+        public CRC32Difference(String path, int checksumInFS, int checksumInDB)
         {
             super(path);
             this.checksumInFS = checksumInFS;
@@ -484,7 +514,27 @@ public class DataSetAndPathInfoDBConsistencyChecker
                     + IOUtilities.crc32ToString(checksumInFS) + " but in the path info database = "
                     + IOUtilities.crc32ToString(checksumInDB);
         }
+    }
 
+    private class ChecksumDifference extends Difference
+    {
+        private String checksumInFS;
+
+        private String checksumInDB;
+
+        public ChecksumDifference(String path, String checksumInFS, String checksumInDB)
+        {
+            super(path);
+            this.checksumInFS = checksumInFS;
+            this.checksumInDB = checksumInDB;
+        }
+
+        @Override
+        public String getDescription()
+        {
+            return "'" + getPath() + "' checksum in the file system = " + checksumInFS
+                    + " but in the path info database = " + checksumInDB;
+        }
     }
 
     private class Children

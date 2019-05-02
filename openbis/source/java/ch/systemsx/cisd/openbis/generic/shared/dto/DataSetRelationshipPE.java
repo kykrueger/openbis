@@ -122,6 +122,10 @@ public class DataSetRelationshipPE implements Serializable
     @Column(name = ColumnNames.PARENT_FROZEN_COLUMN, nullable = false)
     public boolean isParentFrozen()
     {
+        if (parentDataSet != null)
+        {
+            parentFrozen = parentDataSet.isFrozen() && parentDataSet.isFrozenForChildren();
+        }
         return parentFrozen;
     }
 
@@ -134,6 +138,10 @@ public class DataSetRelationshipPE implements Serializable
     @Column(name = ColumnNames.CONTAINER_FROZEN_COLUMN, nullable = false)
     public boolean isContainerFrozen()
     {
+        if (parentDataSet != null)
+        {
+            containerFrozen = parentDataSet.isFrozen() && parentDataSet.isFrozenForComponents();
+        }
         return containerFrozen;
     }
 
@@ -165,6 +173,10 @@ public class DataSetRelationshipPE implements Serializable
     @Column(name = ColumnNames.CHILD_FROZEN_COLUMN, nullable = false)
     public boolean isChildFrozen()
     {
+        if (childDataSet != null)
+        {
+            childFrozen = childDataSet.isFrozen() && childDataSet.isFrozenForParents();
+        }
         return childFrozen;
     }
 
@@ -177,6 +189,10 @@ public class DataSetRelationshipPE implements Serializable
     @Column(name = ColumnNames.COMPONENT_FROZEN_COLUMN, nullable = false)
     public boolean isComponentFrozen()
     {
+        if (childDataSet != null)
+        {
+            componentFrozen = childDataSet.isFrozen() && childDataSet.isFrozenForContainers();
+        }
         return componentFrozen;
     }
 

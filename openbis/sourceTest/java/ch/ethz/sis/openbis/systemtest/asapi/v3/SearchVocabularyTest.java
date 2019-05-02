@@ -18,7 +18,10 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.testng.annotations.Test;
 
@@ -31,6 +34,44 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
  */
 public class SearchVocabularyTest extends AbstractTest
 {
+    @Test
+    public void testWithCodes()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        VocabularySearchCriteria criteria = new VocabularySearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("GENDER", "ORGANISM"));
+
+        // When
+        List<Vocabulary> vocabularies =
+                v3api.searchVocabularies(sessionToken, criteria, new VocabularyFetchOptions()).getObjects();
+
+        // Then
+        List<String> codes = vocabularies.stream().map(Vocabulary::getCode).collect(Collectors.toList());
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[GENDER, ORGANISM]");
+    }
+
+    @Test
+    public void testWithOrOperator()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        VocabularySearchCriteria criteria = new VocabularySearchCriteria();
+        criteria.withOrOperator();
+        criteria.withCode().thatContains("U");
+        criteria.withCode().thatContains("Y");
+
+        // When
+        List<Vocabulary> vocabularies =
+                v3api.searchVocabularies(sessionToken, criteria, new VocabularyFetchOptions()).getObjects();
+
+        // Then
+        List<String> codes = vocabularies.stream().map(Vocabulary::getCode).collect(Collectors.toList());
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[$PLATE_GEOMETRY, HUMAN, TEST_VOCABULARY]");
+    }
+
     @Test
     public void testWithoutFetchingTerms()
     {

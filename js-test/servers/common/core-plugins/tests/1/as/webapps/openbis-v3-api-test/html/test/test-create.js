@@ -475,6 +475,7 @@ define(
 				QUnit.test("createPropertyTypes()", function(assert) {
 					var c = new common(assert, openbis);
 					var code = c.generateId("PROPERTY_TYPE");
+					var metaData = {"greetings" : "hello test"};
 
 					var fCreate = function(facade) {
 						var creation = new c.PropertyTypeCreation();
@@ -482,6 +483,7 @@ define(
 						creation.setDescription("hello");
 						creation.setDataType(c.DataType.INTEGER);
 						creation.setLabel("Test Property Type");
+						creation.setMetaData(metaData);
 						return facade.createPropertyTypes([ creation ]);
 					}
 
@@ -491,6 +493,8 @@ define(
 						c.assertEqual(type.getLabel(), "Test Property Type", "Label");
 						c.assertEqual(type.getDescription(), "hello", "Description");
 						c.assertEqual(type.getDataType(), c.DataType.INTEGER, "Data type");
+						c.assertEqual(type.getMetaData().toString(), metaData, "Meta data");
+						
 					}
 
 					testCreate(c, fCreate, c.findPropertyType, fCheck);

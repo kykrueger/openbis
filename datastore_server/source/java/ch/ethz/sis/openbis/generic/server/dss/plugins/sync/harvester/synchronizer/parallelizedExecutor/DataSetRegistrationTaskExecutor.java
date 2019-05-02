@@ -18,12 +18,11 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.IncomingDataSet;
 import ch.systemsx.cisd.common.concurrent.ITaskExecutor;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
@@ -35,7 +34,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelColumnHeader;
  *
  * @author Ganime Betul Akin
  */
-public final class DataSetRegistrationTaskExecutor implements ITaskExecutor<IncomingDataSet>
+public final class DataSetRegistrationTaskExecutor implements ITaskExecutor<DataSetCreation>
 {
     private final File storeRoot;
 
@@ -58,10 +57,10 @@ public final class DataSetRegistrationTaskExecutor implements ITaskExecutor<Inco
     }
 
     @Override
-    public Status execute(IncomingDataSet dataSet)
+    public Status execute(DataSetCreation dataSet)
     {
         DataSetRegistrationIngestionService ingestionService =
-                new DataSetRegistrationIngestionService(config, storeRoot, dataSet.getDataSet(), operationLog);
+                new DataSetRegistrationIngestionService(config, storeRoot, dataSet, operationLog);
         TableModel resultTable = ingestionService.createAggregationReport(new HashMap<String, Object>(), context);
         if (resultTable != null)
         {
@@ -70,10 +69,10 @@ public final class DataSetRegistrationTaskExecutor implements ITaskExecutor<Inco
                 if (header.getTitle().startsWith("Error"))
                 {
                     String message = resultTable.getRows().get(0).getValues().toString();
-                    dsRegistrationSummary.notRegisteredDataSetCodes.add(dataSet.getDataSet().getCode());
-                    operationLog.error("Registration for data set " + dataSet.getDataSet().getCode() + " failed: "
-                            + message + ", exp: " + dataSet.getDataSet().getExperimentIdentifierOrNull()
-                            + ", sample:" + dataSet.getDataSet().getSampleIdentifierOrNull());
+                    dsRegistrationSummary.notRegisteredDataSetCodes.add(dataSet.getCode());
+                    operationLog.error("Registration for data set " + dataSet.getCode() + " failed: "
+                            + message + ", exp: " + dataSet.getExperimentId()
+                            + ", sample:" + dataSet.getSampleId());
                     return Status.createError(message);
                 }
                 else if (header.getTitle().startsWith("Added"))

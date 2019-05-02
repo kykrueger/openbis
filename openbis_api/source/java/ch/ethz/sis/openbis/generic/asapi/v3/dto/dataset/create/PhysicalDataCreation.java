@@ -59,7 +59,7 @@ public class PhysicalDataCreation implements ICreation
     @JsonProperty
     private Integer speedHint;
 
-    private boolean h5Folders = true;
+    private boolean h5Folders = false;
 
     private boolean h5arFolders = true;
 

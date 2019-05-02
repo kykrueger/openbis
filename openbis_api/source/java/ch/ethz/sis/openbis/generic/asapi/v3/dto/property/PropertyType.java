@@ -35,12 +35,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /*
  * Class automatically generated with DtoGenerator
  */
 @JsonObject("as.dto.property.PropertyType")
-public class PropertyType implements Serializable, ICodeHolder, IDescriptionHolder, IPermIdHolder, IRegistrationDateHolder, IRegistratorHolder, ISemanticAnnotationsHolder
+public class PropertyType implements Serializable, ICodeHolder, IDescriptionHolder, IPermIdHolder, IRegistrationDateHolder, IRegistratorHolder,
+        ISemanticAnnotationsHolder
 {
     private static final long serialVersionUID = 1L;
 
@@ -88,6 +90,9 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
 
     @JsonProperty
     private Date registrationDate;
+
+    @JsonProperty
+    private Map<String, String> metaData;
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -203,8 +208,7 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
         if (getFetchOptions() != null && getFetchOptions().hasVocabulary())
         {
             return vocabulary;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Vocabulary has not been fetched.");
         }
@@ -223,8 +227,7 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
         if (getFetchOptions() != null && getFetchOptions().hasMaterialType())
         {
             return materialType;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Material type has not been fetched.");
         }
@@ -270,8 +273,7 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
         if (getFetchOptions() != null && getFetchOptions().hasSemanticAnnotations())
         {
             return semanticAnnotations;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Semantic annotations have not been fetched.");
         }
@@ -291,8 +293,7 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
         if (getFetchOptions() != null && getFetchOptions().hasRegistrator())
         {
             return registrator;
-        }
-        else
+        } else
         {
             throw new NotFetchedException("Registrator has not been fetched.");
         }
@@ -316,6 +317,17 @@ public class PropertyType implements Serializable, ICodeHolder, IDescriptionHold
     public void setRegistrationDate(Date registrationDate)
     {
         this.registrationDate = registrationDate;
+    }
+
+    @JsonIgnore
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
     }
 
     // Method automatically generated with DtoGenerator

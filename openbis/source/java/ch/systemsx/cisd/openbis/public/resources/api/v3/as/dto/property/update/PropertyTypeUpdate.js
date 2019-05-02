@@ -1,9 +1,10 @@
-define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, FieldUpdateValue) {
+define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/ListUpdateValue" ], function(stjs, FieldUpdateValue, ListUpdateValue) {
 	var PropertyTypeUpdate = function() {
 		this.label = new FieldUpdateValue();
 		this.description = new FieldUpdateValue();
 		this.schema = new FieldUpdateValue();
 		this.transformation = new FieldUpdateValue();
+		this.metaData = new ListUpdateValue();
 	};
 	stjs.extend(PropertyTypeUpdate, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.property.update.PropertyTypeUpdate';
@@ -13,6 +14,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		prototype.description = null;
 		prototype.schema = null;
 		prototype.transformation = null;
+		prototype.metaData = null;
 
 		prototype.getObjectId = function() {
 			return this.getTypeId();
@@ -47,8 +49,15 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		prototype.setTransformation = function(transformation) {
 			this.transformation.setValue(transformation);
 		};
+		prototype.getMetaData = function() {
+			return this.metaData;
+		};
+		prototype.setMetaDataActions = function(actions) {
+			this.metaData.setActions(actions);
+		};
 	}, {
-		typeId : "IPropertyTypeId"
+		typeId : "IPropertyTypeId",
+		metaData : "ListUpdateValue"
 	});
 	return PropertyTypeUpdate;
 })

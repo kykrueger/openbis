@@ -750,3 +750,17 @@ span.fancytree-custom-icon {
     background-position: 0 0;
      margin-left: .5em;
 }
+
+/* 
+ * PopUp table
+ */
+.popup-table {
+	width : 100%;
+}
+
+.popup-table th,
+.popup-table td {
+	padding : 4px;
+	border : 1px solid #ddd;
+	border-collapse: collapse;
+}

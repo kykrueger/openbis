@@ -211,10 +211,17 @@ public final class FullTextIndexUpdater extends HibernateDaoSupport implements
                     }
                     updaterQueue.take();
                 }
+            } catch (final InterruptedException e)
+            {
+                operationLog.warn(e);
             } catch (final Throwable th)
             {
                 notificationLog.error("A problem has occurred while updating index.", th);
+            } finally
+            {
+                operationLog.info("Updater closed");
             }
+            
         }
     }
 

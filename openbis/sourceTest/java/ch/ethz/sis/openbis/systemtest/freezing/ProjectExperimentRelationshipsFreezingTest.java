@@ -28,7 +28,12 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.UpdateExperimentsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.IOperationExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.UpdateProjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 
 /**
@@ -150,7 +155,6 @@ public class ProjectExperimentRelationshipsFreezingTest extends FreezingTest
                 asCartesianProduct(combinationsForExperiment, combinationsForFrozenProject, combinationsForFrozenProject));
     }
 
-
     @Test(dataProvider = "liquidExperimentProjectRelations")
     public void testValidAddExperimentToProject(FrozenFlags frozenFlagsForProject)
     {
@@ -200,6 +204,27 @@ public class ProjectExperimentRelationshipsFreezingTest extends FreezingTest
 
         // Then
         assertEquals(getExperiment(id).getProject().getCode(), PROJECT_1);
+    }
 
+    @Test
+    public void testFreezeProjectAndExperiment()
+    {
+        // Given
+        ProjectUpdate projectUpdate = new ProjectUpdate();
+        projectUpdate.setProjectId(projectOfExperiment);
+        projectUpdate.freeze();
+        projectUpdate.freezeForExperiments();
+        ExperimentUpdate experimentUpdate = new ExperimentUpdate();
+        experimentUpdate.setExperimentId(experiment);
+        experimentUpdate.freeze();
+        IOperationExecutionOptions op = new SynchronousOperationExecutionOptions();
+
+        // When
+        v3api.executeOperations(systemSessionToken, Arrays.asList(
+                new UpdateProjectsOperation(projectUpdate), new UpdateExperimentsOperation(experimentUpdate)), op);
+
+        // Then
+        assertEquals(getExperiment(experiment).isFrozen(), true);
+        assertEquals(getExperiment(experiment).getProject().isFrozen(), true);
     }
 }

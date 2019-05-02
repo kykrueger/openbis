@@ -16,6 +16,7 @@
 
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -40,7 +41,11 @@ final class MockNode implements IHierarchicalContentNode
 
     long size;
 
-    int checksum;
+    int crc32Checksum;
+
+    String checksum;
+
+    String content;
 
     void addNode(MockNode node)
     {
@@ -111,13 +116,13 @@ final class MockNode implements IHierarchicalContentNode
     @Override
     public String getChecksum() throws UnsupportedOperationException
     {
-        return null;
+        return checksum;
     }
 
     @Override
     public int getChecksumCRC32() throws UnsupportedOperationException
     {
-        return checksum;
+        return crc32Checksum;
     }
 
     @Override
@@ -134,9 +139,12 @@ final class MockNode implements IHierarchicalContentNode
     }
 
     @Override
-    public InputStream getInputStream() throws UnsupportedOperationException,
-            IOExceptionUnchecked
+    public InputStream getInputStream() throws UnsupportedOperationException, IOExceptionUnchecked
     {
+        if (content != null)
+        {
+            return new ByteArrayInputStream(content.getBytes());
+        }
         throw new UnsupportedOperationException();
     }
 

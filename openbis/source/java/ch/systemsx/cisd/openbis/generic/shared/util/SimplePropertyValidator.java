@@ -194,16 +194,65 @@ public class SimplePropertyValidator
             assert value != null : "Unspecified value.";
             try
             {
-                Date date = DateUtils.parseDate(value, DATE_PATTERNS);
+                validateHyphens(value);
+                Date date = DateUtils.parseDateStrictly(value, DATE_PATTERNS);
                 // we store date in CANONICAL_DATE_PATTERN
                 return DateFormatUtils.format(date,
                         SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern());
             } catch (final ParseException ex)
             {
-                throw UserFailureException.fromTemplate(
-                        "Date value '%s' has improper format. It must be one of '%s'.", value,
-                        Arrays.toString(DATE_PATTERNS));
+                throwUserFailureException(value);
+                return null;
             }
+        }
+
+        /**
+         * Manually validates the date value on cases which are omitted by DateUtils.
+         * 
+         * @param value the date-time value to validate. 
+         * @throws UserFailureException thrown if the value is not considered as a well formatted date.
+         */
+        private void validateHyphens(final String value) throws UserFailureException
+        {
+            if (value == null)
+            {
+                return;
+            }
+            
+            final String dateValue = extractDate(value);
+            final boolean hyphenFormat = dateValue.matches("\\d*-\\d*-\\d*");
+            final boolean desiredHyphenFormat = dateValue.matches("\\d{4,}-\\d+-\\d+");
+            if (hyphenFormat && !desiredHyphenFormat) 
+            {
+                // When the date value uses hyphens as separators but does not have 4 digits for the year value 
+                // throw an exception.
+                throwUserFailureException(value);
+            }
+        }
+        
+        /**
+         * Throws UserFailureException.
+         * 
+         * @param value the value to use in the description of the exception.
+         * @throws UserFailureException always thrown.
+         */
+        private final static void throwUserFailureException(final String value) throws UserFailureException
+        {
+            throw UserFailureException.fromTemplate(
+                    "Date value '%s' has improper format. It must be one of '%s'.", value,
+                    Arrays.toString(DATE_PATTERNS));
+        }
+        
+        /**
+         * Extracts date part from the string representation of a date-time.
+         * 
+         * @param value the value considered as string representation of date-time.
+         * @return the date portion of the date-time string.
+         */
+        private final static String extractDate(final String value) 
+        {
+            final int dateSeparator = Math.min(value.indexOf(' '), value.indexOf('T'));
+            return dateSeparator >= 0 ? value.substring(0, dateSeparator) : value;
         }
     }
 

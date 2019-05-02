@@ -17,18 +17,27 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.AbstractEntityTypeSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
- * 
- *
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.dataset.search.DataSetTypeSearchCriteria")
 public class DataSetTypeSearchCriteria extends AbstractEntityTypeSearchCriteria
 {
     private static final long serialVersionUID = 1L;
+
+    public DataSetTypeSearchCriteria withOrOperator()
+    {
+        return (DataSetTypeSearchCriteria) withOperator(SearchOperator.OR);
+    }
+
+    public DataSetTypeSearchCriteria withAndOperator()
+    {
+        return (DataSetTypeSearchCriteria) withOperator(SearchOperator.AND);
+    }
 
     @Override
     protected SearchCriteriaToStringBuilder createBuilder()

@@ -36,6 +36,7 @@
     <variable name="ShowCreateDirectoryMessage"  value="false" />
     <variable name="data.validation.error.title"  value="Error" />
     <variable name="VERSION_NUMBER"  value="@{version.number}" />
+    <variable name="REVISION_NUMBER"  value="@{revision.number}" />
   </variables>
 
   <dynamicvariables>

@@ -36,20 +36,20 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.DataSetFile;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFileDownloadOptions;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSession;
+import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadSessionOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.id.IDataSetFileId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.config.SyncConfig;
 
 /**
- * 
- *
  * @author Ganime Betul Akin
  */
 public class V3Facade
 {
     private final IDataStoreServerApi dss;
-    
+
     private final IApplicationServerApi as;
 
     private final String sessionToken;
@@ -59,7 +59,7 @@ public class V3Facade
         as = ServiceUtils.createAsV3Api(config.getDataSourceOpenbisURL());
         dss = ServiceUtils.createDssV3Api(config.getDataSourceDSSURL());
         sessionToken = as.login(config.getUser(), config.getPassword());
-     }
+    }
 
     public SearchResult<DataSetFile> searchFiles(DataSetFileSearchCriteria criteria, DataSetFileFetchOptions dsFileFetchOptions)
     {
@@ -80,7 +80,8 @@ public class V3Facade
         fetchOptions.withAttachments().withPreviousVersion().withPreviousVersionUsing(fetchOptions.withAttachments());
         fetchOptions.withAttachments().withPreviousVersion().withContentUsing(fetchOptions.withAttachments().withContent());
         Map<IExperimentId, Experiment> experiments = as.getExperiments(sessionToken, Arrays.asList(experimentId), fetchOptions);
-        if(experiments.size() == 1) {
+        if (experiments.size() == 1)
+        {
             Experiment experiment = experiments.get(experimentId);
             return experiment.getAttachments();
         }
@@ -120,6 +121,12 @@ public class V3Facade
     public InputStream downloadFiles(List<IDataSetFileId> fileIds, DataSetFileDownloadOptions options)
     {
         return dss.downloadFiles(sessionToken, fileIds, options);
+    }
+
+    public FastDownloadSession createFastDownloadSession(List<? extends IDataSetFileId> fileIds, 
+            FastDownloadSessionOptions options)
+    {
+        return dss.createFastDownloadSession(sessionToken, fileIds, options);
     }
 
 }

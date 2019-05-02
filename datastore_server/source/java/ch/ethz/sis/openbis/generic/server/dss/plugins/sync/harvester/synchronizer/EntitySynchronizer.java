@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchroniz
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -113,7 +114,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.GenericEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Identifier;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewAttachment;
@@ -1074,8 +1074,6 @@ public class EntitySynchronizer
             SampleIdentifier sampleIdentifier = dataSet.getSampleIdentifierOrNull();
             if (sampleIdentifier != null)
             {
-                Sample sampleWithExperiment = service.tryGetSampleWithExperiment(sampleIdentifier);
-                // dsBatchUpdatesDTO.setSampleIdentifierOrNull(SampleIdentifierFactory.parse(sampleWithExperiment.getIdentifier()));
                 dsBatchUpdatesDTO.setSampleIdentifierOrNull(sampleIdentifier);
             } else
             {
@@ -1086,8 +1084,6 @@ public class EntitySynchronizer
             ExperimentIdentifier expIdentifier = dataSet.getExperimentIdentifierOrNull();
             if (expIdentifier != null)
             {
-                Experiment experiment = service.tryGetExperiment(expIdentifier);
-                // dsBatchUpdatesDTO.setExperimentIdentifierOrNull(ExperimentIdentifierFactory.parse(experiment.getIdentifier()));
                 dsBatchUpdatesDTO.setExperimentIdentifierOrNull(expIdentifier);
             } else
             {
@@ -1128,7 +1124,9 @@ public class EntitySynchronizer
 
     private DataSetSynchronizationSummary registerPhysicalDataSets(Map<String, IncomingDataSet> physicalDSMap) throws IOException
     {
-        List<IncomingDataSet> dsList = new ArrayList<IncomingDataSet>(physicalDSMap.values());
+        List<DataSetCreation> dsList = new ArrayList<IncomingDataSet>(physicalDSMap.values()).stream()
+                .map(IncomingDataSet::getFullDataSet).map(FullDataSetCreation::getMetadataCreation)
+                .collect(Collectors.toList());
         DataSetSynchronizationSummary dataSetSynchronizationSummary = new DataSetSynchronizationSummary();
 
         // This parallelization is possible because each DS is registered without dependencies
@@ -1172,42 +1170,17 @@ public class EntitySynchronizer
     {
         File backupLastSyncTimeStampFile = new File(config.getNotSyncedEntitiesFileName() + ".bk");
         FileUtils.copyFile(notSyncedDataSetsFile, backupLastSyncTimeStampFile);
-        FileUtils.writeStringToFile(notSyncedDataSetsFile, "");
+        FileUtils.writeStringToFile(notSyncedDataSetsFile, "", Charset.defaultCharset());
     }
 
     private void registerMasterData(MasterData masterData)
     {
         Monitor monitor = new Monitor("Register master data", operationLog);
         operationLog.info("Registering master data...");
-        if (config.isVerbose() == true)
-        {
-            // operationLog.info("-------The following master data will be synchronized-------");
-            // verboseLogMasterData(masterData.getFileFormatTypesToProcess().keySet(), "File Formats");
-            // verboseLogMasterData(masterData.getValidationPluginsToProcess().keySet(), "Validation Plugins");
-            // verboseLogMasterData(masterData.getValidationPluginsToProcess().keySet(), "Validation Plugins");
-            // verboseLogMasterData(masterData.getVocabulariesToProcess().keySet(), "Controlled Vocabularies");
-            // verboseLogMasterData(masterData.getMaterialTypesToProcess().keySet(), "Material Types");
-            // verboseLogMasterData(masterData.getSampleTypesToProcess().keySet(), "Sample Types");
-            // verboseLogMasterData(masterData.getExperimentTypesToProcess().keySet(), "Experiment Types");
-            // verboseLogMasterData(masterData.getDataSetTypesToProcess().keySet(), "Data set Types");
-            // verboseLogMasterData(masterData.getPropertyTypesToProcess().keySet(), "Property Types");
-        }
         MasterDataSynchronizer masterDataSyncronizer =
                 new MasterDataSynchronizer(config.getHarvesterUser(), config.getHarvesterPass(), config.isDryRun(), config.isVerbose(), operationLog);
         masterDataSyncronizer.synchronizeMasterData(masterData, monitor);
         monitor.log();
-    }
-
-    private void verboseLogMasterData(Set<String> types, String typeName)
-    {
-        if (types.isEmpty() == false)
-        {
-            operationLog.info("-------" + typeName + " :-------");
-            for (String type : types)
-            {
-                operationLog.info(type);
-            }
-        }
     }
 
     private void processDeletions(ResourceListParserData data) throws Exception
@@ -1472,26 +1445,6 @@ public class EntitySynchronizer
                 }
             }
             // handleExperimentConnections(data, exp, incomingExp);
-        }
-    }
-
-    private void handleExperimentConnections(ResourceListParserData data, IncomingExperiment exp, NewExperiment newIncomingExp)
-    {
-        Map<String, IncomingSample> samplesToProcess = data.getSamplesToProcess();
-        Map<String, IncomingDataSet> dataSetsToProcess = data.getDataSetsToProcess();
-        for (Connection conn : exp.getConnections())
-        {
-            if (samplesToProcess.containsKey(conn.getToPermId()))
-            {
-                IncomingSample sample = samplesToProcess.get(conn.getToPermId());
-                NewSample newSample = sample.getSample();
-                newSample.setExperimentIdentifier(newIncomingExp.getIdentifier());
-            }
-            if (dataSetsToProcess.containsKey(conn.getToPermId()))
-            {
-                NewExternalData externalData = dataSetsToProcess.get(conn.getToPermId()).getDataSet();
-                externalData.setExperimentIdentifierOrNull(ExperimentIdentifierFactory.parse(newIncomingExp.getIdentifier()));
-            }
         }
     }
 
@@ -1772,12 +1725,6 @@ public class EntitySynchronizer
             return null;
         }
         return ProjectIdentifierFactory.parse(projectIdentifier);
-    }
-
-    private List<Sample> getChildSamples(Sample sampleWithExperiment)
-    {
-        ListSampleCriteria criteria = ListSampleCriteria.createForParent(new TechId(sampleWithExperiment.getId()));
-        return service.listSamples(criteria);
     }
 
     private IncomingSample findChildInSamplesToProcess(String childSampleIdentifier, Map<String, IncomingSample> samplesToProcess)

@@ -95,21 +95,31 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
 			}
 			
-			//Edit Button
-			var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
-				mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
-			});
-			if(toolbarConfig.EDIT) {
-				toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
-			}
-			
-			//Move
-			var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
-				var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSet.code);
-				moveEntityController.init();
-			});
-			if(toolbarConfig.MOVE) {
-				toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+			if(!_this._dataSetFormModel.v3_dataset.frozen) {
+				//Edit Button
+				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+					mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
+				});
+				if(toolbarConfig.EDIT) {
+					toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
+				}
+				
+				//Move
+				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+					var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSet.code);
+					moveEntityController.init();
+				});
+				if(toolbarConfig.MOVE) {
+					toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+				}
+				
+				//Delete Button
+				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
+					_this._dataSetFormController.deleteDataSet(reason);
+				}, true);
+				if(toolbarConfig.DELETE) {
+					toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
+				}
 			}
 			
 			//Archiving Requested Button
@@ -165,14 +175,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 						$tooltip : $archiveTooltip
 					});
 				}
-			}
-			
-			//Delete Button
-			var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
-				_this._dataSetFormController.deleteDataSet(reason);
-			}, true);
-			if(toolbarConfig.DELETE) {
-				toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
 			}
 			
 			//Hierarchy Table

@@ -240,6 +240,8 @@ public class SyncConfig
 
     private HashMap<String, String> spaceMappings = new HashMap<String, String>();
 
+    private Integer wishedNumberOfStreams;
+
     public HashMap<String, String> getSpaceMappings()
     {
         return spaceMappings;
@@ -366,5 +368,15 @@ public class SyncConfig
     public ParallelizedExecutionPreferences getParallelizedExecutionPrefs()
     {
         return parallelizedExecutionPrefs;
+    }
+
+    public Integer getWishedNumberOfStreams()
+    {
+        return wishedNumberOfStreams;
+    }
+
+    public void setWishedNumberOfStreams(Integer wishedNumberOfStreams)
+    {
+        this.wishedNumberOfStreams = wishedNumberOfStreams;
     }
 }

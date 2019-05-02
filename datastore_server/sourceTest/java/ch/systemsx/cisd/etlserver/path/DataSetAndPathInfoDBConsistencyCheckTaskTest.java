@@ -140,9 +140,10 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
         PhysicalDataSet ds1 = createDataSetBuilder().code("ds1").getDataSet();
         RecordingMatcher<DataSetSearchCriteria> searchCriteriaRecorder = prepareListDataSets(ds1);
         MockContent fileContent =
-                prepareContentProvider(fileProvider, "ds1", ":0:0", "a/:0:0", "a/b:34:9");
+                prepareContentProvider(fileProvider, "ds1", ":0:0", "a/:0:0", "a/b:34:9", "a/c:4:1:abcd::");
         MockContent pathInfoContent =
-                prepareContentProvider(pathInfoProvider, "ds1", ":0:0", "a/:0:0", "a/b:34:9");
+                prepareContentProvider(pathInfoProvider, "ds1", ":0:0", "a/:0:0", "a/b:34:9", 
+                        "a/c:4:1:abcd:SHA:81fe8bfe87576c3ecb22426f8e57847382917acf");
 
         task.execute();
 
@@ -216,10 +217,10 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
         MockContent fileContent2 = prepareContentProvider(fileProvider, "ds2");
         MockContent pathInfoContent2 = prepareContentProvider(pathInfoProvider, "ds2", ":0:0");
         MockContent fileContent3 =
-                prepareContentProvider(fileProvider, "ds3", ":0:0", "a/:0:0", "a/b:34:7",
+                prepareContentProvider(fileProvider, "ds3", ":0:0", "a/:0:0", "a/b:34:9:abcd::",
                         "a/c:42:2", "c:2:4");
         MockContent pathInfoContent3 =
-                prepareContentProvider(pathInfoProvider, "ds3", ":0:0", "a/:0:0", "a/b:34:9",
+                prepareContentProvider(pathInfoProvider, "ds3", ":0:0", "a/:0:0", "a/b:34:9::SHA:78bc65",
                         "a/c:35:2", "b:33:3", "c/:0:0");
         MockContent fileContent4 = prepareContentProvider(fileProvider, "ds4", ":0:0");
         MockContent pathInfoContent4 = prepareContentProvider(pathInfoProvider, "ds4");
@@ -228,6 +229,8 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
 
         task.execute();
 
+        System.out.println(">>>>>> LOG:\n"+String.join("\n", logRecorder.getLogLines()));
+        System.out.println("<<<<<<");
         assertThat(logRecorder.getLogLines(),
                 hasItem("INFO  OPERATION.DataSetAndPathInfoDBConsistencyCheckTask - Check 5 data sets registered since 1977-06-15 23:53:08"));
 
@@ -247,7 +250,7 @@ public class DataSetAndPathInfoDBConsistencyCheckTaskTest extends AbstractFileSy
         assertThat(logRecorder.getLogLines(), hasItem("- exists in the path info database but does not exist in the file system"));
         assertThat(logRecorder.getLogLines(), hasItem("Data set ds3:"));
         assertThat(logRecorder.getLogLines(),
-                hasItem("- 'a/b' CRC32 checksum in the file system = 00000007 but in the path info database = 00000009"));
+                hasItem("- 'a/b' checksum in the file system = SHA:81fe8bfe87576c3ecb22426f8e57847382917acf but in the path info database = SHA:78bc65"));
         assertThat(logRecorder.getLogLines(), hasItem("- 'a/c' size in the file system = 42 bytes but in the path info database = 35 bytes."));
         assertThat(logRecorder.getLogLines(), hasItem("- 'b' is referenced in the path info database but does not exist on the file system"));
         assertThat(logRecorder.getLogLines(), hasItem("- 'c' is a directory in the path info database but a file in the file system"));

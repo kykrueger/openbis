@@ -124,6 +124,11 @@ public class JettyWebAppPluginInjector
         }
         operationLog.info("Inject the following web apps: " + remainingWebapps);
         List<File> targets = WebClientConfigurationProvider.findInjectionTargets();
+        for (File target : targets)
+        {
+            File webappFolder = new File(target, WEBAPP_FOLDER);
+            FileUtilities.deleteRecursively(webappFolder);
+        }
         for (String webapp : remainingWebapps)
         {
             File folder = webappToFoldersMap.get(webapp);

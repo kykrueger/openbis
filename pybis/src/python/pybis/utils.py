@@ -202,7 +202,10 @@ def extract_role_assignments(ras):
 
 def extract_person(person):
     if not isinstance(person, dict):
-        return str(person)
+        if person is None:
+            return ''
+        else:
+            return str(person)
     return person['userId']
 
 def extract_person_details(person):

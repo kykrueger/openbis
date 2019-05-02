@@ -711,6 +711,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			var code = c.generateId("PROPERTY_TYPE");
 			var description = "Description of " + code;
 			var label = "Label of " + code;
+			var metaData1 = {"greetings" : "hello test"};
+			var metaData2 = {"greetings" : "hello test"};
 
 			var fCreate = function(facade) {
 				var creation = new c.PropertyTypeCreation();
@@ -718,6 +720,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				creation.setLabel("Testing");
 				creation.setDescription("testing");
 				creation.setDataType(c.DataType.VARCHAR);
+				creation.setMetaData(metaData1);
 				return facade.createPropertyTypes([ creation ]);
 			}
 
@@ -726,6 +729,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				update.setTypeId(new c.PropertyTypePermId(code));
 				update.setDescription(description);
 				update.setLabel(label);
+				update.getMetaData().add(metaData2);
+				update.getMetaData().remove("greetings");
 				return facade.updatePropertyTypes([ update ]);
 			}
 
@@ -733,6 +738,7 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(propertyType.getCode(), code, "Code");
 				c.assertEqual(propertyType.getDescription(), description, "Description");
 				c.assertEqual(propertyType.getLabel(), label, "Label");
+				c.assertEqual(propertyType.getMetaData().toString(), metaData2, "Meta data");
 			}
 
 			testUpdate(c, fCreate, fUpdate, c.findPropertyType, fCheck);

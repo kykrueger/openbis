@@ -16,8 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.dssapi.v3;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,6 +70,7 @@ import ch.ethz.sis.filetransfer.ILogger;
 import ch.ethz.sis.filetransfer.IUserSessionId;
 import ch.ethz.sis.filetransfer.IUserSessionManager;
 import ch.ethz.sis.filetransfer.InvalidUserSessionException;
+import ch.ethz.sis.filetransfer.LogLevel;
 import ch.ethz.sis.filetransfer.UserSessionId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadMethod;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fastdownload.FastDownloadParameter;
@@ -95,6 +100,10 @@ public class FileTransferServerServlet extends HttpServlet
     private static final long serialVersionUID = 1L;
 
     public static final String SERVLET_NAME = "file-transfer";
+
+    private static final String MAXIMUM_NUMBER_OF_ALLOWED_STREAMS_PROPERTY = "api.v3.fast-download.maximum-number-of-allowed-streams";
+
+    private static final int DEFAULT_MAXIMUM_NUMBER_OF_ALLOWED_STREAMS = 50;
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             FileTransferServerServlet.class);
@@ -344,7 +353,8 @@ public class FileTransferServerServlet extends HttpServlet
 
         private ConcurrencyProvider(Properties properties)
         {
-            maximumNumberOfAllowedStreams = PropertyUtils.getInt(properties, "api.v3.fast-download.maximum-number-of-allowed-streams", 10);
+            maximumNumberOfAllowedStreams =
+                    PropertyUtils.getInt(properties, MAXIMUM_NUMBER_OF_ALLOWED_STREAMS_PROPERTY, DEFAULT_MAXIMUM_NUMBER_OF_ALLOWED_STREAMS);
             operationLog.info("max number of allowed streams: " + maximumNumberOfAllowedStreams);
         }
 
@@ -386,7 +396,6 @@ public class FileTransferServerServlet extends HttpServlet
                 throws DownloadItemNotFoundException, DownloadException
         {
             IHierarchicalContentProvider contentProvider = applicationContext.getHierarchicalContentProvider(null);
-
             Map<IDownloadItemId, List<Chunk>> result = new HashMap<IDownloadItemId, List<Chunk>>();
             AtomicInteger sequenceNumber = new AtomicInteger(0);
 
@@ -409,7 +418,8 @@ public class FileTransferServerServlet extends HttpServlet
                 IDownloadItemId itemId)
         {
             boolean directory = node.isDirectory();
-            if (directory)
+            boolean isH5ar = node.getName().endsWith(".h5ar");
+            if (directory && isH5ar == false)
             {
                 for (IHierarchicalContentNode childNode : node.getChildNodes())
                 {
@@ -417,17 +427,91 @@ public class FileTransferServerServlet extends HttpServlet
                 }
             } else
             {
-                long fileSize = node.getFileLength();
+                long fileSize = isH5ar ? node.getFile().length() : node.getFileLength();
                 long fileOffset = 0;
                 do
                 {
                     int payloadLength = (int) (Math.min(fileOffset + chunkSize, fileSize) - fileOffset);
-                    chunks.add(new FileChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
-                            fileOffset, payloadLength, node.getFile().toPath(), logger));
+                    File file = node.tryGetFile();
+                    Chunk chunk;
+                    if (file != null)
+                    {
+                        chunk = new FileChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
+                                fileOffset, payloadLength, file.toPath(), logger);
+                    } else
+                    {
+                        chunk = new InputStreamBasedChunk(sequenceNumber.getAndIncrement(), itemId, node.getRelativePath(),
+                                fileOffset, payloadLength, node.getInputStream(), logger);
+                    }
+                    chunks.add(chunk);
                     fileOffset += chunkSize;
                 } while (fileOffset < fileSize);
             }
         }
     }
 
+    private static class InputStreamBasedChunk extends Chunk
+    {
+        private InputStream inputStream;
+
+        private ILogger logger;
+
+        public InputStreamBasedChunk(int sequenceNumber, IDownloadItemId downloadItemId, String filePath,
+                long fileOffset, int payloadLength, InputStream inputStream, ILogger logger)
+        {
+            super(sequenceNumber, downloadItemId, false, filePath, fileOffset, payloadLength);
+            this.inputStream = inputStream;
+            this.logger = logger;
+        }
+
+        @Override
+        public InputStream getPayload() throws DownloadException
+        {
+            try
+            {
+                inputStream.skip(getFileOffset());
+                int payloadLength = getPayloadLength();
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream(payloadLength);
+                copyLarge(inputStream, outputStream, payloadLength, new byte[payloadLength]);
+                return new ByteArrayInputStream(outputStream.toByteArray());
+            } catch (IOException e)
+            {
+                DownloadException downloadException = new DownloadException("Can not get payload for chunk "
+                        + getSequenceNumber() + " staring at " + getFileOffset() + " of " + getFilePath(), e, false);
+                logger.log(InputStreamBasedChunk.class, LogLevel.ERROR, downloadException.getMessage());
+                throw downloadException;
+            }
+        }
+
+        /**
+         * This is copied from org.apache.commons.io.IOUtils (apache commons io version 2.6). Even though we ship datastore server with
+         * commons-io-2.6.jar the bioformats 5.9.2 has and older version of this library which hasn't the new copyLarge method.
+         */
+        private long copyLarge(final InputStream input, final OutputStream output,
+                final long length, final byte[] buffer) throws IOException
+        {
+            if (length == 0)
+            {
+                return 0;
+            }
+            final int bufferLength = buffer.length;
+            int bytesToRead = bufferLength;
+            if (length > 0 && length < bufferLength)
+            {
+                bytesToRead = (int) length;
+            }
+            int read;
+            long totalRead = 0;
+            while (bytesToRead > 0 && IOUtils.EOF != (read = input.read(buffer, 0, bytesToRead)))
+            {
+                output.write(buffer, 0, read);
+                totalRead += read;
+                if (length > 0)
+                {
+                    bytesToRead = (int) Math.min(length - totalRead, bufferLength);
+                }
+            }
+            return totalRead;
+        }
+    }
 }

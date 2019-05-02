@@ -354,6 +354,10 @@ class TestCase(systemtest.testcase.TestCase):
                                "select d.code as data_set, file_name, size_in_bytes "
                                + "from data_set_files f join data_sets d on f.dase_id=d.id where parent_id is null "
                                + "order by d.code")
+        self._compareDataBases("h5ar files as folders", openbis_data_source, openbis_harvester, "pathinfo",
+                               "select d.code as data_set, relative_path, size_in_bytes "
+                               + "from data_set_files f join data_sets d on f.dase_id=d.id where relative_path like '%.h5ar%' "
+                               + "order by d.code, relative_path")
         self._compareDataBases("Data set relationships", openbis_data_source, openbis_harvester, "openbis",
                                 "select p.code as parent, c.code as child, t.code as relationship_type, "
                                 + "r.parent_frozen, r.child_frozen, r.cont_frozen, r.comp_frozen "

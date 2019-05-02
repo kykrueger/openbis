@@ -293,7 +293,7 @@ public class PathInfoProviderBasedHierarchicalContent implements IHierarchicalCo
                 return result;
             } else
             {
-                throw new UnsupportedOperationException("This is not a normal file/directory node.");
+                throw new UnsupportedOperationException("This is not a normal file/directory node: " + result);
             }
         }
 

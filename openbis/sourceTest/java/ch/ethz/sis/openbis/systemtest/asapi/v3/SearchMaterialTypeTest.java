@@ -55,6 +55,42 @@ public class SearchMaterialTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithAndOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        MaterialTypeSearchCriteria searchCriteria = new MaterialTypeSearchCriteria();
+        searchCriteria.withAndOperator();
+        searchCriteria.withCode().thatContains("EL");
+        searchCriteria.withCode().thatContains("REF");
+        MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
+        SearchResult<MaterialType> searchResult = v3api.searchMaterialTypes(sessionToken, searchCriteria, fetchOptions);
+
+        List<MaterialType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[SELF_REF]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testSearchWithOrOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        MaterialTypeSearchCriteria searchCriteria = new MaterialTypeSearchCriteria();
+        searchCriteria.withOrOperator();
+        searchCriteria.withCode().thatContains("EL");
+        searchCriteria.withCode().thatContains("REF");
+        MaterialTypeFetchOptions fetchOptions = new MaterialTypeFetchOptions();
+        SearchResult<MaterialType> searchResult = v3api.searchMaterialTypes(sessionToken, searchCriteria, fetchOptions);
+
+        List<MaterialType> types = searchResult.getObjects();
+        List<String> codes = extractCodes(types);
+        Collections.sort(codes);
+        assertEquals(codes.toString(), "[CELL_LINE, DELETION_TEST, OTHER_REF, SELF_REF]");
+        v3api.logout(sessionToken);
+    }
+
+    @Test
     public void testSearchExactCodeWithVocabularies()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

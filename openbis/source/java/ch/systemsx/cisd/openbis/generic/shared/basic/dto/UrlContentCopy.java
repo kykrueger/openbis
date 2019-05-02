@@ -1,5 +1,8 @@
 package ch.systemsx.cisd.openbis.generic.shared.basic.dto;
 
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicURLEncoder;
+
 public class UrlContentCopy implements IContentCopy
 {
     private static final long serialVersionUID = 1L;
@@ -36,7 +39,12 @@ public class UrlContentCopy implements IContentCopy
             labelString = code + " (" + label + ")";
         }
 
-        return "External DMS: " + labelString + "</br>Link: <a class=\"gwt-Anchor\" href=\"" + url + "\" target=\"_blank\" \">" + url + "</a><br>";
+        if (url != null && externalCode != null)
+        {
+            url = url.replaceAll(BasicConstant.EXTERNAL_DMS_URL_TEMPLATE_CODE_PATTERN, BasicURLEncoder.encode(externalCode));
+        }
+        return "External DMS: " + labelString + "</br>Link: <a class=\"gwt-Anchor\" href=\"" + url 
+                + "\" target=\"_blank\" \">" + url + "</a><br>";
     }
 
     @Override
@@ -69,10 +77,11 @@ public class UrlContentCopy implements IContentCopy
         return null;
     }
 
-	@Override
-	public String getRespitoryId() {
-		return null;
-	}
+    @Override
+    public String getRespitoryId()
+    {
+        return null;
+    }
 
     @Override
     public String getExternalCode()
