@@ -1,3 +1,6 @@
 /targets
 /.settings
 /test-output
+/.idea/
+*.iml
+*.eml

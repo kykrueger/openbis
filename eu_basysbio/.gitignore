@@ -3,3 +3,6 @@
 /test-output
 /.shredder
 /.updater
+/.idea/
+*.iml
+*.eml

@@ -4,3 +4,6 @@
 **.cache
 **.pytest_cache
 src/vagrant/initialize/openBIS-installation-standard-technologies-*
+/.idea/
+*.iml
+*.eml

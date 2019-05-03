@@ -5,3 +5,6 @@
 /targets
 /bin
 /build
+/.idea/
+*.iml
+*.eml
