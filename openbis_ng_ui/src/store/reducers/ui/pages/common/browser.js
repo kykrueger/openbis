@@ -3,26 +3,12 @@ import { combineReducers } from 'redux'
 import * as actions from '../../../../actions/actions.js'
 
 export const browser = combineReducers({
-  initialized,
   filter,
   nodes,
   selectedNodes,
   visibleNodes,
   expandedNodes
 })
-
-function initialized(state = false, action){
-  switch(action.type){
-    case actions.BROWSER_SET_INITIALIZED:
-      if(_.isEqual(state, action.payload.initialized)){
-        return state
-      }else{
-        return action.payload.initialized
-      }
-    default:
-      return state
-  }
-}
 
 function filter(state = '', action){
   switch(action.type){
