@@ -16,35 +16,18 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchNotNullAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchNullAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchSubCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
+
+import java.util.*;
 
 /**
  * Manages detailed search with complex search criteria.
  * 
- * @author Piotr Buczek
- * @author Kaloyan Enimanev
+ * @author Viktor Kovtun
  */
 public class AbstractSearchManager<T>
 {
-//    protected final IHibernateSearchDAO searchDAO;
-    
     protected final ISQLSearchDAO searchDAO;
 
     protected final T lister;
@@ -55,85 +38,71 @@ public class AbstractSearchManager<T>
         this.lister = lister;
     }
 
-    protected Collection<Long> restrictResultSetIfNecessary(Collection<Long> ids)
+    protected Collection<Long> restrictResultSetIfNecessary(final Collection<Long> ids)
     {
         if (ids == null)
         {
-            return new ArrayList<Long>();
+            return new ArrayList<>();
         } else
         {
-            int maxSize = searchDAO.getResultSetSizeLimit();
+            final int maxSize = searchDAO.getResultSetSizeLimit();
 
             if (ids.size() <= maxSize)
             {
                 return ids;
-            }
-            return new ArrayList<Long>(ids).subList(0, maxSize);
-        }
-    }
-
-    protected IAssociationCriteria findAssociatedEntities(String userId,
-            DetailedSearchSubCriteria subCriteria)
-    {
-        if (subCriteria.getCriteria() == null)
-        {
-            return new DetailedSearchNullAssociationCriteria(subCriteria.getTargetEntityKind());
-        } else
-        {
-            if (subCriteria.getCriteria().isEmpty())
-            {
-                return new DetailedSearchNotNullAssociationCriteria(subCriteria.getTargetEntityKind());
             } else
             {
-                // where related objects meets given criteria (for now we don't support sub criteria of sub criteria)
-                List<IAssociationCriteria> associations = Collections.emptyList();
-                final Collection<Long> associatedIds =
-                        searchDAO.searchForEntityIds(userId, subCriteria.getCriteria(), DtoConverters
-                                .convertEntityKind(subCriteria.getTargetEntityKind().getEntityKind()),
-                                associations);
-
-                return new DetailedSearchAssociationCriteria(subCriteria.getTargetEntityKind(),
-                        associatedIds);
+                return new ArrayList<>(ids).subList(0, maxSize);
             }
         }
     }
 
-    protected void mergeSubCriteria(DetailedSearchCriteria criteria,
-            DetailedSearchSubCriteria subCriteriaToMerge)
-    {
-        criteria.getCriteria().addAll(subCriteriaToMerge.getCriteria().getCriteria());
-        criteria.setConnection(subCriteriaToMerge.getCriteria().getConnection());
-        criteria.setUseWildcardSearchMode(subCriteriaToMerge.getCriteria()
-                .isUseWildcardSearchMode());
+//    protected IAssociationCriteria findAssociatedEntities(final String userId, final ISearchCriteria criterion)
+//    {
+//        // TODO: implement.
+//        return null;
+////        if (criterion == null)
+////        {
+////            return new DetailedSearchNullAssociationCriteria(criterion.getTargetEntityKind());
+////        } else
+////        {
+////            if (criterion.getCriteria().isEmpty())
+////            {
+////                return new DetailedSearchNotNullAssociationCriteria(criterion.getTargetEntityKind());
+////            } else
+////            {
+////                // where related objects meets given criteria (for now we don't support sub criteria of sub criteria)
+////                List<IAssociationCriteria> associations = Collections.emptyList();
+////                final Collection<Long> associatedIds =
+////                        searchDAO.searchForEntityIds(userId, criterion.getCriteria(), DtoConverters
+////                                .convertEntityKind(criterion.getTargetEntityKind().getEntityKind()),
+////                                associations);
+////
+////                return new DetailedSearchAssociationCriteria(criterion.getTargetEntityKind(),
+////                        associatedIds);
+////            }
+////        }
+//    }
+
+    protected void mergeCriteria(final Collection<ISearchCriteria> criteria, final ISearchCriteria criterion) {
+        criteria.add(criterion);
     }
 
-    interface IRelationshipHandler
+    protected <C extends ISearchCriteria> Collection<Long> filterSearchResultsByCriteria(final String userId,
+            final Collection<Long> idsToFilter, final C criterion,
+            final IRelationshipHandler<C> relationshipHandler)
     {
-        Collection<Long> findRelatedIdsByCriteria(String userId, DetailedSearchCriteria criteria,
-                List<DetailedSearchSubCriteria> otherSubCriterias);
-
-        Map<Long, Set<Long>> listIdsToRelatedIds(Collection<Long> ids);
-
-        Map<Long, Set<Long>> listRelatedIdsToIds(Collection<Long> relatedIds);
-    }
-
-    protected Collection<Long> filterSearchResultsBySubcriteria(String userId,
-            Collection<Long> idsToFilter, DetailedSearchCriteria criteria,
-            IRelationshipHandler relationshipHandler)
-    {
-        Collection<Long> relatedIds =
-                relationshipHandler.findRelatedIdsByCriteria(userId, criteria,
-                        Collections.<DetailedSearchSubCriteria> emptyList());
+        final Collection<Long> relatedIds = relationshipHandler.findRelatedIdsByCriteria(userId, criterion,
+                Collections.emptyList());
 
         if (idsToFilter == null)
         {
-            Map<Long, Set<Long>> relatedIdsToIds =
-                    relationshipHandler.listRelatedIdsToIds(relatedIds);
-            Set<Long> result = new HashSet<Long>();
+            final Map<Long, Set<Long>> relatedIdToIdsMap = relationshipHandler.listRelatedIdsToIds(relatedIds);
+            final Set<Long> result = new HashSet<>();
 
-            for (Set<Long> relatedIdsIds : relatedIdsToIds.values())
+            for (final Set<Long> ids : relatedIdToIdsMap.values())
             {
-                result.addAll(relatedIdsIds);
+                result.addAll(ids);
             }
 
             return result;
@@ -141,14 +110,12 @@ public class AbstractSearchManager<T>
         {
             if (idsToFilter.size() > relatedIds.size())
             {
-                Map<Long, Set<Long>> relatedIdsToIds =
-                        relationshipHandler.listRelatedIdsToIds(relatedIds);
-                return intersection(idsToFilter, relatedIdsToIds.values());
+                final Map<Long, Set<Long>> relatedIdToIdsMap = relationshipHandler.listRelatedIdsToIds(relatedIds);
+                return intersection(idsToFilter, relatedIdToIdsMap.values());
             } else
             {
-                Map<Long, Set<Long>> idsToRelatedIds =
-                        relationshipHandler.listIdsToRelatedIds(idsToFilter);
-                return filteIdsByRelationship(idsToFilter, relatedIds, idsToRelatedIds);
+                final Map<Long, Set<Long>> idToRelatedIdsMap = relationshipHandler.listIdsToRelatedIds(idsToFilter);
+                return filterIdsByRelationship(idsToFilter, relatedIds, idToRelatedIdsMap);
             }
         }
     }
@@ -156,11 +123,11 @@ public class AbstractSearchManager<T>
     /**
      * @return the intersection of a collection and a multi set (collection of sets).
      */
-    protected Collection<Long> intersection(Collection<Long> collection,
-            Collection<Set<Long>> multiSet)
+    protected Collection<Long> intersection(final Collection<Long> collection,
+            final Collection<Set<Long>> multiSet)
     {
-        Set<Long> intersection = new HashSet<Long>();
-        for (Set<Long> set : multiSet)
+        final Set<Long> intersection = new HashSet<>();
+        for (final Set<Long> set : multiSet)
         {
             set.retainAll(collection);
             intersection.addAll(set);
@@ -169,27 +136,39 @@ public class AbstractSearchManager<T>
     }
 
     /**
-     * Filters search results by a relationship. This comes handy when filtering search results based on a subcriteria which operates on a different
-     * entity than the encapsulating criteria.
+     * Filters search results by a relationship. This comes in handy when filtering search results based on a
+     * subcriteria which operates on a different entity than the encapsulating criteria.
      * 
      * @param idsToFilter the ids to be filtered.
-     * @param relatedIds ids matching a subcriteria
+     * @param relatedIds ids matching subcriteria.
      * @param relationshipMap a relationship map in the form <id, set<related-ids>>
      * @return all id-s having relationship to at least on id from relatedIds.
      */
-    protected Collection<Long> filteIdsByRelationship(Collection<Long> idsToFilter,
-            Collection<Long> relatedIds, Map<Long, Set<Long>> relationshipMap)
+    protected Collection<Long> filterIdsByRelationship(final Collection<Long> idsToFilter,
+            final Collection<Long> relatedIds, final Map<Long, Set<Long>> relationshipMap)
     {
-        for (Iterator<Long> iterator = idsToFilter.iterator(); iterator.hasNext();)
+        for (final Iterator<Long> iterator = idsToFilter.iterator(); iterator.hasNext();)
         {
-            Long id = iterator.next();
-            Set<Long> relatedIdSet = relationshipMap.get(id);
+            final Long id = iterator.next();
+            final Set<Long> relatedIdSet = relationshipMap.get(id);
             if (relatedIdSet == null || Collections.disjoint(relatedIds, relatedIdSet))
             {
                 iterator.remove();
             }
         }
         return idsToFilter;
+    }
+
+    interface IRelationshipHandler<C extends ISearchCriteria>
+    {
+
+        Collection<Long> findRelatedIdsByCriteria(String userId, C criterion,
+                List<ISearchCriteria> otherSubCriteria);
+
+        Map<Long, Set<Long>> listIdsToRelatedIds(Collection<Long> ids);
+
+        Map<Long, Set<Long>> listRelatedIdsToIds(Collection<Long> relatedIds);
+
     }
 
 }

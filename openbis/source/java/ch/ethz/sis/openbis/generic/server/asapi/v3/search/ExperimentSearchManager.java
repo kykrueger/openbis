@@ -16,22 +16,20 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
-import static ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.EXPERIMENT;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 
 import java.util.Collections;
 import java.util.List;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.EXPERIMENT;
 
 /**
  * Search manager for experiments.
  * 
- * @author Franz-Josef Elmer
+ * @author Viktor Kovtun
  */
 public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTable>
 {
@@ -41,17 +39,16 @@ public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTa
         super(searchDAO, lister);
     }
 
-    public List<ExperimentPE> searchForExperiments(String userId, DetailedSearchCriteria criteria)
+    public List<ExperimentPE> searchForExperiments(final String userId, final ExperimentSearchCriteria criteria)
     {
-        List<Long> experimentIds = searchForExperimentIDs(userId, criteria);
+        final List<Long> experimentIds = searchForExperimentIDs(userId, criteria);
         lister.loadByIds(experimentIds);
         return lister.getExperiments();
     }
 
-    public List<Long> searchForExperimentIDs(String userId, DetailedSearchCriteria criteria)
+    public List<Long> searchForExperimentIDs(final String userId, final ExperimentSearchCriteria criteria)
     {
-        return searchDAO.searchForEntityIds(userId, criteria, EXPERIMENT,
-                Collections.<IAssociationCriteria> emptyList());
+        return searchDAO.searchForEntityIds(userId, criteria, EXPERIMENT, Collections.emptyList());
     }
 
 }
