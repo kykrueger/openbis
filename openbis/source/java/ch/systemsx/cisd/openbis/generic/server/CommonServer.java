@@ -923,7 +923,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
         {
             extractAssignments(result, entityTypeOrNull, propertyType);
         }
-        Collections.sort(result);
+        result.sort(null);
         return result;
     }
 

@@ -112,9 +112,13 @@ public class AuthorizationManagementConsolTest extends AbstractGWTTestCase
     {
         loginAndInvokeAction("o", "o", ActionMenuKind.AUTHORIZATION_MENU_USERS);
 
+        // Had to make casting to bare Class (with no type information) to fix the following compilation error.
+        // java: incompatible types:
+        // java.lang.Class<ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.TypedTableGrid.ListEntitiesCallback>
+        // cannot be converted to java.lang.Class<? extends com.google.gwt.user.client.rpc.AsyncCallback<?>>
         FailureExpectation failureExpectation =
                 new FailureExpectation(
-                        (Class<? extends AsyncCallback<?>>) TypedTableGrid.ListEntitiesCallback.class)
+                        (Class) TypedTableGrid.ListEntitiesCallback.class)
                         .with("Authorization failure: None of method roles '[INSTANCE_ADMIN]' "
                                 + "could be found in roles of user 'o'.");
 
