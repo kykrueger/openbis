@@ -1,8 +1,8 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
 import java.util.List;
 

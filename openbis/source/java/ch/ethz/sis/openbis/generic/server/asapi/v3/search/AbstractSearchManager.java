@@ -18,12 +18,17 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchAssociationCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchNotNullAssociationCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchNullAssociationCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
 
 import java.util.*;
 
 /**
  * Manages detailed search with complex search criteria.
- * 
+ *
  * @author Viktor Kovtun
  */
 public class AbstractSearchManager<T>
@@ -57,32 +62,32 @@ public class AbstractSearchManager<T>
         }
     }
 
-//    protected IAssociationCriteria findAssociatedEntities(final String userId, final ISearchCriteria criterion)
-//    {
+    protected IAssociationCriteria findAssociatedEntities(final String userId, final ISearchCriteria criterion)
+    {
 //        // TODO: implement.
 //        return null;
-////        if (criterion == null)
-////        {
-////            return new DetailedSearchNullAssociationCriteria(criterion.getTargetEntityKind());
-////        } else
-////        {
-////            if (criterion.getCriteria().isEmpty())
-////            {
-////                return new DetailedSearchNotNullAssociationCriteria(criterion.getTargetEntityKind());
-////            } else
-////            {
-////                // where related objects meets given criteria (for now we don't support sub criteria of sub criteria)
-////                List<IAssociationCriteria> associations = Collections.emptyList();
-////                final Collection<Long> associatedIds =
-////                        searchDAO.searchForEntityIds(userId, criterion.getCriteria(), DtoConverters
-////                                .convertEntityKind(criterion.getTargetEntityKind().getEntityKind()),
-////                                associations);
-////
-////                return new DetailedSearchAssociationCriteria(criterion.getTargetEntityKind(),
-////                        associatedIds);
-////            }
-////        }
-//    }
+        if (criterion == null)
+        {
+            return new DetailedSearchNullAssociationCriteria(criterion.getTargetEntityKind());
+        } else
+        {
+            if (criterion.getCriteria().isEmpty())
+            {
+                return new DetailedSearchNotNullAssociationCriteria(criterion.getTargetEntityKind());
+            } else
+            {
+                // where related objects meets given criteria (for now we don't support sub criteria of sub criteria)
+                List<IAssociationCriteria> associations = Collections.emptyList();
+                final Collection<Long> associatedIds =
+                        searchDAO.searchForEntityIds(userId, criterion.getCriteria(), DtoConverters
+                                .convertEntityKind(criterion.getTargetEntityKind().getEntityKind()),
+                                associations);
+
+                return new DetailedSearchAssociationCriteria(criterion.getTargetEntityKind(),
+                        associatedIds);
+            }
+        }
+    }
 
     protected void mergeCriteria(final Collection<ISearchCriteria> criteria, final ISearchCriteria criterion) {
         criteria.add(criterion);

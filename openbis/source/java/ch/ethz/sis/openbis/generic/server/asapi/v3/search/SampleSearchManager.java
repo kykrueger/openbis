@@ -17,16 +17,15 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListOrSearchSampleCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
 import org.springframework.dao.DataAccessException;
 
 import java.util.*;
@@ -168,7 +167,7 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
         for (final ISearchCriteria subCriterion : subCriteria)
         {
             // TODO: rewrite method findAssociatedEntities().
-//            associations.add(findAssociatedEntities(userId, subCriterion));
+            associations.add(findAssociatedEntities(userId, subCriterion));
         }
 
         if (subCriteria.isEmpty() && criterion.getCriteria().isEmpty())
@@ -178,8 +177,7 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
             sampleSearchCriteria.withCode().thatContains("");
             criterion.getCriteria().add(sampleSearchCriteria);
         }
-        final List<Long> sampleIds = searchDAO.searchForEntityIds(userId, criterion,
-                DtoConverters.convertEntityKind(EntityKind.SAMPLE), associations);
+        final List<Long> sampleIds = searchDAO.searchForEntityIds(userId, criterion, EntityKind.SAMPLE, associations);
         return sampleIds;
     }
 
