@@ -10,6 +10,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 	forceMonospaceFont : [],
 	sampleTypeDefinitionsExtension : {
 				"MICROSCOPY_SAMPLE_TYPE" : {
+					"SHOW_ON_NAV" : true,
 					"SHOW" : false,
 					"SAMPLE_CHILDREN_DISABLED" : true,
 					"SAMPLE_PARENTS_DISABLED" : true,
