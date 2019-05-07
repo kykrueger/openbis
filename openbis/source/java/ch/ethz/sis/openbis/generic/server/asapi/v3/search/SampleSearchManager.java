@@ -34,28 +34,6 @@ import java.util.*;
  */
 public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
 {
-    private final IRelationshipHandler CHILDREN_RELATIONSHIP_HANDLER = new IRelationshipHandler<SampleSearchCriteria>()
-        {
-
-            @Override
-            public Collection<Long> findRelatedIdsByCriteria(final String userId, final SampleSearchCriteria criterion,
-                    final List<ISearchCriteria> otherSubCriteria)
-            {
-                return findSampleIds(userId, criterion, otherSubCriteria);
-            }
-
-            @Override
-            public Map<Long, Set<Long>> listIdsToRelatedIds(Collection<Long> sampleIds)
-            {
-                return lister.getParentToChildrenIdsMap(sampleIds);
-            }
-
-            @Override
-            public Map<Long, Set<Long>> listRelatedIdsToIds(Collection<Long> childrenSampleIds)
-            {
-                return lister.getChildToParentsIdsMap(childrenSampleIds);
-            }
-        };
 
     private final IRelationshipHandler PARENT_RELATIONSHIP_HANDLER = new IRelationshipHandler<SampleSearchCriteria>()
         {
@@ -78,6 +56,31 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
             {
                 return lister.getParentToChildrenIdsMap(parentSampleIds);
             }
+
+        };
+
+    private final IRelationshipHandler CHILDREN_RELATIONSHIP_HANDLER = new IRelationshipHandler<SampleSearchCriteria>()
+        {
+
+            @Override
+            public Collection<Long> findRelatedIdsByCriteria(final String userId, final SampleSearchCriteria criterion,
+                    final List<ISearchCriteria> otherSubCriteria)
+            {
+                return findSampleIds(userId, criterion, otherSubCriteria);
+            }
+
+            @Override
+            public Map<Long, Set<Long>> listIdsToRelatedIds(Collection<Long> sampleIds)
+            {
+                return lister.getParentToChildrenIdsMap(sampleIds);
+            }
+
+            @Override
+            public Map<Long, Set<Long>> listRelatedIdsToIds(Collection<Long> childrenSampleIds)
+            {
+                return lister.getChildToParentsIdsMap(childrenSampleIds);
+            }
+
         };
 
     public SampleSearchManager(ISQLSearchDAO searchDAO, ISampleLister sampleLister)
@@ -96,8 +99,6 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
         final boolean hasMainCriteria = !criterion.getCriteria().isEmpty() || !mainCriteria.isEmpty();
         final boolean hasParentCriteria = !parentCriteria.isEmpty();
         final boolean hasChildCriteria = !childCriteria.isEmpty();
-
-        // TODO: continue from here.
 
         Collection<Long> sampleIds = null;
         if (hasMainCriteria || (!hasParentCriteria && !hasChildCriteria))
@@ -147,6 +148,9 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
                 otherCriteria.add(subCriterion);
             }
         }
+
+        assert parentCriteria.size() <= 1 : "There should be at most one parent criterion.";
+        assert childCriteria.size() <= 1 : "There should be at most one child criterion.";
     }
 
     private List<Long> findSampleIds(final String userId, final SampleSearchCriteria criterion,

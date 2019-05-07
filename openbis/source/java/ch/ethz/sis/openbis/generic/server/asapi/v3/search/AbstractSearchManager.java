@@ -20,7 +20,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchNotNullAssociationCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchNullAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
 
@@ -69,32 +68,30 @@ public class AbstractSearchManager<T>
 
         // This method is never called for parents and children.
         // For the "others" case subCriteria cannot be null.
-        if (subCriteria.getCriteria() == null)
-        {
-            return new DetailedSearchNullAssociationCriteria(subCriteria.getTargetEntityKind());
-        } else
-        {
+//        if (subCriteria.getCriteria() == null)
+//        {
+//            return new DetailedSearchNullAssociationCriteria(subCriteria.getTargetEntityKind());
+//        } else
+//        {
             if (subCriteria.getCriteria().isEmpty())
             {
                 return new DetailedSearchNotNullAssociationCriteria(subCriteria.getTargetEntityKind());
             } else
             {
                 // where related objects meets given criteria (for now we don't support sub criteria of sub criteria)
-                List<IAssociationCriteria> associations = Collections.emptyList();
                 final Collection<Long> associatedIds =
                         searchDAO.searchForEntityIds(userId, subCriteria.getCriteria(), DtoConverters
                                 .convertEntityKind(subCriteria.getTargetEntityKind().getEntityKind()),
-                                associations);
+                                Collections.emptyList());
 
                 return new DetailedSearchAssociationCriteria(subCriteria.getTargetEntityKind(),
                         associatedIds);
             }
-        }
+//        }
     }
 
     protected <C extends ISearchCriteria> Collection<Long> filterSearchResultsByCriteria(final String userId,
-            final Collection<Long> idsToFilter, C criterion,
-            final IRelationshipHandler<C> relationshipHandler)
+            final Collection<Long> idsToFilter, C criterion, final IRelationshipHandler<C> relationshipHandler)
     {
         final Collection<Long> relatedIds = relationshipHandler.findRelatedIdsByCriteria(userId, criterion,
                 Collections.emptyList());
