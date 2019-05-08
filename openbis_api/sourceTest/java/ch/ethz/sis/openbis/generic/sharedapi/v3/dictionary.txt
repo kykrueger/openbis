@@ -567,6 +567,7 @@ SampleIdentifier
 SampleParentsSearchCriteria
 SamplePermId
 SampleRelationType
+Abstract Sample Search Criteria
 SampleSearchCriteria
 SampleSearchRelation
 SampleSortOptions

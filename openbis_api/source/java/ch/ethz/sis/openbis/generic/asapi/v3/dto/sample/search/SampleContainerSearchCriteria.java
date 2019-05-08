@@ -22,7 +22,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author pkupczyk
  */
 @JsonObject("as.dto.sample.search.SampleContainerSearchCriteria")
-public class SampleContainerSearchCriteria extends SampleSearchCriteria
+public class SampleContainerSearchCriteria extends AbstractSampleSearchCriteria<SampleContainerSearchCriteria>
 {
 
     private static final long serialVersionUID = 1L;
