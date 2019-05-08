@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -73,6 +74,14 @@ public class SearchMaterialTest extends AbstractTest
     {
         MaterialSearchCriteria criteria = new MaterialSearchCriteria();
         criteria.withCode().thatStartsWith("VIRUS");
+        testSearch(TEST_USER, criteria, new MaterialPermId("VIRUS1", "VIRUS"), new MaterialPermId("VIRUS2", "VIRUS"));
+    }
+
+    @Test
+    public void testSearchWithCodes()
+    {
+        MaterialSearchCriteria criteria = new MaterialSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("VIRUS2", "VIRUS1"));
         testSearch(TEST_USER, criteria, new MaterialPermId("VIRUS1", "VIRUS"), new MaterialPermId("VIRUS2", "VIRUS"));
     }
 
