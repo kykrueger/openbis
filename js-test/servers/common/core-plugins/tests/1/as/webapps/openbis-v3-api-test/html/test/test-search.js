@@ -606,6 +606,38 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchSamples() withChildren", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withChildren().withCode().thatContains("CHILD");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				c.assertObjectsWithValues(samples, "code", [ "TEST-SAMPLE-2" ]);
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSamples() withParents", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withParents().withCode().thatContains("ARE");
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				c.assertObjectsWithValues(samples, "code", [ "TEST-SAMPLE-2" ]);
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchSamples() with sorting by identifier", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -999,6 +1031,54 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchDataSets() withChildren", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.DataSetSearchCriteria();
+				criteria.withChildren().withCode().thatEquals("20130415100238098-408");
+				return facade.searchDataSets(criteria, c.createDataSetFetchOptions());
+			}
+			
+			var fCheck = function(facade, dataSets) {
+				c.assertObjectsWithValues(dataSets, "code", [ "20130415093804724-403" ]);
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchDataSets() withParents", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.DataSetSearchCriteria();
+				criteria.withParents().withCode().thatEquals("20130415100158230-407");
+				return facade.searchDataSets(criteria, c.createDataSetFetchOptions());
+			}
+			
+			var fCheck = function(facade, dataSets) {
+				c.assertObjectsWithValues(dataSets, "code", [ "20130415093804724-403" ]);
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchDataSets() withContainer", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.DataSetSearchCriteria();
+				criteria.withContainer().withCode().thatEquals("20130412153119864-385");
+				return facade.searchDataSets(criteria, c.createDataSetFetchOptions());
+			}
+			
+			var fCheck = function(facade, dataSets) {
+				c.assertObjectsWithValues(dataSets, "code", [ "20130412153118625-384" ]);
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchDataSets() withPhysicalData", function(assert) {
 			var c = new common(assert, openbis);
 

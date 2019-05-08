@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.AbstractSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
@@ -46,7 +47,7 @@ public class SampleSearchCriteriaTranslator extends AbstractCompositeSearchCrite
     @Override
     protected boolean doAccepts(ISearchCriteria criteria)
     {
-        return criteria instanceof SampleSearchCriteria
+        return criteria instanceof AbstractSampleSearchCriteria
                 || criteria instanceof NoSampleSearchCriteria;
     }
 
