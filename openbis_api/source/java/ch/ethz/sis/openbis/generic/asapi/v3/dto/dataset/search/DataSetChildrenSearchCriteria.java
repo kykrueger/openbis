@@ -22,7 +22,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Jakub Straszewski
  */
 @JsonObject("as.dto.dataset.search.DataSetChildrenSearchCriteria")
-public class DataSetChildrenSearchCriteria extends DataSetSearchCriteria
+public class DataSetChildrenSearchCriteria extends AbstractDataSetSearchCriteria<DataSetChildrenSearchCriteria>
 {
     private static final long serialVersionUID = 1L;
 

@@ -110,6 +110,7 @@ DataSetKind
 DataSetParentsSearchCriteria
 DataSetPermId
 DataSetRelationType
+AbstractDataSetSearchCriteria
 DataSetSearchCriteria
 DataSetSearchRelation
 DataSetSortOptions
@@ -567,6 +568,7 @@ SampleIdentifier
 SampleParentsSearchCriteria
 SamplePermId
 SampleRelationType
+Abstract Sample Search Criteria
 SampleSearchCriteria
 SampleSearchRelation
 SampleSortOptions

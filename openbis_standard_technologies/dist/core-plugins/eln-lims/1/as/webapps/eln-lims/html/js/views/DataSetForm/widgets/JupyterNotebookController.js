@@ -26,4 +26,10 @@ function JupyterNotebookController(entity) {
 		JupyterUtil.createJupyterNotebookAndOpen(workspace, notebook, datasets, notebookOwner);
 		Util.unblockUI();
 	}
+	
+	this.createAndSave = function(fileName, datasets, notebookOwner) {
+		var jnb = JSON.stringify(JupyterUtil.createJupyterNotebookContent(datasets, notebookOwner, fileName));
+		Util.downloadTextFile(jnb, fileName);
+		Util.unblockUI();
+	}
 }

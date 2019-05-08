@@ -6,12 +6,12 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 		"as/dto/experiment/search/NoExperimentSearchCriteria", "as/dto/sample/search/NoSampleContainerSearchCriteria", "as/dto/sample/search/SampleTypeSearchCriteria",
 		"as/dto/common/search/IdentifierSearchCriteria" ], function(require, stjs, AbstractEntitySearchCriteria, SearchOperator, SampleSearchRelation) {
 
-	var SampleSearchCriteria = function(relation) {
+	var AbstractSampleSearchCriteria = function(relation) {
 		AbstractEntitySearchCriteria.call(this);
 		this.relation = relation ? relation : SampleSearchRelation.SAMPLE;
 	};
-	stjs.extend(SampleSearchCriteria, AbstractEntitySearchCriteria, [ AbstractEntitySearchCriteria ], function(constructor, prototype) {
-		prototype['@type'] = 'as.dto.sample.search.SampleSearchCriteria';
+	stjs.extend(AbstractSampleSearchCriteria, AbstractEntitySearchCriteria, [ AbstractEntitySearchCriteria ], function(constructor, prototype) {
+		prototype['@type'] = 'as.dto.sample.search.AbstractSampleSearchCriteria';
 		constructor.serialVersionUID = 1;
 		prototype.relation = null;
 		prototype.withIdentifier = function() {
@@ -42,15 +42,6 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 			var NoExperimentSearchCriteria = require("as/dto/experiment/search/NoExperimentSearchCriteria");
 			this.addCriteria(new NoExperimentSearchCriteria());
 			return this;
-		};
-		prototype.withParents = function() {
-			return this.addCriteria(new SampleParentsSearchCriteria());
-		};
-		prototype.withChildren = function() {
-			return this.addCriteria(new SampleChildrenSearchCriteria());
-		};
-		prototype.withContainer = function() {
-			return this.addCriteria(new SampleContainerSearchCriteria());
 		};
 		prototype.withoutContainer = function() {
 			var NoSampleContainerSearchCriteria = require("as/dto/sample/search/NoSampleContainerSearchCriteria");
@@ -85,10 +76,40 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 		}
 	});
 
-	var SampleParentsSearchCriteria = function() {
-		SampleSearchCriteria.call(this, SampleSearchRelation.PARENTS);
+	var SampleSearchCriteria = function() {
+		AbstractSampleSearchCriteria.call(this, SampleSearchRelation.PARENTS);
 	};
-	stjs.extend(SampleParentsSearchCriteria, SampleSearchCriteria, [ SampleSearchCriteria ], function(constructor, prototype) {
+	stjs.extend(SampleSearchCriteria, AbstractSampleSearchCriteria, [ AbstractSampleSearchCriteria ], function(constructor, prototype) {
+		prototype['@type'] = 'as.dto.sample.search.SampleSearchCriteria';
+		constructor.serialVersionUID = 1;
+		prototype.withParents = function() {
+			return this.addCriteria(new SampleParentsSearchCriteria());
+		};
+		prototype.withChildren = function() {
+			return this.addCriteria(new SampleChildrenSearchCriteria());
+		};
+		prototype.withContainer = function() {
+			return this.addCriteria(new SampleContainerSearchCriteria());
+		};
+	}, {
+		relation : {
+			name : "Enum",
+			arguments : [ "SampleSearchRelation" ]
+		},
+		operator : {
+			name : "Enum",
+			arguments : [ "SearchOperator" ]
+		},
+		criteria : {
+			name : "Collection",
+			arguments : [ "ISearchCriteria" ]
+		}
+	});
+
+	var SampleParentsSearchCriteria = function() {
+		AbstractSampleSearchCriteria.call(this, SampleSearchRelation.PARENTS);
+	};
+	stjs.extend(SampleParentsSearchCriteria, AbstractSampleSearchCriteria, [ AbstractSampleSearchCriteria ], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.sample.search.SampleParentsSearchCriteria';
 		constructor.serialVersionUID = 1;
 	}, {
@@ -105,11 +126,11 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 			arguments : [ "ISearchCriteria" ]
 		}
 	});
-
+	
 	var SampleChildrenSearchCriteria = function() {
-		SampleSearchCriteria.call(this, SampleSearchRelation.CHILDREN);
+		AbstractSampleSearchCriteria.call(this, SampleSearchRelation.CHILDREN);
 	};
-	stjs.extend(SampleChildrenSearchCriteria, SampleSearchCriteria, [ SampleSearchCriteria ], function(constructor, prototype) {
+	stjs.extend(SampleChildrenSearchCriteria, AbstractSampleSearchCriteria, [ AbstractSampleSearchCriteria ], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.sample.search.SampleChildrenSearchCriteria';
 		constructor.serialVersionUID = 1;
 	}, {
@@ -128,9 +149,9 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 	});
 
 	var SampleContainerSearchCriteria = function() {
-		SampleSearchCriteria.call(this, SampleSearchRelation.CONTAINER);
+		AbstractSampleSearchCriteria.call(this, SampleSearchRelation.CONTAINER);
 	};
-	stjs.extend(SampleContainerSearchCriteria, SampleSearchCriteria, [ SampleSearchCriteria ], function(constructor, prototype) {
+	stjs.extend(SampleContainerSearchCriteria, AbstractSampleSearchCriteria, [ AbstractSampleSearchCriteria ], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.sample.search.SampleContainerSearchCriteria';
 		constructor.serialVersionUID = 1;
 	}, {
