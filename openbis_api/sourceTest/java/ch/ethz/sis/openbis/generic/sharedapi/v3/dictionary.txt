@@ -110,6 +110,7 @@ DataSetKind
 DataSetParentsSearchCriteria
 DataSetPermId
 DataSetRelationType
+AbstractDataSetSearchCriteria
 DataSetSearchCriteria
 DataSetSearchRelation
 DataSetSortOptions

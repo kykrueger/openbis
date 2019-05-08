@@ -16,110 +16,35 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author pkupczyk
  */
 @JsonObject("as.dto.dataset.search.DataSetSearchCriteria")
-public class DataSetSearchCriteria extends AbstractEntitySearchCriteria<IDataSetId>
+public class DataSetSearchCriteria extends AbstractDataSetSearchCriteria<DataSetSearchCriteria>
 {
 
     private static final long serialVersionUID = 1L;
 
-    private DataSetSearchRelation relation;
-
     public DataSetSearchCriteria()
     {
-        this(DataSetSearchRelation.DATASET);
+        super(DataSetSearchRelation.DATASET);
     }
 
-    DataSetSearchCriteria(DataSetSearchRelation relation)
-    {
-        this.relation = relation;
-    }
-
-    public DataSetTypeSearchCriteria withType()
-    {
-        return with(new DataSetTypeSearchCriteria());
-    }
-
-    public PhysicalDataSearchCriteria withPhysicalData()
-    {
-        return with(new PhysicalDataSearchCriteria());
-    }
-
-    public LinkedDataSearchCriteria withLinkedData()
-    {
-        return with(new LinkedDataSearchCriteria());
-    }
-
-    public DataSetSearchCriteria withParents()
+    public DataSetParentsSearchCriteria withParents()
     {
         return with(new DataSetParentsSearchCriteria());
     }
 
-    public DataSetSearchCriteria withChildren()
+    public DataSetChildrenSearchCriteria withChildren()
     {
         return with(new DataSetChildrenSearchCriteria());
     }
 
-    public DataSetSearchCriteria withContainer()
+    public DataSetContainerSearchCriteria withContainer()
     {
         return with(new DataSetContainerSearchCriteria());
-    }
-
-    public ExperimentSearchCriteria withExperiment()
-    {
-        return with(new ExperimentSearchCriteria());
-    }
-
-    public DataSetSearchCriteria withoutExperiment()
-    {
-        with(new NoExperimentSearchCriteria());
-        return this;
-    }
-
-    public SampleSearchCriteria withSample()
-    {
-        return with(new SampleSearchCriteria());
-    }
-
-    public DataSetSearchCriteria withoutSample()
-    {
-        with(new NoSampleSearchCriteria());
-        return this;
-    }
-
-    public DataSetSearchCriteria withOrOperator()
-    {
-        return (DataSetSearchCriteria) withOperator(SearchOperator.OR);
-    }
-
-    public DataSetSearchCriteria withAndOperator()
-    {
-        return (DataSetSearchCriteria) withOperator(SearchOperator.AND);
-    }
-
-    public DataSetSearchRelation getRelation()
-    {
-        return relation;
-    }
-
-    @Override
-    protected SearchCriteriaToStringBuilder createBuilder()
-    {
-        SearchCriteriaToStringBuilder builder = super.createBuilder();
-        builder.setName(relation.name());
-        return builder;
     }
 
 }

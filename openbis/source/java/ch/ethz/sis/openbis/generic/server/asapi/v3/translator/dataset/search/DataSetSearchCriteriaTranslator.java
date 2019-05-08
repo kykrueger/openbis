@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.AbstractDataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetParentsSearchCriteria;
@@ -44,7 +45,7 @@ public class DataSetSearchCriteriaTranslator extends AbstractCompositeSearchCrit
     @Override
     protected boolean doAccepts(ISearchCriteria criteria)
     {
-        return criteria instanceof DataSetSearchCriteria;
+        return criteria instanceof AbstractDataSetSearchCriteria;
     }
 
     @Override
