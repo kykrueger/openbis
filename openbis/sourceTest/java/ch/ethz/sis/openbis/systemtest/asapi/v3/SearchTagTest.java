@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -97,6 +98,14 @@ public class SearchTagTest extends AbstractTest
         testSearch(TEST_USER, criteria, "/test/TEST_METAPROJECTS");
     }
 
+    @Test
+    public void testSearchWithCodes()
+    {
+        TagSearchCriteria criteria = new TagSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("TEST_METAPROJECTS", "ANOTHER_TEST_METAPROJECTS"));
+        testSearch(TEST_USER, criteria, "/test/TEST_METAPROJECTS", "/test/ANOTHER_TEST_METAPROJECTS");
+    }
+    
     @Test
     public void testSearchWithCodeThatContains()
     {

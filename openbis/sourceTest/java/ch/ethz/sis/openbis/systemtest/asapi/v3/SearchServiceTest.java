@@ -18,6 +18,8 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
+
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -44,6 +46,19 @@ public class SearchServiceTest extends AbstractTest
         assertEquals(result.getTotalCount(), 1);
     }
 
+    @Test
+    public void testSearchServicesWithCodes()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        CustomASServiceSearchCriteria searchCriteria = new CustomASServiceSearchCriteria();
+        searchCriteria.withCodes().thatIn(Arrays.asList("simple-service"));
+        
+        SearchResult<CustomASService> result = v3api.searchCustomASServices(sessionToken, searchCriteria,
+                new CustomASServiceFetchOptions());
+        
+        assertEquals(result.getTotalCount(), 1);
+    }
+    
     @Test
     public void testSearchAllServicesSortedPage2()
     {

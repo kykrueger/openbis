@@ -1885,6 +1885,29 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchExternalDms() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.ExternalDmsSearchCriteria();
+				criteria.withCodes().thatIn(["DMS_2"]);
+				return facade.searchExternalDataManagementSystems(criteria, c.createExternalDmsFetchOptions());
+			}
+			
+			var fCheck = function(facade, entities) {
+				c.assertEqual(entities.length, 1);
+				var edms = entities[0];
+				c.assertEqual(edms.getCode(), "DMS_2", "Code");
+				c.assertEqual(edms.getLabel(), "Test External openBIS instance", "Label");
+				c.assertEqual(edms.getAddress(), "http://www.openbis.ch/perm_id=${code}", "Address");
+				c.assertEqual(edms.getUrlTemplate(), "http://www.openbis.ch/perm_id=${code}", "URL template");
+				c.assertEqual(edms.getAddressType(), "OPENBIS", "Address type");
+				c.assertEqual(edms.isOpenbis(), true, "is openBIS?");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchTags()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1904,6 +1927,25 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchTags() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.TagSearchCriteria();
+				criteria.withCodes().thatIn(["JS_TEST_METAPROJECT"]);
+				return facade.searchTags(criteria, c.createTagFetchOptions());
+			}
+			
+			var fCheck = function(facade, tags) {
+				c.assertEqual(tags.length, 1);
+				var tag = tags[0];
+				c.assertEqual(tag.getCode(), "JS_TEST_METAPROJECT", "Code");
+				c.assertEqual(tag.getPermId().getPermId(), "/openbis_test_js/JS_TEST_METAPROJECT", "PermId");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchAuthorizationGroups()", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
@@ -1929,6 +1971,31 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchAuthorizationGroups() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			var code;
+			
+			var fSearch = function(facade) {
+				return c.createAuthorizationGroup(facade).then(function(permId) {
+					var criteria = new c.AuthorizationGroupSearchCriteria();
+					code = permId.getPermId();
+					criteria.withCodes().thatIn([code]);
+					return facade.searchAuthorizationGroups(criteria, c.createAuthorizationGroupFetchOptions());
+				});
+			}
+			
+			var fCheck = function(facade, groups) {
+				c.assertEqual(groups.length, 1);
+				var group = groups[0];
+				c.assertEqual(group.getCode(), code, "Code");
+				var users = group.getUsers();
+				c.assertEqual(users[0].getUserId(), "power_user", "User");
+				c.assertEqual(users.length, 1, "# Users");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchAuthorizationGroups() existing with role assigments", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
@@ -2090,6 +2157,24 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchDataStores() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.DataStoreSearchCriteria();
+				criteria.withCodes().thatIn(["DSS1"]);
+				return facade.searchDataStores(criteria, c.createDataStoreFetchOptions());
+			}
+			
+			var fCheck = function(facade, dataStores) {
+				c.assertEqual(dataStores.length, 1);
+				var dataStore = dataStores[0];
+				c.assertEqual(dataStore.getCode(), "DSS1", "Code");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("dataStoreFacade.searchFiles() atNonexistentDataStore", function(assert) {
 			var c = new common(assert, openbis);
 

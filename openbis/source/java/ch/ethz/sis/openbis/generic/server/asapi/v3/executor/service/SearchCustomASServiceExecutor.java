@@ -22,11 +22,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.CustomASServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodesMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.StringFieldMatcher;
 
@@ -63,6 +65,14 @@ public class SearchCustomASServiceExecutor extends AbstractSearchObjectManuallyE
         if (criteria instanceof CodeSearchCriteria)
         {
             return new CodeMatcher();
+        } else if (criteria instanceof CodesSearchCriteria)
+        {
+            return new CodesMatcher<CustomASService>() {
+                @Override
+                protected String getCodeOf(CustomASService object)
+                {
+                    return object.getCode().getPermId();
+                }};
         }
         throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());
     }

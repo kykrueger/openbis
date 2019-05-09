@@ -1,7 +1,10 @@
 /**
  * @author pkupczyk
  */
-define([ "require", "stjs", "as/dto/common/search/AbstractCompositeSearchCriteria", "as/dto/common/search/CodeSearchCriteria", "as/dto/externaldms/search/LabelSearchCriteria",  "as/dto/externaldms/search/AddressSearchCriteria", "as/dto/externaldms/search/ExternalDmsTypeSearchCriteria"], function(require, stjs, AbstractCompositeSearchCriteria) {
+define([ "require", "stjs", "as/dto/common/search/AbstractCompositeSearchCriteria", "as/dto/common/search/CodeSearchCriteria", 
+		"as/dto/common/search/CodesSearchCriteria", "as/dto/externaldms/search/LabelSearchCriteria",  
+		"as/dto/externaldms/search/AddressSearchCriteria", "as/dto/externaldms/search/ExternalDmsTypeSearchCriteria"], 
+	function(require, stjs, AbstractCompositeSearchCriteria) {
 	var ExternalDmsSearchCriteria = function() {
 		AbstractCompositeSearchCriteria.call(this);
 	};
@@ -11,6 +14,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractCompositeSearchCriteri
 		prototype.withCode = function() {
 			var CodeSearchCriteria = require("as/dto/common/search/CodeSearchCriteria");
 			return this.addCriteria(new CodeSearchCriteria());
+		};
+		prototype.withCodes = function() {
+			var CodesSearchCriteria = require("as/dto/common/search/CodesSearchCriteria");
+			return this.addCriteria(new CodesSearchCriteria());
 		};
 		prototype.withLabel = function() {
 			var LabelSearchCriteria = require("as/dto/externaldms/search/LabelSearchCriteria");

@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.AddressSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.ExternalDmsSearchCriteria;
@@ -30,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.search.LabelSearchCr
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodeMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodesMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataManagementSystemPE;
 
@@ -63,6 +65,9 @@ public class SearchExternalDmsExecutor extends AbstractSearchObjectManuallyExecu
         if (criteria instanceof CodeSearchCriteria)
         {
             return new CodeMatcher<ExternalDataManagementSystemPE>();
+        } else if (criteria instanceof CodesSearchCriteria)
+        {
+            return new CodesMatcher<ExternalDataManagementSystemPE>();
         } else if (criteria instanceof LabelSearchCriteria)
         {
             return new LabelMatcher();

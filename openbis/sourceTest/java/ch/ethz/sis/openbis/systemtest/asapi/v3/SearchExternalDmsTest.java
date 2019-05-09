@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -63,6 +64,23 @@ public class SearchExternalDmsTest extends AbstractExternalDmsTest
         assertEquals(result.get(0).getAddressType(), edms2.getAddressType());
     }
 
+    @Test
+    public void searchReturnsExternalDataManagementSystemWithCodes()
+    {
+        get(create(externalDms()));
+        ExternalDms edms2 = get(create(externalDms()));
+        
+        ExternalDmsSearchCriteria criteria = new ExternalDmsSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList(edms2.getCode()));
+        ExternalDmsFetchOptions fetchOptions = new ExternalDmsFetchOptions();
+        List<ExternalDms> result = v3api.searchExternalDataManagementSystems(session, criteria, fetchOptions).getObjects();
+        
+        assertEquals(result.size(), 1);
+        assertEquals(result.get(0).getCode(), edms2.getCode());
+        assertEquals(result.get(0).getAddress(), edms2.getAddress());
+        assertEquals(result.get(0).getAddressType(), edms2.getAddressType());
+    }
+    
     @Test
     public void canSearchWithLabel()
     {
