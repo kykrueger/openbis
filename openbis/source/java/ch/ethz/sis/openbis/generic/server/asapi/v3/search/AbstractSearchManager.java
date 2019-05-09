@@ -91,9 +91,10 @@ public class AbstractSearchManager<T>
     }
 
     protected <C extends ISearchCriteria> Collection<Long> filterSearchResultsByCriteria(final String userId,
-            final Collection<Long> idsToFilter, C criterion, final IRelationshipHandler<C> relationshipHandler)
+            final Collection<Long> idsToFilter, Collection<C> criteria,
+            final IRelationshipHandler<C> relationshipHandler)
     {
-        final Collection<Long> relatedIds = relationshipHandler.findRelatedIdsByCriteria(userId, criterion,
+        final Collection<Long> relatedIds = relationshipHandler.findRelatedIdsByCriteria(userId, criteria,
                 Collections.emptyList());
 
         if (idsToFilter == null)
@@ -163,8 +164,7 @@ public class AbstractSearchManager<T>
     interface IRelationshipHandler<C extends ISearchCriteria>
     {
 
-        Collection<Long> findRelatedIdsByCriteria(String userId, C criterion,
-                List<ISearchCriteria> otherSubCriteria);
+        Collection<Long> findRelatedIdsByCriteria(Collection<C> criterion);
 
         Map<Long, Set<Long>> listIdsToRelatedIds(Collection<Long> ids);
 

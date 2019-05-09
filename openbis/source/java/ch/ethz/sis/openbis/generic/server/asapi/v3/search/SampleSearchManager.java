@@ -16,7 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
@@ -27,6 +29,9 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 
 import java.util.*;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SearchCriteriaUtils.getCriteria;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SearchCriteriaUtils.getOtherCriteriaThan;
+
 /**
  * Manages detailed search with complex sample search criteria.
  * 
@@ -35,14 +40,13 @@ import java.util.*;
 public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
 {
 
-    private final IRelationshipHandler PARENT_RELATIONSHIP_HANDLER = new IRelationshipHandler<SampleSearchCriteria>()
+    private final IRelationshipHandler PARENT_RELATIONSHIP_HANDLER = new IRelationshipHandler<ISearchCriteria>()
         {
 
             @Override
-            public Collection<Long> findRelatedIdsByCriteria(final String userId, final SampleSearchCriteria criterion,
-                    final List<ISearchCriteria> otherSubCriteria)
+            public Collection<Long> findRelatedIdsByCriteria(final Collection<ISearchCriteria> criteria)
             {
-                return findSampleIds(userId, criterion, otherSubCriteria);
+                return findSampleIds(criteria);
             }
 
             @Override
@@ -59,14 +63,13 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
 
         };
 
-    private final IRelationshipHandler CHILDREN_RELATIONSHIP_HANDLER = new IRelationshipHandler<SampleSearchCriteria>()
+    private final IRelationshipHandler CHILDREN_RELATIONSHIP_HANDLER = new IRelationshipHandler<ISearchCriteria>()
         {
 
             @Override
-            public Collection<Long> findRelatedIdsByCriteria(final String userId, final SampleSearchCriteria criterion,
-                    final List<ISearchCriteria> otherSubCriteria)
+            public Collection<Long> findRelatedIdsByCriteria(final Collection<ISearchCriteria> criteria)
             {
-                return findSampleIds(userId, criterion, otherSubCriteria);
+                return findSampleIds(criteria);
             }
 
             @Override
@@ -88,88 +91,94 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
         super(searchDAO, sampleLister);
     }
 
-    public Collection<Long> searchForSampleIDs(final String userId, final SampleSearchCriteria criterion)
+    public Collection<Long> searchForSampleIDs(final String userId, final SampleSearchCriteria criteria)
     {
-        final List<SampleParentsSearchCriteria> parentCriteria = new ArrayList<>();
-        final List<SampleChildrenSearchCriteria> childCriteria = new ArrayList<>();
-        final List<ISearchCriteria> mainCriteria = new ArrayList<>();
+        final List<SampleParentsSearchCriteria> parentsCriteria = getCriteria(criteria,
+                SampleParentsSearchCriteria.class);
+        final List<SampleChildrenSearchCriteria> childrenCriteria = getCriteria(criteria,
+                SampleChildrenSearchCriteria.class);
+        final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, SampleParentsSearchCriteria.class,
+                SampleChildrenSearchCriteria.class);
 
-        groupSampleCriteria(criterion.getCriteria(), parentCriteria, childCriteria, mainCriteria);
+        final SearchOperator searchOperator = criteria.getOperator();
 
-        final boolean hasMainCriteria = !criterion.getCriteria().isEmpty() || !mainCriteria.isEmpty();
-        final boolean hasParentCriteria = !parentCriteria.isEmpty();
-        final boolean hasChildCriteria = !childCriteria.isEmpty();
+        final boolean hasMainCriteria = !mainCriteria.isEmpty();
+        final boolean hasParentsCriteria = !parentsCriteria.isEmpty();
+        final boolean hasChildrenCriteria = !childrenCriteria.isEmpty();
+
 
         Collection<Long> sampleIds = null;
-        if (hasMainCriteria || (!hasParentCriteria && !hasChildCriteria))
+        if (hasMainCriteria || (!hasParentsCriteria && !hasChildrenCriteria))
         {
-            sampleIds = findSampleIds(userId, criterion, mainCriteria);
+            sampleIds = findSampleIds(mainCriteria);
             if (sampleIds == null)
             {
                 sampleIds = Collections.emptyList();
             }
         }
 
-        if (hasParentCriteria)
+        if (hasParentsCriteria)
         {
             // At most one criterion can be in parentCriteria.
-            sampleIds = filterSearchResultsByCriteria(userId, sampleIds, parentCriteria.get(0),
+            sampleIds = filterSearchResultsByCriteria(userId, sampleIds, parentsCriteria,
                     PARENT_RELATIONSHIP_HANDLER);
         }
 
-        if (hasChildCriteria)
+        if (hasChildrenCriteria)
         {
             // At most one criterion can be in childCriteria.
-            sampleIds = filterSearchResultsByCriteria(userId, sampleIds, childCriteria.get(0),
+            sampleIds = filterSearchResultsByCriteria(userId, sampleIds, childrenCriteria,
                     CHILDREN_RELATIONSHIP_HANDLER);
         }
 
         return restrictResultSetIfNecessary(sampleIds);
     }
 
-    private void groupSampleCriteria(final Collection<ISearchCriteria> allCriteria,
-            final Collection<SampleParentsSearchCriteria> parentCriteria,
-            final Collection<SampleChildrenSearchCriteria> childCriteria,
-            final Collection<ISearchCriteria> otherCriteria)
-    {
-        parentCriteria.clear();
-        childCriteria.clear();
-        otherCriteria.clear();
-        for (ISearchCriteria subCriterion : allCriteria)
-        {
-            if (subCriterion instanceof SampleParentsSearchCriteria)
-            {
-                parentCriteria.add((SampleParentsSearchCriteria) subCriterion);
-            } else if (subCriterion instanceof SampleChildrenSearchCriteria)
-            {
-                childCriteria.add((SampleChildrenSearchCriteria) subCriterion);
-            } else
-            {
-                otherCriteria.add(subCriterion);
-            }
-        }
+//    private void groupSampleCriteria(final Collection<ISearchCriteria> allCriteria,
+//            final Collection<SampleParentsSearchCriteria> parentCriteria,
+//            final Collection<SampleChildrenSearchCriteria> childCriteria,
+//            final Collection<ISearchCriteria> otherCriteria)
+//    {
+//        parentCriteria.clear();
+//        childCriteria.clear();
+//        otherCriteria.clear();
+//        for (ISearchCriteria subCriterion : allCriteria)
+//        {
+//            if (subCriterion instanceof SampleParentsSearchCriteria)
+//            {
+//                parentCriteria.add((SampleParentsSearchCriteria) subCriterion);
+//            } else if (subCriterion instanceof SampleChildrenSearchCriteria)
+//            {
+//                childCriteria.add((SampleChildrenSearchCriteria) subCriterion);
+//            } else
+//            {
+//                otherCriteria.add(subCriterion);
+//            }
+//        }
+//
+//        assert parentCriteria.size() <= 1 : "There should be at most one parent criterion.";
+//        assert childCriteria.size() <= 1 : "There should be at most one child criterion.";
+//    }
 
-        assert parentCriteria.size() <= 1 : "There should be at most one parent criterion.";
-        assert childCriteria.size() <= 1 : "There should be at most one child criterion.";
-    }
-
+//    private List<Long> findSampleIds(final Collection<ISearchCriteria> subCriterias)
     private List<Long> findSampleIds(final String userId, final SampleSearchCriteria criterion,
             final List<ISearchCriteria> subCriteria)
     {
         // for now we connect all sub criteria with logical AND
         final List<IAssociationCriteria> associations = new ArrayList<>();
-        for (final ISearchCriteria subCriterion : subCriteria)
+        for (final ISearchCriteria subCriterion : subCriterias)
         {
             // TODO: rewrite method findAssociatedEntities().
             associations.add(findAssociatedEntities(userId, subCriterion));
         }
 
-        if (subCriteria.isEmpty() && criterion.getCriteria().isEmpty())
+        if (subCriterias.isEmpty())
         {
-            // if no criteria were provided find all samples
-            criterion.withCode().thatContains("");
+            CodeSearchCriteria codeSearchCriteria = new CodeSearchCriteria();
+            codeSearchCriteria.thatContains("");
+            subCriterias.add(codeSearchCriteria);
         }
-        final List<Long> sampleIds = searchDAO.searchForEntityIds(userId, criterion, EntityKind.SAMPLE, associations);
+        final List<Long> sampleIds = searchDAO.searchForEntityIds(userId, mainCriteria, EntityKind.SAMPLE, associations);
         return sampleIds;
     }
 

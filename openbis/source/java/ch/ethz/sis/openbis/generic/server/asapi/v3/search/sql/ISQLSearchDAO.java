@@ -10,7 +10,7 @@ public interface ISQLSearchDAO
 {
 
     /** search for entity ids using the specified criteria */
-    List<Long> searchForEntityIds(String userId, ISearchCriteria criteria,
+    List<Long> searchForEntityIds(String userId, List<? extends ISearchCriteria> criteria,
             EntityKind entityKind, List<IAssociationCriteria> associationCriteria);
     
     /**
