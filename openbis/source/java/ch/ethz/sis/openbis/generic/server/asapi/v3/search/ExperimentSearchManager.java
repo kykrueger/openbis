@@ -21,10 +21,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 
-import java.util.Collections;
 import java.util.List;
-
-import static ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.EXPERIMENT;
 
 /**
  * Search manager for experiments.
@@ -48,7 +45,8 @@ public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTa
 
     public List<Long> searchForExperimentIDs(final String userId, final ExperimentSearchCriteria criteria)
     {
-        return searchDAO.searchForEntityIds(userId, criteria, EXPERIMENT, Collections.emptyList());
+//        return searchDAO.searchForEntityIds(userId, criteria, EXPERIMENT, Collections.emptyList());
+        return null;
     }
 
 }

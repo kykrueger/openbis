@@ -1,19 +1,21 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 
 import java.util.List;
+import java.util.Set;
 
 public class PostgresSearchDAO implements ISQLSearchDAO
 {
 
-    @Override
-    /** search for entity ids using the specified criteria */
-    public List<Long> searchForEntityIds(final String userId, ISearchCriteria criteria,
-            EntityKind entityKind, List<IAssociationCriteria> associationCriteria) {
-        return null;
+    /*
+     *
+     */
+    public Set<Long> queryDBWithNonRecursiveCriteria(EntityKind entityKind, List<ISearchCriteria> criteria,
+            SearchOperator operator) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

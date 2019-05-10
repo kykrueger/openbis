@@ -19,11 +19,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListMaterialCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import org.springframework.dao.DataAccessException;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,11 +38,13 @@ public class MaterialSearchManager extends AbstractSearchManager<IMaterialLister
     public List<Material> searchForMaterials(final String userId, final MaterialSearchCriteria criteria)
             throws DataAccessException
     {
-        List<Long> materialIds = searchDAO.searchForEntityIds(userId, criteria,
-                ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL,
-                Collections.emptyList());
+//        List<Long> materialIds = searchDAO.searchForEntityIds(userId, criteria,
+//                ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind.MATERIAL,
+//                Collections.emptyList());
+//
+//        return lister.list(ListMaterialCriteria.createFromMaterialIds(materialIds), true);
 
-        return lister.list(ListMaterialCriteria.createFromMaterialIds(materialIds), true);
+        return null;
     }
 
 }

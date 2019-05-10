@@ -1,17 +1,20 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ISQLSearchDAO
 {
 
-    /** search for entity ids using the specified criteria */
-    List<Long> searchForEntityIds(String userId, List<? extends ISearchCriteria> criteria,
-            EntityKind entityKind, List<IAssociationCriteria> associationCriteria);
+    /*
+     *
+     */
+    Set<Long> queryDBWithNonRecursiveCriteria(EntityKind entityKind, List<ISearchCriteria> criteria,
+            SearchOperator operator);
     
     /**
      * Returns the maximum size of a search result set. The standard implementations returns <code>hibernate.search.maxResults</code> of

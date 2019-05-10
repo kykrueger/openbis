@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -25,161 +24,111 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SearchCriteriaUtils.getCriteria;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SearchCriteriaUtils.getOtherCriteriaThan;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.NewSQLQueryTranslator.queryDBWithNonRecursiveCriteria;
 
 /**
  * Manages detailed search with complex sample search criteria.
  * 
  * @author Viktor Kovtun
+ * @author Juan Fuentes
  */
 public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
 {
 
-    private final IRelationshipHandler PARENT_RELATIONSHIP_HANDLER = new IRelationshipHandler<ISearchCriteria>()
-        {
-
-            @Override
-            public Collection<Long> findRelatedIdsByCriteria(final Collection<ISearchCriteria> criteria)
-            {
-                return findSampleIds(criteria);
-            }
-
-            @Override
-            public Map<Long, Set<Long>> listIdsToRelatedIds(Collection<Long> sampleIds)
-            {
-                return lister.getChildToParentsIdsMap(sampleIds);
-            }
-
-            @Override
-            public Map<Long, Set<Long>> listRelatedIdsToIds(Collection<Long> parentSampleIds)
-            {
-                return lister.getParentToChildrenIdsMap(parentSampleIds);
-            }
-
-        };
-
-    private final IRelationshipHandler CHILDREN_RELATIONSHIP_HANDLER = new IRelationshipHandler<ISearchCriteria>()
-        {
-
-            @Override
-            public Collection<Long> findRelatedIdsByCriteria(final Collection<ISearchCriteria> criteria)
-            {
-                return findSampleIds(criteria);
-            }
-
-            @Override
-            public Map<Long, Set<Long>> listIdsToRelatedIds(Collection<Long> sampleIds)
-            {
-                return lister.getParentToChildrenIdsMap(sampleIds);
-            }
-
-            @Override
-            public Map<Long, Set<Long>> listRelatedIdsToIds(Collection<Long> childrenSampleIds)
-            {
-                return lister.getChildToParentsIdsMap(childrenSampleIds);
-            }
-
-        };
-
-    public SampleSearchManager(ISQLSearchDAO searchDAO, ISampleLister sampleLister)
+    public SampleSearchManager(final ISQLSearchDAO searchDAO, final ISampleLister sampleLister)
     {
         super(searchDAO, sampleLister);
     }
 
-    public Collection<Long> searchForSampleIDs(final String userId, final SampleSearchCriteria criteria)
+    public Set<Long> searchForSampleIDs(final SampleSearchCriteria criteria)
     {
-        final List<SampleParentsSearchCriteria> parentsCriteria = getCriteria(criteria,
-                SampleParentsSearchCriteria.class);
-        final List<SampleChildrenSearchCriteria> childrenCriteria = getCriteria(criteria,
-                SampleChildrenSearchCriteria.class);
-        final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, SampleParentsSearchCriteria.class,
+        List<ISearchCriteria> parentsCriteria = getCriteria(criteria, SampleParentsSearchCriteria.class);
+        List<ISearchCriteria> childrenCriteria = getCriteria(criteria, SampleChildrenSearchCriteria.class);
+        List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, SampleParentsSearchCriteria.class,
                 SampleChildrenSearchCriteria.class);
 
-        final SearchOperator searchOperator = criteria.getOperator();
+        Set<Long> mainCriteriaIntermediateResults = Collections.emptySet();
+        Set<Long> parentCriteriaIntermediateResults = Collections.emptySet();
+        Set<Long> childrenCriteriaIntermediateResults  = Collections.emptySet();
 
-        final boolean hasMainCriteria = !mainCriteria.isEmpty();
-        final boolean hasParentsCriteria = !parentsCriteria.isEmpty();
-        final boolean hasChildrenCriteria = !childrenCriteria.isEmpty();
-
-
-        Collection<Long> sampleIds = null;
-        if (hasMainCriteria || (!hasParentsCriteria && !hasChildrenCriteria))
+        // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
+        if (!mainCriteria.isEmpty())
         {
-            sampleIds = findSampleIds(mainCriteria);
-            if (sampleIds == null)
-            {
-                sampleIds = Collections.emptyList();
-            }
+            mainCriteriaIntermediateResults = queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, mainCriteria,
+                    criteria.getOperator());
         }
 
-        if (hasParentsCriteria)
-        {
-            // At most one criterion can be in parentCriteria.
-            sampleIds = filterSearchResultsByCriteria(userId, sampleIds, parentsCriteria,
-                    PARENT_RELATIONSHIP_HANDLER);
+        // The parents criterias can be or not recursive, they are resolved by a recursive call
+        if (!parentsCriteria.isEmpty()) {
+            final Set<Long> finalParentIds = findFinalRelationshipIds(criteria.getOperator(), parentsCriteria);
+            parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIds);
         }
 
-        if (hasChildrenCriteria)
-        {
-            // At most one criterion can be in childCriteria.
-            sampleIds = filterSearchResultsByCriteria(userId, sampleIds, childrenCriteria,
-                    CHILDREN_RELATIONSHIP_HANDLER);
+        // The children criterias can be or not recursive, they are resolved by a recursive call
+        if (!childrenCriteria.isEmpty()) {
+            final Set<Long> finalChildrenIds = findFinalRelationshipIds(criteria.getOperator(), childrenCriteria);
+            parentCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIds);
         }
 
-        return restrictResultSetIfNecessary(sampleIds);
+        // Reaching this point we have the intermediate results of all recursive queries
+        Set<Long> finalResult = null;
+        if (!mainCriteriaIntermediateResults.isEmpty() ||
+                !childrenCriteriaIntermediateResults.isEmpty() ||
+                !parentCriteriaIntermediateResults.isEmpty()) { // If we have results, we merge them
+            finalResult = mergeResults(criteria.getOperator(),
+                    Collections.singleton(mainCriteriaIntermediateResults),
+                    Collections.singleton(parentCriteriaIntermediateResults),
+                    Collections.singleton(childrenCriteriaIntermediateResults));
+        } else if ( mainCriteria.isEmpty() &&
+                parentsCriteria.isEmpty() &&
+                childrenCriteria.isEmpty()) { // If we don't have results and criterias are empty, return all.
+            finalResult = getAllIds();
+        } else { // If we don't have results and criterias are not empty, there is no results.
+            finalResult = Collections.emptySet();
+        }
+
+        return finalResult;
     }
 
-//    private void groupSampleCriteria(final Collection<ISearchCriteria> allCriteria,
-//            final Collection<SampleParentsSearchCriteria> parentCriteria,
-//            final Collection<SampleChildrenSearchCriteria> childCriteria,
-//            final Collection<ISearchCriteria> otherCriteria)
-//    {
-//        parentCriteria.clear();
-//        childCriteria.clear();
-//        otherCriteria.clear();
-//        for (ISearchCriteria subCriterion : allCriteria)
-//        {
-//            if (subCriterion instanceof SampleParentsSearchCriteria)
-//            {
-//                parentCriteria.add((SampleParentsSearchCriteria) subCriterion);
-//            } else if (subCriterion instanceof SampleChildrenSearchCriteria)
-//            {
-//                childCriteria.add((SampleChildrenSearchCriteria) subCriterion);
-//            } else
-//            {
-//                otherCriteria.add(subCriterion);
-//            }
-//        }
-//
-//        assert parentCriteria.size() <= 1 : "There should be at most one parent criterion.";
-//        assert childCriteria.size() <= 1 : "There should be at most one child criterion.";
-//    }
-
-//    private List<Long> findSampleIds(final Collection<ISearchCriteria> subCriterias)
-    private List<Long> findSampleIds(final String userId, final SampleSearchCriteria criterion,
-            final List<ISearchCriteria> subCriteria)
+    /**
+     * Returns IDs using parent or child relationship criteria.
+     *
+     * @param operator the operator used to merge the results.
+     * @param relatedEntitiesCriteria parent or child criteria.
+     * @return IDs found from parent/child criteria.
+     */
+    private Set<Long> findFinalRelationshipIds(final SearchOperator operator,
+            final List<ISearchCriteria> relatedEntitiesCriteria)
     {
-        // for now we connect all sub criteria with logical AND
-        final List<IAssociationCriteria> associations = new ArrayList<>();
-        for (final ISearchCriteria subCriterion : subCriterias)
-        {
-            // TODO: rewrite method findAssociatedEntities().
-            associations.add(findAssociatedEntities(userId, subCriterion));
+        final List<Set<Long>> relatedIds = new ArrayList<>();
+        for (ISearchCriteria sampleSearchCriteria : relatedEntitiesCriteria) {
+            Set<Long> foundParentIds = searchForSampleIDs((SampleSearchCriteria) sampleSearchCriteria);
+            if (!foundParentIds.isEmpty()) {
+                relatedIds.add(foundParentIds);
+            }
         }
+        return mergeResults(operator, relatedIds);
+    }
 
-        if (subCriterias.isEmpty())
-        {
-            CodeSearchCriteria codeSearchCriteria = new CodeSearchCriteria();
-            codeSearchCriteria.thatContains("");
-            subCriterias.add(codeSearchCriteria);
-        }
-        final List<Long> sampleIds = searchDAO.searchForEntityIds(userId, mainCriteria, EntityKind.SAMPLE, associations);
-        return sampleIds;
+    /*
+     * These methods require a simple SQL query to the database
+     */
+    private static Set<Long> getAllIds() {
+        throw new UnsupportedOperationException();
+    }
+
+    private static Set<Long> getChildrenIdsOf(final Set<Long> parents) {
+        throw new UnsupportedOperationException();
+    }
+
+    private static Set<Long> getParentsIdsOf(final Set<Long> children) {
+        throw new UnsupportedOperationException();
     }
 
 }
