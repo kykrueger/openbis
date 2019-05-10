@@ -156,8 +156,15 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
 		// Render the paremeter options
 		this.renderParameterSelectionWidget($container, model);
 
+		// Add a div for reporting status
+		$container.append($('<div>')
+			.css("margin-bottom", "5px")
+			.attr("id", "status_div"));
+
 		// Append the div where the data will be plotted
-		$container.append($('<div>').attr("id", "plot_canvas_div"));
+		$container.append($('<div>')
+			.css("width", "580px")
+			.attr("id", "plot_canvas_div"));
 
 	},
 	dataSetFormBottom: function ($container, model) {
@@ -473,8 +480,8 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
 			key in this.dataCache[model.dataSetV3.code]) {
 
 			// Plot the cached data
-			DATAVIEWER.plotFCSData(
-				this.dataCache[model.dataSetV3.code],
+			this.plotFCSData(
+				this.dataCache[model.dataSetV3.code][key],
 				paramX,
 				paramY,
 				displayX,
@@ -484,13 +491,10 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
 			return;
 		}
 
-		// Is the reference to the service already stored?
-		if (null !== this.retrieveFCSEventsService) {
-
-			// Return it
-			return this.retrieveFCSEventsService;
-		}
-
+		// Inform the user that we are about to process the request
+		this.displayStatus("Please wait while processing your request. This might take a while...",
+			"info");
+	
 		var thisObj = this;
 		require(["openbis",
 			"as/dto/service/search/AggregationServiceSearchCriteria",
@@ -512,10 +516,6 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
 				options.withParameter("maxNumEvents", numEventsToPlot);
 				options.withParameter("samplingMethod", samplingMethod);
 				options.withParameter("nodeKey", model.dataSetV3.code);
-
-				// Inform the user that we are about to process the request
-				thisObj.displayStatus("Please wait while processing your request. This might take a while...",
-					"info");
 
 				// Call service
 				if (null === thisObj.retrieveFCSEventsService) {
@@ -551,70 +551,65 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
 
 	plotFCSData: function (data, xLabel, yLabel, xDisplay, yDisplay) {
 
-		var thisObj = this;
-		require(["d3", "c3"], function (d3, c3) {
+		// Make sure to have a proper array
+		var parsed_data = JSON.parse(data);
 
-			// Make sure to have a proper array
-			var parsed_data = JSON.parse(data);
+		// Prepend data names to be compatible with C3.js
+		parsed_data[0].unshift("x_values");
+		parsed_data[1].unshift("y_values");
 
-			// Prepend data names to be compatible with C3.js
-			parsed_data[0].unshift("x_values");
-			parsed_data[1].unshift("y_values");
-
-			// Plot the data
-			c3.generate({
-				bindto: '#detailViewPlot',
-				title: {
-					text: yLabel + " vs. " + xLabel
+		// Plot the data
+		c3.generate({
+			bindto: '#plot_canvas_div',
+			title: {
+				text: yLabel + " vs. " + xLabel
+			},
+			data: {
+				xs: {
+					y_values: "x_values"
 				},
-				data: {
-					xs: {
-						y_values: "x_values"
-					},
-					columns: [
-						parsed_data[0],
-						parsed_data[1],
-					],
-					names: {
-						y_values: yLabel
-					},
-					type: 'scatter'
+				columns: [
+					parsed_data[0],
+					parsed_data[1],
+				],
+				names: {
+					y_values: yLabel
 				},
-				axis: {
-					x: {
-						label: xLabel,
-						tick: {
-							fit: false
-						}
-					},
-					y: {
-						label: yLabel,
-						tick: {
-							fit: false
-						}
+				type: 'scatter'
+			},
+			axis: {
+				x: {
+					label: xLabel,
+					tick: {
+						fit: false
 					}
 				},
-				legend: {
-					show: false
-				},
-				tooltip: {
-					format: {
-						title: function (d) {
-							const format = d3.format(',');
-							return xLabel + " | " + format(d);
-						},
-						value: function (value, ratio, id) {
-							const format = d3.format(',');
-							return format(value);
-						}
+				y: {
+					label: yLabel,
+					tick: {
+						fit: false
 					}
-				},
-				zoom: {
-					enabled: true,
-					rescale: true
-				},
-			});
-
+				}
+			},
+			legend: {
+				show: false
+			},
+			tooltip: {
+				format: {
+					title: function (d) {
+						const format = d3.format(',');
+						return xLabel + " | " + format(d);
+					},
+					value: function (value, ratio, id) {
+						const format = d3.format(',');
+						return format(value);
+					}
+				}
+			},
+			zoom: {
+				enabled: true,
+				rescale: true
+			},
 		});
 	},
 
@@ -720,12 +715,30 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
 		this.dataCache[nodeKey][dataKey] = fcsData;
 	},
 
-	displayStatus: function() {
-		return;
+	displayStatus: function(status, level) {
+		switch (level) {
+			case "info":
+				color = "black";
+				break;
+			case "success":
+				color = "cyan";
+				break;
+			case "danger":
+				color = "red";
+				break;
+			default:
+				color = "black";
+				break;
+		}
+		var status_div = $("#status_div");
+		status_div
+			.css("color", color)
+			.text(status);
+		status_div.show();
 	},
 
 	hideStatus: function() {
-		return;
+		$("#status_div").hide();
 	}
 
 });
