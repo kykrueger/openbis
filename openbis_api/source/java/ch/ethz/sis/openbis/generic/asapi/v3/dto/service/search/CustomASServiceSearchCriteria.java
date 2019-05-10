@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.ICustomASServiceId;
@@ -38,6 +39,11 @@ public class CustomASServiceSearchCriteria extends AbstractObjectSearchCriteria<
     public CodeSearchCriteria withCode()
     {
         return with(new CodeSearchCriteria());
+    }
+
+    public CodesSearchCriteria withCodes()
+    {
+        return with(new CodesSearchCriteria());
     }
 
     public CustomASServiceSearchCriteria withOrOperator()

@@ -132,6 +132,26 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchSpaces() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SpaceSearchCriteria();
+				criteria.withCodes().thatIn(["TEST"]);
+				return facade.searchSpaces(criteria, c.createSpaceFetchOptions());
+			}
+			
+			var fCheck = function(facade, spaces) {
+				c.assertEqual(spaces.length, 1);
+				var space = spaces[0];
+				c.assertEqual(space.getCode(), "TEST", "Code");
+				c.assertEqual(space.getDescription(), null, "Description");
+				c.assertDate(space.getRegistrationDate(), "Registration date", 2013, 04, 12, 12, 59);
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchSpaces() with paging and sorting", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -179,6 +199,24 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchProjects() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.ProjectSearchCriteria();
+				criteria.withCodes().thatIn(["SCREENING-EXAMPLES"]);
+				return facade.searchProjects(criteria, c.createProjectFetchOptions());
+			}
+			
+			var fCheck = function(facade, projects) {
+				c.assertEqual(projects.length, 1);
+				var project = projects[0];
+				c.assertEqual(project.getCode(), "SCREENING-EXAMPLES", "Code");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchProjects() with paging and sorting", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -230,6 +268,27 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchExperiments() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.ExperimentSearchCriteria();
+				criteria.withCodes().thatIn(["EXP-1"]);
+				return facade.searchExperiments(criteria, c.createExperimentFetchOptions());
+			}
+			
+			var fCheck = function(facade, experiments) {
+				c.assertEqual(experiments.length, 1);
+				var experiment = experiments[0];
+				c.assertEqual(experiment.getCode(), "EXP-1", "Experiment code");
+				c.assertEqual(experiment.getType().getCode(), "HCS_PLATONIC", "Type code");
+				c.assertEqual(experiment.getProject().getCode(), "SCREENING-EXAMPLES", "Project code");
+				c.assertEqual(experiment.getProject().getSpace().getCode(), "PLATONIC", "Space code");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchExperiments() with paging and sorting", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -456,6 +515,24 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				}
 			}
 
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSamples() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SampleSearchCriteria();
+				criteria.withCodes().thatIn(["TEST-SAMPLE-2-PARENT"]);
+				return facade.searchSamples(criteria, c.createSampleFetchOptions());
+			}
+			
+			var fCheck = function(facade, samples) {
+				c.assertEqual(samples.length, 1);
+				var sample = samples[0];
+				c.assertEqual(sample.code, "TEST-SAMPLE-2-PARENT", "Sample code");
+			}
+			
 			testSearch(c, fSearch, fCheck);
 		});
 
@@ -902,6 +979,24 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchDataSets() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.DataSetSearchCriteria();
+				criteria.withCodes().thatIn(["20130412142543232-197"]);
+				return facade.searchDataSets(criteria, c.createDataSetFetchOptions());
+			}
+			
+			var fCheck = function(facade, dataSets) {
+				c.assertEqual(dataSets.length, 1);
+				var dataSet = dataSets[0];
+				c.assertEqual(dataSet.getCode(), "20130412142543232-197", "Code");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchDataSets() with paging and sorting", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1266,6 +1361,24 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchMaterials() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.MaterialSearchCriteria();
+				criteria.withCodes().thatIn(["H2O"]);
+				return facade.searchMaterials(criteria, c.createMaterialFetchOptions());
+			}
+			
+			var fCheck = function(facade, materials) {
+				c.assertEqual(materials.length, 1);
+				var material = materials[0];
+				c.assertEqual(material.getCode(), "H2O", "Code");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchMaterials() with paging and sorting", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1728,6 +1841,27 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchVocabularyTerms() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.VocabularyTermSearchCriteria();
+				criteria.withCodes().thatIn(["BDS_DIRECTORY"]);
+				return facade.searchVocabularyTerms(criteria, c.createVocabularyTermFetchOptions());
+			}
+			
+			var fCheck = function(facade, terms) {
+				c.assertEqual(terms.length, 1);
+				var term = terms[0];
+				c.assertEqual(term.getCode(), "BDS_DIRECTORY", "Code");
+				c.assertEqual(term.getVocabulary().getCode(), "$STORAGE_FORMAT", "Vocabulary code");
+				c.assertEqual(term.getOrdinal(), 2, "Ordinal");
+				c.assertEqual(term.isOfficial(), true, "Official");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchExternalDms()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1751,6 +1885,29 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchExternalDms() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.ExternalDmsSearchCriteria();
+				criteria.withCodes().thatIn(["DMS_2"]);
+				return facade.searchExternalDataManagementSystems(criteria, c.createExternalDmsFetchOptions());
+			}
+			
+			var fCheck = function(facade, entities) {
+				c.assertEqual(entities.length, 1);
+				var edms = entities[0];
+				c.assertEqual(edms.getCode(), "DMS_2", "Code");
+				c.assertEqual(edms.getLabel(), "Test External openBIS instance", "Label");
+				c.assertEqual(edms.getAddress(), "http://www.openbis.ch/perm_id=${code}", "Address");
+				c.assertEqual(edms.getUrlTemplate(), "http://www.openbis.ch/perm_id=${code}", "URL template");
+				c.assertEqual(edms.getAddressType(), "OPENBIS", "Address type");
+				c.assertEqual(edms.isOpenbis(), true, "is openBIS?");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchTags()", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -1770,6 +1927,25 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchTags() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.TagSearchCriteria();
+				criteria.withCodes().thatIn(["JS_TEST_METAPROJECT"]);
+				return facade.searchTags(criteria, c.createTagFetchOptions());
+			}
+			
+			var fCheck = function(facade, tags) {
+				c.assertEqual(tags.length, 1);
+				var tag = tags[0];
+				c.assertEqual(tag.getCode(), "JS_TEST_METAPROJECT", "Code");
+				c.assertEqual(tag.getPermId().getPermId(), "/openbis_test_js/JS_TEST_METAPROJECT", "PermId");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchAuthorizationGroups()", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
@@ -1795,6 +1971,31 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchAuthorizationGroups() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			var code;
+			
+			var fSearch = function(facade) {
+				return c.createAuthorizationGroup(facade).then(function(permId) {
+					var criteria = new c.AuthorizationGroupSearchCriteria();
+					code = permId.getPermId();
+					criteria.withCodes().thatIn([code]);
+					return facade.searchAuthorizationGroups(criteria, c.createAuthorizationGroupFetchOptions());
+				});
+			}
+			
+			var fCheck = function(facade, groups) {
+				c.assertEqual(groups.length, 1);
+				var group = groups[0];
+				c.assertEqual(group.getCode(), code, "Code");
+				var users = group.getUsers();
+				c.assertEqual(users[0].getUserId(), "power_user", "User");
+				c.assertEqual(users.length, 1, "# Users");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("searchAuthorizationGroups() existing with role assigments", function(assert) {
 			var c = new common(assert, openbis);
 			var code;
@@ -1956,6 +2157,24 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 			testSearch(c, fSearch, fCheck);
 		});
 
+		QUnit.test("searchDataStores() with codes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.DataStoreSearchCriteria();
+				criteria.withCodes().thatIn(["DSS1"]);
+				return facade.searchDataStores(criteria, c.createDataStoreFetchOptions());
+			}
+			
+			var fCheck = function(facade, dataStores) {
+				c.assertEqual(dataStores.length, 1);
+				var dataStore = dataStores[0];
+				c.assertEqual(dataStore.getCode(), "DSS1", "Code");
+			}
+			
+			testSearch(c, fSearch, fCheck);
+		});
+		
 		QUnit.test("dataStoreFacade.searchFiles() atNonexistentDataStore", function(assert) {
 			var c = new common(assert, openbis);
 
@@ -2128,6 +2347,24 @@ define([ 'jquery', 'underscore', 'openbis', 'test/openbis-execute-operations', '
 				c.assertEqual(annotations[0].getEntityType().getCode(), "PLATE", "Entity type code");
 			}
 
+			testSearch(c, fSearch, fCheck);
+		});
+		
+		QUnit.test("searchSemanticAnnotations() withEntityTypeCodes", function(assert) {
+			var c = new common(assert, openbis);
+			
+			var fSearch = function(facade) {
+				var criteria = new c.SemanticAnnotationSearchCriteria();
+				criteria.withEntityType().withCodes().thatIn(["PLATE"]);
+				return facade.searchSemanticAnnotations(criteria, c.createSemanticAnnotationFetchOptions());
+			}
+			
+			var fCheck = function(facade, annotations) {
+				c.assertEqual(annotations.length, 1);
+				c.assertEqual(annotations[0].getPermId().getPermId(), "ST_PLATE", "Annotation perm id");
+				c.assertEqual(annotations[0].getEntityType().getCode(), "PLATE", "Entity type code");
+			}
+			
 			testSearch(c, fSearch, fCheck);
 		});
 

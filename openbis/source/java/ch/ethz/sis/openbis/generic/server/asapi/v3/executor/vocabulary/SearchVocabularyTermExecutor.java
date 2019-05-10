@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
@@ -34,6 +35,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTerm
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodeMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodesMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SimpleFieldMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.StringFieldMatcher;
@@ -79,6 +81,9 @@ public class SearchVocabularyTermExecutor extends AbstractSearchObjectManuallyEx
         } else if (criteria instanceof CodeSearchCriteria)
         {
             return new CodeMatcher<VocabularyTermPE>();
+        } else if (criteria instanceof CodesSearchCriteria)
+        {
+            return new CodesMatcher<VocabularyTermPE>();
         } else if (criteria instanceof VocabularySearchCriteria)
         {
             return new VocabularyMatcher();

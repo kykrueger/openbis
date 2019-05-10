@@ -36,6 +36,11 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new CodeSearchCriteria());
     }
 
+    public CodesSearchCriteria withCodes()
+    {
+        return with(new CodesSearchCriteria());
+    }
+
     public PermIdSearchCriteria withPermId()
     {
         return with(new PermIdSearchCriteria());
