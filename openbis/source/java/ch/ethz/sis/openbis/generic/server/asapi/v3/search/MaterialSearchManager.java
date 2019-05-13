@@ -16,9 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
@@ -30,7 +29,7 @@ import java.util.Set;
 /**
  * @author Viktor Kovtun
  */
-public class MaterialSearchManager extends AbstractSearchManager<IMaterialLister>
+public class MaterialSearchManager extends AbstractSearchManager<IMaterialLister, MaterialSearchCriteria>
 {
 
     public MaterialSearchManager(final ISQLSearchDAO searchDAO, final IMaterialLister lister)
@@ -51,20 +50,19 @@ public class MaterialSearchManager extends AbstractSearchManager<IMaterialLister
     }
 
     @Override
-    public Set<Long> searchForIDs(SampleSearchCriteria criteria)
+    public Set<Long> searchForIDs(MaterialSearchCriteria criteria)
     {
         return null;
     }
 
     @Override
-    public Set<Long> filterIDsByUserRights(Set<Long> ids)
-    {
+    public Set<Long> filterIDsByUserRights(Long userId, Set<Long> ids) {
         return null;
     }
 
     @Override
-    public List<Long> sortIDsByValue(Set<Long> ids, SortOptions sortOptions)
-    {
+    public List<Long> sortAndPage(Set<Long> ids, MaterialSearchCriteria criteria, FetchOptions<?> fetchOptions) {
         return null;
     }
+
 }

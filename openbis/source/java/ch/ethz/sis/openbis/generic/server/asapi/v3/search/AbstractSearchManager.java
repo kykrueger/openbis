@@ -31,7 +31,7 @@ import java.util.*;
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public abstract class AbstractSearchManager<L> implements ISearchManager
+public abstract class AbstractSearchManager<L, C extends ISearchCriteria> implements ISearchManager<C>
 {
     protected final ISQLSearchDAO searchDAO;
 

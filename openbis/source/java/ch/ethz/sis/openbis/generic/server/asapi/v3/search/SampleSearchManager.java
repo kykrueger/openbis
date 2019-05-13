@@ -16,13 +16,14 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
@@ -40,7 +41,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.NewSQLQueryTran
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
+public class SampleSearchManager extends AbstractSearchManager<ISampleLister, SampleSearchCriteria>
 {
 
     public SampleSearchManager(final ISQLSearchDAO searchDAO, final ISampleLister sampleLister)
@@ -107,9 +108,11 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
     }
 
     @Override
-    public List<Long> sortIDsByValue(final Set<Long> ids, final SortOptions sortOptions) {
-        // TODO: implement.
-        return new ArrayList<>(ids);
+    public List<Long> sortAndPage(final Set<Long> ids, final SampleSearchCriteria criteria,
+            final FetchOptions<?> fetchOptions) {
+        final SortAndPage sap = new SortAndPage();
+        final Set<Long> objects = sap.sortAndPage(ids, criteria, fetchOptions);
+        return new ArrayList<>(objects);
     }
 
     /**

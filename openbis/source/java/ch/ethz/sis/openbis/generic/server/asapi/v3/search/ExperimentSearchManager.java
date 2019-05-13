@@ -16,9 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
@@ -31,7 +30,7 @@ import java.util.Set;
  * 
  * @author Viktor Kovtun
  */
-public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTable>
+public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTable, ExperimentSearchCriteria>
 {
 
     public ExperimentSearchManager(ISQLSearchDAO searchDAO, IExperimentTable lister)
@@ -53,20 +52,18 @@ public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTa
     }
 
     @Override
-    public Set<Long> searchForIDs(SampleSearchCriteria criteria)
+    public Set<Long> searchForIDs(ExperimentSearchCriteria criteria)
     {
         return null;
     }
 
     @Override
-    public Set<Long> filterIDsByUserRights(Set<Long> ids)
-    {
+    public Set<Long> filterIDsByUserRights(Long userId, Set<Long> ids) {
         return null;
     }
 
     @Override
-    public List<Long> sortIDsByValue(Set<Long> ids, SortOptions sortOptions)
-    {
+    public List<Long> sortAndPage(Set<Long> ids, ExperimentSearchCriteria criteria, FetchOptions<?> fetchOptions) {
         return null;
     }
 
