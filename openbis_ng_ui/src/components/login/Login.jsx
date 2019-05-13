@@ -19,9 +19,6 @@ const styles = {
     width: '30em',
     margin: '0 auto',
   },
-  title: {
-    fontSize: 24,
-  },
   textField: {
     width: '100%',
   },
@@ -74,44 +71,47 @@ class WithLogin extends React.Component {
     return (
       <div>
         <div className={classes.container}>
-          <Card className={classes.card}>
-            <CardContent>
-              <Typography className={classes.title}>
+          <form>
+            <Card className={classes.card}>
+              <CardContent>
+                <Typography variant="h6">
                   Login
-              </Typography>
-              <TextField
-                id="standard-name"
-                label="User"
-                className={classes.textField}
-                margin="normal"
-                autoFocus={true}
-                onKeyPress={(e) => {
-                  this.keyPress(e)
-                }}
-                onChange={this.handleChange('user')}
-              />
-              <TextField
-                id="standard-password-input"
-                label="Password"
-                className={classes.textField}
-                type="password"
-                autoComplete="current-password"
-                margin="normal"
-                onKeyPress={(e) => {
-                  this.keyPress(e)
-                }}
-                onChange={this.handleChange('password')}
-              />
-              <Button
-                onClick={this.login}
-                color="primary"
-                className={classes.button}
-                variant="contained">
+                </Typography>
+                <TextField
+                  id="standard-name"
+                  label="User"
+                  className={classes.textField}
+                  margin="normal"
+                  autoComplete="username"
+                  autoFocus={true}
+                  onKeyPress={(e) => {
+                    this.keyPress(e)
+                  }}
+                  onChange={this.handleChange('user')}
+                />
+                <TextField
+                  id="standard-password-input"
+                  label="Password"
+                  className={classes.textField}
+                  type="password"
+                  autoComplete="current-password"
+                  margin="normal"
+                  onKeyPress={(e) => {
+                    this.keyPress(e)
+                  }}
+                  onChange={this.handleChange('password')}
+                />
+                <Button
+                  onClick={this.login}
+                  color="primary"
+                  className={classes.button}
+                  variant="contained">
                   Login
-              </Button>
+                </Button>
 
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </form>
         </div>
       </div>
     )

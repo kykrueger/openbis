@@ -1,16 +1,27 @@
 import _ from 'lodash'
 import React from 'react'
-import TextField from '@material-ui/core/TextField'
-import Checkbox from '@material-ui/core/Checkbox'
-import Button from '@material-ui/core/Button'
-import Table from '@material-ui/core/Table'
-import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableHead from '@material-ui/core/TableHead'
-import TableRow from '@material-ui/core/TableRow'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
+import {withStyles} from '@material-ui/core/styles'
+import ObjectTypeForm from './ObjectTypeForm.jsx'
+import ObjectTypeFooter from './ObjectTypeFooter.jsx'
 import logger from '../../../common/logger.js'
 import {facade, dto} from '../../../services/openbis.js'
+
+const styles = (theme) => ({
+  container: {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  form: {
+    flex: '1 1 0',
+    overflow: 'auto',
+    padding: theme.spacing.unit * 2
+  },
+  footer: {
+    flex: '0 0',
+    padding: theme.spacing.unit * 2
+  }
+})
 
 class ObjectType extends React.Component {
 
@@ -19,6 +30,11 @@ class ObjectType extends React.Component {
     this.state = {
       loaded: false,
     }
+    this.handleChange = this.handleChange.bind(this)
+    this.handleAdd = this.handleAdd.bind(this)
+    this.handleSelect = this.handleSelect.bind(this)
+    this.handleReorder = this.handleReorder.bind(this)
+    this.handleRemove = this.handleRemove.bind(this)
     this.handleSave = this.handleSave.bind(this)
   }
 
@@ -34,17 +50,17 @@ class ObjectType extends React.Component {
         this.setState(() => {
           return {
             loaded: true,
-            data: {
+            object: {
               code: objectType.code,
-              description: objectType.description || '',
-              listable: objectType.listable,
               properties: objectType.propertyAssignments.map(assignment => ({
                 permId: assignment.permId,
                 code: assignment.propertyType.code,
                 label: assignment.propertyType.label,
                 description: assignment.propertyType.description,
+                dataType: assignment.propertyType.dataType,
                 ordinal: assignment.ordinal,
-                mandatory: assignment.mandatory
+                mandatory: assignment.mandatory,
+                selected: false
               }))
             }
           }
@@ -53,25 +69,98 @@ class ObjectType extends React.Component {
     })
   }
 
-  handleChange(name){
-    return event => {
-      let value = _.has(event.target, 'checked') ? event.target.checked : event.target.value
-      this.setState((prevState) => ({
-        ...prevState,
-        data: {
-          ...prevState.data,
-          [name]: value
+  handleChange(path, value){
+    this.setState((prevState) => {
+      let newState = {
+        ...prevState
+      }
+      _.set(newState.object, path, value)
+      return newState
+    })
+  }
+
+  handleRemove(){
+    this.setState((prevState) => {
+      let newProperties = prevState.object.properties.reduce((array, property) => {
+        if(!property.selected){
+          array.push(property)
         }
+        return array
+      }, [])
+
+      return {
+        ...prevState,
+        object: {
+          ...prevState.object,
+          properties: newProperties
+        }
+      }
+    })
+  }
+
+  handleAdd(){
+    this.setState((prevState) => {
+      let newPropertyIndex = prevState.object.properties.length
+
+      prevState.object.properties.forEach((property, index) => {
+        if(property.selected){
+          newPropertyIndex = index + 1
+        }
+      })
+
+      let newProperties = prevState.object.properties.map(property => ({
+        ...property,
+        selected: false
       }))
-    }
+      newProperties.splice(newPropertyIndex, 0, {
+        code: 'PROPERTY_' + prevState.object.properties.length,
+        selected: true
+      })
+
+      return {
+        ...prevState,
+        object: {
+          ...prevState.object,
+          properties: newProperties
+        }
+      }
+    })
+  }
+
+  handleSelect(propertyCode){
+    this.setState((prevState) => ({
+      ...prevState,
+      object: {
+        ...prevState.object,
+        properties: prevState.object.properties.map(property => {
+          return {
+            ...property,
+            selected: property.code === propertyCode
+          }
+        })
+      }
+    }))
+  }
+
+  handleReorder(oldPropertyIndex, newPropertyIndex){
+    let oldProperties = this.state.object.properties
+    let newProperties = [ ...oldProperties ]
+
+    let [ property ] = newProperties.splice(oldPropertyIndex, 1)
+    newProperties.splice(newPropertyIndex, 0, property)
+
+    this.setState((prevState) => ({
+      ...prevState,
+      object: {
+        ...prevState.object,
+        properties: newProperties
+      }
+    }))
   }
 
   handleSave(){
-    let {description, listable} = this.state.data
     let update = new dto.SampleTypeUpdate()
     update.setTypeId(new dto.EntityTypePermId(this.props.objectId))
-    update.setDescription(description)
-    update.setListable(listable)
     facade.updateSampleTypes([update])
   }
 
@@ -82,54 +171,29 @@ class ObjectType extends React.Component {
       return <div></div>
     }
 
-    let { code, description, listable, properties } = this.state.data
+    let classes = this.props.classes
 
     return (
-      <div>
-        <h2>{code}</h2>
-        <form>
-          <FormControlLabel
-            label="Description"
-            labelPlacement="top"
-            control={
-              <TextField value={description} onChange={this.handleChange('description')} />
-            }
+      <div className={classes.container}>
+        <div className={classes.form}>
+          <ObjectTypeForm
+            object={this.state.object}
+            onSelect={this.handleSelect}
+            onReorder={this.handleReorder}
+            onChange={this.handleChange}
           />
-          <FormControlLabel
-            label="Listable"
-            labelPlacement="top"
-            control={
-              <Checkbox checked={listable} value='listable' onChange={this.handleChange('listable')} />
-            }
+        </div>
+        <div className={classes.footer}>
+          <ObjectTypeFooter
+            onAdd={this.handleAdd}
+            onRemove={this.handleRemove}
+            onSave={this.handleSave}
           />
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Code</TableCell>
-                <TableCell>Label</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Mandatory</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {properties.map(property => (
-                <TableRow key={property.permId}>
-                  <TableCell>{property.code}</TableCell>
-                  <TableCell>{property.label}</TableCell>
-                  <TableCell>{property.description}</TableCell>
-                  <TableCell>{property.mandatory ? 'true' : 'false'}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div>
-            <Button variant='contained' color='primary' onClick={this.handleSave}>Save</Button>
-          </div>
-        </form>
+        </div>
       </div>
     )
   }
 
 }
 
-export default ObjectType
+export default withStyles(styles)(ObjectType)
