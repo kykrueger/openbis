@@ -26,16 +26,18 @@ import java.util.*;
 /**
  * Manages detailed search with complex search criteria.
  *
+ * @param <L> type of lister to be used.
+ *
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public abstract class AbstractSearchManager<T>
+public abstract class AbstractSearchManager<L> implements ISearchManager
 {
     protected final ISQLSearchDAO searchDAO;
 
-    protected final T lister;
+    protected final L lister;
 
-    public AbstractSearchManager(final ISQLSearchDAO searchDAO, final T lister)
+    public AbstractSearchManager(final ISQLSearchDAO searchDAO, final L lister)
     {
         this.searchDAO = searchDAO;
         this.lister = lister;

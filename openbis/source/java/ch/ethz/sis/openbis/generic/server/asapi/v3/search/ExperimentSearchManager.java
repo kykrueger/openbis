@@ -16,12 +16,15 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Search manager for experiments.
@@ -46,6 +49,24 @@ public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTa
     public List<Long> searchForExperimentIDs(final String userId, final ExperimentSearchCriteria criteria)
     {
 //        return searchDAO.searchForEntityIds(userId, criteria, EXPERIMENT, Collections.emptyList());
+        return null;
+    }
+
+    @Override
+    public Set<Long> searchForIDs(SampleSearchCriteria criteria)
+    {
+        return null;
+    }
+
+    @Override
+    public Set<Long> filterIDsByUserRights(Set<Long> ids)
+    {
+        return null;
+    }
+
+    @Override
+    public List<Long> sortIDsByValue(Set<Long> ids, SortOptions sortOptions)
+    {
         return null;
     }
 

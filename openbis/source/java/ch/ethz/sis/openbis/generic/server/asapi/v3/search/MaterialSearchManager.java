@@ -16,13 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import org.springframework.dao.DataAccessException;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Viktor Kovtun
@@ -47,4 +50,21 @@ public class MaterialSearchManager extends AbstractSearchManager<IMaterialLister
         return null;
     }
 
+    @Override
+    public Set<Long> searchForIDs(SampleSearchCriteria criteria)
+    {
+        return null;
+    }
+
+    @Override
+    public Set<Long> filterIDsByUserRights(Set<Long> ids)
+    {
+        return null;
+    }
+
+    @Override
+    public List<Long> sortIDsByValue(Set<Long> ids, SortOptions sortOptions)
+    {
+        return null;
+    }
 }

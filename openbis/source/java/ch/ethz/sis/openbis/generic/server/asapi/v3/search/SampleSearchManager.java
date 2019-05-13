@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -23,6 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 
 import java.util.ArrayList;
@@ -46,7 +48,8 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
         super(searchDAO, sampleLister);
     }
 
-    public Set<Long> searchForSampleIDs(final SampleSearchCriteria criteria)
+    @Override
+    public Set<Long> searchForIDs(final SampleSearchCriteria criteria)
     {
         List<ISearchCriteria> parentsCriteria = getCriteria(criteria, SampleParentsSearchCriteria.class);
         List<ISearchCriteria> childrenCriteria = getCriteria(criteria, SampleChildrenSearchCriteria.class);
@@ -96,6 +99,19 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
         return finalResult;
     }
 
+    @Override
+    public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids) {
+        final SpaceProjectIDsVO authorizedSpaceProjectIds = searchDAO.getAuthorisedSpaceProjectIds(userId);
+        final Set<Long> filteredIds = searchDAO.filterSampleIDsBySpaceAndProjectIDs(ids, authorizedSpaceProjectIds);
+        return filteredIds;
+    }
+
+    @Override
+    public List<Long> sortIDsByValue(final Set<Long> ids, final SortOptions sortOptions) {
+        // TODO: implement.
+        return new ArrayList<>(ids);
+    }
+
     /**
      * Returns IDs using parent or child relationship criteria.
      *
@@ -108,7 +124,7 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister>
     {
         final List<Set<Long>> relatedIds = new ArrayList<>();
         for (ISearchCriteria sampleSearchCriteria : relatedEntitiesCriteria) {
-            Set<Long> foundParentIds = searchForSampleIDs((SampleSearchCriteria) sampleSearchCriteria);
+            Set<Long> foundParentIds = searchForIDs((SampleSearchCriteria) sampleSearchCriteria);
             if (!foundParentIds.isEmpty()) {
                 relatedIds.add(foundParentIds);
             }
