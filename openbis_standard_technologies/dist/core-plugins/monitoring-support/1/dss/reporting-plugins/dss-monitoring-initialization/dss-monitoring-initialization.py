@@ -1,4 +1,6 @@
+from __future__ import with_statement
 import subprocess
+from java.util import Arrays
 from ch.systemsx.cisd.common.exceptions import UserFailureException
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id import SpacePermId
@@ -51,46 +53,46 @@ def process(tr, parameters, tableBuilder):
 def _create_data_set_type(session_token, data_set_type_code):
     v3 = ServiceProvider.getV3ApplicationService()
     data_set_type_permid = EntityTypePermId(data_set_type_code)
-    if v3.getDataSetTypes(session_token, [data_set_type_permid], DataSetTypeFetchOptions()).get(data_set_type_permid) is None:
+    if v3.getDataSetTypes(session_token, Arrays.asList(data_set_type_permid), DataSetTypeFetchOptions()).get(data_set_type_permid) is None:
         data_set_type_creation = DataSetTypeCreation()
         data_set_type_creation.setCode(data_set_type_code)
-        v3.createDataSetTypes(session_token, [data_set_type_creation])
+        v3.createDataSetTypes(session_token, Arrays.asList(data_set_type_creation))
 
 def _create_sample(tr, session_token, space_code, sample_code, sample_type_code):
     v3 = ServiceProvider.getV3ApplicationService()
     space_permid = SpacePermId(space_code)
-    if v3.getSpaces(session_token, [space_permid], SpaceFetchOptions()).get(space_permid) is None:
+    if v3.getSpaces(session_token, Arrays.asList(space_permid), SpaceFetchOptions()).get(space_permid) is None:
         space_creation = SpaceCreation()
         space_creation.setCode(space_code)
-        v3.createSpaces(session_token, [space_creation])
+        v3.createSpaces(session_token, Arrays.asList(space_creation))
     sample_id = SampleIdentifier(space_code, None, sample_code)
-    if v3.getSamples(session_token, [sample_id], SampleFetchOptions()).get(sample_id) is None:
+    if v3.getSamples(session_token, Arrays.asList(sample_id), SampleFetchOptions()).get(sample_id) is None:
         sample_type_permid = EntityTypePermId(sample_type_code)
-        if v3.getSampleTypes(session_token, [sample_type_permid], SampleTypeFetchOptions()).get(sample_type_permid) is None:
+        if v3.getSampleTypes(session_token, Arrays.asList(sample_type_permid), SampleTypeFetchOptions()).get(sample_type_permid) is None:
             sample_type_creation = SampleTypeCreation()
             sample_type_creation.setCode(sample_type_code)
-            v3.createSampleTypes(session_token, [sample_type_creation])
+            v3.createSampleTypes(session_token, Arrays.asList(sample_type_creation))
         sample_creation = SampleCreation()
         sample_creation.setTypeId(sample_type_permid)
         sample_creation.setSpaceId(space_permid)
         sample_creation.setCode(sample_code)
-        v3.createSamples(session_token, [sample_creation])
+        v3.createSamples(session_token, Arrays.asList(sample_creation))
     return tr.getSearchService().getSample(sample_id.getIdentifier())
 
 def _create_user(session_token, user_id, password, space_code):
     v3 = ServiceProvider.getV3ApplicationService()
     person_permid = PersonPermId(user_id)
-    if v3.getPersons(session_token, [person_permid], PersonFetchOptions()).get(person_permid) is None:
+    if v3.getPersons(session_token, Arrays.asList(person_permid), PersonFetchOptions()).get(person_permid) is None:
         passwdShPath = '../openBIS-server/jetty/bin/passwd.sh'
         subprocess.call([passwdShPath, 'add', user_id, '-p', password])
         creation = PersonCreation()
         creation.setUserId(user_id)
-        v3.createPersons(session_token, [creation])
+        v3.createPersons(session_token, Arrays.asList(creation))
         role_assignment_creation = RoleAssignmentCreation()
         role_assignment_creation.setUserId(person_permid)
         role_assignment_creation.setRole(Role.OBSERVER)
         role_assignment_creation.setSpaceId(SpacePermId(space_code))
-        v3.createRoleAssignments(session_token, [role_assignment_creation])
+        v3.createRoleAssignments(session_token, Arrays.asList(role_assignment_creation))
 
 def _get_parameter(parameters, key, default_value):
     p = parameters.get(key)
