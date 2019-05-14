@@ -29,12 +29,12 @@ import java.util.Set;
 /**
  * @author Viktor Kovtun
  */
-public class MaterialSearchManager extends AbstractSearchManager<IMaterialLister, MaterialSearchCriteria>
+public class MaterialSearchManager extends AbstractSearchManager<MaterialSearchCriteria>
 {
 
     public MaterialSearchManager(final ISQLSearchDAO searchDAO, final IMaterialLister lister)
     {
-        super(searchDAO, lister);
+        super(searchDAO);
     }
 
     public List<Material> searchForMaterials(final String userId, final MaterialSearchCriteria criteria)

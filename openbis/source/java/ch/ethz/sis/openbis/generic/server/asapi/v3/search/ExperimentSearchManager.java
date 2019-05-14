@@ -30,19 +30,20 @@ import java.util.Set;
  * 
  * @author Viktor Kovtun
  */
-public class ExperimentSearchManager extends AbstractSearchManager<IExperimentTable, ExperimentSearchCriteria>
+public class ExperimentSearchManager extends AbstractSearchManager<ExperimentSearchCriteria>
 {
 
     public ExperimentSearchManager(ISQLSearchDAO searchDAO, IExperimentTable lister)
     {
-        super(searchDAO, lister);
+        super(searchDAO);
     }
 
     public List<ExperimentPE> searchForExperiments(final String userId, final ExperimentSearchCriteria criteria)
     {
-        final List<Long> experimentIds = searchForExperimentIDs(userId, criteria);
-        lister.loadByIds(experimentIds);
-        return lister.getExperiments();
+//        final List<Long> experimentIds = searchForExperimentIDs(userId, criteria);
+//        lister.loadByIds(experimentIds);
+//        return lister.getExperiments();
+        return null;
     }
 
     public List<Long> searchForExperimentIDs(final String userId, final ExperimentSearchCriteria criteria)

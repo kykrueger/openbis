@@ -41,20 +41,20 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.NewSQLQueryTran
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public class SampleSearchManager extends AbstractSearchManager<ISampleLister, SampleSearchCriteria>
+public class SampleSearchManager extends AbstractSearchManager<SampleSearchCriteria>
 {
 
     public SampleSearchManager(final ISQLSearchDAO searchDAO, final ISampleLister sampleLister)
     {
-        super(searchDAO, sampleLister);
+        super(searchDAO);
     }
 
     @Override
     public Set<Long> searchForIDs(final SampleSearchCriteria criteria)
     {
-        List<ISearchCriteria> parentsCriteria = getCriteria(criteria, SampleParentsSearchCriteria.class);
-        List<ISearchCriteria> childrenCriteria = getCriteria(criteria, SampleChildrenSearchCriteria.class);
-        List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, SampleParentsSearchCriteria.class,
+        final List<ISearchCriteria> parentsCriteria = getCriteria(criteria, SampleParentsSearchCriteria.class);
+        final List<ISearchCriteria> childrenCriteria = getCriteria(criteria, SampleChildrenSearchCriteria.class);
+        final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, SampleParentsSearchCriteria.class,
                 SampleChildrenSearchCriteria.class);
 
         Set<Long> mainCriteriaIntermediateResults = Collections.emptySet();
@@ -69,31 +69,33 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister, Sa
         }
 
         // The parents criterias can be or not recursive, they are resolved by a recursive call
-        if (!parentsCriteria.isEmpty()) {
+        if (!parentsCriteria.isEmpty())
+        {
             final Set<Long> finalParentIds = findFinalRelationshipIds(criteria.getOperator(), parentsCriteria);
-            parentCriteriaIntermediateResults = getChildrenIdsOf(finalParentIds);
+            childrenCriteriaIntermediateResults = getChildrenIdsOf(finalParentIds);
         }
 
         // The children criterias can be or not recursive, they are resolved by a recursive call
-        if (!childrenCriteria.isEmpty()) {
+        if (!childrenCriteria.isEmpty())
+        {
             final Set<Long> finalChildrenIds = findFinalRelationshipIds(criteria.getOperator(), childrenCriteria);
             parentCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIds);
         }
 
         // Reaching this point we have the intermediate results of all recursive queries
-        Set<Long> finalResult = null;
-        if (!mainCriteriaIntermediateResults.isEmpty() ||
-                !childrenCriteriaIntermediateResults.isEmpty() ||
-                !parentCriteriaIntermediateResults.isEmpty()) { // If we have results, we merge them
+        final Set<Long> finalResult;
+        if (!mainCriteriaIntermediateResults.isEmpty() || !childrenCriteriaIntermediateResults.isEmpty() ||
+                !parentCriteriaIntermediateResults.isEmpty())
+        { // If we have results, we merge them
             finalResult = mergeResults(criteria.getOperator(),
                     Collections.singleton(mainCriteriaIntermediateResults),
                     Collections.singleton(parentCriteriaIntermediateResults),
                     Collections.singleton(childrenCriteriaIntermediateResults));
-        } else if ( mainCriteria.isEmpty() &&
-                parentsCriteria.isEmpty() &&
-                childrenCriteria.isEmpty()) { // If we don't have results and criterias are empty, return all.
+        } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
+        { // If we don't have results and criterias are empty, return all.
             finalResult = getAllIds();
-        } else { // If we don't have results and criterias are not empty, there is no results.
+        } else
+        { // If we don't have results and criterias are not empty, there is no results.
             finalResult = Collections.emptySet();
         }
 
@@ -101,7 +103,8 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister, Sa
     }
 
     @Override
-    public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids) {
+    public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids)
+    {
         final SpaceProjectIDsVO authorizedSpaceProjectIds = searchDAO.getAuthorisedSpaceProjectIds(userId);
         final Set<Long> filteredIds = searchDAO.filterSampleIDsBySpaceAndProjectIDs(ids, authorizedSpaceProjectIds);
         return filteredIds;
@@ -109,7 +112,8 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister, Sa
 
     @Override
     public List<Long> sortAndPage(final Set<Long> ids, final SampleSearchCriteria criteria,
-            final FetchOptions<?> fetchOptions) {
+            final FetchOptions<?> fetchOptions)
+    {
         final SortAndPage sap = new SortAndPage();
         final Set<Long> objects = sap.sortAndPage(ids, criteria, fetchOptions);
         return new ArrayList<>(objects);
@@ -138,15 +142,18 @@ public class SampleSearchManager extends AbstractSearchManager<ISampleLister, Sa
     /*
      * These methods require a simple SQL query to the database
      */
-    private static Set<Long> getAllIds() {
+    private static Set<Long> getAllIds()
+    {
         throw new UnsupportedOperationException();
     }
 
-    private static Set<Long> getChildrenIdsOf(final Set<Long> parents) {
+    private static Set<Long> getChildrenIdsOf(final Set<Long> parents)
+    {
         throw new UnsupportedOperationException();
     }
 
-    private static Set<Long> getParentsIdsOf(final Set<Long> children) {
+    private static Set<Long> getParentsIdsOf(final Set<Long> children)
+    {
         throw new UnsupportedOperationException();
     }
 
