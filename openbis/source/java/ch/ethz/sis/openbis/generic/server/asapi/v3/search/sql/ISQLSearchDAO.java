@@ -33,8 +33,8 @@ public interface ISQLSearchDAO
             SearchOperator operator);
 
     /**
-     * Returns the maximum size of a search result set. The standard implementations returns <code>hibernate.search.maxResults</code> of
-     * <code>service.properties</code>.
+     * Returns the maximum size of a search result set. The standard implementations returns
+     * <code>hibernate.search.maxResults</code> of <code>service.properties</code>.
      */
     int getResultSetSizeLimit();
 

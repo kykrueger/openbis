@@ -61,18 +61,19 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
         // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
         if (!mainCriteria.isEmpty())
         {
-            mainCriteriaIntermediateResults = queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, mainCriteria,
+            // TODO: implement.
+            mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, mainCriteria,
                     criteria.getOperator());
         }
 
-        // The parents criterias can be or not recursive, they are resolved by a recursive call
+        // The parents criteria can be or not recursive, they are resolved by a recursive call
         if (!parentsCriteria.isEmpty())
         {
             final Set<Long> finalParentIds = findFinalRelationshipIds(criteria.getOperator(), parentsCriteria);
             childrenCriteriaIntermediateResults = getChildrenIdsOf(finalParentIds);
         }
 
-        // The children criterias can be or not recursive, they are resolved by a recursive call
+        // The children criteria can be or not recursive, they are resolved by a recursive call
         if (!childrenCriteria.isEmpty())
         {
             final Set<Long> finalChildrenIds = findFinalRelationshipIds(criteria.getOperator(), childrenCriteria);
@@ -139,19 +140,31 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     /*
      * These methods require a simple SQL query to the database
      */
-    private static Set<Long> getAllIds()
+
+    /**
+     * Queries the DB to return all sample IDs.
+     *
+     * @return set of IDs of all samples.
+     */
+    private Set<Long> getAllIds()
     {
-        throw new UnsupportedOperationException();
+        final SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCode().thatContains("");
+
+        return searchDAO.queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, Collections.singletonList(criteria),
+                SearchOperator.OR);
     }
 
-    private static Set<Long> getChildrenIdsOf(final Set<Long> parents)
+    private Set<Long> getChildrenIdsOf(final Set<Long> parents)
     {
-        throw new UnsupportedOperationException();
+        // TODO: implement.
+        return Collections.emptySet();
     }
 
-    private static Set<Long> getParentsIdsOf(final Set<Long> children)
+    private Set<Long> getParentsIdsOf(final Set<Long> children)
     {
-        throw new UnsupportedOperationException();
+        // TODO: implement.
+        return Collections.emptySet();
     }
 
 }

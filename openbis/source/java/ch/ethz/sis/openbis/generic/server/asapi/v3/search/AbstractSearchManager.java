@@ -19,7 +19,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 
@@ -180,15 +179,6 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
             }
         }
         return smallest;
-    }
-
-    /*
-     *
-     */
-    protected Set<Long> queryDBWithNonRecursiveCriteria(final EntityKind entityKind,
-            final List<ISearchCriteria> criteria, final SearchOperator operator) {
-        // TODO: implement.
-        return Collections.emptySet();
     }
 
 }

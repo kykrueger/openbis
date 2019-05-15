@@ -40,8 +40,8 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
     /*
      *
      */
-    public Set<Long> queryDBWithNonRecursiveCriteria(EntityKind entityKind, List<ISearchCriteria> criteria,
-            SearchOperator operator) {
+    public Set<Long> queryDBWithNonRecursiveCriteria(final EntityKind entityKind, final List<ISearchCriteria> criteria,
+            final SearchOperator operator) {
         throw new UnsupportedOperationException();
     }
 

@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
@@ -30,6 +32,7 @@ import org.testng.annotations.Test;
 import java.util.*;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests {@link SampleSearchManager}.
@@ -74,8 +77,67 @@ public class SampleSearchManagerTest
         parentSearchCriteria.withType().withCode().thatEquals("B");
         searchCriteria.withParents().setCriteria(new ArrayList<>(Arrays.asList(parentSearchCriteria)));
 
+        context.checking(new Expectations()
+                {{
 
-        final Set<Long> ids = searchManager.searchForIDs(searchCriteria);
+                }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+    }
+
+    /**
+     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when only main criteria is
+     * present.
+     */
+    @Test
+    public void testSearchForIDsOnlyMainCriteria()
+    {
+        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+        criterion.withType().withCode().thatEquals("A");
+
+        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria();
+        searchCriteria.withAndOperator().setCriteria(new ArrayList<>(Collections.singletonList(criterion)));
+
+        final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L, 5L, 7L));
+
+        // AND
+        context.checking(new Expectations()
+                {{
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                            Collections.singletonList(criterion), SearchOperator.AND);
+                    will(returnValue(expectedIds));
+                }});
+
+        Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        assertTrue(actualIds.isEmpty(), "Searching with AND operator should produce empty result set.");
+
+        // OR
+        searchCriteria.withOrOperator();
+        context.checking(new Expectations()
+                {{
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                            Collections.singletonList(criterion), SearchOperator.OR);
+                    will(returnValue(expectedIds));
+                }});
+
+        actualIds = searchManager.searchForIDs(searchCriteria);
+        assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testSearchForIDsNoCriteria()
+    {
+        final Set<Long> expectedIds = new HashSet(Arrays.asList(1L, 2L, 3L, 4L));
+        context.checking(new Expectations()
+                {{
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(equal(EntityKind.SAMPLE)),
+                            with(any(List.class)), with(any(SearchOperator.class)));
+                    will(returnValue(expectedIds));
+                }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(new SampleSearchCriteria());
+        assertEquals(actualIds, expectedIds);
     }
 
     @Test
