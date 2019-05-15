@@ -18,8 +18,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
 
 import java.util.List;
@@ -33,9 +33,8 @@ import java.util.Set;
 public class ExperimentSearchManager extends AbstractSearchManager<ExperimentSearchCriteria>
 {
 
-    public ExperimentSearchManager(ISQLSearchDAO searchDAO, IExperimentTable lister)
-    {
-        super(searchDAO);
+    public ExperimentSearchManager(ISQLSearchDAO searchDAO, ISortAndPage sortAndPage) {
+        super(searchDAO, sortAndPage);
     }
 
     public List<ExperimentPE> searchForExperiments(final String userId, final ExperimentSearchCriteria criteria)

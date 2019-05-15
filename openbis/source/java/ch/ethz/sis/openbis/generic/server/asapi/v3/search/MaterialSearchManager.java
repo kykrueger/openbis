@@ -18,8 +18,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.search.MaterialSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Material;
 import org.springframework.dao.DataAccessException;
 
@@ -32,9 +32,8 @@ import java.util.Set;
 public class MaterialSearchManager extends AbstractSearchManager<MaterialSearchCriteria>
 {
 
-    public MaterialSearchManager(final ISQLSearchDAO searchDAO, final IMaterialLister lister)
-    {
-        super(searchDAO);
+    public MaterialSearchManager(ISQLSearchDAO searchDAO, ISortAndPage sortAndPage) {
+        super(searchDAO, sortAndPage);
     }
 
     public List<Material> searchForMaterials(final String userId, final MaterialSearchCriteria criteria)

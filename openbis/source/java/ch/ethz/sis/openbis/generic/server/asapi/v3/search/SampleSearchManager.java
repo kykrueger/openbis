@@ -23,7 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
 
@@ -41,9 +41,9 @@ import java.util.Set;
 public class SampleSearchManager extends AbstractSearchManager<SampleSearchCriteria>
 {
 
-    public SampleSearchManager(final ISQLSearchDAO searchDAO)
+    public SampleSearchManager(ISQLSearchDAO searchDAO, ISortAndPage sortAndPage)
     {
-        super(searchDAO);
+        super(searchDAO, sortAndPage);
     }
 
     @Override
@@ -111,9 +111,7 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     public List<Long> sortAndPage(final Set<Long> ids, final SampleSearchCriteria criteria,
             final FetchOptions<?> fetchOptions)
     {
-        final SortAndPage sap = new SortAndPage();
-        final Set<Long> objects = sap.sortAndPage(ids, criteria, fetchOptions);
-        return new ArrayList<>(objects);
+        return sortAndPage.sortAndPage(new ArrayList<>(ids), criteria, fetchOptions);
     }
 
     /**
@@ -127,9 +125,11 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
             final List<ISearchCriteria> relatedEntitiesCriteria)
     {
         final List<Set<Long>> relatedIds = new ArrayList<>();
-        for (ISearchCriteria sampleSearchCriteria : relatedEntitiesCriteria) {
+        for (ISearchCriteria sampleSearchCriteria : relatedEntitiesCriteria)
+        {
             Set<Long> foundParentIds = searchForIDs((SampleSearchCriteria) sampleSearchCriteria);
-            if (!foundParentIds.isEmpty()) {
+            if (!foundParentIds.isEmpty())
+            {
                 relatedIds.add(foundParentIds);
             }
         }

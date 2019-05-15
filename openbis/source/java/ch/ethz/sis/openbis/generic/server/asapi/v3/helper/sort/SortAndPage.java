@@ -16,21 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.BeanUtils;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchIgnore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
@@ -39,18 +24,23 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.Abstrac
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.ListView;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.view.SetView;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import org.springframework.beans.BeanUtils;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * @author pkupczyk
  */
 @SuppressWarnings({ "rawtypes", "unchecked", "cast" })
-public class SortAndPage
-{
+public class SortAndPage implements ISortAndPage {
 
     private Set processed = new HashSet();
 
     private MethodsCache methodsCache = new MethodsCache();
 
+    @Override
     public <T, C extends Collection<T>> C sortAndPage(C objects, ISearchCriteria c, FetchOptions fo)
     {
         C newObjects = objects;

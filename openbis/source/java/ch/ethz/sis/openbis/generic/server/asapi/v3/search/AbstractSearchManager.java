@@ -20,6 +20,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeS
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 
 import java.util.*;
@@ -36,9 +37,12 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
 {
     protected final ISQLSearchDAO searchDAO;
 
-    public AbstractSearchManager(final ISQLSearchDAO searchDAO)
+    protected final ISortAndPage sortAndPage;
+
+    public AbstractSearchManager(final ISQLSearchDAO searchDAO, final ISortAndPage sortAndPage)
     {
         this.searchDAO = searchDAO;
+        this.sortAndPage = sortAndPage;
     }
 
     /**

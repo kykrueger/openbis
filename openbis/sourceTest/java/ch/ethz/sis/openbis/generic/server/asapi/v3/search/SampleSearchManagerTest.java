@@ -16,7 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
 import org.jmock.Expectations;
@@ -25,14 +27,13 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 
 /**
+ * Tests {@link SampleSearchManager}.
+ *
  * @author Viktor Kovtun
  */
 public class SampleSearchManagerTest
@@ -45,12 +46,15 @@ public class SampleSearchManagerTest
 
     private SampleSearchManager searchManager;
 
+    private ISortAndPage sortAndPageMock;
+
     @BeforeMethod
     public void setUpMocks()
     {
         context = new Mockery();
         searchDAOMock = context.mock(ISQLSearchDAO.class);
-        searchManager = new SampleSearchManager(searchDAOMock);
+        sortAndPageMock = context.mock(ISortAndPage.class);
+        searchManager = new SampleSearchManager(searchDAOMock, sortAndPageMock);
     }
 
     @AfterMethod
@@ -60,7 +64,8 @@ public class SampleSearchManagerTest
     }
 
     @Test
-    public void testSearchForIDs() {
+    public void testSearchForIDs()
+    {
         final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
         searchCriteria.withType().withCode().thatEquals("A");
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(searchCriteria)));
@@ -74,29 +79,50 @@ public class SampleSearchManagerTest
     }
 
     @Test
-    public void testFilterIDsByUserRights() {
+    public void testFilterIDsByUserRights()
+    {
         final long userId = 12345;
         final Set<Long> sampleIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 4L, 5L));
         final Set<Long> acceptedIds = new HashSet<Long>(Arrays.asList(1L, 3L, 5L));
 
-        context.checking(new Expectations() {{
-            final Set<Long> spaceIds = new HashSet<>(Arrays.asList(10L, 11L, 12L));
-            final Set<Long> projectIds = new HashSet<>(Arrays.asList(20L, 21L, 22L, 23L));
+        context.checking(new Expectations()
+                {{
+                    final Set<Long> spaceIds = new HashSet<>(Arrays.asList(10L, 11L, 12L));
+                    final Set<Long> projectIds = new HashSet<>(Arrays.asList(20L, 21L, 22L, 23L));
 
-            one(searchDAOMock).getAuthorisedSpaceProjectIds(userId);
-            will(returnValue(new SpaceProjectIDsVO(spaceIds, projectIds)));
+                    one(searchDAOMock).getAuthorisedSpaceProjectIds(userId);
+                    will(returnValue(new SpaceProjectIDsVO(spaceIds, projectIds)));
 
-            one(searchDAOMock).filterSampleIDsBySpaceAndProjectIDs(sampleIds,
-                    new SpaceProjectIDsVO(spaceIds, projectIds));
-            will(returnValue(acceptedIds));
-        }});
+                    one(searchDAOMock).filterSampleIDsBySpaceAndProjectIDs(sampleIds,
+                            new SpaceProjectIDsVO(spaceIds, projectIds));
+                    will(returnValue(acceptedIds));
+                }});
 
         final Set<Long> resultingIds = searchManager.filterIDsByUserRights(userId, sampleIds);
         assertEquals(resultingIds, acceptedIds);
     }
 
     @Test
-    public void testSortAndPage() {
+    public void testSortAndPage()
+    {
+        final Set<Long> sampleIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 4L, 5L));
+
+        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
+        searchCriteria.withType().withCode().thatEquals("A");
+        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(searchCriteria)));
+
+        final SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+
+        final List<Long> expectedSortedIds = Arrays.asList(5L, 4L, 3L, 2L, 1L);
+
+        context.checking(new Expectations()
+                {{
+                    one(sortAndPageMock).sortAndPage(new ArrayList<>(sampleIds), searchCriteria, sampleFetchOptions);
+                    will(returnValue(expectedSortedIds));
+                }});
+
+        final List<Long> actualSortedIds = searchManager.sortAndPage(sampleIds, searchCriteria, sampleFetchOptions);
+        assertEquals(actualSortedIds, expectedSortedIds);
     }
 
 
