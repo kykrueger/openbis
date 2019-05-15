@@ -26,14 +26,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriter
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.SortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.samplelister.ISampleLister;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.NewSQLQueryTranslator.queryDBWithNonRecursiveCriteria;
 
 /**
  * Manages detailed search with complex sample search criteria.
@@ -44,7 +41,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.NewSQLQueryTran
 public class SampleSearchManager extends AbstractSearchManager<SampleSearchCriteria>
 {
 
-    public SampleSearchManager(final ISQLSearchDAO searchDAO, final ISampleLister sampleLister)
+    public SampleSearchManager(final ISQLSearchDAO searchDAO)
     {
         super(searchDAO);
     }

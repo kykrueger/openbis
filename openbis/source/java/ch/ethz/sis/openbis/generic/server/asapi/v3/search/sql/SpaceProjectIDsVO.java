@@ -43,4 +43,23 @@ public class SpaceProjectIDsVO
         return projectIds;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SpaceProjectIDsVO that = (SpaceProjectIDsVO) o;
+
+        if (!spaceIds.equals(that.spaceIds)) return false;
+        return projectIds.equals(that.projectIds);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = spaceIds.hashCode();
+        result = 31 * result + projectIds.hashCode();
+        return result;
+    }
+
 }
