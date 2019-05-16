@@ -111,18 +111,18 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 			return;
 		}
 
+		// Clear the container
+		$container.empty();
+
 		if (microscopyExperimentSample.children.length === 0) {
 			return;
 		}
 
-		// Clear the container
-		$container.empty();
-
-     	// Add legend
+		// Add legend
 		var legend = $("<legend>")
 			.text("File previews");
 		$container.append(legend);
-	
+
 		// Prepare a div to host the thumbnails
 		var sampleView_div = $("<div>");
 		$container.append(sampleView_div);
@@ -220,7 +220,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 		});
 	},
 
-	formatSizeForDisplay : function (datasetSize) {
+	formatSizeForDisplay: function (datasetSize) {
 
 		// Output
 		var formattedDatasetSize = "";
@@ -239,67 +239,67 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 		return formattedDatasetSize;
 	},
 
-	displayThumbnailForSample : function(model, sample, img_id) {
+	displayThumbnailForSample: function (model, sample, img_id) {
 
 		// Get the datasets with type "MICROSCOPY_IMG_THUMBNAIL" for current sample
 		this.getMicroscopyImgThumbnailDataSetsForMicroscopySample(
 			model,
 			sample.experimentIdentifierOrNull,
-			sample.code, function(dataset) {
-	
-			// Get the containers
-			if (dataset == null) {
-				return;
-			}
-	
-			// Retrieve the file for the dataset and the associated URL
-			mainController.openbisV1.listFilesForDataSet(dataset.code, '/', true,
-				function(response) {
-	
-					// Make sure that we got some results from the DSS to process
-					if (response.error) {
-	
-						// Thumbnail not found!
-						var imD = $("#" + img_id);
-						imD.attr("src", "./img/error.png");
-						imD.attr("title", "Could not find any files associated to this dataset!");
-	
-						return;
-	
-					}
-	
-					// Find the thumbnail.png file
-					response.result.forEach(function(f) {
-	
-						if (!f.isDirectory && f.pathInDataSet.toLowerCase() === "thumbnail.png") {
-	
-							// Retrieve the file URL
-							mainController.openbisV1.getDownloadUrlForFileForDataSetInSession(
-								dataset.code, f.pathInDataSet, function(url){
-	
-									// Replace the image
-									var eUrl = encodeURI(url);
-									eUrl = eUrl.replace('+', '%2B');
-									$("#" + img_id).attr("src", eUrl);
-	
-								});
-						} else {
-	
+			sample.code, function (dataset) {
+
+				// Get the containers
+				if (dataset == null) {
+					return;
+				}
+
+				// Retrieve the file for the dataset and the associated URL
+				mainController.openbisV1.listFilesForDataSet(dataset.code, '/', true,
+					function (response) {
+
+						// Make sure that we got some results from the DSS to process
+						if (response.error) {
+
 							// Thumbnail not found!
 							var imD = $("#" + img_id);
 							imD.attr("src", "./img/error.png");
-							imD.attr("title", "Could not find a thumbnail for this dataset!");
-	
+							imD.attr("title", "Could not find any files associated to this dataset!");
+
+							return;
+
 						}
+
+						// Find the thumbnail.png file
+						response.result.forEach(function (f) {
+
+							if (!f.isDirectory && f.pathInDataSet.toLowerCase() === "thumbnail.png") {
+
+								// Retrieve the file URL
+								mainController.openbisV1.getDownloadUrlForFileForDataSetInSession(
+									dataset.code, f.pathInDataSet, function (url) {
+
+										// Replace the image
+										var eUrl = encodeURI(url);
+										eUrl = eUrl.replace('+', '%2B');
+										$("#" + img_id).attr("src", eUrl);
+
+									});
+							} else {
+
+								// Thumbnail not found!
+								var imD = $("#" + img_id);
+								imD.attr("src", "./img/error.png");
+								imD.attr("title", "Could not find a thumbnail for this dataset!");
+
+							}
+						});
+
 					});
-	
-				});
-	
-		});
-	
+
+			});
+
 	},
 
-	getMicroscopyImgThumbnailDataSetsForMicroscopySample : function (model, expCode, sampleCode, action) {
+	getMicroscopyImgThumbnailDataSetsForMicroscopySample: function (model, expCode, sampleCode, action) {
 
 		// Experiment criteria (experiment of type "COLLECTION" and code expCode)
 		var experimentCriteria = new SearchCriteria();
@@ -311,7 +311,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 			SearchCriteriaMatchClause.createAttributeMatch(
 				"TYPE", "COLLECTION")
 		);
-	
+
 		// Sample criteria (sample of type "MICROSCOPY_SAMPLE_TYPE" and code sampleCode)
 		var sampleCriteria = new SearchCriteria();
 		sampleCriteria.addMatchClause(
@@ -322,14 +322,14 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 			SearchCriteriaMatchClause.createAttributeMatch(
 				"TYPE", "MICROSCOPY_SAMPLE_TYPE")
 		);
-	
+
 		// Dataset criteria
 		var datasetCriteria = new SearchCriteria();
 		datasetCriteria.addMatchClause(
 			SearchCriteriaMatchClause.createAttributeMatch(
 				"TYPE", "MICROSCOPY_IMG_CONTAINER")
 		);
-	
+
 		// Add sample and experiment search criteria as subcriteria
 		datasetCriteria.addSubCriteria(
 			SearchSubCriteria.createSampleCriteria(sampleCriteria)
@@ -337,15 +337,15 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 		datasetCriteria.addSubCriteria(
 			SearchSubCriteria.createExperimentCriteria(experimentCriteria)
 		);
-	
+
 		// Search
 		mainController.openbisV1.searchForDataSets(datasetCriteria, function (response) {
-	
+
 			// Get the containers
 			if (response.error || response.result.length === 0) {
 				return null;
 			}
-	
+
 			// All MICROSCOPY_IMG_CONTAINER datasets (i.e. a file series) contain a MICROSCOPY_IMG_OVERVIEW
 			// and a MICROSCOPY_IMG dataset; one of the series will also contain a MICROSCOPY_IMG_THUMBNAIL,
 			// which is what we are looking for here.
@@ -363,6 +363,6 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 				}
 			}
 		});
-	
+
 	}
 });
