@@ -815,22 +815,25 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
 
     private boolean hasInvalidCodes(DetailedSearchCriteria searchCriteria)
     {
-        for (DetailedSearchCriterion criterion : searchCriteria.getCriteria())
+        if (searchCriteria != null)
         {
-            String value = criterion.getValue();
-            DetailedSearchField field = criterion.getField();
-            DetailedSearchFieldKind kind = field.getKind();
-            if (DetailedSearchFieldKind.ATTRIBUTE.equals(kind) && field.getAttributeCode().equals("CODE") 
-                    && VALID_CODE_PATTERN.matcher(value).matches() == false)
+            for (DetailedSearchCriterion criterion : searchCriteria.getCriteria())
             {
-                return true;
+                String value = criterion.getValue();
+                DetailedSearchField field = criterion.getField();
+                DetailedSearchFieldKind kind = field.getKind();
+                if (DetailedSearchFieldKind.ATTRIBUTE.equals(kind) && field.getAttributeCode().equals("CODE") 
+                        && VALID_CODE_PATTERN.matcher(value).matches() == false)
+                {
+                    return true;
+                }
             }
-        }
-        for (DetailedSearchSubCriteria subCriteria : searchCriteria.getSubCriterias())
-        {
-            if (hasInvalidCodes(subCriteria.getCriteria()))
+            for (DetailedSearchSubCriteria subCriteria : searchCriteria.getSubCriterias())
             {
-                return true;
+                if (hasInvalidCodes(subCriteria.getCriteria()))
+                {
+                    return true;
+                }
             }
         }
         return false;
