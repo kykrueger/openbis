@@ -27,10 +27,11 @@ class ObjectTypeTable extends React.Component {
       <Table className={classes.table}>
         <TableHead>
           <TableRow>
-            <TableCell>Code</TableCell>
-            <TableCell>Label</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Data Type</TableCell>
+            <TableCell></TableCell>
+            <TableCell>Code*</TableCell>
+            <TableCell>Label*</TableCell>
+            <TableCell>Description*</TableCell>
+            <TableCell>Data Type*</TableCell>
             <TableCell>Mandatory</TableCell>
           </TableRow>
         </TableHead>

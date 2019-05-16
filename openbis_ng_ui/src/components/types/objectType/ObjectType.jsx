@@ -60,7 +60,8 @@ class ObjectType extends React.Component {
                 dataType: assignment.propertyType.dataType,
                 ordinal: assignment.ordinal,
                 mandatory: assignment.mandatory,
-                selected: false
+                selected: false,
+                errors: {}
               }))
             }
           }
@@ -69,13 +70,29 @@ class ObjectType extends React.Component {
     })
   }
 
-  handleChange(path, value){
+  handleChange(index, key, value){
     this.setState((prevState) => {
-      let newState = {
-        ...prevState
+      let newProperties = prevState.object.properties.map((property, i) => {
+        if(i === index){
+          return {
+            ...property,
+            [key]: value
+          }
+        }else{
+          return property
+        }
+      })
+      return {
+        ...prevState,
+        object: {
+          ...prevState.object,
+          properties: newProperties
+        }
       }
-      _.set(newState.object, path, value)
-      return newState
+    }, () => {
+      if(this.state.validated){
+        this.validate()
+      }
     })
   }
 
@@ -100,21 +117,18 @@ class ObjectType extends React.Component {
 
   handleAdd(){
     this.setState((prevState) => {
-      let newPropertyIndex = prevState.object.properties.length
-
-      prevState.object.properties.forEach((property, index) => {
-        if(property.selected){
-          newPropertyIndex = index + 1
-        }
-      })
-
       let newProperties = prevState.object.properties.map(property => ({
         ...property,
         selected: false
       }))
-      newProperties.splice(newPropertyIndex, 0, {
+      newProperties.push({
         code: 'PROPERTY_' + prevState.object.properties.length,
-        selected: true
+        label: '',
+        description: '',
+        dataType: '',
+        mandatory: false,
+        selected: true,
+        errors: {}
       })
 
       return {
@@ -135,7 +149,7 @@ class ObjectType extends React.Component {
         properties: prevState.object.properties.map(property => {
           return {
             ...property,
-            selected: property.code === propertyCode
+            selected: property.code === propertyCode ? !property.selected : false
           }
         })
       }
@@ -144,10 +158,22 @@ class ObjectType extends React.Component {
 
   handleReorder(oldPropertyIndex, newPropertyIndex){
     let oldProperties = this.state.object.properties
-    let newProperties = [ ...oldProperties ]
+    let newProperties = oldProperties.map(property => {
+      if(property.selected){
+        return {
+          ...property,
+          selected: false
+        }
+      }else{
+        return property
+      }
+    })
 
     let [ property ] = newProperties.splice(oldPropertyIndex, 1)
-    newProperties.splice(newPropertyIndex, 0, property)
+    newProperties.splice(newPropertyIndex, 0, {
+      ...property,
+      selected: true
+    })
 
     this.setState((prevState) => ({
       ...prevState,
@@ -158,10 +184,53 @@ class ObjectType extends React.Component {
     }))
   }
 
+  validate(){
+    let valid = true
+
+    let newProperties = this.state.object.properties.map(property => {
+      let errors = {}
+
+      if(!_.trim(property.code)){
+        errors['code'] = 'Cannot be empty'
+      }
+      if(!_.trim(property.label)){
+        errors['label'] = 'Cannot be empty'
+      }
+      if(!_.trim(property.description)){
+        errors['description'] = 'Cannot be empty'
+      }
+      if(!_.trim(property.dataType)){
+        errors['dataType'] = 'Cannot be empty'
+      }
+
+      if(_.size(errors) > 0){
+        valid = false
+      }
+
+      return {
+        ...property,
+        errors: errors
+      }
+    })
+
+    this.setState((prevState) => ({
+      ...prevState,
+      validated: true,
+      object: {
+        ...prevState.object,
+        properties: newProperties
+      }
+    }))
+
+    return valid
+  }
+
   handleSave(){
-    let update = new dto.SampleTypeUpdate()
-    update.setTypeId(new dto.EntityTypePermId(this.props.objectId))
-    facade.updateSampleTypes([update])
+    if(this.validate()){
+      let update = new dto.SampleTypeUpdate()
+      update.setTypeId(new dto.EntityTypePermId(this.props.objectId))
+      facade.updateSampleTypes([update])
+    }
   }
 
   render() {
