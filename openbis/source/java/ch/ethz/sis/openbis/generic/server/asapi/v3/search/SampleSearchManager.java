@@ -27,10 +27,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Manages detailed search with complex sample search criteria.
@@ -54,9 +51,9 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
         final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, SampleParentsSearchCriteria.class,
                 SampleChildrenSearchCriteria.class);
 
-        Set<Long> mainCriteriaIntermediateResults = Collections.emptySet();
-        Set<Long> parentCriteriaIntermediateResults = Collections.emptySet();
-        Set<Long> childrenCriteriaIntermediateResults  = Collections.emptySet();
+        Set<Long> mainCriteriaIntermediateResults = null;
+        Set<Long> parentCriteriaIntermediateResults = null;
+        Set<Long> childrenCriteriaIntermediateResults  = null;
 
         // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
         if (!mainCriteria.isEmpty())
@@ -82,28 +79,39 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
 
         // Reaching this point we have the intermediate results of all recursive queries
         final Set<Long> finalResult;
-        if (!mainCriteriaIntermediateResults.isEmpty() || !childrenCriteriaIntermediateResults.isEmpty() ||
-                !parentCriteriaIntermediateResults.isEmpty())
+        if (containsValues(mainCriteriaIntermediateResults) || containsValues(childrenCriteriaIntermediateResults) ||
+                containsValues(parentCriteriaIntermediateResults))
         { // If we have results, we merge them
             finalResult = mergeResults(criteria.getOperator(),
                     Collections.singleton(mainCriteriaIntermediateResults),
                     Collections.singleton(parentCriteriaIntermediateResults),
                     Collections.singleton(childrenCriteriaIntermediateResults));
         } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
-        { // If we don't have results and criterias are empty, return all.
+        { // If we don't have results and criteria are empty, return all.
             finalResult = getAllIds();
         } else
-        { // If we don't have results and criterias are not empty, there is no results.
+        { // If we don't have results and criteria are not empty, there is no results.
             finalResult = Collections.emptySet();
         }
 
         return finalResult;
     }
 
+    /**
+     * Checks whether a collection contains any values.
+     *
+     * @param collection collection to be checked for values.
+     * @return {@code false} if collection is {@code null} or empty, true otherwise.
+     */
+    private static boolean containsValues(final Collection<?> collection)
+    {
+        return collection != null && !collection.isEmpty();
+    }
+
     @Override
     public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids)
     {
-        final SpaceProjectIDsVO authorizedSpaceProjectIds = searchDAO.getAuthorisedSpaceProjectIds(userId);
+        final SpaceProjectIDsVO authorizedSpaceProjectIds = searchDAO.findAuthorisedSpaceProjectIDs(userId);
         final Set<Long> filteredIds = searchDAO.filterSampleIDsBySpaceAndProjectIDs(ids, authorizedSpaceProjectIds);
         return filteredIds;
     }
@@ -155,16 +163,14 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
                 SearchOperator.OR);
     }
 
-    private Set<Long> getChildrenIdsOf(final Set<Long> parents)
+    private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet)
     {
-        // TODO: implement.
-        return Collections.emptySet();
+        return searchDAO.findChildIDs(parentIdSet);
     }
 
-    private Set<Long> getParentsIdsOf(final Set<Long> children)
+    private Set<Long> getParentsIdsOf(final Set<Long> childIdSet)
     {
-        // TODO: implement.
-        return Collections.emptySet();
+        return searchDAO.findParentIDs(childIdSet);
     }
 
 }

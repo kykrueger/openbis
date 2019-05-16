@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
@@ -66,23 +67,182 @@ public class SampleSearchManagerTest
         context.assertIsSatisfied();
     }
 
+    /**
+     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when there are main and parent
+     * criteria and the OR logical operator is applied to the root criteria.
+     */
     @Test
-    public void testSearchForIDs()
+    public void testSearchForIDsParentCriteriaOr()
     {
-        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
-        searchCriteria.withType().withCode().thatEquals("A");
-        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(searchCriteria)));
+        final SampleSearchCriteria parentSearchCriterion1 = new SampleSearchCriteria();
+        parentSearchCriterion1.withType().withCode().thatEquals("B");
 
-        final SampleSearchCriteria parentSearchCriteria = new SampleSearchCriteria();
-        parentSearchCriteria.withType().withCode().thatEquals("B");
-        searchCriteria.withParents().setCriteria(new ArrayList<>(Arrays.asList(parentSearchCriteria)));
+        final SampleSearchCriteria parentSearchCriterion2 = new SampleSearchCriteria();
+        parentSearchCriterion2.withProject();
 
+        final List<ISearchCriteria> parentCriteria = Arrays.asList(parentSearchCriterion1, parentSearchCriterion2);
+
+        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+        criterion.withType().withCode().thatEquals("A");
+
+        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withOrOperator();
+        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
+        searchCriteria.withParents().withOrOperator().setCriteria(new ArrayList<>(parentCriteria));
+
+        final Set<Long> parentCriteriaIds = new HashSet<>(Arrays.asList(11L, 13L, 19L, 17L));
+        final Set<Long> parentCriteriaResultingIds = new HashSet<>(Arrays.asList(1L, 3L, 9L, 7L));
+        final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 5L));
+        final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
         context.checking(new Expectations()
                 {{
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                            Collections.singletonList(criterion), SearchOperator.OR);
+                    will(returnValue(mainCriteriaIds));
 
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, parentCriteria,
+                            SearchOperator.OR);
+                    will(returnValue(parentCriteriaIds));
+
+                    one(searchDAOMock).findChildIDs(parentCriteriaIds);
+                    will(returnValue(parentCriteriaResultingIds));
                 }});
 
         final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
+    }
+
+    /**
+     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when there are main and parent
+     * criteria and the AND logical operator is applied to the root criteria.
+     */
+    @Test
+    public void testSearchForIDsParentCriteriaAnd()
+    {
+        final SampleSearchCriteria parentSearchCriterion1 = new SampleSearchCriteria();
+        parentSearchCriterion1.withType().withCode().thatEquals("B");
+
+        final SampleSearchCriteria parentSearchCriterion2 = new SampleSearchCriteria();
+        parentSearchCriterion2.withProject();
+
+        final List<ISearchCriteria> parentCriteria = Arrays.asList(parentSearchCriterion1, parentSearchCriterion2);
+
+        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+        criterion.withType().withCode().thatEquals("A");
+
+        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
+        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
+        searchCriteria.withParents().withOrOperator().setCriteria(new ArrayList<>(parentCriteria));
+
+        final Set<Long> parentCriteriaIds = new HashSet<>(Arrays.asList(11L, 13L, 19L, 17L));
+        final Set<Long> parentCriteriaResultingIds = new HashSet<>(Arrays.asList(1L, 3L, 9L, 7L));
+        final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 3L));
+        final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
+
+        context.checking(new Expectations()
+        {{
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                    Collections.singletonList(criterion), SearchOperator.AND);
+            will(returnValue(mainCriteriaIds));
+
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, parentCriteria,
+                    SearchOperator.OR);
+            will(returnValue(parentCriteriaIds));
+
+            one(searchDAOMock).findChildIDs(parentCriteriaIds);
+            will(returnValue(parentCriteriaResultingIds));
+        }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
+    }
+
+    /**
+     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when there are main and child
+     * criteria and the OR logical operator is applied to the root criteria.
+     */
+    @Test
+    public void testSearchForIDsChildCriteriaOr()
+    {
+        final SampleSearchCriteria childSearchCriterion1 = new SampleSearchCriteria();
+        childSearchCriterion1.withType().withCode().thatEquals("B");
+
+        final SampleSearchCriteria childSearchCriterion2 = new SampleSearchCriteria();
+        childSearchCriterion2.withProject();
+
+        final List<ISearchCriteria> childCriteria = Arrays.asList(childSearchCriterion1, childSearchCriterion2);
+
+        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+        criterion.withType().withCode().thatEquals("A");
+
+        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withOrOperator();
+        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
+        searchCriteria.withChildren().withAndOperator().setCriteria(new ArrayList<>(childCriteria));
+
+        final Set<Long> childCriteriaIds = new HashSet<>(Arrays.asList(11L, 12L, 14L, 18L));
+        final Set<Long> childCriteriaResultingIds = new HashSet<>(Arrays.asList(1L, 3L, 9L, 7L));
+        final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 5L));
+        final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
+        context.checking(new Expectations()
+                {{
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, childCriteria,
+                            SearchOperator.AND);
+                    will(returnValue(childCriteriaIds));
+
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                            Collections.singletonList(criterion), SearchOperator.OR);
+                    will(returnValue(mainCriteriaIds));
+
+                    one(searchDAOMock).findParentIDs(childCriteriaIds);
+                    will(returnValue(childCriteriaResultingIds));
+                }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
+    }
+
+    /**
+     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when there are main and child
+     * criteria and the AND logical operator is applied to the root criteria.
+     */
+    @Test
+    public void testSearchForIDsChildCriteriaAnd()
+    {
+        final SampleSearchCriteria childSearchCriterion1 = new SampleSearchCriteria();
+        childSearchCriterion1.withType().withCode().thatEquals("B");
+
+        final SampleSearchCriteria childSearchCriterion2 = new SampleSearchCriteria();
+        childSearchCriterion2.withProject();
+
+        final List<ISearchCriteria> childCriteria = Arrays.asList(childSearchCriterion1, childSearchCriterion2);
+
+        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+        criterion.withType().withCode().thatEquals("A");
+
+        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
+        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
+        searchCriteria.withChildren().withOrOperator().setCriteria(new ArrayList<>(childCriteria));
+
+        final Set<Long> childCriteriaIds = new HashSet<>(Arrays.asList(11L, 12L, 14L, 18L));
+        final Set<Long> childCriteriaResultingIds = new HashSet<>(Arrays.asList(1L, 3L, 5L, 7L));
+        final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 3L));
+        final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
+
+        context.checking(new Expectations()
+        {{
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, childCriteria,
+                    SearchOperator.OR);
+            will(returnValue(childCriteriaIds));
+
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                    Collections.singletonList(criterion), SearchOperator.AND);
+            will(returnValue(mainCriteriaIds));
+
+            one(searchDAOMock).findParentIDs(childCriteriaIds);
+            will(returnValue(childCriteriaResultingIds));
+        }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
@@ -100,7 +260,6 @@ public class SampleSearchManagerTest
 
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L, 5L, 7L));
 
-        // AND
         context.checking(new Expectations()
                 {{
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
@@ -108,22 +267,14 @@ public class SampleSearchManagerTest
                     will(returnValue(expectedIds));
                 }});
 
-        Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
-        assertTrue(actualIds.isEmpty(), "Searching with AND operator should produce empty result set.");
-
-        // OR
-        searchCriteria.withOrOperator();
-        context.checking(new Expectations()
-                {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.OR);
-                    will(returnValue(expectedIds));
-                }});
-
-        actualIds = searchManager.searchForIDs(searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
+    /**
+     * Tests if the method {$ SampleSearchManager#searchForIDs(SampleSearchCriteria)} returns all values when no
+     * criteria are specified.
+     */
     @SuppressWarnings("unchecked")
     @Test
     public void testSearchForIDsNoCriteria()
@@ -141,6 +292,26 @@ public class SampleSearchManagerTest
     }
 
     @Test
+    public void testSearchForIDsNoValuesFound()
+    {
+        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+        criterion.withType().withCode().thatEquals("A");
+
+        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria();
+        searchCriteria.withAndOperator().setCriteria(new ArrayList<>(Collections.singletonList(criterion)));
+
+        context.checking(new Expectations()
+                {{
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(equal(EntityKind.SAMPLE)),
+                            with(any(List.class)), with(any(SearchOperator.class)));
+                    will(returnValue(Collections.emptySet()));
+                }});
+
+        final Set<Long> actualIds = searchManager.searchForIDs(new SampleSearchCriteria());
+        assertTrue(actualIds.isEmpty());
+    }
+
+    @Test
     public void testFilterIDsByUserRights()
     {
         final long userId = 12345;
@@ -152,7 +323,7 @@ public class SampleSearchManagerTest
                     final Set<Long> spaceIds = new HashSet<>(Arrays.asList(10L, 11L, 12L));
                     final Set<Long> projectIds = new HashSet<>(Arrays.asList(20L, 21L, 22L, 23L));
 
-                    one(searchDAOMock).getAuthorisedSpaceProjectIds(userId);
+                    one(searchDAOMock).findAuthorisedSpaceProjectIDs(userId);
                     will(returnValue(new SpaceProjectIDsVO(spaceIds, projectIds)));
 
                     one(searchDAOMock).filterSampleIDsBySpaceAndProjectIDs(sampleIds,
@@ -186,114 +357,5 @@ public class SampleSearchManagerTest
         final List<Long> actualSortedIds = searchManager.sortAndPage(sampleIds, searchCriteria, sampleFetchOptions);
         assertEquals(actualSortedIds, expectedSortedIds);
     }
-
-
-//    @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
-//    @Test
-//    public void testSamplesRestrictedByParentSamplesMoreParentsThanChildren()
-//    {
-//        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
-//        searchCriteria.withType().withCode().thatEquals("A");
-////        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(searchCriteria)));
-//
-//        final SampleSearchCriteria parentSearchCriteria = new SampleSearchCriteria();
-//        parentSearchCriteria.withType().withCode().thatEquals("B");
-//        searchCriteria.withParents().setCriteria(new ArrayList<>(Arrays.asList(parentSearchCriteria)));
-//
-//
-//        // TODO: continue refactoring this test from here.
-//
-//        final RecordingMatcher<DetailedSearchCriteria> mainCriteriaMatcher =
-//                new RecordingMatcher<DetailedSearchCriteria>();
-//        final RecordingMatcher<DetailedSearchCriteria> parentCriteriaMatcher =
-//                new RecordingMatcher<DetailedSearchCriteria>();
-//        context.checking(new Expectations()
-//            {
-//                {
-//                    one(searchDAO).getResultSetSizeLimit();
-//                    will(returnValue(100));
-//
-//                    one(searchDAO).searchForEntityIds(with(USER_ID), with(mainCriteriaMatcher),
-//                            with(EntityKind.SAMPLE),
-//                            with(Arrays.<IAssociationCriteria> asList()));
-//                    will(returnValue(new ArrayList<Long>(Arrays.asList(1L, 2L, 3L, 4L))));
-//                    one(searchDAO).searchForEntityIds(with(USER_ID), with(parentCriteriaMatcher),
-//                            with(EntityKind.SAMPLE),
-//                            with(Arrays.<IAssociationCriteria> asList()));
-//                    will(returnValue(new ArrayList<Long>(Arrays.asList(1L, 2L, 3L, 4L, 5L))));
-//
-//                    one(sampleLister).getChildToParentsIdsMap(Arrays.asList(1L, 2L, 3L, 4L));
-//                    Map<Long, Set<Long>> result = new HashMap<Long, Set<Long>>();
-//                    result.put(1L, new HashSet<Long>(Arrays.asList(4L, 6L)));
-//                    result.put(2L, new HashSet<Long>(Arrays.asList(4L, 3L)));
-//                    result.put(3L, new HashSet<Long>(Arrays.asList(7L, 8L)));
-//                    will(returnValue(result));
-//                }
-//            });
-//
-//        List<Long> sampleIds =
-//                new ArrayList<Long>(searchManager.searchForSampleIDs(USER_ID, searchCriteria));
-//
-//        Collections.sort(sampleIds);
-//        assertEquals("[1, 2]", sampleIds.toString());
-//        assertEquals("ATTRIBUTE SAMPLE_TYPE: A, [SAMPLE_PARENT: ATTRIBUTE SAMPLE_TYPE: B] "
-//                + "(without wildcards)", mainCriteriaMatcher.recordedObject().toString());
-//        assertEquals("ATTRIBUTE SAMPLE_TYPE: B (without wildcards)", parentCriteriaMatcher
-//                .recordedObject().toString());
-//        context.assertIsSatisfied();
-//    }
-
-//    @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
-//    @Test
-//    public void testSamplesRestrictedByParentSamplesMoreChildrenThanParents()
-//    {
-//        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
-//        searchCriteria.withType().withCode().thatEquals("A");
-////        searchCriteria.setCriteria(new ArrayList<>(Collections.singletonList(searchCriteria)));
-//
-//        final SampleSearchCriteria parentSearchCriteria = new SampleSearchCriteria();
-//        parentSearchCriteria.withType().withCode().thatEquals("B");
-//        searchCriteria.withParents().setCriteria(new ArrayList<>(Collections.singletonList(parentSearchCriteria)));
-//
-//        // TODO: continue refactoring this test from here.
-//
-//        final RecordingMatcher<DetailedSearchCriteria> mainCriteriaMatcher =
-//                new RecordingMatcher<DetailedSearchCriteria>();
-//        final RecordingMatcher<DetailedSearchCriteria> parentCriteriaMatcher =
-//                new RecordingMatcher<DetailedSearchCriteria>();
-//        context.checking(new Expectations()
-//            {
-//                {
-//                    one(searchDAO).getResultSetSizeLimit();
-//                    will(returnValue(100));
-//
-//                    one(searchDAO).searchForEntityIds(with(USER_ID), with(mainCriteriaMatcher),
-//                            with(EntityKind.SAMPLE),
-//                            with(Arrays.<IAssociationCriteria> asList()));
-//                    will(returnValue(new ArrayList<Long>(Arrays.asList(1L, 2L, 3L, 4L, 5L))));
-//                    one(searchDAO).searchForEntityIds(with(USER_ID), with(parentCriteriaMatcher),
-//                            with(EntityKind.SAMPLE),
-//                            with(Arrays.<IAssociationCriteria> asList()));
-//                    will(returnValue(new ArrayList<Long>(Arrays.asList(1L, 2L, 3L, 4L))));
-//
-//                    one(sampleLister).getParentToChildrenIdsMap(Arrays.asList(1L, 2L, 3L, 4L));
-//                    Map<Long, Set<Long>> result = new HashMap<Long, Set<Long>>();
-//                    result.put(3L, new HashSet<Long>(Arrays.asList(2L)));
-//                    result.put(4L, new HashSet<Long>(Arrays.asList(1L, 2L)));
-//                    will(returnValue(result));
-//                }
-//            });
-//
-//        List<Long> sampleIds =
-//                new ArrayList<Long>(searchManager.searchForSampleIDs(USER_ID, searchCriteria));
-//
-//        Collections.sort(sampleIds);
-//        assertEquals("[1, 2]", sampleIds.toString());
-//        assertEquals("ATTRIBUTE SAMPLE_TYPE: A, [SAMPLE_PARENT: ATTRIBUTE SAMPLE_TYPE: B] "
-//                + "(without wildcards)", mainCriteriaMatcher.recordedObject().toString());
-//        assertEquals("ATTRIBUTE SAMPLE_TYPE: B (without wildcards)", parentCriteriaMatcher
-//                .recordedObject().toString());
-//        context.assertIsSatisfied();
-//    }
 
 }

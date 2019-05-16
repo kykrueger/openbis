@@ -44,7 +44,7 @@ public interface ISQLSearchDAO
      * @param userId the ID of the user.
      * @return set of IDs of spaces authorized for the current user.
      */
-    SpaceProjectIDsVO getAuthorisedSpaceProjectIds(Long userId);
+    SpaceProjectIDsVO findAuthorisedSpaceProjectIDs(Long userId);
 
     /**
      * Filters sample IDs based on their relations to space and projects.
@@ -55,5 +55,21 @@ public interface ISQLSearchDAO
      * @return the subset of IDs which are related either to one of the specified projects or spaces.
      */
     Set<Long> filterSampleIDsBySpaceAndProjectIDs(Set<Long> ids, SpaceProjectIDsVO authorizedSpaceProjectIds);
+
+    /**
+     * Finds child IDs which correspond to parent IDs.
+     *
+     * @param parentIdSet set of parent IDs to find the corresponding child IDs for.
+     * @return a set of IDs od child entities of the parents specified by IDs.
+     */
+    Set<Long> findChildIDs(Set<Long> parentIdSet);
+
+    /**
+     * Finds parent IDs which correspond to child IDs.
+     *
+     * @param childIdSet set of child IDs to find the corresponding parent IDs for.
+     * @return a set of IDs od parent entities of the children specified by IDs.
+     */
+    Set<Long> findParentIDs(Set<Long> childIdSet);
 
 }

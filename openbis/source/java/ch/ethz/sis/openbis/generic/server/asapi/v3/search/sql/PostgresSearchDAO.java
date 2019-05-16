@@ -54,7 +54,7 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
 
     @SuppressWarnings("unchecked")
     @Override
-    public SpaceProjectIDsVO getAuthorisedSpaceProjectIds(final Long userId) {
+    public SpaceProjectIDsVO findAuthorisedSpaceProjectIDs(final Long userId) {
         final Session session = currentSession();
         final NativeQuery query = session.createNativeQuery(
                 "SELECT rap.space_id, rap.project_id, rag.space_id, rag.project_id\n" +
@@ -107,6 +107,16 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
 //        querySampleTypeId.setParameter("sampleTypeCode", sampleTypeCode);
 //        sampleTypeId = querySampleTypeId.uniqueResult();
         return new HashSet<>(query.getResultList());
+    }
+
+    @Override
+    public Set<Long> findChildIDs(Set<Long> parentIdSet) {
+        return null;
+    }
+
+    @Override
+    public Set<Long> findParentIDs(Set<Long> childIdSet) {
+        return null;
     }
 
 }

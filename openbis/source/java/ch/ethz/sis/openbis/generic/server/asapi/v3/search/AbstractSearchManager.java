@@ -109,15 +109,15 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
     protected List<ISearchCriteria> getCriteria(
             AbstractCompositeSearchCriteria compositeSearchCriteria, Class<? extends ISearchCriteria> clazz)
     {
-        List<ISearchCriteria> criterias = new ArrayList<>();
-        for (ISearchCriteria criteria : compositeSearchCriteria.getCriteria())
+        List<ISearchCriteria> criteria = new ArrayList<>();
+        for (ISearchCriteria criterion : compositeSearchCriteria.getCriteria())
         {
-            if (clazz.isInstance(criteria))
+            if (clazz.isInstance(criterion))
             {
-                criterias.add(criteria);
+                criteria.add(criterion);
             }
         }
-        return criterias;
+        return criteria;
     }
 
     protected static <E> Set<E> mergeResults(final SearchOperator operator,
@@ -126,7 +126,10 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
         final Collection<Set<E>> intermediateResults = new ArrayList();
         for (final Collection<Set<E>> intermediateResultToMerge : intermediateResultsToMerge)
         {
-            intermediateResults.addAll(intermediateResultToMerge);
+            if (intermediateResultToMerge != null)
+            {
+                intermediateResults.addAll(intermediateResultToMerge);
+            }
         }
 
         switch (operator)
@@ -146,7 +149,10 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
         sets.remove(pivot);
         for (final Set<E> intermediateResult : sets)
         {
-            pivot.retainAll(intermediateResult);
+            if (intermediateResult != null)
+            {
+                pivot.retainAll(intermediateResult);
+            }
         }
         return pivot;
     }
@@ -156,7 +162,10 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
         final Set<E> all = new HashSet<>();
         for (final Set<E> intermediateResult : sets)
         {
-            all.addAll(intermediateResult);
+            if (intermediateResult != null)
+            {
+                all.addAll(intermediateResult);
+            }
         }
         return all;
     }
@@ -173,7 +182,7 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
         Set<E> smallest = null;
         for (final Set<E> candidate : candidates)
         {
-            if (smallest == null || smallest.size() > candidate.size())
+            if (candidate != null && (smallest == null || smallest.size() > candidate.size()))
             {
                 smallest = candidate;
             }
