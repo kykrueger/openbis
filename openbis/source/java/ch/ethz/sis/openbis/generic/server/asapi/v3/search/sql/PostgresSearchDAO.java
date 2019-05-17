@@ -28,12 +28,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 
 public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
 {
 
-    protected PostgresSearchDAO(SessionFactory sessionFactory) {
+    protected PostgresSearchDAO(SessionFactory sessionFactory)
+    {
         super(sessionFactory);
     }
 
@@ -41,7 +43,8 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
      *
      */
     public Set<Long> queryDBWithNonRecursiveCriteria(final EntityKind entityKind, final List<ISearchCriteria> criteria,
-            final SearchOperator operator) {
+            final SearchOperator operator)
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -54,34 +57,44 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
 
     @SuppressWarnings("unchecked")
     @Override
-    public SpaceProjectIDsVO findAuthorisedSpaceProjectIDs(final Long userId) {
+    public SpaceProjectIDsVO findAuthorisedSpaceProjectIDs(final Long userId)
+    {
         final Session session = currentSession();
         final NativeQuery query = session.createNativeQuery(
-                "SELECT rap.space_id, rap.project_id, rag.space_id, rag.project_id\n" +
+                "SELECT rap." + SPACE_COLUMN + ", rap." + PROJECT_ID_COLUMN + ", rag." + SPACE_COLUMN + ", rag." +
+                        PROJECT_ID_COLUMN + "\n" +
                 "FROM " + PERSONS_TABLE + " p\n" +
-                "LEFT JOIN " + AUTHORIZATION_GROUP_PERSONS_TABLE + " ag ON (p.id = ag.pers_id)\n" +
-                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " rap ON (p.id = rap.pers_id_grantee)\n" +
-                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " rag ON (ag.ag_id = rag.ag_id_grantee)\n" +
-                "WHERE p.id = :userId");
+                "LEFT JOIN " + AUTHORIZATION_GROUP_PERSONS_TABLE + " ag ON (p." + ID_COLUMN + " = ag." +
+                        PERSON_ID_COLUMN + ")\n" +
+                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " rap ON (p." + ID_COLUMN + " = rap." +
+                        PERSON_GRANTEE_COLUMN + ")\n" +
+                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " rag ON (ag." + AUTHORIZATION_GROUP_ID_COLUMN + " = rag." +
+                        AUTHORIZATION_GROUP_ID_GRANTEE_COLUMN + ")\n" +
+                "WHERE p." + ID_COLUMN + " = :userId");
         query.setParameter("userId", userId);
         final List<Object[]> queryResultList = query.getResultList();
 
         final SpaceProjectIDsVO result = new SpaceProjectIDsVO();
-        for (final Object[] resultRow : queryResultList) {
+        for (final Object[] resultRow : queryResultList)
+        {
             final Object spaceIdPerson = resultRow[0];
             final Object projectIdPerson = resultRow[1];
             final Object spaceIdGroup = resultRow[2];
             final Object projectIdGroup = resultRow[3];
-            if (spaceIdPerson != null) {
+            if (spaceIdPerson != null)
+            {
                 result.getSpaceIds().add((long) spaceIdPerson);
             }
-            if (projectIdPerson != null) {
+            if (projectIdPerson != null)
+            {
                 result.getProjectIds().add((long) projectIdPerson);
             }
-            if (spaceIdGroup != null) {
+            if (spaceIdGroup != null)
+            {
                 result.getSpaceIds().add((long) spaceIdGroup);
             }
-            if (projectIdGroup != null) {
+            if (projectIdGroup != null)
+            {
                 result.getProjectIds().add((long) projectIdGroup);
             }
         }
@@ -90,12 +103,15 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
 
     @Override
     public Set<Long> filterSampleIDsBySpaceAndProjectIDs(final Set<Long> ids,
-            final SpaceProjectIDsVO authorizedSpaceProjectIds) {
+            final SpaceProjectIDsVO authorizedSpaceProjectIds)
+    {
         final Session session = currentSession();
-        final NativeQuery query = session.createNativeQuery(
-                "SELECT DISTINCT id\n" +
+        final NativeQuery<Long> query = session.createNativeQuery(
+                "SELECT DISTINCT " + ID_COLUMN + "\n" +
                 "FROM " + SAMPLES_ALL_TABLE + "\n" +
-                "WHERE id IN (:ids) AND (space_id IN (:spaceIds) OR proj_id IN (:projectIds))");
+                "WHERE " + ID_COLUMN + " IN (:ids) AND (" + SPACE_COLUMN + " IN (:spaceIds) " +
+                        "OR proj_id IN (:projectIds))",
+                Long.class);
         query.setParameter("ids", ids);
         query.setParameter("spaceIds", authorizedSpaceProjectIds.getSpaceIds());
         query.setParameter("projectIds", authorizedSpaceProjectIds.getProjectIds());
@@ -110,13 +126,65 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
     }
 
     @Override
-    public Set<Long> findChildIDs(Set<Long> parentIdSet) {
-        return null;
+    public Set<Long> findChildIDs(final EntityKind entityKind, final Set<Long> parentIdSet)
+    {
+        final DBEntityKind dbEntityKind = DBEntityKind.toEntityKind(entityKind);
+        final Session session = currentSession();
+        final NativeQuery<Long> query = session.createNativeQuery(
+                "SELECT DISTINCT " + dbEntityKind.childIdField + "\n" +
+                "FROM " + dbEntityKind.relationshipsTable + "\n" +
+                "WHERE " + dbEntityKind.parentIdField + " IN (:parentIds)", Long.class);
+        query.setParameter("parentIds", parentIdSet);
+        return new HashSet<>(query.getResultList());
     }
 
     @Override
-    public Set<Long> findParentIDs(Set<Long> childIdSet) {
-        return null;
+    public Set<Long> findParentIDs(final EntityKind entityKind, final Set<Long> childIdSet)
+    {
+        final DBEntityKind dbEntityKind = DBEntityKind.toEntityKind(entityKind);
+        final Session session = currentSession();
+        final NativeQuery<Long> query = session.createNativeQuery(
+                "SELECT DISTINCT " + dbEntityKind.parentIdField + "\n" +
+                "FROM " + dbEntityKind.relationshipsTable + "\n" +
+                "WHERE " + dbEntityKind.childIdField + " IN (:childIds)", Long.class);
+        query.setParameter("childIds", childIdSet);
+        return new HashSet<>(query.getResultList());
+    }
+
+    /**
+     * Extension of enum {@link EntityKind} to contain extra information about tables related to the entities which can
+     * have parent-child relationships.
+     *
+     * @author Viktor Kovtun
+     */
+    private enum DBEntityKind
+    {
+        SAMPLE(SAMPLES_ALL_TABLE, SAMPLE_RELATIONSHIPS_ALL_TABLE, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN),
+
+        DATA_SET(DATA_ALL_TABLE, DATA_SET_RELATIONSHIPS_ALL_TABLE, DATA_PARENT_COLUMN, DATA_CHILD_COLUMN);
+
+        private String valuesTable;
+
+        private String relationshipsTable;
+
+        private String parentIdField;
+
+        private String childIdField;
+
+        DBEntityKind(final String valuesTable, final String relationshipsTable, final String parentIdField,
+                final String childIdField)
+        {
+            this.valuesTable = valuesTable;
+            this.relationshipsTable = relationshipsTable;
+            this.parentIdField = parentIdField;
+            this.childIdField = childIdField;
+        }
+
+        static DBEntityKind toEntityKind(final EntityKind entityKind)
+        {
+            return DBEntityKind.valueOf(entityKind.name());
+        }
+
     }
 
 }

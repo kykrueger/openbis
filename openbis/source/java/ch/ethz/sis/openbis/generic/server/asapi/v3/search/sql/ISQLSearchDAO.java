@@ -59,17 +59,20 @@ public interface ISQLSearchDAO
     /**
      * Finds child IDs which correspond to parent IDs.
      *
+     * @param entityKind type of the entities to search for.
      * @param parentIdSet set of parent IDs to find the corresponding child IDs for.
      * @return a set of IDs od child entities of the parents specified by IDs.
      */
-    Set<Long> findChildIDs(Set<Long> parentIdSet);
+    Set<Long> findChildIDs(EntityKind entityKind, Set<Long> parentIdSet);
 
     /**
      * Finds parent IDs which correspond to child IDs.
      *
+     *
+     * @param entityKind type of the entities to search for.
      * @param childIdSet set of child IDs to find the corresponding parent IDs for.
      * @return a set of IDs od parent entities of the children specified by IDs.
      */
-    Set<Long> findParentIDs(Set<Long> childIdSet);
+    Set<Long> findParentIDs(EntityKind entityKind, Set<Long> childIdSet);
 
 }

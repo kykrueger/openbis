@@ -165,12 +165,12 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
 
     private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet)
     {
-        return searchDAO.findChildIDs(parentIdSet);
+        return searchDAO.findChildIDs(EntityKind.SAMPLE, parentIdSet);
     }
 
     private Set<Long> getParentsIdsOf(final Set<Long> childIdSet)
     {
-        return searchDAO.findParentIDs(childIdSet);
+        return searchDAO.findParentIDs(EntityKind.SAMPLE, childIdSet);
     }
 
 }

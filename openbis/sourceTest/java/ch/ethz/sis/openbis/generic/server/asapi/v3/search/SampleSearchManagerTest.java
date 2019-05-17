@@ -103,7 +103,7 @@ public class SampleSearchManagerTest
                             SearchOperator.OR);
                     will(returnValue(parentCriteriaIds));
 
-                    one(searchDAOMock).findChildIDs(parentCriteriaIds);
+                    one(searchDAOMock).findChildIDs(EntityKind.SAMPLE, parentCriteriaIds);
                     will(returnValue(parentCriteriaResultingIds));
                 }});
 
@@ -148,7 +148,7 @@ public class SampleSearchManagerTest
                     SearchOperator.OR);
             will(returnValue(parentCriteriaIds));
 
-            one(searchDAOMock).findChildIDs(parentCriteriaIds);
+            one(searchDAOMock).findChildIDs(EntityKind.SAMPLE, parentCriteriaIds);
             will(returnValue(parentCriteriaResultingIds));
         }});
 
@@ -192,7 +192,7 @@ public class SampleSearchManagerTest
                             Collections.singletonList(criterion), SearchOperator.OR);
                     will(returnValue(mainCriteriaIds));
 
-                    one(searchDAOMock).findParentIDs(childCriteriaIds);
+                    one(searchDAOMock).findParentIDs(EntityKind.SAMPLE, childCriteriaIds);
                     will(returnValue(childCriteriaResultingIds));
                 }});
 
@@ -237,7 +237,7 @@ public class SampleSearchManagerTest
                     Collections.singletonList(criterion), SearchOperator.AND);
             will(returnValue(mainCriteriaIds));
 
-            one(searchDAOMock).findParentIDs(childCriteriaIds);
+            one(searchDAOMock).findParentIDs(EntityKind.SAMPLE, childCriteriaIds);
             will(returnValue(childCriteriaResultingIds));
         }});
 
