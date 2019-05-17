@@ -50,6 +50,40 @@ public class SearchFileTest extends AbstractFileTest
     }
 
     @Test
+    public void withAndOperator() throws Exception
+    {
+        // Given
+        DataSetFileSearchCriteria sc = new DataSetFileSearchCriteria();
+        sc.withAndOperator();
+        sc.withDataSet().withPermId().thatEquals(dataSetCode);
+        sc.withDataSet().withPermId().thatEquals("blabla");
+        String sessionToken = gis.tryToAuthenticateForAllServices(TEST_USER, PASSWORD);
+
+        // When
+        List<DataSetFile> searchFiles = dss.searchFiles(sessionToken, sc, new DataSetFileFetchOptions()).getObjects();
+
+        // Then
+        assertEquals(0, searchFiles.size());
+    }
+
+    @Test
+    public void withOrOperator() throws Exception
+    {
+        // Given
+        DataSetFileSearchCriteria sc = new DataSetFileSearchCriteria();
+        sc.withOrOperator();
+        sc.withDataSet().withPermId().thatEquals(dataSetCode);
+        sc.withDataSet().withPermId().thatEquals("blabla");
+        String sessionToken = gis.tryToAuthenticateForAllServices(TEST_USER, PASSWORD);
+
+        // When
+        List<DataSetFile> searchFiles = dss.searchFiles(sessionToken, sc, new DataSetFileFetchOptions()).getObjects();
+
+        // Then
+        assertEquals(12, searchFiles.size());
+    }
+
+    @Test
     public void testLogging()
     {
         String sessionToken = gis.tryToAuthenticateForAllServices(TEST_USER, PASSWORD);

@@ -16,6 +16,8 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static org.testng.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +28,7 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
@@ -168,8 +171,11 @@ public class SearchPropertyAssignmentTest extends AbstractTest
 
         PropertyAssignmentSearchCriteria criteria = new PropertyAssignmentSearchCriteria();
         criteria.withAndOperator();
-        criteria.withEntityType().withId().thatEquals(new EntityTypePermId("CELL_PLATE", EntityKind.SAMPLE));
-        criteria.withPropertyType().withId().thatEquals(new PropertyTypePermId("BACTERIUM"));
+        EntityTypeSearchCriteria entityTypeSearchCriteria = criteria.withEntityType();
+        entityTypeSearchCriteria.withOrOperator();
+        entityTypeSearchCriteria.withCode().thatStartsWith("VALI");
+        entityTypeSearchCriteria.withCode().thatEndsWith("PLATE");
+        criteria.withPropertyType().withId().thatEquals(new PropertyTypePermId("COMMENT"));
 
         SearchResult<PropertyAssignment> searchResult =
                 v3api.searchPropertyAssignments(sessionToken, criteria, fo);
@@ -178,9 +184,11 @@ public class SearchPropertyAssignmentTest extends AbstractTest
 
         for (PropertyAssignment propertyAssignment : propertyAssignments)
         {
-            Assert.assertTrue(propertyAssignment.getEntityType().getCode().equals("CELL_PLATE")
-                    && propertyAssignment.getPropertyType().getCode().equals("BACTERIUM"));
+            Assert.assertTrue((propertyAssignment.getEntityType().getCode().startsWith("VALI")
+                    || propertyAssignment.getEntityType().getCode().endsWith("PLATE"))
+                    && propertyAssignment.getPropertyType().getCode().equals("COMMENT"));
         }
+        assertEquals(propertyAssignments.size(), 3);
     }
 
     @Test
@@ -194,8 +202,12 @@ public class SearchPropertyAssignmentTest extends AbstractTest
 
         PropertyAssignmentSearchCriteria criteria = new PropertyAssignmentSearchCriteria();
         criteria.withOrOperator();
-        criteria.withEntityType().withId().thatEquals(new EntityTypePermId("CELL_PLATE", EntityKind.SAMPLE));
+        EntityTypeSearchCriteria entityTypeSearchCriteria = criteria.withEntityType();
+        entityTypeSearchCriteria.withAndOperator();
+        entityTypeSearchCriteria.withCode().thatStartsWith("CELL");
+        entityTypeSearchCriteria.withCode().thatEndsWith("PLATE");
         criteria.withPropertyType().withId().thatEquals(new PropertyTypePermId("BACTERIUM"));
+
 
         SearchResult<PropertyAssignment> searchResult =
                 v3api.searchPropertyAssignments(sessionToken, criteria, fo);
@@ -207,6 +219,7 @@ public class SearchPropertyAssignmentTest extends AbstractTest
             Assert.assertTrue(propertyAssignment.getEntityType().getCode().equals("CELL_PLATE")
                     || propertyAssignment.getPropertyType().getCode().equals("BACTERIUM"));
         }
+        assertEquals(propertyAssignments.size(), 11);
     }
 
     @Test
