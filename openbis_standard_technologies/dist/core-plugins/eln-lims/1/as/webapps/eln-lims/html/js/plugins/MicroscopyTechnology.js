@@ -187,11 +187,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
                 .css("padding-bottom", "10px")
 
             // Link to the dataset (sample) viewer.
-            var link = $("<a>").text(displayName).attr("href", "#").attr("title", name).click(
-                function () {
-                    window.top.location.hash = "#" + (new Date().getTime());
-                    return false;
-                });
+            var link = FormUtil.getFormLink(displayName, "Sample", sample.permId, null);
 
             // Actual thumbnail. Initially we display a place holder. Later,
             // we will replace it asynchronously.
@@ -312,25 +308,15 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
                                 // Find the only fcs file and add its name and URL to the DynaTree
                                 datasetFiles.forEach(function (f) {
 
-                                    // 	// Build the download URL
-                                    // let url = f.getDataStore().getDownloadUrl() + "/datastore_server/" +
-                                    // f.permId.dataSetId.permId + "/" + f.getPath() + "?sessionID=" +
-                                    // mainController.openbisV3.getWebAppContext().sessionId;
+                                    	// Build the download URL
+                                    var url = f.getDataStore().getDownloadUrl() + "/datastore_server/" +
+                                    f.permId.dataSetId.permId + "/" + f.getPath() + "?sessionID=" +
+                                    mainController.serverFacade.openbisServer.getSession();
 
-                                    if (!f.isDirectory() && f.getPath().toLowerCase() === "thumbnail.png") {
-
-                                        // Still use the V1 API since the sessionId stored in the 
-                                        // webapp context is null in V3.
-                                        mainController.openbisV1.getDownloadUrlForFileForDataSetInSession(
-                                            f.getDataSetPermId().permId, f.getPath(), function (url) {
-
-                                                // Replace the image
-                                                var eUrl = encodeURI(url);
-                                                eUrl = eUrl.replace('+', '%2B');
-                                                imD.attr("src", eUrl);
-                                            });
-                                    }
-
+                                    // Replace the image
+                                    var eUrl = encodeURI(url);
+                                    eUrl = eUrl.replace('+', '%2B');
+                                    imD.attr("src", eUrl);
                                 });
                             });
                         }
