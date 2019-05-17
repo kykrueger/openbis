@@ -71,6 +71,29 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
                     // Create the image viewer component for the specific data sets
                     var widget = new ImageViewerWidget(screningFacade, imageViewerDataSets);
 
+                    // Customize the widget
+                    widget.addLoadListener(function () {
+
+                        widget.getDataSetChooserWidget().then(function (chooser) {
+
+                            var view = chooser.getView();
+
+                            // Show the series name instead of the dataset code
+                            view.getDataSetText = function (dataSetCode) {
+                                // Return the series name
+                                for (var i = 0; i < model.datasets.length; i++) {
+                                    if (model.datasets[i].code === dataSetCode) {
+                                        return model.datasets[i].properties.MICROSCOPY_IMG_CONTAINER_NAME;
+                                    }
+                                }
+
+                                // If not found, return the dataset code
+                                return dataSetCode;
+                            };
+
+                        });
+                    });
+
                     // Render the component and add it to the page
                     $container.append($('<legend>').text('Microscopy Viewer'));
                     var $imageWidgetContainer = new $('<div>');
@@ -92,6 +115,27 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 
                 // Create the image viewer component for the specific data sets
                 var widget = new ImageViewerWidget(screningFacade, [model.dataSetV3.permId.permId]);
+
+                    // Customize the widget
+                    widget.addLoadListener(function () {
+
+                        widget.getDataSetChooserWidget().then(function (chooser) {
+
+                            var view = chooser.getView();
+
+                            // Show the series name instead of the dataset code
+                            view.getDataSetText = function (dataSetCode) {
+                                // Return the series name
+                                if (model.dataSet.code === dataSetCode) {
+                                    return model.dataSet.properties.MICROSCOPY_IMG_CONTAINER_NAME;
+                                } else {
+                                    // Fall-back (that should not happen)
+                                    return dataSetCode;
+                                }
+                            };
+
+                        });
+                    });
 
                 // Render the component and add it to the page
                 $container.append($('<legend>').text('Microscopy Viewer'));
