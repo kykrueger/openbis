@@ -139,7 +139,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 			numSample++;
 
 			// Add a new row for the next three thumbnails
-			if (numSample % 3 === 1) {
+			if (numSample % 4 === 1) {
 				newThumbRow = $("<div />", { class: "row" });
 				sampleView_div.append(newThumbRow);
 			}
@@ -173,7 +173,8 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 			// elements related to current sample
 			var newThumbCol = $("<div />",
 				{
-					class: "col-md-4",
+					class: "col-md-3",
+                    display: "inline",
 					"text-align": "center",
 					id: sample.code
 				});
@@ -275,6 +276,9 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 						// Find the thumbnail.png file
 						response.result.forEach(function (f) {
 
+							// Thumbnail
+							var imD = $("#" + img_id);
+
 							if (!f.isDirectory && f.pathInDataSet.toLowerCase() === "thumbnail.png") {
 
 								// Retrieve the file URL
@@ -284,17 +288,19 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 										// Replace the image
 										var eUrl = encodeURI(url);
 										eUrl = eUrl.replace('+', '%2B');
-										$("#" + img_id).attr("src", eUrl);
+										imD.attr("src", eUrl);
 
 									});
 							} else {
 
 								// Thumbnail not found!
-								var imD = $("#" + img_id);
 								imD.attr("src", "./img/error.png");
 								imD.attr("title", "Could not find a thumbnail for this dataset!");
 
 							}
+
+							// Make sure to reset the display attribute
+							imD.css("display", "inline");
 						});
 
 					});
