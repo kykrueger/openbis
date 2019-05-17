@@ -262,9 +262,6 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 				DataSetFileFetchOptions) {
 
 				// First retrieve the sample again but with the associated datasets
-				console.log("Processing microscopy sample " + sample.code);
-
-				// Search for the sample of type and given perm id
 				var criteria = new SampleSearchCriteria();
 				criteria.withType().withCode().thatEquals(sample.sampleTypeCode);
 				criteria.withPermId().thatEquals(sample.permId);
@@ -325,15 +322,12 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 										// Still use the V1 API since the sessionId stored in the 
 										// webapp context is null in V3.
 										mainController.openbisV1.getDownloadUrlForFileForDataSetInSession(
-											dataSet.code, f.getPath(), function (url) {
+											f.getDataSetPermId().permId, f.getPath(), function (url) {
 
 												// Replace the image
 												var eUrl = encodeURI(url);
 												eUrl = eUrl.replace('+', '%2B');
 												imD.attr("src", eUrl);
-
-												console.log("Adding thumbnail " + eUrl + " to " + img_id);
-
 											});
 									}
 
