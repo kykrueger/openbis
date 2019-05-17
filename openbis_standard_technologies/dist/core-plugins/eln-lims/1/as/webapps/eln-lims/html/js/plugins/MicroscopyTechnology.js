@@ -174,7 +174,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 			var newThumbCol = $("<div />",
 				{
 					class: "col-md-3",
-                    display: "inline",
+					display: "inline",
 					"text-align": "center",
 					id: sample.code
 				});
@@ -246,133 +246,102 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 
 	displayThumbnailForSample: function (model, sample, img_id) {
 
-		// Get the datasets with type "MICROSCOPY_IMG_THUMBNAIL" for current sample
-		this.getMicroscopyImgThumbnailDataSetsForMicroscopySample(
-			model,
-			sample.experimentIdentifierOrNull,
-			sample.code, function (dataset) {
+		require([
+			"as/dto/sample/search/SampleSearchCriteria",
+			"as/dto/sample/fetchoptions/SampleFetchOptions",
+			"as/dto/dataset/search/DataSetSearchCriteria",
+			"dss/dto/datasetfile/search/DataSetFileSearchCriteria",
+			"dss/dto/datasetfile/fetchoptions/DataSetFileFetchOptions",
+		],
 
-				// Get the containers
-				if (dataset == null) {
-					return;
-				}
+			function (
+				SampleSearchCriteria,
+				SampleFetchOptions,
+				DataSetSearchCriteria,
+				DataSetFileSearchCriteria,
+				DataSetFileFetchOptions) {
 
-				// Retrieve the file for the dataset and the associated URL
-				mainController.openbisV1.listFilesForDataSet(dataset.code, '/', true,
-					function (response) {
+				// First retrieve the sample again but with the associated datasets
+				console.log("Processing microscopy sample " + sample.code);
 
-						// Make sure that we got some results from the DSS to process
-						if (response.error) {
+				// Search for the sample of type and given perm id
+				var criteria = new SampleSearchCriteria();
+				criteria.withType().withCode().thatEquals(sample.sampleTypeCode);
+				criteria.withPermId().thatEquals(sample.permId);
+				var fetchOptions = new SampleFetchOptions();
+				fetchOptions.withDataSets().withType();
 
-							// Thumbnail not found!
-							var imD = $("#" + img_id);
-							imD.attr("src", "./img/error.png");
-							imD.attr("title", "Could not find any files associated to this dataset!");
-
-							return;
-
-						}
-
-						// Find the thumbnail.png file
-						response.result.forEach(function (f) {
-
-							// Thumbnail
-							var imD = $("#" + img_id);
-
-							if (!f.isDirectory && f.pathInDataSet.toLowerCase() === "thumbnail.png") {
-
-								// Retrieve the file URL
-								mainController.openbisV1.getDownloadUrlForFileForDataSetInSession(
-									dataset.code, f.pathInDataSet, function (url) {
-
-										// Replace the image
-										var eUrl = encodeURI(url);
-										eUrl = eUrl.replace('+', '%2B');
-										imD.attr("src", eUrl);
-
-									});
-							} else {
-
-								// Thumbnail not found!
-								imD.attr("src", "./img/error.png");
-								imD.attr("title", "Could not find a thumbnail for this dataset!");
-
-							}
-
-							// Make sure to reset the display attribute
-							imD.css("display", "inline");
-						});
-
-					});
-
-			});
-
-	},
-
-	getMicroscopyImgThumbnailDataSetsForMicroscopySample: function (model, expCode, sampleCode, action) {
-
-		// Experiment criteria (experiment of type "COLLECTION" and code expCode)
-		var experimentCriteria = new SearchCriteria();
-		experimentCriteria.addMatchClause(
-			SearchCriteriaMatchClause.createAttributeMatch(
-				"CODE", expCode)
-		);
-		experimentCriteria.addMatchClause(
-			SearchCriteriaMatchClause.createAttributeMatch(
-				"TYPE", "COLLECTION")
-		);
-
-		// Sample criteria (sample of type "MICROSCOPY_SAMPLE_TYPE" and code sampleCode)
-		var sampleCriteria = new SearchCriteria();
-		sampleCriteria.addMatchClause(
-			SearchCriteriaMatchClause.createAttributeMatch(
-				"CODE", sampleCode)
-		);
-		sampleCriteria.addMatchClause(
-			SearchCriteriaMatchClause.createAttributeMatch(
-				"TYPE", "MICROSCOPY_SAMPLE_TYPE")
-		);
-
-		// Dataset criteria
-		var datasetCriteria = new SearchCriteria();
-		datasetCriteria.addMatchClause(
-			SearchCriteriaMatchClause.createAttributeMatch(
-				"TYPE", "MICROSCOPY_IMG_CONTAINER")
-		);
-
-		// Add sample and experiment search criteria as subcriteria
-		datasetCriteria.addSubCriteria(
-			SearchSubCriteria.createSampleCriteria(sampleCriteria)
-		);
-		datasetCriteria.addSubCriteria(
-			SearchSubCriteria.createExperimentCriteria(experimentCriteria)
-		);
-
-		// Search
-		mainController.openbisV1.searchForDataSets(datasetCriteria, function (response) {
-
-			// Get the containers
-			if (response.error || response.result.length === 0) {
-				return null;
-			}
-
-			// All MICROSCOPY_IMG_CONTAINER datasets (i.e. a file series) contain a MICROSCOPY_IMG_OVERVIEW
-			// and a MICROSCOPY_IMG dataset; one of the series will also contain a MICROSCOPY_IMG_THUMBNAIL,
-			// which is what we are looking for here.
-			// Even though the MICROSCOPY_IMG_THUMBNAIL is always created for series 0, we cannot guarantee
-			// here that series zero will be returned as the first. We quickly scan through the returned
-			// results for the MICROSCOPY_IMG_CONTAINER that has three contained datasets.
-			// From there we can then quickly retrieve the MICROSCOPY_IMG_THUMBNAIL.
-			for (var i = 0; i < response.result.length; i++) {
-				var series = response.result[i];
-				for (var j = 0; j < series.containedDataSets.length; j++) {
-					if (series.containedDataSets[j].dataSetTypeCode === "MICROSCOPY_IMG_THUMBNAIL") {
-						action(series.containedDataSets[j]);
-						return;
+				// Query the server
+				mainController.openbisV3.searchSamples(criteria, fetchOptions).done(function (result) {
+					if (result.getTotalCount() == 0) {
+						return null;
 					}
-				}
-			}
-		});
+					var sample = result.getObjects()[0];
+					for (var i = 0; i < sample.getDataSets().length; i++) {
+						var dataSet = sample.getDataSets()[i];
 
+						if (dataSet.getType().code === "MICROSCOPY_IMG_THUMBNAIL") {
+
+							// Now retrieve the thumbnail and add display it
+
+							// Get the file
+							var criteria = new DataSetFileSearchCriteria();
+							var dataSetCriteria = criteria.withDataSet().withOrOperator();
+							dataSetCriteria.withPermId().thatEquals(dataSet.permId.permId);
+
+							var fetchOptions = new DataSetFileFetchOptions();
+
+							// Query the server
+							mainController.openbisV3.getDataStoreFacade().searchFiles(criteria, fetchOptions).done(function (result) {
+
+								// Thumbnail
+								var imD = $("#" + img_id);
+
+								// Make sure to reset the display attribute
+								imD.css("display", "inline");
+
+								if (result.getTotalCount() == 0) {
+
+									// Thumbnail not found!
+									imD.attr("src", "./img/error.png");
+									imD.attr("title", "Could not find a thumbnail for this dataset!");
+
+									return;
+								}
+
+								// Extract the files
+								var datasetFiles = result.getObjects();
+
+								// Find the only fcs file and add its name and URL to the DynaTree
+								datasetFiles.forEach(function (f) {
+
+									// 	// Build the download URL
+									// let url = f.getDataStore().getDownloadUrl() + "/datastore_server/" +
+									// f.permId.dataSetId.permId + "/" + f.getPath() + "?sessionID=" +
+									// mainController.openbisV3.getWebAppContext().sessionId;
+
+									if (!f.isDirectory() && f.getPath().toLowerCase() === "thumbnail.png") {
+
+										// Still use the V1 API since the sessionId stored in the 
+										// webapp context is null in V3.
+										mainController.openbisV1.getDownloadUrlForFileForDataSetInSession(
+											dataSet.code, f.getPath(), function (url) {
+
+												// Replace the image
+												var eUrl = encodeURI(url);
+												eUrl = eUrl.replace('+', '%2B');
+												imD.attr("src", eUrl);
+
+												console.log("Adding thumbnail " + eUrl + " to " + img_id);
+
+											});
+									}
+
+								});
+							});
+						}
+					}
+				});
+			});
 	}
 });
