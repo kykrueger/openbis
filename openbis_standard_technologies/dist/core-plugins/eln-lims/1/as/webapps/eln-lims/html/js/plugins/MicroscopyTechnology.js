@@ -193,7 +193,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
             // we will replace it asynchronously.
             var thumbnailImage = $("<img />",
                 {
-                    src: "./img/wait.png",
+                    src: "./img/image_loading.gif",
                     class: "img-responsive",
                     display: "inline",
                     "text-align": "center",
@@ -296,7 +296,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
                                 if (result.getTotalCount() == 0) {
 
                                     // Thumbnail not found!
-                                    imD.attr("src", "./img/error.png");
+                                    imD.attr("src", "./img/image_unavailable.png");
                                     imD.attr("title", "Could not find a thumbnail for this dataset!");
 
                                     return;
