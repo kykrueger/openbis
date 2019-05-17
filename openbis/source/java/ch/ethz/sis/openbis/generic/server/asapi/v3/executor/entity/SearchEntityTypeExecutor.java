@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -31,6 +32,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search.EntityTypeSear
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodeMatcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.CodesMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SimpleFieldMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset.IDataSetTypeAuthorizationExecutor;
@@ -92,6 +94,9 @@ public class SearchEntityTypeExecutor extends AbstractSearchObjectManuallyExecut
         } else if (criteria instanceof CodeSearchCriteria)
         {
             return new CodeMatcher<EntityTypePE>();
+        } else if (criteria instanceof CodesSearchCriteria)
+        {
+            return new CodesMatcher<EntityTypePE>();
         } else if (criteria instanceof EntityKindSearchCriteria)
         {
             return new EntityKindMatcher();

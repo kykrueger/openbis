@@ -163,6 +163,14 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithCodes()
+    {
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("RP1-A2X", "RP1-B1X"));
+        testSearch(TEST_USER, criteria, "/CISD/RP1-A2X", "/CISD/RP1-B1X");
+    }
+
+    @Test
     public void testSearchWithCodeThatEqualsWithStarWildcard()
     {
         SampleSearchCriteria criteria = new SampleSearchCriteria();

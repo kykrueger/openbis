@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -33,6 +34,11 @@ public class EntityTypeSearchCriteria extends AbstractObjectSearchCriteria<IEnti
     public CodeSearchCriteria withCode()
     {
         return with(new CodeSearchCriteria());
+    }
+
+    public CodesSearchCriteria withCodes()
+    {
+        return with(new CodesSearchCriteria());
     }
 
     public EntityKindSearchCriteria withKind()

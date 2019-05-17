@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -98,6 +99,14 @@ public class SearchSpaceTest extends AbstractTest
         testSearch(TEST_USER, criteria, "TEST-SPACE");
     }
 
+    @Test
+    public void testSearchWithCodes()
+    {
+        SpaceSearchCriteria criteria = new SpaceSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("TEST-SPACE"));
+        testSearch(TEST_USER, criteria, "TEST-SPACE");
+    }
+    
     @Test
     public void testSearchWithCodeThatContains()
     {

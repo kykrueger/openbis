@@ -174,13 +174,13 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
 	// Additional functionality
 	renderParameterSelectionWidget: function ($container, model) {
 
-		// Clear the container
-		$container.empty();
-
 		// Check that we ave the correct dataset type
 		if (!model.dataSetV3.type.code.endsWith("_FCSFILE")) {
 			return;
 		}
+
+		// Clear the container
+		$container.empty();
 
 		//
 		// Retrieve the parameter info

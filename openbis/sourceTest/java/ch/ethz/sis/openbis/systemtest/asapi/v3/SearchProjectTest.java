@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -92,6 +93,14 @@ public class SearchProjectTest extends AbstractTest
         testSearch(TEST_USER, criteria, "/TEST-SPACE/TEST-PROJECT");
     }
 
+    @Test
+    public void testSearchWithCodes()
+    {
+        ProjectSearchCriteria criteria = new ProjectSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("TEST-PROJECT", "TESTPROJ"));
+        testSearch(TEST_USER, criteria, "/TESTGROUP/TESTPROJ", "/TEST-SPACE/TEST-PROJECT");
+    }
+    
     @Test
     public void testSearchWithCodeThatContains()
     {

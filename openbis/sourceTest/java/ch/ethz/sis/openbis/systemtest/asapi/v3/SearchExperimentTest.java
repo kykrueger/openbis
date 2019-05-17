@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -184,6 +185,14 @@ public class SearchExperimentTest extends AbstractExperimentTest
         ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
         criteria.withCode().thatStartsWith("EXP1");
         testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP1", "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP11");
+    }
+
+    @Test
+    public void testSearchWithCodes()
+    {
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("EXP10", "EXP11"));
+        testSearch(TEST_USER, criteria, "/CISD/NEMO/EXP10", "/CISD/NEMO/EXP11");
     }
 
     @Test

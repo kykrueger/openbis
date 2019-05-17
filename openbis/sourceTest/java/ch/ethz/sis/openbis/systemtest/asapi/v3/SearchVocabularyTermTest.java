@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -96,6 +97,14 @@ public class SearchVocabularyTermTest extends AbstractVocabularyTermTest
     {
         VocabularyTermSearchCriteria criteria = new VocabularyTermSearchCriteria();
         criteria.withCode().thatEquals("MAN");
+        testSearch(criteria, new VocabularyTermPermId("MAN", "HUMAN"));
+    }
+
+    @Test
+    public void testSearchWithCodes()
+    {
+        VocabularyTermSearchCriteria criteria = new VocabularyTermSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("MAN"));
         testSearch(criteria, new VocabularyTermPermId("MAN", "HUMAN"));
     }
 

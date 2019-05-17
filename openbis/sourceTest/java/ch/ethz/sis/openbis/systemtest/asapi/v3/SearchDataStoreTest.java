@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -136,6 +137,14 @@ public class SearchDataStoreTest extends AbstractTest
         DataStoreSearchCriteria criteriaNonMatching = new DataStoreSearchCriteria();
         criteriaNonMatching.withCode().thatEquals("ANDAR");
         testSearch(TEST_USER, criteriaNonMatching);
+    }
+    
+    @Test
+    public void testSearchWithCodes()
+    {
+        DataStoreSearchCriteria criteria = new DataStoreSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("STANDARD", "BLABLA"));
+        testSearch(TEST_USER, criteria, "STANDARD");
     }
 
     @Test

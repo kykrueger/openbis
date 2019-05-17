@@ -1,5 +1,6 @@
-define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/CodeSearchCriteria", "as/dto/entitytype/search/EntityKindSearchCriteria" ], function(require,
-		stjs, AbstractObjectSearchCriteria, CodeSearchCriteria, EntityKindSearchCriteria) {
+define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/CodeSearchCriteria", 
+	"as/dto/common/search/CodesSearchCriteria", "as/dto/entitytype/search/EntityKindSearchCriteria" ], function(require,
+		stjs, AbstractObjectSearchCriteria, CodeSearchCriteria, CodesSearchCriteria, EntityKindSearchCriteria) {
 	var EntityTypeSearchCriteria = function() {
 		AbstractObjectSearchCriteria.call(this);
 	};
@@ -9,6 +10,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 		prototype.withCode = function() {
 			var CodeSearchCriteria = require("as/dto/common/search/CodeSearchCriteria");
 			return this.addCriteria(new CodeSearchCriteria());
+		};
+		prototype.withCodes = function() {
+			var CodesSearchCriteria = require("as/dto/common/search/CodesSearchCriteria");
+			return this.addCriteria(new CodesSearchCriteria());
 		};
 		prototype.withKind = function() {
 			var EntityKindSearchCriteria = require("as/dto/entitytype/search/EntityKindSearchCriteria");
