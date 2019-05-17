@@ -174,6 +174,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 			var newThumbCol = $("<div />",
 				{
 					class: "col-md-4",
+					"text-align": "center",
 					id: sample.code
 				});
 
@@ -196,6 +197,9 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 			var thumbnailImage = $("<img />",
 				{
 					src: "./img/wait.png",
+					class: "img-responsive",
+					display: "inline",
+					"text-align": "center",
 					id: "image_" + sample.code,
 					title: name
 				});
