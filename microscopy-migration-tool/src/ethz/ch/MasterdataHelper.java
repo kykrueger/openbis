@@ -13,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
@@ -242,6 +243,12 @@ public class MasterdataHelper
         PropertyTypeDeletionOptions propertyTypeDeletionOptions = new PropertyTypeDeletionOptions();
         propertyTypeDeletionOptions.setReason("Microscopy Migration");
         v3.deletePropertyTypes(sessionToken, Arrays.asList(new PropertyTypePermId(propertyTypeCode)), propertyTypeDeletionOptions);
+    }
+
+    public static void deleteExperimentType(String sessionToken, IApplicationServerApi v3, String typeCode) {
+        ExperimentTypeDeletionOptions experimentTypeDeletionOptions = new ExperimentTypeDeletionOptions();
+        experimentTypeDeletionOptions.setReason("Microscopy Migration");
+        v3.deleteExperimentTypes(sessionToken, Arrays.asList(new EntityTypePermId(typeCode, EntityKind.EXPERIMENT)), experimentTypeDeletionOptions);
     }
 
     //

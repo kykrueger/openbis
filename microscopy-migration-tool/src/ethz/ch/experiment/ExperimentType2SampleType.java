@@ -32,9 +32,4 @@ public class ExperimentType2SampleType {
     {
         return propertyTypesFromTo;
     }
-
-    public List<String> getPropertyTypesToDeleteAfterMigration()
-    {
-        return propertyTypesToDeleteAfterMigration;
-    }
 }

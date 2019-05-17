@@ -194,6 +194,7 @@ public class Main
                 total++;
                 System.out.println("[DONE] " + config.getTypeCode() + "\t" + total + "/" + experiments.getTotalCount());
             }
+            MasterdataHelper.deleteExperimentType(sessionToken, v3, config.getTypeCode());
         }
 
         System.out.println("4. Translate Properties to Samples");
