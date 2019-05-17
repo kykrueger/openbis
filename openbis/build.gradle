@@ -115,7 +115,7 @@ task copyTestData(type: Copy, dependsOn: testClasses) {
     include "*.properties"
 }
 
-task executeOpenbisDev(type: JavaExec) {
+task executeOpenBisDev(type: JavaExec) {
 	main = 'org.eclipse.jetty.runner.Runner'
 	classpath = sourceSets.main.runtimeClasspath
 	jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=etc/log.xml',

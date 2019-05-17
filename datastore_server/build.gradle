@@ -72,3 +72,10 @@ jar {
         into 'datastore_server'
     }
 }
+
+task executeOpenBisDataStore(type: JavaExec) {
+	main = 'ch.systemsx.cisd.openbis.dss.generic.DataStoreServer'
+	classpath = sourceSets.main.runtimeClasspath
+	jvmArgs(['-ea', '-Dpython.path=../libraries/jython/jython-lib',
+			 '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog'])
+}
