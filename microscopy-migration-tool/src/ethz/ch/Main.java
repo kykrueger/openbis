@@ -194,6 +194,10 @@ public class Main
                 total++;
                 System.out.println("[DONE] " + config.getTypeCode() + "\t" + total + "/" + experiments.getTotalCount());
             }
+            // Delete old experiment type
+            MasterdataHelper.deleteExperimentType(sessionToken, v3, config.getTypeCode());
+            // Delete old name property from new sample type
+            config.getSamplePropertyDelete().deleteOldPropertyType(sessionToken, v3);
         }
 
         System.out.println("4. Translate Properties to Samples");
@@ -234,6 +238,8 @@ public class Main
                 total++;
                 System.out.println("[DONE] " + config.getOldSampleTypeCode() + "\t" + total + "/" + samples.getTotalCount());
             }
+            // Delete old copied property that become a sample
+            config.getEntityPropertyDelete().deleteOldPropertyType(sessionToken, v3);
         }
 
         System.out.println("5. Copy Property A to Property B on Samples and DataSets");
@@ -259,6 +265,8 @@ public class Main
 
         for (EntityPropertyCopy config:propertyCopiesMigrationConfig) {
             config.copy(sessionToken, v3);
+            // Delete old copied name property
+            config.getEntityPropertyDelete().deleteOldPropertyType(sessionToken, v3);
         }
     }
 }

@@ -1,5 +1,7 @@
 package ethz.ch.property;
 
+import ethz.ch.sample.SamplePropertyDelete;
+
 public class PropertyType2SampleType
 {
     private String oldSampleTypeCode;
@@ -34,6 +36,10 @@ public class PropertyType2SampleType
     public String getNewPropertyCode()
     {
         return newPropertyCode;
+    }
+
+    public EntityPropertyDelete getEntityPropertyDelete() {
+        return new SamplePropertyDelete(oldSampleTypeCode, oldPropertyCode);
     }
     
 }

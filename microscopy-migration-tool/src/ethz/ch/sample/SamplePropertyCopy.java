@@ -6,6 +6,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ethz.ch.MasterdataHelper;
 import ethz.ch.MetadataHelper;
 import ethz.ch.property.EntityPropertyCopy;
+import ethz.ch.property.EntityPropertyDelete;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class SamplePropertyCopy extends EntityPropertyCopy<Sample> {
 
     @Override
     public void updatePropertyAssignmentsHolder(String sessionToken, IApplicationServerApi v3) {
-        MasterdataHelper.updateSampleType(sessionToken, v3, typeCode, 1, newPropertyCode);
+        MasterdataHelper.updateSampleType(sessionToken, v3, typeCode, MasterdataHelper.PropertyTypeUpdateAction.ADD,1, newPropertyCode);
     }
 
     @Override
@@ -33,5 +34,10 @@ public class SamplePropertyCopy extends EntityPropertyCopy<Sample> {
     @Override
     public void updateEntityProperty(String sessionToken, IApplicationServerApi v3, Sample entity) {
         MetadataHelper.updateSampleProperty(sessionToken, v3, entity.getPermId().getPermId(), newPropertyCode, entity.getProperty(oldPropertyCode));
+    }
+
+    @Override
+    public EntityPropertyDelete getEntityPropertyDelete() {
+        return new SamplePropertyDelete(typeCode, oldPropertyCode);
     }
 }

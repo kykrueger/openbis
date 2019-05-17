@@ -8,14 +8,26 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import java.util.List;
 
 public abstract class EntityPropertyCopy<ENTITY extends IPermIdHolder & IPropertiesHolder> {
-    protected String typeCode;
-    protected String oldPropertyCode;
-    protected String newPropertyCode;
+    protected final String typeCode;
+    protected final String oldPropertyCode;
+    protected final String newPropertyCode;
 
     public EntityPropertyCopy(String typeCode, String oldPropertyCode, String newPropertyCode) {
         this.typeCode = typeCode;
         this.oldPropertyCode = oldPropertyCode;
         this.newPropertyCode = newPropertyCode;
+    }
+
+    public String getTypeCode() {
+        return typeCode;
+    }
+
+    public String getOldPropertyCode() {
+        return oldPropertyCode;
+    }
+
+    public String getNewPropertyCode() {
+        return newPropertyCode;
     }
 
     public abstract IPropertyAssignmentsHolder getPropertyAssignmentsHolder(String sessionToken, IApplicationServerApi v3);
@@ -25,6 +37,8 @@ public abstract class EntityPropertyCopy<ENTITY extends IPermIdHolder & IPropert
     public abstract List<ENTITY> getEntities(String sessionToken, IApplicationServerApi v3);
 
     public abstract void updateEntityProperty(String sessionToken, IApplicationServerApi v3, ENTITY entity);
+
+    public abstract EntityPropertyDelete getEntityPropertyDelete();
 
     public void copy(String sessionToken, IApplicationServerApi v3) {
         // Is Property B assigned to the type? If not Do
@@ -51,14 +65,14 @@ public abstract class EntityPropertyCopy<ENTITY extends IPermIdHolder & IPropert
             if (entity.getProperty(oldPropertyCode) != null) {
                 if(!entity.getProperty(oldPropertyCode).equals(entity.getProperty(newPropertyCode))) {
                     updateEntityProperty(sessionToken, v3, entity);
-                    System.out.println("[PREPARING] " + entity.getPermId() + "\t" + entity.getProperty(oldPropertyCode) + "\t" + total + "/" + entities.size());
+                    System.out.println("[PREPARING COPY] " + entity.getPermId() + "\t" + entity.getProperty(oldPropertyCode) + "\t" + total + "/" + entities.size());
                 } else {
-                    System.out.println("[SKIP] " + entity.getPermId() + "\t" + entity.getProperty(oldPropertyCode) + "\t" + total + "/" + entities.size());
+                    System.out.println("[SKIP COPY] " + entity.getPermId() + "\t" + entity.getProperty(oldPropertyCode) + "\t" + total + "/" + entities.size());
                 }
             }
             total++;
         }
-        System.out.println("[DONE] " + total + "/" + entities.size());
+        System.out.println("[DONE COPY] " + total + "/" + entities.size());
 
     }
 }
