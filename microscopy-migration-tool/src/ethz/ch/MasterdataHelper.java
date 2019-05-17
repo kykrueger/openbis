@@ -1,15 +1,15 @@
 package ethz.ch;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
@@ -25,6 +25,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleTypeUpdate;
 
 public class MasterdataHelper
 {
@@ -158,7 +159,55 @@ public class MasterdataHelper
         
         createExperimentTypeIfMissing(sessionToken, v3, creation);
     }
-    
+
+    //
+    // Get
+    //
+
+    public static SampleType getSampleType(String sessionToken, IApplicationServerApi v3, String typeCode) {
+        EntityTypePermId id = new EntityTypePermId(typeCode);
+        SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().withPropertyType();
+        Map<IEntityTypeId, SampleType> types = v3.getSampleTypes(sessionToken, Arrays.asList(id), fetchOptions);
+        return types.get(id);
+    }
+
+    public static DataSetType getDataSetType(String sessionToken, IApplicationServerApi v3, String typeCode) {
+        EntityTypePermId id = new EntityTypePermId(typeCode);
+        DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().withPropertyType();
+        Map<IEntityTypeId, DataSetType> types = v3.getDataSetTypes(sessionToken, Arrays.asList(id), fetchOptions);
+        return types.get(id);
+    }
+
+    //
+    // Update
+    //
+
+    public static void updateSampleType(String sessionToken, IApplicationServerApi v3, String typeCode, int addOrder, String addPropertyTypeCode) {
+        SampleTypeUpdate update = new SampleTypeUpdate();
+        update.setTypeId(new EntityTypePermId(typeCode));
+        ListUpdateValue.ListUpdateActionAdd add = new ListUpdateValue.ListUpdateActionAdd();
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setOrdinal(addOrder);
+        propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(addPropertyTypeCode));
+        add.setItems(Arrays.asList(propertyAssignmentCreation));
+        update.setPropertyAssignmentActions(Arrays.asList(add));
+        v3.updateSampleTypes(sessionToken, Arrays.asList(update));
+    }
+
+    public static void updateDataSetType(String sessionToken, IApplicationServerApi v3, String typeCode, int addOrder, String addPropertyTypeCode) {
+        DataSetTypeUpdate update = new DataSetTypeUpdate();
+        update.setTypeId(new EntityTypePermId(typeCode));
+        ListUpdateValue.ListUpdateActionAdd add = new ListUpdateValue.ListUpdateActionAdd();
+        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+        propertyAssignmentCreation.setOrdinal(addOrder);
+        propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(addPropertyTypeCode));
+        add.setItems(Arrays.asList(propertyAssignmentCreation));
+        update.setPropertyAssignmentActions(Arrays.asList(add));
+        v3.updateDataSetTypes(sessionToken, Arrays.asList(update));
+    }
+
     //
     // Type to translate Attachments to DataSets
     //

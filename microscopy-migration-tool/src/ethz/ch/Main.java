@@ -18,14 +18,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import ethz.ch.dataset.DataSetPropertyCopy;
 import ethz.ch.dataset.DatasetCreationHelper;
 import ethz.ch.experiment.Experiment2Sample;
 import ethz.ch.experiment.Experiment2SampleTranslator;
 import ethz.ch.experiment.ExperimentType2SampleType;
 import ethz.ch.property.Property2Sample;
 import ethz.ch.property.Property2SampleTranslator;
-import ethz.ch.property.PropertyCopy;
+import ethz.ch.property.EntityPropertyCopy;
 import ethz.ch.property.PropertyType2SampleType;
+import ethz.ch.sample.SamplePropertyCopy;
 import ethz.ch.ssl.SslCertificateHelper;
 import ethz.ch.tag.Tag2SampleTranslator;
 
@@ -234,26 +236,28 @@ public class Main
             }
         }
 
-        System.out.println("5. Copy Property A to Property B on Samples");
-        PropertyCopy LSR_FORTESSA_PLATE_p =     new PropertyCopy(   "LSR_FORTESSA_PLATE",    "LSR_FORTESSA_PLATE_NAME",      "$NAME");
-        PropertyCopy LSR_FORTESSA_TUBE_p =      new PropertyCopy(   "LSR_FORTESSA_TUBE",     "LSR_FORTESSA_TUBE_NAME",       "$NAME");
-        PropertyCopy LSR_FORTESSA_WELL_p =      new PropertyCopy(   "LSR_FORTESSA_WELL",     "LSR_FORTESSA_WELL_NAME",       "$NAME");
-        PropertyCopy FACS_ARIA_TUBE_p =         new PropertyCopy(   "FACS_ARIA_TUBE",        "FACS_ARIA_TUBE_NAME",          "$NAME");
-        PropertyCopy INFLUX_TUBE_p =            new PropertyCopy(   "INFLUX_TUBE",           "INFLUX_TUBE_NAME",             "$NAME");
-        PropertyCopy MOFLO_XDP_TUBE_p =         new PropertyCopy(   "MOFLO_XDP_TUBE",        "MOFLO_XDP_TUBE_NAME",          "$NAME");
-        PropertyCopy S3E_TUBE_p =               new PropertyCopy(   "S3E_TUBE",              "S3E_NAME",                     "$NAME");
-        PropertyCopy MICROSCOPY_SAMPLE_TYPE_p = new PropertyCopy(   "MICROSCOPY_SAMPLE_TYPE","MICROSCOPY_SAMPLE_NAME",       "$NAME");
+        System.out.println("5. Copy Property A to Property B on Samples and DataSets");
+        EntityPropertyCopy LSR_FORTESSA_PLATE_p =           new SamplePropertyCopy( "LSR_FORTESSA_PLATE",       "LSR_FORTESSA_PLATE_NAME",             "$NAME");
+        EntityPropertyCopy LSR_FORTESSA_TUBE_p =            new SamplePropertyCopy( "LSR_FORTESSA_TUBE",        "LSR_FORTESSA_TUBE_NAME",              "$NAME");
+        EntityPropertyCopy LSR_FORTESSA_WELL_p =            new SamplePropertyCopy( "LSR_FORTESSA_WELL",        "LSR_FORTESSA_WELL_NAME",              "$NAME");
+        EntityPropertyCopy FACS_ARIA_TUBE_p =               new SamplePropertyCopy( "FACS_ARIA_TUBE",           "FACS_ARIA_TUBE_NAME",                 "$NAME");
+        EntityPropertyCopy INFLUX_TUBE_p =                  new SamplePropertyCopy( "INFLUX_TUBE",              "INFLUX_TUBE_NAME",                    "$NAME");
+        EntityPropertyCopy MOFLO_XDP_TUBE_p =               new SamplePropertyCopy( "MOFLO_XDP_TUBE",           "MOFLO_XDP_TUBE_NAME",                 "$NAME");
+        EntityPropertyCopy S3E_TUBE_p =                     new SamplePropertyCopy( "S3E_TUBE",                 "S3E_NAME",                            "$NAME");
+        EntityPropertyCopy MICROSCOPY_SAMPLE_TYPE_p =       new SamplePropertyCopy( "MICROSCOPY_SAMPLE_TYPE",   "MICROSCOPY_SAMPLE_NAME",              "$NAME");
+        EntityPropertyCopy MICROSCOPY_ACCESSORY_FILE_p =    new DataSetPropertyCopy("MICROSCOPY_ACCESSORY_FILE","MICROSCOPY_ACCESSORY_FILE_NAME",      "$NAME");
 
-        List<PropertyCopy> propertyCopiesMigrationConfig = Arrays.asList(LSR_FORTESSA_PLATE_p,
+        List<EntityPropertyCopy> propertyCopiesMigrationConfig = Arrays.asList(LSR_FORTESSA_PLATE_p,
                 LSR_FORTESSA_TUBE_p,
                 LSR_FORTESSA_WELL_p,
                 FACS_ARIA_TUBE_p,
                 INFLUX_TUBE_p,
                 MOFLO_XDP_TUBE_p,
                 S3E_TUBE_p,
-                MICROSCOPY_SAMPLE_TYPE_p);
+                MICROSCOPY_SAMPLE_TYPE_p,
+                MICROSCOPY_ACCESSORY_FILE_p);
 
-        for (PropertyCopy config:propertyCopiesMigrationConfig) {
+        for (EntityPropertyCopy config:propertyCopiesMigrationConfig) {
             config.copy(sessionToken, v3);
         }
     }
