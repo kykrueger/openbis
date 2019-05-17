@@ -8,6 +8,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
@@ -19,7 +20,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.delete.PropertyTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
@@ -184,28 +187,61 @@ public class MasterdataHelper
     // Update
     //
 
-    public static void updateSampleType(String sessionToken, IApplicationServerApi v3, String typeCode, int addOrder, String addPropertyTypeCode) {
+    public enum PropertyTypeUpdateAction { ADD, REMOVE}
+
+    public static void updateSampleType(String sessionToken, IApplicationServerApi v3, String typeCode, PropertyTypeUpdateAction updateAction, int addOrder, String addPropertyTypeCode) {
         SampleTypeUpdate update = new SampleTypeUpdate();
         update.setTypeId(new EntityTypePermId(typeCode));
-        ListUpdateValue.ListUpdateActionAdd add = new ListUpdateValue.ListUpdateActionAdd();
-        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
-        propertyAssignmentCreation.setOrdinal(addOrder);
-        propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(addPropertyTypeCode));
-        add.setItems(Arrays.asList(propertyAssignmentCreation));
-        update.setPropertyAssignmentActions(Arrays.asList(add));
+        ListUpdateValue.ListUpdateAction action = null;
+        switch (updateAction) {
+            case ADD:
+                action = new ListUpdateValue.ListUpdateActionAdd();
+                PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+                propertyAssignmentCreation.setOrdinal(addOrder);
+                propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(addPropertyTypeCode));
+                action.setItems(Arrays.asList(propertyAssignmentCreation));
+                break;
+            case REMOVE:
+                action = new ListUpdateValue.ListUpdateActionRemove();
+                action.setItems(Arrays.asList(new PropertyAssignmentPermId(new EntityTypePermId(typeCode, EntityKind.SAMPLE), new PropertyTypePermId(addPropertyTypeCode))));
+                update.getPropertyAssignments().setForceRemovingAssignments(true);
+                break;
+        }
+        update.setPropertyAssignmentActions(Arrays.asList(action));
         v3.updateSampleTypes(sessionToken, Arrays.asList(update));
     }
 
-    public static void updateDataSetType(String sessionToken, IApplicationServerApi v3, String typeCode, int addOrder, String addPropertyTypeCode) {
+    public static void updateDataSetType(String sessionToken, IApplicationServerApi v3, String typeCode, PropertyTypeUpdateAction updateAction, int addOrder, String addPropertyTypeCode) {
         DataSetTypeUpdate update = new DataSetTypeUpdate();
         update.setTypeId(new EntityTypePermId(typeCode));
-        ListUpdateValue.ListUpdateActionAdd add = new ListUpdateValue.ListUpdateActionAdd();
-        PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
-        propertyAssignmentCreation.setOrdinal(addOrder);
-        propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(addPropertyTypeCode));
-        add.setItems(Arrays.asList(propertyAssignmentCreation));
-        update.setPropertyAssignmentActions(Arrays.asList(add));
+        ListUpdateValue.ListUpdateAction action = null;
+        switch (updateAction) {
+            case ADD:
+                action = new ListUpdateValue.ListUpdateActionAdd();
+                PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+                propertyAssignmentCreation.setOrdinal(addOrder);
+                propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(addPropertyTypeCode));
+                action.setItems(Arrays.asList(propertyAssignmentCreation));
+                break;
+            case REMOVE:
+                action = new ListUpdateValue.ListUpdateActionRemove();
+                action.setItems(Arrays.asList(new PropertyAssignmentPermId(new EntityTypePermId(typeCode, EntityKind.DATA_SET), new PropertyTypePermId(addPropertyTypeCode))));
+                update.getPropertyAssignments().setForceRemovingAssignments(true);
+                break;
+        }
+
+        update.setPropertyAssignmentActions(Arrays.asList(action));
         v3.updateDataSetTypes(sessionToken, Arrays.asList(update));
+    }
+
+    //
+    // Delete
+    //
+
+    public static void deletePropertyType(String sessionToken, IApplicationServerApi v3, String propertyTypeCode) {
+        PropertyTypeDeletionOptions propertyTypeDeletionOptions = new PropertyTypeDeletionOptions();
+        propertyTypeDeletionOptions.setReason("Microscopy Migration");
+        v3.deletePropertyTypes(sessionToken, Arrays.asList(new PropertyTypePermId(propertyTypeCode)), propertyTypeDeletionOptions);
     }
 
     //

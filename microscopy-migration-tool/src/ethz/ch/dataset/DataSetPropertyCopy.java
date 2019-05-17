@@ -6,6 +6,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ethz.ch.MasterdataHelper;
 import ethz.ch.MetadataHelper;
 import ethz.ch.property.EntityPropertyCopy;
+import ethz.ch.property.EntityPropertyDelete;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class DataSetPropertyCopy extends EntityPropertyCopy<DataSet> {
 
     @Override
     public void updatePropertyAssignmentsHolder(String sessionToken, IApplicationServerApi v3) {
-        MasterdataHelper.updateDataSetType(sessionToken, v3, typeCode, 1, newPropertyCode);
+        MasterdataHelper.updateDataSetType(sessionToken, v3, typeCode, MasterdataHelper.PropertyTypeUpdateAction.ADD,1, newPropertyCode);
     }
 
     @Override
@@ -33,5 +34,10 @@ public class DataSetPropertyCopy extends EntityPropertyCopy<DataSet> {
     @Override
     public void updateEntityProperty(String sessionToken, IApplicationServerApi v3, DataSet entity) {
         MetadataHelper.updateDataSetProperty(sessionToken, v3, entity.getPermId().getPermId(), newPropertyCode, entity.getProperty(oldPropertyCode));
+    }
+
+    @Override
+    public EntityPropertyDelete getEntityPropertyDelete() {
+        return new DataSetPropertyDelete(typeCode, oldPropertyCode);
     }
 }

@@ -234,6 +234,7 @@ public class Main
                 total++;
                 System.out.println("[DONE] " + config.getOldSampleTypeCode() + "\t" + total + "/" + samples.getTotalCount());
             }
+            config.getEntityPropertyDelete().deleteOldPropertyType(sessionToken, v3);
         }
 
         System.out.println("5. Copy Property A to Property B on Samples and DataSets");
@@ -259,6 +260,7 @@ public class Main
 
         for (EntityPropertyCopy config:propertyCopiesMigrationConfig) {
             config.copy(sessionToken, v3);
+            config.getEntityPropertyDelete().deleteOldPropertyType(sessionToken, v3);
         }
     }
 }
