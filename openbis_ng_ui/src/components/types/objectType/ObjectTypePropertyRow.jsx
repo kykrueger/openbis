@@ -5,9 +5,7 @@ import { DropTarget } from 'react-dnd'
 import MenuItem from '@material-ui/core/MenuItem'
 import TableCell from '@material-ui/core/TableCell'
 import TableRow from '@material-ui/core/TableRow'
-import FormControl from '@material-ui/core/FormControl'
-import FormHelperText from '@material-ui/core/FormHelperText'
-import Select from '@material-ui/core/Select'
+import TextField from '@material-ui/core/TextField'
 import Checkbox from '@material-ui/core/Checkbox'
 import DragHandleIcon from '@material-ui/icons/DragHandle'
 import RootRef from '@material-ui/core/RootRef'
@@ -147,21 +145,20 @@ class ObjectTypeTableRow extends React.Component {
     const {property, propertyTypes} = this.props
 
     return (
-      <FormControl error={property.errors['propertyType'] ? true : false}>
-        <Select
-          value={property.propertyType ? property.propertyType.code : ''}
-          onClick={event => {event.stopPropagation()}}
-          onChange={this.handleChangePropertyType}
-        >
-          <MenuItem value=""></MenuItem>
-          {propertyTypes && propertyTypes.map(propertyType => (
-            <MenuItem key={propertyType.code} value={propertyType.code}>{propertyType.code}</MenuItem>
-          ))}
-        </Select>
-        {property.errors['type'] &&
-        <FormHelperText>{property.errors['type']}</FormHelperText>
-        }
-      </FormControl>
+      <TextField
+        select
+        value={property.propertyType ? property.propertyType.code : ''}
+        onClick={event => {event.stopPropagation()}}
+        onChange={this.handleChangePropertyType}
+        fullWidth={true}
+        error={property.errors['propertyType'] ? true : false}
+        helperText={property.errors['propertyType']}
+      >
+        <MenuItem value=""></MenuItem>
+        {propertyTypes && propertyTypes.map(propertyType => (
+          <MenuItem key={propertyType.code} value={propertyType.code}>{propertyType.code}</MenuItem>
+        ))}
+      </TextField>
     )
   }
 

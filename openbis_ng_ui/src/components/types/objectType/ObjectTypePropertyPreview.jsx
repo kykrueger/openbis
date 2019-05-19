@@ -1,16 +1,23 @@
 import _ from 'lodash'
 import React from 'react'
-import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
-import FormHelperText from '@material-ui/core/FormHelperText'
 import TextField from '@material-ui/core/TextField'
-import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 import Checkbox from '@material-ui/core/Checkbox'
+import InfoIcon from '@material-ui/icons/InfoOutlined'
+import Tooltip from '@material-ui/core/Tooltip'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({
+  container: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  boolean: {
+    width: '100%'
+  }
 })
 
 class ObjectTypePropertyPreview extends React.Component {
@@ -39,6 +46,19 @@ class ObjectTypePropertyPreview extends React.Component {
   render(){
     logger.log(logger.DEBUG, 'ObjectTypePropertyPreview.render')
 
+    const {classes} = this.props
+
+    return (
+      <div className={classes.container}>
+        {this.renderField()}
+        <Tooltip title={this.getDescription()}>
+          <InfoIcon />
+        </Tooltip>
+      </div>
+    )
+  }
+
+  renderField(){
     const {propertyType} = this.props
 
     switch(propertyType.dataType){
@@ -59,14 +79,12 @@ class ObjectTypePropertyPreview extends React.Component {
   }
 
   renderBoolean(){
+    const {classes} = this.props
     return (
-      <FormControl>
-        <FormControlLabel
-          control={<Checkbox />}
-          label={this.getLabel()}
-        />
-        <FormHelperText>{this.getDescription()}</FormHelperText>
-      </FormControl>
+      <FormControlLabel classes={{ root: classes.boolean }}
+        control={<Checkbox />}
+        label={this.getLabel()}
+      />
     )
   }
 
@@ -74,7 +92,7 @@ class ObjectTypePropertyPreview extends React.Component {
     return (
       <TextField
         label={this.getLabel()}
-        helperText={this.getDescription()}
+        fullWidth={true}
         variant="filled"
       />
     )
@@ -84,8 +102,8 @@ class ObjectTypePropertyPreview extends React.Component {
     return (
       <TextField
         label={this.getLabel()}
-        helperText={this.getDescription()}
         multiline={true}
+        fullWidth={true}
         variant="filled"
       />
     )
@@ -95,8 +113,8 @@ class ObjectTypePropertyPreview extends React.Component {
     return (
       <TextField
         label={this.getLabel()}
-        helperText={this.getDescription()}
         type="number"
+        fullWidth={true}
         variant="filled"
       />
     )
@@ -104,21 +122,19 @@ class ObjectTypePropertyPreview extends React.Component {
 
   renderVocabulary(){
     return (
-      <FormControl>
-        <FormControlLabel
-          control={
-            <Select value={this.getValue('vocabulary')} onChange={this.handleChange('vocabulary')}>
-              <MenuItem value=""></MenuItem>
-              {this.getTerms().map(term => (
-                <MenuItem key={term.code} value={term.code}>{term.label || term.code}</MenuItem>
-              ))}
-            </Select>
-          }
-          label={this.getLabel()}
-          labelPlacement="top"
-        />
-        <FormHelperText>{this.getDescription()}</FormHelperText>
-      </FormControl>
+      <TextField
+        select
+        label={this.getLabel()}
+        value={this.getValue('vocabulary')}
+        onChange={this.handleChange('vocabulary')}
+        fullWidth={true}
+        variant="filled"
+      >
+        <MenuItem value=""></MenuItem>
+        {this.getTerms().map(term => (
+          <MenuItem key={term.code} value={term.code}>{term.label || term.code}</MenuItem>
+        ))}
+      </TextField>
     )
   }
 
