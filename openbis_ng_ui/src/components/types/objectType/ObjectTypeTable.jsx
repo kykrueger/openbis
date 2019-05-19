@@ -5,10 +5,9 @@ import TableBody from '@material-ui/core/TableBody'
 import TableHead from '@material-ui/core/TableHead'
 import TableCell from '@material-ui/core/TableCell'
 import TableRow from '@material-ui/core/TableRow'
-import ObjectTypeTableRow from './ObjectTypeTableRow.jsx'
+import ObjectTypePropertyRow from './ObjectTypePropertyRow.jsx'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
-
 
 const styles = () => ({
   table: {
@@ -18,29 +17,34 @@ const styles = () => ({
 
 class ObjectTypeTable extends React.Component {
 
+  constructor(props){
+    super(props)
+    this.state = {}
+  }
+
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeTable.render')
 
-    const { classes, properties } = this.props
+    const { classes, objectType, propertyTypes } = this.props
+    const { properties } = objectType
 
     return (
       <Table className={classes.table}>
         <TableHead>
           <TableRow>
             <TableCell></TableCell>
-            <TableCell>Code*</TableCell>
-            <TableCell>Label*</TableCell>
-            <TableCell>Description*</TableCell>
-            <TableCell>Data Type*</TableCell>
+            <TableCell>Preview</TableCell>
+            <TableCell>Property Type*</TableCell>
             <TableCell>Mandatory</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {properties.map((property, index) => (
-            <React.Fragment key={property.code}>
-              <ObjectTypeTableRow
+            <React.Fragment key={property.ordinal}>
+              <ObjectTypePropertyRow
                 index={index}
                 property={property}
+                propertyTypes={propertyTypes}
                 onChange={this.props.onChange}
                 onSelect={this.props.onSelect}
                 onReorder={this.props.onReorder}

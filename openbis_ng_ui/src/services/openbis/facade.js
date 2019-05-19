@@ -32,6 +32,10 @@ export class Facade {
     return this.v3.logout()
   }
 
+  searchPropertyTypes(criteria, fo) {
+    return this.v3.searchPropertyTypes(criteria, fo)
+  }
+
   searchPersons(criteria, fo) {
     return this.v3.searchPersons(criteria, fo)
   }

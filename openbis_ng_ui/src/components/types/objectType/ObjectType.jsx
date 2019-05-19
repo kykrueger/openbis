@@ -39,41 +39,58 @@ class ObjectType extends React.Component {
   }
 
   componentDidMount(){
-    let id = new dto.EntityTypePermId(this.props.objectId)
+    Promise.all([
+      this.loadObjectType(this.props.objectId),
+      this.loadPropertyTypes()
+    ]).then(([objectType, propertyTypes]) => {
+      this.setState(() => ({
+        loaded: true,
+        objectType: objectType,
+        propertyTypes: propertyTypes
+      }))
+    })
+  }
+
+  loadObjectType(objectTypeId){
+    let id = new dto.EntityTypePermId(objectTypeId)
     let fo = new dto.SampleTypeFetchOptions()
     fo.withPropertyAssignments().withPropertyType()
     fo.withPropertyAssignments().sortBy().code()
 
-    facade.getSampleTypes([id], fo).then(map => {
-      let objectType = map[this.props.objectId]
+    return facade.getSampleTypes([id], fo).then(map => {
+      let objectType = map[objectTypeId]
       if(objectType){
-        this.setState(() => {
-          return {
-            loaded: true,
-            object: {
-              code: objectType.code,
-              properties: objectType.propertyAssignments.map(assignment => ({
-                permId: assignment.permId,
-                code: assignment.propertyType.code,
-                label: assignment.propertyType.label,
-                description: assignment.propertyType.description,
-                dataType: assignment.propertyType.dataType,
-                ordinal: assignment.ordinal,
-                mandatory: assignment.mandatory,
-                selected: false,
-                errors: {}
-              }))
-            }
-          }
-        })
+        return {
+          code: objectType.code,
+          properties: objectType.propertyAssignments.map(assignment => ({
+            permId: assignment.permId,
+            propertyType: assignment.propertyType,
+            ordinal: assignment.ordinal,
+            mandatory: assignment.mandatory,
+            selected: false,
+            errors: {}
+          }))
+        }
+      }else{
+        return null
       }
     })
   }
 
-  handleChange(index, key, value){
+  loadPropertyTypes(){
+    let criteria = new dto.PropertyTypeSearchCriteria()
+    let fo = new dto.PropertyTypeFetchOptions()
+    fo.withVocabulary().withTerms()
+
+    return facade.searchPropertyTypes(criteria, fo).then(result => {
+      return result.objects
+    })
+  }
+
+  handleChange(ordinal, key, value){
     this.setState((prevState) => {
-      let newProperties = prevState.object.properties.map((property, i) => {
-        if(i === index){
+      let newProperties = prevState.objectType.properties.map((property) => {
+        if(property.ordinal === ordinal){
           return {
             ...property,
             [key]: value
@@ -84,8 +101,8 @@ class ObjectType extends React.Component {
       })
       return {
         ...prevState,
-        object: {
-          ...prevState.object,
+        objectType: {
+          ...prevState.objectType,
           properties: newProperties
         }
       }
@@ -98,7 +115,7 @@ class ObjectType extends React.Component {
 
   handleRemove(){
     this.setState((prevState) => {
-      let newProperties = prevState.object.properties.reduce((array, property) => {
+      let newProperties = prevState.objectType.properties.reduce((array, property) => {
         if(!property.selected){
           array.push(property)
         }
@@ -107,8 +124,8 @@ class ObjectType extends React.Component {
 
       return {
         ...prevState,
-        object: {
-          ...prevState.object,
+        objectType: {
+          ...prevState.objectType,
           properties: newProperties
         }
       }
@@ -117,39 +134,44 @@ class ObjectType extends React.Component {
 
   handleAdd(){
     this.setState((prevState) => {
-      let newProperties = prevState.object.properties.map(property => ({
-        ...property,
-        selected: false
-      }))
+      let newOrdinal = 0
+      let newProperties = prevState.objectType.properties.map(property => {
+        if(newOrdinal <= property.ordinal){
+          newOrdinal = property.ordinal + 1
+        }
+        return {
+          ...property,
+          selected: false
+        }
+      })
       newProperties.push({
-        code: 'PROPERTY_' + prevState.object.properties.length,
-        label: '',
-        description: '',
-        dataType: '',
+        permId: null,
+        propertyType: null,
         mandatory: false,
         selected: true,
+        ordinal: newOrdinal,
         errors: {}
       })
 
       return {
         ...prevState,
-        object: {
-          ...prevState.object,
+        objectType: {
+          ...prevState.objectType,
           properties: newProperties
         }
       }
     })
   }
 
-  handleSelect(propertyCode){
+  handleSelect(ordinal){
     this.setState((prevState) => ({
       ...prevState,
-      object: {
-        ...prevState.object,
-        properties: prevState.object.properties.map(property => {
+      objectType: {
+        ...prevState.objectType,
+        properties: prevState.objectType.properties.map(property => {
           return {
             ...property,
-            selected: property.code === propertyCode ? !property.selected : false
+            selected: property.ordinal === ordinal ? !property.selected : false
           }
         })
       }
@@ -157,7 +179,7 @@ class ObjectType extends React.Component {
   }
 
   handleReorder(oldPropertyIndex, newPropertyIndex){
-    let oldProperties = this.state.object.properties
+    let oldProperties = this.state.objectType.properties
     let newProperties = oldProperties.map(property => {
       if(property.selected){
         return {
@@ -177,8 +199,8 @@ class ObjectType extends React.Component {
 
     this.setState((prevState) => ({
       ...prevState,
-      object: {
-        ...prevState.object,
+      objectType: {
+        ...prevState.objectType,
         properties: newProperties
       }
     }))
@@ -187,20 +209,11 @@ class ObjectType extends React.Component {
   validate(){
     let valid = true
 
-    let newProperties = this.state.object.properties.map(property => {
+    let newProperties = this.state.objectType.properties.map(property => {
       let errors = {}
 
-      if(!_.trim(property.code)){
-        errors['code'] = 'Cannot be empty'
-      }
-      if(!_.trim(property.label)){
-        errors['label'] = 'Cannot be empty'
-      }
-      if(!_.trim(property.description)){
-        errors['description'] = 'Cannot be empty'
-      }
-      if(!_.trim(property.dataType)){
-        errors['dataType'] = 'Cannot be empty'
+      if(!_.trim(property.type)){
+        errors['propertyType'] = 'Cannot be empty'
       }
 
       if(_.size(errors) > 0){
@@ -216,8 +229,8 @@ class ObjectType extends React.Component {
     this.setState((prevState) => ({
       ...prevState,
       validated: true,
-      object: {
-        ...prevState.object,
+      objectType: {
+        ...prevState.objectType,
         properties: newProperties
       }
     }))
@@ -246,7 +259,8 @@ class ObjectType extends React.Component {
       <div className={classes.container}>
         <div className={classes.form}>
           <ObjectTypeForm
-            object={this.state.object}
+            objectType={this.state.objectType}
+            propertyTypes={this.state.propertyTypes}
             onSelect={this.handleSelect}
             onReorder={this.handleReorder}
             onChange={this.handleChange}

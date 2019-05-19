@@ -8,10 +8,10 @@ import TableRow from '@material-ui/core/TableRow'
 import FormControl from '@material-ui/core/FormControl'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import Select from '@material-ui/core/Select'
-import TextField from '@material-ui/core/TextField'
 import Checkbox from '@material-ui/core/Checkbox'
 import DragHandleIcon from '@material-ui/icons/DragHandle'
 import RootRef from '@material-ui/core/RootRef'
+import ObjectTypePropertyPreview from './ObjectTypePropertyPreview.jsx'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
@@ -72,6 +72,9 @@ class ObjectTypeTableRow extends React.Component {
     super(props)
     this.handleRef = React.createRef()
     this.rowRef = React.createRef()
+    this.handleSelect = this.handleSelect.bind(this)
+    this.handleChangePropertyType = this.handleChangePropertyType.bind(this)
+    this.handleChangeMandatory = this.handleChangeMandatory.bind(this)
   }
 
   componentDidMount(){
@@ -80,78 +83,98 @@ class ObjectTypeTableRow extends React.Component {
     this.props.connectDropTarget(this.rowRef.current)
   }
 
-  handleSelect(property){
-    return () => {
-      this.props.onSelect(property)
-    }
+  handleSelect(){
+    this.props.onSelect(this.props.property.ordinal)
   }
 
-  handleChange(index, key){
-    return event => {
-      let value = _.has(event.target, 'checked') ? event.target.checked : event.target.value
-      this.props.onChange(index, key, value)
-    }
+  handleChangePropertyType(event){
+    event.stopPropagation()
+    let propertyType = _.find(this.props.propertyTypes, propertyType => {
+      return propertyType.code === event.target.value
+    })
+    this.props.onChange(this.props.property.ordinal, 'propertyType', propertyType)
+  }
+
+  handleChangeMandatory(event){
+    event.stopPropagation()
+    this.props.onChange(this.props.property.ordinal, 'mandatory', event.target.checked)
   }
 
   render(){
-    logger.log(logger.DEBUG, 'ObjectTypeTableRow.render')
+    logger.log(logger.DEBUG, 'ObjectTypePropertyRow.render')
 
-    const {classes, property, index} = this.props
+    const {classes, property} = this.props
 
     return (
       <RootRef rootRef={this.rowRef}>
-        <TableRow key={property.code} classes={{ root: classes.row, selected: classes.selected }} selected={property.selected} onClick={this.handleSelect(property.code)}>
+        <TableRow
+          classes={{ root: classes.row, selected: classes.selected }}
+          selected={property.selected}
+          onClick={this.handleSelect}
+        >
           <RootRef rootRef={this.handleRef}>
             <TableCell classes={{ root: classes.drag }}>
               <DragHandleIcon />
             </TableCell>
           </RootRef>
           <TableCell>
-            <TextField
-              value={property.code}
-              error={property.errors['code'] ? true : false}
-              helperText={property.errors['code']}
-              onChange={this.handleChange(index, 'code')}
-            />
+            {this.renderPreview()}
           </TableCell>
           <TableCell>
-            <TextField
-              value={property.label}
-              error={property.errors['label'] ? true : false}
-              helperText={property.errors['label']}
-              onChange={this.handleChange(index, 'label')}
-            />
+            {this.renderPropertyType()}
           </TableCell>
           <TableCell>
-            <TextField
-              value={property.description}
-              error={property.errors['description'] ? true : false}
-              helperText={property.errors['description']}
-              onChange={this.handleChange(index, 'description')}
-            />
-          </TableCell>
-          <TableCell>
-            <FormControl error={property.errors['dataType'] ? true : false}>
-              <Select
-                value={property.dataType ? property.dataType : ''}
-                onChange={this.handleChange(index, 'dataType')}
-              >
-                <MenuItem value=""></MenuItem>
-                <MenuItem value={'VARCHAR'}>VARCHAR</MenuItem>
-                <MenuItem value={'INTEGER'}>INTEGER</MenuItem>
-                <MenuItem value={'REAL'}>REAL</MenuItem>
-                <MenuItem value={'BOOLEAN'}>BOOLEAN</MenuItem>
-              </Select>
-              { property.errors['dataType'] &&
-                <FormHelperText>{property.errors['dataType']}</FormHelperText>
-              }
-            </FormControl>
-          </TableCell>
-          <TableCell>
-            <Checkbox checked={property.mandatory} value='mandatory' onChange={this.handleChange(index, 'mandatory')} />
+            {this.renderMandatory()}
           </TableCell>
         </TableRow>
       </RootRef>
+    )
+  }
+
+  renderPreview(){
+    const {property, propertyTypes} = this.props
+
+    const propertyType = _.find(propertyTypes, propertyType => {
+      return propertyType.code === property.propertyType.code
+    })
+
+    return (
+      <ObjectTypePropertyPreview property={property} propertyType={propertyType} />
+    )
+  }
+
+  renderPropertyType(){
+    const {property, propertyTypes} = this.props
+
+    return (
+      <FormControl error={property.errors['propertyType'] ? true : false}>
+        <Select
+          value={property.propertyType ? property.propertyType.code : ''}
+          onClick={event => {event.stopPropagation()}}
+          onChange={this.handleChangePropertyType}
+        >
+          <MenuItem value=""></MenuItem>
+          {propertyTypes && propertyTypes.map(propertyType => (
+            <MenuItem key={propertyType.code} value={propertyType.code}>{propertyType.code}</MenuItem>
+          ))}
+        </Select>
+        {property.errors['type'] &&
+        <FormHelperText>{property.errors['type']}</FormHelperText>
+        }
+      </FormControl>
+    )
+  }
+
+  renderMandatory(){
+    const {property} = this.props
+
+    return (
+      <Checkbox
+        checked={property.mandatory}
+        value='mandatory'
+        onClick={event => {event.stopPropagation()}}
+        onChange={this.handleChangeMandatory}
+      />
     )
   }
 }

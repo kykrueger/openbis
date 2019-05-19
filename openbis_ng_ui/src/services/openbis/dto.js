@@ -13,7 +13,10 @@ const CLASS_FULL_NAMES = [
   'as/dto/dataset/search/DataSetTypeSearchCriteria',
   'as/dto/dataset/fetchoptions/DataSetTypeFetchOptions',
   'as/dto/material/search/MaterialTypeSearchCriteria',
-  'as/dto/material/fetchoptions/MaterialTypeFetchOptions'
+  'as/dto/material/fetchoptions/MaterialTypeFetchOptions',
+  'as/dto/property/PropertyType',
+  'as/dto/property/search/PropertyTypeSearchCriteria',
+  'as/dto/property/fetchoptions/PropertyTypeFetchOptions'
 ]
 
 class Dto {

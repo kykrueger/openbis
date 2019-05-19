@@ -13,7 +13,8 @@ class ObjectTypeForm extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeForm.render')
 
-    let { code, properties } = this.props.object
+    let { objectType, propertyTypes } = this.props
+    let { code, properties } = objectType
 
     return (
       <div>
@@ -23,7 +24,8 @@ class ObjectTypeForm extends React.Component {
         <form>
           {properties && properties.length > 0 &&
             <ObjectTypeTable
-              properties={properties}
+              objectType={objectType}
+              propertyTypes={propertyTypes}
               onSelect={this.props.onSelect}
               onReorder={this.props.onReorder}
               onChange={this.props.onChange}
