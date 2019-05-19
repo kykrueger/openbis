@@ -132,13 +132,16 @@ class ObjectTypeTableRow extends React.Component {
   renderPreview(){
     const {property, propertyTypes} = this.props
 
-    const propertyType = _.find(propertyTypes, propertyType => {
-      return propertyType.code === property.propertyType.code
-    })
-
-    return (
-      <ObjectTypePropertyPreview property={property} propertyType={propertyType} />
-    )
+    if(property.propertyType){
+      const propertyType = _.find(propertyTypes, propertyType => {
+        return propertyType.code === property.propertyType.code
+      })
+      return (
+        <ObjectTypePropertyPreview property={property} propertyType={propertyType} />
+      )
+    }else{
+      return (<div></div>)
+    }
   }
 
   renderPropertyType(){

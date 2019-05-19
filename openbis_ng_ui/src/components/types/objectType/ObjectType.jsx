@@ -212,7 +212,7 @@ class ObjectType extends React.Component {
     let newProperties = this.state.objectType.properties.map(property => {
       let errors = {}
 
-      if(!_.trim(property.type)){
+      if(!property.propertyType){
         errors['propertyType'] = 'Cannot be empty'
       }
 
