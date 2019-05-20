@@ -16,24 +16,18 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.util;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
-
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.properties.PropertyUtils.Boolean;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ValidationUtilities.HyperlinkValidationHelper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
+
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * This is a refactoring of {@link ch.systemsx.cisd.openbis.generic.server.dataaccess.PropertyValidator} that takes some simple validations that do
@@ -52,6 +46,10 @@ public class SimplePropertyValidator
 
         SECONDS_DATE_PATTERN("yyyy-MM-dd HH:mm:ss"),
 
+        ISO_MINUTES_DATE_PATTERN("yyyy-MM-dd'T'HH:mm"),
+
+        ISO_SECONDS_DATE_PATTERN("yyyy-MM-dd'T'HH:mm:ss"),
+
         US_DATE_PATTERN("M/d/yy"),
 
         US_DATE_TIME_PATTERN("M/d/yy h:mm a"),
@@ -60,7 +58,11 @@ public class SimplePropertyValidator
 
         CANONICAL_DATE_PATTERN(BasicConstant.CANONICAL_DATE_FORMAT_PATTERN),
 
-        RENDERED_CANONICAL_DATE_PATTERN(BasicConstant.RENDERED_CANONICAL_DATE_FORMAT_PATTERN);
+        ISO_CANONICAL_DATE_PATTERN("yyyy-MM-dd'T'HH:mm:ssX"),
+
+        RENDERED_CANONICAL_DATE_PATTERN(BasicConstant.RENDERED_CANONICAL_DATE_FORMAT_PATTERN),
+
+        ISO_RENDERED_CANONICAL_DATE_PATTERN("yyyy-MM-dd'T'HH:mm:ssXXX");
 
         private final String pattern;
 
@@ -199,7 +201,7 @@ public class SimplePropertyValidator
                 // we store date in CANONICAL_DATE_PATTERN
                 return DateFormatUtils.format(date,
                         SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern());
-            } catch (final ParseException ex)
+            } catch (final ParseException | IllegalArgumentException ex)
             {
                 throwUserFailureException(value);
                 return null;
@@ -235,9 +237,10 @@ public class SimplePropertyValidator
          */
         private final static void throwUserFailureException(final String value) throws UserFailureException
         {
+            final String validValues = "[" + String.join("\n", DATE_PATTERNS) + "]";
             throw UserFailureException.fromTemplate(
                     "Date value '%s' has improper format. It must be one of '%s'.", value,
-                    Arrays.toString(DATE_PATTERNS));
+                    validValues);
         }
     }
 
