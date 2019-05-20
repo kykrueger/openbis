@@ -58,6 +58,18 @@ sourceSets {
 			srcDirs = ['source/java']
 		}
 	}
+
+	datastoreExec {
+		java {
+			srcDirs = ['source/java']
+		}
+		resources {
+			srcDirs = ['source/java']
+		}
+
+		compileClasspath += sourceSets.main.compileClasspath
+		runtimeClasspath += sourceSets.main.runtimeClasspath
+	}
 }
 
 jar {
@@ -71,4 +83,11 @@ jar {
         include 'sql/**/*.sql'
         into 'datastore_server'
     }
+}
+
+task executeOpenBisDataStore(type: JavaExec) {
+	main = 'ch.systemsx.cisd.openbis.dss.generic.DataStoreServer'
+	classpath = sourceSets.datastoreExec.runtimeClasspath
+	jvmArgs(['-ea', '-Dpython.path=../libraries/jython/jython-lib',
+			 '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog'])
 }
