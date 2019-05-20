@@ -20,6 +20,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAO;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.HibernateSearchContext;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.NativeQuery;
@@ -34,9 +35,14 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.*;
 public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
 {
 
-    protected PostgresSearchDAO(SessionFactory sessionFactory)
+    private final HibernateSearchContext hibernateSearchContext;
+
+    protected PostgresSearchDAO(final SessionFactory sessionFactory,
+            final HibernateSearchContext hibernateSearchContext)
     {
         super(sessionFactory);
+
+        this.hibernateSearchContext = hibernateSearchContext;
     }
 
     /*
@@ -51,8 +57,7 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
     @Override
     public int getResultSetSizeLimit()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        return hibernateSearchContext.getMaxResults();
     }
 
     @SuppressWarnings("unchecked")
@@ -110,7 +115,7 @@ public class PostgresSearchDAO extends AbstractDAO implements ISQLSearchDAO
                 "SELECT DISTINCT " + ID_COLUMN + "\n" +
                 "FROM " + SAMPLES_ALL_TABLE + "\n" +
                 "WHERE " + ID_COLUMN + " IN (:ids) AND (" + SPACE_COLUMN + " IN (:spaceIds) " +
-                        "OR proj_id IN (:projectIds))",
+                        "OR " + PROJECT_COLUMN + " IN (:projectIds))",
                 Long.class);
         query.setParameter("ids", ids);
         query.setParameter("spaceIds", authorizedSpaceProjectIds.getSpaceIds());
