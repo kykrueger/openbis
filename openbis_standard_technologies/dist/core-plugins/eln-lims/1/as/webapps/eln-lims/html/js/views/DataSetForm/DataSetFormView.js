@@ -92,7 +92,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				var isEntityFrozen = _this._dataSetFormModel.v3_dataset.frozen;
 				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
 				var $freezeButton = FormUtil.getFreezeButton("DATASET", this._dataSetFormModel.v3_dataset.permId.permId, isEntityFrozen);
-				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+				if(toolbarConfig.FREEZE) {
+				    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+				}
 			}
 			
 			if(!_this._dataSetFormModel.v3_dataset.frozen) {
