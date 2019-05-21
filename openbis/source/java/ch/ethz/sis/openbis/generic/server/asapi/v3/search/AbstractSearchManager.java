@@ -22,7 +22,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Manages detailed search with complex search criteria.
@@ -43,45 +47,6 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
         this.searchDAO = searchDAO;
         this.sortAndPage = sortAndPage;
     }
-
-//    /**
-//     * @return the intersection of a collection and a multi set (collection of sets).
-//     */
-//    protected Collection<Long> intersection(final Collection<Long> collection,
-//            final Collection<Set<Long>> multiSet)
-//    {
-//        final Set<Long> intersection = new HashSet<>();
-//        for (final Set<Long> set : multiSet)
-//        {
-//            set.retainAll(collection);
-//            intersection.addAll(set);
-//        }
-//        return intersection;
-//    }
-//
-//    /**
-//     * Filters search results by a relationship. This comes in handy when filtering search results based on a
-//     * subcriteria which operates on a different entity than the encapsulating criteria.
-//     *
-//     * @param idsToFilter the ids to be filtered.
-//     * @param relatedIds ids matching subcriteria.
-//     * @param relationshipMap a relationship map in the form <id, set<related-ids>>
-//     * @return all id-s having relationship to at least on id from relatedIds.
-//     */
-//    protected Collection<Long> filterIdsByRelationship(final Collection<Long> idsToFilter,
-//            final Collection<Long> relatedIds, final Map<Long, Set<Long>> relationshipMap)
-//    {
-//        for (final Iterator<Long> iterator = idsToFilter.iterator(); iterator.hasNext(); )
-//        {
-//            final Long id = iterator.next();
-//            final Set<Long> relatedIdSet = relationshipMap.get(id);
-//            if (relatedIdSet == null || Collections.disjoint(relatedIds, relatedIdSet))
-//            {
-//                iterator.remove();
-//            }
-//        }
-//        return idsToFilter;
-//    }
 
     protected List<ISearchCriteria> getOtherCriteriaThan(AbstractCompositeSearchCriteria compositeSearchCriteria,
             Class<? extends ISearchCriteria>... classes)
