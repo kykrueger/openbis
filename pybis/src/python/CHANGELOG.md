@@ -1,3 +1,8 @@
+## Changes with pybis-1.8.5
+
+* changed to v3 API when fetching datastores
+* 
+
 ## Changes with pybis-1.8.4
 
 * totalCount attribute added in every Things object
