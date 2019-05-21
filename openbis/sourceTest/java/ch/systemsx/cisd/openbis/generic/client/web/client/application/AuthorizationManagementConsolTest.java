@@ -16,18 +16,9 @@
 
 package ch.systemsx.cisd.openbis.generic.client.web.client.application;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.menu.TopMenu.ActionMenuKind;
 import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.TypedTableGrid;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.CheckGroupTable;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.CheckPersonTable;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.CheckRoleAssignmentTable;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.CreateGroup;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.CreatePerson;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.FillRoleAssignmentForm;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.OpenRoleAssignmentDialog;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.RoleAssignmentRow;
+import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.amc.*;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.PersonGridColumnIDs;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.SpaceGridColumnIDs;
 import ch.systemsx.cisd.openbis.generic.client.web.client.testframework.AbstractGWTTestCase;
@@ -114,7 +105,7 @@ public class AuthorizationManagementConsolTest extends AbstractGWTTestCase
 
         FailureExpectation failureExpectation =
                 new FailureExpectation(
-                        (Class<? extends AsyncCallback<?>>) TypedTableGrid.ListEntitiesCallback.class)
+                        (Class) TypedTableGrid.ListEntitiesCallback.class)
                         .with("Authorization failure: None of method roles '[INSTANCE_ADMIN]' "
                                 + "could be found in roles of user 'o'.");
 

@@ -150,7 +150,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
 				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
 				var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
-				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+			    if(toolbarConfig.FREEZE) {
+                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                }
 			}
 			
 			if(!_this._sampleFormModel.v3_sample.frozen) {
@@ -656,10 +658,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				
 				if(this._sampleFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 					if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
-						if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-							value = FormUtil.getVocabularyLabelForTermCode(propertyType, value);
-						}
-						$controlGroup = FormUtil.getFieldForLabelWithText(propertyType.label, value, propertyType.code);
+						$controlGroup = FormUtil.createPropertyField(propertyType, value);
 					} else {
 						continue;
 					}

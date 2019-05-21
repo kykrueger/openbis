@@ -18,7 +18,6 @@ package ch.systemsx.cisd.openbis.generic.shared.util;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
@@ -52,6 +51,10 @@ public class SimplePropertyValidator
 
         SECONDS_DATE_PATTERN("yyyy-MM-dd HH:mm:ss"),
 
+        ISO_MINUTES_DATE_PATTERN("yyyy-MM-dd'T'HH:mm"),
+
+        ISO_SECONDS_DATE_PATTERN("yyyy-MM-dd'T'HH:mm:ss"),
+
         US_DATE_PATTERN("M/d/yy"),
 
         US_DATE_TIME_PATTERN("M/d/yy h:mm a"),
@@ -60,7 +63,11 @@ public class SimplePropertyValidator
 
         CANONICAL_DATE_PATTERN(BasicConstant.CANONICAL_DATE_FORMAT_PATTERN),
 
-        RENDERED_CANONICAL_DATE_PATTERN(BasicConstant.RENDERED_CANONICAL_DATE_FORMAT_PATTERN);
+        ISO_CANONICAL_DATE_PATTERN("yyyy-MM-dd'T'HH:mm:ssX"),
+
+        RENDERED_CANONICAL_DATE_PATTERN(BasicConstant.RENDERED_CANONICAL_DATE_FORMAT_PATTERN),
+
+        ISO_RENDERED_CANONICAL_DATE_PATTERN("yyyy-MM-dd'T'HH:mm:ssXXX");
 
         private final String pattern;
 
@@ -199,7 +206,7 @@ public class SimplePropertyValidator
                 // we store date in CANONICAL_DATE_PATTERN
                 return DateFormatUtils.format(date,
                         SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern());
-            } catch (final ParseException ex)
+            } catch (final ParseException | IllegalArgumentException ex)
             {
                 throwUserFailureException(value);
                 return null;
@@ -209,7 +216,7 @@ public class SimplePropertyValidator
         /**
          * Manually validates the date value on cases which are omitted by DateUtils.
          * 
-         * @param value the date-time value to validate. 
+         * @param value the date-time value to validate.
          * @throws UserFailureException thrown if the value is not considered as a well formatted date.
          */
         private void validateHyphens(final String value) throws UserFailureException
@@ -218,18 +225,15 @@ public class SimplePropertyValidator
             {
                 return;
             }
-            
-            final String dateValue = extractDate(value);
-            final boolean hyphenFormat = dateValue.matches("\\d*-\\d*-\\d*");
-            final boolean desiredHyphenFormat = dateValue.matches("\\d{4,}-\\d+-\\d+");
-            if (hyphenFormat && !desiredHyphenFormat) 
+            int indexOfHyphen = value.indexOf('-');
+            if (indexOfHyphen >= 0 && indexOfHyphen != 4)
             {
-                // When the date value uses hyphens as separators but does not have 4 digits for the year value 
+                // When the date value uses hyphens as separators but does not have 4 digits for the year value
                 // throw an exception.
                 throwUserFailureException(value);
             }
         }
-        
+
         /**
          * Throws UserFailureException.
          * 
@@ -238,21 +242,10 @@ public class SimplePropertyValidator
          */
         private final static void throwUserFailureException(final String value) throws UserFailureException
         {
+            final String validValues = "[" + String.join("\n", DATE_PATTERNS) + "]";
             throw UserFailureException.fromTemplate(
                     "Date value '%s' has improper format. It must be one of '%s'.", value,
-                    Arrays.toString(DATE_PATTERNS));
-        }
-        
-        /**
-         * Extracts date part from the string representation of a date-time.
-         * 
-         * @param value the value considered as string representation of date-time.
-         * @return the date portion of the date-time string.
-         */
-        private final static String extractDate(final String value) 
-        {
-            final int dateSeparator = Math.min(value.indexOf(' '), value.indexOf('T'));
-            return dateSeparator >= 0 ? value.substring(0, dateSeparator) : value;
+                    validValues);
         }
     }
 
