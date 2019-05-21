@@ -1,9 +1,9 @@
-import openbis from '../../../src/services/openbis.js'
+import { facade } from '../../../src/services/openbis.js'
 import * as actions from '../../../src/store/actions/actions.js'
 import * as selectors from '../../../src/store/selectors/selectors.js'
 import * as pages from '../../../src/store/consts/pages.js'
 import { createStore } from '../../../src/store/store.js'
-import * as fixture from './fixture.js'
+import * as fixture from '../../common/fixture.js'
 
 jest.mock('../../../src/services/openbis.js')
 
@@ -16,7 +16,7 @@ beforeEach(() => {
 
 describe('app', () => {
   test('login successful', () => {
-    openbis.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
+    facade.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
 
     store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
 
@@ -26,7 +26,7 @@ describe('app', () => {
   })
 
   test('login failed', () => {
-    openbis.login.mockReturnValue(null)
+    facade.login.mockReturnValue(null)
 
     store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
 
@@ -36,7 +36,7 @@ describe('app', () => {
   })
 
   test('logout', () => {
-    openbis.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
+    facade.login.mockReturnValue(fixture.TEST_SESSION_TOKEN)
 
     store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
     store.dispatch(actions.logout())

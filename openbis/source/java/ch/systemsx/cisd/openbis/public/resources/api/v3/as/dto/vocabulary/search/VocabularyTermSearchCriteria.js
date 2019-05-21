@@ -1,7 +1,8 @@
 /**
  * @author pkupczyk
  */
-define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/CodeSearchCriteria", "as/dto/common/search/PermIdSearchCriteria",
+define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/CodeSearchCriteria", 
+		"as/dto/common/search/CodeSearchCriteria", "as/dto/common/search/PermIdSearchCriteria",
 		"as/dto/vocabulary/search/VocabularySearchCriteria" ], function(require, stjs, AbstractObjectSearchCriteria) {
 	var VocabularyTermSearchCriteria = function() {
 		AbstractObjectSearchCriteria.call(this);
@@ -17,6 +18,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 		prototype.withCode = function() {
 			var CodeSearchCriteria = require("as/dto/common/search/CodeSearchCriteria");
 			return this.addCriteria(new CodeSearchCriteria());
+		};
+		prototype.withCodes = function() {
+			var CodesSearchCriteria = require("as/dto/common/search/CodesSearchCriteria");
+			return this.addCriteria(new CodesSearchCriteria());
 		};
 		prototype.withVocabulary = function() {
 			var VocabularySearchCriteria = require("as/dto/vocabulary/search/VocabularySearchCriteria");

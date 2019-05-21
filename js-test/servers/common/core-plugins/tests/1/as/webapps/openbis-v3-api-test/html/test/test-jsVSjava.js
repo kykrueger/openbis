@@ -18,6 +18,8 @@ define([ 'jquery', 'underscore', 'openbis', 'test/common' ], function($, _, open
 			"CustomASServiceContext" : "Java class ignored: ",
 			"AbstractCollectionView" : "Java class ignored: ",
 			"AbstractExecutionOptionsWithParameters" : "Java class ignored: ",
+			"AbstractSampleSearchCriteria" : "Java class ignored: ",
+			"AbstractDataSetSearchCriteria" : "Java class ignored: ",
 			"ListView" : "Java class ignored: ",
 			"SetView" : "Java class ignored: ",
 			"NotFetchedException" : "Java class ignored: ",

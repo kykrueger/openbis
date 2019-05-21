@@ -87,12 +87,17 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.LuceneQueryB
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.search.detailed.DetailedQueryBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BasicEntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriteria;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchCriterion;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchField;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchFieldKind;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DetailedSearchSubCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IAssociationCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MatchingEntity;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PropertyMatch;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Span;
+import ch.systemsx.cisd.openbis.generic.shared.dto.AbstractIdAndCodeHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SearchableEntity;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
@@ -106,6 +111,8 @@ import ch.systemsx.cisd.openbis.generic.shared.translator.DtoConverters;
 
 final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernateSearchDAO
 {
+    private static final Pattern VALID_CODE_PATTERN = Pattern.compile("^[^\\s/&]+$", Pattern.CASE_INSENSITIVE);
+
     /**
      * The <code>Logger</code> of this class.
      * <p>
@@ -784,6 +791,10 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
             DetailedSearchCriteria searchCriteria, EntityKind entityKind,
             List<IAssociationCriteria> associations)
     {
+        if (hasInvalidCodes(searchCriteria))
+        {
+            return Collections.emptyList();
+        }
         List<String> fieldNames = DetailedQueryBuilder.getIndexFieldNames(searchCriteria.getCriteria(), DtoConverters.convertEntityKind(entityKind));
 
         Query query = LuceneQueryBuilder.createDetailedSearchQuery(userId, searchCriteria, associations, entityKind, getFieldTypes(fieldNames));
@@ -800,6 +811,32 @@ final class HibernateSearchDAO extends HibernateDaoSupport implements IHibernate
         List<Long> entityIds = AbstractDAO.cast(hibernateQuery.list());
         entityIds = filterNulls(entityIds);
         return entityIds;
+    }
+
+    private boolean hasInvalidCodes(DetailedSearchCriteria searchCriteria)
+    {
+        if (searchCriteria != null)
+        {
+            for (DetailedSearchCriterion criterion : searchCriteria.getCriteria())
+            {
+                String value = criterion.getValue();
+                DetailedSearchField field = criterion.getField();
+                DetailedSearchFieldKind kind = field.getKind();
+                if (DetailedSearchFieldKind.ATTRIBUTE.equals(kind) && field.getAttributeCode().equals("CODE") 
+                        && VALID_CODE_PATTERN.matcher(value).matches() == false)
+                {
+                    return true;
+                }
+            }
+            for (DetailedSearchSubCriteria subCriteria : searchCriteria.getSubCriterias())
+            {
+                if (hasInvalidCodes(subCriteria.getCriteria()))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     //

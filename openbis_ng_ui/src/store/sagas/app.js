@@ -1,4 +1,5 @@
-import {put, putAndWait, takeEvery} from './effects.js'
+import {call, put, putAndWait, takeEvery} from './effects.js'
+import {facade, dto} from '../../services/openbis.js'
 import * as actions from '../actions/actions.js'
 import * as pages from '../consts/pages.js'
 
@@ -6,14 +7,15 @@ export default function* app() {
   yield takeEvery(actions.INIT, init)
   yield takeEvery(actions.LOGIN, login)
   yield takeEvery(actions.LOGOUT, logout)
-  yield takeEvery(actions.CURRENT_PAGE_CHANGED, currentPageChanged)
-  yield takeEvery(actions.ERROR_CHANGED, errorChanged)
+  yield takeEvery(actions.CURRENT_PAGE_CHANGE, currentPageChange)
+  yield takeEvery(actions.ERROR_CHANGE, errorChange)
 }
 
 function* init() {
   try{
     yield put(actions.setLoading(true))
-    yield putAndWait(actions.apiRequest({method: 'init'}))
+    yield call([dto, dto.init])
+    yield call([facade, facade.init])
   }catch(e){
     yield put(actions.setError(e))
   }finally{
@@ -52,10 +54,10 @@ function* logout() {
   }
 }
 
-function* currentPageChanged(action){
+function* currentPageChange(action){
   yield put(actions.setCurrentPage(action.payload.currentPage))
 }
 
-function* errorChanged(action){
+function* errorChange(action){
   yield put(actions.setError(action.payload.error))
 }

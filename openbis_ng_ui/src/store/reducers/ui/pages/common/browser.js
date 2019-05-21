@@ -2,31 +2,13 @@ import _ from 'lodash'
 import { combineReducers } from 'redux'
 import * as actions from '../../../../actions/actions.js'
 
-export function isBrowserAction(page, action){
-  return action.type === actions.INIT || page === (action.payload && action.payload.page)
-}
-
 export const browser = combineReducers({
-  initialized,
   filter,
   nodes,
-  selectedNode,
+  selectedNodes,
   visibleNodes,
   expandedNodes
 })
-
-function initialized(state = false, action){
-  switch(action.type){
-    case actions.BROWSER_SET_INITIALIZED:
-      if(_.isEqual(state, action.payload.initialized)){
-        return state
-      }else{
-        return action.payload.initialized
-      }
-    default:
-      return state
-  }
-}
 
 function filter(state = '', action){
   switch(action.type){
@@ -50,13 +32,13 @@ function nodes(state = [], action){
   }
 }
 
-function selectedNode(state = null, action){
+function selectedNodes(state = [], action){
   switch(action.type){
-    case actions.BROWSER_SET_SELECTED_NODE:
-      if(_.isEqual(state, action.payload.id)){
+    case actions.BROWSER_SET_SELECTED_NODES:
+      if(_.isEqual(state, action.payload.ids)){
         return state
       }else{
-        return action.payload.id
+        return action.payload.ids
       }
     default:
       return state

@@ -1,5 +1,7 @@
 import _ from 'lodash'
 import {putAndWait} from './../effects.js'
+import {dto} from '../../../services/openbis.js'
+import * as objectType from '../../consts/objectType.js'
 import * as actions from '../../actions/actions.js'
 import * as common from '../../common/browser.js'
 
@@ -10,13 +12,13 @@ export function* createNodes() {
     return {
       id: `users/${user.userId}`,
       text: user.userId,
-      object: { type: 'user', id: user.userId },
+      object: { type: objectType.USER, id: user.userId },
       children: user.groupIds.map(groupId => {
         let group = groups[groupId]
         return {
           id: `users/${user.userId}/${group.code}`,
           text: group.code,
-          object: { type: 'group', id: group.code }
+          object: { type: objectType.GROUP, id: group.code }
         }
       })
     }
@@ -28,13 +30,13 @@ export function* createNodes() {
     return {
       id: `groups/${group.code}`,
       text: group.code,
-      object: { type: 'group', id: group.code },
+      object: { type: objectType.GROUP, id: group.code },
       children: group.userIds.map(userId => {
         let user = users[userId]
         return {
           id: `groups/${group.code}/${user.userId}`,
           text: user.userId,
-          object: { type: 'user', id: user.userId }
+          object: { type: objectType.USER, id: user.userId }
         }
       })
     }
@@ -56,8 +58,18 @@ export function* createNodes() {
 }
 
 function* getUsersAndGroups(){
-  let getUsersReponse = yield putAndWait(actions.apiRequest({method: 'getUsers'}))
-  let getGroupsReponse = yield putAndWait(actions.apiRequest({method: 'getGroups'}))
+  let getUsersReponse = yield putAndWait(actions.apiRequest({
+    method: 'searchPersons',
+    params: [new dto.PersonSearchCriteria(), new dto.PersonFetchOptions()]
+  }))
+
+  let groupFetchOptions = new dto.AuthorizationGroupFetchOptions()
+  groupFetchOptions.withUsers()
+
+  let getGroupsReponse = yield putAndWait(actions.apiRequest({
+    method: 'searchAuthorizationGroups',
+    params: [new dto.AuthorizationGroupSearchCriteria(), groupFetchOptions]
+  }))
 
   let users = {}
   let groups = {}

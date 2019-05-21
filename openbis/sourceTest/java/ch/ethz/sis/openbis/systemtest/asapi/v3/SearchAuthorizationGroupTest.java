@@ -70,6 +70,30 @@ public class SearchAuthorizationGroupTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithCodes()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        AuthorizationGroupSearchCriteria searchCriteria = new AuthorizationGroupSearchCriteria();
+        searchCriteria.withCodes().thatIn(Arrays.asList("AGROUP"));
+        AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
+        fetchOptions.withRegistrator();
+        fetchOptions.withUsers().withSpace();
+        
+        // When
+        SearchResult<AuthorizationGroup> result = v3api.searchAuthorizationGroups(sessionToken, searchCriteria, fetchOptions);
+        
+        // Then
+        
+        AuthorizationGroup authorizationGroup = result.getObjects().get(0);
+        assertEquals(authorizationGroup.getCode(), "AGROUP");
+        assertEquals(authorizationGroup.getDescription(), "myDescription");
+        assertEquals(result.getTotalCount(), 1);
+        
+        v3api.logout(sessionToken);
+    }
+    
+    @Test
     public void testSearchWithPermIdFetchingRegistrator()
     {
         // Given

@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -75,6 +76,14 @@ public class SearchDataSetTest extends AbstractDataSetTest
         testSearch(TEST_USER, criteria, "20081105092259000-18");
     }
 
+    @Test
+    public void testSearchWithCodes()
+    {
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withCodes().thatIn(Arrays.asList("20081105092259000-18", "20081105092259000-19"));
+        testSearch(TEST_USER, criteria, "20081105092259000-18", "20081105092259000-19");
+    }
+    
     @Test
     public void testSearchTwoDataSetsWithCodeAndId()
     {

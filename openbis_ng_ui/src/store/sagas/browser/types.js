@@ -1,5 +1,7 @@
 import _ from 'lodash'
 import {putAndWait} from './../effects.js'
+import {dto} from '../../../services/openbis.js'
+import * as objectType from '../../consts/objectType.js'
 import * as actions from '../../actions/actions.js'
 import * as common from '../../common/browser.js'
 
@@ -16,10 +18,10 @@ export function* createNodes() {
     })
   }
 
-  let objectTypeNodes = convert(objectTypes, 'objectType')
-  let collectionTypeNodes = convert(collectionTypes, 'collectionType')
-  let dataSetTypeNodes = convert(dataSetTypes, 'dataSetType')
-  let materialTypeNodes = convert(materialTypes, 'materialType')
+  let objectTypeNodes = convert(objectTypes, objectType.OBJECT_TYPE)
+  let collectionTypeNodes = convert(collectionTypes, objectType.COLLECTION_TYPE)
+  let dataSetTypeNodes = convert(dataSetTypes, objectType.DATA_SET_TYPE)
+  let materialTypeNodes = convert(materialTypes, objectType.MATERIAL_TYPE)
 
   common.sortNodes(objectTypeNodes)
   common.sortNodes(collectionTypeNodes)
@@ -49,10 +51,22 @@ export function* createNodes() {
 
 function* getTypes(){
   let responses = yield putAndWait({
-    objectTypes: actions.apiRequest({method: 'getObjectTypes'}),
-    collectionTypes: actions.apiRequest({method: 'getCollectionTypes'}),
-    dataSetTypes: actions.apiRequest({method: 'getDataSetTypes'}),
-    materialTypes: actions.apiRequest({method: 'getMaterialTypes'})
+    objectTypes: actions.apiRequest({
+      method: 'searchSampleTypes',
+      params: [new dto.SampleTypeSearchCriteria(), new dto.SampleTypeFetchOptions()]
+    }),
+    collectionTypes: actions.apiRequest({
+      method: 'searchExperimentTypes',
+      params: [new dto.ExperimentTypeSearchCriteria(), new dto.ExperimentTypeFetchOptions()]
+    }),
+    dataSetTypes: actions.apiRequest({
+      method: 'searchDataSetTypes',
+      params: [new dto.DataSetTypeSearchCriteria(), new dto.DataSetTypeFetchOptions()]
+    }),
+    materialTypes: actions.apiRequest({
+      method: 'searchMaterialTypes',
+      params: [new dto.MaterialTypeSearchCriteria(), new dto.MaterialTypeFetchOptions()]
+    })
   })
 
   let convert = function(response){

@@ -18,19 +18,30 @@ export const getAllBrowserNodes = (state, page) => {
   return getBrowser(state, page).nodes
 }
 
+export const getBrowserSelectedNode = (state, page) => {
+  logger.log(logger.DEBUG, 'browserSelector.getBrowserSelectedNode')
+  return getBrowser(state, page).selectedNode
+}
+
+export const getBrowserNode = (state, page, id) => {
+  logger.log(logger.DEBUG, 'browserSelector.getBrowserNode')
+  let nodesMap = getBrowserNodesMap(state, page)
+  return nodesMap[id]
+}
+
 export const getBrowserNodes = createSelector(
   [getBrowser],
   browser => {
     logger.log(logger.DEBUG, 'browserSelector.getBrowserNodes')
 
-    let selectedNode = browser.selectedNode
+    let selectedNodes = new Set(browser.selectedNodes)
     let visibleNodes = new Set(browser.visibleNodes)
     let expandedNodes = new Set(browser.expandedNodes)
     let nodes = browser.nodes
 
     nodes = common.mapNodes(null, nodes, (parent, node) => {
       if(visibleNodes.has(node.id)){
-        let selected = selectedNode === node.id
+        let selected = selectedNodes.has(node.id)
         let expanded = expandedNodes.has(node.id)
         return Object.assign({ selected, expanded }, node)
       }else{
@@ -46,5 +57,17 @@ export const getBrowserNodes = createSelector(
     })
 
     return nodes
+  }
+)
+
+export const getBrowserNodesMap = createSelector(
+  [getBrowserNodes],
+  nodes => {
+    let nodesMap = {}
+    common.mapNodes(null, nodes, (parent, node) => {
+      nodesMap[node.id] = node
+      return node
+    })
+    return nodesMap
   }
 )

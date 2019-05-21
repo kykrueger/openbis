@@ -1,7 +1,7 @@
 import React from 'react'
 import {withStyles} from '@material-ui/core/styles'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import logger from '../../common/logger.js'
+import logger from '../../../common/logger.js'
 
 const styles = {
   loader: {
@@ -24,7 +24,7 @@ class Loading extends React.Component {
 
   render() {
     logger.log(logger.DEBUG, 'Loading.render')
-    
+
     const classes = this.props.classes
 
     return (

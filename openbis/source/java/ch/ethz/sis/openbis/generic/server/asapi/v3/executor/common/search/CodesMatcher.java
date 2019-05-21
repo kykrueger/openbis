@@ -29,7 +29,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
 /**
  * @author pkupczyk
  */
-public class CodesMatcher<OBJECT extends ICodeHolder> extends Matcher<OBJECT>
+public class CodesMatcher<OBJECT> extends Matcher<OBJECT>
 {
 
     @Override
@@ -47,7 +47,7 @@ public class CodesMatcher<OBJECT extends ICodeHolder> extends Matcher<OBJECT>
 
         for (OBJECT object : objects)
         {
-            String code = object.getCode();
+            String code = getCodeOf(object);
             if (codes.contains(code))
             {
                 matches.add(object);
@@ -55,6 +55,11 @@ public class CodesMatcher<OBJECT extends ICodeHolder> extends Matcher<OBJECT>
         }
 
         return matches;
+    }
+
+    protected String getCodeOf(OBJECT object)
+    {
+        return ((ICodeHolder) object).getCode();
     }
 
 }

@@ -16,76 +16,20 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdentifierSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * @author pkupczyk
  */
 @JsonObject("as.dto.sample.search.SampleSearchCriteria")
-public class SampleSearchCriteria extends AbstractEntitySearchCriteria<ISampleId>
+public class SampleSearchCriteria extends AbstractSampleSearchCriteria<SampleSearchCriteria>
 {
 
     private static final long serialVersionUID = 1L;
 
-    private SampleSearchRelation relation;
-
     public SampleSearchCriteria()
     {
-        this(SampleSearchRelation.SAMPLE);
-    }
-
-    SampleSearchCriteria(SampleSearchRelation relation)
-    {
-        this.relation = relation;
-    }
-
-    public IdentifierSearchCriteria withIdentifier()
-    {
-        return with(new IdentifierSearchCriteria());
-    }
-
-    public SpaceSearchCriteria withSpace()
-    {
-        return with(new SpaceSearchCriteria());
-    }
-
-    public SampleSearchCriteria withoutSpace()
-    {
-        with(new NoSpaceSearchCriteria());
-        return this;
-    }
-    
-    public ProjectSearchCriteria withProject()
-    {
-        return with(new ProjectSearchCriteria());
-    }
-
-    public SampleSearchCriteria withoutProject()
-    {
-        with(new NoProjectSearchCriteria());
-        return this;
-    }
-
-    public ExperimentSearchCriteria withExperiment()
-    {
-        return with(new ExperimentSearchCriteria());
-    }
-
-    public SampleSearchCriteria withoutExperiment()
-    {
-        with(new NoExperimentSearchCriteria());
-        return this;
+        super(SampleSearchRelation.SAMPLE);
     }
 
     public SampleParentsSearchCriteria withParents()
@@ -101,40 +45,6 @@ public class SampleSearchCriteria extends AbstractEntitySearchCriteria<ISampleId
     public SampleContainerSearchCriteria withContainer()
     {
         return with(new SampleContainerSearchCriteria());
-    }
-
-    public SampleSearchCriteria withoutContainer()
-    {
-        with(new NoSampleContainerSearchCriteria());
-        return this;
-    }
-
-    public SampleTypeSearchCriteria withType()
-    {
-        return with(new SampleTypeSearchCriteria());
-    }
-
-    public SampleSearchCriteria withOrOperator()
-    {
-        return (SampleSearchCriteria) withOperator(SearchOperator.OR);
-    }
-
-    public SampleSearchCriteria withAndOperator()
-    {
-        return (SampleSearchCriteria) withOperator(SearchOperator.AND);
-    }
-
-    public SampleSearchRelation getRelation()
-    {
-        return relation;
-    }
-
-    @Override
-    protected SearchCriteriaToStringBuilder createBuilder()
-    {
-        SearchCriteriaToStringBuilder builder = super.createBuilder();
-        builder.setName(relation.name());
-        return builder;
     }
 
 }

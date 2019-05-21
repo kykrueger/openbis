@@ -3,11 +3,17 @@ import {withStyles} from '@material-ui/core/styles'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import FilterIcon from '@material-ui/icons/FilterList'
-import logger from '../../common/logger.js'
+import logger from '../../../common/logger.js'
 
 const styles = () => ({
-  browserFilter: {
+  field: {
     width: '100%'
+  },
+  input: {
+    height: '35px'
+  },
+  adornment: {
+    margin: '8px'
   }
 })
 
@@ -20,16 +26,21 @@ class BrowserFilter extends React.Component {
 
     return (
       <TextField
-        className={classes.browserFilter}
+        className={classes.field}
         placeholder="Filter"
         value={this.props.filter}
-        onChange={this.props.filterChanged}
+        onChange={this.props.filterChange}
         InputProps={{
           startAdornment: (
-            <InputAdornment position="start">
-              <FilterIcon/>
+            <InputAdornment position="start" classes={{
+              root: classes.adornment
+            }}>
+              <FilterIcon />
             </InputAdornment>
           ),
+          classes: {
+            input: classes.input
+          }
         }}/>
     )
   }

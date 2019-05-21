@@ -9,6 +9,8 @@ package-lock.json
 junit.xml
 node_modules
 node
+temp
+
 /.idea/
 *.iml
 *.eml
