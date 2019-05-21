@@ -54,7 +54,8 @@ class ObjectType extends React.Component {
   loadObjectType(objectTypeId){
     let id = new dto.EntityTypePermId(objectTypeId)
     let fo = new dto.SampleTypeFetchOptions()
-    fo.withPropertyAssignments().withPropertyType()
+    fo.withPropertyAssignments().withPropertyType().withMaterialType()
+    fo.withPropertyAssignments().withPropertyType().withVocabulary()
     fo.withPropertyAssignments().sortBy().code()
 
     return facade.getSampleTypes([id], fo).then(map => {
@@ -81,6 +82,7 @@ class ObjectType extends React.Component {
     let criteria = new dto.PropertyTypeSearchCriteria()
     let fo = new dto.PropertyTypeFetchOptions()
     fo.withVocabulary().withTerms()
+    fo.withMaterialType()
 
     return facade.searchPropertyTypes(criteria, fo).then(result => {
       return result.objects

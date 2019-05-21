@@ -16,7 +16,12 @@ const CLASS_FULL_NAMES = [
   'as/dto/material/fetchoptions/MaterialTypeFetchOptions',
   'as/dto/property/PropertyType',
   'as/dto/property/search/PropertyTypeSearchCriteria',
-  'as/dto/property/fetchoptions/PropertyTypeFetchOptions'
+  'as/dto/property/fetchoptions/PropertyTypeFetchOptions',
+  'as/dto/property/fetchoptions/PropertyTypeFetchOptions',
+  'as/dto/material/fetchoptions/MaterialFetchOptions',
+  'as/dto/material/search/MaterialSearchCriteria',
+  'as/dto/vocabulary/search/VocabularyTermSearchCriteria',
+  'as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions'
 ]
 
 class Dto {

@@ -7,6 +7,7 @@ import Checkbox from '@material-ui/core/Checkbox'
 import InfoIcon from '@material-ui/icons/InfoOutlined'
 import Tooltip from '@material-ui/core/Tooltip'
 import {withStyles} from '@material-ui/core/styles'
+import {facade, dto} from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({
@@ -25,21 +26,53 @@ class ObjectTypePropertyPreview extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      values: {
-        vocabulary: '',
+      vocabularyValue: '',
+      materialValue: '',
+    }
+    this.setMaterial = this.setMaterial.bind(this)
+    this.setVocabulary = this.setVocabulary.bind(this)
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    if(props.property !== state.property){
+      return {
+        loaded: false,
+        property: props.property,
+        vocabularyTerms: [],
+        materials: []
       }
+    }else{
+      return null
     }
   }
 
-  handleChange(name){
-    return (event) => {
-      this.setState((prevState) => ({
-        ...prevState,
-        values: {
-          ...prevState.values,
-          [name]: _.has(event.target, 'checked') ? event.target.checked : event.target.value
-        }
-      }))
+  componentDidMount(){
+    this.load()
+  }
+
+  componentDidUpdate(){
+    this.load()
+  }
+
+  load(){
+    if(this.state.loaded){
+      return
+    }
+
+    const {propertyType} = this.state.property
+
+    switch(propertyType.dataType){
+      case 'CONTROLLEDVOCABULARY':
+        this.loadVocabulary()
+        return
+      case 'MATERIAL':
+        this.loadMaterial()
+        return
+      default:
+        this.setState(() => ({
+          loaded: true
+        }))
+        return
     }
   }
 
@@ -49,7 +82,7 @@ class ObjectTypePropertyPreview extends React.Component {
     const {classes} = this.props
 
     return (
-      <div className={classes.container}>
+      <div className={classes.container} onClick={(event) => {event.stopPropagation()}}>
         {this.renderField()}
         <Tooltip title={this.getDescription()}>
           <InfoIcon />
@@ -59,7 +92,7 @@ class ObjectTypePropertyPreview extends React.Component {
   }
 
   renderField(){
-    const {propertyType} = this.props
+    const {propertyType} = this.state.property
 
     switch(propertyType.dataType){
       case 'BOOLEAN':
@@ -73,6 +106,8 @@ class ObjectTypePropertyPreview extends React.Component {
         return this.renderNumber()
       case 'CONTROLLEDVOCABULARY':
         return this.renderVocabulary()
+      case 'MATERIAL':
+        return this.renderMaterial()
       default:
         return this.renderUnsupported()
     }
@@ -120,19 +155,88 @@ class ObjectTypePropertyPreview extends React.Component {
     )
   }
 
+  loadVocabulary(){
+    let criteria = new dto.VocabularyTermSearchCriteria()
+    let fo = new dto.VocabularyTermFetchOptions()
+
+    criteria.withVocabulary().withCode().thatEquals(this.state.property.propertyType.vocabulary.code)
+
+    return facade.searchVocabularyTerms(criteria, fo).then(result => {
+      this.setState(() => ({
+        loaded: true,
+        vocabularyTerms: result.objects
+      }))
+    })
+  }
+
+  getVocabulary(){
+    return this.state.vocabularyValue
+  }
+
+  setVocabulary(event){
+    this.setState(() => ({
+      vocabularyValue: event.target.value
+    }))
+  }
+
   renderVocabulary(){
     return (
       <TextField
         select
         label={this.getLabel()}
-        value={this.getValue('vocabulary')}
-        onChange={this.handleChange('vocabulary')}
+        value={this.getVocabulary()}
+        onChange={this.setVocabulary}
         fullWidth={true}
         variant="filled"
       >
         <MenuItem value=""></MenuItem>
-        {this.getTerms().map(term => (
+        {this.state.vocabularyTerms.map(term => (
           <MenuItem key={term.code} value={term.code}>{term.label || term.code}</MenuItem>
+        ))}
+      </TextField>
+    )
+  }
+
+  loadMaterial(){
+    let criteria = new dto.MaterialSearchCriteria()
+    let fo = new dto.MaterialFetchOptions()
+
+    let materialType = this.state.property.propertyType.materialType
+    if(materialType){
+      criteria.withType().withId().thatEquals(materialType.permId)
+    }
+
+    return facade.searchMaterials(criteria, fo).then(result => {
+      this.setState(() => ({
+        loaded: true,
+        materials: result.objects
+      }))
+    })
+  }
+
+  getMaterial(){
+    return this.state.materialValue
+  }
+
+  setMaterial(event){
+    this.setState(() => ({
+      materialValue: event.target.value
+    }))
+  }
+
+  renderMaterial(){
+    return (
+      <TextField
+        select
+        label={this.getLabel()}
+        value={this.getMaterial()}
+        onChange={this.setMaterial}
+        fullWidth={true}
+        variant="filled"
+      >
+        <MenuItem value=""></MenuItem>
+        {this.state.materials.map(material => (
+          <MenuItem key={material.code} value={material.code}>{material.code}</MenuItem>
         ))}
       </TextField>
     )
@@ -142,22 +246,14 @@ class ObjectTypePropertyPreview extends React.Component {
     return (<div>unsupported</div>)
   }
 
-  getValue(field){
-    return this.state.values[field]
-  }
-
   getLabel(){
-    let mandatory = this.props.property.mandatory
-    let label = this.props.propertyType.label
+    let mandatory = this.state.property.mandatory
+    let label = this.state.property.propertyType.label
     return mandatory ? label + '*' : label
   }
 
   getDescription(){
-    return this.props.propertyType.description
-  }
-
-  getTerms(){
-    return this.props.propertyType.vocabulary.terms
+    return this.state.property.propertyType.description
   }
 
 }
