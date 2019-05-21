@@ -632,7 +632,18 @@ var FormUtil = new function() {
 		}
 	}
 	
+	this.createPropertyField = function(propertyType, propertyValue) {
+		if (propertyType.dataType === "CONTROLLEDVOCABULARY") {
+			propertyValue = this.getVocabularyLabelForTermCode(propertyType, propertyValue);
+		}
+		return this._createField(propertyType.dataType === "HYPERLINK", propertyType.label, propertyValue, propertyType.code);
+	}
+	
 	this.getFieldForLabelWithText = function(label, text, id, postComponent, cssForText) {
+		return this._createField(false, label, text, id, postComponent, cssForText);
+	}
+	
+	this._createField = function(hyperlink, label, text, id, postComponent, cssForText) {
 		var $fieldset = $('<div>');
 		
 		var $controlGroup = $('<div>', {class : 'form-group'});
@@ -660,7 +671,8 @@ var FormUtil = new function() {
 		if(text) {
 			text = text.replace(/(?:\r\n|\r|\n)/g, '\n'); //Normalise carriage returns
 		}
-		$component.html(html.sanitize(text));
+		text = html.sanitize(text);
+		$component.html(hyperlink ? this.asHyperlink(text) : text);
 		
 		if(id) {
 			$component.attr('id', id);
@@ -668,6 +680,10 @@ var FormUtil = new function() {
 		$controls.append($component);
 		
 		return $fieldset;
+	}
+	
+	this.asHyperlink = function(text) {
+		$("<a>", { "href" : text, "target" : "_blank"}).append(text);
 	}
 
 	//
