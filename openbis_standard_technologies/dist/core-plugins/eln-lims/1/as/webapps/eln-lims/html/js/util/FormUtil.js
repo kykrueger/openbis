@@ -683,7 +683,7 @@ var FormUtil = new function() {
 	}
 	
 	this.asHyperlink = function(text) {
-		$("<a>", { "href" : text, "target" : "_blank"}).append(text);
+		return $("<a>", { "href" : text, "target" : "_blank"}).append(text);
 	}
 
 	//
