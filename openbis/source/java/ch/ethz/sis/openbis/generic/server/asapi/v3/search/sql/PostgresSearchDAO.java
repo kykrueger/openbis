@@ -68,10 +68,10 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final String query = "SELECT " + rap + "." + SPACE_COLUMN + ", " + rap + "." + PROJECT_ID_COLUMN + ", " + rag + "." + SPACE_COLUMN + ", " +
                         rag + "." + PROJECT_ID_COLUMN + "\n" +
                 "FROM " + PERSONS_TABLE + " p\n" +
-                "LEFT JOIN " + AUTHORIZATION_GROUP_PERSONS_TABLE + " ag ON (p." + ID_COLUMN + " = ag." + PERSON_ID_COLUMN + ")\n" +
-                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + rap + " ON (p." + ID_COLUMN + " = " + rap + "." + PERSON_GRANTEE_COLUMN + ")\n" +
-                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + rag + " ON (ag." + AUTHORIZATION_GROUP_ID_COLUMN + " = " + rag + "." +
-                        AUTHORIZATION_GROUP_ID_GRANTEE_COLUMN + ")\n" +
+                "LEFT JOIN " + AUTHORIZATION_GROUP_PERSONS_TABLE + " ag ON p." + ID_COLUMN + " = ag." + PERSON_ID_COLUMN + "\n" +
+                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + rap + " ON p." + ID_COLUMN + " = " + rap + "." + PERSON_GRANTEE_COLUMN + "\n" +
+                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + rag + " ON ag." + AUTHORIZATION_GROUP_ID_COLUMN + " = " + rag + "." +
+                        AUTHORIZATION_GROUP_ID_GRANTEE_COLUMN + "\n" +
                 "WHERE p." + ID_COLUMN + " = ?";
         final List<Object> args = Collections.singletonList(userId);
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
@@ -109,8 +109,8 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     {
         final String query = "SELECT DISTINCT " + ID_COLUMN + "\n" +
                 "FROM " + SAMPLES_ALL_TABLE + "\n" +
-                "WHERE " + ID_COLUMN + " IN (?) AND (" + SPACE_COLUMN + " IN (?) " +
-                "OR " + PROJECT_COLUMN + " IN (?))";
+                "WHERE " + ID_COLUMN + " IN (SELECT unnest(?)) AND (" + SPACE_COLUMN + " IN (SELECT unnest(?)) " +
+                        "OR " + PROJECT_COLUMN + " IN (SELECT unnest(?)))";
         final List<Object> args = Arrays.asList(ids.toArray(), authorizedSpaceProjectIds.getSpaceIds().toArray(), authorizedSpaceProjectIds.getProjectIds().toArray());
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
 
