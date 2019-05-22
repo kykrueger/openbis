@@ -65,7 +65,6 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
         // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
         if (!mainCriteria.isEmpty())
         {
-            // TODO: implement.
             mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, mainCriteria,
                     criteria.getOperator());
         }
