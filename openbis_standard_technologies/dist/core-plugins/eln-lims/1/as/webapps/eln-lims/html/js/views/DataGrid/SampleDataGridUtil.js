@@ -289,6 +289,19 @@ var SampleDataGridUtil = new function() {
 					
 					var newVocabularyColumnFunc = getVocabularyColumn(propertyType);
 					propertyColumnsToSort.push(newVocabularyColumnFunc());
+				} else if (propertyType.dataType === "HYPERLINK") {
+					var getHyperlinkColumn = function(propertyType) {
+						return {
+							label : propertyType.label,
+							property : propertyType.code,
+							isExportable: true,
+							sortable : true,
+							render : function(data) {
+								return FormUtil.asHyperlink(data[propertyType.code]);
+							}
+						};
+					}
+					propertyColumnsToSort.push(getHyperlinkColumn(propertyType));
 				} else {			
 					propertyColumnsToSort.push({
 						label : propertyType.label,
