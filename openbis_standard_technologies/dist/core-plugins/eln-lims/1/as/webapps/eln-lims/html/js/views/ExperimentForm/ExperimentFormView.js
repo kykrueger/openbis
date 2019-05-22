@@ -421,17 +421,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				
 				if(this._experimentFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 					if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
-						if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-							value = FormUtil.getVocabularyLabelForTermCode(propertyType, value);
-						}
-						$controlGroup = FormUtil.getFieldForLabelWithText(propertyType.label, value);
+						$controlGroup = FormUtil.createPropertyField(propertyType, value);
 					} else {
 						continue;
 					}
 				} else {
 					var $component = null;
 					if(propertyType.code === "$DEFAULT_OBJECT_TYPE") {
-						$component = FormUtil.getSampleTypeDropdown(propertyType.code, true);
+						$component = FormUtil.getSampleTypeDropdown(propertyType.code, false);
 					} else {
 						$component = FormUtil.getFieldForPropertyType(propertyType, value);
 					}

@@ -446,9 +446,13 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				enabled : sampleTypeSettings["ENABLE_STORAGE"]
 			});
 			tableModel.addRow({
-				name : "Show",
+				name : "Show on Drop-down",
 				enabled : sampleTypeSettings["SHOW"]
 			});
+			tableModel.addRow({
+                name : "Show on Navigation",
+                enabled : sampleTypeSettings["SHOW_ON_NAV"]
+            });
 		} else { // default values
 			tableModel.addRow({
 				name : "Use as Protocol",
@@ -458,6 +462,14 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				name : "Enable Storage",
 				enabled : false
 			});
+			tableModel.addRow({
+                name : "Show on Drop-down",
+                enabled : false
+            });
+            tableModel.addRow({
+                name : "Show on Navigation",
+                enabled : false
+            });
 		}
 		// transform output
 		tableModel.valuesTransformer = function(values) {
@@ -467,9 +479,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					settings["USE_AS_PROTOCOL"] = rowValues["enabled"];
 				} else if (rowValues["Options"] === "Enable Storage") {
 					settings["ENABLE_STORAGE"] = rowValues["enabled"];
-				} else if (rowValues["Options"] === "Show") {
+				} else if (rowValues["Options"] === "Show on Drop-down") {
 					settings["SHOW"] = rowValues["enabled"];
-				}
+				} else if (rowValues["Options"] === "Show on Navigation") {
+                    settings["SHOW_ON_NAV"] = rowValues["enabled"];
+                }
 			}
 			return settings;
 		}

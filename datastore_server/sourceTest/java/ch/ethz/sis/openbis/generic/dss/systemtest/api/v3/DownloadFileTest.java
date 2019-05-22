@@ -24,6 +24,9 @@ import ch.ethz.sis.filetransfer.DownloadStatus;
 import ch.ethz.sis.filetransfer.IDownloadItemId;
 import ch.ethz.sis.filetransfer.IDownloadListener;
 import ch.ethz.sis.filetransfer.ILogger;
+import ch.ethz.sis.filetransfer.IRetryAction;
+import ch.ethz.sis.filetransfer.IRetryProvider;
+import ch.ethz.sis.filetransfer.IRetryProviderFactory;
 import ch.ethz.sis.filetransfer.LogLevel;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
@@ -41,7 +44,6 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.fastdownload.FastDownloader;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.ExceptionUtils;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 
 public class DownloadFileTest extends AbstractFileTest
 {
@@ -167,32 +169,49 @@ public class DownloadFileTest extends AbstractFileTest
     {
         // Given
         String sessionToken = as.login(TEST_USER, PASSWORD);
-        DataSetFilePermId folder = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("subdir1"));
-        List<DataSetFilePermId> fileIds = Arrays.asList(folder);
+        DataSetFilePermId file1 = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("subdir1/file3.txt"));
+        DataSetFilePermId file2 = new DataSetFilePermId(new DataSetPermId(dataSetCode), getPath("subdir1/file4.txt"));
+        List<DataSetFilePermId> fileIds = Arrays.asList(file1, file2);
         FastDownloadSessionOptions options = new FastDownloadSessionOptions().withWishedNumberOfStreams(1);
         List<Exception> exceptions = new ArrayList<>();
         IDownloadListener listener = new DownloadListenerAdapter()
             {
-
-                @Override
-                public void onChunkDownloaded(int chunkSequenceNumber)
-                {
-                    ServiceProvider.getDataStoreService().cleanupSession(sessionToken);
-                }
-
                 @Override
                 public void onDownloadFailed(Collection<Exception> e)
                 {
                     exceptions.addAll(e);
                 }
             };
+        IRetryProviderFactory retryProviderFactory = new IRetryProviderFactory()
+            {
+                @Override
+                public IRetryProvider createRetryProvider(ILogger logger)
+                {
+                    return new IRetryProvider()
+                        {
+                            int counter = 3;
+                            @Override
+                            public <T> T executeWithRetry(IRetryAction<T> action) throws DownloadException
+                            {
+                                T result = action.execute();
+                                if (counter-- > 0)
+                                {
+                                    return result;
+                                }
+                                throw new DownloadException("Download failed!!!!", false);
+                            }
+                        };
+                }
+            };
 
         // When
         FastDownloadSession downloadSession = dss.createFastDownloadSession(sessionToken, fileIds, options);
-        FastDownloadResult downloadResult = new FastDownloader(downloadSession).withListener(listener).downloadTo(target);
+        FastDownloadResult downloadResult = new FastDownloader(downloadSession).withListener(listener)
+                .withRetryProviderFactory(retryProviderFactory ).downloadTo(target);
 
         // Then
         assertEquals(DownloadStatus.FAILED, downloadResult.getStatus());
+        assertEquals("[ch.ethz.sis.filetransfer.DownloadException: Download failed!!!!]", exceptions.toString());
     }
 
     @Test

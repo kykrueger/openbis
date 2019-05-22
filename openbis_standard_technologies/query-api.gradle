@@ -125,7 +125,7 @@ task apiV3Jar(type: Jar) {
 configurations.create('apiV3Dependencies')
 dependencies {
   apiV3Dependencies 'sis:sis-base:18.09.0',
-                    'sis:sis-file-transfer:19.03.0',
+                    'sis:sis-file-transfer:19.03.1',
                     'apache:httpclient:4.3.6',
                     'apache:commons-lang3:3.7',
                     'eclipse:jetty-client:9.4.14.v20181114',

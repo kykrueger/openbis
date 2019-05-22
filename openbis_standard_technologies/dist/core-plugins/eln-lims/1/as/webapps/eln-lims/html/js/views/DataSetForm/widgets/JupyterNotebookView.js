@@ -19,13 +19,32 @@ function JupyterNotebookView(jupyterNotebookController, jupyterNotebookModel) {
 	this._jupyterNotebookModel = jupyterNotebookModel;
 	
 	this.repaint = function() {
-		var _this = this;
-		var entity = this._jupyterNotebookModel.entity;
-		
 		var $window = $('<form>', { 'action' : 'javascript:void(0);' });
-		
 		$window.append($('<legend>').append("Create Jupyter Notebook"));
-		
+		var $btns = $('<div>', {'id' : 'jnb_buttons'});
+		$window.append($btns);
+		var $btnOpen = $('<div>', { 'class' : 'btn btn-default', 'text' : 'For immediate use', 'id' : 'open_jnb' });
+		$btnOpen.click(["open", $window, this], this._handle);
+		var $btnSave = $('<div>', { 'class' : 'btn btn-default', 'text' : 'For later use', 'id' : 'save_jnb' });
+		$btnSave.click(["save", $window, this], this._handle);
+		$btns.append($btnOpen).append('&nbsp;').append($btnSave);
+		var css = {
+				'text-align' : 'left',
+				'top' : '15%',
+				'width' : '70%',
+				'left' : '15%',
+				'right' : '20%',
+				'overflow' : 'hidden'
+		};
+		Util.blockUI($window, css);
+	};
+	
+	this._handle = function(event) {
+		var actionType = event.data[0];
+		var $window = event.data[1];
+		var _this = event.data[2];
+		var entity = _this._jupyterNotebookModel.entity;
+		$("#jnb_buttons").hide();
 		var $datasetsContainer = $("<div>", { style : "width: 100%;" });
 		$window.append(FormUtil.getInfoText("Please enter the names/codes of the datasets you want to download, or the names/codes of the experiments/objects which contain those datasets. "));
 		$window.append(FormUtil.getFieldForComponentWithLabel($datasetsContainer, "Datasets"));
@@ -85,35 +104,30 @@ function JupyterNotebookView(jupyterNotebookController, jupyterNotebookModel) {
 			}
 		}
 		
-		
-		var $workspace = FormUtil._getInputField('text', null, 'directory Name', null, true);
+		var buttonLabel = "Accept & Download";
+		if (actionType === 'open') {
+			var $workspace = FormUtil._getInputField('text', null, 'directory Name', null, true);
+			$window.append(FormUtil.getFieldForComponentWithLabel($workspace, "Directory Name"));
+			buttonLabel = "Accept & Open";
+		}
 		var $notebookName = FormUtil._getInputField('text', null, 'notebook Name', null, true);
-		$window.append(FormUtil.getFieldForComponentWithLabel($workspace, "Directory Name"));
 		$window.append(FormUtil.getFieldForComponentWithLabel($notebookName, "Notebook Name"));
 		
-		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+		var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : buttonLabel });
 		$window.submit(function() {
 			var selectedDatasets = datasetsSearchDropdown.getSelected();
 			var selectedOwner = ownerSearchDropdown.getSelected();
 			var notebookOwner = selectedOwner[0];
-			_this._jupyterNotebookController.create($workspace.val(), $notebookName.val(), selectedDatasets, notebookOwner);
+			if (actionType === 'open') {
+				_this._jupyterNotebookController.create($workspace.val(), $notebookName.val(), selectedDatasets, notebookOwner);
+			} else {
+				_this._jupyterNotebookController.createAndSave($notebookName.val() + ".ipynb", selectedDatasets, notebookOwner);
+			}
 		});
 		var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
 		$btnCancel.click(function() {
 			Util.unblockUI();
 		});
-		
 		$window.append($btnAccept).append('&nbsp;').append($btnCancel);
-		
-		var css = {
-				'text-align' : 'left',
-				'top' : '15%',
-				'width' : '70%',
-				'left' : '15%',
-				'right' : '20%',
-				'overflow' : 'hidden'
-		};
-		
-		Util.blockUI($window, css);
 	}
 }

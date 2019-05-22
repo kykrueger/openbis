@@ -1,5 +1,7 @@
 package ethz.ch.experiment;
 
+import ethz.ch.sample.SamplePropertyDelete;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +35,7 @@ public class ExperimentType2SampleType {
         return propertyTypesFromTo;
     }
 
-    public List<String> getPropertyTypesToDeleteAfterMigration()
-    {
-        return propertyTypesToDeleteAfterMigration;
+    public SamplePropertyDelete getSamplePropertyDelete() {
+        return new SamplePropertyDelete(typeCode, propertyTypesToDeleteAfterMigration.get(0), true, true);
     }
 }

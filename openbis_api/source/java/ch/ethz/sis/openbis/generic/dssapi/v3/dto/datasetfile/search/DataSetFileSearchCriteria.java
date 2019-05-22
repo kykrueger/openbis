@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -32,6 +33,16 @@ public class DataSetFileSearchCriteria extends AbstractCompositeSearchCriteria
     public DataSetSearchCriteria withDataSet()
     {
         return with(new DataSetSearchCriteria());
+    }
+
+    public DataSetFileSearchCriteria withOrOperator()
+    {
+        return (DataSetFileSearchCriteria) withOperator(SearchOperator.OR);
+    }
+
+    public DataSetFileSearchCriteria withAndOperator()
+    {
+        return (DataSetFileSearchCriteria) withOperator(SearchOperator.AND);
     }
 
     @Override

@@ -151,24 +151,6 @@ public class SampleSearchCriteriaTranslatorTest extends AbstractSearchCriteriaTr
     }
 
     @Test
-    public void testWithParentsWithParents()
-    {
-        SearchCriteria subSubCriteria = new SearchCriteria();
-        subSubCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.CODE, "parentCode"));
-
-        SearchCriteria subCriteria = new SearchCriteria();
-        subCriteria.addSubCriteria(SearchSubCriteria.createSampleParentCriteria(subSubCriteria));
-
-        SearchCriteria v1Criteria = new SearchCriteria();
-        v1Criteria.addSubCriteria(SearchSubCriteria.createSampleParentCriteria(subCriteria));
-
-        SampleSearchCriteria v3Criteria = new SampleSearchCriteria();
-        v3Criteria.withParents().withParents().withCode().thatEquals("parentCode");
-
-        translateAndAssertEqual(v1Criteria, v3Criteria);
-    }
-
-    @Test
     public void testWithChildren()
     {
         SearchCriteria subCriteria = new SearchCriteria();

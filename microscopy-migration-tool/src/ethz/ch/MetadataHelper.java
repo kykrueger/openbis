@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -27,6 +31,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 
@@ -133,7 +139,23 @@ public class MetadataHelper
     //
     // Gets
     //
-    
+
+    public static List<Sample> getSamples(String sessionToken, IApplicationServerApi v3, String typeCode) {
+        SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
+        sampleSearchCriteria.withType().withCode().thatEquals(typeCode);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        return v3.searchSamples(sessionToken, sampleSearchCriteria, fetchOptions).getObjects();
+    }
+
+    public static List<DataSet> getDataSets(String sessionToken, IApplicationServerApi v3, String typeCode) {
+        DataSetSearchCriteria searchCriteria = new DataSetSearchCriteria();
+        searchCriteria.withType().withCode().thatEquals(typeCode);
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        return v3.searchDataSets(sessionToken, searchCriteria, fetchOptions).getObjects();
+    }
+
     public static Sample getSample(String sessionToken, IApplicationServerApi v3, ISampleId sampleId) {
         SampleFetchOptions fo = new SampleFetchOptions();
         fo.withProperties();
@@ -166,5 +188,22 @@ public class MetadataHelper
             throw new RuntimeException("Experiment with PermId not found: " + permId.getPermId());
         }
     }
-    
+
+    //
+    // Update
+    //
+
+    public static void updateSampleProperty(String sessionToken, IApplicationServerApi v3, String permId, String propertyCode, String propertyValue) {
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(new SamplePermId(permId));
+        update.setProperty(propertyCode, propertyValue);
+        v3.updateSamples(sessionToken, Arrays.asList(update));
+    }
+
+    public static void updateDataSetProperty(String sessionToken, IApplicationServerApi v3, String permId, String propertyCode, String propertyValue) {
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(new DataSetPermId(permId));
+        update.setProperty(propertyCode, propertyValue);
+        v3.updateDataSets(sessionToken, Arrays.asList(update));
+    }
 }

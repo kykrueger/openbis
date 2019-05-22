@@ -819,7 +819,7 @@ test("listDataSetsForSamplesWithConnections() without parents and children", fun
 
 test("listDataSetsForSamplesOnBehalfOfUser()", function() {
 	createFacadeAndLogin(function(facade) {
-		var searchCriteria = createSearchCriteriaForCodes([ 'PLATE-1, TEST-SAMPLE-2' ]);
+		var searchCriteria = createSearchCriteriaForCodes([ 'PLATE-1', 'TEST-SAMPLE-2' ]);
 
 		facade.searchForSamples(searchCriteria, function(response) {
 			var samples = response.result;

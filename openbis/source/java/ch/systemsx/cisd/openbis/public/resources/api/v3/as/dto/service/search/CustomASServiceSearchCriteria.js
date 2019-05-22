@@ -1,4 +1,5 @@
-define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/CodeSearchCriteria"], 
+define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/CodeSearchCriteria", 
+		"as/dto/common/search/CodesSearchCriteria"], 
 	function(require, stjs, AbstractObjectSearchCriteria) {
 	var CustomASServiceSearchCriteria = function() {
 		AbstractObjectSearchCriteria.call(this);
@@ -9,6 +10,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 		prototype.withCode = function() {
 			var CodeSearchCriteria = require("as/dto/common/search/CodeSearchCriteria");
 			return this.addCriteria(new CodeSearchCriteria());
+		};
+		prototype.withCodes = function() {
+			var CodesSearchCriteria = require("as/dto/common/search/CodesSearchCriteria");
+			return this.addCriteria(new CodesSearchCriteria());
 		};
 		prototype.withOrOperator = function() {
 			return this.withOperator(SearchOperator.OR);

@@ -1,17 +1,19 @@
 package ethz.ch;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
@@ -19,12 +21,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.delete.PropertyTypeDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.search.PropertyTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleTypeUpdate;
 
 public class MasterdataHelper
 {
@@ -158,7 +163,94 @@ public class MasterdataHelper
         
         createExperimentTypeIfMissing(sessionToken, v3, creation);
     }
-    
+
+    //
+    // Get
+    //
+
+    public static SampleType getSampleType(String sessionToken, IApplicationServerApi v3, String typeCode) {
+        EntityTypePermId id = new EntityTypePermId(typeCode);
+        SampleTypeFetchOptions fetchOptions = new SampleTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().withPropertyType();
+        Map<IEntityTypeId, SampleType> types = v3.getSampleTypes(sessionToken, Arrays.asList(id), fetchOptions);
+        return types.get(id);
+    }
+
+    public static DataSetType getDataSetType(String sessionToken, IApplicationServerApi v3, String typeCode) {
+        EntityTypePermId id = new EntityTypePermId(typeCode);
+        DataSetTypeFetchOptions fetchOptions = new DataSetTypeFetchOptions();
+        fetchOptions.withPropertyAssignments().withPropertyType();
+        Map<IEntityTypeId, DataSetType> types = v3.getDataSetTypes(sessionToken, Arrays.asList(id), fetchOptions);
+        return types.get(id);
+    }
+
+    //
+    // Update
+    //
+
+    public enum PropertyTypeUpdateAction { ADD, REMOVE}
+
+    public static void updateSampleType(String sessionToken, IApplicationServerApi v3, String typeCode, PropertyTypeUpdateAction updateAction, int addOrder, String addPropertyTypeCode) {
+        SampleTypeUpdate update = new SampleTypeUpdate();
+        update.setTypeId(new EntityTypePermId(typeCode));
+        ListUpdateValue.ListUpdateAction action = null;
+        switch (updateAction) {
+            case ADD:
+                action = new ListUpdateValue.ListUpdateActionAdd();
+                PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+                propertyAssignmentCreation.setOrdinal(addOrder);
+                propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(addPropertyTypeCode));
+                action.setItems(Arrays.asList(propertyAssignmentCreation));
+                break;
+            case REMOVE:
+                action = new ListUpdateValue.ListUpdateActionRemove();
+                action.setItems(Arrays.asList(new PropertyAssignmentPermId(new EntityTypePermId(typeCode, EntityKind.SAMPLE), new PropertyTypePermId(addPropertyTypeCode))));
+                update.getPropertyAssignments().setForceRemovingAssignments(true);
+                break;
+        }
+        update.setPropertyAssignmentActions(Arrays.asList(action));
+        v3.updateSampleTypes(sessionToken, Arrays.asList(update));
+    }
+
+    public static void updateDataSetType(String sessionToken, IApplicationServerApi v3, String typeCode, PropertyTypeUpdateAction updateAction, int addOrder, String addPropertyTypeCode) {
+        DataSetTypeUpdate update = new DataSetTypeUpdate();
+        update.setTypeId(new EntityTypePermId(typeCode));
+        ListUpdateValue.ListUpdateAction action = null;
+        switch (updateAction) {
+            case ADD:
+                action = new ListUpdateValue.ListUpdateActionAdd();
+                PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
+                propertyAssignmentCreation.setOrdinal(addOrder);
+                propertyAssignmentCreation.setPropertyTypeId(new PropertyTypePermId(addPropertyTypeCode));
+                action.setItems(Arrays.asList(propertyAssignmentCreation));
+                break;
+            case REMOVE:
+                action = new ListUpdateValue.ListUpdateActionRemove();
+                action.setItems(Arrays.asList(new PropertyAssignmentPermId(new EntityTypePermId(typeCode, EntityKind.DATA_SET), new PropertyTypePermId(addPropertyTypeCode))));
+                update.getPropertyAssignments().setForceRemovingAssignments(true);
+                break;
+        }
+
+        update.setPropertyAssignmentActions(Arrays.asList(action));
+        v3.updateDataSetTypes(sessionToken, Arrays.asList(update));
+    }
+
+    //
+    // Delete
+    //
+
+    public static void deletePropertyType(String sessionToken, IApplicationServerApi v3, String propertyTypeCode) {
+        PropertyTypeDeletionOptions propertyTypeDeletionOptions = new PropertyTypeDeletionOptions();
+        propertyTypeDeletionOptions.setReason("Microscopy Migration");
+        v3.deletePropertyTypes(sessionToken, Arrays.asList(new PropertyTypePermId(propertyTypeCode)), propertyTypeDeletionOptions);
+    }
+
+    public static void deleteExperimentType(String sessionToken, IApplicationServerApi v3, String typeCode) {
+        ExperimentTypeDeletionOptions experimentTypeDeletionOptions = new ExperimentTypeDeletionOptions();
+        experimentTypeDeletionOptions.setReason("Microscopy Migration");
+        v3.deleteExperimentTypes(sessionToken, Arrays.asList(new EntityTypePermId(typeCode, EntityKind.EXPERIMENT)), experimentTypeDeletionOptions);
+    }
+
     //
     // Type to translate Attachments to DataSets
     //

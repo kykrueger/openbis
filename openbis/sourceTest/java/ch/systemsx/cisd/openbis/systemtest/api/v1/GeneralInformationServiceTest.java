@@ -844,7 +844,7 @@ public class GeneralInformationServiceTest extends SystemTestCase
     {
         SearchCriteria searchCriteria = new SearchCriteria();
         searchCriteria.addMatchClause(MatchClause.createAttributeMatch(MatchClauseAttribute.CODE,
-                "MP002-1 "));
+                "MP002-1"));
 
         EnumSet<SampleFetchOption> fetchOptions =
                 EnumSet.of(SampleFetchOption.PROPERTIES, SampleFetchOption.DESCENDANTS);

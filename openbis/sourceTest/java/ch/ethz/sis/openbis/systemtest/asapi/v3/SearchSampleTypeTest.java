@@ -401,6 +401,20 @@ public class SearchSampleTypeTest extends AbstractTest
     }
 
     @Test
+    public void testSearchWithPropertyAssignmentsWithEntityTypeWithCodes()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleTypeSearchCriteria searchCriteria = new SampleTypeSearchCriteria();
+        searchCriteria.withPropertyAssignments().withEntityType().withCodes().thatIn(Arrays.asList("CELL_PLATE"));
+
+        SearchResult<SampleType> searchResult = v3api.searchSampleTypes(sessionToken, searchCriteria, new SampleTypeFetchOptions());
+
+        List<String> codes = extractCodes(searchResult.getObjects());
+        assertEquals(codes.toString(), "[CELL_PLATE]");
+    }
+
+    @Test
     public void testSearchWithPropertyAssignmentsWithPropertyTypeWithIdThatEquals()
     {
         String sessionToken = v3api.login(TEST_USER, PASSWORD);

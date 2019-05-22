@@ -92,7 +92,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				var isEntityFrozen = _this._dataSetFormModel.v3_dataset.frozen;
 				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
 				var $freezeButton = FormUtil.getFreezeButton("DATASET", this._dataSetFormModel.v3_dataset.permId.permId, isEntityFrozen);
-				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+				if(toolbarConfig.FREEZE) {
+				    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+				}
 			}
 			
 			if(!_this._dataSetFormModel.v3_dataset.frozen) {
@@ -648,10 +650,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					
 					if(this._dataSetFormModel.mode === FormMode.VIEW) {
 						if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
-							if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-								value = FormUtil.getVocabularyLabelForTermCode(propertyType, value);
-							}
-							var $controlGroup = FormUtil.getFieldForLabelWithText(propertyType.label, value, propertyType.code);
+							$controlGroup = FormUtil.createPropertyField(propertyType, value);
 							$fieldset.append($controlGroup);
 						} else {
 							continue;
