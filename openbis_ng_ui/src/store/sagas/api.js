@@ -2,7 +2,7 @@ import {put, takeEvery, apply} from 'redux-saga/effects'
 import {facade} from '../../services/openbis.js'
 import * as actions from '../actions/actions.js'
 
-export default function* api() {
+export default function* apiSaga() {
   yield takeEvery(actions.API_REQUEST, apiRequest)
 }
 
