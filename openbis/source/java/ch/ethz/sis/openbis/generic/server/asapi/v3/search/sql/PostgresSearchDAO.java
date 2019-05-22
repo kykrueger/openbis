@@ -74,28 +74,29 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
 
         final SpaceProjectIDsVO result = new SpaceProjectIDsVO();
-        queryResultList.forEach(resultRow -> {
-            final Object spaceIdPerson = resultRow.get(rap + "." + SPACE_COLUMN);
-            final Object projectIdPerson = resultRow.get(rap + "." + PROJECT_ID_COLUMN);
-            final Object spaceIdGroup = resultRow.get(rag + "." + SPACE_COLUMN);
-            final Object projectIdGroup = resultRow.get(rag + "." + PROJECT_ID_COLUMN);
-            if (spaceIdPerson != null)
-            {
-                result.getSpaceIds().add((long) spaceIdPerson);
-            }
-            if (projectIdPerson != null)
-            {
-                result.getProjectIds().add((long) projectIdPerson);
-            }
-            if (spaceIdGroup != null)
-            {
-                result.getSpaceIds().add((long) spaceIdGroup);
-            }
-            if (projectIdGroup != null)
-            {
-                result.getProjectIds().add((long) projectIdGroup);
-            }
-        });
+        queryResultList.forEach(resultRow ->
+                {
+                    final Object spaceIdPerson = resultRow.get(rap + "." + SPACE_COLUMN);
+                    final Object projectIdPerson = resultRow.get(rap + "." + PROJECT_ID_COLUMN);
+                    final Object spaceIdGroup = resultRow.get(rag + "." + SPACE_COLUMN);
+                    final Object projectIdGroup = resultRow.get(rag + "." + PROJECT_ID_COLUMN);
+                    if (spaceIdPerson != null)
+                    {
+                        result.getSpaceIds().add((long) spaceIdPerson);
+                    }
+                    if (projectIdPerson != null)
+                    {
+                        result.getProjectIds().add((long) projectIdPerson);
+                    }
+                    if (spaceIdGroup != null)
+                    {
+                        result.getSpaceIds().add((long) spaceIdGroup);
+                    }
+                    if (projectIdGroup != null)
+                    {
+                        result.getProjectIds().add((long) projectIdGroup);
+                    }
+                });
         return result;
     }
 

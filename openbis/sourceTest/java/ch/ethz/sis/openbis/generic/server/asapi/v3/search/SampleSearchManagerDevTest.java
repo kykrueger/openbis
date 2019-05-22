@@ -29,13 +29,13 @@ public class SampleSearchManagerDevTest
     @Test
     public void testPipeline()
     {
-        Long userId = 2L; // Default ETL Server that is supposed to see everything
-        SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
-        SampleFetchOptions sampleFetchOption = new SampleFetchOptions();
-        PostgresSearchDAO searchDAO = new PostgresSearchDAO();
-        SortAndPage sortAndPage = new SortAndPage();
-        SampleSearchManager sampleSearchManager = new SampleSearchManager(searchDAO, sortAndPage);
-        Set<Long> unSortedResults = sampleSearchManager.searchForIDs(userId, sampleSearchCriteria);
+        final Long userId = 2L; // Default ETL Server that is supposed to see everything
+        final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
+        final SampleFetchOptions sampleFetchOption = new SampleFetchOptions();
+        final PostgresSearchDAO searchDAO = new PostgresSearchDAO();
+        final SortAndPage sortAndPage = new SortAndPage();
+        final SampleSearchManager sampleSearchManager = new SampleSearchManager(searchDAO, sortAndPage);
+        final Set<Long> unSortedResults = sampleSearchManager.searchForIDs(userId, sampleSearchCriteria);
         // List<Long> sortedResults = sampleSearchManager.sortAndPage(unSortedResults, sampleSearchCriteria, sampleFetchOption);
     }
 }

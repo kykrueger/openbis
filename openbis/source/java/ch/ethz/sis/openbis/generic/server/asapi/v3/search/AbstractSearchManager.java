@@ -34,8 +34,6 @@ import java.util.stream.Collectors;
 /**
  * Manages detailed search with complex search criteria.
  *
- *
- *
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */

@@ -26,37 +26,52 @@ public class SpaceProjectIDsVO
 
     private final Set<Long> projectIds;
 
-    public SpaceProjectIDsVO() {
+    public SpaceProjectIDsVO()
+    {
         this(new HashSet<>(), new HashSet<>());
     }
 
-    public SpaceProjectIDsVO(final Set<Long> spaceIds, final Set<Long> projectIds) {
+    public SpaceProjectIDsVO(final Set<Long> spaceIds, final Set<Long> projectIds)
+    {
         this.spaceIds = spaceIds;
         this.projectIds = projectIds;
     }
 
-    public Set<Long> getSpaceIds() {
+    public Set<Long> getSpaceIds()
+    {
         return spaceIds;
     }
 
-    public Set<Long> getProjectIds() {
+    public Set<Long> getProjectIds()
+    {
         return projectIds;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
 
         SpaceProjectIDsVO that = (SpaceProjectIDsVO) o;
 
-        if (!spaceIds.equals(that.spaceIds)) return false;
+        if (!spaceIds.equals(that.spaceIds))
+        {
+            return false;
+        }
         return projectIds.equals(that.projectIds);
 
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         int result = spaceIds.hashCode();
         result = 31 * result + projectIds.hashCode();
         return result;
