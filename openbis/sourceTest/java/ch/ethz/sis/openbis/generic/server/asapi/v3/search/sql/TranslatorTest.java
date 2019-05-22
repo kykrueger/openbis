@@ -47,9 +47,9 @@ public class TranslatorTest
                 Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
         assertEquals(result, new Translator.TranslatorResult(String.format(
-                "SELECT *\n" +
+                "SELECT DISTINCT %s\n" +
                 "FROM %s\n",
-                SAMPLES_ALL_TABLE), Collections.emptyList()));
+                ID_COLUMN, SAMPLES_ALL_TABLE), Collections.emptyList()));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class TranslatorTest
                 Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
         assertEquals(result, new Translator.TranslatorResult(String.format(
-                "SELECT %s\n" +
+                "SELECT DISTINCT %s\n" +
                 "FROM %s\n" +
                 "WHERE %s=?\n",
                 ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN),
@@ -81,9 +81,28 @@ public class TranslatorTest
                 Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
         assertEquals(result, new Translator.TranslatorResult(String.format(
-                "SELECT %s\n" +
+                "SELECT DISTINCT %s\n" +
                 "FROM %s\n" +
                 "WHERE %s=? AND %s=? AND %s=?\n",
+                ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN, REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN),
+                Arrays.asList(SAMPLE_ID, REGISTRATION_DATE, MODIFICATION_DATE)));
+    }
+
+    @Test
+    public void testTranslateSearchSamplesByOtherFieldsOr()
+    {
+        final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria().withOrOperator();
+        sampleSearchCriteria.withCode().thatEquals(SAMPLE_ID);
+        sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
+        sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
+
+        final Translator.TranslatorResult result =
+                Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+
+        assertEquals(result, new Translator.TranslatorResult(String.format(
+                "SELECT DISTINCT %s\n" +
+                "FROM %s\n" +
+                "WHERE %s=? OR %s=? OR %s=?\n",
                 ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN, REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN),
                 Arrays.asList(SAMPLE_ID, REGISTRATION_DATE, MODIFICATION_DATE)));
     }

@@ -77,7 +77,7 @@ public class SampleSearchManagerTest
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
-    public void testSearchForIDsParentCriteriaOr()
+    public void testSearchForIDsParentCriteriaOr() throws Exception
     {
         final SampleSearchCriteria parentSearchCriterion1 = new SampleSearchCriteria();
         parentSearchCriterion1.withType().withCode().thatEquals("B");
@@ -121,7 +121,7 @@ public class SampleSearchManagerTest
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
-    public void testSearchForIDsParentCriteriaAnd()
+    public void testSearchForIDsParentCriteriaAnd() throws Exception
     {
         final SampleSearchCriteria parentSearchCriterion1 = new SampleSearchCriteria();
         parentSearchCriterion1.withType().withCode().thatEquals("B");
@@ -166,7 +166,7 @@ public class SampleSearchManagerTest
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
-    public void testSearchForIDsChildCriteriaOr()
+    public void testSearchForIDsChildCriteriaOr() throws Exception
     {
         final SampleSearchCriteria childSearchCriterion1 = new SampleSearchCriteria();
         childSearchCriterion1.withType().withCode().thatEquals("B");
@@ -210,7 +210,7 @@ public class SampleSearchManagerTest
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
-    public void testSearchForIDsChildCriteriaAnd()
+    public void testSearchForIDsChildCriteriaAnd() throws Exception
     {
         final SampleSearchCriteria childSearchCriterion1 = new SampleSearchCriteria();
         childSearchCriterion1.withType().withCode().thatEquals("B");
@@ -317,7 +317,7 @@ public class SampleSearchManagerTest
     }
 
     @Test
-    public void testFilterIDsByUserRights()
+    public void testFilterIDsByUserRights() throws Exception
     {
         final long userId = 12345;
         final Set<Long> sampleIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 4L, 5L));

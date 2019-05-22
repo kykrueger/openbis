@@ -16,16 +16,26 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.mappers.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.mappers.LogicalOperatorsMapper;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 
 public class Translator
@@ -43,9 +53,11 @@ public class Translator
 
     private static final String JOIN = "JOIN";
 
+    private static final String LIKE = "LIKE";
+
     private static final String ON = "ON";
 
-    private static final String SPACE = " ";
+    private static final String SP = " ";
 
     private static final String COMMA = ",";
 
@@ -53,9 +65,23 @@ public class Translator
 
     private static final String EQ = "=";
 
+    private static final String GT = ">";
+
+    private static final String LT = "<";
+
+    private static final String GE = ">=";
+
+    private static final String LE = "<=";
+
     private static final String NEW_LINE = "\n";
 
     private static final String ASTERISK = "*";
+
+    private static final String QU = "?";
+
+    private static final String PERCENT = "%";
+
+    private static final String BARS = "||";
 
     public static TranslatorResult translate(final EntityKind entityKind, final List<ISearchCriteria> criteria,
             final SearchOperator operator)
@@ -68,38 +94,30 @@ public class Translator
         final EntityMapper dbEntityKind = EntityMapper.toEntityMapper(entityKind);
 
         final List<String> aliases = new ArrayList<>();
+        final List<Object> args = new ArrayList<>();
 
-        if (criteria.size() == 1)
-        {
-            final ISearchCriteria criterion = criteria.get(0);
-            if (criteria instanceof AbstractEntitySearchCriteria<?>)
-            {
-                final AbstractEntitySearchCriteria<?> entitySearchCriterion = (AbstractEntitySearchCriteria<?>) criterion;
-                if (entitySearchCriterion.getCriteria().isEmpty())
-                {
-                    aliases.add(ASTERISK);
-                }
-            }
-        }
+        final String fromClause = buildFrom(dbEntityKind, criteria);
+        final String whereClause = buildWhere(dbEntityKind, criteria, args, operator);
+        final String selectClause = buildSelect(dbEntityKind, aliases);
 
+        return new TranslatorResult(selectClause + fromClause + whereClause, args);
+    }
+
+    private static String buildSelect(final EntityMapper dbEntityKind, final List<String> aliasesPresentInOrderBy)
+    {
         final StringBuilder builder = new StringBuilder();
-        select(builder, dbEntityKind, aliases);
-        from(builder, dbEntityKind, criteria);
-        where(builder, dbEntityKind, criteria, operator);
-        return new TranslatorResult(builder.toString(), Collections.emptyList());
-    }
-
-    private static void select(final StringBuilder builder, final EntityMapper dbEntityKind, final List<String> aliasesPresentInOrderBy)
-    {
-        builder.append(SELECT).append(SPACE).append(DISTINCT).append(SPACE).append(dbEntityKind.getEntitiesTableIdField());
-        aliasesPresentInOrderBy.forEach(alias -> builder.append(SPACE).append(COMMA).append(alias));
+        builder.append(SELECT).append(SP).append(DISTINCT).append(SP).append(dbEntityKind.getEntitiesTableIdField());
+        aliasesPresentInOrderBy.forEach(alias -> builder.append(COMMA).append(SP).append(alias));
         builder.append(NEW_LINE);
+
+        return builder.toString();
     }
 
-    private static void from(final StringBuilder builder, final EntityMapper entityMapper, final List<ISearchCriteria> criteria)
+    private static String buildFrom(final EntityMapper entityMapper, final List<ISearchCriteria> criteria)
     {
+        final StringBuilder builder = new StringBuilder();
         final String entitiesTableName = entityMapper.getEntitiesTable();
-        builder.append(FROM).append(SPACE).append(entitiesTableName).append(NEW_LINE);
+        builder.append(FROM).append(SP).append(entitiesTableName).append(NEW_LINE);
         criteria.forEach(criterion ->
                 {
                     if (criterion instanceof AbstractEntitySearchCriteria<?>)
@@ -120,44 +138,126 @@ public class Translator
 //                    if(isAliasPresentInWhere) {
 //
 //                    }
-//                    builder.append(LEFT).append(SPACE).append(JOIN).append(SPACE).append().append(SPACE).append(entitiesTableName).append(SPACE).append(ON)
-//                            .append(SPACE).append(entitiesTableName).append(PERIOD).append().append(EQ).append().append(PERIOD).append();
+//                    builder.append(LEFT).append(SP).append(JOIN).append(SP).append().append(SP).append(entitiesTableName).append(SP).append(ON)
+//                            .append(SP).append(entitiesTableName).append(PERIOD).append().append(EQ).append().append(PERIOD).append();
                 });
+        return builder.toString();
     }
 
-    private static void where(final StringBuilder builder, final EntityMapper entityMapper, final List<ISearchCriteria> criteria,
+    private static String buildWhere(final EntityMapper entityMapper, final List<ISearchCriteria> criteria, final List<Object> args,
             final SearchOperator operator)
     {
-        final String logicalOperator = LogicalOperatorsMapper.toLogicalOperatorsMapper(operator).toString();
-        builder.append(WHERE).append(SPACE);
+        if (isSearchAllCriteria(criteria))
+        {
+            return "";
+        }
+
+        final StringBuilder builder = new StringBuilder();
+
+        final String logicalOperator = operator.toString();
+        builder.append(WHERE).append(SP);
         criteria.forEach(criterion ->
                 {
                     if (criterion instanceof AbstractEntitySearchCriteria<?>)
                     {
                         final AbstractEntitySearchCriteria<?> entitySearchCriterion = (AbstractEntitySearchCriteria<?>) criterion;
-//                        builder.append().append(SPACE).append(logicalOperator);
+//                        builder.append().append(SP).append(logicalOperator);
                     }
                     if (criterion instanceof SampleSearchCriteria)
                     {
                         final SampleSearchCriteria sampleSearchCriterion = (SampleSearchCriteria) criterion;
+                        final Collection<ISearchCriteria> subcriteria = sampleSearchCriterion.getCriteria();
+                        subcriteria.forEach(subcriterion ->
+                                {
+                                    if (subcriterion instanceof AbstractFieldSearchCriteria<?>)
+                                    {
+                                        final AbstractFieldSearchCriteria fieldSearchSubcriterion = (AbstractFieldSearchCriteria) subcriterion;
+                                        final Object fieldName = fieldSearchSubcriterion.getFieldName();
+                                        final Object fieldValue = fieldSearchSubcriterion.getFieldValue();
+                                        final SearchFieldType fieldType = fieldSearchSubcriterion.getFieldType();
 
-
+                                        if (fieldValue instanceof AbstractStringValue) {
+                                            builder.append(fieldName);
+                                            if (fieldValue instanceof StringEqualToValue) {
+                                                builder.append(EQ).append(QU);
+                                            }
+                                            if (fieldValue instanceof StringContainsValue) {
+                                                builder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
+                                                        append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
+                                            }
+                                            if (fieldValue instanceof StringStartsWithValue) {
+                                                builder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
+                                                        append(PERCENT);
+                                            }
+                                            if (fieldValue instanceof StringEndsWithValue) {
+                                                builder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
+                                                        append(QU);
+                                            }
+                                        } else if (fieldValue instanceof AbstractDateValue) {
+                                            if (fieldValue instanceof DateEqualToValue) {
+                                                builder.append(EQ).append(QU);
+                                            }
+                                            if (fieldValue instanceof DateEarlierThanOrEqualToValue)
+                                            {
+                                                builder.append(LE).append(QU);
+                                            }
+                                            if (fieldValue instanceof DateLaterThanOrEqualToValue)
+                                            {
+                                                builder.append(GE).append(QU);
+                                            }
+                                        } else {
+                                            builder.append(fieldName).append(EQ).append(QU);
+                                        }
+                                    }
+                                    builder.append(SP).append(logicalOperator).append(SP);
+                                });
                     }
                 });
-        builder.setLength(builder.length() - logicalOperator.length() - SPACE.length());
+        builder.setLength(builder.length() - logicalOperator.length() - SP.length());
+        return builder.toString();
+    }
+
+    /**
+     * Checks whether the criteria is for searching all values.
+     *
+     * @param criteria the criteria to be checked.
+     * @return {@code true} if the criteria contain only one entity search value which is empty.
+     */
+    private static boolean isSearchAllCriteria(final List<ISearchCriteria> criteria)
+    {
+        if (criteria.size() == 1)
+        {
+            final ISearchCriteria criterion = criteria.get(0);
+            if (criterion instanceof AbstractEntitySearchCriteria<?> &&
+                    ((AbstractEntitySearchCriteria<?>) criterion).getCriteria().isEmpty())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static class TranslatorResult
     {
 
-        private String sqlQuery;
+        private final String sqlQuery;
 
-        private List<Object> args;
+        private final List<Object> args;
 
         public TranslatorResult(String sqlQuery, List<Object> args)
         {
             this.sqlQuery = sqlQuery;
             this.args = args;
+        }
+
+        public String getSqlQuery()
+        {
+            return sqlQuery;
+        }
+
+        public List<Object> getArgs()
+        {
+            return args;
         }
 
         @Override
@@ -189,6 +289,13 @@ public class Translator
             return result;
         }
 
+        @Override public String toString()
+        {
+            return "TranslatorResult{" +
+                    "sqlQuery='" + sqlQuery + '\'' +
+                    ", args=" + args +
+                    '}';
+        }
     }
 
     public static class TranslatorAlias

@@ -53,7 +53,10 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     public Set<Long> queryDBWithNonRecursiveCriteria(final EntityKind entityKind, final List<ISearchCriteria> criteria,
             final SearchOperator operator)
     {
-        return null;
+        Translator.TranslatorResult translatorResult = Translator.translate(entityKind, criteria, operator);
+        List<Map<String, Object>> result = sqlExecutor.execute(translatorResult.getSqlQuery(), translatorResult.getArgs());
+        EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind);
+        return result.stream().map(stringObjectMap -> (Long) stringObjectMap.get(entityMapper.getDataTableIdField())).collect(Collectors.toSet());
     }
 
     @SuppressWarnings("unchecked")
@@ -108,7 +111,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
                 "FROM " + SAMPLES_ALL_TABLE + "\n" +
                 "WHERE " + ID_COLUMN + " IN (?) AND (" + SPACE_COLUMN + " IN (?) " +
                 "OR " + PROJECT_COLUMN + " IN (?))";
-        final List<Object> args = Arrays.asList(ids, authorizedSpaceProjectIds.getSpaceIds(), authorizedSpaceProjectIds.getProjectIds());
+        final List<Object> args = Arrays.asList(ids.toArray(), authorizedSpaceProjectIds.getSpaceIds().toArray(), authorizedSpaceProjectIds.getProjectIds().toArray());
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
 
         return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(ID_COLUMN)).collect(Collectors.toSet());
@@ -121,7 +124,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final String query = "SELECT DISTINCT " + entityMapper.getRelationshipsTableChildIdField() + "\n" +
                 "FROM " + entityMapper.getRelationshipsTable() + "\n" +
                 "WHERE " + entityMapper.getRelationshipsTableParentIdField() + " IN (?)";
-        return executeSetSearchQuery(entityMapper, query, Collections.singletonList(parentIdSet));
+        return executeSetSearchQuery(entityMapper, query, Collections.singletonList(parentIdSet.toArray()));
     }
 
     @Override
@@ -131,7 +134,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final String query = "SELECT DISTINCT " + entityMapper.getRelationshipsTableParentIdField() + "\n" +
                 "FROM " + entityMapper.getRelationshipsTable() + "\n" +
                 "WHERE " + entityMapper.getRelationshipsTableChildIdField() + " IN (?)";
-        return executeSetSearchQuery(entityMapper, query, Collections.singletonList(childIdSet));
+        return executeSetSearchQuery(entityMapper, query, Collections.singletonList(childIdSet.toArray()));
     }
 
     private Set<Long> executeSetSearchQuery(final EntityMapper entityMapper, final String query, final List<Object> args)

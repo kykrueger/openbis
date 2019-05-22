@@ -119,9 +119,17 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     @Override
     public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids)
     {
-        final SpaceProjectIDsVO authorizedSpaceProjectIds = searchDAO.findAuthorisedSpaceProjectIDs(userId);
-        final Set<Long> filteredIds = searchDAO.filterSampleIDsBySpaceAndProjectIDs(ids, authorizedSpaceProjectIds);
-        return filteredIds;
+        final Set<Long> filteredIds;
+        try
+        {
+            final SpaceProjectIDsVO authorizedSpaceProjectIds = searchDAO.findAuthorisedSpaceProjectIDs(userId);
+            filteredIds = searchDAO.filterSampleIDsBySpaceAndProjectIDs(ids, authorizedSpaceProjectIds);
+            return filteredIds;
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -160,20 +168,32 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     private Set<Long> getAllIds()
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        criteria.withCode().thatContains("");
-
         return searchDAO.queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, Collections.singletonList(criteria),
                 SearchOperator.OR);
     }
 
     private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet)
     {
-        return searchDAO.findChildIDs(EntityKind.SAMPLE, parentIdSet);
+        try
+        {
+            return searchDAO.findChildIDs(EntityKind.SAMPLE, parentIdSet);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private Set<Long> getParentsIdsOf(final Set<Long> childIdSet)
     {
-        return searchDAO.findParentIDs(EntityKind.SAMPLE, childIdSet);
+        try
+        {
+            return searchDAO.findParentIDs(EntityKind.SAMPLE, childIdSet);
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }
