@@ -144,7 +144,7 @@ public enum EntityMapper
         this.dataTableEntityIdField = dataTableEntityIdField;
     }
 
-    public static EntityMapper toDBEntityKind(final EntityKind entityKind)
+    public static EntityMapper toEntityMapper(final EntityKind entityKind)
     {
         return EntityMapper.valueOf(entityKind.name());
     }
@@ -258,4 +258,5 @@ public enum EntityMapper
     {
         return dataTableEntityIdField;
     }
+
 }

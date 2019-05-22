@@ -33,6 +33,8 @@ public class Translator
 
     private static final String FROM = "FROM";
 
+    private static final String WHERE = "WHERE";
+
     private static final String LEFT = "LEFT";
 
     private static final String JOIN = "JOIN";
@@ -58,19 +60,21 @@ public class Translator
 
     public static class TranslatorAlias {
         private String table;
+
         private String tableAlias; // table + "_" + <alias_idx>
+
         private ISearchCriteria reasonForAlias;
     }
 
     public static TranslatorResult translate(final EntityKind entityKind, final List<ISearchCriteria> criteria,
             final SearchOperator operator)
     {
-        final EntityMapper dbEntityKind = EntityMapper.toDBEntityKind(entityKind);
+        final EntityMapper dbEntityKind = EntityMapper.toEntityMapper(entityKind);
 
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         select(builder, dbEntityKind, Collections.emptyList());
         from(builder, dbEntityKind, criteria);
-        where(builder, dbEntityKind, criteria);
+        where(builder, dbEntityKind, criteria, operator);
         return new TranslatorResult();
     }
 
@@ -98,9 +102,17 @@ public class Translator
         }
     }
 
-    private static void where(final StringBuilder builder, EntityMapper dbEntityKind, List<ISearchCriteria> criteria)
+    private static void where(final StringBuilder builder, final EntityMapper dbEntityKind, final List<ISearchCriteria> criteria,
+            final SearchOperator operator)
     {
-
+//        final String logicalOperator = LogicalOperatorsMapper.toLogicalOperatorsMapper(operator).toString();
+//        builder.append(WHERE).append(SPACE);
+//        for (final ISearchCriteria criterion : criteria)
+//        {
+//            final AbstractEntitySearchCriteria<?> entitySearchCriterion = (AbstractEntitySearchCriteria<?>) criterion;
+//            builder.append().append(SPACE).append(logicalOperator);
+//        }
+//        builder.setLength(builder.length() - logicalOperator.length() - SPACE.length());
     }
 
 }

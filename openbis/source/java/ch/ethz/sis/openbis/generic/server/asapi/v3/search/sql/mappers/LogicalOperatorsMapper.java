@@ -14,23 +14,32 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.mappers;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 
-import java.util.Set;
-
-public interface ISearchManager<CRITERIA extends ISearchCriteria>
+public enum LogicalOperatorsMapper
 {
+    AND("AND"),
 
-    /**
-     * Searches for entities using certain criteria.
-     *
-     * @param criteria search criteria.
-     * @return set of IDs of found entities.
-     */
-    Set<Long> searchForIDs(final Long userId, final CRITERIA criteria);
+    OR("OR");
 
+    private String value;
 
+    LogicalOperatorsMapper(String value)
+    {
+        this.value = value;
+    }
+
+    @Override
+    public String toString()
+    {
+        return value;
+    }
+
+    public static LogicalOperatorsMapper toLogicalOperatorsMapper(final SearchOperator operator)
+    {
+        return LogicalOperatorsMapper.valueOf(operator.name());
+    }
 
 }

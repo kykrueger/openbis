@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import java.util.List;
+import java.util.Map;
 
-import java.util.Set;
-
-public interface ISearchManager<CRITERIA extends ISearchCriteria>
+public interface ISQLExecutor
 {
 
-    /**
-     * Searches for entities using certain criteria.
-     *
-     * @param criteria search criteria.
-     * @return set of IDs of found entities.
-     */
-    Set<Long> searchForIDs(final Long userId, final CRITERIA criteria);
-
-
+    List<Map<String, Object>> execute(String sqlQuery, List<Object> args);
 
 }

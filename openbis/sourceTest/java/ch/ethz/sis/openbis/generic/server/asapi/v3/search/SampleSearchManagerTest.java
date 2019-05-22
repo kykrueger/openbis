@@ -30,7 +30,12 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -68,7 +73,7 @@ public class SampleSearchManagerTest
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when there are main and parent
+     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when there are main and parent
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
@@ -107,12 +112,12 @@ public class SampleSearchManagerTest
                     will(returnValue(parentCriteriaResultingIds));
                 }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when there are main and parent
+     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when there are main and parent
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
@@ -139,25 +144,25 @@ public class SampleSearchManagerTest
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
 
         context.checking(new Expectations()
-        {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.AND);
-            will(returnValue(mainCriteriaIds));
+                {{
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                            Collections.singletonList(criterion), SearchOperator.AND);
+                    will(returnValue(mainCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, parentCriteria,
-                    SearchOperator.OR);
-            will(returnValue(parentCriteriaIds));
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, parentCriteria,
+                            SearchOperator.OR);
+                    will(returnValue(parentCriteriaIds));
 
-            one(searchDAOMock).findChildIDs(EntityKind.SAMPLE, parentCriteriaIds);
-            will(returnValue(parentCriteriaResultingIds));
-        }});
+                    one(searchDAOMock).findChildIDs(EntityKind.SAMPLE, parentCriteriaIds);
+                    will(returnValue(parentCriteriaResultingIds));
+                }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when there are main and child
+     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when there are main and child
      * criteria and the OR logical operator is applied to the root criteria.
      */
     @Test
@@ -196,12 +201,12 @@ public class SampleSearchManagerTest
                     will(returnValue(childCriteriaResultingIds));
                 }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when there are main and child
+     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when there are main and child
      * criteria and the AND logical operator is applied to the root criteria.
      */
     @Test
@@ -241,12 +246,12 @@ public class SampleSearchManagerTest
             will(returnValue(childCriteriaResultingIds));
         }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
     /**
-     * Tests {@link SampleSearchManager#searchForIDs(SampleSearchCriteria)} for the case when only main criteria is
+     * Tests {@link SampleSearchManager#searchForIDs(Long, SampleSearchCriteria)} for the case when only main criteria is
      * present.
      */
     @Test
@@ -267,7 +272,7 @@ public class SampleSearchManagerTest
                     will(returnValue(expectedIds));
                 }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(searchCriteria);
+        final Set<Long> actualIds = searchManager.searchForIDs(null, searchCriteria);
         assertEquals(actualIds, expectedIds, "Actual and expected IDs are not equal.");
     }
 
@@ -287,7 +292,7 @@ public class SampleSearchManagerTest
                     will(returnValue(expectedIds));
                 }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(new SampleSearchCriteria());
+        final Set<Long> actualIds = searchManager.searchForIDs(null, new SampleSearchCriteria());
         assertEquals(actualIds, expectedIds);
     }
 
@@ -307,7 +312,7 @@ public class SampleSearchManagerTest
                     will(returnValue(Collections.emptySet()));
                 }});
 
-        final Set<Long> actualIds = searchManager.searchForIDs(new SampleSearchCriteria());
+        final Set<Long> actualIds = searchManager.searchForIDs(null, new SampleSearchCriteria());
         assertTrue(actualIds.isEmpty());
     }
 

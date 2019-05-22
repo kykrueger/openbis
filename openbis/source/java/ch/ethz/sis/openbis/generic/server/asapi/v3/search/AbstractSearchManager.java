@@ -16,6 +16,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
@@ -23,20 +24,22 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Manages detailed search with complex search criteria.
  *
- * @param <C> type search criteria to be used.
+ *
  *
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public abstract class AbstractSearchManager<C extends ISearchCriteria> implements ISearchManager<C>
+public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, ENTITY> implements ISearchManager<CRITERIA>
 {
     protected final ISQLSearchDAO searchDAO;
 
@@ -48,54 +51,51 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
         this.sortAndPage = sortAndPage;
     }
 
+    /**
+     * Filters sample IDs set leaving the ones to which the user has access.
+     *
+     * @param userId the ID of the user.
+     * @param ids IDs to filter.
+     * @return IDs of samples which the user is authorised to access.
+     */
+    public abstract Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids);
+
+    /**
+     * Sorts IDs using certain sort options.
+     *
+     * @param ids IDs of entities to sort.
+     * @param fetchOptions sorting options.
+     * @return ids sorted by the specified options.
+     */
+    public abstract List<Long> sortAndPage(final Set<Long> ids, final CRITERIA criteria, final FetchOptions<ENTITY> fetchOptions);
+
     protected List<ISearchCriteria> getOtherCriteriaThan(AbstractCompositeSearchCriteria compositeSearchCriteria,
             Class<? extends ISearchCriteria>... classes)
     {
-        List<ISearchCriteria> criterias = new ArrayList<>();
-        for (ISearchCriteria criteria : compositeSearchCriteria.getCriteria())
-        {
-            boolean isInstanceOfOneOf = false;
-            for (Class<? extends ISearchCriteria> clazz : classes)
-            {
-                if (clazz.isInstance(criteria))
-                {
-                    isInstanceOfOneOf = true;
-                    break;
-                }
-            }
-            if (false == isInstanceOfOneOf)
-            {
-                criterias.add(criteria);
-            }
-        }
-        return criterias;
+        final List<ISearchCriteria> criteria = compositeSearchCriteria.getCriteria().stream().filter(criterion -> {
+            final boolean isInstanceOfOneOfClasses = Arrays.stream(classes).anyMatch(clazz -> clazz.isInstance(criterion));
+            return !isInstanceOfOneOfClasses;
+        }).collect(Collectors.toList());
+
+        return criteria;
     }
 
     protected List<ISearchCriteria> getCriteria(
             AbstractCompositeSearchCriteria compositeSearchCriteria, Class<? extends ISearchCriteria> clazz)
     {
-        List<ISearchCriteria> criteria = new ArrayList<>();
-        for (ISearchCriteria criterion : compositeSearchCriteria.getCriteria())
-        {
-            if (clazz.isInstance(criterion))
-            {
-                criteria.add(criterion);
-            }
-        }
+        final List<ISearchCriteria> criteria = compositeSearchCriteria.getCriteria().stream().filter(clazz::isInstance)
+                .collect(Collectors.toList());
         return criteria;
     }
 
     protected static <E> Set<E> mergeResults(final SearchOperator operator,
             final Collection<Set<E>>... intermediateResultsToMerge)
     {
-        final Collection<Set<E>> intermediateResults = new ArrayList();
-        for (final Collection<Set<E>> intermediateResultToMerge : intermediateResultsToMerge)
-        {
-            if (intermediateResultToMerge != null)
-            {
-                intermediateResults.addAll(intermediateResultToMerge);
-            }
-        }
+        final Collection<Set<E>> intermediateResults = Arrays.stream(intermediateResultsToMerge).reduce(new ArrayList<>(), (sets, sets2) ->
+                {
+                    sets.addAll(sets2);
+                    return sets;
+                });
 
         switch (operator)
         {
@@ -110,29 +110,20 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
 
     protected static <E> Set<E> intersection(final Collection<Set<E>> sets)
     {
-        final Set<E> pivot = getSmallestSet(sets);
-        sets.remove(pivot);
-        for (final Set<E> intermediateResult : sets)
-        {
-            if (intermediateResult != null)
-            {
-                pivot.retainAll(intermediateResult);
-            }
-        }
-        return pivot;
+        return !sets.isEmpty() ? sets.stream().reduce(new HashSet<>(sets.iterator().next()), (es, es2) ->
+                {
+                    es.retainAll(es2);
+                    return es;
+                }) : new HashSet<>(0);
     }
 
     protected static <E> Set<E> union(final Collection<Set<E>> sets)
     {
-        final Set<E> all = new HashSet<>();
-        for (final Set<E> intermediateResult : sets)
-        {
-            if (intermediateResult != null)
-            {
-                all.addAll(intermediateResult);
-            }
-        }
-        return all;
+        return sets.stream().reduce(new HashSet<>(), (es, es2) ->
+                {
+                    es.addAll(es2);
+                    return es;
+                });
     }
 
     /**
@@ -144,15 +135,17 @@ public abstract class AbstractSearchManager<C extends ISearchCriteria> implement
      */
     protected static <E> Set<E> getSmallestSet(final Collection<Set<E>> candidates)
     {
-        Set<E> smallest = null;
-        for (final Set<E> candidate : candidates)
-        {
-            if (candidate != null && (smallest == null || smallest.size() > candidate.size()))
-            {
-                smallest = candidate;
-            }
-        }
-        return smallest;
+        final Set<E> smallestSet = candidates.stream().min((o1, o2) ->
+                {
+                    if (o1 == null)
+                    {
+                        return (o2 == null) ? 0 : 1;
+                    } else
+                    {
+                        return (o2 == null) ? -1 : o1.size() - o2.size();
+                    }
+                }).orElse(null);
+        return smallestSet;
     }
 
 }

@@ -20,6 +20,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -27,7 +28,13 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Manages detailed search with complex sample search criteria.
@@ -35,7 +42,7 @@ import java.util.*;
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public class SampleSearchManager extends AbstractSearchManager<SampleSearchCriteria>
+public class SampleSearchManager extends AbstractSearchManager<SampleSearchCriteria, Sample>
 {
 
     public SampleSearchManager(ISQLSearchDAO searchDAO, ISortAndPage sortAndPage)
@@ -44,7 +51,7 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     }
 
     @Override
-    public Set<Long> searchForIDs(final SampleSearchCriteria criteria)
+    public Set<Long> searchForIDs(final Long userId, final SampleSearchCriteria criteria)
     {
         final List<ISearchCriteria> parentsCriteria = getCriteria(criteria, SampleParentsSearchCriteria.class);
         final List<ISearchCriteria> childrenCriteria = getCriteria(criteria, SampleChildrenSearchCriteria.class);
@@ -66,35 +73,37 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
         // The parents criteria can be or not recursive, they are resolved by a recursive call
         if (!parentsCriteria.isEmpty())
         {
-            final Set<Long> finalParentIds = findFinalRelationshipIds(criteria.getOperator(), parentsCriteria);
-            childrenCriteriaIntermediateResults = getChildrenIdsOf(finalParentIds);
+            final Set<Long> finalParentIds = findFinalRelationshipIds(userId, criteria.getOperator(), parentsCriteria);
+            final Set<Long> finalParentIdsFiltered = filterIDsByUserRights(userId, finalParentIds);
+            childrenCriteriaIntermediateResults = getChildrenIdsOf(finalParentIdsFiltered);
         }
 
         // The children criteria can be or not recursive, they are resolved by a recursive call
         if (!childrenCriteria.isEmpty())
         {
-            final Set<Long> finalChildrenIds = findFinalRelationshipIds(criteria.getOperator(), childrenCriteria);
-            parentCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIds);
+            final Set<Long> finalChildrenIds = findFinalRelationshipIds(userId, criteria.getOperator(), childrenCriteria);
+            final Set<Long> finalChildrenIdsFiltered = filterIDsByUserRights(userId, finalChildrenIds);
+            parentCriteriaIntermediateResults = getParentsIdsOf(finalChildrenIdsFiltered);
         }
 
         // Reaching this point we have the intermediate results of all recursive queries
-        final Set<Long> finalResult;
+        final Set<Long> resultBeforeFiltering;
         if (containsValues(mainCriteriaIntermediateResults) || containsValues(childrenCriteriaIntermediateResults) ||
                 containsValues(parentCriteriaIntermediateResults))
         { // If we have results, we merge them
-            finalResult = mergeResults(criteria.getOperator(),
+            resultBeforeFiltering = mergeResults(criteria.getOperator(),
                     Collections.singleton(mainCriteriaIntermediateResults),
                     Collections.singleton(parentCriteriaIntermediateResults),
                     Collections.singleton(childrenCriteriaIntermediateResults));
         } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
         { // If we don't have results and criteria are empty, return all.
-            finalResult = getAllIds();
+            resultBeforeFiltering = getAllIds();
         } else
         { // If we don't have results and criteria are not empty, there is no results.
-            finalResult = Collections.emptySet();
+            resultBeforeFiltering = Collections.emptySet();
         }
 
-        return finalResult;
+        return filterIDsByUserRights(userId, resultBeforeFiltering);
     }
 
     /**
@@ -117,8 +126,7 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     }
 
     @Override
-    public List<Long> sortAndPage(final Set<Long> ids, final SampleSearchCriteria criteria,
-            final FetchOptions<?> fetchOptions)
+    public List<Long> sortAndPage(Set<Long> ids, SampleSearchCriteria criteria, FetchOptions<Sample> fetchOptions)
     {
         return sortAndPage.sortAndPage(new ArrayList<>(ids), criteria, fetchOptions);
     }
@@ -130,18 +138,14 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
      * @param relatedEntitiesCriteria parent or child criteria.
      * @return IDs found from parent/child criteria.
      */
-    private Set<Long> findFinalRelationshipIds(final SearchOperator operator,
+    private Set<Long> findFinalRelationshipIds(final Long userId, final SearchOperator operator,
             final List<ISearchCriteria> relatedEntitiesCriteria)
     {
-        final List<Set<Long>> relatedIds = new ArrayList<>();
-        for (ISearchCriteria sampleSearchCriteria : relatedEntitiesCriteria)
-        {
-            Set<Long> foundParentIds = searchForIDs((SampleSearchCriteria) sampleSearchCriteria);
-            if (!foundParentIds.isEmpty())
-            {
-                relatedIds.add(foundParentIds);
-            }
-        }
+        final List<Set<Long>> relatedIds =  relatedEntitiesCriteria.stream().flatMap(sampleSearchCriteria -> {
+            final Set<Long> foundParentIds = searchForIDs(userId, (SampleSearchCriteria) sampleSearchCriteria);
+            return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
+        }).collect(Collectors.toList());
+
         return mergeResults(operator, relatedIds);
     }
 
