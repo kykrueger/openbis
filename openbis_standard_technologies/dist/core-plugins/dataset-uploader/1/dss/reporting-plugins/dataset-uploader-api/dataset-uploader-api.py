@@ -45,6 +45,7 @@ def process(tr, parameters, tableBuilder):
 	tr.setUserId(userId);
 	
 	if method == "insertDataSet":
+                permId = parameters.get("permId");
 		sampleIdentifier = parameters.get("sampleIdentifier"); #String
 		experimentIdentifier = parameters.get("experimentIdentifier"); #String
 		dataSetType = parameters.get("dataSetType"); #String
@@ -55,7 +56,7 @@ def process(tr, parameters, tableBuilder):
 		isZipDirectoryUpload = parameters.get("isZipDirectoryUpload"); #String
 		metadata = parameters.get("properties"); #java.util.LinkedHashMap<String, String> where the key is the name
 		parentIdentifiers = parameters.get('parentIdentifiers');
-		isOk, result = insertDataSet(tr, sampleIdentifier, experimentIdentifier, dataSetType, folderName, fileNames, isZipDirectoryUpload, metadata, parentIdentifiers);
+		isOk, result = insertDataSet(tr, permId, sampleIdentifier, experimentIdentifier, dataSetType, folderName, fileNames, isZipDirectoryUpload, metadata, parentIdentifiers);
 	
 	if isOk:
 		tableBuilder.addHeader("STATUS");
@@ -82,10 +83,14 @@ def getThreadProperties(transaction):
       pass
   return threadPropertyDict
 
-def insertDataSet(tr, sampleIdentifier, experimentIdentifier, dataSetType, folderName, fileNames, isZipDirectoryUpload, metadata, parentIds):
+def insertDataSet(tr, permId, sampleIdentifier, experimentIdentifier, dataSetType, folderName, fileNames, isZipDirectoryUpload, metadata, parentIds):
 		
-	#Create Dataset
-	dataSet = tr.createNewDataSet(dataSetType);
+	#Create Dataset, either with or without a prior defined permId
+        if permId is not None:
+	    dataSet = tr.createNewDataSet(dataSetType, permId);
+        else:
+	    dataSet = tr.createNewDataSet(dataSetType);
+
 	dataSet.setParentDatasets(parentIds);
 	if sampleIdentifier is not None:
 		dataSetSample = tr.getSampleForUpdate(sampleIdentifier);
