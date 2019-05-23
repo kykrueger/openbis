@@ -39,6 +39,14 @@ class ObjectType extends React.Component {
   }
 
   componentDidMount(){
+    this.load()
+  }
+
+  load(){
+    this.setState({
+      loaded: false
+    })
+
     Promise.all([
       this.loadObjectType(this.props.objectId),
       this.loadPropertyTypes()
@@ -56,7 +64,7 @@ class ObjectType extends React.Component {
     let fo = new dto.SampleTypeFetchOptions()
     fo.withPropertyAssignments().withPropertyType().withMaterialType()
     fo.withPropertyAssignments().withPropertyType().withVocabulary()
-    fo.withPropertyAssignments().sortBy().code()
+    fo.withPropertyAssignments().sortBy().ordinal()
 
     return facade.getSampleTypes([id], fo).then(map => {
       let objectType = map[objectTypeId]
@@ -64,10 +72,10 @@ class ObjectType extends React.Component {
         return {
           code: objectType.code,
           properties: objectType.propertyAssignments.map(assignment => ({
-            permId: assignment.permId,
             propertyType: assignment.propertyType,
             ordinal: assignment.ordinal,
             mandatory: assignment.mandatory,
+            original: assignment,
             selected: false,
             errors: {}
           }))
@@ -147,7 +155,6 @@ class ObjectType extends React.Component {
         }
       })
       newProperties.push({
-        permId: null,
         propertyType: null,
         mandatory: false,
         selected: true,
@@ -244,7 +251,39 @@ class ObjectType extends React.Component {
     if(this.validate()){
       let update = new dto.SampleTypeUpdate()
       update.setTypeId(new dto.EntityTypePermId(this.props.objectId))
-      facade.updateSampleTypes([update])
+
+      let newProperties = []
+      let newPropertyOridinal = 1
+
+      this.state.objectType.properties.forEach(property => {
+        let newProperty = new dto.PropertyAssignmentCreation()
+
+        if(property.original && property.propertyType.code === property.original.propertyType.code){
+          newProperty.ordinal = newPropertyOridinal++
+          newProperty.propertyTypeId = new dto.PropertyTypePermId(property.original.propertyType.code)
+          newProperty.section = property.original.section
+          newProperty.pluginId = property.original.plugin ? new dto.PluginPermId(property.original.plugin.name) : null
+          newProperty.initialValueForExistingEntities = property.original.initialValueForExistingEntities
+          newProperty.showInEditView = property.original.showInEditView
+          newProperty.showRawValueInForms = property.original.showRawValueInForms
+          newProperty.mandatory = property.mandatory
+        }else{
+          newProperty.ordinal = newPropertyOridinal++
+          newProperty.propertyTypeId = new dto.PropertyTypePermId(property.propertyType.code)
+          newProperty.mandatory = property.mandatory
+        }
+
+        newProperties.push(newProperty)
+      })
+
+      update.getPropertyAssignments().set(newProperties)
+
+      facade.updateSampleTypes([update]).then(()=>{
+        alert('Saved!')
+        this.load()
+      }, (error) => {
+        alert(error.message)
+      })
     }
   }
 
