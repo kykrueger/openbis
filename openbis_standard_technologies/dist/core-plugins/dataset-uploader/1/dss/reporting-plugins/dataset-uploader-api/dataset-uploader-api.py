@@ -45,7 +45,7 @@ def process(tr, parameters, tableBuilder):
 	tr.setUserId(userId);
 	
 	if method == "insertDataSet":
-                permId = parameters.get("permId");
+		permId = parameters.get("permId");
 		sampleIdentifier = parameters.get("sampleIdentifier"); #String
 		experimentIdentifier = parameters.get("experimentIdentifier"); #String
 		dataSetType = parameters.get("dataSetType"); #String
@@ -86,10 +86,10 @@ def getThreadProperties(transaction):
 def insertDataSet(tr, permId, sampleIdentifier, experimentIdentifier, dataSetType, folderName, fileNames, isZipDirectoryUpload, metadata, parentIds):
 		
 	#Create Dataset, either with or without a prior defined permId
-        if permId is not None:
-	    dataSet = tr.createNewDataSet(dataSetType, permId);
-        else:
-	    dataSet = tr.createNewDataSet(dataSetType);
+	if permId is not None:
+		dataSet = tr.createNewDataSet(dataSetType, permId);
+	else:
+		dataSet = tr.createNewDataSet(dataSetType);
 
 	dataSet.setParentDatasets(parentIds);
 	if sampleIdentifier is not None:
