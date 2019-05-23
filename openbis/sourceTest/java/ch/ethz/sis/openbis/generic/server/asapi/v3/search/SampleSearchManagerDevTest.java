@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.PostgresSearchDAO;
 import org.testng.annotations.Test;
 
@@ -42,63 +41,61 @@ public class SampleSearchManagerDevTest
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
         final SampleFetchOptions sampleFetchOption = new SampleFetchOptions();
         final PostgresSearchDAO searchDAO = new PostgresSearchDAO();
-        searchDAO.setSqlExecutor(new ISQLExecutor()
-        {
-            @Override
-            public List<Map<String, Object>> execute(String sqlQuery, List<Object> args)
-            {
-                System.out.println("QUERY: " + sqlQuery);
-                System.out.println("ARGS: " + args);
-                try
+        searchDAO.setSqlExecutor((sqlQuery, args) ->
                 {
-                    Class.forName("org.postgresql.Driver");
-                    Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", "");
-
-                    PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-                    for (int aIdx = 0; aIdx < args.size(); aIdx++)
+                    System.out.println("QUERY: " + sqlQuery);
+                    System.out.println("ARGS: " + args);
+                    try
                     {
-                        final Object object = args.get(aIdx);
-                        if (object.getClass().isArray())
+                        Class.forName("org.postgresql.Driver");
+                        Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", "");
+
+                        PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+                        for (int aIdx = 0; aIdx < args.size(); aIdx++)
                         {
-                            preparedStatement.setArray(aIdx + 1, connection.createArrayOf("bigint", (Object[]) object));
-                        } else
-                        {
-                            preparedStatement.setObject(aIdx + 1, object);
+                            final Object object = args.get(aIdx);
+                            if (object.getClass().isArray())
+                            {
+                                preparedStatement.setArray(aIdx + 1, connection.createArrayOf("bigint", (Object[]) object));
+                            } else
+                            {
+                                preparedStatement.setObject(aIdx + 1, object);
+                            }
                         }
-                    }
 
-                    ResultSet resultSet = preparedStatement.executeQuery();
-                    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-                    List<String> columnNames = new ArrayList<>();
-                    for (int cIdx = 0; cIdx < resultSetMetaData.getColumnCount(); cIdx++)
-                    {
-                        columnNames.add(resultSetMetaData.getColumnName(cIdx + 1));
-                    }
-
-                    List<Map<String, Object>> results = new ArrayList<>();
-                    while (resultSet.next())
-                    {
-                        Map<String, Object> row = new HashMap<>();
-                        for (String columnName : columnNames)
+                        ResultSet resultSet = preparedStatement.executeQuery();
+                        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                        List<String> columnNames = new ArrayList<>();
+                        for (int cIdx = 0; cIdx < resultSetMetaData.getColumnCount(); cIdx++)
                         {
-                            row.put(columnName, resultSet.getObject(columnName));
+                            columnNames.add(resultSetMetaData.getColumnName(cIdx + 1));
                         }
-                        results.add(row);
-                    }
 
-                    resultSet.close();
-                    preparedStatement.close();
-                    connection.close();
-                    System.out.println("RESULTS: " + results);
-                    return results;
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        });
+                        List<Map<String, Object>> results = new ArrayList<>();
+                        while (resultSet.next())
+                        {
+                            Map<String, Object> row = new HashMap<>();
+                            for (String columnName : columnNames)
+                            {
+                                row.put(columnName, resultSet.getObject(columnName));
+                            }
+                            results.add(row);
+                        }
+
+                        resultSet.close();
+                        preparedStatement.close();
+                        connection.close();
+                        System.out.println("RESULTS: " + results);
+                        return results;
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
         // final SortAndPage sortAndPage = new SortAndPage();
         final SampleSearchManager sampleSearchManager = new SampleSearchManager(searchDAO, null);
         final Set<Long> unSortedResults = sampleSearchManager.searchForIDs(userId, sampleSearchCriteria);
         // List<Long> sortedResults = sampleSearchManager.sortAndPage(unSortedResults, sampleSearchCriteria, sampleFetchOption);
+
+        System.out.println("Final results: " + unSortedResults);
     }
 }

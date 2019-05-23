@@ -119,12 +119,14 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     @Override
     public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids)
     {
-        final Set<Long> filteredIds;
         try
         {
             final SpaceProjectIDsVO authorizedSpaceProjectIds = searchDAO.findAuthorisedSpaceProjectIDs(userId);
-            filteredIds = searchDAO.filterSampleIDsBySpaceAndProjectIDs(ids, authorizedSpaceProjectIds);
-            return filteredIds;
+            if (authorizedSpaceProjectIds.isETLServer() || authorizedSpaceProjectIds.isInstanceAdmin()) {
+                return ids;
+            } else {
+                return searchDAO.filterSampleIDsBySpaceAndProjectIDs(ids, authorizedSpaceProjectIds);
+            }
         } catch (Exception e)
         {
             e.printStackTrace();

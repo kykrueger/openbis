@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.mappers.EntityMapper;
 
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_GRA
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ROLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.AUTHORIZATION_GROUP_PERSONS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PERSONS_TABLE;
@@ -63,26 +65,47 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     @Override
     public SpaceProjectIDsVO findAuthorisedSpaceProjectIDs(final Long userId)
     {
-        final String rap = "rap";
-        final String rag = "rag";
-        final String query = "SELECT " + rap + "." + SPACE_COLUMN + ", " + rap + "." + PROJECT_ID_COLUMN + ", " + rag + "." + SPACE_COLUMN + ", " +
-                        rag + "." + PROJECT_ID_COLUMN + "\n" +
-                "FROM " + PERSONS_TABLE + " p\n" +
-                "LEFT JOIN " + AUTHORIZATION_GROUP_PERSONS_TABLE + " ag ON p." + ID_COLUMN + " = ag." + PERSON_ID_COLUMN + "\n" +
-                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + rap + " ON p." + ID_COLUMN + " = " + rap + "." + PERSON_GRANTEE_COLUMN + "\n" +
-                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + rag + " ON ag." + AUTHORIZATION_GROUP_ID_COLUMN + " = " + rag + "." +
+        final String p = "p";
+        final String g = "g";
+        final String query = "SELECT " + p + "." + ROLE_COLUMN + " as \"p.role_code\", " + g + "." + ROLE_COLUMN + " as \"g.role_code\"," +
+                p + "." + SPACE_COLUMN + " as \"p.space_id\", " + p + "." + PROJECT_ID_COLUMN + " as \"p.project_id\", " +
+                g + "." + SPACE_COLUMN + " as \"g.space_id\", " + g + "." + PROJECT_ID_COLUMN + " as \"g.project_id\"\n" +
+                "FROM " + PERSONS_TABLE + " per\n" +
+                "LEFT JOIN " + AUTHORIZATION_GROUP_PERSONS_TABLE + " ag ON per." + ID_COLUMN + " = ag." + PERSON_ID_COLUMN + "\n" +
+                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + p + " ON per." + ID_COLUMN + " = " + p + "." + PERSON_GRANTEE_COLUMN + "\n" +
+                "LEFT JOIN " + ROLE_ASSIGNMENTS_TABLE + " " + g + " ON ag." + AUTHORIZATION_GROUP_ID_COLUMN + " = " + g + "." +
                         AUTHORIZATION_GROUP_ID_GRANTEE_COLUMN + "\n" +
-                "WHERE p." + ID_COLUMN + " = ?";
+                "WHERE per." + ID_COLUMN + " = ?";
         final List<Object> args = Collections.singletonList(userId);
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
 
         final SpaceProjectIDsVO result = new SpaceProjectIDsVO();
         queryResultList.forEach(resultRow ->
                 {
-                    final Object spaceIdPerson = resultRow.get(rap + "." + SPACE_COLUMN);
-                    final Object projectIdPerson = resultRow.get(rap + "." + PROJECT_ID_COLUMN);
-                    final Object spaceIdGroup = resultRow.get(rag + "." + SPACE_COLUMN);
-                    final Object projectIdGroup = resultRow.get(rag + "." + PROJECT_ID_COLUMN);
+                    final Object roleIdPerson = resultRow.get(p + "." + ROLE_COLUMN);
+                    final Object spaceIdPerson = resultRow.get(p + "." + SPACE_COLUMN);
+                    final Object projectIdPerson = resultRow.get(p + "." + PROJECT_ID_COLUMN);
+                    final Object roleIdGroup = resultRow.get(g + "." + ROLE_COLUMN);
+                    final Object spaceIdGroup = resultRow.get(g + "." + SPACE_COLUMN);
+                    final Object projectIdGroup = resultRow.get(g + "." + PROJECT_ID_COLUMN);
+
+                    boolean isInstanceAdmin = result.isInstanceAdmin() || Role.ADMIN.name().equals(roleIdPerson) &&
+                            spaceIdPerson == null && projectIdPerson == null || Role.ADMIN.name().equals(roleIdGroup) &&
+                            spaceIdGroup == null && projectIdGroup == null;
+
+                    if (isInstanceAdmin) {
+                        result.setInstanceAdmin(true);
+                    }
+
+                    boolean isETLServer = result.isInstanceAdmin() || Role.ETL_SERVER.name().equals(roleIdPerson) &&
+                            spaceIdPerson == null && projectIdPerson == null || Role.ETL_SERVER.name().equals(roleIdGroup) &&
+                            spaceIdGroup == null && projectIdGroup == null;
+
+                    if (isETLServer)
+                    {
+                        result.setETLServer(true);
+                    }
+
                     if (spaceIdPerson != null)
                     {
                         result.getSpaceIds().add((long) spaceIdPerson);

@@ -22,6 +22,10 @@ import java.util.Set;
 public class SpaceProjectIDsVO
 {
 
+    private boolean isInstanceAdmin;
+
+    private boolean isETLServer;
+
     private final Set<Long> spaceIds;
 
     private final Set<Long> projectIds;
@@ -45,6 +49,26 @@ public class SpaceProjectIDsVO
     public Set<Long> getProjectIds()
     {
         return projectIds;
+    }
+
+    public boolean isInstanceAdmin()
+    {
+        return isInstanceAdmin;
+    }
+
+    public void setInstanceAdmin(boolean instanceAdmin)
+    {
+        isInstanceAdmin = instanceAdmin;
+    }
+
+    public boolean isETLServer()
+    {
+        return isETLServer;
+    }
+
+    public void setETLServer(boolean ETLServer)
+    {
+        isETLServer = ETLServer;
     }
 
     @Override
