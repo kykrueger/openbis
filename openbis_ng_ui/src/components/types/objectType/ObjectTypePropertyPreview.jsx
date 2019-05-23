@@ -34,7 +34,7 @@ class ObjectTypePropertyPreview extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    if(props.property !== state.property){
+    if(!state.property || state.property.propertyType !== props.property.propertyType){
       return {
         loaded: false,
         property: props.property,
