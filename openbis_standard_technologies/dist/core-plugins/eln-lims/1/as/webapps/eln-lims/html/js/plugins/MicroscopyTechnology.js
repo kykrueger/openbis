@@ -14,14 +14,14 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
             "SHOW": false,
             "SAMPLE_CHILDREN_DISABLED": true,
             "SAMPLE_PARENTS_DISABLED": true,
-            "TOOLBAR": { CREATE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true }
+            "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true }
         },
         "MICROSCOPY_EXPERIMENT": {
             "SHOW": false,
             "SAMPLE_CHILDREN_DISABLED": false,
             "SAMPLE_PARENTS_DISABLED": false,
             "SAMPLE_PARENTS_ANY_TYPE_DISABLED": true,
-            "TOOLBAR": { CREATE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true },
+            "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true },
             "SAMPLE_PARENTS_HINT": [{
                 "LABEL": "Organization Units",
                 "TYPE": "ORGANIZATION_UNIT",
@@ -32,23 +32,23 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
     dataSetTypeDefinitionsExtension: {
         "MICROSCOPY_ACCESSORY_FILE": {
             "DATASET_PARENTS_DISABLED": true,
-            "TOOLBAR": { EDIT: true, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
         },
         "MICROSCOPY_IMG": {
             "DATASET_PARENTS_DISABLED": true,
-            "TOOLBAR": { EDIT: true, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
         },
         "MICROSCOPY_IMG_OVERVIEW": {
             "DATASET_PARENTS_DISABLED": true,
-            "TOOLBAR": { EDIT: true, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
         },
         "MICROSCOPY_IMG_THUMBNAIL": {
             "DATASET_PARENTS_DISABLED": true,
-            "TOOLBAR": { EDIT: true, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
         },
         "MICROSCOPY_IMG_CONTAINER": {
             "DATASET_PARENTS_DISABLED": true,
-            "TOOLBAR": { EDIT: true, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
+            "TOOLBAR": { EDIT: false, FREEZE: false, MOVE: false, ARCHIVE: true, DELETE: false, HIERARCHY_TABLE: true, EXPORT_ALL: true, EXPORT_METADATA: true }
         }
     },
     sampleFormTop: function ($container, model) {

@@ -8,8 +8,8 @@ import ethz.ch.property.EntityPropertyDelete;
 
 public class DataSetPropertyDelete extends EntityPropertyDelete {
 
-    public DataSetPropertyDelete(String typeCode, String propertyCode) {
-        super(typeCode, propertyCode);
+    public DataSetPropertyDelete(String typeCode, String propertyCode, Boolean unassign, Boolean delete) {
+        super(typeCode, propertyCode, unassign, delete);
     }
 
     @Override
@@ -23,9 +23,14 @@ public class DataSetPropertyDelete extends EntityPropertyDelete {
             }
         }
         if (found) {
-            MasterdataHelper.updateDataSetType(sessionToken, v3, typeCode, MasterdataHelper.PropertyTypeUpdateAction.REMOVE, 1, propertyCode);
-            MasterdataHelper.deletePropertyType(sessionToken, v3, propertyCode);
-            System.out.println("[PROPERTY DELETE] " + "\t" + propertyCode);
+            if (unassign) {
+                MasterdataHelper.updateDataSetType(sessionToken, v3, typeCode, MasterdataHelper.PropertyTypeUpdateAction.REMOVE, 1, propertyCode);
+                System.out.println("[PROPERTY UNASSIGN] " + "\t" + propertyCode);
+            }
+            if (delete) {
+                MasterdataHelper.deletePropertyType(sessionToken, v3, propertyCode);
+                System.out.println("[PROPERTY DELETE] " + "\t" + propertyCode);
+            }
         }
     }
 }

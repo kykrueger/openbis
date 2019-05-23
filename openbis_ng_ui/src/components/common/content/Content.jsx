@@ -17,12 +17,10 @@ const styles = {
     width: '100px'
   },
   component: {
-    margin: '12px 0px 0px 12px',
-    overflowY: 'auto',
     flex: '1 1 100%'
   },
   visible: {
-    display: 'flex'
+    display: 'block'
   },
   hidden: {
     display: 'none',

@@ -3,7 +3,7 @@ import {facade, dto} from '../../services/openbis.js'
 import * as actions from '../actions/actions.js'
 import * as pages from '../consts/pages.js'
 
-export default function* app() {
+export default function* appSaga() {
   yield takeEvery(actions.INIT, init)
   yield takeEvery(actions.LOGIN, login)
   yield takeEvery(actions.LOGOUT, logout)

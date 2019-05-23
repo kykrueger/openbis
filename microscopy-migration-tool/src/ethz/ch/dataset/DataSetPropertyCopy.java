@@ -38,6 +38,6 @@ public class DataSetPropertyCopy extends EntityPropertyCopy<DataSet> {
 
     @Override
     public EntityPropertyDelete getEntityPropertyDelete() {
-        return new DataSetPropertyDelete(typeCode, oldPropertyCode);
+        return new DataSetPropertyDelete(typeCode, oldPropertyCode, true, true);
     }
 }
