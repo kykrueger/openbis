@@ -36,6 +36,6 @@ public class ExperimentType2SampleType {
     }
 
     public SamplePropertyDelete getSamplePropertyDelete() {
-        return new SamplePropertyDelete(typeCode, propertyTypesToDeleteAfterMigration.get(0));
+        return new SamplePropertyDelete(typeCode, propertyTypesToDeleteAfterMigration.get(0), true, true);
     }
 }

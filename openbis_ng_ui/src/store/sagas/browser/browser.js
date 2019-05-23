@@ -9,7 +9,7 @@ import * as common from '../../common/browser.js'
 import * as typesBrowser from './types.js'
 import * as usersBrowser from './users.js'
 
-export default function* browser() {
+export default function* browserSaga() {
   yield takeEvery(actions.BROWSER_INIT, browserInit)
   yield takeEvery(actions.BROWSER_FILTER_CHANGE, browserFilterChange)
   yield takeEvery(actions.BROWSER_NODE_SELECT, browserNodeSelect)

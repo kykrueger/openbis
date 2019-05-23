@@ -428,7 +428,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				} else {
 					var $component = null;
 					if(propertyType.code === "$DEFAULT_OBJECT_TYPE") {
-						$component = FormUtil.getSampleTypeDropdown(propertyType.code, true);
+						$component = FormUtil.getSampleTypeDropdown(propertyType.code, false);
 					} else {
 						$component = FormUtil.getFieldForPropertyType(propertyType, value);
 					}

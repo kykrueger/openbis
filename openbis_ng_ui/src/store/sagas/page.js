@@ -3,7 +3,7 @@ import {put, takeEvery, select} from './effects.js'
 import * as selectors from '../selectors/selectors.js'
 import * as actions from '../actions/actions.js'
 
-export default function* page() {
+export default function* pageSaga() {
   yield takeEvery(actions.OBJECT_OPEN, objectOpen)
   yield takeEvery(actions.OBJECT_CLOSE, objectClose)
 }
