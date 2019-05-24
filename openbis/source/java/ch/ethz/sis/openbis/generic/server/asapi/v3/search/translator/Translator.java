@@ -61,6 +61,12 @@ public class Translator
 
     private static final String ON = "ON";
 
+    private static final String IS = "IS";
+
+    private static final String NOT = "NOT";
+
+    private static final String NULL = "NULL";
+
     private static final String SP = " ";
 
     private static final String COMMA = ",";
@@ -180,40 +186,54 @@ public class Translator
                                         final Object fieldValue = fieldSearchSubcriterion.getFieldValue();
                                         final SearchFieldType fieldType = fieldSearchSubcriterion.getFieldType();
 
-                                        if (fieldValue instanceof AbstractStringValue) {
-                                            builder.append(fieldName);
-                                            if (fieldValue instanceof StringEqualToValue) {
-                                                builder.append(EQ).append(QU);
-                                            }
-                                            if (fieldValue instanceof StringContainsValue) {
-                                                builder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
-                                                        append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
-                                            }
-                                            if (fieldValue instanceof StringStartsWithValue) {
-                                                builder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
-                                                        append(PERCENT);
-                                            }
-                                            if (fieldValue instanceof StringEndsWithValue) {
-                                                builder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
-                                                        append(QU);
-                                            }
-                                        } else if (fieldValue instanceof AbstractDateValue) {
-                                            if (fieldValue instanceof DateEqualToValue) {
-                                                builder.append(EQ).append(QU);
-                                            }
-                                            if (fieldValue instanceof DateEarlierThanOrEqualToValue)
+                                        if (fieldValue == null)
+                                        {
+                                            builder.append(fieldName).append(SP).append(IS).append(SP).append(NOT).append(SP).append(NULL);
+                                        } else
+                                        {
+                                            if (fieldValue instanceof AbstractStringValue)
                                             {
-                                                builder.append(LE).append(QU);
-                                            }
-                                            if (fieldValue instanceof DateLaterThanOrEqualToValue)
+                                                builder.append(fieldName);
+                                                if (fieldValue instanceof StringEqualToValue)
+                                                {
+                                                    builder.append(EQ).append(QU);
+                                                }
+                                                if (fieldValue instanceof StringContainsValue)
+                                                {
+                                                    builder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
+                                                            append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
+                                                }
+                                                if (fieldValue instanceof StringStartsWithValue)
+                                                {
+                                                    builder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
+                                                            append(PERCENT);
+                                                }
+                                                if (fieldValue instanceof StringEndsWithValue)
+                                                {
+                                                    builder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
+                                                            append(QU);
+                                                }
+                                            } else if (fieldValue instanceof AbstractDateValue)
                                             {
-                                                builder.append(GE).append(QU);
+                                                if (fieldValue instanceof DateEqualToValue)
+                                                {
+                                                    builder.append(EQ).append(QU);
+                                                }
+                                                if (fieldValue instanceof DateEarlierThanOrEqualToValue)
+                                                {
+                                                    builder.append(LE).append(QU);
+                                                }
+                                                if (fieldValue instanceof DateLaterThanOrEqualToValue)
+                                                {
+                                                    builder.append(GE).append(QU);
+                                                }
+                                            } else
+                                            {
+                                                builder.append(fieldName).append(EQ).append(QU);
                                             }
-                                        } else {
-                                            builder.append(fieldName).append(EQ).append(QU);
-                                        }
 
-                                        args.add(fieldValue);
+                                            args.add(fieldValue);
+                                        }
                                     } else if (subcriterion instanceof IdSearchCriteria<?>) {
                                         final IdSearchCriteria<? extends IObjectId> fieldSearchSubcriterion = (IdSearchCriteria<?>) subcriterion;
 
