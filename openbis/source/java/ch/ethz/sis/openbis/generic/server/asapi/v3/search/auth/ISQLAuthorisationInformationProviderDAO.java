@@ -14,32 +14,15 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.mappers;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import java.util.Set;
 
-public enum LogicalOperatorsMapper
+public interface ISQLAuthorisationInformationProviderDAO
 {
-    AND("AND"),
+    @SuppressWarnings("unchecked")
+    AuthorisationInformation findAuthorisedSpaceProjectIDs(Long userId);
 
-    OR("OR");
-
-    private String value;
-
-    LogicalOperatorsMapper(String value)
-    {
-        this.value = value;
-    }
-
-    @Override
-    public String toString()
-    {
-        return value;
-    }
-
-    public static LogicalOperatorsMapper toLogicalOperatorsMapper(final SearchOperator operator)
-    {
-        return LogicalOperatorsMapper.valueOf(operator.name());
-    }
+    Set<Long> getAuthorisedSamples(Set<Long> requestedIDs, AuthorisationInformation authInfo);
 
 }

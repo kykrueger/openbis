@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth;
 
-import java.util.HashSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+
 import java.util.Set;
 
-public class SpaceProjectIDsVO
+public class AuthorisationInformation
 {
 
-    private boolean isInstanceAdmin;
-
-    private boolean isETLServer;
+    private final Set<Role> instanceRoles;
 
     private final Set<Long> spaceIds;
 
     private final Set<Long> projectIds;
 
-    public SpaceProjectIDsVO()
+    public AuthorisationInformation(Set<Role> instanceRoles,
+            final Set<Long> spaceIds, final Set<Long> projectIds)
     {
-        this(new HashSet<>(), new HashSet<>());
-    }
-
-    public SpaceProjectIDsVO(final Set<Long> spaceIds, final Set<Long> projectIds)
-    {
+        this.instanceRoles = instanceRoles;
         this.spaceIds = spaceIds;
         this.projectIds = projectIds;
+    }
+
+    public Set<Role> getInstanceRoles()
+    {
+        return instanceRoles;
     }
 
     public Set<Long> getSpaceIds()
@@ -49,26 +50,6 @@ public class SpaceProjectIDsVO
     public Set<Long> getProjectIds()
     {
         return projectIds;
-    }
-
-    public boolean isInstanceAdmin()
-    {
-        return isInstanceAdmin;
-    }
-
-    public void setInstanceAdmin(boolean instanceAdmin)
-    {
-        isInstanceAdmin = instanceAdmin;
-    }
-
-    public boolean isETLServer()
-    {
-        return isETLServer;
-    }
-
-    public void setETLServer(boolean ETLServer)
-    {
-        isETLServer = ETLServer;
     }
 
     @Override
@@ -83,7 +64,7 @@ public class SpaceProjectIDsVO
             return false;
         }
 
-        SpaceProjectIDsVO that = (SpaceProjectIDsVO) o;
+        AuthorisationInformation that = (AuthorisationInformation) o;
 
         if (!spaceIds.equals(that.spaceIds))
         {

@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,13 +40,17 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, ENTITY> implements ISearchManager<CRITERIA>
 {
-    protected final ISQLSearchDAO searchDAO;
+    private final ISQLSearchDAO searchDAO;
 
-    protected final ISortAndPage sortAndPage;
+    private final ISQLAuthorisationInformationProviderDAO authProvider;
 
-    public AbstractSearchManager(final ISQLSearchDAO searchDAO, final ISortAndPage sortAndPage)
+    private final ISortAndPage sortAndPage;
+
+    public AbstractSearchManager(final ISQLSearchDAO searchDAO,
+            ISQLAuthorisationInformationProviderDAO authProvider, final ISortAndPage sortAndPage)
     {
         this.searchDAO = searchDAO;
+        this.authProvider = authProvider;
         this.sortAndPage = sortAndPage;
     }
 
@@ -91,7 +96,10 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, EN
     {
         final Collection<Set<E>> intermediateResults = Arrays.stream(intermediateResultsToMerge).reduce(new ArrayList<>(), (sets, sets2) ->
                 {
-                    sets.addAll(sets2);
+                    if (sets2 != null)
+                    {
+                        sets.addAll(sets2);
+                    }
                     return sets;
                 });
 
@@ -108,19 +116,25 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, EN
 
     protected static <E> Set<E> intersection(final Collection<Set<E>> sets)
     {
-        return !sets.isEmpty() ? sets.stream().reduce(new HashSet<>(sets.iterator().next()), (es, es2) ->
+        return !sets.isEmpty() ? sets.stream().reduce(new HashSet<>(sets.iterator().next()), (set1, set2) ->
                 {
-                    es.retainAll(es2);
-                    return es;
+                    if (set2 != null)
+                    {
+                        set1.retainAll(set2);
+                    }
+                    return set1;
                 }) : new HashSet<>(0);
     }
 
     protected static <E> Set<E> union(final Collection<Set<E>> sets)
     {
-        return sets.stream().reduce(new HashSet<>(), (es, es2) ->
+        return sets.stream().reduce(new HashSet<>(), (set1, set2) ->
                 {
-                    es.addAll(es2);
-                    return es;
+                    if (set2 != null)
+                    {
+                        set1.addAll(set2);
+                    }
+                    return set1;
                 });
     }
 
@@ -144,6 +158,21 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, EN
                     }
                 }).orElse(null);
         return smallestSet;
+    }
+
+    protected ISQLSearchDAO getSearchDAO()
+    {
+        return searchDAO;
+    }
+
+    protected ISQLAuthorisationInformationProviderDAO getAuthProvider()
+    {
+        return authProvider;
+    }
+
+    protected ISortAndPage getSortAndPage()
+    {
+        return sortAndPage;
     }
 
 }

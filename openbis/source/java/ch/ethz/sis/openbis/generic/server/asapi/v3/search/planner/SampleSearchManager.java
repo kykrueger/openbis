@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
@@ -25,8 +25,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,9 +46,10 @@ import java.util.stream.Stream;
 public class SampleSearchManager extends AbstractSearchManager<SampleSearchCriteria, Sample>
 {
 
-    public SampleSearchManager(ISQLSearchDAO searchDAO, ISortAndPage sortAndPage)
+    public SampleSearchManager(ISQLSearchDAO searchDAO, ISortAndPage sortAndPage,
+            ISQLAuthorisationInformationProviderDAO authProvider)
     {
-        super(searchDAO, sortAndPage);
+        super(searchDAO, authProvider, sortAndPage);
     }
 
     @Override
@@ -65,7 +67,7 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
         // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
         if (!mainCriteria.isEmpty())
         {
-            mainCriteriaIntermediateResults = searchDAO.queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, mainCriteria,
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, mainCriteria,
                     criteria.getOperator());
         }
 
@@ -119,25 +121,20 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     @Override
     public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids)
     {
-        try
+        final AuthorisationInformation authorizedSpaceProjectIds = getAuthProvider().findAuthorisedSpaceProjectIDs(userId);
+        if (authorizedSpaceProjectIds.getInstanceRoles().isEmpty())
         {
-            final SpaceProjectIDsVO authorizedSpaceProjectIds = searchDAO.findAuthorisedSpaceProjectIDs(userId);
-            if (authorizedSpaceProjectIds.isETLServer() || authorizedSpaceProjectIds.isInstanceAdmin()) {
-                return ids;
-            } else {
-                return searchDAO.filterSampleIDsBySpaceAndProjectIDs(ids, authorizedSpaceProjectIds);
-            }
-        } catch (Exception e)
+            return getAuthProvider().getAuthorisedSamples(ids, authorizedSpaceProjectIds);
+        } else
         {
-            e.printStackTrace();
+            return ids;
         }
-        return null;
     }
 
     @Override
     public List<Long> sortAndPage(Set<Long> ids, SampleSearchCriteria criteria, FetchOptions<Sample> fetchOptions)
     {
-        return sortAndPage.sortAndPage(new ArrayList<>(ids), criteria, fetchOptions);
+        return getSortAndPage().sortAndPage(new ArrayList<>(ids), criteria, fetchOptions);
     }
 
     /**
@@ -170,7 +167,7 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     private Set<Long> getAllIds()
     {
         final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        return searchDAO.queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, Collections.singletonList(criteria),
+        return getSearchDAO().queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, Collections.singletonList(criteria),
                 SearchOperator.OR);
     }
 
@@ -178,7 +175,7 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     {
         try
         {
-            return searchDAO.findChildIDs(EntityKind.SAMPLE, parentIdSet);
+            return getSearchDAO().findChildIDs(EntityKind.SAMPLE, parentIdSet);
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -190,7 +187,7 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
     {
         try
         {
-            return searchDAO.findParentIDs(EntityKind.SAMPLE, childIdSet);
+            return getSearchDAO().findParentIDs(EntityKind.SAMPLE, childIdSet);
         } catch (Exception e)
         {
             e.printStackTrace();

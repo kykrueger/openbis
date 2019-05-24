@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 ETH Zuerich, CISD
+ * Copyright 2011 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.SpaceProjectIDsVO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
@@ -53,6 +55,8 @@ public class SampleSearchManagerTest
 
     private ISQLSearchDAO searchDAOMock;
 
+    private ISQLAuthorisationInformationProviderDAO authInfoProviderMock;
+
     private SampleSearchManager searchManager;
 
     private ISortAndPage sortAndPageMock;
@@ -62,8 +66,9 @@ public class SampleSearchManagerTest
     {
         context = new Mockery();
         searchDAOMock = context.mock(ISQLSearchDAO.class);
+        authInfoProviderMock = context.mock(ISQLAuthorisationInformationProviderDAO.class);
         sortAndPageMock = context.mock(ISortAndPage.class);
-        searchManager = new SampleSearchManager(searchDAOMock, sortAndPageMock);
+        searchManager = new SampleSearchManager(searchDAOMock, sortAndPageMock, authInfoProviderMock);
     }
 
     @AfterMethod
@@ -327,12 +332,13 @@ public class SampleSearchManagerTest
                 {{
                     final Set<Long> spaceIds = new HashSet<>(Arrays.asList(10L, 11L, 12L));
                     final Set<Long> projectIds = new HashSet<>(Arrays.asList(20L, 21L, 22L, 23L));
+                    final Set<Role> instanceRoles = new HashSet<>(Arrays.asList(Role.ETL_SERVER));
 
-                    one(searchDAOMock).findAuthorisedSpaceProjectIDs(userId);
-                    will(returnValue(new SpaceProjectIDsVO(spaceIds, projectIds)));
+                    one(authInfoProviderMock).findAuthorisedSpaceProjectIDs(userId);
+                    will(returnValue(new AuthorisationInformation(instanceRoles, spaceIds, projectIds)));
 
-                    one(searchDAOMock).filterSampleIDsBySpaceAndProjectIDs(sampleIds,
-                            new SpaceProjectIDsVO(spaceIds, projectIds));
+                    one(authInfoProviderMock).getAuthorisedSamples(sampleIds,
+                            new AuthorisationInformation(instanceRoles, spaceIds, projectIds));
                     will(returnValue(acceptedIds));
                 }});
 

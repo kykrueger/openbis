@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
@@ -24,6 +25,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrE
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
@@ -32,11 +34,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.mappers.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 
 public class Translator
 {
@@ -83,7 +87,7 @@ public class Translator
 
     private static final String BARS = "||";
 
-    public static TranslatorResult translate(final EntityKind entityKind, final List<ISearchCriteria> criteria,
+    public static SelectQuery translate(final EntityKind entityKind, final List<ISearchCriteria> criteria,
             final SearchOperator operator)
     {
         if (criteria == null && criteria.isEmpty())
@@ -100,7 +104,7 @@ public class Translator
         final String whereClause = buildWhere(dbEntityKind, criteria, args, operator);
         final String selectClause = buildSelect(dbEntityKind, aliases);
 
-        return new TranslatorResult(selectClause + fromClause + whereClause, args);
+        return new SelectQuery(selectClause + fromClause + whereClause, args);
     }
 
     private static String buildSelect(final EntityMapper dbEntityKind, final List<String> aliasesPresentInOrderBy)
@@ -171,7 +175,7 @@ public class Translator
                                 {
                                     if (subcriterion instanceof AbstractFieldSearchCriteria<?>)
                                     {
-                                        final AbstractFieldSearchCriteria fieldSearchSubcriterion = (AbstractFieldSearchCriteria) subcriterion;
+                                        final AbstractFieldSearchCriteria<?> fieldSearchSubcriterion = (AbstractFieldSearchCriteria<?>) subcriterion;
                                         final Object fieldName = fieldSearchSubcriterion.getFieldName();
                                         final Object fieldValue = fieldSearchSubcriterion.getFieldValue();
                                         final SearchFieldType fieldType = fieldSearchSubcriterion.getFieldType();
@@ -208,12 +212,19 @@ public class Translator
                                         } else {
                                             builder.append(fieldName).append(EQ).append(QU);
                                         }
+
+                                        args.add(fieldValue);
+                                    } else if (subcriterion instanceof IdSearchCriteria<?>) {
+                                        final IdSearchCriteria<? extends IObjectId> fieldSearchSubcriterion = (IdSearchCriteria<?>) subcriterion;
+
+                                        builder.append(ID_COLUMN).append(EQ).append(QU);
+                                        args.add(fieldSearchSubcriterion.getId());
                                     }
                                     builder.append(SP).append(logicalOperator).append(SP);
                                 });
                     }
                 });
-        builder.setLength(builder.length() - logicalOperator.length() - SP.length());
+        builder.setLength(builder.length() - logicalOperator.length() - SP.length() * 2);
         return builder.toString();
     }
 
@@ -235,67 +246,6 @@ public class Translator
             }
         }
         return false;
-    }
-
-    public static class TranslatorResult
-    {
-
-        private final String sqlQuery;
-
-        private final List<Object> args;
-
-        public TranslatorResult(String sqlQuery, List<Object> args)
-        {
-            this.sqlQuery = sqlQuery;
-            this.args = args;
-        }
-
-        public String getSqlQuery()
-        {
-            return sqlQuery;
-        }
-
-        public List<Object> getArgs()
-        {
-            return args;
-        }
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o)
-            {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass())
-            {
-                return false;
-            }
-
-            TranslatorResult that = (TranslatorResult) o;
-
-            if (!sqlQuery.equals(that.sqlQuery))
-            {
-                return false;
-            }
-            return args.equals(that.args);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int result = sqlQuery.hashCode();
-            result = 31 * result + args.hashCode();
-            return result;
-        }
-
-        @Override public String toString()
-        {
-            return "TranslatorResult{" +
-                    "sqlQuery='" + sqlQuery + '\'' +
-                    ", args=" + args +
-                    '}';
-        }
     }
 
     public static class TranslatorAlias

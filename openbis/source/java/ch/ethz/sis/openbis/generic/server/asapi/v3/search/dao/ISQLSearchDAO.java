@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
@@ -32,23 +32,6 @@ public interface ISQLSearchDAO
     Set<Long> queryDBWithNonRecursiveCriteria(EntityKind entityKind, List<ISearchCriteria> criteria,
             SearchOperator operator);
 
-    /**
-     * Finds IDs of spaces and projects to which the current user has access.
-     *
-     * @param userId the ID of the user.
-     * @return set of IDs of spaces authorized for the current user.
-     */
-    SpaceProjectIDsVO findAuthorisedSpaceProjectIDs(Long userId);
-
-    /**
-     * Filters sample IDs based on their relations to space and projects.
-     *
-     * @param ids the IDs to be filtered
-     * @param authorizedSpaceProjectIds value object that contains space and project IDs, which should be related to the
-     *     resulting IDs.
-     * @return the subset of IDs which are related either to one of the specified projects or spaces.
-     */
-    Set<Long> filterSampleIDsBySpaceAndProjectIDs(Set<Long> ids, SpaceProjectIDsVO authorizedSpaceProjectIds);
 
     /**
      * Finds child IDs which correspond to parent IDs.

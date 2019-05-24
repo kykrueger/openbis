@@ -18,7 +18,10 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
@@ -43,10 +46,10 @@ public class TranslatorTest
     public void testTranslateSearchAllSamples()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
-        final Translator.TranslatorResult result =
+        final SelectQuery result =
                 Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
-        assertEquals(result, new Translator.TranslatorResult(String.format(
+        assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s\n" +
                 "FROM %s\n",
                 ID_COLUMN, SAMPLES_ALL_TABLE), Collections.emptyList()));
@@ -56,17 +59,19 @@ public class TranslatorTest
     public void testTranslateSearchSamplesById()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria().withAndOperator();
-        sampleSearchCriteria.withIdentifier().thatEquals(SAMPLE_ID);
+//        sampleSearchCriteria.withIdentifier().thatEquals(SAMPLE_ID);
+        final SampleIdentifier sampleIdentifier = new SampleIdentifier(SAMPLE_ID);
+        sampleSearchCriteria.withId().thatEquals(sampleIdentifier);
 
-        final Translator.TranslatorResult result =
+        final SelectQuery result =
                 Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
-        assertEquals(result, new Translator.TranslatorResult(String.format(
+        assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s\n" +
                 "FROM %s\n" +
-                "WHERE %s=?\n",
+                "WHERE %s=?",
                 ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN),
-                Collections.singletonList(SAMPLE_ID)));
+                Collections.singletonList(sampleIdentifier)));
     }
 
     @Test
@@ -77,10 +82,10 @@ public class TranslatorTest
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
-        final Translator.TranslatorResult result =
+        final SelectQuery result =
                 Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
-        assertEquals(result, new Translator.TranslatorResult(String.format(
+        assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s\n" +
                 "FROM %s\n" +
                 "WHERE %s=? AND %s=? AND %s=?\n",
@@ -96,10 +101,10 @@ public class TranslatorTest
         sampleSearchCriteria.withRegistrationDate().thatEquals(REGISTRATION_DATE);
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
-        final Translator.TranslatorResult result =
+        final SelectQuery result =
                 Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
-        assertEquals(result, new Translator.TranslatorResult(String.format(
+        assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s\n" +
                 "FROM %s\n" +
                 "WHERE %s=? OR %s=? OR %s=?\n",
