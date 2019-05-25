@@ -71,9 +71,9 @@ class ObjectType extends React.Component {
       if(objectType){
         return {
           code: objectType.code,
-          properties: objectType.propertyAssignments.map(assignment => ({
+          properties: objectType.propertyAssignments.map((assignment, index) => ({
+            ordinal: index,
             propertyType: assignment.propertyType,
-            ordinal: assignment.ordinal,
             mandatory: assignment.mandatory,
             original: assignment,
             selected: false,

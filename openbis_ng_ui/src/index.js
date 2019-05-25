@@ -3,10 +3,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+import DragAndDropProvider from './components/common/dnd/DragAndDropProvider.jsx'
 import indigo from '@material-ui/core/colors/indigo'
 import lightBlue from '@material-ui/core/colors/lightBlue'
-import { DragDropContextProvider } from 'react-dnd'
-import HTML5Backend from 'react-dnd-html5-backend'
 
 const theme = createMuiTheme({
   typography: {
@@ -29,9 +28,9 @@ const render = () => {
   ReactDOM.render(
     <Provider store = { store }>
       <MuiThemeProvider theme={ theme }>
-        <DragDropContextProvider backend={HTML5Backend}>
+        <DragAndDropProvider>
           <App />
-        </DragDropContextProvider>
+        </DragAndDropProvider>
       </MuiThemeProvider>
     </Provider>,
     document.getElementById('app')

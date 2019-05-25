@@ -6,10 +6,10 @@ import MenuItem from '@material-ui/core/MenuItem'
 import TableCell from '@material-ui/core/TableCell'
 import TableRow from '@material-ui/core/TableRow'
 import TextField from '@material-ui/core/TextField'
-import Checkbox from '@material-ui/core/Checkbox'
 import DragHandleIcon from '@material-ui/icons/DragHandle'
 import RootRef from '@material-ui/core/RootRef'
 import ObjectTypePropertyPreview from './ObjectTypePropertyPreview.jsx'
+import ObjectTypePropertyMandatory from './ObjectTypePropertyMandatory.jsx'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
@@ -64,7 +64,7 @@ function targetCollect(connect, monitor) {
   }
 }
 
-class ObjectTypeTableRow extends React.Component {
+class ObjectTypePropertyRow extends React.Component {
 
   constructor(props){
     super(props)
@@ -72,7 +72,6 @@ class ObjectTypeTableRow extends React.Component {
     this.rowRef = React.createRef()
     this.handleSelect = this.handleSelect.bind(this)
     this.handleChangePropertyType = this.handleChangePropertyType.bind(this)
-    this.handleChangeMandatory = this.handleChangeMandatory.bind(this)
   }
 
   componentDidMount(){
@@ -91,11 +90,6 @@ class ObjectTypeTableRow extends React.Component {
       return propertyType.code === event.target.value
     })
     this.props.onChange(this.props.property.ordinal, 'propertyType', propertyType)
-  }
-
-  handleChangeMandatory(event){
-    event.stopPropagation()
-    this.props.onChange(this.props.property.ordinal, 'mandatory', event.target.checked)
   }
 
   render(){
@@ -122,7 +116,7 @@ class ObjectTypeTableRow extends React.Component {
             {this.renderPropertyType()}
           </TableCell>
           <TableCell>
-            {this.renderMandatory()}
+            <ObjectTypePropertyMandatory property={property} onChange={this.props.onChange} />
           </TableCell>
         </TableRow>
       </RootRef>
@@ -162,22 +156,10 @@ class ObjectTypeTableRow extends React.Component {
     )
   }
 
-  renderMandatory(){
-    const {property} = this.props
-
-    return (
-      <Checkbox
-        checked={property.mandatory}
-        value='mandatory'
-        onClick={event => {event.stopPropagation()}}
-        onChange={this.handleChangeMandatory}
-      />
-    )
-  }
 }
 
 export default _.flow(
   DragSource('property', source, sourceCollect),
   DropTarget('property', target, targetCollect),
   withStyles(styles)
-)(ObjectTypeTableRow)
+)(ObjectTypePropertyRow)
