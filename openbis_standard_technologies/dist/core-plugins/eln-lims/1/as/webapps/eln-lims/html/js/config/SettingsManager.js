@@ -103,17 +103,15 @@ function SettingsManager(serverFacade) {
 			}
 		}
 		
-		// array fields to add values to defaults
+		// array fields to add/remove values to defaults
 		var fieldsToAdd = [
 			"inventorySpaces"
 		];
 		for (var field of fieldsToAdd) {
+			targetProfile[field] = [];
 			if (settings[field]) {
 				for(var fIdx = 0; fIdx < settings[field].length; fIdx++) {
-					var settingsValue = settings[field][fIdx];
-					if(($.inArray(settingsValue, targetProfile[field]) === -1)) {
-						targetProfile[field].push(settingsValue);
-					}
+					targetProfile[field].push(settings[field][fIdx]);
 				}
 			}
 		}
