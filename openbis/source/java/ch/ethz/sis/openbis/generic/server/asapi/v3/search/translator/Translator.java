@@ -17,12 +17,12 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -44,6 +45,8 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 
 public class Translator
 {
+
+    private static final String UNNEST = "unnest";
 
     private static final String SELECT = "SELECT";
 
@@ -60,6 +63,8 @@ public class Translator
     private static final String LIKE = "LIKE";
 
     private static final String ON = "ON";
+
+    private static final String IN = "IN";
 
     private static final String IS = "IS";
 
@@ -92,6 +97,10 @@ public class Translator
     private static final String PERCENT = "%";
 
     private static final String BARS = "||";
+
+    private static final String LP = "(";
+
+    private static final String RP = ")";
 
     public static SelectQuery translate(final EntityKind entityKind, final List<ISearchCriteria> criteria,
             final SearchOperator operator)
@@ -162,18 +171,18 @@ public class Translator
             return "";
         }
 
-        final StringBuilder builder = new StringBuilder();
+        final StringBuilder sqlBuilder = new StringBuilder();
 
         final String logicalOperator = operator.toString();
-        builder.append(WHERE).append(SP);
+        sqlBuilder.append(WHERE).append(SP);
         criteria.forEach(criterion ->
                 {
-                    if (criterion instanceof AbstractEntitySearchCriteria<?>)
+                    if (criterion.getClass() == AbstractEntitySearchCriteria.class)
                     {
                         final AbstractEntitySearchCriteria<?> entitySearchCriterion = (AbstractEntitySearchCriteria<?>) criterion;
-//                        builder.append().append(SP).append(logicalOperator);
+//                        sqlBuilder.append().append(SP).append(logicalOperator);
                     }
-                    if (criterion instanceof SampleSearchCriteria)
+                    if (criterion.getClass() == SampleSearchCriteria.class)
                     {
                         final SampleSearchCriteria sampleSearchCriterion = (SampleSearchCriteria) criterion;
                         final Collection<ISearchCriteria> subcriteria = sampleSearchCriterion.getCriteria();
@@ -186,66 +195,70 @@ public class Translator
                                         final Object fieldValue = fieldSearchSubcriterion.getFieldValue();
                                         final SearchFieldType fieldType = fieldSearchSubcriterion.getFieldType();
 
-                                        if (fieldValue == null)
+                                        if (subcriterion instanceof CollectionFieldSearchCriteria<?>)
                                         {
-                                            builder.append(fieldName).append(SP).append(IS).append(SP).append(NOT).append(SP).append(NULL);
+                                            sqlBuilder.append(fieldName).append(SP).append(IN).append(SP).append(LP).
+                                                    append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
+                                                    append(RP);
                                         } else
                                         {
-                                            if (fieldValue instanceof AbstractStringValue)
+                                            if (fieldValue == null)
                                             {
-                                                builder.append(fieldName);
-                                                if (fieldValue instanceof StringEqualToValue)
-                                                {
-                                                    builder.append(EQ).append(QU);
-                                                }
-                                                if (fieldValue instanceof StringContainsValue)
-                                                {
-                                                    builder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
-                                                            append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
-                                                }
-                                                if (fieldValue instanceof StringStartsWithValue)
-                                                {
-                                                    builder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
-                                                            append(PERCENT);
-                                                }
-                                                if (fieldValue instanceof StringEndsWithValue)
-                                                {
-                                                    builder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
-                                                            append(QU);
-                                                }
-                                            } else if (fieldValue instanceof AbstractDateValue)
-                                            {
-                                                if (fieldValue instanceof DateEqualToValue)
-                                                {
-                                                    builder.append(EQ).append(QU);
-                                                }
-                                                if (fieldValue instanceof DateEarlierThanOrEqualToValue)
-                                                {
-                                                    builder.append(LE).append(QU);
-                                                }
-                                                if (fieldValue instanceof DateLaterThanOrEqualToValue)
-                                                {
-                                                    builder.append(GE).append(QU);
-                                                }
+                                                sqlBuilder.append(fieldName).append(SP).append(IS).append(SP).append(NOT).append(SP).append(NULL);
                                             } else
                                             {
-                                                builder.append(fieldName).append(EQ).append(QU);
-                                            }
+                                                if (criteria instanceof StringFieldSearchCriteria)
+                                                {
+                                                    sqlBuilder.append(fieldName);
+                                                    if (fieldValue.getClass() == StringEqualToValue.class)
+                                                    {
+                                                        sqlBuilder.append(EQ).append(QU);
+                                                    } else if (fieldValue.getClass() == StringContainsValue.class)
+                                                    {
+                                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
+                                                                append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
+                                                    } else if (fieldValue.getClass() == StringStartsWithValue.class)
+                                                    {
+                                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
+                                                                append(PERCENT);
+                                                    } else if (fieldValue.getClass() == StringEndsWithValue.class)
+                                                    {
+                                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
+                                                                append(QU);
+                                                    }
+                                                } else if (criteria instanceof DateFieldSearchCriteria)
+                                                {
+                                                    sqlBuilder.append(fieldName);
+                                                    if (fieldValue.getClass() == DateEqualToValue.class)
+                                                    {
+                                                        sqlBuilder.append(EQ).append(QU);
+                                                    } else if (fieldValue.getClass() == DateEarlierThanOrEqualToValue.class)
+                                                    {
+                                                        sqlBuilder.append(LE).append(QU);
+                                                    } else if (fieldValue.getClass() == DateLaterThanOrEqualToValue.class)
+                                                    {
+                                                        sqlBuilder.append(GE).append(QU);
+                                                    }
+                                                } else
+                                                {
+                                                    sqlBuilder.append(fieldName).append(EQ).append(QU);
+                                                }
 
-                                            args.add(fieldValue);
+                                                args.add(fieldValue);
+                                            }
                                         }
-                                    } else if (subcriterion instanceof IdSearchCriteria<?>) {
+                                    } else if (subcriterion.getClass() == IdSearchCriteria.class) {
                                         final IdSearchCriteria<? extends IObjectId> fieldSearchSubcriterion = (IdSearchCriteria<?>) subcriterion;
 
-                                        builder.append(ID_COLUMN).append(EQ).append(QU);
+                                        sqlBuilder.append(ID_COLUMN).append(EQ).append(QU);
                                         args.add(fieldSearchSubcriterion.getId());
                                     }
-                                    builder.append(SP).append(logicalOperator).append(SP);
+                                    sqlBuilder.append(SP).append(logicalOperator).append(SP);
                                 });
                     }
                 });
-        builder.setLength(builder.length() - logicalOperator.length() - SP.length() * 2);
-        return builder.toString();
+        sqlBuilder.setLength(sqlBuilder.length() - logicalOperator.length() - SP.length() * 2);
+        return sqlBuilder.toString();
     }
 
     /**
