@@ -54,7 +54,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
@@ -122,7 +121,7 @@ public class Translator
 
     private static final String RP = ")";
 
-//    private static final Map<Class<ISearchCriteria>, IConditionTranslator> CRITERIA_TO_CONDITION_TRANSLATOR_MAP;
+    //    private static final Map<Class<ISearchCriteria>, IConditionTranslator> CRITERIA_TO_CONDITION_TRANSLATOR_MAP;
 
     public static SelectQuery translate(final EntityKind entityKind, final List<ISearchCriteria> criteria,
             final SearchOperator operator)
@@ -160,28 +159,28 @@ public class Translator
         final String entitiesTableName = entityMapper.getEntitiesTable();
         builder.append(FROM).append(SP).append(entitiesTableName).append(NEW_LINE);
         criteria.forEach(criterion ->
+        {
+            if (criterion instanceof AbstractEntitySearchCriteria<?>)
+            {
+                final AbstractEntitySearchCriteria<?> entitySearchCriterion = (AbstractEntitySearchCriteria<?>) criterion;
+                if (entitySearchCriterion.getCriteria().isEmpty())
                 {
-                    if (criterion instanceof AbstractEntitySearchCriteria<?>)
-                    {
-                        final AbstractEntitySearchCriteria<?> entitySearchCriterion = (AbstractEntitySearchCriteria<?>) criterion;
-                        if (entitySearchCriterion.getCriteria().isEmpty()) {
 
-                        }
-                    }
+                }
+            }
 
-                    if (criterion instanceof SampleSearchCriteria)
-                    {
-                        final SampleSearchCriteria sampleSearchCriterion = (SampleSearchCriteria) criterion;
+            if (criterion instanceof SampleSearchCriteria)
+            {
+                final SampleSearchCriteria sampleSearchCriterion = (SampleSearchCriteria) criterion;
 
-
-                    }
+            }
 
 //                    if(isAliasPresentInWhere) {
 //
 //                    }
 //                    builder.append(LEFT).append(SP).append(JOIN).append(SP).append().append(SP).append(entitiesTableName).append(SP).append(ON)
 //                            .append(SP).append(entitiesTableName).append(PERIOD).append().append(EQ).append().append(PERIOD).append();
-                });
+        });
         return builder.toString();
     }
 
@@ -197,130 +196,152 @@ public class Translator
 
         final String logicalOperator = operator.toString();
         sqlBuilder.append(WHERE).append(SP);
-        criteria.forEach(criterion ->
+
+        criteria.forEach(subcriterion ->
                 {
-                    if (criterion.getClass() == AbstractEntitySearchCriteria.class)
+                    if (subcriterion instanceof AbstractFieldSearchCriteria<?>)
                     {
-                        final AbstractEntitySearchCriteria<?> entitySearchCriterion = (AbstractEntitySearchCriteria<?>) criterion;
-//                        sqlBuilder.append().append(SP).append(logicalOperator);
-                    }
-                    if (criterion.getClass() == SampleSearchCriteria.class)
-                    {
-                        final SampleSearchCriteria sampleSearchCriterion = (SampleSearchCriteria) criterion;
-                        final Collection<ISearchCriteria> subcriteria = sampleSearchCriterion.getCriteria();
-                        subcriteria.forEach(subcriterion ->
+                        final AbstractFieldSearchCriteria<?> fieldSearchSubcriterion = (AbstractFieldSearchCriteria<?>) subcriterion;
+                        final Object fieldName = fieldSearchSubcriterion.getFieldName();
+                        final Object fieldValue = fieldSearchSubcriterion.getFieldValue();
+                        final SearchFieldType fieldType = fieldSearchSubcriterion.getFieldType();
+
+                        if (subcriterion instanceof CollectionFieldSearchCriteria<?>)
+                        {
+                            sqlBuilder.append(fieldName).append(SP).append(IN).append(SP).append(LP).
+                                    append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
+                                    append(RP);
+                        } else
+                        {
+                            if (fieldValue == null)
+                            {
+                                sqlBuilder.append(fieldName).append(SP).append(IS_NOT_NULL);
+                            } else
+                            {
+                                if (criteria instanceof StringFieldSearchCriteria)
                                 {
-                                    if (subcriterion instanceof AbstractFieldSearchCriteria<?>)
+                                    sqlBuilder.append(fieldName);
+                                    if (fieldValue.getClass() == StringEqualToValue.class)
                                     {
-                                        final AbstractFieldSearchCriteria<?> fieldSearchSubcriterion = (AbstractFieldSearchCriteria<?>) subcriterion;
-                                        final Object fieldName = fieldSearchSubcriterion.getFieldName();
-                                        final Object fieldValue = fieldSearchSubcriterion.getFieldValue();
-                                        final SearchFieldType fieldType = fieldSearchSubcriterion.getFieldType();
-
-                                        if (subcriterion instanceof CollectionFieldSearchCriteria<?>)
-                                        {
-                                            sqlBuilder.append(fieldName).append(SP).append(IN).append(SP).append(LP).
-                                                    append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
-                                                    append(RP);
-                                        } else
-                                        {
-                                            if (fieldValue == null)
-                                            {
-                                                sqlBuilder.append(fieldName).append(SP).append(IS_NOT_NULL);
-                                            } else
-                                            {
-                                                if (criteria instanceof StringFieldSearchCriteria)
-                                                {
-                                                    sqlBuilder.append(fieldName);
-                                                    if (fieldValue.getClass() == StringEqualToValue.class)
-                                                    {
-                                                        sqlBuilder.append(EQ).append(QU);
-                                                    } else if (fieldValue.getClass() == StringContainsValue.class)
-                                                    {
-                                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
-                                                                append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
-                                                    } else if (fieldValue.getClass() == StringStartsWithValue.class)
-                                                    {
-                                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
-                                                                append(PERCENT);
-                                                    } else if (fieldValue.getClass() == StringEndsWithValue.class)
-                                                    {
-                                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
-                                                                append(QU);
-                                                    }
-                                                } else if (criteria instanceof DateFieldSearchCriteria)
-                                                {
-                                                    sqlBuilder.append(fieldName);
-                                                    if (fieldValue.getClass() == DateEqualToValue.class)
-                                                    {
-                                                        sqlBuilder.append(EQ).append(QU);
-                                                    } else if (fieldValue.getClass() == DateEarlierThanOrEqualToValue.class)
-                                                    {
-                                                        sqlBuilder.append(LE).append(QU);
-                                                    } else if (fieldValue.getClass() == DateLaterThanOrEqualToValue.class)
-                                                    {
-                                                        sqlBuilder.append(GE).append(QU);
-                                                    }
-                                                } else if (subcriterion instanceof AnyFieldSearchCriteria) {
-                                                    throw new IllegalArgumentException();
-                                                } else if (subcriterion instanceof NumberPropertySearchCriteria) {
-                                                    throw new IllegalArgumentException();
-                                                } else if (subcriterion instanceof StringPropertySearchCriteria) {
-                                                    throw new IllegalArgumentException();
-                                                } else
-                                                {
-                                                    sqlBuilder.append(fieldName).append(EQ).append(QU);
-                                                }
-
-                                                args.add(fieldValue);
-                                            }
-                                        }
-                                    } else if (subcriterion instanceof AbstractObjectSearchCriteria<?>) {
-                                        if (subcriterion instanceof SampleSearchCriteria) {
-                                            throw new IllegalArgumentException("Unsupported criterion type: " +
-                                                    subcriterion.getClass().getSimpleName());
-                                        } else if (subcriterion instanceof ExperimentSearchCriteria) {
-                                            throw new IllegalArgumentException("Unsupported criterion type: " +
-                                                    subcriterion.getClass().getSimpleName());
-                                        } else if (subcriterion instanceof ProjectSearchCriteria) {
-                                            throw new IllegalArgumentException("Unsupported criterion type: " +
-                                                    subcriterion.getClass().getSimpleName());
-                                        } else if (subcriterion instanceof SpaceSearchCriteria) {
-                                            throw new IllegalArgumentException("Unsupported criterion type: " +
-                                                    subcriterion.getClass().getSimpleName());
-                                        } else if (subcriterion instanceof SampleContainerSearchCriteria) {
-                                            throw new IllegalArgumentException("Unsupported criterion type: " +
-                                                    subcriterion.getClass().getSimpleName());
-                                        } else if (subcriterion instanceof SampleTypeSearchCriteria) {
-                                            throw new IllegalArgumentException("Unsupported criterion type: " +
-                                                    subcriterion.getClass().getSimpleName());
-                                        } else if (subcriterion instanceof PersonSearchCriteria) {
-                                            throw new IllegalArgumentException("Unsupported criterion type: " +
-                                                    subcriterion.getClass().getSimpleName());
-                                        } else if (subcriterion instanceof TagSearchCriteria) {
-                                            throw new IllegalArgumentException("Unsupported criterion type: " +
-                                                    subcriterion.getClass().getSimpleName());
-                                        }
-                                    } else if (subcriterion instanceof IdSearchCriteria<?>) {
-                                        final IdSearchCriteria<? extends IObjectId> fieldSearchSubcriterion = (IdSearchCriteria<?>) subcriterion;
-
-                                        sqlBuilder.append(ID_COLUMN).append(EQ).append(QU);
-                                        args.add(fieldSearchSubcriterion.getId());
-                                    } else if (subcriterion instanceof NoSampleSearchCriteria) {
-                                        sqlBuilder.append(ColumnNames.PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
-                                    } else if (subcriterion instanceof NoExperimentSearchCriteria) {
-                                        sqlBuilder.append(ColumnNames.EXPERIMENT_COLUMN).append(SP).append(IS_NULL);
-                                    } else if (subcriterion instanceof NoProjectSearchCriteria) {
-                                        sqlBuilder.append(ColumnNames.PROJECT_COLUMN).append(SP).append(IS_NULL);
-                                    } else if (subcriterion instanceof NoSpaceSearchCriteria) {
-                                        sqlBuilder.append(ColumnNames.SPACE_COLUMN).append(SP).append(IS_NULL);
-                                    } else {
-                                        throw new IllegalArgumentException("Unsupported criterion type");
+                                        sqlBuilder.append(EQ).append(QU);
+                                    } else if (fieldValue.getClass() == StringContainsValue.class)
+                                    {
+                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
+                                                append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
+                                    } else if (fieldValue.getClass() == StringStartsWithValue.class)
+                                    {
+                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
+                                                append(PERCENT);
+                                    } else if (fieldValue.getClass() == StringEndsWithValue.class)
+                                    {
+                                        sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).append(QU);
+                                    } else
+                                    {
+                                        throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
                                     }
-                                    sqlBuilder.append(SP).append(logicalOperator).append(SP);
-                                });
+                                } else if (criteria instanceof DateFieldSearchCriteria)
+                                {
+                                    sqlBuilder.append(fieldName);
+                                    if (fieldValue.getClass() == DateEqualToValue.class)
+                                    {
+                                        sqlBuilder.append(EQ).append(QU);
+                                    } else if (fieldValue.getClass() == DateEarlierThanOrEqualToValue.class)
+                                    {
+                                        sqlBuilder.append(LE).append(QU);
+                                    } else if (fieldValue.getClass() == DateLaterThanOrEqualToValue.class)
+                                    {
+                                        sqlBuilder.append(GE).append(QU);
+                                    } else
+                                    {
+                                        throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
+                                    }
+                                } else if (subcriterion instanceof AnyFieldSearchCriteria)
+                                {
+                                    throw new IllegalArgumentException();
+                                } else if (subcriterion instanceof NumberPropertySearchCriteria)
+                                {
+                                    throw new IllegalArgumentException();
+                                } else if (subcriterion instanceof StringPropertySearchCriteria)
+                                {
+                                    throw new IllegalArgumentException();
+                                } else
+                                {
+                                    sqlBuilder.append(fieldName).append(EQ).append(QU);
+                                }
+
+                                args.add(fieldValue);
+                            }
+                        }
+                    } else if (subcriterion instanceof AbstractObjectSearchCriteria<?>)
+                    {
+                        if (subcriterion instanceof SampleSearchCriteria)
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                    subcriterion.getClass().getSimpleName());
+                        } else if (subcriterion instanceof ExperimentSearchCriteria)
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                    subcriterion.getClass().getSimpleName());
+                        } else if (subcriterion instanceof ProjectSearchCriteria)
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                    subcriterion.getClass().getSimpleName());
+                        } else if (subcriterion instanceof SpaceSearchCriteria)
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                    subcriterion.getClass().getSimpleName());
+                        } else if (subcriterion instanceof SampleContainerSearchCriteria)
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                    subcriterion.getClass().getSimpleName());
+                        } else if (subcriterion instanceof SampleTypeSearchCriteria)
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                    subcriterion.getClass().getSimpleName());
+                        } else if (subcriterion instanceof PersonSearchCriteria)
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                    subcriterion.getClass().getSimpleName());
+                        } else if (subcriterion instanceof TagSearchCriteria)
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                    subcriterion.getClass().getSimpleName());
+                        } else
+                        {
+                            throw new IllegalArgumentException("Unsupported criterion type");
+                        }
+                    } else if (subcriterion instanceof IdSearchCriteria<?>)
+                    {
+                        final IdSearchCriteria<? extends IObjectId> fieldSearchSubcriterion = (IdSearchCriteria<?>) subcriterion;
+
+                        sqlBuilder.append(ID_COLUMN).append(EQ).append(QU);
+                        args.add(fieldSearchSubcriterion.getId());
+                    } else if (subcriterion instanceof NoSampleSearchCriteria)
+                    {
+                        sqlBuilder.append(ColumnNames.PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
+                    } else if (subcriterion instanceof NoExperimentSearchCriteria)
+                    {
+                        sqlBuilder.append(ColumnNames.EXPERIMENT_COLUMN).append(SP).append(IS_NULL);
+                    } else if (subcriterion instanceof NoProjectSearchCriteria)
+                    {
+                        sqlBuilder.append(ColumnNames.PROJECT_COLUMN).append(SP).append(IS_NULL);
+                    } else if (subcriterion instanceof NoSpaceSearchCriteria)
+                    {
+                        sqlBuilder.append(ColumnNames.SPACE_COLUMN).append(SP).append(IS_NULL);
+                    } else
+                    {
+                        throw new IllegalArgumentException("Unsupported criterion type");
                     }
+                    sqlBuilder.append(SP).append(logicalOperator).append(SP);
                 });
+
+        criteria.forEach(criterion ->
+        {
+            if (criterion.getClass() == SampleSearchCriteria.class)
+            {
+
+            }
+        });
         sqlBuilder.setLength(sqlBuilder.length() - logicalOperator.length() - SP.length() * 2);
         return sqlBuilder.toString();
     }

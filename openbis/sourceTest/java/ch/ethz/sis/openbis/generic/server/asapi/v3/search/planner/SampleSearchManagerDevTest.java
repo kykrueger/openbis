@@ -33,7 +33,7 @@ public class SampleSearchManagerDevTest
     {
         final Long userId = 2L; // Default ETL Server that is supposed to see everything
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
-        sampleSearchCriteria.withId().thatEquals(new SampleIdentifier("A"));
+        sampleSearchCriteria.withId().thatEquals(new SampleIdentifier(null, null, "DEFAULT"));
 
         final SampleFetchOptions sampleFetchOption = new SampleFetchOptions();
 
