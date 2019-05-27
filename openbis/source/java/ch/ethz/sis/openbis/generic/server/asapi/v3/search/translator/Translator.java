@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
@@ -43,6 +42,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -50,13 +52,23 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCr
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
 public class Translator
 {
@@ -84,6 +96,8 @@ public class Translator
     private static final String IS = "IS";
 
     private static final String NOT = "NOT";
+
+    private static final String AND = "AND";
 
     private static final String NULL = "NULL";
 
@@ -312,13 +326,57 @@ public class Translator
                         }
                     } else if (subcriterion instanceof IdSearchCriteria<?>)
                     {
-                        final IdSearchCriteria<? extends IObjectId> fieldSearchSubcriterion = (IdSearchCriteria<?>) subcriterion;
+                        final IdSearchCriteria<ISampleId> fieldSearchSubcriterion = (IdSearchCriteria<ISampleId>) subcriterion;
+                        final ISampleId sampleId = fieldSearchSubcriterion.getId();
 
-                        sqlBuilder.append(ID_COLUMN).append(EQ).append(QU);
-                        args.add(fieldSearchSubcriterion.getId());
+                        if (sampleId.getClass() == SampleIdentifier.class) {
+                            final FullSampleIdentifier fullSampleIdentifier = new FullSampleIdentifier(((SampleIdentifier) sampleId).getIdentifier(),
+                                    null);
+                            final String sampleCode = fullSampleIdentifier.getSampleCode();
+                            final SampleIdentifierParts identifierParts = fullSampleIdentifier.getParts();
+                            final String spaceCode = identifierParts.getSpaceCodeOrNull();
+                            final String projectCode = identifierParts.getProjectCodeOrNull();
+                            final String containerCode = identifierParts.getContainerCodeOrNull();
+
+                            if (spaceCode != null || projectCode != null || containerCode != null)
+                            {
+                                sqlBuilder.append(LP);
+
+                                if (spaceCode != null)
+                                {
+                                    buildSelectByIdConditionWithSubquery(sqlBuilder, SPACE_COLUMN, SPACES_TABLE);
+                                    args.add(spaceCode);
+                                }
+
+                                if (projectCode != null)
+                                {
+                                    buildSelectByIdConditionWithSubquery(sqlBuilder, PROJECT_COLUMN, PROJECTS_TABLE);
+                                    args.add(projectCode);
+                                }
+
+                                if (containerCode != null)
+                                {
+                                    buildSelectByIdConditionWithSubquery(sqlBuilder, PART_OF_SAMPLE_COLUMN, SAMPLES_ALL_TABLE);
+                                    args.add(containerCode);
+                                }
+
+                                sqlBuilder.setLength(sqlBuilder.length() - AND.length() - SP.length() * 2);
+                                sqlBuilder.append(RP).append(SP).append(AND).append(SP);
+                            }
+
+                            sqlBuilder.append(CODE_COLUMN).append(EQ).append(QU);
+                            args.add(sampleCode);
+                        } else if (sampleId.getClass() == SamplePermId.class)
+                        {
+                            sqlBuilder.append(PERM_ID_COLUMN).append(EQ).append(QU);
+                            args.add(((SamplePermId) sampleId).getPermId());
+                        } else
+                        {
+                            throw new IllegalArgumentException("The following ID class is not supported: " + sampleId.getClass().getSimpleName());
+                        }
                     } else if (subcriterion instanceof NoSampleSearchCriteria)
                     {
-                        sqlBuilder.append(ColumnNames.PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
+                        sqlBuilder.append(PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
                     } else if (subcriterion instanceof NoExperimentSearchCriteria)
                     {
                         sqlBuilder.append(ColumnNames.EXPERIMENT_COLUMN).append(SP).append(IS_NULL);
@@ -344,6 +402,14 @@ public class Translator
         });
         sqlBuilder.setLength(sqlBuilder.length() - logicalOperator.length() - SP.length() * 2);
         return sqlBuilder.toString();
+    }
+
+    private static void buildSelectByIdConditionWithSubquery(final StringBuilder sqlBuilder, final String columnName, final String subqueryTable)
+    {
+        sqlBuilder.append(columnName).append(EQ).append(LP).
+                append(SELECT).append(SP).append(ID_COLUMN).append(SP).append(FROM).append(SP).append(subqueryTable).append(SP).
+                append(WHERE).append(SP).append(CODE_COLUMN).append(EQ).append(QU).
+                append(RP).append(SP).append(AND).append(SP);
     }
 
     /**
