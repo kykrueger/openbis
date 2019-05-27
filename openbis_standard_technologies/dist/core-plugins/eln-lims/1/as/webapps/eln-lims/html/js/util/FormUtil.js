@@ -1549,13 +1549,24 @@ var FormUtil = new function() {
 					
 				entityTypeOrder = ["Space", "Project", "Experiment", "Sample", "DataSet"];
 				entityMap = result.result;
+				
+				var getTypeDisplayName = function(type) {
+					if(type === "Sample") {
+						return ELNDictionary.Sample;
+					} else if(type === "Experiment") {
+						return ELNDictionary.getExperimentDualName();
+					} else {
+						return type;
+					}
+				}
+				
 				for(var typeOrder = 0 ; typeOrder < entityTypeOrder.length ; typeOrder++) {
 					for (key in entityMap) {
 						entity = entityMap[key];
 						if(entity.type == entityTypeOrder[typeOrder]) {
 							$table.append($("<tr>")
 									.append($("<td>").append(_this._getBooleanField('freezing-form-' + key.replace("+", "-"), entity.displayName, true)))
-									.append($("<td>").append(entity.type))
+									.append($("<td>").append(getTypeDisplayName(entity.type)))
 									.append($("<td>").append(entity.permId))
 									.append($("<td>").append(entity.displayName))
 							);
