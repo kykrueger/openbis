@@ -38,6 +38,14 @@ describe('browser', () => {
       withMaterialType: () => ({})
     }))
 
+    dto.VocabularyTermSearchCriteria.mockImplementation(() => ({
+      withVocabulary: () => ({
+        withCode: () => ({
+          thatEquals: () => ({})
+        })
+      })
+    }))
+
     facade.getSampleTypes.mockReturnValue(Promise.resolve({
       'TEST_OBJECT_TYPE': {
         code: 'TEST_OBJECT_TYPE',
@@ -55,6 +63,17 @@ describe('browser', () => {
             label: 'material label',
             description: 'material description',
             dataType: 'MATERIAL'
+          },
+          mandatory: true
+        },{
+          propertyType: {
+            code: 'DICTIONARY_PROPERTY_TYPE',
+            label: 'dictionary label',
+            description: 'dictionary description',
+            dataType: 'CONTROLLEDVOCABULARY',
+            vocabulary: {
+              code: 'VOCABULARY_1'
+            }
           },
           mandatory: true
         }]
@@ -81,6 +100,16 @@ describe('browser', () => {
       }]
     }))
 
+    facade.searchVocabularyTerms.mockReturnValue(Promise.resolve({
+      objects: [{
+        code: 'TERM_1'
+      },{
+        code: 'TERM_2'
+      }, {
+        code: 'TERM_3'
+      }]
+    }))
+
     store.dispatch(actions.init())
 
     let wrapper = mount(
@@ -93,12 +122,17 @@ describe('browser', () => {
       wrapper.update()
 
       expectTitle(wrapper, 'TEST_OBJECT_TYPE')
-      expectProperty(wrapper, 0, {
-        mandatory: false
-      })
-      expectProperty(wrapper, 1, {
-        mandatory: true
-      })
+
+      expectPropertyMandatory(wrapper, 0, false)
+      expectPropertyType(wrapper, 0, 'VARCHAR_PROPERTY_TYPE')
+
+      expectPropertyMandatory(wrapper, 1, true)
+      expectPropertyType(wrapper, 1, 'MATERIAL_PROPERTY_TYPE')
+      expectPropertyPreviewMaterial(wrapper, 1, ['', 'MATERIAL_1', 'MATERIAL_2', 'MATERIAL_3'])
+
+      expectPropertyMandatory(wrapper, 2, true)
+      expectPropertyType(wrapper, 2, 'DICTIONARY_PROPERTY_TYPE')
+      expectPropertyPreviewDictionary(wrapper, 2, ['', 'TERM_1', 'TERM_2', 'TERM_3'])
 
       done()
     }, 0)
@@ -111,10 +145,30 @@ function expectTitle(wrapper, expectedTitle){
   expect(actualTitle).toEqual(expectedTitle)
 }
 
-function expectProperty(wrapper, index, expectedProperty){
+function expectPropertyMandatory(wrapper, index, expected){
   let row = wrapper.find('ObjectTypePropertyRow').at(index)
-  let mandatory = row.find('ObjectTypePropertyMandatory').find('Checkbox').prop('checked')
-  expect({
-    mandatory
-  }).toEqual(expectedProperty)
+  let actual = row.find('ObjectTypePropertyMandatory').find('Checkbox').prop('checked')
+  expect(actual).toEqual(expected)
+}
+
+function expectPropertyType(wrapper, index, expected){
+  let row = wrapper.find('ObjectTypePropertyRow').at(index)
+  let actual = row.find('ObjectTypePropertyType').find('TextField').prop('value')
+  expect(actual).toEqual(expected)
+}
+
+function expectPropertyPreviewMaterial(wrapper, index, expected){
+  let row = wrapper.find('ObjectTypePropertyRow').at(index)
+  let actual = row.find('ObjectTypePropertyPreview').find('option').map(node => {
+    return node.prop('value')
+  })
+  expect(actual).toEqual(expected)
+}
+
+function expectPropertyPreviewDictionary(wrapper, index, expected){
+  let row = wrapper.find('ObjectTypePropertyRow').at(index)
+  let actual = row.find('ObjectTypePropertyPreview').find('option').map(node => {
+    return node.prop('value')
+  })
+  expect(actual).toEqual(expected)
 }

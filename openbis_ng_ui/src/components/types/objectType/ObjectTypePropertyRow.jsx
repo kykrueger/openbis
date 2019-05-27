@@ -2,13 +2,12 @@ import _ from 'lodash'
 import React from 'react'
 import { DragSource } from 'react-dnd'
 import { DropTarget } from 'react-dnd'
-import MenuItem from '@material-ui/core/MenuItem'
 import TableCell from '@material-ui/core/TableCell'
 import TableRow from '@material-ui/core/TableRow'
-import TextField from '@material-ui/core/TextField'
 import DragHandleIcon from '@material-ui/icons/DragHandle'
 import RootRef from '@material-ui/core/RootRef'
 import ObjectTypePropertyPreview from './ObjectTypePropertyPreview.jsx'
+import ObjectTypePropertyType from './ObjectTypePropertyType.jsx'
 import ObjectTypePropertyMandatory from './ObjectTypePropertyMandatory.jsx'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
@@ -71,7 +70,6 @@ class ObjectTypePropertyRow extends React.Component {
     this.handleRef = React.createRef()
     this.rowRef = React.createRef()
     this.handleSelect = this.handleSelect.bind(this)
-    this.handleChangePropertyType = this.handleChangePropertyType.bind(this)
   }
 
   componentDidMount(){
@@ -82,14 +80,6 @@ class ObjectTypePropertyRow extends React.Component {
 
   handleSelect(){
     this.props.onSelect(this.props.property.ordinal)
-  }
-
-  handleChangePropertyType(event){
-    event.stopPropagation()
-    let propertyType = _.find(this.props.propertyTypes, propertyType => {
-      return propertyType.code === event.target.value
-    })
-    this.props.onChange(this.props.property.ordinal, 'propertyType', propertyType)
   }
 
   render(){
@@ -116,7 +106,7 @@ class ObjectTypePropertyRow extends React.Component {
             {this.renderPropertyType()}
           </TableCell>
           <TableCell>
-            <ObjectTypePropertyMandatory property={property} onChange={this.props.onChange} />
+            {this.renderMandatory()}
           </TableCell>
         </TableRow>
       </RootRef>
@@ -128,7 +118,9 @@ class ObjectTypePropertyRow extends React.Component {
 
     if(property.propertyType){
       return (
-        <ObjectTypePropertyPreview property={property} />
+        <ObjectTypePropertyPreview
+          property={property}
+        />
       )
     }else{
       return (<div></div>)
@@ -136,23 +128,24 @@ class ObjectTypePropertyRow extends React.Component {
   }
 
   renderPropertyType(){
-    const {property, propertyTypes} = this.props
+    const {property, propertyTypes, onChange} = this.props
 
     return (
-      <TextField
-        select
-        value={property.propertyType ? property.propertyType.code : ''}
-        onClick={event => {event.stopPropagation()}}
-        onChange={this.handleChangePropertyType}
-        fullWidth={true}
-        error={property.errors['propertyType'] ? true : false}
-        helperText={property.errors['propertyType']}
-      >
-        <MenuItem value=""></MenuItem>
-        {propertyTypes && propertyTypes.map(propertyType => (
-          <MenuItem key={propertyType.code} value={propertyType.code}>{propertyType.code}</MenuItem>
-        ))}
-      </TextField>
+      <ObjectTypePropertyType
+        property={property}
+        propertyTypes={propertyTypes}
+        onChange={onChange}
+      />
+    )
+  }
+
+  renderMandatory(){
+    const {property, onChange} = this.props
+    return (
+      <ObjectTypePropertyMandatory
+        property={property}
+        onChange={onChange}
+      />
     )
   }
 
