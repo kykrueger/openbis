@@ -19,6 +19,8 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
@@ -26,19 +28,28 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCri
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.PersonSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.ProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
@@ -110,6 +121,8 @@ public class Translator
     private static final String LP = "(";
 
     private static final String RP = ")";
+
+//    private static final Map<Class<ISearchCriteria>, IConditionTranslator> CRITERIA_TO_CONDITION_TRANSLATOR_MAP;
 
     public static SelectQuery translate(final EntityKind entityKind, final List<ISearchCriteria> criteria,
             final SearchOperator operator)
@@ -248,6 +261,12 @@ public class Translator
                                                     {
                                                         sqlBuilder.append(GE).append(QU);
                                                     }
+                                                } else if (subcriterion instanceof AnyFieldSearchCriteria) {
+                                                    throw new IllegalArgumentException();
+                                                } else if (subcriterion instanceof NumberPropertySearchCriteria) {
+                                                    throw new IllegalArgumentException();
+                                                } else if (subcriterion instanceof StringPropertySearchCriteria) {
+                                                    throw new IllegalArgumentException();
                                                 } else
                                                 {
                                                     sqlBuilder.append(fieldName).append(EQ).append(QU);
@@ -256,12 +275,38 @@ public class Translator
                                                 args.add(fieldValue);
                                             }
                                         }
+                                    } else if (subcriterion instanceof AbstractObjectSearchCriteria<?>) {
+                                        if (subcriterion instanceof SampleSearchCriteria) {
+                                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                                    subcriterion.getClass().getSimpleName());
+                                        } else if (subcriterion instanceof ExperimentSearchCriteria) {
+                                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                                    subcriterion.getClass().getSimpleName());
+                                        } else if (subcriterion instanceof ProjectSearchCriteria) {
+                                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                                    subcriterion.getClass().getSimpleName());
+                                        } else if (subcriterion instanceof SpaceSearchCriteria) {
+                                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                                    subcriterion.getClass().getSimpleName());
+                                        } else if (subcriterion instanceof SampleContainerSearchCriteria) {
+                                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                                    subcriterion.getClass().getSimpleName());
+                                        } else if (subcriterion instanceof SampleTypeSearchCriteria) {
+                                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                                    subcriterion.getClass().getSimpleName());
+                                        } else if (subcriterion instanceof PersonSearchCriteria) {
+                                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                                    subcriterion.getClass().getSimpleName());
+                                        } else if (subcriterion instanceof TagSearchCriteria) {
+                                            throw new IllegalArgumentException("Unsupported criterion type: " +
+                                                    subcriterion.getClass().getSimpleName());
+                                        }
                                     } else if (subcriterion instanceof IdSearchCriteria<?>) {
                                         final IdSearchCriteria<? extends IObjectId> fieldSearchSubcriterion = (IdSearchCriteria<?>) subcriterion;
 
                                         sqlBuilder.append(ID_COLUMN).append(EQ).append(QU);
                                         args.add(fieldSearchSubcriterion.getId());
-                                    } else if (subcriterion instanceof NoSampleContainerSearchCriteria) {
+                                    } else if (subcriterion instanceof NoSampleSearchCriteria) {
                                         sqlBuilder.append(ColumnNames.PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
                                     } else if (subcriterion instanceof NoExperimentSearchCriteria) {
                                         sqlBuilder.append(ColumnNames.EXPERIMENT_COLUMN).append(SP).append(IS_NULL);
@@ -269,6 +314,8 @@ public class Translator
                                         sqlBuilder.append(ColumnNames.PROJECT_COLUMN).append(SP).append(IS_NULL);
                                     } else if (subcriterion instanceof NoSpaceSearchCriteria) {
                                         sqlBuilder.append(ColumnNames.SPACE_COLUMN).append(SP).append(IS_NULL);
+                                    } else {
+                                        throw new IllegalArgumentException("Unsupported criterion type");
                                     }
                                     sqlBuilder.append(SP).append(logicalOperator).append(SP);
                                 });
