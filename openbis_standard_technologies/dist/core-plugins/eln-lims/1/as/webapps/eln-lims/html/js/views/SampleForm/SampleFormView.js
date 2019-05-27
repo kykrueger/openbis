@@ -560,7 +560,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$formColumn.append($dataSetViewerContainer);
 		}
 		
-		if(this._sampleFormModel.mode === FormMode.VIEW) {
+		if(this._sampleFormModel.mode === FormMode.VIEW && !this._sampleFormModel.v3_sample.frozen) {
 			var $inlineDataSetForm = $("<div>");
 			if($rightPanel) {
 				$rightPanel.append($inlineDataSetForm);
