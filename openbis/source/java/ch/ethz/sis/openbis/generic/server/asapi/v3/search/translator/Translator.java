@@ -16,18 +16,26 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEarlierThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectLaterThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberPropertySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
@@ -56,15 +64,21 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdent
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
@@ -134,6 +148,9 @@ public class Translator
     private static final String LP = "(";
 
     private static final String RP = ")";
+
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
+            SimplePropertyValidator.SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern());
 
     //    private static final Map<Class<ISearchCriteria>, IConditionTranslator> CRITERIA_TO_CONDITION_TRANSLATOR_MAP;
 
@@ -232,58 +249,90 @@ public class Translator
                                 sqlBuilder.append(fieldName).append(SP).append(IS_NOT_NULL);
                             } else
                             {
-                                if (criteria instanceof StringFieldSearchCriteria)
+                                if (subcriterion instanceof StringFieldSearchCriteria)
                                 {
                                     sqlBuilder.append(fieldName);
                                     if (fieldValue.getClass() == StringEqualToValue.class)
                                     {
                                         sqlBuilder.append(EQ).append(QU);
+                                        args.add(((AbstractStringValue) fieldValue).getValue());
                                     } else if (fieldValue.getClass() == StringContainsValue.class)
                                     {
                                         sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
                                                 append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
+                                        args.add(((AbstractStringValue) fieldValue).getValue());
                                     } else if (fieldValue.getClass() == StringStartsWithValue.class)
                                     {
                                         sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
                                                 append(PERCENT);
+                                        args.add(((AbstractStringValue) fieldValue).getValue());
                                     } else if (fieldValue.getClass() == StringEndsWithValue.class)
                                     {
                                         sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).append(QU);
+                                        args.add(((AbstractStringValue) fieldValue).getValue());
+                                    } else if (subcriterion instanceof AnyFieldSearchCriteria)
+                                    {
+                                        throw new IllegalArgumentException();
+                                    } else if (subcriterion instanceof StringPropertySearchCriteria)
+                                    {
+                                        throw new IllegalArgumentException();
                                     } else
                                     {
                                         throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
                                     }
-                                } else if (criteria instanceof DateFieldSearchCriteria)
+                                } else if (subcriterion instanceof DateFieldSearchCriteria)
                                 {
-                                    sqlBuilder.append(fieldName);
-                                    if (fieldValue.getClass() == DateEqualToValue.class)
+                                    if (subcriterion instanceof RegistrationDateSearchCriteria)
+                                    {
+                                        sqlBuilder.append(REGISTRATION_TIMESTAMP_COLUMN);
+                                    } else if (subcriterion instanceof ModificationDateSearchCriteria)
+                                    {
+                                        sqlBuilder.append(MODIFICATION_TIMESTAMP_COLUMN);
+                                    } else
+                                    {
+                                        sqlBuilder.append(fieldName);
+                                    }
+
+                                    if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
                                     {
                                         sqlBuilder.append(EQ).append(QU);
-                                    } else if (fieldValue.getClass() == DateEarlierThanOrEqualToValue.class)
+                                    } else if (fieldValue instanceof DateEarlierThanOrEqualToValue ||
+                                            fieldValue instanceof DateObjectEarlierThanOrEqualToValue)
                                     {
                                         sqlBuilder.append(LE).append(QU);
-                                    } else if (fieldValue.getClass() == DateLaterThanOrEqualToValue.class)
+                                    } else if (fieldValue instanceof DateLaterThanOrEqualToValue ||
+                                            fieldValue instanceof DateObjectLaterThanOrEqualToValue)
                                     {
                                         sqlBuilder.append(GE).append(QU);
                                     } else
                                     {
                                         throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
                                     }
-                                } else if (subcriterion instanceof AnyFieldSearchCriteria)
-                                {
-                                    throw new IllegalArgumentException();
+
+                                    if (fieldValue instanceof AbstractDateValue)
+                                    {
+                                        // String type date value.
+                                        final String dateString = ((AbstractDateValue) fieldValue).getValue();
+                                        try
+                                        {
+                                            args.add(DATE_FORMAT.parse(dateString));
+                                        } catch (ParseException e)
+                                        {
+                                            throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e);
+                                        }
+                                    } else
+                                    {
+                                        // Date type date value.
+                                        args.add(((AbstractDateObjectValue) fieldValue).getValue());
+                                    }
                                 } else if (subcriterion instanceof NumberPropertySearchCriteria)
-                                {
-                                    throw new IllegalArgumentException();
-                                } else if (subcriterion instanceof StringPropertySearchCriteria)
                                 {
                                     throw new IllegalArgumentException();
                                 } else
                                 {
                                     sqlBuilder.append(fieldName).append(EQ).append(QU);
+                                    args.add(fieldValue);
                                 }
-
-                                args.add(fieldValue);
                             }
                         }
                     } else if (subcriterion instanceof AbstractObjectSearchCriteria<?>)

@@ -17,7 +17,6 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
@@ -33,8 +32,10 @@ public class SampleSearchManagerDevTest
     {
         final Long userId = 2L; // Default ETL Server that is supposed to see everything
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
-        sampleSearchCriteria.withId().thatEquals(new SampleIdentifier("DEFAULT", "DEFAULT", null, "DEFAULT"));
+//        sampleSearchCriteria.withId().thatEquals(new SampleIdentifier("DEFAULT", "DEFAULT", null, "DEFAULT"));
 //        sampleSearchCriteria.withId().thatEquals(new SamplePermId("20190411142116392-367"));
+        sampleSearchCriteria.withRegistrationDate().thatIsEarlierThanOrEqualTo("2019-04-04 11:33:30 +0100");
+//        sampleSearchCriteria.withRegistrationDate().thatIsEarlierThanOrEqualTo(new Date(119, 3, 4, 11, 33, 30));
 
         final SampleFetchOptions sampleFetchOption = new SampleFetchOptions();
 

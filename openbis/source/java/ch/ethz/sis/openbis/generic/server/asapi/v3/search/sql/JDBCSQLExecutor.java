@@ -21,7 +21,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,10 @@ public class JDBCSQLExecutor implements ISQLExecutor
                 if (object.getClass().isArray())
                 {
                     preparedStatement.setArray(aIdx + 1, connection.createArrayOf("bigint", (Object[]) object));
+                } if (object instanceof Date)
+                {
+                    final Date date = (Date) object;
+                    preparedStatement.setTimestamp(aIdx + 1, new Timestamp(date.getTime()));
                 } else
                 {
                     preparedStatement.setObject(aIdx + 1, object);
