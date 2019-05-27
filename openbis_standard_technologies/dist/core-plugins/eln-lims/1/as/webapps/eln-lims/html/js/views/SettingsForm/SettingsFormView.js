@@ -273,7 +273,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		
 		var spacesOptions = this._settingsFormController.getInventorySpacesOptions();
 			spacesOptions = JSON.parse(JSON.stringify(spacesOptions));
-		var initialValues = this._profileToEdit.inventorySpaces;
+		var initialValues = this._profileToEdit.inventorySpaces.filter(space => space);
 		
 		for(var i = 0; i < initialValues.length; i++) {
 			if($.inArray(initialValues[i], spacesOptions) === -1) {
@@ -753,7 +753,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				for (var column of tableModel.columns) {
 					var $widget = row[column.label];
 					var value = this._getWidgetValue($widget);
-					rowValues[column.label] = value;
+					if (value) {
+						rowValues[column.label] = value;
+					}
 				}
 				if (tableModel.rowExtraModels.length === tableModel.rows.length) {
 					rowValues.extraValues = tableModel.rowExtraModels[i].getValues();
