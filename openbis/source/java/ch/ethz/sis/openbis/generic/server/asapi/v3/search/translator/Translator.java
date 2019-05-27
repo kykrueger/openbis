@@ -34,8 +34,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,6 +78,10 @@ public class Translator
     private static final String NULL = "NULL";
 
     private static final String SP = " ";
+
+    private static final String IS_NULL = IS + SP + NULL;
+
+    private static final String IS_NOT_NULL = IS + SP + NOT + SP + NULL;
 
     private static final String COMMA = ",";
 
@@ -204,7 +213,7 @@ public class Translator
                                         {
                                             if (fieldValue == null)
                                             {
-                                                sqlBuilder.append(fieldName).append(SP).append(IS).append(SP).append(NOT).append(SP).append(NULL);
+                                                sqlBuilder.append(fieldName).append(SP).append(IS_NOT_NULL);
                                             } else
                                             {
                                                 if (criteria instanceof StringFieldSearchCriteria)
@@ -247,11 +256,19 @@ public class Translator
                                                 args.add(fieldValue);
                                             }
                                         }
-                                    } else if (subcriterion.getClass() == IdSearchCriteria.class) {
+                                    } else if (subcriterion instanceof IdSearchCriteria<?>) {
                                         final IdSearchCriteria<? extends IObjectId> fieldSearchSubcriterion = (IdSearchCriteria<?>) subcriterion;
 
                                         sqlBuilder.append(ID_COLUMN).append(EQ).append(QU);
                                         args.add(fieldSearchSubcriterion.getId());
+                                    } else if (subcriterion instanceof NoSampleContainerSearchCriteria) {
+                                        sqlBuilder.append(ColumnNames.PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
+                                    } else if (subcriterion instanceof NoExperimentSearchCriteria) {
+                                        sqlBuilder.append(ColumnNames.EXPERIMENT_COLUMN).append(SP).append(IS_NULL);
+                                    } else if (subcriterion instanceof NoProjectSearchCriteria) {
+                                        sqlBuilder.append(ColumnNames.PROJECT_COLUMN).append(SP).append(IS_NULL);
+                                    } else if (subcriterion instanceof NoSpaceSearchCriteria) {
+                                        sqlBuilder.append(ColumnNames.SPACE_COLUMN).append(SP).append(IS_NULL);
                                     }
                                     sqlBuilder.append(SP).append(logicalOperator).append(SP);
                                 });
