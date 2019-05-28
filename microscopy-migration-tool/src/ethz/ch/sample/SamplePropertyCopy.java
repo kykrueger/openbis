@@ -38,6 +38,6 @@ public class SamplePropertyCopy extends EntityPropertyCopy<Sample> {
 
     @Override
     public EntityPropertyDelete getEntityPropertyDelete() {
-        return new SamplePropertyDelete(typeCode, oldPropertyCode);
+        return new SamplePropertyDelete(typeCode, oldPropertyCode, true, true);
     }
 }

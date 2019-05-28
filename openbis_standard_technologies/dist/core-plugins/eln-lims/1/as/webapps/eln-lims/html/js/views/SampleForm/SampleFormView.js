@@ -266,26 +266,28 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
 			}
 			
-			//Create Dataset
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
-				mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-			});
-			if(toolbarConfig.UPLOAD_DATASET) {
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
-			}
+			if(!_this._sampleFormModel.v3_sample.frozen) {
+				//Create Dataset
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
+					mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
+				});
+				if(toolbarConfig.UPLOAD_DATASET) {
+					toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+				}
 			
-			//Get dropbox folder name
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-				var nameElements = [
-					"O",
-					_this._sampleFormModel.sample.spaceCode,
-					IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
-					_this._sampleFormModel.sample.code,
-				];
-				FormUtil.showDropboxFolderNameDialog(nameElements);
-			}).bind(this));
-			if(toolbarConfig.UPLOAD_DATASET_HELPER) {
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+				//Get dropbox folder name
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
+					var nameElements = [
+						"O",
+						_this._sampleFormModel.sample.spaceCode,
+						IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
+						_this._sampleFormModel.sample.code,
+					];
+					FormUtil.showDropboxFolderNameDialog(nameElements);
+				}).bind(this));
+				if(toolbarConfig.UPLOAD_DATASET_HELPER) {
+					toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+				}
 			}
 			
 			//Export
@@ -560,7 +562,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$formColumn.append($dataSetViewerContainer);
 		}
 		
-		if(this._sampleFormModel.mode === FormMode.VIEW) {
+		if(this._sampleFormModel.mode === FormMode.VIEW && !this._sampleFormModel.v3_sample.frozen) {
 			var $inlineDataSetForm = $("<div>");
 			if($rightPanel) {
 				$rightPanel.append($inlineDataSetForm);

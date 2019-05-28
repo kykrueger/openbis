@@ -131,27 +131,27 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					_this._experimentFormController.deleteExperiment(reason);
 				}, true);
 				toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
-			}
 			
-			//Create Dataset
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
-				mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-			});
-			toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
-
-			//Get dropbox folder name
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-				var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
-				var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
-				var nameElements = [
-					"E",
-					space,
-					project,
-					_this._experimentFormModel.experiment.code,
-				];
-				FormUtil.showDropboxFolderNameDialog(nameElements);
-			}).bind(this));
-			toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+				//Create Dataset
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
+					mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
+				});
+				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+	
+				//Get dropbox folder name
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
+					var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
+					var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
+					var nameElements = [
+						"E",
+						space,
+						project,
+						_this._experimentFormModel.experiment.code,
+					];
+					FormUtil.showDropboxFolderNameDialog(nameElements);
+				}).bind(this));
+				toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+			}
 			
 			//Export
 			var $exportAll = FormUtil.getExportButton([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false);
@@ -274,7 +274,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				// Viewer
 				_this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, data.objects[0], mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
 				_this._experimentFormModel.dataSetViewer.init();
-				if(_this._experimentFormModel.mode === FormMode.VIEW) {
+				if(_this._experimentFormModel.mode === FormMode.VIEW && !_this._experimentFormModel.v3_experiment.frozen) {
 					// Uploader
 					var $dataSetFormController = new DataSetFormController(_this, FormMode.CREATE, data.objects[0], null, true);
 					var viewsForDS = {
@@ -428,7 +428,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				} else {
 					var $component = null;
 					if(propertyType.code === "$DEFAULT_OBJECT_TYPE") {
-						$component = FormUtil.getSampleTypeDropdown(propertyType.code, true);
+						$component = FormUtil.getSampleTypeDropdown(propertyType.code, false);
 					} else {
 						$component = FormUtil.getFieldForPropertyType(propertyType, value);
 					}

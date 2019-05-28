@@ -174,7 +174,6 @@ class DataSet(OpenBisObject):
         if VERBOSE: print("DataSet {} unarchived".format(self.permId))
 
     def archive_unarchive(self, method, fetchopts):
-        dss = self.get_datastore
         payload = {}
 
         request = {
@@ -381,7 +380,7 @@ class DataSet(OpenBisObject):
             raise ValueError('internal error while performing post request')
 
 
-    def _generate_plugin_request(self, dss):
+    def _generate_plugin_request(self, dss, permId=None):
         """generates a request to activate the dataset-uploader ingestion plugin to
         register our files as a new dataset
         """
@@ -408,6 +407,7 @@ class DataSet(OpenBisObject):
                 dss,
                 PYBIS_PLUGIN,
                 {
+                    "permId" : permId,
                     "method" : "insertDataSet",
                     "sampleIdentifier" : sample_identifier,
                     "experimentIdentifier" : experiment_identifier,
@@ -426,7 +426,8 @@ class DataSet(OpenBisObject):
         self.openbis.delete_entity(entity='DataSet',id=self.permId, reason=reason)
         if VERBOSE: print("DataSet {} successfully deleted.".format(self.permId))
 
-    def save(self):
+
+    def save(self, permId=None):
         for prop_name, prop in self.props._property_names.items():
             if prop['mandatory']:
                 if getattr(self.props, prop_name) is None or getattr(self.props, prop_name) == "":
@@ -434,8 +435,6 @@ class DataSet(OpenBisObject):
 
         if self.is_new:
             datastores = self.openbis.get_datastores()
-            permId = None
-
  
             if self.sample is None and self.experiment is None:
                 raise ValueError('A DataSet must be either connected to a Sample or an Experiment')
@@ -456,7 +455,7 @@ class DataSet(OpenBisObject):
 
                 # activate the ingestion plugin, as soon as the data is uploaded
                 # this will actually register the dataset in the datastore and the AS
-                request = self._generate_plugin_request(dss=datastores['code'][0])
+                request = self._generate_plugin_request(dss=datastores['code'][0], permId=permId)
                 resp = self.openbis._post_request(self.openbis.reg_v1, request)
                 if resp['rows'][0][0]['value'] == 'OK':
                     permId = resp['rows'][0][2]['value']
@@ -544,7 +543,7 @@ class DataSet(OpenBisObject):
             self.files_in_wsp.append(file_in_wsp)
 
             upload_url = (
-                datastore_url + '/session_workspace_file_upload'
+                datastore_url + '/datastore_server/session_workspace_file_upload'
                 + '?filename=' + url_filename
                 + '&id=1'
                 + '&startByte=0&endByte=0'
