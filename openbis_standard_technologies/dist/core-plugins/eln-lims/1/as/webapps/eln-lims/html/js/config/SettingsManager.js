@@ -108,12 +108,7 @@ function SettingsManager(serverFacade) {
 			"inventorySpaces"
 		];
 		for (var field of fieldsToAdd) {
-			targetProfile[field] = [];
-			if (settings[field]) {
-				for(var fIdx = 0; fIdx < settings[field].length; fIdx++) {
-					targetProfile[field].push(settings[field][fIdx]);
-				}
-			}
+			targetProfile[field] = settings[field];
 		}
 		
 		// main menu, checks menu items one by one to keep new ones
