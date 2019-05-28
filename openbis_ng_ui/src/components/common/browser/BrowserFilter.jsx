@@ -47,28 +47,44 @@ class BrowserFilter extends React.Component {
         value={this.props.filter}
         onChange={this.handleFilterChange}
         InputProps={{
-          startAdornment: (
-            <InputAdornment position="start" classes={{
-              root: classes.adornment
-            }}>
-              <FilterIcon />
-            </InputAdornment>
-          ),
-          endAdornment: (
-            <InputAdornment position="end" classes={{
-              root: classes.adornment
-            }}>
-              <IconButton onClick={this.handleFilterClear}>
-                <CloseIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
+          startAdornment: this.renderFilterIcon(),
+          endAdornment: this.renderFilterClearIcon(),
           classes: {
             input: classes.input
           }
         }}/>
     )
   }
+
+  renderFilterIcon(){
+    const classes = this.props.classes
+    return (
+      <InputAdornment position="start" classes={{
+        root: classes.adornment
+      }}>
+        <FilterIcon />
+      </InputAdornment>
+    )
+  }
+
+  renderFilterClearIcon(){
+    const classes = this.props.classes
+
+    if(this.props.filter){
+      return (
+        <InputAdornment position="end" classes={{
+          root: classes.adornment
+        }}>
+          <IconButton onClick={this.handleFilterClear}>
+            <CloseIcon />
+          </IconButton>
+        </InputAdornment>
+      )
+    }else{
+      return (<React.Fragment></React.Fragment>)
+    }
+  }
+
 }
 
 export default withStyles(styles)(BrowserFilter)
