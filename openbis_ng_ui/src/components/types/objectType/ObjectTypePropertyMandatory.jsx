@@ -16,7 +16,7 @@ class ObjectTypePropertyMandatory extends React.Component {
 
   handleChange(event){
     event.stopPropagation()
-    this.props.onChange(this.props.property.ordinal, 'mandatory', event.target.checked)
+    this.props.onChange(this.props.property.id, 'mandatory', event.target.checked)
   }
 
   render(){

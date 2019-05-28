@@ -40,7 +40,7 @@ class ObjectTypeTable extends React.Component {
         </TableHead>
         <TableBody>
           {properties.map((property, index) => (
-            <React.Fragment key={property.ordinal}>
+            <React.Fragment key={property.id}>
               <ObjectTypePropertyRow
                 index={index}
                 property={property}

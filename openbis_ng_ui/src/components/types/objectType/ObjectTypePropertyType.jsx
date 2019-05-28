@@ -20,7 +20,7 @@ class ObjectTypePropertyType extends React.Component {
     let propertyType = _.find(this.props.propertyTypes, propertyType => {
       return propertyType.code === event.target.value
     })
-    this.props.onChange(this.props.property.ordinal, 'propertyType', propertyType)
+    this.props.onChange(this.props.property.id, 'propertyType', propertyType)
   }
 
   render(){

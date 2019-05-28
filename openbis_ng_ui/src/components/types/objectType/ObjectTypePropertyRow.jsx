@@ -79,7 +79,7 @@ class ObjectTypePropertyRow extends React.Component {
   }
 
   handleSelect(){
-    this.props.onSelect(this.props.property.ordinal)
+    this.props.onSelect(this.props.property.id)
   }
 
   render(){
