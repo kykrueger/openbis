@@ -90,7 +90,5 @@ def process(context, parameters):
     server_duplicates_handler.rewrite_parentchild_creationid_to_permid()
     creations = server_duplicates_handler.handle_existing_elements_in_creations()
     operations = CreationOrUpdateToOperationParser.parse(creations)
-    print("EOEOOEOEOOEE")
-    print(operations)
     res = str(api.executeOperations(session_token, operations, SynchronousOperationExecutionOptions()).getResults())
     return res
