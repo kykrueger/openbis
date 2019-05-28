@@ -138,12 +138,23 @@ function SettingsManager(serverFacade) {
 
     this._validateSettings = function(settings) {
 		var errors = [];
+		this._validateSpaces(settings, errors);
 		this._validateForcedDisableRTF(settings, errors);
 		this._validateForcedMonospaceFont(settings, errors);
 		this._validateDataSetTypeForFileNameMap(settings, errors);
 		this._validateSampleTypeDefinitionsExtension(settings, errors);
 		return errors;
 	}
+
+    this._validateSpaces = function(settings, errors) {
+        if(settings.inventorySpaces) {
+            for(var idx = 0; idx < settings.inventorySpaces.length; idx++) {
+                if(!settings.inventorySpaces[idx]) {
+                    errors.push("Empty value found instead of a space, please delete it before save.");
+                }
+            }
+        }
+    }
 
 	this._validateSampleTypeDefinitionsExtension = function(settings, errors) {
 		if (settings.sampleTypeDefinitionsExtension) {
