@@ -1,5 +1,8 @@
-from parsers import SpaceDefinitionToCreationParser, ProjectDefinitionToCreationParser, \
-    ExperimentDefinitionToCreationParser, ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser, CreationToUpdateParser
+from parsers import SpaceDefinitionToCreationType, ProjectDefinitionToCreationType, VocabularyDefinitionToCreationType, \
+    VocabularyTermDefinitionToCreationType, \
+    ExperimentDefinitionToCreationType, ScriptDefinitionToCreationType, SampleDefinitionToCreationType, \
+    CreationToUpdateParser
+from .version_handler import VersionHandler
 
 from utils.openbis_utils import create_sample_identifier_string
 
@@ -10,38 +13,41 @@ UPDATE_IF_EXISTS = "UPDATE_IF_EXISTS"
 
 class OpenbisDuplicatesHandler(object):
 
-    def __init__(self, creations, existing_elements, duplicates_strategy=FAIL_IF_EXISTS):
+    def __init__(self, creations, creations_metadata, existing_elements, xls_version_vocabulary,
+                 duplicates_strategy=FAIL_IF_EXISTS):
         self.creations = creations
+        self.creations_metadata = creations_metadata
         self.existing_elements = existing_elements
+        self.xls_version_vocabulary = xls_version_vocabulary
         self.duplicates_strategy = duplicates_strategy
 
     def rewrite_parentchild_creationid_to_permid(self):
-        if ProjectDefinitionToCreationParser.type in self.creations:
-            for creation in self.creations[ProjectDefinitionToCreationParser.type]:
-                for existing_element in self.existing_elements[SpaceDefinitionToCreationParser.type]:
+        if ProjectDefinitionToCreationType in self.creations:
+            for creation in self.creations[ProjectDefinitionToCreationType]:
+                for existing_element in self.existing_elements[SpaceDefinitionToCreationType]:
                     if existing_element.code == str(creation.spaceId):
                         creation.spaceId = existing_element.permId
                         break
-        if ExperimentDefinitionToCreationParser.type in self.creations:
-            for creation in self.creations[ExperimentDefinitionToCreationParser.type]:
-                for existing_element in self.existing_elements[ProjectDefinitionToCreationParser.type]:
+        if ExperimentDefinitionToCreationType in self.creations:
+            for creation in self.creations[ExperimentDefinitionToCreationType]:
+                for existing_element in self.existing_elements[ProjectDefinitionToCreationType]:
                     if existing_element.code == str(creation.projectId):
                         creation.projectId = existing_element.permId
                         break
-        if SampleDefinitionToCreationParser.type in self.creations:
-            for creation in self.creations[SampleDefinitionToCreationParser.type]:
+        if SampleDefinitionToCreationType in self.creations:
+            for creation in self.creations[SampleDefinitionToCreationType]:
                 if creation.spaceId is not None:
-                    for existing_element in self.existing_elements[SpaceDefinitionToCreationParser.type]:
+                    for existing_element in self.existing_elements[SpaceDefinitionToCreationType]:
                         if existing_element.code == str(creation.spaceId):
                             creation.spaceId = existing_element.permId
                             break
                 if creation.projectId is not None:
-                    for existing_element in self.existing_elements[ProjectDefinitionToCreationParser.type]:
+                    for existing_element in self.existing_elements[ProjectDefinitionToCreationType]:
                         if existing_element.code == str(creation.projectId):
                             creation.projectId = existing_element.permId
                             break
                 if creation.experimentId is not None:
-                    for existing_element in self.existing_elements[ExperimentDefinitionToCreationParser.type]:
+                    for existing_element in self.existing_elements[ExperimentDefinitionToCreationType]:
                         if existing_element.code == str(creation.experimentId):
                             creation.experimentId = existing_element.permId
                             break
@@ -50,7 +56,7 @@ class OpenbisDuplicatesHandler(object):
                 if creation.childIds is not None:
                     for child in creation.childIds:
                         new_id = None
-                        for existing_element in self.existing_elements[SampleDefinitionToCreationParser.type]:
+                        for existing_element in self.existing_elements[SampleDefinitionToCreationType]:
                             if existing_element.permId.permId == str(child):
                                 new_id = existing_element.permId
                                 break
@@ -67,7 +73,7 @@ class OpenbisDuplicatesHandler(object):
                 if creation.parentIds is not None:
                     for parent in creation.parentIds:
                         new_id = None
-                        for existing_element in self.existing_elements[SampleDefinitionToCreationParser.type]:
+                        for existing_element in self.existing_elements[SampleDefinitionToCreationType]:
                             if existing_element.permId.permId == str(parent):
                                 new_id = existing_element.permId
                                 break
@@ -87,11 +93,26 @@ class OpenbisDuplicatesHandler(object):
     def handle_existing_elements_in_creations(self):
 
         if self.duplicates_strategy == UPDATE_IF_EXISTS:
+            version_handler = VersionHandler(self.creations, self.creations_metadata, self.existing_elements,
+                                             self.xls_version_vocabulary)
+            self.creations = version_handler.check_and_filter_versioned_creations()
             duplicates_list = {}
             for creations_type, existing_elements in self.existing_elements.items():
                 if not creations_type in self.creations:
                     continue
-                if creations_type == SampleDefinitionToCreationParser.type:
+                if creations_type == VocabularyTermDefinitionToCreationType:
+                    continue
+                if creations_type == VocabularyDefinitionToCreationType:
+                    terms = [obj.terms for obj in existing_elements]
+                    terms = [item for sublist in terms for item in sublist]
+                    existing_object_codes = [(obj.code, obj.vocabulary.code) for obj in terms]
+                    duplicates_list[VocabularyTermDefinitionToCreationType] = list(filter(
+                        lambda creation: (creation.code, str(creation.vocabularyId)) in existing_object_codes,
+                        self.creations[VocabularyTermDefinitionToCreationType]))
+                    self.creations[VocabularyTermDefinitionToCreationType] = list(filter(
+                        lambda creation: (creation.code, str(creation.vocabularyId)) not in existing_object_codes,
+                        self.creations[VocabularyTermDefinitionToCreationType]))
+                if creations_type == SampleDefinitionToCreationType:
                     existing_object_codes = [obj.identifier.identifier for obj in existing_elements]
                     duplicates_list[creations_type] = list(filter(
                         lambda creation: creation.code is not None or create_sample_identifier_string(
@@ -99,40 +120,57 @@ class OpenbisDuplicatesHandler(object):
                     self.creations[creations_type] = list(filter(
                         lambda creation: creation.code is None or create_sample_identifier_string(
                             creation) not in existing_object_codes, self.creations[creations_type]))
+
                 else:
                     distinct_property_name = self._get_distinct_property_name(creations_type)
-                    duplicates_list[creations_type] = self.get_creations_for_existing_objects(creations_type, existing_elements, distinct_property_name)
+                    duplicates_list[creations_type] = self.get_creations_for_existing_objects(creations_type,
+                                                                                              existing_elements,
+                                                                                              distinct_property_name)
                     self.creations[creations_type] = self._filter_creations_from_existing_objects(creations_type,
                                                                                                   existing_elements,
                                                                                                   distinct_property_name)
 
-                updates = CreationToUpdateParser.parse(duplicates_list, self.existing_elements)
-                for update_type, update in updates.items():
-                    self.creations[update_type] = update
+            updates = CreationToUpdateParser.parse(duplicates_list, self.existing_elements)
+            for update_type, update in updates.items():
+                if update_type not in self.creations:
+                    self.creations[update_type] = []
+                self.creations[update_type].extend(update)
 
         if self.duplicates_strategy == FAIL_IF_EXISTS:
             duplicates_list = {}
             for creations_type, existing_elements in self.existing_elements.items():
                 if not creations_type in self.creations:
                     continue
-                if creations_type == SampleDefinitionToCreationParser.type:
+                if creations_type == SampleDefinitionToCreationType:
                     existing_object_codes = [obj.identifier.identifier for obj in existing_elements]
-                    duplicates = list(filter(lambda creation: creation.code is not None and create_sample_identifier_string(creation) in existing_object_codes, self.creations[creations_type]))
+                    duplicates = list(filter(
+                        lambda creation: creation.code is not None and create_sample_identifier_string(
+                            creation) in existing_object_codes, self.creations[creations_type]))
                     if duplicates:
                         duplicates_list[creations_type] = duplicates
+                elif creations_type == VocabularyDefinitionToCreationType:
+                    existing_object_codes = [(obj.code, obj.vocabulary.code) for obj in existing_elements.terms]
+                    duplicates_list[VocabularyTermDefinitionToCreationType] = list(filter(
+                        lambda creation: (creation.code, str(creation.vocabularyId)) in existing_object_codes,
+                        self.creations[VocabularyTermDefinitionToCreationType]))
+                elif creations_type == VocabularyTermDefinitionToCreationType:
+                    continue
                 else:
                     distinct_property_name = self._get_distinct_property_name(creations_type)
-                    duplicates = self.get_creations_for_existing_objects(creations_type, existing_elements, distinct_property_name)
+                    duplicates = self.get_creations_for_existing_objects(creations_type, existing_elements,
+                                                                         distinct_property_name)
                     if duplicates:
                         duplicates_list[creations_type] = duplicates
             if duplicates_list:
-                raise Exception("Some of the objects you are trying to create already exist on the server. An error is being thrown when FAIL_IF_EXISTS flag is on. Existing elements are: " + str(duplicates_list))
+                raise Exception(
+                    "Some of the objects you are trying to create already exist on the server. An error is being thrown when FAIL_IF_EXISTS flag is on. Existing elements are: " + str(
+                        duplicates_list))
 
         if self.duplicates_strategy == IGNORE_EXISTING:
             for creations_type, existing_elements in self.existing_elements.items():
                 if not creations_type in self.creations:
                     continue
-                if creations_type == SampleDefinitionToCreationParser.type:
+                if creations_type == SampleDefinitionToCreationType:
                     existing_object_codes = [obj.identifier.identifier for obj in existing_elements]
                     self.creations[creations_type] = list(filter(
                         lambda creation: creation.code is None or create_sample_identifier_string(
@@ -145,7 +183,7 @@ class OpenbisDuplicatesHandler(object):
         return self.creations
 
     def _get_distinct_property_name(self, creation_type):
-        if creation_type == ScriptDefinitionToCreationParser.type:
+        if creation_type == ScriptDefinitionToCreationType:
             return 'name'
         else:
             return 'code'
