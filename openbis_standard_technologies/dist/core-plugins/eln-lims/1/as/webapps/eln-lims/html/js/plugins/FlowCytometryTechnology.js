@@ -16,7 +16,7 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
     sampleTypeDefinitionsExtension: {
         "FACS_ARIA_EXPERIMENT": {
             "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true },
-            "SAMPLE_CHILDREN_DISABLED": true,
+            "SAMPLE_CHILDREN_DISABLED": false,
             "SAMPLE_PARENTS_HINT": [{
                 "LABEL": "Organization Units",
                 "TYPE": "ORGANIZATION_UNIT",
@@ -25,7 +25,7 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
         },
         "INFLUX_EXPERIMENT": {
             "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true },
-            "SAMPLE_CHILDREN_DISABLED": true,
+            "SAMPLE_CHILDREN_DISABLED": false,
             "SAMPLE_PARENTS_HINT": [{
                 "LABEL": "Organization Units",
                 "TYPE": "ORGANIZATION_UNIT",
@@ -34,7 +34,7 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
         },
         "LSR_FORTESSA_EXPERIMENT": {
             "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true },
-            "SAMPLE_CHILDREN_DISABLED": true,
+            "SAMPLE_CHILDREN_DISABLED": false,
             "SAMPLE_PARENTS_HINT": [{
                 "LABEL": "Organization Units",
                 "TYPE": "ORGANIZATION_UNIT",
@@ -43,7 +43,7 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
         },
         "MOFLO_XDP_EXPERIMENT": {
             "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true },
-            "SAMPLE_CHILDREN_DISABLED": true,
+            "SAMPLE_CHILDREN_DISABLED": false,
             "SAMPLE_PARENTS_HINT": [{
                 "LABEL": "Organization Units",
                 "TYPE": "ORGANIZATION_UNIT",
@@ -52,7 +52,7 @@ $.extend(FlowCytometryTechnology.prototype, ELNLIMSPlugin.prototype, {
         },
         "S3E_EXPERIMENT": {
             "TOOLBAR": { CREATE: false, FREEZE: false, EDIT: true, MOVE: false, COPY: false, DELETE: false, PRINT: true, HIERARCHY_GRAPH: true, HIERARCHY_TABLE: true, UPLOAD_DATASET: false, UPLOAD_DATASET_HELPER: false, EXPORT_ALL: true, EXPORT_METADATA: true },
-            "SAMPLE_CHILDREN_DISABLED": true,
+            "SAMPLE_CHILDREN_DISABLED": false,
             "SAMPLE_PARENTS_HINT": [{
                 "LABEL": "Organization Units",
                 "TYPE": "ORGANIZATION_UNIT",
