@@ -446,11 +446,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				enabled : sampleTypeSettings["ENABLE_STORAGE"]
 			});
 			tableModel.addRow({
-				name : "Show on Drop-down",
+				name : "Show in drop downs",
 				enabled : sampleTypeSettings["SHOW"]
 			});
 			tableModel.addRow({
-                name : "Show on Navigation",
+                name : "Show in main menu",
                 enabled : sampleTypeSettings["SHOW_ON_NAV"]
             });
 		} else { // default values
@@ -463,11 +463,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				enabled : false
 			});
 			tableModel.addRow({
-                name : "Show on Drop-down",
+                name : "Show in drop downs",
                 enabled : false
             });
             tableModel.addRow({
-                name : "Show on Navigation",
+                name : "Show in main menu",
                 enabled : false
             });
 		}
