@@ -170,7 +170,7 @@ class TestCase(systemtest.testcase.TestCase):
                                + "from property_types t join data_types dt on t.daty_id = dt.id "
                                + "left join controlled_vocabularies v on t.covo_id = v.id "
                                + "left join material_types mt on t.maty_prop_id = mt.id "
-                               + "where t.code like '{1}%' order by t.code")
+                               + "where t.code like '{1}%' order by t.code, t.is_internal_namespace")
         self._compareDataBases("Material types", openbis_data_source, openbis_harvester, "openbis", 
                                "select '{0}' || t.code as code, t.description, '{0}' || s.name as validation_script "
                                + "from material_types t left join scripts s on t.validation_script_id = s.id "
