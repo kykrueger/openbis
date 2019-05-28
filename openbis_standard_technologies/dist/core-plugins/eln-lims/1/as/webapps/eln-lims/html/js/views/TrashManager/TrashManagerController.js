@@ -50,8 +50,12 @@ function TrashManagerController(mainController) {
 		}
 		
 		mainController.serverFacade.deletePermanently(deleteIds, function(data) {
-			Util.showSuccess("Trashcan cleaned.");
-			mainController.changeView('showTrashcanPage', null);
+		    if(data.error) {
+                Util.showError(data.error.message, null, true, true, false, true);
+            } else {
+                Util.showSuccess("Trashcan cleaned.");
+                mainController.changeView('showTrashcanPage', null);
+            }
 		});
 	}
 	
