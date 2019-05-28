@@ -40,9 +40,12 @@ def get_all_scripts():
 
     return scripts
 
+
 class ListForBinaries(ArrayList):
+
     def toString(self):
         return "%s blobs" % self.size()
+
 
 def list_xls_byte_arrays():
     xls = ListForBinaries()
@@ -76,9 +79,10 @@ def list_all_files(source_root_path):
 
 # "======================== Helper Functions ========================"
 
+
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
-props = CustomASServiceExecutionOptions().withParameter('xls', list_xls_byte_arrays()).withParameter('update_mode', 'IGNORE_EXISTING').withParameter('scripts', get_all_scripts())
+props = CustomASServiceExecutionOptions().withParameter('xls', list_xls_byte_arrays()).withParameter('xls_name', 'ELN-LIMS-LIFE-SCIENCES').withParameter('update_mode', 'IGNORE_EXISTING').withParameter('scripts', get_all_scripts())
 result = api.executeCustomASService(sessionToken, CustomASServiceCode("xls-import-api"), props);
 print("======================== master-data xls ingestion result ========================")
 print(result)
