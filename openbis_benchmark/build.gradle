@@ -21,7 +21,7 @@ dependencies {
 			'fasterxml:jackson-annotations:2.0.2',
 			'fasterxml:jackson-core:2.0.2',
 			'fasterxml:jackson-databind:2.0.2',
-			'openbis:openbis-v3-api-batteries-included:S275'
+			'openbis:openbis-v3-api-batteries-included:S300'
 }
 
 
