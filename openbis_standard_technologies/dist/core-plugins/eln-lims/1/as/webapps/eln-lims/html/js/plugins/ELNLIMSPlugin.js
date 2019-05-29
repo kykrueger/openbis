@@ -23,6 +23,9 @@ $.extend(ELNLIMSPlugin.prototype, {
 	dataSetFormTop : function($container, model) {
 	
 	},
+	onSampleSave : function(sample, changesToDo, success, failed) {
+        success();
+	},
 	dataSetFormBottom : function($container, model) {
 	
 	}

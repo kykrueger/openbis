@@ -145,16 +145,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				}
 			}
 			
-			//Freeze
-			if(_this._sampleFormModel.v3_sample && _this._sampleFormModel.v3_sample.frozen !== undefined) { //Freezing available on the API
-				var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
-				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-				var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
-			    if(toolbarConfig.FREEZE) {
-                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
-                }
-			}
-			
 			if(!_this._sampleFormModel.v3_sample.frozen) {
 				//Edit
 				if(this._sampleFormModel.mode === FormMode.VIEW) {
@@ -266,26 +256,28 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
 			}
 			
-			//Create Dataset
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
-				mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-			});
-			if(toolbarConfig.UPLOAD_DATASET) {
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
-			}
+			if(!_this._sampleFormModel.v3_sample.frozen) {
+				//Create Dataset
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
+					mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
+				});
+				if(toolbarConfig.UPLOAD_DATASET) {
+					toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+				}
 			
-			//Get dropbox folder name
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-				var nameElements = [
-					"O",
-					_this._sampleFormModel.sample.spaceCode,
-					IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
-					_this._sampleFormModel.sample.code,
-				];
-				FormUtil.showDropboxFolderNameDialog(nameElements);
-			}).bind(this));
-			if(toolbarConfig.UPLOAD_DATASET_HELPER) {
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+				//Get dropbox folder name
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
+					var nameElements = [
+						"O",
+						_this._sampleFormModel.sample.spaceCode,
+						IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
+						_this._sampleFormModel.sample.code,
+					];
+					FormUtil.showDropboxFolderNameDialog(nameElements);
+				}).bind(this));
+				if(toolbarConfig.UPLOAD_DATASET_HELPER) {
+					toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+				}
 			}
 			
 			//Export
@@ -307,6 +299,16 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				});
 				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
 			}
+
+            //Freeze
+            if(_this._sampleFormModel.v3_sample && _this._sampleFormModel.v3_sample.frozen !== undefined) { //Freezing available on the API
+                var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
+                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+            	var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
+                if(toolbarConfig.FREEZE) {
+                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                }
+            }
 		} else { //Create and Edit
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._sampleFormController.createUpdateCopySample();
@@ -560,7 +562,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$formColumn.append($dataSetViewerContainer);
 		}
 		
-		if(this._sampleFormModel.mode === FormMode.VIEW) {
+		if(this._sampleFormModel.mode === FormMode.VIEW && !this._sampleFormModel.v3_sample.frozen) {
 			var $inlineDataSetForm = $("<div>");
 			if($rightPanel) {
 				$rightPanel.append($inlineDataSetForm);

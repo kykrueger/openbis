@@ -21,15 +21,23 @@ function TrashManagerController(mainController) {
 	
 	this.revertDeletions = function(deletionIds) {
 		mainController.serverFacade.revertDeletions(deletionIds, function(data) {
-			Util.showSuccess("Deletions Reverted.", function() {});
-			mainController.changeView('showTrashcanPage', null);
+		    if(data.error) {
+                Util.showError(data.error.message, null, true, true, false, true);
+            } else {
+                Util.showSuccess("Deletions Reverted.", function() {});
+                mainController.changeView('showTrashcanPage', null);
+            }
 		});
 	}
 	
 	this.deletePermanently = function(deletionIds) {
 		mainController.serverFacade.deletePermanently(deletionIds, function(data) {
-			Util.showSuccess("Permanently Deleted.");
-			mainController.changeView('showTrashcanPage', null);
+		    if(data.error) {
+		        Util.showError(data.error.message, null, true, true, false, true);
+		    } else {
+		        Util.showSuccess("Permanently Deleted.");
+                mainController.changeView('showTrashcanPage', null);
+		    }
 		});
 	}
 	
@@ -42,8 +50,12 @@ function TrashManagerController(mainController) {
 		}
 		
 		mainController.serverFacade.deletePermanently(deleteIds, function(data) {
-			Util.showSuccess("Trashcan cleaned.");
-			mainController.changeView('showTrashcanPage', null);
+		    if(data.error) {
+                Util.showError(data.error.message, null, true, true, false, true);
+            } else {
+                Util.showSuccess("Trashcan cleaned.");
+                mainController.changeView('showTrashcanPage', null);
+            }
 		});
 	}
 	

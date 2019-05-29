@@ -149,6 +149,25 @@ $.extend(DefaultProfile.prototype, {
 				this.plugins[i].dataSetFormTop($container, model);
 			}
 		}
+		this.onSampleSave = function(sample, changesToDo, action) {
+            var idx = -1;
+            var _this = this;
+
+            var failed = function(message) {
+                Util.showError(message, null, false, true, false, true);
+            }
+
+            var next = null;
+                next = function() {
+                    idx = idx + 1;
+                    if(idx < _this.plugins.length) {
+                        _this.plugins[idx].onSampleSave(sample, changesToDo, next, failed);
+                    } else {
+                        action(sample, null, null, changesToDo);
+                    }
+                }
+            next();
+        }
 		this.dataSetFormBottom = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {
 				this.plugins[i].dataSetFormBottom($container, model);
@@ -156,8 +175,8 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 //		Jupyter integration config
-//		this.jupyterIntegrationServerEndpoint = "https://127.0.0.1:8002";
-//		this.jupyterEndpoint = "https://127.0.0.1:8000/";
+//		this.jupyterIntegrationServerEndpoint = "https://bs-openbis-sis-dev.ethz.ch:8002";
+//		this.jupyterEndpoint = "https://bs-openbis-sis-dev.ethz.ch:8000/";
 		
 		this.systemProperties = ["$ANNOTATIONS_STATE", "$FREEFORM_TABLE_STATE"];
 		this.forcedDisableRTF = [];
@@ -281,14 +300,18 @@ $.extend(DefaultProfile.prototype, {
 		
 		this.getStorageConfigCollectionForConfigSample = function(sample) {
 			var prefix = this.getSampleConfigSpacePrefix(sample);
-			return IdentifierUtil.getExperimentIdentifier(prefix + "ELN_SETTINGS", prefix + "STORAGES", prefix + "STORAGES_COLLECTION");
+			return IdentifierUtil.getExperimentIdentifier(prefix + "ELN_SETTINGS", "STORAGES", "STORAGES_COLLECTION");
 		}
 		
 		this.getStorageSpaceForSample = function(sample) {
+			return this.getStorageSpaceForSpace(sample.spaceCode);
+		}
+		
+		this.getStorageSpaceForSpace = function(spaceCode) {
 			var storageSpaceCode = null;
-			var prefixIndexOf = sample.spaceCode.indexOf("_"); // This is a euristic that only works if the prefixes can't contain "_"
+			var prefixIndexOf = spaceCode.indexOf("_"); // This is a euristic that only works if the prefixes can't contain "_"
 			if(prefixIndexOf !== -1) {
-				var prefix = sample.spaceCode.substring(0, prefixIndexOf);
+				var prefix = spaceCode.substring(0, prefixIndexOf);
 				for(var ssIdx = 0; ssIdx < this.storageSpaces.length; ssIdx++) {
 					if(this.storageSpaces[ssIdx].startsWith(prefix)) {
 						storageSpaceCode = this.storageSpaces[ssIdx];

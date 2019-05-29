@@ -86,16 +86,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		var toolbarModel = [];
 		if(this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini) {
 			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(_this._dataSetFormModel.dataSet.dataSetTypeCode);
-		
-			//Freeze
-			if(_this._dataSetFormModel.v3_dataset && _this._dataSetFormModel.v3_dataset.frozen !== undefined) { //Freezing available on the API
-				var isEntityFrozen = _this._dataSetFormModel.v3_dataset.frozen;
-				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-				var $freezeButton = FormUtil.getFreezeButton("DATASET", this._dataSetFormModel.v3_dataset.permId.permId, isEntityFrozen);
-				if(toolbarConfig.FREEZE) {
-				    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
-				}
-			}
 			
 			if(!_this._dataSetFormModel.v3_dataset.frozen) {
 				//Edit Button
@@ -206,6 +196,16 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				});
 				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
 			}
+
+            //Freeze
+            if(_this._dataSetFormModel.v3_dataset && _this._dataSetFormModel.v3_dataset.frozen !== undefined) { //Freezing available on the API
+                var isEntityFrozen = _this._dataSetFormModel.v3_dataset.frozen;
+                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+                var $freezeButton = FormUtil.getFreezeButton("DATASET", this._dataSetFormModel.v3_dataset.permId.permId, isEntityFrozen);
+                if(toolbarConfig.FREEZE) {
+                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                }
+            }
 		} else if(!this._dataSetFormModel.isMini) {
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._dataSetFormController.submitDataSet();

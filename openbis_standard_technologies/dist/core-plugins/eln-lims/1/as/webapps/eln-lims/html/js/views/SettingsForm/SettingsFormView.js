@@ -273,7 +273,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		
 		var spacesOptions = this._settingsFormController.getInventorySpacesOptions();
 			spacesOptions = JSON.parse(JSON.stringify(spacesOptions));
-		var initialValues = this._profileToEdit.inventorySpaces;
+		var initialValues = this._profileToEdit.inventorySpaces.filter(space => space != null);
 		
 		for(var i = 0; i < initialValues.length; i++) {
 			if($.inArray(initialValues[i], spacesOptions) === -1) {
@@ -446,11 +446,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				enabled : sampleTypeSettings["ENABLE_STORAGE"]
 			});
 			tableModel.addRow({
-				name : "Show on Drop-down",
+				name : "Show in drop downs",
 				enabled : sampleTypeSettings["SHOW"]
 			});
 			tableModel.addRow({
-                name : "Show on Navigation",
+                name : "Show in main menu",
                 enabled : sampleTypeSettings["SHOW_ON_NAV"]
             });
 		} else { // default values
@@ -463,11 +463,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 				enabled : false
 			});
 			tableModel.addRow({
-                name : "Show on Drop-down",
+                name : "Show in drop downs",
                 enabled : false
             });
             tableModel.addRow({
-                name : "Show on Navigation",
+                name : "Show in main menu",
                 enabled : false
             });
 		}
@@ -479,9 +479,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					settings["USE_AS_PROTOCOL"] = rowValues["enabled"];
 				} else if (rowValues["Options"] === "Enable Storage") {
 					settings["ENABLE_STORAGE"] = rowValues["enabled"];
-				} else if (rowValues["Options"] === "Show on Drop-down") {
+				} else if (rowValues["Options"] === "Show in drop downs") {
 					settings["SHOW"] = rowValues["enabled"];
-				} else if (rowValues["Options"] === "Show on Navigation") {
+				} else if (rowValues["Options"] === "Show in main menu") {
                     settings["SHOW_ON_NAV"] = rowValues["enabled"];
                 }
 			}
