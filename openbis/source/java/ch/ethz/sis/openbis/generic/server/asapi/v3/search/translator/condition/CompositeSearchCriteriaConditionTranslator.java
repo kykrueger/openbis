@@ -18,7 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 
 import java.util.Collection;
@@ -33,7 +33,7 @@ public class CompositeSearchCriteriaConditionTranslator implements IConditionTra
 
     @Override
     public void translate(final AbstractCompositeSearchCriteria criterion,
-            final EntityKind entityKind, final List<Object> args,
+            final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final Collection<ISearchCriteria> subcriteria = criterion.getCriteria();

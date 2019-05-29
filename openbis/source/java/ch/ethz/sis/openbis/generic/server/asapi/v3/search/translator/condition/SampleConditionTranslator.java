@@ -16,8 +16,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class SampleConditionTranslator implements IConditionTranslator<SampleSea
 {
 
     @Override
-    public void translate(final SampleSearchCriteria criteria, final EntityKind entityKind,
+    public void translate(final SampleSearchCriteria criteria, final EntityMapper entityMapper,
             final List<Object> args,
             final StringBuilder sqlBuilder)
     {

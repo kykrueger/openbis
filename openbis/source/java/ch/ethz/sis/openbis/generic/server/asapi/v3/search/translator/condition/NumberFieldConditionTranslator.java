@@ -17,14 +17,14 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
 
 public class NumberFieldConditionTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
 {
     @Override
-    public void translate(final NumberFieldSearchCriteria criterion, final EntityKind entityKind,
+    public void translate(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper,
             final List<Object> args, final StringBuilder sqlBuilder)
     {
         // TODO: implement.

@@ -17,13 +17,13 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
 
 public interface IConditionTranslator<CRITERIA extends ISearchCriteria>
 {
 
-    void translate(CRITERIA criterion, EntityKind entityKind, List<Object> args, StringBuilder sqlBuilder);
+    void translate(CRITERIA criterion, EntityMapper entityMapper, List<Object> args, StringBuilder sqlBuilder);
 
 }

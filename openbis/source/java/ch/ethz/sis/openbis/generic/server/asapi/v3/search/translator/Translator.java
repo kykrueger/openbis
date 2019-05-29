@@ -226,7 +226,7 @@ public class Translator
                     (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
             if (conditionTranslator != null)
             {
-                conditionTranslator.translate(criterion, , args, sqlBuilder);
+                conditionTranslator.translate(criterion, entityMapper, args, sqlBuilder);
             } else
             {
                 throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());

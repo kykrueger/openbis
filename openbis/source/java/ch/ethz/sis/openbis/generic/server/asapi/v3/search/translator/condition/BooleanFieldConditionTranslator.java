@@ -17,14 +17,14 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.BooleanFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
 
 public class BooleanFieldConditionTranslator implements IConditionTranslator<BooleanFieldSearchCriteria>
 {
     @Override
-    public void translate(final BooleanFieldSearchCriteria criterion, final EntityKind entityKind,
+    public void translate(final BooleanFieldSearchCriteria criterion, final EntityMapper entityMapper,
             final List<Object> args, final StringBuilder sqlBuilder)
     {
         // TODO: implement.
