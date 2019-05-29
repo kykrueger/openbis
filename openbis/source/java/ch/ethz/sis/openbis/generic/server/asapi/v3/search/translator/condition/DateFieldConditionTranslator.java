@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEqualToV
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectLaterThanOrEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 
 import java.text.ParseException;
 import java.util.List;
@@ -43,7 +44,8 @@ public class DateFieldConditionTranslator implements IConditionTranslator<DateFi
 {
 
     @Override
-    public void translate(final DateFieldSearchCriteria criterion, final List<Object> args,
+    public void translate(final DateFieldSearchCriteria criterion, final EntityKind entityKind,
+            final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final Object fieldName = criterion.getFieldName();

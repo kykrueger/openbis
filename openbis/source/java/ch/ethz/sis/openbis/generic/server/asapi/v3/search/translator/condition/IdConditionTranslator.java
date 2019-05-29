@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -48,7 +49,8 @@ public class IdConditionTranslator implements IConditionTranslator<IdSearchCrite
 {
 
     @Override
-    public void translate(final IdSearchCriteria<ISampleId> criterion, final List<Object> args,
+    public void translate(final IdSearchCriteria<ISampleId> criterion,
+            final EntityKind entityKind, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final ISampleId sampleId = criterion.getId();

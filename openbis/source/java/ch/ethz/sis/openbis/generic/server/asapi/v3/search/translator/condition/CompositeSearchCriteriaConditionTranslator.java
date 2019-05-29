@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 
 import java.util.Collection;
@@ -28,14 +29,17 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 
 public class CompositeSearchCriteriaConditionTranslator implements IConditionTranslator<AbstractCompositeSearchCriteria>
 {
+    private final AtomicBoolean first = new AtomicBoolean();
+
     @Override
-    public void translate(final AbstractCompositeSearchCriteria criterion, final List<Object> args,
+    public void translate(final AbstractCompositeSearchCriteria criterion,
+            final EntityKind entityKind, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final Collection<ISearchCriteria> subcriteria = criterion.getCriteria();
         final String operator = criterion.getOperator().toString();
 
-        final AtomicBoolean first = new AtomicBoolean(true);
+        first.set(true);
         subcriteria.forEach((subcriterion) ->
         {
             if (first.get())
@@ -49,7 +53,7 @@ public class CompositeSearchCriteriaConditionTranslator implements IConditionTra
                     (IConditionTranslator<ISearchCriteria>) Translator.CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(subcriterion.getClass());
             if (conditionTranslator != null)
             {
-                conditionTranslator.translate(subcriterion, args, sqlBuilder);
+                conditionTranslator.translate(subcriterion, , args, sqlBuilder);
             } else
             {
                 throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());

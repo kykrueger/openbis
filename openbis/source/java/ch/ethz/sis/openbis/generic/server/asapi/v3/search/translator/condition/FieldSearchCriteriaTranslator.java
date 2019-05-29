@@ -18,11 +18,9 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.IS_NOT_NULL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
@@ -30,13 +28,9 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 public class FieldSearchCriteriaTranslator implements IConditionTranslator<AbstractFieldSearchCriteria<?>>
 {
 
-    private static final Map<String, String> sampleAttributeIdToColumnName = new HashMap<>();
-    static {
-        sampleAttributeIdToColumnName.put("perm id", ColumnNames.PERM_ID_COLUMN);
-    }
-
     @Override
-    public void translate(final AbstractFieldSearchCriteria<?> criterion, final List<Object> args,
+    public void translate(final AbstractFieldSearchCriteria<?> criterion,
+            final EntityKind entityKind, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final SearchFieldType searchFieldType = criterion.getFieldType();
@@ -49,7 +43,7 @@ public class FieldSearchCriteriaTranslator implements IConditionTranslator<Abstr
             case PROPERTY:
                 break;
             case ATTRIBUTE:
-                sqlBuilder.append(sampleAttributeIdToColumnName.get(fieldName)).append(SP);
+                sqlBuilder.append(Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.get(fieldName)).append(SP);
                 break;
             case ANY_PROPERTY:
                 break;

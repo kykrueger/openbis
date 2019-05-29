@@ -17,6 +17,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
@@ -32,7 +33,8 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SA
 public class AbsenceConditionTranslator implements IConditionTranslator<ISearchCriteria>
 {
     @Override
-    public void translate(final ISearchCriteria criterion, final List<Object> args,
+    public void translate(final ISearchCriteria criterion, final EntityKind entityKind,
+            final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         if (criterion instanceof NoSampleSearchCriteria)

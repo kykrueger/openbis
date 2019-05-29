@@ -16,18 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.EnumFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 
 import java.util.List;
 
-public class SampleConditionTranslator implements IConditionTranslator<SampleSearchCriteria>
+public class EnumFieldConditionTranslator implements IConditionTranslator<EnumFieldSearchCriteria<?>>
 {
-
     @Override
-    public void translate(final SampleSearchCriteria criteria, final EntityKind entityKind,
-            final List<Object> args,
-            final StringBuilder sqlBuilder)
+    public void translate(final EnumFieldSearchCriteria<?> criterion, final EntityKind entityKind,
+            final List<Object> args, final StringBuilder sqlBuilder)
     {
 
     }

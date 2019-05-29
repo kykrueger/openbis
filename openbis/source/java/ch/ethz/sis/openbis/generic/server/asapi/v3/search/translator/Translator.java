@@ -59,7 +59,13 @@ public class Translator
 
     public static final String LEFT = "LEFT";
 
+    public static final String INNER = "INNER";
+
     public static final String JOIN = "JOIN";
+
+    public static final String SP = " ";
+
+    public static final String INNER_JOIN = INNER + SP + JOIN;
 
     public static final String LIKE = "LIKE";
 
@@ -75,7 +81,7 @@ public class Translator
 
     public static final String NULL = "NULL";
 
-    public static final String SP = " ";
+    public static final String NL = "\n";
 
     public static final String IS_NULL = IS + SP + NULL;
 
@@ -123,6 +129,8 @@ public class Translator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CollectionFieldSearchCriteria.class, new CollectionFieldConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, new IdConditionTranslator());
     }
+
+    private static final AtomicBoolean FIRST = new AtomicBoolean();
 
     @SuppressWarnings("unchecked")
     private static <T extends ISearchCriteria> IConditionTranslator<T> getConditionTranslator(final Class<T> criterionClass)
@@ -202,15 +210,15 @@ public class Translator
 
         sqlBuilder.append(WHERE).append(SP);
 
-        final AtomicBoolean first = new AtomicBoolean(true);
+        FIRST.set(true);
         final String logicalOperator = operator.toString();
 
         criteria.forEach((criterion) ->
         {
-            if (first.get())
+            if (FIRST.get())
             {
                 sqlBuilder.append(SP).append(logicalOperator).append(SP);
-                first.set(false);
+                FIRST.set(false);
             }
 
             @SuppressWarnings("unchecked")
@@ -218,7 +226,7 @@ public class Translator
                     (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
             if (conditionTranslator != null)
             {
-                conditionTranslator.translate(criterion, args, sqlBuilder);
+                conditionTranslator.translate(criterion, , args, sqlBuilder);
             } else
             {
                 throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
