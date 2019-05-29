@@ -479,9 +479,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					settings["USE_AS_PROTOCOL"] = rowValues["enabled"];
 				} else if (rowValues["Options"] === "Enable Storage") {
 					settings["ENABLE_STORAGE"] = rowValues["enabled"];
-				} else if (rowValues["Options"] === "Show on Drop-down") {
+				} else if (rowValues["Options"] === "Show in drop downs") {
 					settings["SHOW"] = rowValues["enabled"];
-				} else if (rowValues["Options"] === "Show on Navigation") {
+				} else if (rowValues["Options"] === "Show in main menu") {
                     settings["SHOW_ON_NAV"] = rowValues["enabled"];
                 }
 			}
