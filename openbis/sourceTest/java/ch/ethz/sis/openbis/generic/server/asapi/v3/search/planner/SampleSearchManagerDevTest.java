@@ -34,8 +34,13 @@ public class SampleSearchManagerDevTest
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
 //        sampleSearchCriteria.withId().thatEquals(new SampleIdentifier("DEFAULT", "DEFAULT", null, "DEFAULT"));
 //        sampleSearchCriteria.withId().thatEquals(new SamplePermId("20190411142116392-367"));
-        sampleSearchCriteria.withRegistrationDate().thatIsEarlierThanOrEqualTo("2019-04-04 11:33:30 +0100");
+//        sampleSearchCriteria.withRegistrationDate().thatIsEarlierThanOrEqualTo("2019-04-04 11:33:30 +0100");
 //        sampleSearchCriteria.withRegistrationDate().thatIsEarlierThanOrEqualTo(new Date(119, 3, 4, 11, 33, 30));
+
+        sampleSearchCriteria.withoutContainer();
+//        sampleSearchCriteria.withoutSpace();
+        sampleSearchCriteria.withoutProject();
+        sampleSearchCriteria.withoutExperiment();
 
         final SampleFetchOptions sampleFetchOption = new SampleFetchOptions();
 
@@ -48,6 +53,7 @@ public class SampleSearchManagerDevTest
         // List<Long> sortedResults = sampleSearchManager.sortAndPage(unSortedResults, sampleSearchCriteria, sampleFetchOption);
 
         System.out.println("Final results: " + unSortedResults);
+        System.out.println("Final results count: " + unSortedResults.size());
     }
 
 }
