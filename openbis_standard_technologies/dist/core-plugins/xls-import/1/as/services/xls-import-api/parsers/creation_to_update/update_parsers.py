@@ -8,41 +8,34 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update import SpaceUpdate
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update import ProjectUpdate
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.update import PluginUpdate
 from java.lang import UnsupportedOperationException
-from ..definition_to_creation import PropertyTypeDefinitionToCreationType, VocabularyDefinitionToCreationType, VocabularyTermDefinitionToCreationType, \
-                    PropertyAssignmentDefinitionToCreationType, SampleTypeDefinitionToCreationType, ExperimentTypeDefinitionToCreationType, \
-                    DatasetTypeDefinitionToCreationType, SpaceDefinitionToCreationType, ProjectDefinitionToCreationType, ExperimentDefinitionToCreationType, \
-                    SampleDefinitionToCreationType, ScriptDefinitionToCreationType
-from .update_types import PropertyTypeCreationToUpdateType, VocabularyCreationToUpdateType, PropertyAssignmentCreationToUpdateType, \
-                        SampleTypeCreationToUpdateType, ExperimentTypeCreationToUpdateType, DatasetTypeCreationToUpdateType, \
-                        SpaceCreationToUpdateType, ProjectCreationToUpdateType, ExperimentCreationToUpdateType, \
-                        SampleCreationToUpdateType, ScriptCreationToUpdateType, VocabularyTermCreationToUpdateType
+from ..definition_to_creation import VocabularyDefinitionToCreationParser, PropertyTypeDefinitionToCreationParser, SampleTypeDefinitionToCreationParser, \
+                    ExperimentTypeDefinitionToCreationParser, DatasetTypeDefinitionToCreationParser, SpaceDefinitionToCreationParser, \
+                    ProjectDefinitionToCreationParser, ExperimentDefinitionToCreationParser, ScriptDefinitionToCreationParser, SampleDefinitionToCreationParser
 
 
 class CreationToUpdateParserFactory(object):
 
     @staticmethod
     def get_parsers(creation_type):
-        if creation_type == VocabularyDefinitionToCreationType:
-            return [VocabularyCreationToUpdateParser()]
-        if creation_type == VocabularyTermDefinitionToCreationType:
-            return [VocabularyTermCreationToUpdateParser()]
-        elif creation_type == PropertyTypeDefinitionToCreationType:
+        if creation_type == VocabularyDefinitionToCreationParser.type:
+            return [VocabularyCreationToUpdateParser(), VocabularyTermCreationToUpdateParser()]
+        elif creation_type == PropertyTypeDefinitionToCreationParser.type:
             return [PropertyTypeCreationToUpdateParser()]
-        elif creation_type == SampleTypeDefinitionToCreationType:
+        elif creation_type == SampleTypeDefinitionToCreationParser.type:
             return [SampleTypeCreationToUpdateParser()]
-        elif creation_type == ExperimentTypeDefinitionToCreationType:
+        elif creation_type == ExperimentTypeDefinitionToCreationParser.type:
             return [ExperimentTypeCreationToUpdateParser()]
-        elif creation_type == DatasetTypeDefinitionToCreationType:
+        elif creation_type == DatasetTypeDefinitionToCreationParser.type:
             return [DatasetTypeCreationToUpdateParser()]
-        elif creation_type == SpaceDefinitionToCreationType:
+        elif creation_type == SpaceDefinitionToCreationParser.type:
             return [SpaceCreationToUpdateParser()]
-        elif creation_type == ProjectDefinitionToCreationType:
+        elif creation_type == ProjectDefinitionToCreationParser.type:
             return [ProjectCreationToUpdateParser()]
-        elif creation_type == ExperimentDefinitionToCreationType:
+        elif creation_type == ExperimentDefinitionToCreationParser.type:
             return [ExperimentCreationToUpdateParser()]
-        elif creation_type == SampleDefinitionToCreationType:
+        elif creation_type == SampleDefinitionToCreationParser.type:
             return [SampleCreationToUpdateParser()]
-        elif creation_type == ScriptDefinitionToCreationType:
+        elif creation_type == ScriptDefinitionToCreationParser.type:
             return [ScriptCreationToUpdateParser()]
         else:
             raise UnsupportedOperationException(
@@ -50,6 +43,7 @@ class CreationToUpdateParserFactory(object):
 
 
 class VocabularyCreationToUpdateParser(object):
+    type = "VocabularyUpdate"
 
     def parse(self, creation, existing_vocabulary):
         vocabulary_update = VocabularyUpdate()
@@ -58,23 +52,30 @@ class VocabularyCreationToUpdateParser(object):
         return vocabulary_update
 
     def get_type(self):
-        return VocabularyCreationToUpdateType
+        return VocabularyCreationToUpdateParser.type
 
 
 class VocabularyTermCreationToUpdateParser(object):
+    type = "VocabularyTermUpdate"
 
-    def parse(self, creation, existing_term):
-        vocabulary_term_update = VocabularyTermUpdate()
-        vocabulary_term_update.vocabularyTermId = existing_term.permId
-        vocabulary_term_update.setLabel(creation.label)
-        vocabulary_term_update.setDescription(creation.description)
-        return vocabulary_term_update
+    def parse(self, creation, existing_vocabulary):
+        vocabulary_term_updates = []
+        for term in creation.terms:
+            existing_term = next((existing_term for existing_term in existing_vocabulary.terms if existing_term.code == term.code), None)
+            if existing_term:
+                vocabulary_term_update = VocabularyTermUpdate()
+                vocabulary_term_update.vocabularyTermId = existing_term.permId
+                vocabulary_term_update.setLabel(term.label)
+                vocabulary_term_update.setDescription(term.description)
+                vocabulary_term_updates.append(vocabulary_term_update)
+        return vocabulary_term_updates
 
     def get_type(self):
-        return VocabularyTermCreationToUpdateType
+        return VocabularyTermCreationToUpdateParser.type
 
 
 class PropertyTypeCreationToUpdateParser(object):
+    type = "PropertyTypeUpdate"
 
     def parse(self, creation, existing_property_type):
         property_type_update = PropertyTypeUpdate()
@@ -84,7 +85,7 @@ class PropertyTypeCreationToUpdateParser(object):
         return property_type_update
 
     def get_type(self):
-        return PropertyTypeCreationToUpdateType
+        return PropertyTypeCreationToUpdateParser.type
 
 
 class EntityTypeCreationToUpdateParser(object):
@@ -99,6 +100,7 @@ class EntityTypeCreationToUpdateParser(object):
 
 
 class SampleTypeCreationToUpdateParser(EntityTypeCreationToUpdateParser):
+    type = "SampleTypeUpdate"
 
     def parse(self, creation, existing_sample_type):
         sample_type_update = SampleTypeUpdate()
@@ -112,10 +114,11 @@ class SampleTypeCreationToUpdateParser(EntityTypeCreationToUpdateParser):
         return sample_type_update
 
     def get_type(self):
-        return SampleTypeCreationToUpdateType
+        return SampleTypeCreationToUpdateParser.type
 
 
 class ExperimentTypeCreationToUpdateParser(EntityTypeCreationToUpdateParser):
+    type = "ExperimentTypeUpdate"
 
     def parse(self, creation, existing_experiment_type):
         experiment_type_update = ExperimentTypeUpdate()
@@ -127,10 +130,11 @@ class ExperimentTypeCreationToUpdateParser(EntityTypeCreationToUpdateParser):
         return experiment_type_update
 
     def get_type(self):
-        return ExperimentTypeCreationToUpdateType
+        return ExperimentTypeCreationToUpdateParser.type
 
 
 class DatasetTypeCreationToUpdateParser(EntityTypeCreationToUpdateParser):
+    type = "DatasetTypeUpdate"
 
     def parse(self, creation, existing_dataset_type):
         dataset_type_update = DataSetTypeUpdate()
@@ -141,10 +145,11 @@ class DatasetTypeCreationToUpdateParser(EntityTypeCreationToUpdateParser):
         return dataset_type_update
 
     def get_type(self):
-        return DatasetTypeCreationToUpdateType
+        return DatasetTypeCreationToUpdateParser.type
 
 
 class SpaceCreationToUpdateParser(object):
+    type = "SpaceUpdate"
 
     def parse(self, creation, existing_space):
         space_update = SpaceUpdate()
@@ -153,10 +158,11 @@ class SpaceCreationToUpdateParser(object):
         return space_update
 
     def get_type(self):
-        return SpaceCreationToUpdateType
+        return SpaceCreationToUpdateParser.type
 
 
 class ProjectCreationToUpdateParser(object):
+    type = "ProjectUpdate"
 
     def parse(self, creation, existing_project):
         project_update = ProjectUpdate()
@@ -166,10 +172,11 @@ class ProjectCreationToUpdateParser(object):
         return project_update
 
     def get_type(self):
-        return ProjectCreationToUpdateType
+        return ProjectCreationToUpdateParser.type
 
 
 class ExperimentCreationToUpdateParser(object):
+    type = "ExperimentUpdate"
 
     def parse(self, creation, existing_experiment):
         experiment_update = ExperimentUpdate()
@@ -179,10 +186,11 @@ class ExperimentCreationToUpdateParser(object):
         return experiment_update
 
     def get_type(self):
-        return ExperimentCreationToUpdateType
+        return ExperimentCreationToUpdateParser.type
 
 
 class SampleCreationToUpdateParser(object):
+    type = "SampleUpdate"
 
     def parse(self, creation, existing_sample):
         sample_update = SampleUpdate()
@@ -191,16 +199,16 @@ class SampleCreationToUpdateParser(object):
         sample_update.setProjectId(creation.projectId)
         sample_update.setSpaceId(creation.spaceId)
         sample_update.setProperties(creation.properties)
-        # TODO Handle this
-#         sample_update.parentIds = creation.parentIds
-#         sample_update.childIds = creation.childIds
+        sample_update.sampleId = creatiuon.parentIds
+        sample_update.sampleId = creatiuon.childIds
         return sample_update
 
     def get_type(self):
-        return SampleCreationToUpdateType
+        return SampleCreationToUpdateParser.type
 
 
 class ScriptCreationToUpdateParser(object):
+    type = "ScriptUpdate"
 
     def parse(self, creation, existing_plugin):
         script_update = PluginUpdate()
@@ -209,5 +217,5 @@ class ScriptCreationToUpdateParser(object):
         return script_update
 
     def get_type(self):
-        return ScriptCreationToUpdateType
+        return ScriptCreationToUpdateParser.type
 

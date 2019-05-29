@@ -1,6 +1,3 @@
-from utils.dotdict import dotdict
-
-
 class Definition(object):
     '''
         Used to hold values for object(Vocabulary, SampleType etc.) creation.
@@ -8,7 +5,7 @@ class Definition(object):
 
     def __init__(self):
         self.type = None
-        self.attributes = dotdict()
+        self.attributes = {}
         self.properties = []
 
     def __str__(self):

@@ -2,4 +2,3 @@ from .openbis_duplicates_handler import OpenbisDuplicatesHandler
 from .duplicates_handler import DuplicatesHandler
 from .properties_label_handler import PropertiesLabelHandler
 from .representation_unifier import unify_properties_representation_of
-from .version_handler import VersionHandler

@@ -4,7 +4,7 @@ from .creation_parsers import DefinitionToCreationParserFactory
 class DefinitionToCreationParser(object):
 
     @staticmethod
-    def parse(definitions, context=None):
+    def parse(definitions, context):
         creations = {}
 
         for definition in definitions:

@@ -1,6 +1,7 @@
-from parsers import PropertyTypeDefinitionToCreationType, VocabularyDefinitionToCreationType, \
-    SampleTypeDefinitionToCreationType, ExperimentTypeDefinitionToCreationType, ExperimentDefinitionToCreationType, \
-    SampleDefinitionToCreationType
+from parsers import PropertyTypeDefinitionToCreationParser, SampleTypeDefinitionToCreationParser, \
+                    ExperimentTypeDefinitionToCreationParser, DatasetTypeDefinitionToCreationParser, \
+                    SampleDefinitionToCreationParser, ExperimentDefinitionToCreationParser, \
+                    VocabularyDefinitionToCreationParser
 
 from utils.dotdict import dotdict
 
@@ -9,18 +10,18 @@ experiment = "experiment"
 property = "property"
 
 entity_and_type_uniform_mapping = {
-    SampleDefinitionToCreationType: sample,
-    SampleTypeDefinitionToCreationType: sample,
-    ExperimentDefinitionToCreationType: experiment,
-    ExperimentTypeDefinitionToCreationType: experiment,
-    PropertyTypeDefinitionToCreationType: property
-}
+    SampleDefinitionToCreationParser.type: sample,
+    SampleTypeDefinitionToCreationParser.type: sample,
+    ExperimentDefinitionToCreationParser.type: experiment,
+    ExperimentTypeDefinitionToCreationParser.type: experiment,
+    PropertyTypeDefinitionToCreationParser.type: property
+    }
 
 
 def unify_properties_representation_of(creations, entity_types, vocabularies, existing_elements):
     properties = {}
-    vocabulary_type = VocabularyDefinitionToCreationType
-    property_type = PropertyTypeDefinitionToCreationType
+    vocabulary_type = VocabularyDefinitionToCreationParser.type
+    property_type = PropertyTypeDefinitionToCreationParser.type
     existing_vocabularies = vocabularies[vocabulary_type] if vocabulary_type in vocabularies else []
     existing_properties = existing_elements[property_type] if property_type in existing_elements else []
     properties = _fill_properties_from_creations(properties, creations, existing_vocabularies, existing_properties)
@@ -29,7 +30,7 @@ def unify_properties_representation_of(creations, entity_types, vocabularies, ex
 
 
 def _extract_creations_with_properties(creations_map):
-    property_types_with_properties = [SampleTypeDefinitionToCreationType, ExperimentTypeDefinitionToCreationType]
+    property_types_with_properties = [SampleTypeDefinitionToCreationParser.type, ExperimentTypeDefinitionToCreationParser.type]
     return dict((key, value) for (key, value) in creations_map.iteritems() if key in property_types_with_properties)
 
 
@@ -72,8 +73,8 @@ def property_type_representation_from(property_type, creations, existing_vocabul
     prop_type_representation['dataType'] = property_type.dataType
     vocabulary = None
     if hasattr(property_type, 'vocabularyId'):
-        if VocabularyDefinitionToCreationType in creations:
-            vocabulary = _find_vocabulary(creations[VocabularyDefinitionToCreationType], property_type.vocabularyId)
+        if VocabularyDefinitionToCreationParser.type in creations:
+            vocabulary = _find_vocabulary(creations[VocabularyDefinitionToCreationParser.type], property_type.vocabularyId)
         if vocabulary is None:
             vocabulary = _find_vocabulary(existing_vocabularies, property_type.vocabularyId)
     if vocabulary is None and hasattr(property_type, 'vocabulary'):
@@ -85,26 +86,23 @@ def property_type_representation_from(property_type, creations, existing_vocabul
 
 def _fill_properties_from_creations(properties, creations, existing_vocabularies, existing_property_types):
     creations_with_properties = _extract_creations_with_properties(creations)
-    for creations_type, creationsList in creations_with_properties.items():
+    for creations_type, creationsList in creations_with_properties.iteritems():
         for creation in creationsList:
             entity_kind = entity_and_type_uniform_mapping[creations_type]
             new_key = entity_kind, creation.code
             props = get_value(properties, new_key)
-            if creations_type == PropertyTypeDefinitionToCreationType:
+            if creations_type == PropertyTypeDefinitionToCreationParser.type:
                 props[creation.label.lower()] = creation
                 props[creation.code.lower()] = creation
             else:
                 for property_assignment in creation.propertyAssignments:
-                    if PropertyTypeDefinitionToCreationType in creations:
-                        property_type = _find_property_type_for(creations[PropertyTypeDefinitionToCreationType],
-                                                                property_assignment)
+                    if PropertyTypeDefinitionToCreationParser.type in creations:
+                        property_type = _find_property_type_for(creations[PropertyTypeDefinitionToCreationParser.type], property_assignment)
                         if property_type is None:
                             property_type = _find_property_type_for(existing_property_types, property_assignment)
                         if property_type is None:
-                            raise Exception("No property type found for " + str(
-                                property_assignment) + " having such property type creations ")
-                        property_type_bean = property_type_representation_from(property_type, creations,
-                                                                               existing_vocabularies)
+                            raise Exception("No property type found for " + str(property_assignment) + " having such property type creations ")
+                        property_type_bean = property_type_representation_from(property_type, creations, existing_vocabularies)
                         props[property_type_bean.label.lower()] = property_type_bean
                         props[property_type_bean.code.lower()] = property_type_bean
 
