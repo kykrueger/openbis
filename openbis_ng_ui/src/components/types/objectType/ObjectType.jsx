@@ -1,8 +1,10 @@
 import _ from 'lodash'
 import React from 'react'
+import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import ObjectTypeForm from './ObjectTypeForm.jsx'
 import ObjectTypeFooter from './ObjectTypeFooter.jsx'
+import * as actions from '../../../store/actions/actions.js'
 import logger from '../../../common/logger.js'
 import {facade, dto} from '../../../services/openbis.js'
 
@@ -22,6 +24,12 @@ const styles = (theme) => ({
     padding: theme.spacing.unit * 2
   }
 })
+
+function mapDispatchToProps(dispatch){
+  return {
+    error: (error) => { dispatch(actions.setError(error)) },
+  }
+}
 
 class ObjectType extends React.Component {
 
@@ -274,10 +282,9 @@ class ObjectType extends React.Component {
       update.getPropertyAssignments().set(newProperties)
 
       facade.updateSampleTypes([update]).then(()=>{
-        alert('Saved!')
         this.load()
       }, (error) => {
-        alert(error.message)
+        this.props.error(error)
       })
     }
   }
@@ -332,4 +339,7 @@ class ObjectType extends React.Component {
 
 }
 
-export default withStyles(styles)(ObjectType)
+export default _.flow(
+  connect(null, mapDispatchToProps),
+  withStyles(styles)
+)(ObjectType)
