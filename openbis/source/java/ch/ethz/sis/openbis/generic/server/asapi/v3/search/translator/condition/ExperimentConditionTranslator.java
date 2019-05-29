@@ -17,7 +17,6 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 
 import java.util.List;
@@ -29,7 +28,7 @@ public class ExperimentConditionTranslator implements IConditionTranslator<Exper
 {
 
     @Override
-    public void translate(final ExperimentSearchCriteria criterion, final List<Object> args, final SearchOperator operator,
+    public void translate(final ExperimentSearchCriteria criterion, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         criterion.getCriteria().forEach(subcriterion ->

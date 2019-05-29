@@ -26,12 +26,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchC
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CollectionFieldConditionTranslatorImpl;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DateFieldConditionTranslatorImpl;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CollectionFieldConditionTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DateFieldConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdConditionTranslatorImpl;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.SampleConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldConditionTranslatorImpl;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldConditionTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
 import java.text.DateFormat;
@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Translator
 {
@@ -111,16 +112,16 @@ public class Translator
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat(
             SimplePropertyValidator.SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern());
 
-    private static final Map<Class<? extends ISearchCriteria>, IConditionTranslator<? extends ISearchCriteria>> CRITERIA_TO_CONDITION_TRANSLATOR_MAP =
+    public static final Map<Class<? extends ISearchCriteria>, IConditionTranslator<? extends ISearchCriteria>> CRITERIA_TO_CONDITION_TRANSLATOR_MAP =
             new HashMap<>();
 
     static
     {
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SampleSearchCriteria.class, new SampleConditionTranslator());
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringFieldSearchCriteria.class, new StringFieldConditionTranslatorImpl());
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(DateFieldSearchCriteria.class, new DateFieldConditionTranslatorImpl());
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CollectionFieldSearchCriteria.class, new CollectionFieldConditionTranslatorImpl());
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, new IdConditionTranslatorImpl());
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringFieldSearchCriteria.class, new StringFieldConditionTranslator());
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(DateFieldSearchCriteria.class, new DateFieldConditionTranslator());
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CollectionFieldSearchCriteria.class, new CollectionFieldConditionTranslator());
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, new IdConditionTranslator());
     }
 
     @SuppressWarnings("unchecked")
@@ -199,26 +200,30 @@ public class Translator
             return;
         }
 
-        final String logicalOperator = operator.toString();
         sqlBuilder.append(WHERE).append(SP);
 
-        for (int i = 0; i < criteria.size(); i++)
+        final AtomicBoolean first = new AtomicBoolean(true);
+        final String logicalOperator = operator.toString();
+
+        criteria.forEach((criterion) ->
         {
-            if (i > 0)
+            if (first.get())
             {
                 sqlBuilder.append(SP).append(logicalOperator).append(SP);
+                first.set(false);
             }
 
-            final ISearchCriteria subcriterion = criteria.get(i);
-            IConditionTranslator conditionTranslator = CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(subcriterion.getClass());
+            @SuppressWarnings("unchecked")
+            final IConditionTranslator<ISearchCriteria> conditionTranslator =
+                    (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
             if (conditionTranslator != null)
             {
-                conditionTranslator.translate(subcriterion, args, operator, sqlBuilder);
+                conditionTranslator.translate(criterion, args, sqlBuilder);
             } else
             {
-                throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
+                throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
             }
-        }
+        });
 //
 //            getConditionTranslator(IdSearchCriteria.class).translate((IdSearchCriteria<?>) subcriterion, args, operator, sqlBuilder);
 //

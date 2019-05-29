@@ -18,7 +18,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
@@ -38,7 +37,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
 
-public class StringFieldConditionTranslatorImpl implements IConditionTranslator<StringFieldSearchCriteria>
+public class StringFieldConditionTranslator implements IConditionTranslator<StringFieldSearchCriteria>
 {
     //TODO - Continue this one later
 
@@ -48,13 +47,13 @@ public class StringFieldConditionTranslatorImpl implements IConditionTranslator<
     }
 
     @Override
-    public void translate(final StringFieldSearchCriteria criterion, final List<Object> args, final SearchOperator operator,
+    public void translate(final StringFieldSearchCriteria criterion, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final SearchFieldType searchFieldType = criterion.getFieldType();
         final String fieldName = criterion.getFieldName();
         final AbstractStringValue fieldValue = criterion.getFieldValue();
-        final Class clazz = (fieldValue != null)?fieldValue.getClass():null;
+        final Class fieldValueClass = (fieldValue != null)?fieldValue.getClass():null;
 
         switch (searchFieldType)
         {
@@ -69,27 +68,27 @@ public class StringFieldConditionTranslatorImpl implements IConditionTranslator<
                 break;
         }
 
-        if (clazz == null)
+        if (fieldValueClass == null)
         {
             sqlBuilder.append(IS_NOT_NULL);
-        } else if (clazz == StringEqualToValue.class)
+        } else if (fieldValueClass == StringEqualToValue.class)
         {
             sqlBuilder.append(EQ).append(QU);
-        } else if (clazz == StringContainsValue.class)
+        } else if (fieldValueClass == StringContainsValue.class)
         {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).
                     append(QU).append(SP).append(BARS).append(SP).append(PERCENT);
-        } else if(clazz == StringStartsWithValue.class) {
+        } else if(fieldValueClass == StringStartsWithValue.class) {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).
                     append(PERCENT);
-        } else if(clazz == StringEndsWithValue.class) {
+        } else if(fieldValueClass == StringEndsWithValue.class) {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).append(QU);
         } else
         {
-            throw new IllegalArgumentException("Unsupported field value: " + clazz.getSimpleName());
+            throw new IllegalArgumentException("Unsupported field value: " + fieldValueClass.getSimpleName());
         }
 
-        if (clazz != null)
+        if (fieldValueClass != null)
         {
             args.add(fieldValue.getValue());
         }

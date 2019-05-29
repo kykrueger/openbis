@@ -17,7 +17,6 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -45,11 +44,11 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROJECTS_TA
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SPACES_TABLE;
 
-public class IdConditionTranslatorImpl implements IConditionTranslator<IdSearchCriteria<ISampleId>>
+public class IdConditionTranslator implements IConditionTranslator<IdSearchCriteria<ISampleId>>
 {
 
     @Override
-    public void translate(final IdSearchCriteria<ISampleId> criterion, final List<Object> args, final SearchOperator operator,
+    public void translate(final IdSearchCriteria<ISampleId> criterion, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final ISampleId sampleId = criterion.getId();

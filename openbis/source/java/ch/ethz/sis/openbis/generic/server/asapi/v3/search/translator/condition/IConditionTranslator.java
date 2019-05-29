@@ -17,13 +17,12 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 
 import java.util.List;
 
 public interface IConditionTranslator<CRITERIA extends ISearchCriteria>
 {
 
-    void translate(CRITERIA criterion, List<Object> args, SearchOperator operator, StringBuilder sqlBuilder);
+    void translate(CRITERIA criterion, List<Object> args, StringBuilder sqlBuilder);
 
 }

@@ -17,7 +17,6 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 
 import java.util.List;
 
@@ -29,11 +28,11 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.UNNEST;
 
-public class CollectionFieldConditionTranslatorImpl implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
+public class CollectionFieldConditionTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
 
     @Override
-    public void translate(final CollectionFieldSearchCriteria<?> criterion, final List<Object> args, final SearchOperator operator,
+    public void translate(final CollectionFieldSearchCriteria<?> criterion, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final Object fieldName = criterion.getFieldName();
