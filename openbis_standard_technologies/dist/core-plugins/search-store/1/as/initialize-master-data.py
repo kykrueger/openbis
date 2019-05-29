@@ -75,9 +75,7 @@ def list_all_files(source_root_path):
 
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
-props = CustomASServiceExecutionOptions().withParameter('xls', list_xls_byte_arrays())\
-    .withParameter('xls_name', 'SEARCH-STORE').withParameter('update_mode', 'IGNORE_EXISTING')\
-    .withParameter('scripts', get_all_scripts())
+props = CustomASServiceExecutionOptions().withParameter('xls', list_xls_byte_arrays()).withParameter('update_mode', 'IGNORE_EXISTING').withParameter('scripts', get_all_scripts())
 result = api.executeCustomASService(sessionToken, CustomASServiceCode("xls-import-api"), props);
 print("======================== master-data xls ingestion result ========================")
 print(result)
