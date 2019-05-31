@@ -332,7 +332,7 @@ class ObjectType extends React.Component {
     return this.state.objectType.properties.some((property) => {
       return !property.original ||
         !_.isEqual(property.mandatory, property.original.mandatory) ||
-        !_.isEqual(property.propertyType.code, property.original.propertyType.code) ||
+        !_.isEqual(property.propertyType ? property.propertyType.code : null, property.original.propertyType ? property.original.propertyType.code : null) ||
         !_.isEqual(property.ordinal, property.original.ordinal)
     })
   }
