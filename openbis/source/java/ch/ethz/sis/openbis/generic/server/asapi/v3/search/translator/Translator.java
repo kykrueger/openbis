@@ -26,12 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchC
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CollectionFieldConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DateFieldConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.SampleConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldConditionTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.*;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
 import java.text.DateFormat;
@@ -74,6 +69,8 @@ public class Translator
     public static final String IN = "IN";
 
     public static final String IS = "IS";
+
+    public static final String AS = "AS";
 
     public static final String NOT = "NOT";
 
@@ -148,64 +145,62 @@ public class Translator
 
         final EntityMapper dbEntityKind = EntityMapper.toEntityMapper(entityKind);
 
-        final List<String> aliases = new ArrayList<>();
+        final Map<Object, JoinInformation> aliases = new HashMap<>();
         final List<Object> args = new ArrayList<>();
-        final StringBuilder sqlBuilder = new StringBuilder();
 
-        buildFrom(dbEntityKind, criteria, sqlBuilder);
-        buildWhere(dbEntityKind, criteria, args, operator, sqlBuilder);
-        buildSelect(dbEntityKind, aliases, sqlBuilder);
+        String where = buildWhere(dbEntityKind, criteria, args, operator);
+        String from = buildFrom(dbEntityKind, criteria, aliases);
+        String select = buildSelect(dbEntityKind);
 
-        return new SelectQuery(sqlBuilder.toString(), args);
+        return new SelectQuery(select + from + where, args);
     }
 
-    private static void buildSelect(final EntityMapper dbEntityKind, final List<String> aliasesPresentInOrderBy,
-            final StringBuilder sqlBuilder)
+    private static String buildSelect(final EntityMapper dbEntityKind)
     {
         final StringBuilder builder = new StringBuilder();
         builder.append(SELECT).append(SP).append(DISTINCT).append(SP).append(dbEntityKind.getEntitiesTableIdField());
-        aliasesPresentInOrderBy.forEach(alias -> builder.append(COMMA).append(SP).append(alias));
         builder.append(NEW_LINE);
-        sqlBuilder.insert(0, builder);
+        return builder.toString();
+
     }
 
-    private static void buildFrom(final EntityMapper entityMapper, final List<ISearchCriteria> criteria,
-            final StringBuilder sqlBuilder)
+    private static String getAlias(int num) {
+        return "t" + num;
+    }
+
+    private static String buildFrom(final EntityMapper entityMapper, final List<ISearchCriteria> criteria, Map<Object, JoinInformation> aliases)
     {
+        final StringBuilder sqlBuilder = new StringBuilder();
+
         final String entitiesTableName = entityMapper.getEntitiesTable();
-        sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(NEW_LINE);
-        criteria.forEach(criterion ->
-                {
-                    if (criterion instanceof AbstractEntitySearchCriteria<?>)
-                    {
-                        final AbstractEntitySearchCriteria<?> entitySearchCriterion = (AbstractEntitySearchCriteria<?>) criterion;
-                        if (entitySearchCriterion.getCriteria().isEmpty())
-                        {
+        JoinInformation mainTable = new JoinInformation();
+        mainTable.setMainTable(entitiesTableName);
+        mainTable.setMainTableId(entityMapper.getEntitiesTableIdField());
+        mainTable.setMainTableAlias(getAlias(aliases.size()));
+        aliases.put(entitiesTableName, mainTable);
 
-                        }
-                    }
+        sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(SP).append(AS).append(SP).append(mainTable.getMainTableAlias()).append(NEW_LINE);
 
-                    if (criterion instanceof SampleSearchCriteria)
-                    {
-                        final SampleSearchCriteria sampleSearchCriterion = (SampleSearchCriteria) criterion;
-
-                    }
-
-//                    if(isAliasPresentInWhere) {
-//
-//                    }
-//                    sqlBuilder.append(LEFT).append(SP).append(JOIN).append(SP).append().append(SP).append(entitiesTableName).append(SP).append(ON)
-//                            .append(SP).append(entitiesTableName).append(PERIOD).append().append(EQ).append().append(PERIOD).append();
-                });
+        for (ISearchCriteria criterion:criteria) {
+            IConditionTranslator conditionTranslator = CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion);
+            JoinInformation joinInformation = conditionTranslator.getJoinInformation(criterion, entityMapper);
+            if (joinInformation.getSubTable() != null) { // Join required
+                joinInformation.setSubTableAlias(getAlias(aliases.size()));
+                sqlBuilder.append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP).append(AS).append(joinInformation.getSubTableAlias()).append(SP)
+                        .append(ON).append(SP).append(mainTable.getMainTableAlias()).append(PERIOD).append(joinInformation.getMainTableId()).append(SP)
+                        .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD).append(joinInformation.getSubTableId()).append(RP).append(NEW_LINE);
+            }
+            aliases.put(criterion, joinInformation);
+        }
+        return sqlBuilder.toString();
     }
 
 
-    private static void buildWhere(final EntityMapper entityMapper, final List<ISearchCriteria> criteria, final List<Object> args,
-            final SearchOperator operator, final StringBuilder sqlBuilder)
+    private static String buildWhere(final EntityMapper entityMapper, final List<ISearchCriteria> criteria, final List<Object> args, final SearchOperator operator)
     {
-        if (isSearchAllCriteria(criteria))
-        {
-            return;
+        final StringBuilder sqlBuilder = new StringBuilder();
+        if (isSearchAllCriteria(criteria)) {
+            return "";
         }
 
         sqlBuilder.append(WHERE).append(SP);
@@ -232,100 +227,8 @@ public class Translator
                 throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
             }
         });
-//
-//            getConditionTranslator(IdSearchCriteria.class).translate((IdSearchCriteria<?>) subcriterion, args, operator, sqlBuilder);
-//
-//            if (subcriterion instanceof AbstractFieldSearchCriteria<?>)
-//            {
-//                final AbstractFieldSearchCriteria<?> fieldSearchSubcriterion = (AbstractFieldSearchCriteria<?>) subcriterion;
-//                final Object fieldName = fieldSearchSubcriterion.getFieldName();
-//                final Object fieldValue = fieldSearchSubcriterion.getFieldValue();
-//
-//                if (subcriterion instanceof CollectionFieldSearchCriteria<?>)
-//                {
-//                    getConditionTranslator(CollectionFieldSearchCriteria.class).
-//                            translate((CollectionFieldSearchCriteria<?>) subcriterion, args, operator, sqlBuilder);
-//                } else
-//                {
-//                    if (fieldValue == null)
-//                    {
-//                        sqlBuilder.append(fieldName).append(SP).append(IS_NOT_NULL);
-//                    } else
-//                    {
-//                        if (subcriterion instanceof StringFieldSearchCriteria)
-//                        {
-//                            getConditionTranslator(StringFieldSearchCriteria.class)
-//                                    .translate((StringFieldSearchCriteria) subcriterion, args, operator, sqlBuilder);
-//                        } else if (subcriterion instanceof DateFieldSearchCriteria)
-//                        {
-//                            getConditionTranslator(DateFieldSearchCriteria.class).
-//                                    translate((DateFieldSearchCriteria) subcriterion, args, operator, sqlBuilder);
-//                        } else if (subcriterion instanceof NumberPropertySearchCriteria)
-//                        {
-//                            throw new IllegalArgumentException();
-//                        } else
-//                        {
-//                            sqlBuilder.append(fieldName).append(EQ).append(QU);
-//                            args.add(fieldValue);
-//                        }
-//                    }
-//                }
-//            } else if (subcriterion instanceof AbstractObjectSearchCriteria<?>)
-//            {
-//                if (subcriterion instanceof ExperimentSearchCriteria)
-//                {
-//                    final IConditionTranslator<ExperimentSearchCriteria> conditionTranslator = getConditionTranslator(
-//                            ExperimentSearchCriteria.class);
-//                    conditionTranslator.translate((ExperimentSearchCriteria) subcriterion, args, operator, sqlBuilder);
-//                } else if (subcriterion instanceof ProjectSearchCriteria)
-//                {
-//                    throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
-//                } else if (subcriterion instanceof SpaceSearchCriteria)
-//                {
-//                    throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
-//                } else if (subcriterion instanceof SampleTypeSearchCriteria)
-//                {
-//                    throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
-//                } else if (subcriterion instanceof PersonSearchCriteria)
-//                {
-//                    throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
-//                } else if (subcriterion instanceof TagSearchCriteria)
-//                {
-//                    throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
-//                } else
-//                {
-//                    throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
-//                }
-//            } else if (subcriterion instanceof IdSearchCriteria<?>)
-//            {
-//                getConditionTranslator(IdSearchCriteria.class).translate((IdSearchCriteria<?>) subcriterion, args, operator, sqlBuilder);
-//            } else if (subcriterion instanceof NoSampleSearchCriteria)
-//            {
-//                sqlBuilder.append(PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
-//            } else if (subcriterion instanceof NoExperimentSearchCriteria)
-//            {
-//                sqlBuilder.append(ColumnNames.EXPERIMENT_COLUMN).append(SP).append(IS_NULL);
-//            } else if (subcriterion instanceof NoProjectSearchCriteria)
-//            {
-//                sqlBuilder.append(ColumnNames.PROJECT_COLUMN).append(SP).append(IS_NULL);
-//            } else if (subcriterion instanceof NoSpaceSearchCriteria)
-//            {
-//                sqlBuilder.append(ColumnNames.SPACE_COLUMN).append(SP).append(IS_NULL);
-//            } else
-//            {
-//                throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
-//            }
-//            sqlBuilder.append(SP).append(logicalOperator).append(SP);
-//        }
-//
-//        criteria.forEach(criterion ->
-//                {
-//                    if (criterion.getClass() == SampleSearchCriteria.class)
-//                    {
-//
-//                    }
-//                });
-//        sqlBuilder.setLength(sqlBuilder.length() - logicalOperator.length() - SP.length() * 2);
+
+        return sqlBuilder.toString();
     }
 
     /**

@@ -30,7 +30,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 
-public class AbsenceConditionTranslator implements IConditionTranslator<ISearchCriteria>
+public class AbsenceConditionTranslator extends AbstractConditionTranslator<ISearchCriteria>
 {
     @Override
     public void translate(final ISearchCriteria criterion, final EntityMapper entityMapper,

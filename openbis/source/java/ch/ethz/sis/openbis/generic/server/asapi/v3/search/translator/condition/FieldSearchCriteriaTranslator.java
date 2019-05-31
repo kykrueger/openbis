@@ -38,7 +38,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.WHERE;
 
-public abstract class FieldSearchCriteriaTranslator<T extends AbstractFieldSearchCriteria<?>> implements IConditionTranslator<T>
+public abstract class FieldSearchCriteriaTranslator<T extends AbstractFieldSearchCriteria<?>> extends AbstractConditionTranslator<T>
 {
 
     @Override

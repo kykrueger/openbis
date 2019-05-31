@@ -21,7 +21,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
 
-public class EnumFieldConditionTranslator implements IConditionTranslator<EnumFieldSearchCriteria<?>>
+public class EnumFieldConditionTranslator extends AbstractConditionTranslator<EnumFieldSearchCriteria<?>>
 {
     @Override
     public void translate(final EnumFieldSearchCriteria<?> criterion, final EntityMapper entityMapper,

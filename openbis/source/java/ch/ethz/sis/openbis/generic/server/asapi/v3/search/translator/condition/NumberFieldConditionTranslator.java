@@ -21,7 +21,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
 
-public class NumberFieldConditionTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
+public class NumberFieldConditionTranslator extends AbstractConditionTranslator<NumberFieldSearchCriteria>
 {
     @Override
     public void translate(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper,

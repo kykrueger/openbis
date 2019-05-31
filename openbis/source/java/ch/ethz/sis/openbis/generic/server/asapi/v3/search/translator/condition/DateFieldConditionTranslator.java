@@ -40,7 +40,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 
-public class DateFieldConditionTranslator implements IConditionTranslator<DateFieldSearchCriteria>
+public class DateFieldConditionTranslator extends AbstractConditionTranslator<DateFieldSearchCriteria>
 {
 
     @Override

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
 
-public class CompositeSearchCriteriaConditionTranslator implements IConditionTranslator<AbstractCompositeSearchCriteria>
+public class CompositeSearchCriteriaConditionTranslator extends AbstractConditionTranslator<AbstractCompositeSearchCriteria>
 {
     private final AtomicBoolean first = new AtomicBoolean();
 

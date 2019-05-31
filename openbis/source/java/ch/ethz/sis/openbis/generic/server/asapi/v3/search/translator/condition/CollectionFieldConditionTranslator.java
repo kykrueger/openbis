@@ -29,7 +29,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.UNNEST;
 
-public class CollectionFieldConditionTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
+public class CollectionFieldConditionTranslator extends AbstractConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
 
     @Override

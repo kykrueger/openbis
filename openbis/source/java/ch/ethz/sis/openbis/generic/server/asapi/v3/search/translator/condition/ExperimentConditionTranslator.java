@@ -25,7 +25,7 @@ import java.util.List;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.IS_NOT_NULL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
 
-public class ExperimentConditionTranslator implements IConditionTranslator<ExperimentSearchCriteria>
+public class ExperimentConditionTranslator extends AbstractConditionTranslator<ExperimentSearchCriteria>
 {
 
     @Override

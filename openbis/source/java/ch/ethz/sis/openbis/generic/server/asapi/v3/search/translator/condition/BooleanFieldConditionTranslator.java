@@ -21,7 +21,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
 
-public class BooleanFieldConditionTranslator implements IConditionTranslator<BooleanFieldSearchCriteria>
+public class BooleanFieldConditionTranslator extends AbstractConditionTranslator<BooleanFieldSearchCriteria>
 {
     @Override
     public void translate(final BooleanFieldSearchCriteria criterion, final EntityMapper entityMapper,

@@ -21,7 +21,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
 
-public class SampleConditionTranslator implements IConditionTranslator<SampleSearchCriteria>
+public class SampleConditionTranslator extends AbstractConditionTranslator<SampleSearchCriteria>
 {
 
     @Override
