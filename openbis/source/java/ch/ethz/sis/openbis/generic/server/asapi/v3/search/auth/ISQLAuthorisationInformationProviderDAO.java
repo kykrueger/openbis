@@ -20,7 +20,7 @@ import java.util.Set;
 
 public interface ISQLAuthorisationInformationProviderDAO
 {
-    @SuppressWarnings("unchecked")
+
     AuthorisationInformation findAuthorisedSpaceProjectIDs(Long userId);
 
     Set<Long> getAuthorisedSamples(Set<Long> requestedIDs, AuthorisationInformation authInfo);

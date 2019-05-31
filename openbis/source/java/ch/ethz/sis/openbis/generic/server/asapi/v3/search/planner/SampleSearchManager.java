@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -24,12 +23,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -46,10 +43,9 @@ import java.util.stream.Stream;
 public class SampleSearchManager extends AbstractSearchManager<SampleSearchCriteria, Sample>
 {
 
-    public SampleSearchManager(ISQLSearchDAO searchDAO, ISortAndPage sortAndPage,
-            ISQLAuthorisationInformationProviderDAO authProvider)
+    public SampleSearchManager(ISQLSearchDAO searchDAO, ISQLAuthorisationInformationProviderDAO authProvider)
     {
-        super(searchDAO, authProvider, sortAndPage);
+        super(searchDAO, authProvider);
     }
 
     @Override
@@ -129,12 +125,6 @@ public class SampleSearchManager extends AbstractSearchManager<SampleSearchCrite
         {
             return ids;
         }
-    }
-
-    @Override
-    public List<Long> sortAndPage(Set<Long> ids, SampleSearchCriteria criteria, FetchOptions<Sample> fetchOptions)
-    {
-        return getSortAndPage().sortAndPage(new ArrayList<>(ids), criteria, fetchOptions);
     }
 
     /**

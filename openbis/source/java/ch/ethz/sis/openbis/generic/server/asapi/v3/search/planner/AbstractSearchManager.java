@@ -16,11 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 
@@ -44,14 +42,11 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, EN
 
     private final ISQLAuthorisationInformationProviderDAO authProvider;
 
-    private final ISortAndPage sortAndPage;
-
     public AbstractSearchManager(final ISQLSearchDAO searchDAO,
-            ISQLAuthorisationInformationProviderDAO authProvider, final ISortAndPage sortAndPage)
+            ISQLAuthorisationInformationProviderDAO authProvider)
     {
         this.searchDAO = searchDAO;
         this.authProvider = authProvider;
-        this.sortAndPage = sortAndPage;
     }
 
     /**
@@ -62,15 +57,6 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, EN
      * @return IDs of samples which the user is authorised to access.
      */
     public abstract Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids);
-
-    /**
-     * Sorts IDs using certain sort options.
-     *
-     * @param ids IDs of entities to sort.
-     * @param fetchOptions sorting options.
-     * @return ids sorted by the specified options.
-     */
-    public abstract List<Long> sortAndPage(final Set<Long> ids, final CRITERIA criteria, final FetchOptions<ENTITY> fetchOptions);
 
     protected List<ISearchCriteria> getOtherCriteriaThan(AbstractCompositeSearchCriteria compositeSearchCriteria,
             Class<? extends ISearchCriteria>... classes)
@@ -168,11 +154,6 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, EN
     protected ISQLAuthorisationInformationProviderDAO getAuthProvider()
     {
         return authProvider;
-    }
-
-    protected ISortAndPage getSortAndPage()
-    {
-        return sortAndPage;
     }
 
 }

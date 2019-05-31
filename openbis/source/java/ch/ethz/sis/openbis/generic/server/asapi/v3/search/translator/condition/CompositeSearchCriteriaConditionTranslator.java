@@ -53,7 +53,7 @@ public class CompositeSearchCriteriaConditionTranslator implements IConditionTra
                     (IConditionTranslator<ISearchCriteria>) Translator.CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(subcriterion.getClass());
             if (conditionTranslator != null)
             {
-                conditionTranslator.translate(subcriterion, , args, sqlBuilder);
+                conditionTranslator.translate(subcriterion, entityMapper, args, sqlBuilder);
             } else
             {
                 throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());
