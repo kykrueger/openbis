@@ -33,11 +33,12 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.HibernateSQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.JDBCSQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleTranslator;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,6 +61,9 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
 
     @Autowired
     private ISampleTranslator translator;
+
+    @Autowired
+    protected IDAOFactory daoFactory;
 
     @Override
     protected Class<? extends SearchObjectsOperation<SampleSearchCriteria, SampleFetchOptions>> getOperationClass()
@@ -101,7 +105,7 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
             throw new IllegalArgumentException("Fetch options cannot be null.");
         }
 
-        final ISQLExecutor sqlExecutor = new JDBCSQLExecutor();
+        final ISQLExecutor sqlExecutor = new HibernateSQLExecutor(daoFactory.getSessionFactory().getCurrentSession());
         final Long userId = context.getSession().tryGetPerson().getId();
         final ISortAndPage sortAndPage = new ISortAndPage()
         {

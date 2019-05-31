@@ -23,12 +23,14 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.JDBCSQLExecutor;
 import org.testng.annotations.Test;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.Set;
 
 public class SampleSearchManagerDevTest
 {
     @Test
-    public void testPipeline()
+    public void testPipeline() throws Exception
     {
         final Long userId = 2L; // Default ETL Server that is supposed to see everything
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
@@ -44,16 +46,20 @@ public class SampleSearchManagerDevTest
 
         final SampleFetchOptions sampleFetchOption = new SampleFetchOptions();
 
-        final JDBCSQLExecutor sqlExecutor = new JDBCSQLExecutor();
-        final PostgresSearchDAO searchDAO = new PostgresSearchDAO(sqlExecutor);
-        final PostgresAuthorisationInformationProviderDAO authorisationProviderDAO = new PostgresAuthorisationInformationProviderDAO(sqlExecutor);
-        // final SortAndPage sortAndPage = new SortAndPage();
-        final SampleSearchManager sampleSearchManager = new SampleSearchManager(searchDAO, null, authorisationProviderDAO);
-        final Set<Long> unSortedResults = sampleSearchManager.searchForIDs(userId, sampleSearchCriteria);
-        // List<Long> sortedResults = sampleSearchManager.sortAndPage(unSortedResults, sampleSearchCriteria, sampleFetchOption);
+        Class.forName("org.postgresql.Driver");
+        try (final Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", ""))
+        {
+            final JDBCSQLExecutor sqlExecutor = new JDBCSQLExecutor(connection);
+            final PostgresSearchDAO searchDAO = new PostgresSearchDAO(sqlExecutor);
+            final PostgresAuthorisationInformationProviderDAO authorisationProviderDAO = new PostgresAuthorisationInformationProviderDAO(sqlExecutor);
+            // final SortAndPage sortAndPage = new SortAndPage();
+            final SampleSearchManager sampleSearchManager = new SampleSearchManager(searchDAO, authorisationProviderDAO);
+            final Set<Long> unSortedResults = sampleSearchManager.searchForIDs(userId, sampleSearchCriteria);
+            // List<Long> sortedResults = sampleSearchManager.sortAndPage(unSortedResults, sampleSearchCriteria, sampleFetchOption);
 
-        System.out.println("Final results: " + unSortedResults);
-        System.out.println("Final results count: " + unSortedResults.size());
+            System.out.println("Final results: " + unSortedResults);
+            System.out.println("Final results count: " + unSortedResults.size());
+        }
     }
 
 }

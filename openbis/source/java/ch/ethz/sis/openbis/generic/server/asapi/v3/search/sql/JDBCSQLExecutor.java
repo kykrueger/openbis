@@ -17,10 +17,10 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,17 +30,23 @@ import java.util.Map;
 
 public class JDBCSQLExecutor implements ISQLExecutor
 {
+    /** Connection used for this executor. */
+    private final Connection connection;
+
+    public JDBCSQLExecutor(final Connection connection)
+    {
+        this.connection = connection;
+    }
+
     @Override
     public List<Map<String, Object>> execute(String sqlQuery, List<Object> args)
     {
         System.out.println("QUERY: " + sqlQuery);
         System.out.println("ARGS: " + args);
-        try
-        {
-            Class.forName("org.postgresql.Driver");
-            Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", "");
 
-            PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+        final List<Map<String, Object>> results = new ArrayList<>();
+        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
+        {
             for (int aIdx = 0; aIdx < args.size(); aIdx++)
             {
                 final Object object = args.get(aIdx);
@@ -57,34 +63,33 @@ public class JDBCSQLExecutor implements ISQLExecutor
                 }
             }
 
-            ResultSet resultSet = preparedStatement.executeQuery();
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            List<String> columnNames = new ArrayList<>();
-            for (int cIdx = 0; cIdx < resultSetMetaData.getColumnCount(); cIdx++)
+            try (final ResultSet resultSet = preparedStatement.executeQuery())
             {
-                columnNames.add(resultSetMetaData.getColumnName(cIdx + 1));
-            }
-
-            List<Map<String, Object>> results = new ArrayList<>();
-            while (resultSet.next())
-            {
-                Map<String, Object> row = new HashMap<>();
-                for (String columnName : columnNames)
+                final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                final int columnCount = resultSetMetaData.getColumnCount();
+                final List<String> columnNames = new ArrayList<>(columnCount);
+                for (int cIdx = 0; cIdx < columnCount; cIdx++)
                 {
-                    row.put(columnName, resultSet.getObject(columnName));
+                    columnNames.add(resultSetMetaData.getColumnName(cIdx + 1));
                 }
-                results.add(row);
-            }
 
-            resultSet.close();
-            preparedStatement.close();
-            connection.close();
-            System.out.println("RESULTS: " + results);
-            return results;
-        } catch (Exception ex)
+                while (resultSet.next())
+                {
+                    final Map<String, Object> row = new HashMap<>();
+                    for (final String columnName : columnNames)
+                    {
+                        row.put(columnName, resultSet.getObject(columnName));
+                    }
+                    results.add(row);
+                }
+            }
+        } catch (SQLException ex)
         {
             throw new RuntimeException(ex);
         }
+
+        System.out.println("RESULTS: " + results);
+        return results;
     }
 
 
