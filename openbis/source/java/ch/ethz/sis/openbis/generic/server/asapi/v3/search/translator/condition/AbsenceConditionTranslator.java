@@ -19,7 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
@@ -37,7 +37,7 @@ public class AbsenceConditionTranslator implements IConditionTranslator<ISearchC
             final List<Object> args,
             final StringBuilder sqlBuilder)
     {
-        if (criterion instanceof NoSampleSearchCriteria)
+        if (criterion instanceof NoSampleContainerSearchCriteria)
         {
             sqlBuilder.append(PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
         } else if (criterion instanceof NoExperimentSearchCriteria)
