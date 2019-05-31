@@ -1,18 +1,15 @@
 import _ from 'lodash'
 import React from 'react'
 import TextField from '@material-ui/core/TextField'
+import EditableField from '../../common/form/EditableField.jsx'
 import logger from '../../../common/logger.js'
 
 class ObjectTypePropertyType extends React.Component {
 
   constructor(props){
     super(props)
-    this.handleClick = this.handleClick.bind(this)
+    this.renderField = this.renderField.bind(this)
     this.handleChange = this.handleChange.bind(this)
-  }
-
-  handleClick(event){
-    event.stopPropagation()
   }
 
   handleChange(event){
@@ -26,28 +23,39 @@ class ObjectTypePropertyType extends React.Component {
   render(){
     logger.log(logger.DEBUG, 'ObjectTypePropertyType.render')
 
+    return <EditableField renderField={this.renderField} />
+  }
+
+  renderField({ref, edited, handleBlur}){
     const {property, propertyTypes} = this.props
     const {propertyType, errors} = property
 
-    return (
-      <TextField
-        select
-        SelectProps={{
-          native: true,
-        }}
-        value={propertyType ? propertyType.code : ''}
-        onClick={this.handleClick}
-        onChange={this.handleChange}
-        fullWidth={true}
-        error={errors['propertyType'] ? true : false}
-        helperText={errors['propertyType']}
-      >
-        <option value=""></option>
-        {propertyTypes && propertyTypes.map(propertyType => (
-          <option key={propertyType.code} value={propertyType.code}>{propertyType.code}</option>
-        ))}
-      </TextField>
-    )
+    if(edited){
+      return (
+        <TextField
+          inputRef={ref}
+          select
+          SelectProps={{
+            native: true,
+          }}
+          value={propertyType ? propertyType.code : ''}
+          onChange={this.handleChange}
+          onBlur={handleBlur}
+          fullWidth={true}
+          error={errors['propertyType'] ? true : false}
+          helperText={errors['propertyType']}
+        >
+          <option value=""></option>
+          {propertyTypes && propertyTypes.map(propertyType => (
+            <option key={propertyType.code} value={propertyType.code}>{propertyType.code}</option>
+          ))}
+        </TextField>
+      )
+    }else{
+      return (
+        <span>{propertyType ? propertyType.code : ''}</span>
+      )
+    }
   }
 
 }
