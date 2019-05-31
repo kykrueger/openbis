@@ -123,14 +123,14 @@ describe('browser', () => {
 
       expectTitle(wrapper, 'TEST_OBJECT_TYPE')
 
-      expectPropertyMandatory(wrapper, 0, false)
+      expectPropertyMandatory(wrapper, 0, 'false')
       expectPropertyType(wrapper, 0, 'VARCHAR_PROPERTY_TYPE')
 
-      expectPropertyMandatory(wrapper, 1, true)
+      expectPropertyMandatory(wrapper, 1, 'true')
       expectPropertyType(wrapper, 1, 'MATERIAL_PROPERTY_TYPE')
       expectPropertyPreviewMaterial(wrapper, 1, ['', 'MATERIAL_1', 'MATERIAL_2', 'MATERIAL_3'])
 
-      expectPropertyMandatory(wrapper, 2, true)
+      expectPropertyMandatory(wrapper, 2, 'true')
       expectPropertyType(wrapper, 2, 'DICTIONARY_PROPERTY_TYPE')
       expectPropertyPreviewDictionary(wrapper, 2, ['', 'TERM_1', 'TERM_2', 'TERM_3'])
 
@@ -147,13 +147,13 @@ function expectTitle(wrapper, expectedTitle){
 
 function expectPropertyMandatory(wrapper, index, expected){
   let row = wrapper.find('ObjectTypePropertyRow').at(index)
-  let actual = row.find('ObjectTypePropertyMandatory').find('Checkbox').prop('checked')
+  let actual = row.find('ObjectTypePropertyMandatory').text()
   expect(actual).toEqual(expected)
 }
 
 function expectPropertyType(wrapper, index, expected){
   let row = wrapper.find('ObjectTypePropertyRow').at(index)
-  let actual = row.find('ObjectTypePropertyType').find('TextField').prop('value')
+  let actual = row.find('ObjectTypePropertyType').text()
   expect(actual).toEqual(expected)
 }
 
