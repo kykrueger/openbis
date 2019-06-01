@@ -53,6 +53,26 @@ class ObjectType extends React.Component {
     this.load()
   }
 
+  componentDidUpdate(){
+    if(!this.state.objectType){
+      return
+    }
+
+    const changed = this.state.objectType.properties.some((property) => {
+      return !property.original ||
+        !_.isEqual(property.mandatory, property.original.mandatory) ||
+        !_.isEqual(property.propertyType ? property.propertyType.code : null, property.original.propertyType ? property.original.propertyType.code : null) ||
+        !_.isEqual(property.ordinal, property.original.ordinal)
+    })
+
+    if(changed !== this.state.changed){
+      this.setState(()=>({
+        changed
+      }))
+      this.props.objectChange(changed)
+    }
+  }
+
   load(){
     this.setState({
       loaded: false
@@ -336,21 +356,7 @@ class ObjectType extends React.Component {
   }
 
   isObjectTypeChanged(){
-    let changed = this.state.objectType.properties.some((property) => {
-      return !property.original ||
-        !_.isEqual(property.mandatory, property.original.mandatory) ||
-        !_.isEqual(property.propertyType ? property.propertyType.code : null, property.original.propertyType ? property.original.propertyType.code : null) ||
-        !_.isEqual(property.ordinal, property.original.ordinal)
-    })
-
-    if(this.state.changed !== changed){
-      this.setState(()=>({
-        changed
-      }))
-      this.props.objectChange(changed)
-    }
-
-    return changed
+    return this.state.changed
   }
 
 }
