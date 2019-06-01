@@ -2,10 +2,10 @@ import _ from 'lodash'
 import React from 'react'
 import { DragSource } from 'react-dnd'
 import { DropTarget } from 'react-dnd'
-import TableCell from '@material-ui/core/TableCell'
 import TableRow from '@material-ui/core/TableRow'
 import DragHandleIcon from '@material-ui/icons/DragHandle'
 import RootRef from '@material-ui/core/RootRef'
+import ObjectTypePropertyCell from './ObjectTypePropertyCell.jsx'
 import ObjectTypePropertyPreview from './ObjectTypePropertyPreview.jsx'
 import ObjectTypePropertyType from './ObjectTypePropertyType.jsx'
 import ObjectTypePropertyMandatory from './ObjectTypePropertyMandatory.jsx'
@@ -94,20 +94,22 @@ class ObjectTypePropertyRow extends React.Component {
           selected={property.selected}
           onClick={this.handleSelect}
         >
-          <RootRef rootRef={this.handleRef}>
-            <TableCell classes={{ root: classes.drag }}>
-              <DragHandleIcon />
-            </TableCell>
-          </RootRef>
-          <TableCell>
+          <ObjectTypePropertyCell>
+            <RootRef rootRef={this.handleRef}>
+              <div className={classes.drag}>
+                <DragHandleIcon />
+              </div>
+            </RootRef>
+          </ObjectTypePropertyCell>
+          <ObjectTypePropertyCell>
             {this.renderPreview()}
-          </TableCell>
-          <TableCell>
+          </ObjectTypePropertyCell>
+          <ObjectTypePropertyCell>
             {this.renderPropertyType()}
-          </TableCell>
-          <TableCell>
+          </ObjectTypePropertyCell>
+          <ObjectTypePropertyCell>
             {this.renderMandatory()}
-          </TableCell>
+          </ObjectTypePropertyCell>
         </TableRow>
       </RootRef>
     )

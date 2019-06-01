@@ -3,8 +3,8 @@ import React from 'react'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableHead from '@material-ui/core/TableHead'
-import TableCell from '@material-ui/core/TableCell'
 import TableRow from '@material-ui/core/TableRow'
+import ObjectTypePropertyCell from './ObjectTypePropertyCell.jsx'
 import ObjectTypePropertyRow from './ObjectTypePropertyRow.jsx'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
@@ -12,6 +12,9 @@ import logger from '../../../common/logger.js'
 const styles = () => ({
   table: {
     width: '100%'
+  },
+  propertyType: {
+    minWidth: '30em'
   }
 })
 
@@ -32,10 +35,12 @@ class ObjectTypeTable extends React.Component {
       <Table className={classes.table}>
         <TableHead>
           <TableRow>
-            <TableCell></TableCell>
-            <TableCell>Preview</TableCell>
-            <TableCell>Property Type*</TableCell>
-            <TableCell>Mandatory</TableCell>
+            <ObjectTypePropertyCell></ObjectTypePropertyCell>
+            <ObjectTypePropertyCell>Preview</ObjectTypePropertyCell>
+            <ObjectTypePropertyCell>
+              <div className={classes.propertyType}>Property Type*</div>
+            </ObjectTypePropertyCell>
+            <ObjectTypePropertyCell>Mandatory</ObjectTypePropertyCell>
           </TableRow>
         </TableHead>
         <TableBody>
