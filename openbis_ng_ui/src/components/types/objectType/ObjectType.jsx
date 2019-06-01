@@ -349,6 +349,8 @@ class ObjectType extends React.Component {
       }))
       this.props.objectChange(changed)
     }
+
+    return changed
   }
 
 }
