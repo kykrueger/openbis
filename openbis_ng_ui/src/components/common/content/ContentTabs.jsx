@@ -45,7 +45,7 @@ class ContentTabs extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'ContentTabs.render')
 
-    const classes = this.props.classes
+    const { classes } = this.props
 
     return (
       <Tabs
@@ -72,7 +72,8 @@ class ContentTabs extends React.Component {
   }
 
   renderLabel(object){
-    return <span className={this.props.classes.tabLabel}>{object.id}{this.renderIcon(object)}</span>
+    let label = _.find(this.props.changedObjects, object) ? object.id + '*' : object.id
+    return <span className={this.props.classes.tabLabel}>{label}{this.renderIcon(object)}</span>
   }
 
   renderIcon(object){

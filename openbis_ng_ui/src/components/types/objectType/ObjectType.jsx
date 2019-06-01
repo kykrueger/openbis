@@ -4,6 +4,8 @@ import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import ObjectTypeForm from './ObjectTypeForm.jsx'
 import ObjectTypeFooter from './ObjectTypeFooter.jsx'
+import * as pages from '../../../store/consts/pages.js'
+import * as objectTypes from '../../../store/consts/objectType.js'
 import * as actions from '../../../store/actions/actions.js'
 import logger from '../../../common/logger.js'
 import {facade, dto} from '../../../services/openbis.js'
@@ -25,9 +27,10 @@ const styles = (theme) => ({
   }
 })
 
-function mapDispatchToProps(dispatch){
+function mapDispatchToProps(dispatch, ownProps){
   return {
     error: (error) => { dispatch(actions.setError(error)) },
+    objectChange: (changed) => { dispatch(actions.objectChange(pages.TYPES, objectTypes.OBJECT_TYPE, ownProps.objectId, changed)) }
   }
 }
 
@@ -129,7 +132,7 @@ class ObjectType extends React.Component {
         }
       }
     }, () => {
-      if(this.state.validated){
+      if(this.isObjectTypeValidated()){
         this.validate()
       }
     })
@@ -328,13 +331,24 @@ class ObjectType extends React.Component {
     })
   }
 
+  isObjectTypeValidated(){
+    return this.state.validated
+  }
+
   isObjectTypeChanged(){
-    return this.state.objectType.properties.some((property) => {
+    let changed = this.state.objectType.properties.some((property) => {
       return !property.original ||
         !_.isEqual(property.mandatory, property.original.mandatory) ||
         !_.isEqual(property.propertyType ? property.propertyType.code : null, property.original.propertyType ? property.original.propertyType.code : null) ||
         !_.isEqual(property.ordinal, property.original.ordinal)
     })
+
+    if(this.state.changed !== changed){
+      this.setState(()=>({
+        changed
+      }))
+      this.props.objectChange(changed)
+    }
   }
 
 }
