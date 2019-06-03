@@ -116,7 +116,7 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
                 writer.writeStartElement("x:value");
                 String value = entry.getValue();
                 extractFileServicePath(context, value);
-                writer.writeCData(value);
+                writer.writeCharacters(value);
                 writer.writeEndElement();
                 writer.writeEndElement();
             }
