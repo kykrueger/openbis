@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import React from 'react'
 import TextField from '@material-ui/core/TextField'
+import FormHelperText from '@material-ui/core/FormHelperText'
 import EditableField from '../../common/form/EditableField.jsx'
 import logger from '../../../common/logger.js'
 
@@ -28,7 +29,7 @@ class ObjectTypePropertyType extends React.Component {
 
   renderField({ref, edited, handleBlur}){
     const {property, propertyTypes} = this.props
-    const {propertyType, errors} = property
+    const {propertyType} = property
 
     if(edited){
       return (
@@ -42,8 +43,8 @@ class ObjectTypePropertyType extends React.Component {
           onChange={this.handleChange}
           onBlur={handleBlur}
           fullWidth={true}
-          error={errors['propertyType'] ? true : false}
-          helperText={errors['propertyType']}
+          error={this.hasError()}
+          helperText={this.getError()}
         >
           <option value=""></option>
           {propertyTypes && propertyTypes.map(propertyType => (
@@ -53,9 +54,22 @@ class ObjectTypePropertyType extends React.Component {
       )
     }else{
       return (
-        <span>{propertyType ? propertyType.code : ''}</span>
+        <div>
+          <div>{propertyType ? propertyType.code : ''}</div>
+          {this.hasError() &&
+            <FormHelperText error={true}>{this.getError()}</FormHelperText>
+          }
+        </div>
       )
     }
+  }
+
+  hasError(){
+    return this.getError() ? true : false
+  }
+
+  getError(){
+    return this.props.property.errors['propertyType']
   }
 
 }
