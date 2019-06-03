@@ -68,10 +68,10 @@ public class DataSourceConnector implements IDataSourceConnector
     }
 
     @Override
-    public Document getResourceListAsXMLDoc(List<String> spaceBlackList) throws Exception
+    public Document getResourceListAsXMLDoc(List<String> spaceBlackList, List<String> spaceWhiteList) throws Exception
     {
         HttpClient client = JettyHttpClientFactory.getHttpClient();
-        Request requestEntity = createResourceListRequest(client, spaceBlackList);
+        Request requestEntity = createResourceListRequest(client, spaceBlackList, spaceWhiteList);
         operationLog.info("Start loading a resource list from " + requestEntity.getURI());
         
         InputStreamResponseListener listener = new InputStreamResponseListener();
@@ -212,18 +212,22 @@ public class DataSourceConnector implements IDataSourceConnector
         return contentResponse;
     }
 
-    private Request createResourceListRequest(HttpClient client, List<String> spaceBlackList)
+    private Request createResourceListRequest(HttpClient client, List<String> spaceBlackList, List<String> spaceWhiteList)
     {
-        String url = createRequestUrl(spaceBlackList);
+        String url = createRequestUrl(spaceBlackList, spaceWhiteList);
         return createRequest(client, url);
     }
 
-    private String createRequestUrl(List<String> spaceBlackList)
+    private String createRequestUrl(List<String> spaceBlackList, List<String> spaceWhiteList)
     {
         String url = dataSourceUrl + "?verb=resourcelist.xml";
         for (String space : spaceBlackList)
         {
             url += "&black_list=" + space;
+        }
+        for (String space : spaceWhiteList)
+        {
+            url += "&white_list=" + space;
         }
         return url;
     }
