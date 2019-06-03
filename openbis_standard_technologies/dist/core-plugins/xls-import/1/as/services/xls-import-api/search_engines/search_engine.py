@@ -118,6 +118,9 @@ class SearchEngine():
         experiment_type_fetch_options.withPropertyAssignments().withPropertyType()
         dataset_type_fetch_options = DataSetTypeFetchOptions()
         dataset_type_fetch_options.withPropertyAssignments().withPropertyType()
+        sample_fetch_options = SampleFetchOptions()
+        sample_fetch_options.withChildren()
+        sample_fetch_options.withParents()
         search_strategy = [
             {
             'creations_type': VocabularyDefinitionToCreationType,
@@ -138,7 +141,7 @@ class SearchEngine():
             'search_criteria_build_strategy' : SampleCreationSampleChildrenParentSearchCriteria,
             'search_criteria_class' : SampleSearchCriteria,
             'search_operation': SearchSamplesOperation,
-            'fetch_options': SampleFetchOptions()
+            'fetch_options': sample_fetch_options
             },
             {
             'creations_type': PropertyTypeDefinitionToCreationType,
@@ -210,7 +213,7 @@ class SearchEngine():
             'search_criteria_build_strategy' : SampleCreationSampleSearchCriteria,
             'search_criteria_class' : SampleSearchCriteria,
             'search_operation': SearchSamplesOperation,
-            'fetch_options': SampleFetchOptions()
+            'fetch_options': sample_fetch_options
             },
             {
             'creations_type': SampleDefinitionToCreationType,

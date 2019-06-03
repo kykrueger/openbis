@@ -1,7 +1,7 @@
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id import SampleIdentifier
 import os
 
-VocabularyTermDefinitionToCreationType = "VocabularyTermCreation"
+VocabularyTermDefinitionToCreationType = "VT"
 
 
 def is_internal_namespace(property_value):

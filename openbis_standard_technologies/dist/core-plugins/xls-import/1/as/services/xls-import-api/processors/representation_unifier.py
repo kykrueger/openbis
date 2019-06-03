@@ -1,4 +1,4 @@
-from parsers import PropertyTypeDefinitionToCreationType, VocabularyDefinitionToCreationType, \
+from parsers import PropertyTypeDefinitionToCreationType, VocabularyDefinitionToCreationType, VocabularyTermDefinitionToCreationType, \
     SampleTypeDefinitionToCreationType, ExperimentTypeDefinitionToCreationType, ExperimentDefinitionToCreationType, \
     SampleDefinitionToCreationType
 
@@ -65,15 +65,22 @@ def _find_vocabulary(vocabularies, vocabulary_code):
             return vocabulary
 
 
+def _find_vocabulary_terms(vocabulary_terms, vocabulary_code):
+    return [vocabulary_term for vocabulary_term in vocabulary_terms if str(vocabulary_term.vocabularyId).lower() == str(vocabulary_code).lower()]
+
+
 def property_type_representation_from(property_type, creations, existing_vocabularies):
     prop_type_representation = {}
     prop_type_representation['code'] = property_type.code
     prop_type_representation['label'] = property_type.label
     prop_type_representation['dataType'] = property_type.dataType
     vocabulary = None
-    if hasattr(property_type, 'vocabularyId'):
+    if hasattr(property_type, 'vocabularyId') and property_type.vocabularyId is not None:
         if VocabularyDefinitionToCreationType in creations:
             vocabulary = _find_vocabulary(creations[VocabularyDefinitionToCreationType], property_type.vocabularyId)
+            if vocabulary is not None:
+                vocabulary_terms = _find_vocabulary_terms(creations[VocabularyTermDefinitionToCreationType], property_type.vocabularyId)
+                vocabulary = dotdict({'code':vocabulary.code, 'terms':vocabulary_terms})
         if vocabulary is None:
             vocabulary = _find_vocabulary(existing_vocabularies, property_type.vocabularyId)
     if vocabulary is None and hasattr(property_type, 'vocabulary'):

@@ -191,9 +191,11 @@ class SampleCreationToUpdateParser(object):
         sample_update.setProjectId(creation.projectId)
         sample_update.setSpaceId(creation.spaceId)
         sample_update.setProperties(creation.properties)
-        # TODO Handle this
-#         sample_update.parentIds = creation.parentIds
-#         sample_update.childIds = creation.childIds
+        sample_update.childIds.remove([parent.permId for parent in existing_sample.children])
+        sample_update.parentIds.remove([child.permId for child in existing_sample.parents])
+        sample_update.childIds.add(creation.childIds)
+        sample_update.parentIds.add(creation.parentIds)
+
         return sample_update
 
     def get_type(self):
