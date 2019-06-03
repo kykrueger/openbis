@@ -271,6 +271,7 @@ public class DataSourceRequestHandler implements IRequestHandler
             String parameter = enumeration.nextElement();
             parameterMap.put(parameter, Arrays.asList(request.getParameterValues(parameter)));
         }
+        operationLog.info("Parameters: " + parameterMap);
         return parameterMap;
     }
 
