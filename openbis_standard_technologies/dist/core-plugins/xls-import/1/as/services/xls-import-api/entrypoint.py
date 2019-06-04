@@ -27,12 +27,10 @@ def validate_data(xls_byte_arrays, update_mode, xls_name):
         raise UserFailureException('Excel name has not been provided.  parameter is mandatory')
 
 
-def get_property(key):
+def get_property(key, defaultValue):
     propertyConfigurer = CommonServiceProvider.getApplicationContext().getBean("propertyConfigurer");
     properties = propertyConfigurer.getResolvedProps();
-    print("BRBRRBRB")
-    print(properties)
-    return properties.getProperty(key);
+    return properties.getProperty(key, defaultValue);
 
 
 def process(context, parameters):
@@ -68,9 +66,7 @@ def process(context, parameters):
     creations = get_creations_from(definitions, FileHandler(scripts))
     creations_metadata = get_creation_metadata_from(definitions)
     creations = DuplicatesHandler.get_distinct_creations(creations)
-    xls_version_filepath = get_property("xls-import.version-data-file")
-    if xls_version_filepath is None:
-        raise UserFailureException("No access to versioning information. Please xls-import.version-data-file property in service.properties.")
+    xls_version_filepath = get_property("xls-import.version-data-file", "../../../data/xls-import-version-info")
     if REMOVE_VERSIONS:
         if os.path.exists(xls_version_filepath):
             os.remove(xls_version_filepath)
