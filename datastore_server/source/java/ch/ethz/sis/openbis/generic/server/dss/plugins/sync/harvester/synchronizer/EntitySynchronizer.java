@@ -1586,11 +1586,11 @@ public class EntitySynchronizer
             {
                 if (conn.getType().equals("Component"))
                 {
-                    NewSample containedSample = samplesToProcess.get(conn.getToPermId()).getSample();
+                    NewSample containedSample = getRelated(samplesToProcess, conn).getSample();
                     containedSample.setContainerIdentifier(incomingSample.getIdentifier());
                 } else if (conn.getType().equals("Child"))
                 {
-                    NewSample childSample = samplesToProcess.get(conn.getToPermId()).getSample();
+                    NewSample childSample = getRelated(samplesToProcess, conn).getSample();
                     String[] parents = childSample.getParentsOrNull();
                     List<String> parentIds = null;
                     if (parents == null)
@@ -1641,6 +1641,17 @@ public class EntitySynchronizer
                             modifiedParentIds);
             builder.sampleUpdate(updates);
         }
+    }
+
+    private IncomingSample getRelated(Map<String, IncomingSample> samplesToProcess, Connection conn)
+    {
+        String permId = conn.getToPermId();
+        IncomingSample sample = samplesToProcess.get(permId);
+        if (sample != null)
+        {
+            return sample;
+        }
+        throw new IllegalArgumentException("sample " + permId+ " hasn't been provided by the data source.");
     }
 
     private Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> getKnownSamples(Collection<String> samplePermIds)
