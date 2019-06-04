@@ -2,7 +2,7 @@ from parsers import versionable_types
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update import VocabularyTermUpdate
 from parsers import VocabularyTermCreationToUpdateType, ScriptDefinitionToCreationType, \
     VocabularyTermDefinitionToCreationType, VocabularyDefinitionToCreationType
-from utils.openbis_utils import get_metadata_vocabulary_name_for
+from utils.openbis_utils import get_metadata_name_for
 
 FORCE = -1
 
@@ -24,7 +24,7 @@ class VersionHandler(object):
 
             for creation in creations_collection:
                 code = creation.code
-                version_term_code = get_metadata_vocabulary_name_for(creation_type, creation)
+                version_term_code = get_metadata_name_for(creation_type, creation)
                 if creation_type == VocabularyTermDefinitionToCreationType:
                     creation_metadata = self.creations_metadata[VocabularyDefinitionToCreationType][str(creation.vocabularyId)].terms[code]
                 else:

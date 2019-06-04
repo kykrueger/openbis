@@ -3,7 +3,7 @@ from ..definition_to_creation import PropertyTypeDefinitionToCreationType, Vocab
     SampleTypeDefinitionToCreationType, ExperimentTypeDefinitionToCreationType, DatasetTypeDefinitionToCreationType, \
     SpaceDefinitionToCreationType, ProjectDefinitionToCreationType, ExperimentDefinitionToCreationType, \
     SampleDefinitionToCreationType, ScriptDefinitionToCreationType
-from utils.openbis_utils import get_metadata_vocabulary_name_for
+from utils.openbis_utils import get_metadata_name_for
 from ch.systemsx.cisd.common.exceptions import UserFailureException
 from utils.dotdict import dotdict
 

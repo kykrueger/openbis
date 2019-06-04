@@ -5,12 +5,12 @@ from processors import OpenbisDuplicatesHandler, PropertiesLabelHandler, Duplica
     unify_properties_representation_of
 from search_engines import SearchEngine
 from utils import FileHandler
-from utils.openbis_utils import get_version_vocabulary_name_for, get_metadata_vocabulary_name_for
+from utils.openbis_utils import get_version_name_for, get_metadata_name_for
 from ch.systemsx.cisd.common.exceptions import UserFailureException
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions import VocabularyFetchOptions
-from ch.systemsx.cisd.common.storage import PersistentKeyValueStore
 from java.util import Properties
 import os
+import json
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
 
 REMOVE_VERSIONS = False
@@ -32,6 +32,19 @@ def get_property(key, defaultValue):
     properties = propertyConfigurer.getResolvedProps();
     return properties.getProperty(key, defaultValue);
 
+
+def read_versioning_information(xls_version_filepath):
+    if os.path.exists(xls_version_filepath):
+        with open(xls_version_filepath, 'r') as f:
+            return json.load(f)
+    else:
+        return {}
+
+def save_versioning_information(versioning_information, xls_version_filepath):
+    filepath_new = "%s.new" % xls_version_filepath 
+    with open(filepath_new, 'w') as f:
+        json.dump(versioning_information, f)
+    os.rename(filepath_new, xls_version_filepath)
 
 def process(context, parameters):
     """
@@ -66,30 +79,32 @@ def process(context, parameters):
     creations = get_creations_from(definitions, FileHandler(scripts))
     creations_metadata = get_creation_metadata_from(definitions)
     creations = DuplicatesHandler.get_distinct_creations(creations)
-    xls_version_filepath = get_property("xls-import.version-data-file", "../../../data/xls-import-version-info")
+    xls_version_filepath = get_property("xls-import.version-data-file", "../../../data/xls-import-version-info.json")
     if REMOVE_VERSIONS:
         if os.path.exists(xls_version_filepath):
             os.remove(xls_version_filepath)
-    xls_version_name = get_version_vocabulary_name_for(xls_name)
-    key_value_store = PersistentKeyValueStore(xls_version_filepath)
-    versioning_information = key_value_store.get(xls_version_name)
+    xls_version_name = get_version_name_for(xls_name)
+    
+    all_versioning_information = read_versioning_information(xls_version_filepath)
 
-    if versioning_information is None:
+    if xls_version_name in all_versioning_information:
+        versioning_information = all_versioning_information[xls_version_name]
+        for creation_type, creation_collection in creations.items():
+            if creation_type in versionable_types:
+                for creation in creation_collection:
+                    code = get_metadata_name_for(creation_type, creation)
+                    if code in versioning_information:
+                        version = versioning_information[code]
+                    else:
+                        version = 0
+                    versioning_information[code] = int(version)
+    else:
         versioning_information = {}
         for creation_type, creation_collection in creations.items():
             if creation_type in versionable_types:
                 for creation in creation_collection:
-                    code = get_metadata_vocabulary_name_for(creation_type, creation)
+                    code = get_metadata_name_for(creation_type, creation)
                     versioning_information[code] = 0
-    else:
-        for creation_type, creation_collection in creations.items():
-            if creation_type in versionable_types:
-                for creation in creation_collection:
-                    code = get_metadata_vocabulary_name_for(creation_type, creation)
-                    version = versioning_information.get(code, None)
-                    if version is None:
-                        version = 0
-                    versioning_information[code] = int(version)
 
     existing_elements = search_engine.find_all_existing_elements(creations)
     entity_kinds = search_engine.find_existing_entity_kind_definitions_for(creations)
@@ -104,6 +119,7 @@ def process(context, parameters):
     creations = server_duplicates_handler.handle_existing_elements_in_creations()
     operations = CreationOrUpdateToOperationParser.parse(creations)
     res = str(api.executeOperations(session_token, operations, SynchronousOperationExecutionOptions()).getResults())
-    key_value_store.put(xls_version_name, versioning_information)
+    all_versioning_information[xls_version_name] = versioning_information
+    save_versioning_information(all_versioning_information, xls_version_filepath)
     return res
 

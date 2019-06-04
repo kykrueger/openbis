@@ -24,11 +24,11 @@ def get_filename_from_path(path):
     return os.path.splitext(os.path.basename(path))[0]
 
 
-def get_version_vocabulary_name_for(name):
+def get_version_name_for(name):
     return '${}_VERSION'.format(name)
 
 
-def get_metadata_vocabulary_name_for(creation_type, creation):
+def get_metadata_name_for(creation_type, creation):
     if creation_type == VocabularyTermDefinitionToCreationType:
         code = "{}_{}_{}".format(creation_type, str(creation.vocabularyId), creation.code)
     else:
