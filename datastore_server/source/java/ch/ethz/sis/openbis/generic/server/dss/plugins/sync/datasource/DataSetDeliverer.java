@@ -33,6 +33,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 
 /**
@@ -121,7 +122,11 @@ public class DataSetDeliverer extends AbstractEntityWithPermIdDeliverer
                 addAttribute(writer, "path", contentCopy.getPath());
                 writer.writeEndElement();
             }
-            addFileNodes(writer, code, context.getContentProvider().asContent(code).getRootNode());
+            IHierarchicalContent content = context.getContentProvider().asContent(code);
+            if (content != null)
+            {
+                addFileNodes(writer, code, content.getRootNode());
+            }
             writer.writeEndElement();
         }
     }
