@@ -44,7 +44,7 @@ class OpenbisDuplicatesHandler(object):
                 if creation.projectId is not None:
                     for existing_element in self.existing_elements[ProjectDefinitionToCreationType]:
                         if existing_element.code == str(creation.projectId):
-                            creation.projectId = existing_element.permId
+                            creation.projectId = existing_element.identifier
                             break
                 if creation.experimentId is not None:
                     for existing_element in self.existing_elements[ExperimentDefinitionToCreationType]:

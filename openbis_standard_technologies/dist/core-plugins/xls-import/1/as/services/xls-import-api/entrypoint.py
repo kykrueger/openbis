@@ -13,7 +13,7 @@ import os
 import json
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
 
-REMOVE_VERSIONS = False
+REMOVE_VERSIONS = True
 
 
 def validate_data(xls_byte_arrays, update_mode, xls_name):

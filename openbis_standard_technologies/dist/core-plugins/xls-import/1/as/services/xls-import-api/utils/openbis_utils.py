@@ -1,7 +1,8 @@
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id import SampleIdentifier
 import os
 
-VocabularyTermDefinitionToCreationType = "VT"
+# TODO DRY IT WITH CreationTYpes in definition_to_creation!!!
+VocabularyTermDefinitionToCreationType = "VocabularyTerm"
 
 
 def is_internal_namespace(property_value):
@@ -14,7 +15,7 @@ def get_script_name_for(owner_code, script_path):
 
 def create_sample_identifier_string(sample_creation):
     spaceId = str(sample_creation.spaceId) if sample_creation.spaceId is not None else None
-    projectId = str(sample_creation.projectId) if sample_creation.projectId is not None else None
+    projectId = str(sample_creation.projectId).split("/")[-1] if sample_creation.projectId is not None else None
     code = sample_creation.code
     sample_identifier = SampleIdentifier(spaceId, projectId, None, code)
     return sample_identifier.identifier
