@@ -8,6 +8,7 @@ export default function* appSaga() {
   yield takeEvery(actions.LOGIN, login)
   yield takeEvery(actions.LOGOUT, logout)
   yield takeEvery(actions.CURRENT_PAGE_CHANGE, currentPageChange)
+  yield takeEvery(actions.SEARCH_CHANGE, searchChange)
   yield takeEvery(actions.ERROR_CHANGE, errorChange)
 }
 
@@ -56,6 +57,10 @@ function* logout() {
 
 function* currentPageChange(action){
   yield put(actions.setCurrentPage(action.payload.currentPage))
+}
+
+function* searchChange(action){
+  yield put(actions.setSearch(action.payload.search))
 }
 
 function* errorChange(action){

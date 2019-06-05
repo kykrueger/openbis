@@ -31,11 +31,9 @@ const styles = (theme) => ({
     paddingLeft: theme.spacing.unit,
     paddingRight: theme.spacing.unit,
     marginRight: theme.spacing.unit * 2,
-  },
-  searchInput: {
     transition: theme.transitions.create('width'),
     width: '200px',
-    '&:focus': {
+    '&:focus-within': {
       width: '300px',
     },
   },
@@ -52,22 +50,42 @@ const styles = (theme) => ({
 
 function mapStateToProps(state){
   return {
-    currentPage: selectors.getCurrentPage(state)
+    currentPage: selectors.getCurrentPage(state),
+    search: selectors.getSearch(state)
   }
 }
 
 function mapDispatchToProps(dispatch){
   return {
     currentPageChange: (event, value) => dispatch(actions.currentPageChange(value)),
+    searchChange: (value) => dispatch(actions.searchChange(value)),
     logout: () => dispatch(actions.logout())
   }
 }
 
 class Menu extends React.Component {
+
+  constructor(props){
+    super(props)
+    this.searchRef = React.createRef()
+    this.handleSearchChange = this.handleSearchChange.bind(this)
+    this.handleSearchClear = this.handleSearchClear.bind(this)
+  }
+
+  handleSearchChange(event){
+    this.props.searchChange(event.target.value)
+  }
+
+  handleSearchClear(event){
+    event.preventDefault()
+    this.props.searchChange('')
+    this.searchRef.current.focus()
+  }
+
   render() {
     logger.log(logger.DEBUG, 'Menu.render')
 
-    const classes = this.props.classes
+    const {classes, search} = this.props
 
     return (
       <AppBar position="static">
@@ -80,21 +98,15 @@ class Menu extends React.Component {
           </Tabs>
           <TextField
             placeholder="Search..."
+            value={search}
+            onChange={this.handleSearchChange}
             InputProps={{
+              inputRef: this.searchRef,
               disableUnderline: true,
-              startAdornment: (
-                <InputAdornment>
-                  <SearchIcon classes={{ root: classes.searchIcon }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment>
-                  <CloseIcon classes={{ root: classes.searchClear }}/>
-                </InputAdornment>
-              ),
+              startAdornment: this.renderSearchIcon(),
+              endAdornment: this.renderSearchClearIcon(),
               classes: {
                 root: classes.search,
-                input: classes.searchInput
               }
             }}/>
           <Button
@@ -107,6 +119,32 @@ class Menu extends React.Component {
       </AppBar>
     )
   }
+
+  renderSearchIcon(){
+    const {classes} = this.props
+    return (
+      <InputAdornment>
+        <SearchIcon classes={{ root: classes.searchIcon }} />
+      </InputAdornment>
+    )
+  }
+
+  renderSearchClearIcon(){
+    const {classes, search} = this.props
+    if(search){
+      return (
+        <InputAdornment>
+          <CloseIcon
+            classes={{ root: classes.searchClear }}
+            onMouseDown={this.handleSearchClear}
+          />
+        </InputAdornment>
+      )
+    }else{
+      return (<React.Fragment></React.Fragment>)
+    }
+  }
+
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(Menu))

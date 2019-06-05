@@ -2,6 +2,10 @@ export const getLoading = (state) => {
   return state.ui.loading
 }
 
+export const getSearch = (state) => {
+  return state.ui.search
+}
+
 export const getCurrentPage = (state) => {
   return state.ui.currentPage
 }
