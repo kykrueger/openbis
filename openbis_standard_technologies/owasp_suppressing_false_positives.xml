@@ -28,34 +28,52 @@
 	</suppress>
 	<!-- Jetty 8 - False positive, found in a ehcache POM file -->
 	<suppress>
-	   <notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   <gav regex="true">^org\.eclipse\.jetty:jetty-continuation:.*$</gav>
-	   <cve>CVE-2017-9735</cve>
+	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
+	   	<gav regex="true">^org\.eclipse\.jetty:jetty-continuation:.*$</gav>
+	   	<cve>CVE-2017-9735</cve>
+		<cve>CVE-2017-7656</cve>
+		<cve>CVE-2017-7657</cve>
+		<cve>CVE-2017-7658</cve>
 	</suppress>
 	<suppress>
-	   <notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   <gav regex="true">^org\.eclipse\.jetty:jetty-http:.*$</gav>
-	   <cve>CVE-2017-9735</cve>
+	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
+	   	<gav regex="true">^org\.eclipse\.jetty:jetty-http:.*$</gav>
+	   	<cve>CVE-2017-9735</cve>
+		<cve>CVE-2017-7656</cve>
+		<cve>CVE-2017-7657</cve>
+		<cve>CVE-2017-7658</cve>
 	</suppress>
 	<suppress>
-	   <notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   <gav regex="true">^org\.eclipse\.jetty:jetty-security:.*$</gav>
-	   <cve>CVE-2017-9735</cve>
+	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
+	   	<gav regex="true">^org\.eclipse\.jetty:jetty-security:.*$</gav>
+	   	<cve>CVE-2017-9735</cve>
+		<cve>CVE-2017-7656</cve>
+		<cve>CVE-2017-7657</cve>
+		<cve>CVE-2017-7658</cve>
 	</suppress>
 	<suppress>
-	   <notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   <gav regex="true">^org\.eclipse\.jetty:jetty-server:.*$</gav>
-	   <cve>CVE-2017-9735</cve>
+	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
+	   	<gav regex="true">^org\.eclipse\.jetty:jetty-server:.*$</gav>
+	   	<cve>CVE-2017-9735</cve>
+		<cve>CVE-2017-7656</cve>
+		<cve>CVE-2017-7657</cve>
+		<cve>CVE-2017-7658</cve>
 	</suppress>
 	<suppress>
-	   <notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   <gav regex="true">^org\.eclipse\.jetty:jetty-servlet:.*$</gav>
-	   <cve>CVE-2017-9735</cve>
+	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
+	   	<gav regex="true">^org\.eclipse\.jetty:jetty-servlet:.*$</gav>
+	   	<cve>CVE-2017-9735</cve>
+		<cve>CVE-2017-7656</cve>
+		<cve>CVE-2017-7657</cve>
+		<cve>CVE-2017-7658</cve>
 	</suppress>
 	<suppress>
-	   <notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
-	   <gav regex="true">^org\.eclipse\.jetty:jetty-util:.*$</gav>
-	   <cve>CVE-2017-9735</cve>
+	   	<notes><![CDATA[ ehcache-2.10.0.jar ]]></notes>
+	   	<gav regex="true">^org\.eclipse\.jetty:jetty-util:.*$</gav>
+	   	<cve>CVE-2017-9735</cve>
+		<cve>CVE-2017-7656</cve>
+		<cve>CVE-2017-7657</cve>
+		<cve>CVE-2017-7658</cve>
 	</suppress>
 	<!-- Jetty 9.4.9 -->
 	<suppress>
@@ -159,5 +177,13 @@
    		<gav regex="true">^org\.postgresql:postgresql:.*$</gav>
    		<cve>CVE-2017-14798</cve> <!-- Clients can't use JDBC directly and execute their own SQL -->
    		<cve>CVE-2018-1115</cve> <!-- We don't use any admin pack -->
+		<cve>CVE-2016-7048</cve> <!-- Don't apply to the driver -->
+	</suppress>
+	<!-- Jython -->
+	<suppress>
+		<gav regex="true">^org\.jruby\.extras:jaffl:.*$</gav>
+		<cpe>CVE-2010-1330</cpe>
+		<cpe>CVE-2011-4838</cpe>
+		<cpe>CVE-2012-5370</cpe>
 	</suppress>
 </suppressions>
