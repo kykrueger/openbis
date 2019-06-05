@@ -61,14 +61,23 @@
 	<suppress>
    		<gav regex="true">^org\.eclipse\.jetty\.alpn:alpn-api:.*$</gav>
    		<cve>CVE-2017-9735</cve> <!-- False positive, only affects 9.4.6 and earlier -->
+		<cve>CVE-2017-7656</cve> <!-- False positive, only affects 9.4.10 and earlier -->
+		<cve>CVE-2017-7657</cve> <!-- False positive, only affects 9.4.10 and earlier -->
+		<cve>CVE-2017-7658</cve> <!-- False positive, only affects 9.4.10 and earlier -->
 	</suppress>
 	<suppress>
    		<gav regex="true">^org\.eclipse\.jetty\.orbit:javax\.security\.auth\.message:.*$</gav>
    		<cve>CVE-2017-9735</cve> <!-- False positive, only affects 9.4.6 and earlier -->
+		<cve>CVE-2017-7656</cve> <!-- False positive, only affects 9.4.10 and earlier -->
+		<cve>CVE-2017-7657</cve> <!-- False positive, only affects 9.4.10 and earlier -->
+		<cve>CVE-2017-7658</cve> <!-- False positive, only affects 9.4.10 and earlier -->
 	</suppress>
 	<suppress>
    		<gav regex="true">^org\.eclipse\.jetty\.orbit:javax\.mail\.glassfish:.*$</gav>
    		<cve>CVE-2017-9735</cve> <!-- False positive, only affects 9.4.6 and earlier -->
+		<cve>CVE-2017-7656</cve> <!-- False positive, only affects 9.4.10 and earlier -->
+		<cve>CVE-2017-7657</cve> <!-- False positive, only affects 9.4.10 and earlier -->
+		<cve>CVE-2017-7658</cve> <!-- False positive, only affects 9.4.10 and earlier -->
 	</suppress>
 	<suppress>
    		<gav regex="true">^org\.eclipse\.jetty\.toolchain:jetty-schemas:.*$</gav>
@@ -76,6 +85,9 @@
    		<cve>CVE-2007-5614</cve>  <!-- False positive, only affects 6.1.6 and earlier -->
    		<cve>CVE-2007-5615</cve>  <!-- False positive, only affects 6.1.6 and earlier -->
    		<cve>CVE-2017-9735</cve> <!-- False positive, only affects 9.4.6 and earlier -->
+		<cve>CVE-2017-7656</cve> <!-- False positive, only affects 9.4.10 and earlier -->
+		<cve>CVE-2017-7657</cve> <!-- False positive, only affects 9.4.10 and earlier -->
+		<cve>CVE-2017-7658</cve> <!-- False positive, only affects 9.4.10 and earlier -->
 	</suppress>
 	<!-- Jackson 2.0.2 -->
 	<suppress>
