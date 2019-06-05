@@ -503,7 +503,7 @@ class GitDataMgmt(AbstractDataMgmt):
                 resolver.set_value_for_json_parameter('properties', prop, value, loc, apply_rules=True)
             else:
                 resolver.set_value_for_parameter(prop, value, loc, apply_rules=True)
-        except ValueError as e:
+        except Exception as e:
             if self.debug ==  True:
                 raise e
             return CommandResult(returncode=-1, output="Error: " + str(e))
