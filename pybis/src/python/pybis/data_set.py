@@ -107,7 +107,7 @@ class GitDataSetCreation(object):
     def data_store_url(self, dss_code):
         data_stores = self.openbis.get_datastores()
         data_store = data_stores[data_stores['code'] == dss_code]
-        return "{}/datastore_server/rmi-data-store-server-v3.json".format(data_store['hostUrl'][0])
+        return "{}/datastore_server/rmi-data-store-server-v3.json".format(data_store['downloadUrl'][0])
 
     def data_set_metadata_creation(self):
         """Create the respresentation of the data set metadata."""
@@ -335,4 +335,4 @@ class GitDataSetFileSearch(object):
         if self.dss_code is None:
             self.dss_code = self.openbis.get_datastores()['code'][0]
         data_store = data_stores[data_stores['code'] == self.dss_code]
-        return "{}/datastore_server/rmi-data-store-server-v3.json".format(data_store['hostUrl'][0])
+        return "{}/datastore_server/rmi-data-store-server-v3.json".format(data_store['downloadUrl'][0])
