@@ -25,14 +25,13 @@ def get_filename_from_path(path):
 
 
 def get_version_name_for(name):
-    return '${}_VERSION'.format(name)
+    return 'VERSION-{}'.format(name)
 
 
 def get_metadata_name_for(creation_type, creation):
     if creation_type == VocabularyTermDefinitionToCreationType:
-        code = "{}_{}_{}".format(creation_type, str(creation.vocabularyId), creation.code)
+        code = "{}-{}-{}".format(creation_type, str(creation.vocabularyId), creation.code)
     else:
-        code = "{}_{}".format(creation_type, creation.code)
-    code = code.replace("$", ".")
+        code = "{}-{}".format(creation_type, creation.code)
     code = code.upper()
     return code

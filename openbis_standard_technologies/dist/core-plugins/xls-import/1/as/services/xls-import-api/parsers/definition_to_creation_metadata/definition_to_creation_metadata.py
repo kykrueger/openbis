@@ -1,5 +1,6 @@
 from .creation_metadata_parsers import DefinitionToCreationMetadataParserFactory
 from utils import merge_dicts
+from .creation_metadata import CreationMetadata
 
 
 class DefinitionToCreationMetadataParser(object):
@@ -20,4 +21,4 @@ class DefinitionToCreationMetadataParser(object):
                     creations_metadata[creation_type] = {}
                 merge_dicts(creations_metadata[creation_type], creation_metadata)
 
-        return creations_metadata
+        return CreationMetadata(creations_metadata)

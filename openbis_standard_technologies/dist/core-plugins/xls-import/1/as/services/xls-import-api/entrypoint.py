@@ -40,11 +40,13 @@ def read_versioning_information(xls_version_filepath):
     else:
         return {}
 
+
 def save_versioning_information(versioning_information, xls_version_filepath):
-    filepath_new = "%s.new" % xls_version_filepath 
+    filepath_new = "%s.new" % xls_version_filepath
     with open(filepath_new, 'w') as f:
         json.dump(versioning_information, f)
     os.rename(filepath_new, xls_version_filepath)
+
 
 def process(context, parameters):
     """
@@ -84,7 +86,6 @@ def process(context, parameters):
         if os.path.exists(xls_version_filepath):
             os.remove(xls_version_filepath)
     xls_version_name = get_version_name_for(xls_name)
-    
     all_versioning_information = read_versioning_information(xls_version_filepath)
 
     if xls_version_name in all_versioning_information:
@@ -96,7 +97,7 @@ def process(context, parameters):
                     if code in versioning_information:
                         version = versioning_information[code]
                     else:
-                        version = 0
+                        version = creations_metadata.get_metadata_for(creation_type, creation).version
                     versioning_information[code] = int(version)
     else:
         versioning_information = {}
@@ -104,7 +105,7 @@ def process(context, parameters):
             if creation_type in versionable_types:
                 for creation in creation_collection:
                     code = get_metadata_name_for(creation_type, creation)
-                    versioning_information[code] = 0
+                    versioning_information[code] = creations_metadata.get_metadata_for(creation_type, creation).version
 
     existing_elements = search_engine.find_all_existing_elements(creations)
     entity_kinds = search_engine.find_existing_entity_kind_definitions_for(creations)

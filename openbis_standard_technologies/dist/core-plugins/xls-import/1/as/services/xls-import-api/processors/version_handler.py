@@ -25,10 +25,7 @@ class VersionHandler(object):
             for creation in creations_collection:
                 code = creation.code
                 version_term_code = get_metadata_name_for(creation_type, creation)
-                if creation_type == VocabularyTermDefinitionToCreationType:
-                    creation_metadata = self.creations_metadata[VocabularyDefinitionToCreationType][str(creation.vocabularyId)].terms[code]
-                else:
-                    creation_metadata = self.creations_metadata[creation_type][code]
+                creation_metadata = self.creations_metadata.get_metadata_for(creation_type, creation)
                 entity_excel_version = creation_metadata.version
                 key, openbis_version = next(
                     ((key, self.versioning_information[key]) for key in self.versioning_information if key == version_term_code), None)
