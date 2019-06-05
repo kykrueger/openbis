@@ -1,7 +1,7 @@
 import {call, put, putAndWait, takeEvery} from './effects.js'
 import {facade, dto} from '../../services/openbis.js'
 import * as actions from '../actions/actions.js'
-import * as pages from '../consts/pages.js'
+import * as pages from '../../common/consts/pages.js'
 
 export default function* appSaga() {
   yield takeEvery(actions.INIT, init)

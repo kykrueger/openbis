@@ -3,7 +3,7 @@ import { mount } from 'enzyme'
 import Browser from '../../../../src/components/common/browser/Browser.jsx'
 import { facade, dto } from '../../../../src/services/openbis.js'
 import * as actions from '../../../../src/store/actions/actions.js'
-import * as pages from '../../../../src/store/consts/pages.js'
+import * as pages from '../../../../src/common/consts/pages.js'
 import { createStore } from '../../../../src/store/store.js'
 import * as fixture from '../../../common/fixture.js'
 

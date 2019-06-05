@@ -4,7 +4,7 @@ import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../common/logger.js'
 import * as util from '../common/util.js'
-import * as pages from '../store/consts/pages.js'
+import * as pages from '../common/consts/pages.js'
 import * as actions from '../store/actions/actions.js'
 import * as selectors from '../store/selectors/selectors.js'
 
