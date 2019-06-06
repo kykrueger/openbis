@@ -3,6 +3,7 @@ import os
 import os.path
 import re
 import time
+import sys
 from time import mktime
 
 import settings
@@ -21,15 +22,10 @@ class TestCase(systemtest.testcase.TestCase):
 
     def executeInDevMode(self):
         openbisController = self.setUpAndStartOpenbis()
-#        openbisController = self.createOpenbisController(dropDatabases=False)
         testDataFolder = self.getTestDataFolder(openbisController)
-#        self.dropTestExample(openbisController, testDataFolder, "ivmtcbeb087rjsmilcus17nu18")
-        self.dropTestExample(openbisController, testDataFolder, "cj8p7jgmqlvv8g12ng1it8a5os")
-#        self.dropTestExample(openbisController, testDataFolder, "m9du561cidup7n0gdp97k8gh6u")
-#       self.dropTestExample(openbisController, testDataFolder, "okn3scc5tmhk199m6qk80d20op")
         for exampleName in sorted(os.listdir(testDataFolder)):
             if os.path.isdir("%s/%s" % (testDataFolder, exampleName)):
-                break
+                self.dropTestExample(openbisController, testDataFolder, exampleName)
             
     def setUpAndStartOpenbis(self):
         util.printWhoAmI()
@@ -68,9 +64,25 @@ class TestCase(systemtest.testcase.TestCase):
         util.copyFromTo(testDataFolder, destination, exampleName)
         markerFile = "%s/.MARKER_is_finished_%s" % (destination, exampleName)
         open(markerFile, 'a').close()
-        openbisController.waitUntilDataSetRegistrationFinished(expectations.numberOfPhysicalDataSets, 
-                                                               timeOutInMinutes = expectations.registrationTimeout)
-        logInfo = self.getLogInfo(openbisController, exampleName)
+
+        print("numberOfPhysicalDataSets equals " + str(expectations.numberOfPhysicalDataSets))
+        try:
+            openbisController.waitUntilDataSetRegistrationFinished(expectations.numberOfPhysicalDataSets, timeOutInMinutes = expectations.registrationTimeout)
+            logInfo = self.getLogInfo(openbisController, exampleName)
+            print("Number of experiments created equals " + str(expectations.numberOfExperiments) + " " + str(logInfo.numberOfExperiments))
+            print("Number of samples created equals " + str(expectations.numberOfSamples) + " " + str(logInfo.numberOfSamples))
+            print("Number of data sets created equals " + str(expectations.numberOfDataSets) + " " + str(logInfo.numberOfDataSets))
+            print("Thumbnail generation time smaller " + str(expectations.thumbnailGenerationTime) + " " + str(logInfo.thumbnailTime))
+            print("Registration time smaller " + str(expectations.registrationTime) + " " + str(logInfo.jobTime))
+        except Exception:
+            logInfo = self.getLogInfo(openbisController, exampleName)
+            print("Number of experiments created equals " + str(expectations.numberOfExperiments) + " " + str(logInfo.numberOfExperiments))
+            print("Number of samples created equals " + str(expectations.numberOfSamples) + " " + str(logInfo.numberOfSamples))
+            print("Number of data sets created equals " + str(expectations.numberOfDataSets) + " " + str(logInfo.numberOfDataSets))
+            print("Thumbnail generation time smaller " + str(expectations.thumbnailGenerationTime) + " " + str(logInfo.thumbnailTime))
+            print("Registration time smaller " + str(expectations.registrationTime) + " " + str(logInfo.jobTime))
+            raise Exception(sys.exc_info()[0])
+
         self.assertEquals("Number of experiments created", expectations.numberOfExperiments, logInfo.numberOfExperiments)
         self.assertEquals("Number of samples created", expectations.numberOfSamples, logInfo.numberOfSamples)
         self.assertEquals("Number of data sets created", expectations.numberOfDataSets, logInfo.numberOfDataSets)
