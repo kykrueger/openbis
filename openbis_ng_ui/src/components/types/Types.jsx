@@ -11,6 +11,7 @@ import ObjectType from './objectType/ObjectType.jsx'
 import CollectionType from './collectionType/CollectionType.jsx'
 import DataSetType from './dataSetType/DataSetType.jsx'
 import MaterialType from './materialType/MaterialType.jsx'
+import Search from './search/Search.jsx'
 
 const styles = () => ({
   container: {
@@ -23,7 +24,8 @@ const objectTypeToComponent = {
   [objectType.OBJECT_TYPE]: ObjectType,
   [objectType.COLLECTION_TYPE]: CollectionType,
   [objectType.DATA_SET_TYPE]: DataSetType,
-  [objectType.MATERIAL_TYPE]: MaterialType
+  [objectType.MATERIAL_TYPE]: MaterialType,
+  [objectType.SEARCH]: Search
 }
 
 class Types extends React.Component {
