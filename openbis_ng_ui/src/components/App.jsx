@@ -80,7 +80,7 @@ class App extends React.Component {
     if(this.props.session){
       return (
         <div className={classes.container}>
-          <Menu/>
+          <Menu page={this.props.currentPage} />
           {
             _.map(pageToComponent, (PageComponent, page) => {
               let visible = this.props.currentPage === page

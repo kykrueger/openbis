@@ -2,11 +2,13 @@ import {call, put, putAndWait, takeEvery} from './effects.js'
 import {facade, dto} from '../../services/openbis.js'
 import * as actions from '../actions/actions.js'
 import * as pages from '../../common/consts/pages.js'
+import * as objectTypes from '../../common/consts/objectType.js'
 
 export default function* appSaga() {
   yield takeEvery(actions.INIT, init)
   yield takeEvery(actions.LOGIN, login)
   yield takeEvery(actions.LOGOUT, logout)
+  yield takeEvery(actions.SEARCH, search)
   yield takeEvery(actions.CURRENT_PAGE_CHANGE, currentPageChange)
   yield takeEvery(actions.SEARCH_CHANGE, searchChange)
   yield takeEvery(actions.ERROR_CHANGE, errorChange)
@@ -53,6 +55,11 @@ function* logout() {
   }finally{
     yield put(actions.setLoading(false))
   }
+}
+
+function* search(action) {
+  yield put(actions.objectOpen(action.payload.page, objectTypes.SEARCH, action.payload.text))
+  yield put(actions.setSearch(''))
 }
 
 function* currentPageChange(action){

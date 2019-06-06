@@ -1,6 +1,7 @@
 export const INIT = 'INIT'
 export const LOGIN = 'LOGIN'
 export const LOGOUT = 'LOGOUT'
+export const SEARCH = 'SEARCH'
 export const CURRENT_PAGE_CHANGE = 'CURRENT_PAGE_CHANGE'
 export const SEARCH_CHANGE = 'SEARCH_CHANGE'
 export const ERROR_CHANGE = 'ERROR_CHANGE'
@@ -25,6 +26,14 @@ export const login = (username, password) => ({
 
 export const logout = () => ({
   type: LOGOUT
+})
+
+export const search = (page, text) => ({
+  type: SEARCH,
+  payload: {
+    page,
+    text
+  }
 })
 
 export const currentPageChange = (currentPage) => ({

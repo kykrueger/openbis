@@ -51,14 +51,15 @@ const styles = (theme) => ({
 function mapStateToProps(state){
   return {
     currentPage: selectors.getCurrentPage(state),
-    search: selectors.getSearch(state)
+    searchText: selectors.getSearch(state)
   }
 }
 
-function mapDispatchToProps(dispatch){
+function mapDispatchToProps(dispatch, ownProps){
   return {
     currentPageChange: (event, value) => dispatch(actions.currentPageChange(value)),
     searchChange: (value) => dispatch(actions.searchChange(value)),
+    search: (value) => dispatch(actions.search(ownProps.page, value)),
     logout: () => dispatch(actions.logout())
   }
 }
@@ -69,11 +70,18 @@ class Menu extends React.Component {
     super(props)
     this.searchRef = React.createRef()
     this.handleSearchChange = this.handleSearchChange.bind(this)
+    this.handleSearchKeyPress = this.handleSearchKeyPress.bind(this)
     this.handleSearchClear = this.handleSearchClear.bind(this)
   }
 
   handleSearchChange(event){
     this.props.searchChange(event.target.value)
+  }
+
+  handleSearchKeyPress(event){
+    if(event.key === 'Enter'){
+      this.props.search(this.props.searchText)
+    }
   }
 
   handleSearchClear(event){
@@ -85,7 +93,7 @@ class Menu extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'Menu.render')
 
-    const {classes, search} = this.props
+    const {classes, searchText} = this.props
 
     return (
       <AppBar position="static">
@@ -98,8 +106,9 @@ class Menu extends React.Component {
           </Tabs>
           <TextField
             placeholder="Search..."
-            value={search}
+            value={searchText}
             onChange={this.handleSearchChange}
+            onKeyPress={this.handleSearchKeyPress}
             InputProps={{
               inputRef: this.searchRef,
               disableUnderline: true,
@@ -130,8 +139,8 @@ class Menu extends React.Component {
   }
 
   renderSearchClearIcon(){
-    const {classes, search} = this.props
-    if(search){
+    const {classes, searchText} = this.props
+    if(searchText){
       return (
         <InputAdornment>
           <CloseIcon
