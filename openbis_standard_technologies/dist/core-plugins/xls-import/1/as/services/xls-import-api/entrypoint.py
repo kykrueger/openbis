@@ -97,7 +97,7 @@ def process(context, parameters):
                     if code in versioning_information:
                         version = versioning_information[code]
                     else:
-                        version = creations_metadata.get_metadata_for(creation_type, creation).version
+                        version = creations_metadata.get_metadata_for(creation_type, creation).version if update_mode != "UPDATE_IF_EXISTS" else 0
                     versioning_information[code] = int(version)
     else:
         versioning_information = {}
@@ -105,17 +105,15 @@ def process(context, parameters):
             if creation_type in versionable_types:
                 for creation in creation_collection:
                     code = get_metadata_name_for(creation_type, creation)
-                    versioning_information[code] = creations_metadata.get_metadata_for(creation_type, creation).version
+                    versioning_information[code] = creations_metadata.get_metadata_for(creation_type, creation).version if update_mode != "UPDATE_IF_EXISTS" else 0
 
     existing_elements = search_engine.find_all_existing_elements(creations)
     entity_kinds = search_engine.find_existing_entity_kind_definitions_for(creations)
     existing_vocabularies = search_engine.find_all_existing_vocabularies()
-
     existing_unified_kinds = unify_properties_representation_of(creations, entity_kinds, existing_vocabularies, existing_elements)
     creations = PropertiesLabelHandler.rewrite_property_labels_to_codes(creations, existing_unified_kinds)
     server_duplicates_handler = OpenbisDuplicatesHandler(creations, creations_metadata, existing_elements,
                                                          versioning_information, update_mode)
-
     creations = server_duplicates_handler.rewrite_parentchild_creationid_to_permid()
     creations = server_duplicates_handler.handle_existing_elements_in_creations()
     operations = CreationOrUpdateToOperationParser.parse(creations)
