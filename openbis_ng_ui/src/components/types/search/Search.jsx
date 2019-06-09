@@ -94,6 +94,15 @@ class Search extends React.Component {
     })
   }
 
+  handleSortChange(column){
+    return () => {
+      this.setState((prevState) => ({
+        sort: column,
+        sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
+      }))
+    }
+  }
+
   handlePageChange(page){
     this.setState(() => ({
       page
@@ -107,6 +116,25 @@ class Search extends React.Component {
     }))
   }
 
+  sort(types){
+    const { sort, sortDirection } = this.state
+    if(sort){
+      return types.sort((t1, t2)=>{
+        let sign = sortDirection === 'asc' ? 1 : -1
+        let v1 = t1[sort] || ''
+        let v2 = t2[sort] || ''
+        return sign * v1.localeCompare(v2)
+      })
+    }else{
+      return types
+    }
+  }
+
+  page(types){
+    const { page, pageSize } = this.state
+    return types.slice(page*pageSize, Math.min(types.length, (page+1)*pageSize))
+  }
+
   render() {
     logger.log(logger.DEBUG, 'Search.render')
 
@@ -114,9 +142,11 @@ class Search extends React.Component {
       return <React.Fragment />
     }
 
-    const { page, pageSize, allTypes } = this.state
+    const { page, pageSize, sort, sortDirection, allTypes } = this.state
 
-    const types = allTypes.slice(page*pageSize, Math.min(allTypes.length, (page+1)*pageSize))
+    let types = [...allTypes]
+    types = this.sort(types)
+    types = this.page(types)
 
     return (
       <Table>
@@ -124,14 +154,21 @@ class Search extends React.Component {
           <TableRow>
             <TableCell>
               <TableSortLabel
-                active={true}
-                direction="asc"
+                active={sort === 'code'}
+                direction={sortDirection}
+                onClick={this.handleSortChange('code')}
               >
                   Code
               </TableSortLabel>
             </TableCell>
             <TableCell>
-              Description
+              <TableSortLabel
+                active={sort === 'description'}
+                direction={sortDirection}
+                onClick={this.handleSortChange('description')}
+              >
+                Description
+              </TableSortLabel>
             </TableCell>
           </TableRow>
         </TableHead>
