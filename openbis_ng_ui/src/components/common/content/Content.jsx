@@ -17,7 +17,8 @@ const styles = {
     width: '100px'
   },
   component: {
-    flex: '1 1 100%'
+    flex: '1 1 100%',
+    overflow: 'auto'
   },
   visible: {
     display: 'block'

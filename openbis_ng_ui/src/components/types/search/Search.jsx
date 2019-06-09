@@ -1,6 +1,19 @@
+import _ from 'lodash'
 import React from 'react'
+import {withStyles} from '@material-ui/core/styles'
+import Table from '@material-ui/core/Table'
+import TableBody from '@material-ui/core/TableBody'
+import TableCell from '@material-ui/core/TableCell'
+import TableHead from '@material-ui/core/TableHead'
+import TableFooter from '@material-ui/core/TableFooter'
+import TableRow from '@material-ui/core/TableRow'
+import TableSortLabel from '@material-ui/core/TableSortLabel'
+import Pagination from '../../common/table/Pagination.jsx'
 import {facade, dto} from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
+
+const styles = () => ({
+})
 
 class Search extends React.Component {
 
@@ -9,6 +22,8 @@ class Search extends React.Component {
     this.state = {
       loaded: false,
     }
+    this.handlePageChange = this.handlePageChange.bind(this)
+    this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
   }
 
   componentDidMount(){
@@ -28,7 +43,9 @@ class Search extends React.Component {
     ]).then(([objectTypes, collectionTypes, dataSetTypes, materialTypes]) => {
       this.setState(() => ({
         loaded: true,
-        types: [].concat(objectTypes, collectionTypes, dataSetTypes, materialTypes)
+        page: 0,
+        pageSize: 10,
+        allTypes: [].concat(objectTypes, collectionTypes, dataSetTypes, materialTypes)
       }))
     })
   }
@@ -77,6 +94,19 @@ class Search extends React.Component {
     })
   }
 
+  handlePageChange(page){
+    this.setState(() => ({
+      page
+    }))
+  }
+
+  handlePageSizeChange(pageSize){
+    this.setState(() => ({
+      page: 0,
+      pageSize
+    }))
+  }
+
   render() {
     logger.log(logger.DEBUG, 'Search.render')
 
@@ -84,11 +114,56 @@ class Search extends React.Component {
       return <React.Fragment />
     }
 
-    return this.state.types.map(type => {
-      return <div key={type.permId}>{type.code}</div>
-    })
+    const { page, pageSize, allTypes } = this.state
+
+    const types = allTypes.slice(page*pageSize, Math.min(allTypes.length, (page+1)*pageSize))
+
+    return (
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>
+              <TableSortLabel
+                active={true}
+                direction="asc"
+              >
+                  Code
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              Description
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {types.map(type => (
+            <TableRow key={type.permId.entityKind + '-' + type.permId.permId} hover>
+              <TableCell>
+                {type.code}
+              </TableCell>
+              <TableCell>
+                {type.description}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <Pagination
+              count={allTypes.length}
+              page={page}
+              pageSize={pageSize}
+              onPageChange={this.handlePageChange}
+              onPageSizeChange={this.handlePageSizeChange}
+            />
+          </TableRow>
+        </TableFooter>
+      </Table>
+    )
   }
 
 }
 
-export default Search
+export default _.flow(
+  withStyles(styles)
+)(Search)
