@@ -7,6 +7,7 @@ export default function types(state = {}, action){
     return combineReducers({
       browser: page.browser,
       openObjects: page.openObjects,
+      changedObjects: page.changedObjects,
       selectedObject: page.selectedObject
     })(state, action)
   }else{

@@ -18,9 +18,32 @@ class ObjectTypeFooter extends React.Component {
 
     return (
       <div>
-        <Button classes={{ root: classes.button }} variant='contained' color='secondary' onClick={this.props.onAdd}>Add</Button>
-        <Button classes={{ root: classes.button }} variant='contained' color='secondary' onClick={this.props.onRemove}>Remove</Button>
-        <Button classes={{ root: classes.button }} variant='contained' color='primary' onClick={this.props.onSave}>Save</Button>
+        <Button
+          classes={{ root: classes.button }}
+          variant='contained'
+          color='secondary'
+          onClick={this.props.onAdd}
+        >
+          Add
+        </Button>
+        <Button
+          classes={{ root: classes.button }}
+          variant='contained'
+          color='secondary'
+          disabled={!this.props.removeEnabled}
+          onClick={this.props.onRemove}
+        >
+          Remove
+        </Button>
+        <Button
+          classes={{ root: classes.button }}
+          variant='contained'
+          color='primary'
+          disabled={!this.props.saveEnabled}
+          onClick={this.props.onSave}
+        >
+          Save
+        </Button>
       </div>
     )
   }

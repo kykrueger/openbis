@@ -31,6 +31,30 @@ export const openObjects = (state = [], action) => {
   }
 }
 
+export const changedObjects = (state = [], action) => {
+  let newState = null
+
+  switch(action.type){
+    case actions.ADD_CHANGED_OBJECT:{
+      newState = _.unionWith(state, [{type: action.payload.type, id: action.payload.id}], _.isEqual)
+      break
+    }
+    case actions.REMOVE_CHANGED_OBJECT:{
+      newState = _.differenceWith(state, [{type: action.payload.type, id: action.payload.id}], _.isEqual)
+      break
+    }
+    default:{
+      return state
+    }
+  }
+
+  if(_.isEqual(state, newState)){
+    return state
+  } else {
+    return newState
+  }
+}
+
 export const selectedObject = (state = null, action) => {
   switch(action.type){
     case actions.SET_SELECTED_OBJECT: {

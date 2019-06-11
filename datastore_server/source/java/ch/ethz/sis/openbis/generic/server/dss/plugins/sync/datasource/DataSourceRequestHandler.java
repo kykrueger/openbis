@@ -35,10 +35,14 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.log4j.Logger;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.oaipmh.IRequestHandler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSourceQueryService;
@@ -51,6 +55,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
  */
 public class DataSourceRequestHandler implements IRequestHandler
 {
+    private static final Logger operationLog =
+            LogFactory.getLogger(LogCategory.OPERATION, DataSourceRequestHandler.class);
     private enum Capability
     {
         ABOUT("about", "description", null, false),
@@ -69,6 +75,7 @@ public class DataSourceRequestHandler implements IRequestHandler
                 Map<String, List<String>> parameterMap = context.getParameterMap();
                 Set<String> requestedSpaces = DataSourceUtils.getRequestedAndAllowedSubSet(spaceCodes,
                         parameterMap.get("white_list"), parameterMap.get("black_list"));
+                operationLog.info("Requested spaces: " + requestedSpaces);
                 IDeliverer deliverer = context.getDeliverer();
                 IDataSourceQueryService queryService = context.getQueryService();
                 DeliveryExecutionContext executionContext = new DeliveryExecutionContext();
@@ -264,6 +271,7 @@ public class DataSourceRequestHandler implements IRequestHandler
             String parameter = enumeration.nextElement();
             parameterMap.put(parameter, Arrays.asList(request.getParameterValues(parameter)));
         }
+        operationLog.info("Parameters: " + parameterMap);
         return parameterMap;
     }
 
