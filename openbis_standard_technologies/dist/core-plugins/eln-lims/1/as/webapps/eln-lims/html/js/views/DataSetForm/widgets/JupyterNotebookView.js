@@ -23,9 +23,9 @@ function JupyterNotebookView(jupyterNotebookController, jupyterNotebookModel) {
 		$window.append($('<legend>').append("Create Jupyter Notebook"));
 		var $btns = $('<div>', {'id' : 'jnb_buttons'});
 		$window.append($btns);
-		var $btnOpen = $('<div>', { 'class' : 'btn btn-default', 'text' : 'For immediate use', 'id' : 'open_jnb' });
+		var $btnOpen = $('<div>', { 'class' : 'btn btn-default', 'text' : 'Create & connect', 'id' : 'open_jnb' });
 		$btnOpen.click(["open", $window, this], this._handle);
-		var $btnSave = $('<div>', { 'class' : 'btn btn-default', 'text' : 'For later use', 'id' : 'save_jnb' });
+		var $btnSave = $('<div>', { 'class' : 'btn btn-default', 'text' : 'Create & download', 'id' : 'save_jnb' });
 		$btnSave.click(["save", $window, this], this._handle);
 		$btns.append($btnOpen).append('&nbsp;').append($btnSave);
 		var css = {

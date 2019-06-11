@@ -55,6 +55,10 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi
 
 public class TestUtils
 {
+    private static final String TEST_XLS = "TEST-XLS";
+
+    private static final String XLS_NAME = "xls_name";
+
     private static final String UPDATE_MODE = "update_mode";
 
     public static final String XLS_PARAM = "xls";
@@ -296,6 +300,7 @@ public class TestUtils
         CustomASServiceExecutionOptions options = new CustomASServiceExecutionOptions();
         options.withParameter(XLS_PARAM, excels);
         options.withParameter(UPDATE_MODE, UpdateMode.IGNORE_EXISTING.name());
+        options.withParameter(XLS_NAME, TEST_XLS);
         return (String) v3api.executeCustomASService(sessionToken, new CustomASServiceCode(XLS_IMPORT_API), options);
     }
 
@@ -318,6 +323,7 @@ public class TestUtils
         options.withParameter(XLS_PARAM, excels);
         options.withParameter(SCRIPTS_PARAM, scripts);
         options.withParameter(UPDATE_MODE, updateMode.name());
+        options.withParameter(XLS_NAME, TEST_XLS);
         return (String) v3api.executeCustomASService(sessionToken, new CustomASServiceCode(XLS_IMPORT_API), options);
     }
 

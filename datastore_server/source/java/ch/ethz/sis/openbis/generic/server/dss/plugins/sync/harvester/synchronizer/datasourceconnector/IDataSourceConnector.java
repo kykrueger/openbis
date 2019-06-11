@@ -27,5 +27,5 @@ import org.w3c.dom.Document;
  */
 public interface IDataSourceConnector
 {
-    public Document getResourceListAsXMLDoc(List<String> spaceBlackList) throws Exception;
+    public Document getResourceListAsXMLDoc(List<String> spaceBlackList, List<String> spaceWhiteList) throws Exception;
 }

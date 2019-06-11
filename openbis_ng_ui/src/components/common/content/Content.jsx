@@ -17,12 +17,10 @@ const styles = {
     width: '100px'
   },
   component: {
-    margin: '12px 0px 0px 12px',
-    overflowY: 'auto',
     flex: '1 1 100%'
   },
   visible: {
-    display: 'flex'
+    display: 'block'
   },
   hidden: {
     display: 'none',
@@ -32,6 +30,7 @@ const styles = {
 function mapStateToProps(state, ownProps){
   return {
     openObjects: selectors.getOpenObjects(state, ownProps.page),
+    changedObjects: selectors.getChangedObjects(state, ownProps.page),
     selectedObject: selectors.getSelectedObject(state, ownProps.page)
   }
 }
@@ -54,6 +53,7 @@ class Content extends React.Component {
       <div className={classes.container}>
         <ContentTabs
           objects={this.props.openObjects}
+          changedObjects={this.props.changedObjects}
           selectedObject={this.props.selectedObject}
           objectSelect={this.props.objectSelect}
           objectClose={this.props.objectClose} />

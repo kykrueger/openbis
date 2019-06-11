@@ -1,5 +1,5 @@
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.property import DataType
-from parsers import SampleDefinitionToCreationParser, ExperimentDefinitionToCreationParser
+from parsers import SampleDefinitionToCreationType, ExperimentDefinitionToCreationType
 from .representation_unifier import entity_and_type_uniform_mapping, unify_properties_representation_of
 
 
@@ -10,7 +10,7 @@ class PropertiesLabelHandler(object):
         '''
             This handler rewrites labels for column names and for vocabulary column values
         '''
-        creations_with_rewritable_properties = [SampleDefinitionToCreationParser.type, ExperimentDefinitionToCreationParser.type]
+        creations_with_rewritable_properties = [SampleDefinitionToCreationType, ExperimentDefinitionToCreationType]
         for creations_type, creations in creations_map.iteritems():
             if creations_type in creations_with_rewritable_properties:
                 for creation in creations:
@@ -33,23 +33,3 @@ class PropertiesLabelHandler(object):
                                                 " doesn't have such (" + str(key) + ") code or label")
                         creation.properties = new_properties
         return creations_map
-
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-
