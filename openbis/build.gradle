@@ -8,7 +8,7 @@ evaluationDependsOn(':dbmigration')
 apply from: '../gradle/javaproject.gradle'
 
 configurations.create('testRuntimeFirst')
-configurations.create('devruntime')
+configurations.create('devRuntime')
 
 dependencies {
 	compile project(':common'),
@@ -40,7 +40,7 @@ dependencies {
 	runtime 'slf4j:slf4j-log4j12:1.6.2',
 			'apache:commons-fileupload:1.3.3'
 			
-	devruntime 'eclipse:jetty-runner:9.4.14.v20181114'
+	devRuntime 'eclipse:jetty-runner:9.4.14.v20181114'
 
 	testCompile project(path: ':common', configuration: 'tests'),
 			project(path: ':dbmigration', configuration: 'tests'),
@@ -119,7 +119,7 @@ task copyTestData(type: Copy, dependsOn: testClasses) {
 
 task executeOpenBisDev(type: JavaExec) {
 	main = 'org.eclipse.jetty.runner.Runner'
-	classpath = sourceSets.main.runtimeClasspath + configurations.devruntime
+	classpath = sourceSets.main.runtimeClasspath + configurations.devRuntime
 	jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=etc/log.xml',
 			 '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
 			 '-Dorg.mortbay.util.FileResource.checkAliases=false', '-Xmx2048M', '-XX:MaxPermSize=512m', '-ea'])
