@@ -54,9 +54,9 @@ public class JDBCSQLExecutor implements ISQLExecutor
                 final ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                 final int columnCount = resultSetMetaData.getColumnCount();
                 final List<String> columnNames = new ArrayList<>(columnCount);
-                for (int cIdx = 0; cIdx < columnCount; cIdx++)
+                for (int index = 0; index < columnCount; index++)
                 {
-                    columnNames.add(resultSetMetaData.getColumnName(cIdx + 1));
+                    columnNames.add(resultSetMetaData.getColumnName(index + 1));
                 }
 
                 while (resultSet.next())

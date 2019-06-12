@@ -19,12 +19,14 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CodeSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.NumberFieldSearchCriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
 import java.text.DateFormat;
@@ -59,7 +61,8 @@ public class Translator
 
     static
     {
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CodeSearchCriteria.class, new CodeSearchCriteriaTranslator());
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CodeSearchCriteria.class, new StringFieldSearchCriteriaTranslator());
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NumberPropertySearchCriteria.class, new NumberFieldSearchCriteriaTranslator());
     }
 
     private static final AtomicBoolean FIRST = new AtomicBoolean();

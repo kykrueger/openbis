@@ -17,14 +17,13 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.List;
 
@@ -38,21 +37,21 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
 
-public class CodeSearchCriteriaTranslator implements IConditionTranslator<CodeSearchCriteria>
+public class StringFieldSearchCriteriaTranslator implements IConditionTranslator<StringFieldSearchCriteria>
 {
     @Override
-    public JoinInformation getJoinInformation(final CodeSearchCriteria criterion, final EntityMapper entityMapper)
+    public JoinInformation getJoinInformation(final StringFieldSearchCriteria criterion, final EntityMapper entityMapper)
     {
         return null;
     }
 
     @Override
-    public void translate(final CodeSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final StringFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
         final AbstractStringValue value = criterion.getFieldValue();
 
-        sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP);
+        sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(criterion.getFieldName());
         appendStringComparatorOp(value, sqlBuilder);
         args.add(value.getValue());
         sqlBuilder.append(NL);
@@ -60,14 +59,14 @@ public class CodeSearchCriteriaTranslator implements IConditionTranslator<CodeSe
 
     private void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder) {
         if (value.getClass() == StringEqualToValue.class) {
-            sqlBuilder.append(EQ).append(SP).append(QU);
+            sqlBuilder.append(EQ).append(QU);
         } else if (value.getClass() == StringStartsWithValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).append(SQ).
+            sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).append(SQ).
                     append(PERCENT).append(SQ);
         } else if (value.getClass() == StringEndsWithValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU);
+            sqlBuilder.append(SP).append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU);
         } else if (value.getClass() == StringContainsValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU).
+            sqlBuilder.append(SP).append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU).
                     append(SP).append(BARS).append(SP).append(SQ).append(PERCENT).append(SQ);
         } else {
             throw new IllegalArgumentException("Unsupported AbstractStringValue type: " + value.getClass().getSimpleName());

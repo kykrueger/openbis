@@ -58,6 +58,8 @@ import static org.testng.Assert.assertEquals;
 public class SampleSearchManagerDBTest
 {
 
+    public static final long USER_ID = 2L;
+
     private static final String PERM_ID1 = "20190612105000000-1";
 
     private static final String PERM_ID2 = "20190612105000000-2";
@@ -248,10 +250,10 @@ public class SampleSearchManagerDBTest
      */
     private void checkCriterion(final SampleSearchCriteria criterion)
     {
-        final Set<Long> sampleIdsEquals = searchManager.searchForIDs(2L, criterion);
+        final Set<Long> sampleIds = searchManager.searchForIDs(USER_ID, criterion);
 
-        assertEquals(sampleIdsEquals.size(), 1);
-        assertEquals(sampleIdsEquals.iterator().next().longValue(), ID1);
+        assertEquals(sampleIds.size(), 1);
+        assertEquals(sampleIds.iterator().next().longValue(), ID1);
     }
 
     /**
@@ -262,6 +264,11 @@ public class SampleSearchManagerDBTest
     {
         final SampleSearchCriteria criterionEquals = new SampleSearchCriteria();
         criterionEquals.withNumberProperty(ColumnNames.VERSION_COLUMN).thatEquals(VERSION2);
+
+        final Set<Long> sampleIds = searchManager.searchForIDs(USER_ID, criterionEquals);
+
+        assertEquals(sampleIds.size(), 1);
+        assertEquals(sampleIds.iterator().next().longValue(), ID2);
     }
 
 }
