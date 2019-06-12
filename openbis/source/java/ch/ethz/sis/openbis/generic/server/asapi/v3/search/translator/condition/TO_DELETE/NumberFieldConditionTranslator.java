@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.BooleanFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
 
 import java.util.List;
 
-public class BooleanFieldConditionTranslator extends AbstractConditionTranslator<BooleanFieldSearchCriteria>
+public class NumberFieldConditionTranslator extends AbstractConditionTranslator<NumberFieldSearchCriteria>
 {
     @Override
-    public void translate(final BooleanFieldSearchCriteria criterion, final EntityMapper entityMapper,
+    public void translate(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper,
             final List<Object> args, final StringBuilder sqlBuilder)
     {
         // TODO: implement.

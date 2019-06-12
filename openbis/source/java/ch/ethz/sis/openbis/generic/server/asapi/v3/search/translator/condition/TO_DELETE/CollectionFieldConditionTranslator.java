@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
 
 import java.util.List;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.IN;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.LP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.RP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SELECT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.UNNEST;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
 
 public class CollectionFieldConditionTranslator extends AbstractConditionTranslator<CollectionFieldSearchCriteria<?>>
 {

@@ -20,7 +20,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -68,7 +67,7 @@ public class SampleSearchManagerTest
         searchDAOMock = context.mock(ISQLSearchDAO.class);
         authInfoProviderMock = context.mock(ISQLAuthorisationInformationProviderDAO.class);
         sortAndPageMock = context.mock(ISortAndPage.class);
-        searchManager = new SampleSearchManager(searchDAOMock, sortAndPageMock, authInfoProviderMock);
+        searchManager = new SampleSearchManager(searchDAOMock, authInfoProviderMock);
     }
 
     @AfterMethod
@@ -346,27 +345,27 @@ public class SampleSearchManagerTest
         assertEquals(resultingIds, acceptedIds);
     }
 
-    @Test
-    public void testSortAndPage()
-    {
-        final Set<Long> sampleIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 4L, 5L));
-
-        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
-        searchCriteria.withType().withCode().thatEquals("A");
-        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(searchCriteria)));
-
-        final SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
-
-        final List<Long> expectedSortedIds = Arrays.asList(5L, 4L, 3L, 2L, 1L);
-
-        context.checking(new Expectations()
-                {{
-                    one(sortAndPageMock).sortAndPage(new ArrayList<>(sampleIds), searchCriteria, sampleFetchOptions);
-                    will(returnValue(expectedSortedIds));
-                }});
-
-        final List<Long> actualSortedIds = searchManager.sortAndPage(sampleIds, searchCriteria, sampleFetchOptions);
-        assertEquals(actualSortedIds, expectedSortedIds);
-    }
+//    @Test
+//    public void testSortAndPage()
+//    {
+//        final Set<Long> sampleIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 4L, 5L));
+//
+//        final SampleSearchCriteria searchCriteria = new SampleSearchCriteria().withAndOperator();
+//        searchCriteria.withType().withCode().thatEquals("A");
+//        searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(searchCriteria)));
+//
+//        final SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+//
+//        final List<Long> expectedSortedIds = Arrays.asList(5L, 4L, 3L, 2L, 1L);
+//
+//        context.checking(new Expectations()
+//                {{
+//                    one(sortAndPageMock).sortAndPage(new ArrayList<>(sampleIds), searchCriteria, sampleFetchOptions);
+//                    will(returnValue(expectedSortedIds));
+//                }});
+//
+//        final List<Long> actualSortedIds = searchManager.sortAndPage(sampleIds, searchCriteria, sampleFetchOptions);
+//        assertEquals(actualSortedIds, expectedSortedIds);
+//    }
 
 }

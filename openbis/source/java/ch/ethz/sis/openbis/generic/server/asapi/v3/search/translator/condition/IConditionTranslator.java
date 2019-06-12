@@ -23,6 +23,7 @@ import java.util.List;
 
 public interface IConditionTranslator<CRITERIA extends ISearchCriteria>
 {
+
     JoinInformation getJoinInformation(CRITERIA criterion, EntityMapper entityMapper);
 
     void translate(CRITERIA criterion, EntityMapper entityMapper, List<Object> args, StringBuilder sqlBuilder);

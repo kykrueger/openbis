@@ -42,9 +42,9 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     public Set<Long> queryDBWithNonRecursiveCriteria(final EntityKind entityKind, final List<ISearchCriteria> criteria,
             final SearchOperator operator)
     {
-        SelectQuery selectQuery = Translator.translate(entityKind, criteria, operator);
-        List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
-        EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind);
+        final SelectQuery selectQuery = Translator.translate(entityKind, criteria, operator);
+        final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
+        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind);
         return result.stream().map(stringObjectMap -> (Long) stringObjectMap.get(entityMapper.getDataTableIdField())).collect(Collectors.toSet());
     }
 

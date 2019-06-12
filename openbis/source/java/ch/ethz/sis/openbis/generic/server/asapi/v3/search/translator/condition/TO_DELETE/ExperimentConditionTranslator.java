@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
 
 import java.util.List;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.IS_NOT_NULL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
 public class ExperimentConditionTranslator extends AbstractConditionTranslator<ExperimentSearchCriteria>
 {

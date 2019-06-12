@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
@@ -23,18 +23,19 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
 
 import java.util.List;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.AND;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.FROM;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.LP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.RP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SELECT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.WHERE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;

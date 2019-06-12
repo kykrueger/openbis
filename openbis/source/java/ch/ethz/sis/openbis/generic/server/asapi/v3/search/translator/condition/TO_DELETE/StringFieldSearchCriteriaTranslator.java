@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValue;
@@ -25,16 +25,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithVa
 
 import java.util.List;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.BARS;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.IS_NOT_NULL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.LIKE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.NL;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.PERCENT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BARS;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LIKE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERCENT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
-public class StringFieldConditionTranslator extends FieldSearchCriteriaTranslator<StringFieldSearchCriteria>
+public class StringFieldSearchCriteriaTranslator extends AbstractFieldSearchCriteriaTranslator<StringFieldSearchCriteria>
 {
 
     protected void appendValueComparator(final Object fieldValue, final List<Object> args, final StringBuilder sqlBuilder)
