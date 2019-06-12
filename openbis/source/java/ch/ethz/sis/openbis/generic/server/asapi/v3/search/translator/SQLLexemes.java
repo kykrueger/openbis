@@ -23,9 +23,15 @@ public class SQLLexemes
 
     public static final String SELECT = "SELECT";
 
+    public static final String INSERT = "INSERT";
+
+    public static final String DELETE = "DELETE";
+
     public static final String DISTINCT = "DISTINCT";
 
     public static final String FROM = "FROM";
+
+    public static final String INTO = "INTO";
 
     public static final String WHERE = "WHERE";
 
@@ -34,6 +40,8 @@ public class SQLLexemes
     public static final String INNER = "INNER";
 
     public static final String JOIN = "JOIN";
+
+    public static final String VALUES = "VALUES";
 
     public static final String SP = " ";
 
