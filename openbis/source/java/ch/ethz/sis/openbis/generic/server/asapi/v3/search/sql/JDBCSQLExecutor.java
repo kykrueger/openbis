@@ -39,7 +39,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
     }
 
     @Override
-    public List<Map<String, Object>> execute(String sqlQuery, List<Object> args)
+    public List<Map<String, Object>> execute(final String sqlQuery, final List<Object> args)
     {
         System.out.println("QUERY: " + sqlQuery);
         System.out.println("ARGS: " + args);
@@ -47,21 +47,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
         final List<Map<String, Object>> results = new ArrayList<>();
         try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
         {
-            for (int aIdx = 0; aIdx < args.size(); aIdx++)
-            {
-                final Object object = args.get(aIdx);
-                if (object.getClass().isArray())
-                {
-                    preparedStatement.setArray(aIdx + 1, connection.createArrayOf("bigint", (Object[]) object));
-                } if (object instanceof Date)
-                {
-                    final Date date = (Date) object;
-                    preparedStatement.setTimestamp(aIdx + 1, new Timestamp(date.getTime()));
-                } else
-                {
-                    preparedStatement.setObject(aIdx + 1, object);
-                }
-            }
+            setArgsForPreparedStatement(args, preparedStatement);
 
             try (final ResultSet resultSet = preparedStatement.executeQuery())
             {
@@ -92,5 +78,77 @@ public class JDBCSQLExecutor implements ISQLExecutor
         return results;
     }
 
+    public void executeUpdate(final String sqlQuery, final List<Object> args)
+    {
+        System.out.println("QUERY: " + sqlQuery);
+        System.out.println("ARGS: " + args);
+
+        try (final PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery))
+        {
+            setArgsForPreparedStatement(args, preparedStatement);
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex)
+        {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void setArgsForPreparedStatement(final List<Object> args, final PreparedStatement preparedStatement) throws SQLException
+    {
+        for (int index = 0; index < args.size(); index++)
+        {
+            final Object object = args.get(index);
+            if (object != null && object.getClass().isArray())
+            {
+                final Object[] objectArray = (Object[]) object;
+                final Class<?> componentType = object.getClass().getComponentType();
+                final String dbArrayTypeName;
+
+                if (componentType.isPrimitive()) {
+                    if (boolean.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = "boolean";
+                    } else if (byte.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = "int2";
+                    } else if (char.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = "character";
+                    } else if (double.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = "float8";
+                    } else if (float.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = "float4";
+                    } else if (int.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = "int4";
+                    } else if (long.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = "int8";
+                    } else if (short.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = "int2";
+                    } else
+                    {
+                        /* No else. No other primitive types exist. */
+                        throw new AssertionError();
+                    }
+                } else
+                {
+                    throw new IllegalArgumentException("Arrays of objects are not supported");
+                }
+
+                preparedStatement.setArray(index + 1, connection.createArrayOf(dbArrayTypeName, objectArray));
+            } else if (object instanceof Date)
+            {
+                final Date date = (Date) object;
+                preparedStatement.setTimestamp(index + 1, new Timestamp(date.getTime()));
+            } else
+            {
+                preparedStatement.setObject(index + 1, object);
+            }
+        }
+    }
 
 }
