@@ -1611,7 +1611,7 @@ var FormUtil = new function() {
 				$window.submit(function() {
 					var username = mainController.serverFacade.getUserId();
 					var password = $passField.val();					
-					mainController.serverFacade.login(
+					new openbis().login(
 							username, 
 							password, 
 							function(data) { 
