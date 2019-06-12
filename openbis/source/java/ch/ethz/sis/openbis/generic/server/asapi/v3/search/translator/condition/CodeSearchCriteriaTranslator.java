@@ -34,6 +34,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERCENT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
 
@@ -46,27 +47,28 @@ public class CodeSearchCriteriaTranslator implements IConditionTranslator<CodeSe
     }
 
     @Override
-    public void translate(final CodeSearchCriteria criterion, final EntityMapper entityMapper, final List args, final StringBuilder sqlBuilder)
+    public void translate(final CodeSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+            final StringBuilder sqlBuilder)
     {
         final AbstractStringValue value = criterion.getFieldValue();
 
         sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP);
         appendStringComparatorOp(value, sqlBuilder);
+        args.add(value.getValue());
         sqlBuilder.append(NL);
     }
 
     private void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder) {
         if (value.getClass() == StringEqualToValue.class) {
-            sqlBuilder.append(EQ).append(SP).append(SQ).append(value.getValue()).append(SQ);
+            sqlBuilder.append(EQ).append(SP).append(QU);
         } else if (value.getClass() == StringStartsWithValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(SQ).append(value.getValue()).append(SQ).append(SP).append(BARS).append(SP).append(SQ).
+            sqlBuilder.append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).append(SQ).
                     append(PERCENT).append(SQ);
         } else if (value.getClass() == StringEndsWithValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(SQ).
-                    append(value.getValue()).append(SQ);
+            sqlBuilder.append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU);
         } else if (value.getClass() == StringContainsValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(SQ).
-                    append(value.getValue()).append(SQ).append(SP).append(BARS).append(SP).append(SQ).append(PERCENT).append(SQ);
+            sqlBuilder.append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(QU).
+                    append(SP).append(BARS).append(SP).append(SQ).append(PERCENT).append(SQ);
         } else {
             throw new IllegalArgumentException("Unsupported AbstractStringValue type: " + value.getClass().getSimpleName());
         }
