@@ -441,8 +441,8 @@ function AdvancedSearchController(mainController, forceSearch) {
 	this._doIfAdmin = function(experiment, action) {
 		var _this = this;
 		_this._mainController.getUserRole({
-			space: experiment.project.code,
-			project: experiment.project.space.code,
+			space: experiment.project.space.code,
+			project: experiment.project.code,
 		}, function(roles) {
 			var hasAdmin = roles.filter(function(role) { return role.indexOf('ADMIN') > -1 }).length > 0;
 			if (hasAdmin) {
