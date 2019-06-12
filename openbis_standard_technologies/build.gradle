@@ -285,7 +285,7 @@ def downloadCorePlugin(url, pluginname) {
   if (file.exists() == false || System.currentTimeMillis() - file.lastModified() > 3600000) {
     file.getParentFile().mkdirs()
     ext.executeFunction('curl', [url, '-sL', '-o', file.getAbsolutePath()])
-    ext.executeFunction('unzip', ['-uq', file.getAbsolutePath(), '-d', '../openbis_standard_technologies/targets/downloads/'])
+    ext.executeFunction('unzip', ['-uqo', file.getAbsolutePath(), '-d', '../openbis_standard_technologies/targets/downloads/'])
   }
 }
 

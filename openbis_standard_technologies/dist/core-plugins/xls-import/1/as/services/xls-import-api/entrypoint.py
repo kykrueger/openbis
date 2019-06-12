@@ -1,17 +1,15 @@
+import json
+import os
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.operation import SynchronousOperationExecutionOptions
+from ch.systemsx.cisd.common.exceptions import UserFailureException
+from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
 from parsers import get_creations_from, get_definitions_from, get_creation_metadata_from, \
-    CreationOrUpdateToOperationParser, Definition, DefinitionToCreationParser, versionable_types
+    CreationOrUpdateToOperationParser, versionable_types
 from processors import OpenbisDuplicatesHandler, PropertiesLabelHandler, DuplicatesHandler, \
     unify_properties_representation_of
 from search_engines import SearchEngine
 from utils import FileHandler
 from utils.openbis_utils import get_version_name_for, get_metadata_name_for
-from ch.systemsx.cisd.common.exceptions import UserFailureException
-from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions import VocabularyFetchOptions
-from java.util import Properties
-import os
-import json
-from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
 
 REMOVE_VERSIONS = False
 
