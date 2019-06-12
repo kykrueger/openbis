@@ -91,9 +91,15 @@ class EntityTypeCreationToUpdateParser(object):
 
     def parseAssignments(self, creation, existing_entity_type):
         assignments_update = ListUpdateValue()
+        creationPropertyAssignmentCodes = [str(property_assignment.propertyTypeId) for property_assignment in creation.propertyAssignments]
+        existingPropertyAssignmentCodes = [str(property_assignment.propertyType.code) for property_assignment in existing_entity_type.propertyAssignments]
         for property_assignment in existing_entity_type.propertyAssignments:
+            if str(property_assignment.propertyType.code) in creationPropertyAssignmentCodes:
+                continue
             assignments_update.remove(property_assignment.permId)
         for property_assignment in creation.propertyAssignments:
+            if str(property_assignment.propertyTypeId) in existingPropertyAssignmentCodes:
+                continue
             assignments_update.add(property_assignment)
         return assignments_update.getActions()
 
@@ -191,6 +197,18 @@ class SampleCreationToUpdateParser(object):
         sample_update.setProjectId(creation.projectId)
         sample_update.setSpaceId(creation.spaceId)
         sample_update.setProperties(creation.properties)
+
+        existing_parent_identifiers = []
+        existing_children_identifiers = []
+        for parent in existing_sample.parents:
+            existing_parent_identifiers.extend([str(parent.permId), str(parent.identifier)])
+        for child in existing_sample.children:
+            existing_children_identifiers.extend([str(child.permId), str(child.identifier)])
+
+        parentsToRemove = [parent.permId for parent in existing_sample.parents if parent.permId not in creation.parentIds and parent.identifier not in creation.parentIds]
+        parentsToAdd = [parent for parent in creation.parentIds if str(parent) not in existing_parent_identifiers]
+        childrenToRemove = [child.permId for child in existing_sample.children if child.permId not in creation.childIds and child.identifier not in creation.parentIds]
+        childrenToAdd = [child for child in creation.childIds if str(child) not in existing_children_identifiers]
         sample_update.childIds.remove([parent.permId for parent in existing_sample.children])
         sample_update.parentIds.remove([child.permId for child in existing_sample.parents])
         sample_update.childIds.add(creation.childIds)

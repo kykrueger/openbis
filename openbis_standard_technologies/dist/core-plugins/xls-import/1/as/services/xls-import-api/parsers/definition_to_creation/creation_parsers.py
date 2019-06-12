@@ -66,7 +66,9 @@ class PropertyTypeDefinitionToCreationParser(object):
 
         for prop in definition.properties:
             property_type_creation = PropertyTypeCreation()
-            property_type_creation.code = prop.get(u'code')
+            code = prop.get(u'code')
+            code = code.upper() if code is not None else None
+            property_type_creation.code = code
             property_type_creation.label = prop.get(u'property label')
             property_type_creation.description = prop.get(u'description')
             property_type_creation.dataType = DataType.valueOf(prop.get(u'data type'))
@@ -84,6 +86,7 @@ class VocabularyDefinitionToCreationParser(object):
 
     def parse(self, definition):
         code = definition.attributes.get(u'code')
+        code = code.upper() if code is not None else None
         vocabulary_creation = VocabularyCreation()
         vocabulary_creation.code = code
         vocabulary_creation.internalNameSpace = is_internal_namespace(code)

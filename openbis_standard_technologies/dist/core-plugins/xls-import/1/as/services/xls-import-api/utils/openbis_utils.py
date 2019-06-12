@@ -14,6 +14,7 @@ def get_script_name_for(owner_code, script_path):
 
 
 def create_sample_identifier_string(sample_creation):
+    # No automagical detection of project_samples flag on openbis
     spaceId = str(sample_creation.spaceId) if sample_creation.spaceId is not None else None
     projectId = str(sample_creation.projectId).split("/")[-1] if sample_creation.projectId is not None else None
     code = sample_creation.code
