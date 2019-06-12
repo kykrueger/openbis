@@ -104,14 +104,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				toolbarModel.push({ component : $createBtn, tooltip: "Create " + Util.getDisplayNameFromCode(mandatorySampleTypeCode) });
 			}
 			
-			//Freeze
-			if(_this._experimentFormModel.v3_experiment && _this._experimentFormModel.v3_experiment.frozen !== undefined) { //Freezing available on the API
-				var isEntityFrozen = _this._experimentFormModel.v3_experiment.frozen;
-				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-				var $freezeButton = FormUtil.getFreezeButton("EXPERIMENT", this._experimentFormModel.v3_experiment.permId.permId, isEntityFrozen);
-				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
-			}
-			
 			if(!_this._experimentFormModel.v3_experiment.frozen) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
@@ -131,27 +123,27 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					_this._experimentFormController.deleteExperiment(reason);
 				}, true);
 				toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
-			}
 			
-			//Create Dataset
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
-				mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-			});
-			toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
-
-			//Get dropbox folder name
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-				var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
-				var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
-				var nameElements = [
-					"E",
-					space,
-					project,
-					_this._experimentFormModel.experiment.code,
-				];
-				FormUtil.showDropboxFolderNameDialog(nameElements);
-			}).bind(this));
-			toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+				//Create Dataset
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
+					mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
+				});
+				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+	
+				//Get dropbox folder name
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
+					var space = IdentifierUtil.getSpaceCodeFromIdentifier(_this._experimentFormModel.experiment.identifier);
+					var project = IdentifierUtil.getProjectCodeFromExperimentIdentifier(_this._experimentFormModel.experiment.identifier);
+					var nameElements = [
+						"E",
+						space,
+						project,
+						_this._experimentFormModel.experiment.code,
+					];
+					FormUtil.showDropboxFolderNameDialog(nameElements);
+				}).bind(this));
+				toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+			}
 			
 			//Export
 			var $exportAll = FormUtil.getExportButton([{ type: "EXPERIMENT", permId : _this._experimentFormModel.experiment.permId, expand : true }], false);
@@ -168,7 +160,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				});
 				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
 			}
-			
+
+            //Freeze
+            if(_this._experimentFormModel.v3_experiment && _this._experimentFormModel.v3_experiment.frozen !== undefined) { //Freezing available on the API
+                var isEntityFrozen = _this._experimentFormModel.v3_experiment.frozen;
+                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+                var $freezeButton = FormUtil.getFreezeButton("EXPERIMENT", this._experimentFormModel.v3_experiment.permId.permId, isEntityFrozen);
+                toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+            }
 		} else { //Create and Edit
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._experimentFormController.updateExperiment();
@@ -274,7 +273,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				// Viewer
 				_this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, data.objects[0], mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
 				_this._experimentFormModel.dataSetViewer.init();
-				if(_this._experimentFormModel.mode === FormMode.VIEW) {
+				if(_this._experimentFormModel.mode === FormMode.VIEW && !_this._experimentFormModel.v3_experiment.frozen) {
 					// Uploader
 					var $dataSetFormController = new DataSetFormController(_this, FormMode.CREATE, data.objects[0], null, true);
 					var viewsForDS = {

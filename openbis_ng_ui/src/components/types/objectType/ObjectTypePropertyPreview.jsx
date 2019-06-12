@@ -2,7 +2,6 @@ import _ from 'lodash'
 import React from 'react'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import TextField from '@material-ui/core/TextField'
-import MenuItem from '@material-ui/core/MenuItem'
 import Checkbox from '@material-ui/core/Checkbox'
 import InfoIcon from '@material-ui/icons/InfoOutlined'
 import Tooltip from '@material-ui/core/Tooltip'
@@ -34,7 +33,9 @@ class ObjectTypePropertyPreview extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    if(props.property !== state.property){
+    if(!state.property
+      || state.property.propertyType !== props.property.propertyType
+      || state.property.mandatory !== props.property.mandatory){
       return {
         loaded: false,
         property: props.property,
@@ -174,8 +175,9 @@ class ObjectTypePropertyPreview extends React.Component {
   }
 
   setVocabulary(event){
+    const value = event.target.value
     this.setState(() => ({
-      vocabularyValue: event.target.value
+      vocabularyValue: value
     }))
   }
 
@@ -183,15 +185,18 @@ class ObjectTypePropertyPreview extends React.Component {
     return (
       <TextField
         select
+        SelectProps={{
+          native: true,
+        }}
         label={this.getLabel()}
         value={this.getVocabulary()}
         onChange={this.setVocabulary}
         fullWidth={true}
         variant="filled"
       >
-        <MenuItem value=""></MenuItem>
+        <option value=""></option>
         {this.state.vocabularyTerms.map(term => (
-          <MenuItem key={term.code} value={term.code}>{term.label || term.code}</MenuItem>
+          <option key={term.code} value={term.code}>{term.label || term.code}</option>
         ))}
       </TextField>
     )
@@ -219,8 +224,9 @@ class ObjectTypePropertyPreview extends React.Component {
   }
 
   setMaterial(event){
+    const value = event.target.value
     this.setState(() => ({
-      materialValue: event.target.value
+      materialValue: value
     }))
   }
 
@@ -228,15 +234,18 @@ class ObjectTypePropertyPreview extends React.Component {
     return (
       <TextField
         select
+        SelectProps={{
+          native: true,
+        }}
         label={this.getLabel()}
         value={this.getMaterial()}
         onChange={this.setMaterial}
         fullWidth={true}
         variant="filled"
       >
-        <MenuItem value=""></MenuItem>
+        <option value=""></option>
         {this.state.materials.map(material => (
-          <MenuItem key={material.code} value={material.code}>{material.code}</MenuItem>
+          <option key={material.code} value={material.code}>{material.code}</option>
         ))}
       </TextField>
     )

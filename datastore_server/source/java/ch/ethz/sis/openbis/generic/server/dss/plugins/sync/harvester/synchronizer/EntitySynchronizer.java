@@ -42,7 +42,6 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
@@ -744,7 +743,7 @@ public class EntitySynchronizer
         DataSourceConnector dataSourceConnector =
                 new DataSourceConnector(config.getDataSourceURI(), config.getAuthenticationCredentials(), operationLog);
         operationLog.info("Retrieving the resource list...");
-        Document doc = dataSourceConnector.getResourceListAsXMLDoc(Arrays.asList(ArrayUtils.EMPTY_STRING_ARRAY));
+        Document doc = dataSourceConnector.getResourceListAsXMLDoc(config.getSpaceBlackList(), config.getSpaceWhiteList());
         monitor.log();
         return doc;
     }
@@ -1587,11 +1586,11 @@ public class EntitySynchronizer
             {
                 if (conn.getType().equals("Component"))
                 {
-                    NewSample containedSample = samplesToProcess.get(conn.getToPermId()).getSample();
+                    NewSample containedSample = getRelated(samplesToProcess, conn).getSample();
                     containedSample.setContainerIdentifier(incomingSample.getIdentifier());
                 } else if (conn.getType().equals("Child"))
                 {
-                    NewSample childSample = samplesToProcess.get(conn.getToPermId()).getSample();
+                    NewSample childSample = getRelated(samplesToProcess, conn).getSample();
                     String[] parents = childSample.getParentsOrNull();
                     List<String> parentIds = null;
                     if (parents == null)
@@ -1642,6 +1641,17 @@ public class EntitySynchronizer
                             modifiedParentIds);
             builder.sampleUpdate(updates);
         }
+    }
+
+    private IncomingSample getRelated(Map<String, IncomingSample> samplesToProcess, Connection conn)
+    {
+        String permId = conn.getToPermId();
+        IncomingSample sample = samplesToProcess.get(permId);
+        if (sample != null)
+        {
+            return sample;
+        }
+        throw new IllegalArgumentException("sample " + permId+ " hasn't been provided by the data source.");
     }
 
     private Map<String, ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> getKnownSamples(Collection<String> samplePermIds)

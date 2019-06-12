@@ -1,8 +1,12 @@
 import _ from 'lodash'
 import React from 'react'
+import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import ObjectTypeForm from './ObjectTypeForm.jsx'
 import ObjectTypeFooter from './ObjectTypeFooter.jsx'
+import * as pages from '../../../store/consts/pages.js'
+import * as objectTypes from '../../../store/consts/objectType.js'
+import * as actions from '../../../store/actions/actions.js'
 import logger from '../../../common/logger.js'
 import {facade, dto} from '../../../services/openbis.js'
 
@@ -23,6 +27,13 @@ const styles = (theme) => ({
   }
 })
 
+function mapDispatchToProps(dispatch, ownProps){
+  return {
+    error: (error) => { dispatch(actions.setError(error)) },
+    objectChange: (changed) => { dispatch(actions.objectChange(pages.TYPES, objectTypes.OBJECT_TYPE, ownProps.objectId, changed)) }
+  }
+}
+
 class ObjectType extends React.Component {
 
   constructor(props){
@@ -39,6 +50,34 @@ class ObjectType extends React.Component {
   }
 
   componentDidMount(){
+    this.load()
+  }
+
+  componentDidUpdate(){
+    if(!this.state.objectType){
+      return
+    }
+
+    const changed = this.state.objectType.properties.some((property) => {
+      return !property.original ||
+        !_.isEqual(property.mandatory, property.original.mandatory) ||
+        !_.isEqual(property.propertyType ? property.propertyType.code : null, property.original.propertyType ? property.original.propertyType.code : null) ||
+        !_.isEqual(property.ordinal, property.original.ordinal)
+    })
+
+    if(changed !== this.state.changed){
+      this.setState(()=>({
+        changed
+      }))
+      this.props.objectChange(changed)
+    }
+  }
+
+  load(){
+    this.setState({
+      loaded: false
+    })
+
     Promise.all([
       this.loadObjectType(this.props.objectId),
       this.loadPropertyTypes()
@@ -56,18 +95,22 @@ class ObjectType extends React.Component {
     let fo = new dto.SampleTypeFetchOptions()
     fo.withPropertyAssignments().withPropertyType().withMaterialType()
     fo.withPropertyAssignments().withPropertyType().withVocabulary()
-    fo.withPropertyAssignments().sortBy().code()
+    fo.withPropertyAssignments().sortBy().ordinal()
 
     return facade.getSampleTypes([id], fo).then(map => {
       let objectType = map[objectTypeId]
       if(objectType){
         return {
           code: objectType.code,
-          properties: objectType.propertyAssignments.map(assignment => ({
-            permId: assignment.permId,
+          properties: objectType.propertyAssignments.map((assignment, index) => ({
+            id: index + 1,
+            ordinal: index + 1,
             propertyType: assignment.propertyType,
-            ordinal: assignment.ordinal,
             mandatory: assignment.mandatory,
+            original: {
+              ...assignment,
+              ordinal: index + 1
+            },
             selected: false,
             errors: {}
           }))
@@ -89,10 +132,10 @@ class ObjectType extends React.Component {
     })
   }
 
-  handleChange(ordinal, key, value){
+  handleChange(id, key, value){
     this.setState((prevState) => {
       let newProperties = prevState.objectType.properties.map((property) => {
-        if(property.ordinal === ordinal){
+        if(property.id === id){
           return {
             ...property,
             [key]: value
@@ -109,7 +152,7 @@ class ObjectType extends React.Component {
         }
       }
     }, () => {
-      if(this.state.validated){
+      if(this.isObjectTypeValidated()){
         this.validate()
       }
     })
@@ -136,22 +179,18 @@ class ObjectType extends React.Component {
 
   handleAdd(){
     this.setState((prevState) => {
-      let newOrdinal = 0
       let newProperties = prevState.objectType.properties.map(property => {
-        if(newOrdinal <= property.ordinal){
-          newOrdinal = property.ordinal + 1
-        }
         return {
           ...property,
           selected: false
         }
       })
       newProperties.push({
-        permId: null,
+        id: newProperties.length + 1,
+        ordinal: newProperties.length + 1,
         propertyType: null,
         mandatory: false,
         selected: true,
-        ordinal: newOrdinal,
         errors: {}
       })
 
@@ -165,7 +204,7 @@ class ObjectType extends React.Component {
     })
   }
 
-  handleSelect(ordinal){
+  handleSelect(id){
     this.setState((prevState) => ({
       ...prevState,
       objectType: {
@@ -173,7 +212,7 @@ class ObjectType extends React.Component {
         properties: prevState.objectType.properties.map(property => {
           return {
             ...property,
-            selected: property.ordinal === ordinal ? !property.selected : false
+            selected: property.id === id ? !property.selected : false
           }
         })
       }
@@ -182,21 +221,16 @@ class ObjectType extends React.Component {
 
   handleReorder(oldPropertyIndex, newPropertyIndex){
     let oldProperties = this.state.objectType.properties
-    let newProperties = oldProperties.map(property => {
-      if(property.selected){
-        return {
-          ...property,
-          selected: false
-        }
-      }else{
-        return property
-      }
-    })
+    let newProperties = [ ...oldProperties ]
 
     let [ property ] = newProperties.splice(oldPropertyIndex, 1)
-    newProperties.splice(newPropertyIndex, 0, {
-      ...property,
-      selected: true
+    newProperties.splice(newPropertyIndex, 0, property)
+    newProperties = newProperties.map((property, index) => {
+      return {
+        ...property,
+        selected: index === newPropertyIndex,
+        ordinal: index + 1
+      }
     })
 
     this.setState((prevState) => ({
@@ -244,7 +278,37 @@ class ObjectType extends React.Component {
     if(this.validate()){
       let update = new dto.SampleTypeUpdate()
       update.setTypeId(new dto.EntityTypePermId(this.props.objectId))
-      facade.updateSampleTypes([update])
+
+      let newProperties = []
+
+      this.state.objectType.properties.forEach(property => {
+        let newProperty = new dto.PropertyAssignmentCreation()
+
+        if(property.original && property.propertyType.code === property.original.propertyType.code){
+          newProperty.ordinal = property.ordinal
+          newProperty.propertyTypeId = new dto.PropertyTypePermId(property.original.propertyType.code)
+          newProperty.section = property.original.section
+          newProperty.pluginId = property.original.plugin ? new dto.PluginPermId(property.original.plugin.name) : null
+          newProperty.initialValueForExistingEntities = property.original.initialValueForExistingEntities
+          newProperty.showInEditView = property.original.showInEditView
+          newProperty.showRawValueInForms = property.original.showRawValueInForms
+          newProperty.mandatory = property.mandatory
+        }else{
+          newProperty.ordinal = property.ordinal
+          newProperty.propertyTypeId = new dto.PropertyTypePermId(property.propertyType.code)
+          newProperty.mandatory = property.mandatory
+        }
+
+        newProperties.push(newProperty)
+      })
+
+      update.getPropertyAssignments().set(newProperties)
+
+      facade.updateSampleTypes([update]).then(()=>{
+        this.load()
+      }, (error) => {
+        this.props.error(error)
+      })
     }
   }
 
@@ -273,12 +337,31 @@ class ObjectType extends React.Component {
             onAdd={this.handleAdd}
             onRemove={this.handleRemove}
             onSave={this.handleSave}
+            removeEnabled={this.isPropertySelected()}
+            saveEnabled={this.isObjectTypeChanged()}
           />
         </div>
       </div>
     )
   }
 
+  isPropertySelected(){
+    return this.state.objectType.properties.some((property) => {
+      return property.selected
+    })
+  }
+
+  isObjectTypeValidated(){
+    return this.state.validated
+  }
+
+  isObjectTypeChanged(){
+    return this.state.changed
+  }
+
 }
 
-export default withStyles(styles)(ObjectType)
+export default _.flow(
+  connect(null, mapDispatchToProps),
+  withStyles(styles)
+)(ObjectType)

@@ -253,7 +253,8 @@ public class Main
         EntityPropertyCopy S3E_TUBE_p =                     new SamplePropertyCopy( "S3E_TUBE",                 "S3E_NAME",                            "$NAME");
         EntityPropertyCopy MICROSCOPY_SAMPLE_TYPE_p =       new SamplePropertyCopy( "MICROSCOPY_SAMPLE_TYPE",   "MICROSCOPY_SAMPLE_NAME",              "$NAME");
         EntityPropertyCopy MICROSCOPY_ACCESSORY_FILE_p =    new DataSetPropertyCopy("MICROSCOPY_ACCESSORY_FILE","MICROSCOPY_ACCESSORY_FILE_NAME",      "$NAME");
-
+        EntityPropertyCopy MICROSCOPY_IMAGE_CONTAINER_p =   new DataSetPropertyCopy("MICROSCOPY_IMAGE_CONTAINER","MICROSCOPY_IMAGE_CONTAINER_NAME",     "$NAME");
+        
         List<EntityPropertyCopy> propertyCopiesMigrationConfig = Arrays.asList(LSR_FORTESSA_PLATE_p,
                 LSR_FORTESSA_TUBE_p,
                 LSR_FORTESSA_WELL_p,
@@ -262,7 +263,8 @@ public class Main
                 MOFLO_XDP_TUBE_p,
                 S3E_TUBE_p,
                 MICROSCOPY_SAMPLE_TYPE_p,
-                MICROSCOPY_ACCESSORY_FILE_p);
+                MICROSCOPY_ACCESSORY_FILE_p,
+                MICROSCOPY_IMAGE_CONTAINER_p);
 
         for (EntityPropertyCopy config:propertyCopiesMigrationConfig) {
             config.copy(sessionToken, v3);

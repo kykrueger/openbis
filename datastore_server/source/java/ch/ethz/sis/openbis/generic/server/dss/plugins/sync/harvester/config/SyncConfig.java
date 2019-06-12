@@ -242,6 +242,10 @@ public class SyncConfig
 
     private Integer wishedNumberOfStreams;
 
+    private List<String> spaceBlackList = new ArrayList<>();
+
+    private List<String> spaceWhiteList = new ArrayList<>();
+
     public HashMap<String, String> getSpaceMappings()
     {
         return spaceMappings;
@@ -378,5 +382,25 @@ public class SyncConfig
     public void setWishedNumberOfStreams(Integer wishedNumberOfStreams)
     {
         this.wishedNumberOfStreams = wishedNumberOfStreams;
+    }
+
+    public List<String> getSpaceBlackList()
+    {
+        return spaceBlackList;
+    }
+
+    public void setSpaceBlackList(List<String> spaceBlackList)
+    {
+        this.spaceBlackList = spaceBlackList;
+    }
+
+    public List<String> getSpaceWhiteList()
+    {
+        return spaceWhiteList;
+    }
+
+    public void setSpaceWhiteList(List<String> spaceWhiteList)
+    {
+        this.spaceWhiteList = spaceWhiteList;
     }
 }

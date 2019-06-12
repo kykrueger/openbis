@@ -93,14 +93,6 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				toolbarModel.push({ component : $createExpBtn, tooltip: "Create " + ELNDictionary.getExperimentKindName(projectIdentifier) });
 			}
 			
-			//Freeze
-			if(_this._projectFormModel.v3_project && _this._projectFormModel.v3_project.frozen !== undefined) { //Freezing available on the API
-				var isEntityFrozen = _this._projectFormModel.v3_project.frozen;
-				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-				var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, isEntityFrozen);
-				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
-			}
-			
 			if(!_this._projectFormModel.v3_project.frozen) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
@@ -140,6 +132,14 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				});
 				toolbarModel.push({ component : $share, tooltip: "Manage access" });
 			}
+
+            //Freeze
+            if(_this._projectFormModel.v3_project && _this._projectFormModel.v3_project.frozen !== undefined) { //Freezing available on the API
+                var isEntityFrozen = _this._projectFormModel.v3_project.frozen;
+                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+                var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, isEntityFrozen);
+                toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+            }
 
 			//Operations
 			var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + ELNDictionary.getExperimentKindName(projectIdentifier), event: function() {

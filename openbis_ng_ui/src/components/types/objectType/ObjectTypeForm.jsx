@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
-import Typography from '@material-ui/core/Typography'
+import ObjectTypeTitle from './ObjectTypeTitle.jsx'
 import ObjectTypeTable from './ObjectTypeTable.jsx'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
@@ -14,13 +14,13 @@ class ObjectTypeForm extends React.Component {
     logger.log(logger.DEBUG, 'ObjectTypeForm.render')
 
     let { objectType, propertyTypes } = this.props
-    let { code, properties } = objectType
+    let { properties } = objectType
 
     return (
       <div>
-        <Typography variant="h6">
-          {code}
-        </Typography>
+        <ObjectTypeTitle
+          objectType={objectType}
+        />
         <form>
           {properties && properties.length > 0 &&
             <ObjectTypeTable

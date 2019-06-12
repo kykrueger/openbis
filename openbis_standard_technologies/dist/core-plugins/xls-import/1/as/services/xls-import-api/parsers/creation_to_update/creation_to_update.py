@@ -1,6 +1,6 @@
 from utils.openbis_utils import create_sample_identifier_string
 from .update_parsers import CreationToUpdateParserFactory
-from ..definition_to_creation import SampleDefinitionToCreationParser, ScriptDefinitionToCreationParser
+from ..definition_to_creation import SampleDefinitionToCreationType, ScriptDefinitionToCreationType
 
 
 class CreationToUpdateParser(object):
@@ -24,10 +24,10 @@ class CreationToUpdateParser(object):
 
 
 def get_existing_element_based_on(creation_type, creation, existing_elements):
-    if creation_type == SampleDefinitionToCreationParser.type:
+    if creation_type == SampleDefinitionToCreationType:
         existing_element = list(filter(lambda existing_element: creation.code is not None and create_sample_identifier_string(creation) == existing_element.identifier.identifier, existing_elements))
     else:
-        if creation_type == ScriptDefinitionToCreationParser.type:
+        if creation_type == ScriptDefinitionToCreationType:
             attr = 'name'
         else:
             attr = 'code'

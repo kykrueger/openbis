@@ -49,7 +49,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 			} else if(sample.sampleTypeCode === "REQUEST") {
 				mainController.currentView._newProductsController.createAndAddToForm(sample, action);
 			} else if(action) {
-				action(sample);
+			    profile.onSampleSave(sample, [], action);
 			}
 		}
 		

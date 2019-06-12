@@ -852,14 +852,26 @@ class Openbis:
         """
 
         request = {
-            "method": "listDataStores",
-            "params": [self.token],
+            "method": "searchDataStores",
+            "params": [
+                self.token,
+                {
+                    "@type": "as.dto.datastore.search.DataStoreSearchCriteria"
+                },
+                {
+                    "@type": "as.dto.datastore.fetchoptions.DataStoreFetchOptions"
+                }
+            ]
         }
-        resp = self._post_request(self.as_v1, request)
-        if resp is not None:
-            return DataFrame(resp)[['code', 'downloadUrl', 'hostUrl']]
-        else:
+        resp = self._post_request(self.as_v3, request)
+        attrs=['code','downloadUrl','remoteUrl']
+        if len(resp['objects']) == 0:
             raise ValueError("No datastore found!")
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
+            datastores = DataFrame(objects)
+            return datastores[attrs]
 
     def gen_code(self, entity, prefix=""):
         """ Get the next sequence number for a Sample, Experiment, DataSet and Material. Other entities are currently not supported.
@@ -897,6 +909,22 @@ class Openbis:
             raise ValueError("Could not generate a code for {}: {}".format(entity, e))
 
 
+    def gen_permId(self, count=1):
+        """ Generate a permId (or many permIds) for a dataSet
+        """
+
+        request = {
+            "method": "createPermIdStrings",
+            "params": [
+                self.token,
+                count
+            ]
+        }
+        try:
+            return self._post_request(self.as_v3, request)
+        except Exception as e:
+            raise ValueError("Could not generate a code for {}: {}".format(entity, e))
+            
 
     def new_person(self, userId, space=None):
         """ creates an openBIS person

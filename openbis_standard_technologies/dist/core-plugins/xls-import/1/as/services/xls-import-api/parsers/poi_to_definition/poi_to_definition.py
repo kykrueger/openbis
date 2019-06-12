@@ -24,13 +24,13 @@ class PoiToDefinitionParser(object):
                 .
             ]
         '''
-        definitons = []
+        definitions = []
         for poi_definition in poi_definitions:
             FIRST_ROW = 0
             FIRST_CELL = 0
             definition_type = poi_definition[FIRST_ROW][FIRST_CELL]
             definition_parser = DefinitionParserFactory.get_parser(definition_type)
             definition = definition_parser.parse(poi_definition)
-            definitons.append(definition)
+            definitions.append(definition)
 
-        return definitons
+        return definitions

@@ -45,11 +45,17 @@ abstract class AbstractEntityWithPermIdDeliverer extends AbstractEntityDeliverer
     }
 
     @Override
-    protected List<String> getAllEntities(IDataSourceQueryService queryService, String sessionToken)
+    protected List<String> getAllEntities(DeliveryExecutionContext executionContext, String sessionToken)
     {
+        return getAllEntities(executionContext, sessionToken, sql);
+    }
+
+    protected List<String> getAllEntities(DeliveryExecutionContext executionContext, String sessionToken, String query)
+    {
+        IDataSourceQueryService queryService = executionContext.getQueryService();
         List<String> permIds = new ArrayList<>();
         String dataSourceName = context.getOpenBisDataSourceName();
-        DataSet<Map<String, Object>> select = queryService.select(dataSourceName, sql);
+        DataSet<Map<String, Object>> select = queryService.select(dataSourceName, query);
         for (Map<String, Object> row : select)
         {
             permIds.add((String) row.get(databasePermIdColumn));

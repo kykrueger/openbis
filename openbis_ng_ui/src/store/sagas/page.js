@@ -5,6 +5,7 @@ import * as actions from '../actions/actions.js'
 
 export default function* pageSaga() {
   yield takeEvery(actions.OBJECT_OPEN, objectOpen)
+  yield takeEvery(actions.OBJECT_CHANGE, objectChange)
   yield takeEvery(actions.OBJECT_CLOSE, objectClose)
 }
 
@@ -12,6 +13,16 @@ function* objectOpen(action) {
   let { page, type, id } = action.payload
   yield put(actions.addOpenObject(page, type, id))
   yield put(actions.setSelectedObject(page, type, id))
+}
+
+function* objectChange(action) {
+  let { page, type, id, changed } = action.payload
+
+  if(changed){
+    yield put(actions.addChangedObject(page, type, id))
+  }else{
+    yield put(actions.removeChangedObject(page, type, id))
+  }
 }
 
 function* objectClose(action) {
@@ -34,5 +45,6 @@ function* objectClose(action) {
   }
 
   yield put(actions.removeOpenObject(page, type, id))
+  yield put(actions.removeChangedObject(page, type, id))
   yield put(actions.setSelectedObject(page, selectedObject ? selectedObject.type : null, selectedObject ? selectedObject.id : null))
 }
