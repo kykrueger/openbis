@@ -35,6 +35,9 @@ function AdvancedSearchController(mainController, forceSearch) {
 
 	this.search = function() {
 		var criteria = this._advancedSearchModel.criteria;
+		if (criteria.cached) {
+			criteria.cached = false;
+		}
 		var numberOfGeneralRules = 0;
 		var numberOfRules = 0;
 		
