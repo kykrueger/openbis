@@ -58,11 +58,31 @@ import static org.testng.Assert.assertEquals;
 public class SampleSearchManagerDBTest
 {
 
-    private static final String PERM_ID = "20190612105000000-1";
+    private static final String PERM_ID1 = "20190612105000000-1";
 
-    private static final long ID = 1001L;
+    private static final String PERM_ID2 = "20190612105000000-2";
 
-    public static final String CODE = "MY_UNIQUE_CODE";
+    private static final String PERM_ID3 = "20190612105000000-3";
+
+    private static final long ID1 = 1001L;
+
+    private static final long ID2 = 1002L;
+
+    private static final long ID3 = 1003L;
+
+    public static final String CODE1 = "MY_UNIQUE_CODE1";
+
+    public static final String CODE2 = "NOT_UNIQUE_CODE2";
+
+    public static final String CODE3 = "NOT_UNIQUE_CODE3";
+
+    public static final String DEFAULT_CODE = "NOT_UNIQUE_CODE";
+
+    public static final int VERSION1 = 101;
+
+    public static final int VERSION2 = 102;
+
+    public static final int VERSION3 = 103;
 
     private SampleSearchManager searchManager;
 
@@ -91,10 +111,38 @@ public class SampleSearchManagerDBTest
 
     private void populateDB()
     {
+        final Map<String, Object> valuesMap1 = getDefaultValuesMap();
+        valuesMap1.put(ColumnNames.ID_COLUMN, ID1);
+        valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID1);
+        valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
+        valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
+
+        final Map<String, Object> valuesMap2 = getDefaultValuesMap();
+        valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
+        valuesMap2.put(ColumnNames.ID_COLUMN, ID2);
+        valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
+        valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
+
+        final Map<String, Object> valuesMap3 = getDefaultValuesMap();
+        valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
+        valuesMap3.put(ColumnNames.ID_COLUMN, ID3);
+        valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
+        valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
+
+        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
+        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
+        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap3);
+    }
+
+    /**
+     * Creates a map what contains default values for an object to be stored in DB.
+     *
+     * @return a map that represents an object to be stored in the DB with default values.
+     */
+    private Map<String, Object> getDefaultValuesMap()
+    {
         final Map<String, Object> valuesMap = new LinkedHashMap<String, Object>();
-        valuesMap.put(ColumnNames.ID_COLUMN, ID);
-        valuesMap.put(ColumnNames.PERM_ID_COLUMN, PERM_ID);
-        valuesMap.put(ColumnNames.CODE_COLUMN, CODE);
+        valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
         valuesMap.put(ColumnNames.EXPERIMENT_COLUMN, 1);
         valuesMap.put(ColumnNames.SAMPLE_TYPE_COLUMN, 1);
         valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, new Date(1019, Calendar.JUNE, 12, 10, 50, 0));
@@ -105,8 +153,6 @@ public class SampleSearchManagerDBTest
         valuesMap.put(ColumnNames.SPACE_COLUMN, 1);
         valuesMap.put(ColumnNames.PART_OF_SAMPLE_COLUMN, null);
         valuesMap.put(ColumnNames.PERSON_MODIFIER_COLUMN, null);
-        valuesMap.put("code_unique_check", "DEFAULT,-1,1,1");
-        valuesMap.put("subcode_unique_check", null);
         valuesMap.put(ColumnNames.VERSION_COLUMN, 0);
         valuesMap.put(ColumnNames.PROJECT_COLUMN, 1);
         valuesMap.put(ColumnNames.FROZEN_COLUMN, false);
@@ -118,8 +164,7 @@ public class SampleSearchManagerDBTest
         valuesMap.put(ColumnNames.PROJECT_FROZEN_COLUMN, false);
         valuesMap.put(ColumnNames.EXPERIMENT_FROZEN_COLUMN, false);
         valuesMap.put(ColumnNames.CONTAINER_FROZEN_COLUMN, false);
-
-        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap);
+        return valuesMap;
     }
 
     private void insertRecord(final String tableName, final Map<String, Object> valuesMap)
@@ -161,7 +206,9 @@ public class SampleSearchManagerDBTest
 
     private void cleanDB()
     {
-        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID);
+        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID1);
+        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID2);
+        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID3);
     }
 
     private void deleteRecord(final String tableName, final String key, final Object value)
@@ -177,16 +224,16 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithStringFieldSearchCriteria()
     {
         final SampleSearchCriteria criterionEquals = new SampleSearchCriteria();
-        criterionEquals.withCode().thatEquals(CODE);
+        criterionEquals.withCode().thatEquals(CODE1);
 
         final SampleSearchCriteria criterionContains = new SampleSearchCriteria();
-        criterionContains.withCode().thatContains(CODE.substring(1, CODE.length() - 1));
+        criterionContains.withCode().thatContains(CODE1.substring(1, CODE1.length() - 1));
 
         final SampleSearchCriteria criterionStartsWith = new SampleSearchCriteria();
-        criterionStartsWith.withCode().thatStartsWith(CODE.substring(0, 4));
+        criterionStartsWith.withCode().thatStartsWith(CODE1.substring(0, 4));
 
         final SampleSearchCriteria criterionEndsWith = new SampleSearchCriteria();
-        criterionEndsWith.withCode().thatEndsWith(CODE.substring(4));
+        criterionEndsWith.withCode().thatEndsWith(CODE1.substring(4));
 
         checkCriterion(criterionEquals);
         checkCriterion(criterionContains);
@@ -204,7 +251,17 @@ public class SampleSearchManagerDBTest
         final Set<Long> sampleIdsEquals = searchManager.searchForIDs(2L, criterion);
 
         assertEquals(sampleIdsEquals.size(), 1);
-        assertEquals(sampleIdsEquals.iterator().next().longValue(), ID);
+        assertEquals(sampleIdsEquals.iterator().next().longValue(), ID1);
+    }
+
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} using DB connection.
+     */
+    @Test
+    public void testQueryDBWithNumberFieldSearchCriteria()
+    {
+        final SampleSearchCriteria criterionEquals = new SampleSearchCriteria();
+        criterionEquals.withNumberProperty(ColumnNames.VERSION_COLUMN).thatEquals(VERSION2);
     }
 
 }
