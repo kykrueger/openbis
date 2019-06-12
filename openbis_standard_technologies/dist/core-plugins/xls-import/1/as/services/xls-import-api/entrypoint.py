@@ -74,9 +74,7 @@ def process(context, parameters):
     xls_name = parameters.get('xls_name', None)
     scripts = parameters.get('scripts', {})
     update_mode = parameters.get('update_mode', None)
-
     validate_data(xls_byte_arrays, update_mode, xls_name)
-
     definitions = get_definitions_from(xls_byte_arrays)
     creations = get_creations_from(definitions, FileHandler(scripts))
     creations_metadata = get_creation_metadata_from(definitions)

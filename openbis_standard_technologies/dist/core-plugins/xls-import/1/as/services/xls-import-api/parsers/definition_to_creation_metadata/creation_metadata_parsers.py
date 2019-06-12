@@ -57,6 +57,7 @@ class PropertyTypeDefinitionToCreationMetadataParser(object):
         for prop in definition.properties:
             property_creation_metadata = dotdict()
             code = prop.get(u'code')
+            code = code.upper() if code is not None else None
             property_creation_metadata.code = code
             property_creation_metadata.version = get_version(prop.get(u'version', 1))
             creation_metadata[code] = property_creation_metadata
