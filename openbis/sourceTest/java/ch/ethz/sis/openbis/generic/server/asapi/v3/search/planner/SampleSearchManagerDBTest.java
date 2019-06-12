@@ -24,8 +24,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.JDBCSQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE.StringFieldSearchCriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.sql.Connection;
@@ -62,6 +62,8 @@ public class SampleSearchManagerDBTest
 
     private static final long ID = 1001L;
 
+    public static final String CODE = "MY_UNIQUE_CODE";
+
     private SampleSearchManager searchManager;
 
     private JDBCSQLExecutor sqlExecutor;
@@ -73,7 +75,7 @@ public class SampleSearchManagerDBTest
         Class.forName("org.postgresql.Driver");
     }
 
-    @BeforeMethod
+    @BeforeClass
     public void setUp() throws Exception
     {
         connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", "");
@@ -92,7 +94,7 @@ public class SampleSearchManagerDBTest
         final Map<String, Object> valuesMap = new LinkedHashMap<String, Object>();
         valuesMap.put(ColumnNames.ID_COLUMN, ID);
         valuesMap.put(ColumnNames.PERM_ID_COLUMN, PERM_ID);
-        valuesMap.put(ColumnNames.CODE_COLUMN, "DEFAULT1");
+        valuesMap.put(ColumnNames.CODE_COLUMN, CODE);
         valuesMap.put(ColumnNames.EXPERIMENT_COLUMN, 1);
         valuesMap.put(ColumnNames.SAMPLE_TYPE_COLUMN, 1);
         valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, new Date(1019, Calendar.JUNE, 12, 10, 50, 0));
@@ -146,7 +148,7 @@ public class SampleSearchManagerDBTest
                 VALUES + SP + LP + questionMarks + RP, values);
     }
 
-    @AfterMethod
+    @AfterClass
     public void tearDown() throws Exception
     {
         cleanDB();
@@ -159,7 +161,7 @@ public class SampleSearchManagerDBTest
 
     private void cleanDB()
     {
-        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.PERM_ID_COLUMN, PERM_ID);
+        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID);
     }
 
     private void deleteRecord(final String tableName, final String key, final Object value)
@@ -174,13 +176,35 @@ public class SampleSearchManagerDBTest
     @Test
     public void testQueryDBWithStringFieldSearchCriteria()
     {
-        final SampleSearchCriteria criterion = new SampleSearchCriteria();
-        criterion.withCode().thatEquals("DEFAULT1");
+        final SampleSearchCriteria criterionEquals = new SampleSearchCriteria();
+        criterionEquals.withCode().thatEquals(CODE);
 
-        final Set<Long> sampleIds = searchManager.searchForIDs(2L, criterion);
+        final SampleSearchCriteria criterionContains = new SampleSearchCriteria();
+        criterionContains.withCode().thatContains(CODE.substring(1, CODE.length() - 1));
 
-        assertEquals(sampleIds.size(), 1);
-        assertEquals(sampleIds.iterator().next().longValue(), ID);
+        final SampleSearchCriteria criterionStartsWith = new SampleSearchCriteria();
+        criterionStartsWith.withCode().thatStartsWith(CODE.substring(0, 4));
+
+        final SampleSearchCriteria criterionEndsWith = new SampleSearchCriteria();
+        criterionEndsWith.withCode().thatEndsWith(CODE.substring(4));
+
+        checkCriterion(criterionEquals);
+        checkCriterion(criterionContains);
+        checkCriterion(criterionStartsWith);
+        checkCriterion(criterionEndsWith);
+    }
+
+    /**
+     * Checks if the criterion returns expected results.
+     *
+     * @param criterion criterion to be checked.
+     */
+    private void checkCriterion(final SampleSearchCriteria criterion)
+    {
+        final Set<Long> sampleIdsEquals = searchManager.searchForIDs(2L, criterion);
+
+        assertEquals(sampleIdsEquals.size(), 1);
+        assertEquals(sampleIdsEquals.iterator().next().longValue(), ID);
     }
 
 }

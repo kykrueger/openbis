@@ -59,12 +59,14 @@ public class CodeSearchCriteriaTranslator implements IConditionTranslator<CodeSe
         if (value.getClass() == StringEqualToValue.class) {
             sqlBuilder.append(EQ).append(SP).append(SQ).append(value.getValue()).append(SQ);
         } else if (value.getClass() == StringStartsWithValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(SQ).append(value.getValue()).append(SQ).append(SP).append(BARS).append(SP).append(PERCENT);
+            sqlBuilder.append(LIKE).append(SP).append(SQ).append(value.getValue()).append(SQ).append(SP).append(BARS).append(SP).append(SQ).
+                    append(PERCENT).append(SQ);
         } else if (value.getClass() == StringEndsWithValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).append(SQ).append(value.getValue()).append(SQ);
+            sqlBuilder.append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(SQ).
+                    append(value.getValue()).append(SQ);
         } else if (value.getClass() == StringContainsValue.class) {
-            sqlBuilder.append(LIKE).append(SP).append(PERCENT).append(SP).append(BARS).append(SP).append(SQ).append(value.getValue()).append(SQ).
-                    append(SP).append(BARS).append(SP).append(PERCENT);
+            sqlBuilder.append(LIKE).append(SP).append(SQ).append(PERCENT).append(SQ).append(SP).append(BARS).append(SP).append(SQ).
+                    append(value.getValue()).append(SQ).append(SP).append(BARS).append(SP).append(SQ).append(PERCENT).append(SQ);
         } else {
             throw new IllegalArgumentException("Unsupported AbstractStringValue type: " + value.getClass().getSimpleName());
         }
