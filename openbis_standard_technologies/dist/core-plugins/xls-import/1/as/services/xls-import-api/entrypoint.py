@@ -1,6 +1,5 @@
 import json
 import os
-
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.operation import SynchronousOperationExecutionOptions
 from ch.systemsx.cisd.common.exceptions import UserFailureException
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
@@ -33,7 +32,7 @@ def get_property(key, defaultValue):
 
 
 def read_versioning_information(xls_version_filepath):
-    if xls_version_filepath is not None and os.path.exists(xls_version_filepath):
+    if os.path.exists(xls_version_filepath):
         with open(xls_version_filepath, 'r') as f:
             return json.load(f)
     else:
@@ -41,11 +40,10 @@ def read_versioning_information(xls_version_filepath):
 
 
 def save_versioning_information(versioning_information, xls_version_filepath):
-    if xls_version_filepath is not None:
-        filepath_new = "%s.new" % xls_version_filepath
-        with open(filepath_new, 'w') as f:
-            json.dump(versioning_information, f)
-        os.rename(filepath_new, xls_version_filepath)
+    filepath_new = "%s.new" % xls_version_filepath
+    with open(filepath_new, 'w') as f:
+        json.dump(versioning_information, f)
+    os.rename(filepath_new, xls_version_filepath)
 
 
 def process(context, parameters):
@@ -81,15 +79,10 @@ def process(context, parameters):
     creations = get_creations_from(definitions, FileHandler(scripts))
     creations_metadata = get_creation_metadata_from(definitions)
     creations = DuplicatesHandler.get_distinct_creations(creations)
-    config_file_path = "../../../data/xls-import-version-info.json"
-
-    if not os.path.exists(config_file_path):
-        xls_version_filepath = None
-    else:
-        xls_version_filepath = get_property("xls-import.version-data-file", config_file_path)
-
-    if REMOVE_VERSIONS and xls_version_filepath is not None and os.path.exists(xls_version_filepath):
-        os.remove(xls_version_filepath)
+    xls_version_filepath = get_property("xls-import.version-data-file", "../../../data/xls-import-version-info.json")
+    if REMOVE_VERSIONS:
+        if os.path.exists(xls_version_filepath):
+            os.remove(xls_version_filepath)
     xls_version_name = get_version_name_for(xls_name)
     all_versioning_information = read_versioning_information(xls_version_filepath)
 
