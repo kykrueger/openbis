@@ -1399,7 +1399,7 @@ function ServerFacade(openbisServer) {
 				callback(apiResults);
 			})
 			.fail(function(result) {
-				Util.showError("Call failed to server: " + JSON.stringify(result));
+				Util.showFailedServerCallError(result);
 			});
 		}
 
@@ -2217,7 +2217,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.getSpaces([new SpacePermId(spaceIdentifier)], new SpaceFetchOptions()).done(function(result) {
 					callbackFunction(result);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
@@ -2233,7 +2233,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.getProjects([projectId], fetchOptions).done(function(result) {
 					callbackFunction(result);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
@@ -2253,7 +2253,7 @@ function ServerFacade(openbisServer) {
 			mainController.openbisV3.searchSamples(searchCriteria, fetchOptions).done(function(result) {
 				callbackFunction(result);
 			}).fail(function(result) {
-				Util.showError("Call failed to server: " + JSON.stringify(result));
+				Util.showFailedServerCallError(result);
 				callbackFunction(false);
 			});
 		});
@@ -2271,7 +2271,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.getSamples(samplePermIds, fetchOptions).done(function(result) {
 					callbackFunction(result);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
@@ -2299,7 +2299,7 @@ function ServerFacade(openbisServer) {
 			mainController.openbisV3.createSamples([sampleCreation]).done(function(result) {
 				callbackFunction(result);
 			}).fail(function(result) {
-				Util.showError("Call failed to server: " + JSON.stringify(result));
+				Util.showFailedServerCallError(result);
 				callbackFunction(false);
 			});
 		});
@@ -2317,7 +2317,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.createProjects([projectCreation]).done(function(result) {
 					callbackFunction(true);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 		});
@@ -2333,7 +2333,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.searchExperimentTypes(searchCriteria, fetchOptions).done(function(result) {
 					callbackFunction(result);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
@@ -2350,7 +2350,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.getExperiments(expPermIds, fetchOptions).done(function(result) {
 					callbackFunction(result);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
@@ -2369,7 +2369,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.searchExperiments(searchCriteria, fetchOptions).done(function(result) {
 					callbackFunction(result);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
@@ -2387,7 +2387,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.createExperiments([experimentCreation]).done(function(result) {
 					callbackFunction(result);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
@@ -2406,7 +2406,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.updateSamples([ sampleUpdate ]).done(function() {
 					callbackFunction(true);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
@@ -2437,7 +2437,7 @@ function ServerFacade(openbisServer) {
 			mainController.openbisV3.updateDataSets([update]).done(function(result) {
 				callbackFunction(true);
             }).fail(function(result) {
-				Util.showError("Call failed to server: " + JSON.stringify(result));
+				Util.showFailedServerCallError(result);
 				callbackFunction(false);
 			});
 		});
@@ -2451,7 +2451,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.unarchiveDataSets(ids, options).done(function(result) {
 					callbackFunction(true);
 				}).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			});
@@ -2484,7 +2484,7 @@ function ServerFacade(openbisServer) {
 					if (errorHandler) {
 						errorHandler(result);
 					} else {
-						Util.showError("Call failed to server: " + JSON.stringify(result));
+						Util.showFailedServerCallError(result);
 						callbackFunction(false);
 					}
 				});
@@ -2558,7 +2558,7 @@ function ServerFacade(openbisServer) {
 		mainController.openbisV3.getSessionInformation().done(function(sessionInfo) {
                 callbackFunction(sessionInfo);
         }).fail(function(result) {
-				Util.showError("Call failed to server: " + JSON.stringify(result));
+				Util.showFailedServerCallError(result);
 				callbackFunction(false);
 		});
 	}
@@ -2572,7 +2572,7 @@ function ServerFacade(openbisServer) {
 				mainController.openbisV3.searchCustomASServices(searchCriteria, fetchOptions).done(function(result) {
 					callbackFunction(result);
 		        }).fail(function(result) {
-					Util.showError("Call failed to server: " + JSON.stringify(result));
+					Util.showFailedServerCallError(result);
 					callbackFunction(false);
 				});
 			}
