@@ -21,7 +21,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.JDBCSQLExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE.StringFieldSearchCriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 import org.testng.annotations.AfterClass;
@@ -88,6 +88,18 @@ public class SampleSearchManagerDBTest
 
     private static final int VERSION3 = 103;
 
+    private static final Date REGISTRATION_DATE1 = new Date(1019, Calendar.JUNE, 11, 10, 50, 0);
+
+    private static final Date REGISTRATION_DATE2 = new Date(1019, Calendar.JUNE, 12, 10, 50, 0);
+
+    private static final Date REGISTRATION_DATE3 = new Date(1019, Calendar.JUNE, 13, 10, 50, 0);
+
+    private static final String REGISTRATION_DATE_STRING1 = "2019-06-11 10:50:00.000000+01";
+
+    private static final String REGISTRATION_DATE_STRING2 = "2019-06-12 10:50:00.000000+01";
+
+    private static final String REGISTRATION_DATE_STRING3 = "2019-06-13 10:50:00.000000+01";
+
     private SampleSearchManager searchManager;
 
     private JDBCSQLExecutor sqlExecutor;
@@ -120,18 +132,24 @@ public class SampleSearchManagerDBTest
         valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID1);
         valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
         valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
+        valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
+        valuesMap1.put(ColumnNames.FROZEN_COLUMN, false);
 
         final Map<String, Object> valuesMap2 = getDefaultValuesMap();
         valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
         valuesMap2.put(ColumnNames.ID_COLUMN, ID2);
         valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
         valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
+        valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
+        valuesMap2.put(ColumnNames.FROZEN_COLUMN, false);
 
         final Map<String, Object> valuesMap3 = getDefaultValuesMap();
         valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
         valuesMap3.put(ColumnNames.ID_COLUMN, ID3);
         valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
         valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
+        valuesMap3.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE3);
+        valuesMap3.put(ColumnNames.FROZEN_COLUMN, false);
 
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
@@ -149,7 +167,6 @@ public class SampleSearchManagerDBTest
         valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
         valuesMap.put(ColumnNames.EXPERIMENT_COLUMN, 1);
         valuesMap.put(ColumnNames.SAMPLE_TYPE_COLUMN, 1);
-        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, new Date(1019, Calendar.JUNE, 12, 10, 50, 0));
         valuesMap.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, new Date(1019, Calendar.JUNE, 12, 10, 50, 0));
         valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, 1);
         valuesMap.put(ColumnNames.DELETION_COLUMN, null);
@@ -159,7 +176,6 @@ public class SampleSearchManagerDBTest
         valuesMap.put(ColumnNames.PERSON_MODIFIER_COLUMN, null);
         valuesMap.put(ColumnNames.VERSION_COLUMN, 0);
         valuesMap.put(ColumnNames.PROJECT_COLUMN, 1);
-        valuesMap.put(ColumnNames.FROZEN_COLUMN, false);
         valuesMap.put(ColumnNames.FROZEN_FOR_COMPONENT_COLUMN, false);
         valuesMap.put(ColumnNames.FROZEN_FOR_CHILDREN_COLUMN, false);
         valuesMap.put(ColumnNames.FROZEN_FOR_PARENTS_COLUMN, false);
@@ -222,7 +238,7 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} using DB connection.
+     * Tests {@link StringFieldSearchCriteriaTranslator} with string field search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithStringFieldSearchCriteria()
@@ -300,6 +316,97 @@ public class SampleSearchManagerDBTest
         assertFalse(greaterThanOrEqualsToCriterionSampleIds.contains(ID1));
         assertTrue(greaterThanOrEqualsToCriterionSampleIds.contains(ID2));
         assertTrue(greaterThanOrEqualsToCriterionSampleIds.contains(ID3));
+    }
+
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with date field search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithDateFieldSearchCriteria()
+    {
+        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+        equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE2);
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+        assertEquals(equalCriterionSampleIds.size(), 1);
+        assertTrue(equalCriterionSampleIds.contains(ID2));
+
+        final SampleSearchCriteria earlierThanCriterion = new SampleSearchCriteria();
+        earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE2);
+        final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, earlierThanCriterion);
+        assertFalse(earlierThanCriterionSampleIds.isEmpty());
+        assertTrue(earlierThanCriterionSampleIds.contains(ID1));
+        assertTrue(earlierThanCriterionSampleIds.contains(ID2));
+        assertFalse(earlierThanCriterionSampleIds.contains(ID3));
+
+        final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
+        laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE2);
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
+        assertFalse(laterThanCriterionSampleIds.isEmpty());
+        assertTrue(laterThanCriterionSampleIds.contains(ID1));
+        assertTrue(laterThanCriterionSampleIds.contains(ID2));
+        assertFalse(laterThanCriterionSampleIds.contains(ID3));
+    }
+
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with date field search criteria (in string form) using DB connection.
+     */
+    @Test
+    public void testQueryDBWithStringDateFieldSearchCriteria()
+    {
+        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+        equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE_STRING2);
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+        assertEquals(equalCriterionSampleIds.size(), 1);
+        assertTrue(equalCriterionSampleIds.contains(ID2));
+
+        final SampleSearchCriteria earlierThanCriterion = new SampleSearchCriteria();
+        earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE_STRING2);
+        final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, earlierThanCriterion);
+        assertFalse(earlierThanCriterionSampleIds.isEmpty());
+        assertTrue(earlierThanCriterionSampleIds.contains(ID1));
+        assertTrue(earlierThanCriterionSampleIds.contains(ID2));
+        assertFalse(earlierThanCriterionSampleIds.contains(ID3));
+
+        final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
+        laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_STRING2);
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
+        assertFalse(laterThanCriterionSampleIds.isEmpty());
+        assertTrue(laterThanCriterionSampleIds.contains(ID1));
+        assertTrue(laterThanCriterionSampleIds.contains(ID2));
+        assertFalse(laterThanCriterionSampleIds.contains(ID3));
+    }
+
+//    /**
+//     * Tests {@link StringFieldSearchCriteriaTranslator} with boolean field search criteria using DB connection.
+//     */
+//    @Test
+//    public void testQueryDBWithBooleanFieldSearchCriteria()
+//    {
+//        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+//    }
+
+//    /**
+//     * Tests {@link StringFieldSearchCriteriaTranslator} with enum field search criteria using DB connection.
+//     */
+//    @Test
+//    public void testQueryDBWithEnumFieldSearchCriteria()
+//    {
+//        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+//    }
+
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithCollectionFieldSearchCriteria()
+    {
+        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+        criterion.withCodes().thatIn(Arrays.asList(CODE1, CODE3));
+        final Set<Long> criterionSampleIds = searchManager.searchForIDs(USER_ID, criterion);
+        assertEquals(criterionSampleIds.size(), 2);
+        assertTrue(criterionSampleIds.contains(ID1));
+        assertFalse(criterionSampleIds.contains(ID2));
+        assertTrue(criterionSampleIds.contains(ID3));
     }
 
 }
