@@ -88,17 +88,17 @@ public class SampleSearchManagerDBTest
 
     private static final int VERSION3 = 103;
 
-    private static final Date REGISTRATION_DATE1 = new Date(1019, Calendar.JUNE, 11, 10, 50, 0);
+    private static final Date REGISTRATION_DATE1 = new Date(119, Calendar.JUNE, 11, 10, 50, 0);
 
-    private static final Date REGISTRATION_DATE2 = new Date(1019, Calendar.JUNE, 12, 10, 50, 0);
+    private static final Date REGISTRATION_DATE2 = new Date(119, Calendar.JUNE, 12, 10, 50, 0);
 
-    private static final Date REGISTRATION_DATE3 = new Date(1019, Calendar.JUNE, 13, 10, 50, 0);
+    private static final Date REGISTRATION_DATE3 = new Date(119, Calendar.JUNE, 13, 10, 50, 0);
 
-    private static final String REGISTRATION_DATE_STRING1 = "2019-06-11 10:50:00.000000+01";
+    private static final String REGISTRATION_DATE_STRING1 = "2019-06-11 10:50:00 +0200";
 
-    private static final String REGISTRATION_DATE_STRING2 = "2019-06-12 10:50:00.000000+01";
+    private static final String REGISTRATION_DATE_STRING2 = "2019-06-12 10:50:00 +0200";
 
-    private static final String REGISTRATION_DATE_STRING3 = "2019-06-13 10:50:00.000000+01";
+    private static final String REGISTRATION_DATE_STRING3 = "2019-06-13 10:50:00 +0200";
 
     private SampleSearchManager searchManager;
 
@@ -342,9 +342,9 @@ public class SampleSearchManagerDBTest
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE2);
         final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
-        assertTrue(laterThanCriterionSampleIds.contains(ID1));
+        assertFalse(laterThanCriterionSampleIds.contains(ID1));
         assertTrue(laterThanCriterionSampleIds.contains(ID2));
-        assertFalse(laterThanCriterionSampleIds.contains(ID3));
+        assertTrue(laterThanCriterionSampleIds.contains(ID3));
     }
 
     /**
@@ -371,9 +371,9 @@ public class SampleSearchManagerDBTest
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_STRING2);
         final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
-        assertTrue(laterThanCriterionSampleIds.contains(ID1));
+        assertFalse(laterThanCriterionSampleIds.contains(ID1));
         assertTrue(laterThanCriterionSampleIds.contains(ID2));
-        assertFalse(laterThanCriterionSampleIds.contains(ID3));
+        assertTrue(laterThanCriterionSampleIds.contains(ID3));
     }
 
 //    /**

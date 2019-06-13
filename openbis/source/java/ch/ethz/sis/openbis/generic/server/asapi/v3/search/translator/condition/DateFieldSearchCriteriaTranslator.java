@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
@@ -28,7 +28,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectLaterTha
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
 
 import java.text.ParseException;
 import java.util.List;
@@ -41,7 +40,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 
-public class DateFieldConditionTranslator extends AbstractConditionTranslator<DateFieldSearchCriteria>
+public class DateFieldSearchCriteriaTranslator extends AbstractConditionTranslator<DateFieldSearchCriteria>
 {
 
     @Override
