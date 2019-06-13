@@ -43,7 +43,7 @@ public class Attributes
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("perm id", ColumnNames.PERM_ID_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.REGISTRATION_DATE, ColumnNames.REGISTRATION_TIMESTAMP_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.CODE, ColumnNames.CODE_COLUMN);
-//        ATTRIBUTE_ID_TO_COLUMN_NAME.put("codes", ?);
+        ATTRIBUTE_ID_TO_COLUMN_NAME.put("codes", ColumnNames.CODE_COLUMN);
 //        ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.IDENTIFIER, ?);
 //        ATTRIBUTE_ID_TO_COLUMN_NAME.put("ids", ?);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.ID, ColumnNames.ID_COLUMN);

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
 
+import java.util.Collection;
 import java.util.List;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
@@ -29,8 +29,9 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME;
 
-public class CollectionFieldConditionTranslator extends AbstractConditionTranslator<CollectionFieldSearchCriteria<?>>
+public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
 
     @Override
@@ -38,11 +39,14 @@ public class CollectionFieldConditionTranslator extends AbstractConditionTransla
             final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
-        final Object fieldName = criterion.getFieldName();
+        final Object fieldName = ATTRIBUTE_ID_TO_COLUMN_NAME.get(criterion.getFieldName());
+        final Collection<?> fieldValue = criterion.getFieldValue();
 
         sqlBuilder.append(fieldName).append(SP).append(IN).append(SP).append(LP).
                 append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
                 append(RP);
+
+        args.add(fieldValue.toArray(new Object[fieldValue.size()]));
     }
 
 }

@@ -136,7 +136,12 @@ public class JDBCSQLExecutor implements ISQLExecutor
                     }
                 } else
                 {
-                    throw new IllegalArgumentException("Arrays of objects are not supported");
+                    if (componentType.isAssignableFrom(String.class)) {
+                        dbArrayTypeName = "varchar";
+                    } else
+                    {
+                        throw new IllegalArgumentException("Arrays of objects are not supported");
+                    }
                 }
 
                 preparedStatement.setArray(index + 1, connection.createArrayOf(dbArrayTypeName, objectArray));
