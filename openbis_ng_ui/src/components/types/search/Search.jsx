@@ -12,7 +12,24 @@ import Pagination from '../../common/table/Pagination.jsx'
 import {facade, dto} from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
-const styles = () => ({
+const styles = (theme) => ({
+  table: {
+    height: '100%'
+  },
+  header: {
+    '& th': {
+      position: 'sticky',
+      top: 0,
+      backgroundColor: theme.palette.background.paper
+    }
+  },
+  footer: {
+    '& td': {
+      position: 'sticky',
+      bottom: 0,
+      backgroundColor: theme.palette.background.paper
+    }
+  }
 })
 
 class Search extends React.Component {
@@ -142,6 +159,7 @@ class Search extends React.Component {
       return <React.Fragment />
     }
 
+    const { classes } = this.props
     const { page, pageSize, sort, sortDirection, allTypes } = this.state
 
     let types = [...allTypes]
@@ -149,8 +167,8 @@ class Search extends React.Component {
     types = this.page(types)
 
     return (
-      <Table>
-        <TableHead>
+      <Table classes={{ root: classes.table }}>
+        <TableHead classes={{ root: classes.header }}>
           <TableRow>
             <TableCell>
               <TableSortLabel
@@ -184,7 +202,7 @@ class Search extends React.Component {
             </TableRow>
           ))}
         </TableBody>
-        <TableFooter>
+        <TableFooter classes={{ root: classes.footer }}>
           <TableRow>
             <Pagination
               count={allTypes.length}
