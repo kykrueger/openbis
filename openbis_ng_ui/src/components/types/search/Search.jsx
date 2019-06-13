@@ -23,6 +23,12 @@ const styles = (theme) => ({
       backgroundColor: theme.palette.background.paper
     }
   },
+  spacer: {
+    height: '100%',
+    '& td': {
+      border: 0
+    }
+  },
   footer: {
     '& td': {
       position: 'sticky',
@@ -201,6 +207,9 @@ class Search extends React.Component {
               </TableCell>
             </TableRow>
           ))}
+          <TableRow classes={{ root: classes.spacer }}>
+            <TableCell></TableCell>
+          </TableRow>
         </TableBody>
         <TableFooter classes={{ root: classes.footer }}>
           <TableRow>
