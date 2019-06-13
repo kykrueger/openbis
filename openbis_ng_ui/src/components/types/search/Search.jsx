@@ -1,6 +1,8 @@
 import _ from 'lodash'
 import React from 'react'
+import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
+import Link from '@material-ui/core/Link'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -9,6 +11,9 @@ import TableFooter from '@material-ui/core/TableFooter'
 import TableRow from '@material-ui/core/TableRow'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
 import Pagination from '../../common/table/Pagination.jsx'
+import * as pages from '../../../common/consts/pages.js'
+import * as objectTypes from '../../../common/consts/objectType.js'
+import * as actions from '../../../store/actions/actions.js'
 import {facade, dto} from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
@@ -35,8 +40,24 @@ const styles = (theme) => ({
       bottom: 0,
       backgroundColor: theme.palette.background.paper
     }
+  },
+  link: {
+    fontSize: 'inherit'
   }
 })
+
+const entityKindToObjecType = {
+  'SAMPLE': objectTypes.OBJECT_TYPE,
+  'EXPERIMENT': objectTypes.COLLECTION_TYPE,
+  'DATA_SET': objectTypes.DATA_SET_TYPE,
+  'MATERIAL': objectTypes.MATERIAL_TYPE
+}
+
+function mapDispatchToProps(dispatch){
+  return {
+    objectOpen: (objectType, objectId) => { dispatch(actions.objectOpen(pages.TYPES, objectType, objectId)) }
+  }
+}
 
 class Search extends React.Component {
 
@@ -47,6 +68,7 @@ class Search extends React.Component {
     }
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
+    this.handleLinkClick = this.handleLinkClick.bind(this)
   }
 
   componentDidMount(){
@@ -126,6 +148,12 @@ class Search extends React.Component {
     }
   }
 
+  handleLinkClick(permId){
+    return () => {
+      this.props.objectOpen(entityKindToObjecType[permId.entityKind], permId.permId)
+    }
+  }
+
   handlePageChange(page){
     this.setState(() => ({
       page
@@ -200,7 +228,11 @@ class Search extends React.Component {
           {types.map(type => (
             <TableRow key={type.permId.entityKind + '-' + type.permId.permId} hover>
               <TableCell>
-                {type.code}
+                <Link
+                  component="button"
+                  classes={{ root: classes.link }}
+                  onClick={this.handleLinkClick(type.permId)}>{type.code}
+                </Link>
               </TableCell>
               <TableCell>
                 {type.description}
@@ -229,5 +261,6 @@ class Search extends React.Component {
 }
 
 export default _.flow(
+  connect(null, mapDispatchToProps),
   withStyles(styles)
 )(Search)
