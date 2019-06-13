@@ -37,7 +37,7 @@ function ExportTreeController(parentController) {
 		}
 		
 		Util.blockUI();
-		mainController.serverFacade.exportAll(toExport, true, function(error, result) {
+		mainController.serverFacade.exportAll(toExport, true, false, function(error, result) {
 			if(error) {
 				Util.showError(error);
 			} else {
