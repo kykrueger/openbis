@@ -25,6 +25,7 @@ const styles = (theme) => ({
     '& th': {
       position: 'sticky',
       top: 0,
+      zIndex: 10,
       backgroundColor: theme.palette.background.paper
     }
   },
@@ -38,6 +39,7 @@ const styles = (theme) => ({
     '& td': {
       position: 'sticky',
       bottom: 0,
+      zIndex: 10,
       backgroundColor: theme.palette.background.paper
     }
   },
