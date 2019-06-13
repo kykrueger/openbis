@@ -457,6 +457,9 @@ function ServerFacade(openbisServer) {
 					} else {
 						callback(deletionId);
 					}
+				}).fail(function(error) {
+					Util.showFailedServerCallError(error);
+					Util.unblockUI();
 				});
 		});
 	}
@@ -1833,7 +1836,10 @@ function ServerFacade(openbisServer) {
             mainController.openbisV3.getSamples([id], fetchOptions).done(function(map) {
                 var samples = Util.mapValuesToList(map);
                 callbackFunction(_this.getV3SamplesAsV1(samples));
-            });
+            }).fail(function(result) {
+				Util.showFailedServerCallError(result);
+				callbackFunction(false);
+			});
         });
 	}
 	
