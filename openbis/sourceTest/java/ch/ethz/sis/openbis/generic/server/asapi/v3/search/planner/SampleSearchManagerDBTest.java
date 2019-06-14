@@ -30,11 +30,12 @@ import org.testng.annotations.Test;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,13 +61,7 @@ import static org.testng.Assert.assertTrue;
 public class SampleSearchManagerDBTest
 {
 
-    public static final long USER_ID = 2L;
-
-    private static final String PERM_ID1 = "20190612105000000-1";
-
-    private static final String PERM_ID2 = "20190612105000000-2";
-
-    private static final String PERM_ID3 = "20190612105000000-3";
+    private static final long USER_ID = 2L;
 
     private static final long ID1 = 1001L;
 
@@ -74,13 +69,31 @@ public class SampleSearchManagerDBTest
 
     private static final long ID3 = 1003L;
 
+    private static final long SPACE_ID = 10001L;
+
+    private static final long PROJECT_ID = 10002L;
+
+    private static final long EXPERIMENT_ID = 10003L;
+
+    private static final long EXPERIMENT_TYPE_ID = 10004L;
+
+    private static final String DEFAULT_PERM_ID = "20190612105000000-0";
+
+    private static final String PERM_ID1 = "20190612105000000-1";
+
+    private static final String PERM_ID2 = "20190612105000000-2";
+
+    private static final String PERM_ID3 = "20190612105000000-3";
+
+    private static final String DEFAULT_CODE = "NOT_UNIQUE_CODE";
+
     private static final String CODE1 = "MY_UNIQUE_CODE1";
 
     private static final String CODE2 = "NOT_UNIQUE_CODE2";
 
     private static final String CODE3 = "NOT_UNIQUE_CODE3";
 
-    private static final String DEFAULT_CODE = "NOT_UNIQUE_CODE";
+    private static final int DEFAULT_VERSION = 10;
 
     private static final int VERSION1 = 101;
 
@@ -100,6 +113,8 @@ public class SampleSearchManagerDBTest
 
     private static final String REGISTRATION_DATE_STRING3 = "2019-06-13 10:50:00 +0200";
 
+    private static final Date DEFAULT_DATE = new Date(119, Calendar.JUNE, 10, 10, 50, 0);
+
     private SampleSearchManager searchManager;
 
     private JDBCSQLExecutor sqlExecutor;
@@ -115,6 +130,7 @@ public class SampleSearchManagerDBTest
     public void setUp() throws Exception
     {
         connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", "");
+        connection.setAutoCommit(false);
         sqlExecutor = new JDBCSQLExecutor(connection);
         final PostgresSearchDAO searchDAO = new PostgresSearchDAO(sqlExecutor);
         final ISQLAuthorisationInformationProviderDAO authInfoProviderDAO =
@@ -125,39 +141,120 @@ public class SampleSearchManagerDBTest
         populateDB();
     }
 
-    private void populateDB()
+    private void populateDB() throws SQLException
     {
-        // TODO: create related entities, and not just use 1 as ID.
+        try
+        {
+            createSpace();
+            createProject();
+            createExperimentType();
+            createExperiment();
 
-        final Map<String, Object> valuesMap1 = getDefaultValuesMap();
-        valuesMap1.put(ColumnNames.ID_COLUMN, ID1);
-        valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID1);
-        valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
-        valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
-        valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
-        valuesMap1.put(ColumnNames.SPACE_COLUMN, 1);
-//        valuesMap1.put(ColumnNames.PART_OF_SAMPLE_COLUMN, 1);
+            final Map<String, Object> valuesMap1 = getDefaultValuesMap();
+            valuesMap1.put(ColumnNames.ID_COLUMN, ID1);
+            valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID1);
+            valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
+            valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
+            valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
+            valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID);
+            //        valuesMap1.put(ColumnNames.PART_OF_SAMPLE_COLUMN, 1);
 
-        final Map<String, Object> valuesMap2 = getDefaultValuesMap();
-        valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
-        valuesMap2.put(ColumnNames.ID_COLUMN, ID2);
-        valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
-        valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
-        valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
-        valuesMap2.put(ColumnNames.PROJECT_COLUMN, 1);
+            final Map<String, Object> valuesMap2 = getDefaultValuesMap();
+            valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
+            valuesMap2.put(ColumnNames.ID_COLUMN, ID2);
+            valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
+            valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
+            valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
+            valuesMap2.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
 
-        final Map<String, Object> valuesMap3 = getDefaultValuesMap();
-        valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
-        valuesMap3.put(ColumnNames.ID_COLUMN, ID3);
-        valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
-        valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
-        valuesMap3.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE3);
-        valuesMap3.put(ColumnNames.PROJECT_COLUMN, 1);
-        valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, 1);
+            final Map<String, Object> valuesMap3 = getDefaultValuesMap();
+            valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
+            valuesMap3.put(ColumnNames.ID_COLUMN, ID3);
+            valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
+            valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
+            valuesMap3.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE3);
+            valuesMap3.put(ColumnNames.PROJECT_COLUMN, 1);
+            valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, 1);
 
-        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
-        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
-        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap3);
+            insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
+            insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
+            insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap3);
+
+            connection.commit();
+        } catch (final Exception e)
+        {
+            connection.rollback();
+            throw e;
+        }
+    }
+
+    private void createSpace()
+    {
+        final Map<String, Object> valuesMap = new HashMap<>();
+        valuesMap.put(ColumnNames.ID_COLUMN, SPACE_ID);
+        valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
+        valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, null);
+        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap.put(ColumnNames.FROZEN_COLUMN, false);
+        valuesMap.put(ColumnNames.FROZEN_FOR_PROJECT_COLUMN, false);
+        valuesMap.put(ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, false);
+        insertRecord(TableNames.SPACES_TABLE, valuesMap);
+    }
+
+    private void createProject()
+    {
+        final Map<String, Object> valuesMap = new HashMap<>();
+        valuesMap.put(ColumnNames.ID_COLUMN, PROJECT_ID);
+        valuesMap.put(ColumnNames.PERM_ID_COLUMN, "20190301152050019-11");
+        valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
+        valuesMap.put(ColumnNames.SPACE_COLUMN, SPACE_ID);
+        valuesMap.put(ColumnNames.PERSON_LEADER_COLUMN, null);
+        valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, null);
+        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+        valuesMap.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+        valuesMap.put(ColumnNames.PERSON_MODIFIER_COLUMN, null);
+        valuesMap.put(ColumnNames.VERSION_COLUMN, DEFAULT_VERSION);
+        valuesMap.put(ColumnNames.FROZEN_COLUMN, false);
+        valuesMap.put(ColumnNames.FROZEN_FOR_EXPERIMENT_COLUMN, false);
+        valuesMap.put(ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, false);
+        valuesMap.put(ColumnNames.SPACE_FROZEN_COLUMN, false);
+        insertRecord(TableNames.PROJECTS_TABLE, valuesMap);
+    }
+
+    private void createExperiment()
+    {
+        final Map<String, Object> valuesMap = new HashMap<>();
+        valuesMap.put(ColumnNames.ID_COLUMN, EXPERIMENT_ID);
+        valuesMap.put(ColumnNames.PERM_ID_COLUMN, DEFAULT_PERM_ID);
+        valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
+        valuesMap.put(ColumnNames.EXPERIMENT_TYPE_COLUMN, EXPERIMENT_TYPE_ID);
+        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+        valuesMap.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+        valuesMap.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
+        valuesMap.put(ColumnNames.DELETION_COLUMN, null);
+        valuesMap.put(ColumnNames.ORIGINAL_DELETION_COLUMN, null);
+        valuesMap.put(ColumnNames.IS_PUBLIC, false);
+        valuesMap.put(ColumnNames.PERSON_MODIFIER_COLUMN, null);
+        valuesMap.put(ColumnNames.VERSION_COLUMN, DEFAULT_VERSION);
+        valuesMap.put(ColumnNames.FROZEN_COLUMN, false);
+        valuesMap.put(ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, false);
+        valuesMap.put(ColumnNames.FROZEN_FOR_DATA_SET_COLUMN, false);
+        valuesMap.put(ColumnNames.PROJECT_FROZEN_COLUMN, false);
+        insertRecord(TableNames.EXPERIMENTS_ALL_TABLE, valuesMap);
+    }
+
+    private void createExperimentType()
+    {
+        final Map<String, Object> valuesMap = new HashMap<>();
+        valuesMap.put(ColumnNames.ID_COLUMN, EXPERIMENT_TYPE_ID);
+        valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
+        valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, null);
+        valuesMap.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+        valuesMap.put(ColumnNames.VALIDATION_SCRIPT_ID_COLUMN, null);
+        insertRecord(TableNames.EXPERIMENT_TYPES_TABLE, valuesMap);
     }
 
     /**
@@ -167,11 +264,11 @@ public class SampleSearchManagerDBTest
      */
     private Map<String, Object> getDefaultValuesMap()
     {
-        final Map<String, Object> valuesMap = new LinkedHashMap<String, Object>();
+        final Map<String, Object> valuesMap = new HashMap<>();
         valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
         valuesMap.put(ColumnNames.EXPERIMENT_COLUMN, null);
         valuesMap.put(ColumnNames.SAMPLE_TYPE_COLUMN, 1);
-        valuesMap.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, new Date(1019, Calendar.JUNE, 12, 10, 50, 0));
+        valuesMap.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, 1);
         valuesMap.put(ColumnNames.DELETION_COLUMN, null);
         valuesMap.put(ColumnNames.ORIGINAL_DELETION_COLUMN, null);
@@ -221,19 +318,36 @@ public class SampleSearchManagerDBTest
     @AfterClass
     public void tearDown() throws Exception
     {
-        cleanDB();
-
-        if (connection != null)
+        try
         {
-            connection.close();
+            cleanDB();
+        } finally
+        {
+            if (connection != null)
+            {
+                connection.close();
+            }
         }
     }
 
-    private void cleanDB()
+    private void cleanDB() throws SQLException
     {
-        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID1);
-        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID2);
-        deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID3);
+        try
+        {
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID1);
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID2);
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID3);
+
+            deleteRecord(TableNames.EXPERIMENTS_ALL_TABLE, ColumnNames.ID_COLUMN, EXPERIMENT_ID);
+            deleteRecord(TableNames.PROJECTS_TABLE, ColumnNames.ID_COLUMN, PROJECT_ID);
+            deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID);
+
+            connection.commit();
+        } catch (final Exception e)
+        {
+            connection.rollback();
+            throw e;
+        }
     }
 
     private void deleteRecord(final String tableName, final String key, final Object value)
