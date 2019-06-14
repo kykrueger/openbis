@@ -34,6 +34,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -63,13 +64,15 @@ public class SampleSearchManagerDBTest
 
     private static final long USER_ID = 2L;
 
-    private static final long ID1 = 1001L;
+    private static final long SAMPLE_ID1 = 1001L;
 
-    private static final long ID2 = 1002L;
+    private static final long SAMPLE_ID2 = 1002L;
 
-    private static final long ID3 = 1003L;
+    private static final long SAMPLE_ID3 = 1003L;
 
-    private static final long SPACE_ID = 10001L;
+    private static final long SPACE_ID1 = 10000L;
+
+    private static final long SPACE_ID2 = 10001L;
 
     private static final long PROJECT_ID = 10002L;
 
@@ -85,13 +88,13 @@ public class SampleSearchManagerDBTest
 
     private static final String PERM_ID3 = "20190612105000000-3";
 
-    private static final String DEFAULT_CODE = "NOT_UNIQUE_CODE";
+    private static final String DEFAULT_CODE = "DEFAULT_UNIQUE_CODE";
 
     private static final String CODE1 = "MY_UNIQUE_CODE1";
 
-    private static final String CODE2 = "NOT_UNIQUE_CODE2";
+    private static final String CODE2 = "ANOTHER_UNIQUE_CODE2";
 
-    private static final String CODE3 = "NOT_UNIQUE_CODE3";
+    private static final String CODE3 = "ANOTHER_UNIQUE_CODE3";
 
     private static final int DEFAULT_VERSION = 10;
 
@@ -145,23 +148,22 @@ public class SampleSearchManagerDBTest
     {
         try
         {
-            createSpace();
+            createSpaces();
             createProject();
             createExperimentType();
             createExperiment();
 
             final Map<String, Object> valuesMap1 = getDefaultValuesMap();
-            valuesMap1.put(ColumnNames.ID_COLUMN, ID1);
+            valuesMap1.put(ColumnNames.ID_COLUMN, SAMPLE_ID1);
             valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID1);
             valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
             valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
             valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
-            valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID);
-            //        valuesMap1.put(ColumnNames.PART_OF_SAMPLE_COLUMN, 1);
+            valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
 
             final Map<String, Object> valuesMap2 = getDefaultValuesMap();
             valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
-            valuesMap2.put(ColumnNames.ID_COLUMN, ID2);
+            valuesMap2.put(ColumnNames.ID_COLUMN, SAMPLE_ID2);
             valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
             valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
             valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
@@ -169,12 +171,13 @@ public class SampleSearchManagerDBTest
 
             final Map<String, Object> valuesMap3 = getDefaultValuesMap();
             valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
-            valuesMap3.put(ColumnNames.ID_COLUMN, ID3);
+            valuesMap3.put(ColumnNames.ID_COLUMN, SAMPLE_ID3);
             valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
             valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
             valuesMap3.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE3);
-            valuesMap3.put(ColumnNames.PROJECT_COLUMN, 1);
-            valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, 1);
+            valuesMap3.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
+            valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, EXPERIMENT_ID);
+            valuesMap3.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);
 
             insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
             insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
@@ -188,18 +191,29 @@ public class SampleSearchManagerDBTest
         }
     }
 
-    private void createSpace()
+    private void createSpaces()
     {
-        final Map<String, Object> valuesMap = new HashMap<>();
-        valuesMap.put(ColumnNames.ID_COLUMN, SPACE_ID);
-        valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
-        valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, null);
-        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
-        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
-        valuesMap.put(ColumnNames.FROZEN_COLUMN, false);
-        valuesMap.put(ColumnNames.FROZEN_FOR_PROJECT_COLUMN, false);
-        valuesMap.put(ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, false);
-        insertRecord(TableNames.SPACES_TABLE, valuesMap);
+        final Map<String, Object> valuesMap1 = new HashMap<>();
+        valuesMap1.put(ColumnNames.ID_COLUMN, SPACE_ID1);
+        valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
+        valuesMap1.put(ColumnNames.DESCRIPTION_COLUMN, null);
+        valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+        valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap1.put(ColumnNames.FROZEN_COLUMN, false);
+        valuesMap1.put(ColumnNames.FROZEN_FOR_PROJECT_COLUMN, false);
+        valuesMap1.put(ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, false);
+        insertRecord(TableNames.SPACES_TABLE, valuesMap1);
+
+        final Map<String, Object> valuesMap2 = new HashMap<>();
+        valuesMap2.put(ColumnNames.ID_COLUMN, SPACE_ID2);
+        valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
+        valuesMap2.put(ColumnNames.DESCRIPTION_COLUMN, null);
+        valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+        valuesMap2.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        valuesMap2.put(ColumnNames.FROZEN_COLUMN, false);
+        valuesMap2.put(ColumnNames.FROZEN_FOR_PROJECT_COLUMN, false);
+        valuesMap2.put(ColumnNames.FROZEN_FOR_SAMPLE_COLUMN, false);
+        insertRecord(TableNames.SPACES_TABLE, valuesMap2);
     }
 
     private void createProject()
@@ -208,7 +222,7 @@ public class SampleSearchManagerDBTest
         valuesMap.put(ColumnNames.ID_COLUMN, PROJECT_ID);
         valuesMap.put(ColumnNames.PERM_ID_COLUMN, "20190301152050019-11");
         valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
-        valuesMap.put(ColumnNames.SPACE_COLUMN, SPACE_ID);
+        valuesMap.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
         valuesMap.put(ColumnNames.PERSON_LEADER_COLUMN, null);
         valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, null);
         valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
@@ -334,13 +348,15 @@ public class SampleSearchManagerDBTest
     {
         try
         {
-            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID1);
-            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID2);
-            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, ID3);
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID3);
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID2);
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID1);
 
             deleteRecord(TableNames.EXPERIMENTS_ALL_TABLE, ColumnNames.ID_COLUMN, EXPERIMENT_ID);
+            deleteRecord(TableNames.EXPERIMENT_TYPES_TABLE, ColumnNames.ID_COLUMN, EXPERIMENT_TYPE_ID);
             deleteRecord(TableNames.PROJECTS_TABLE, ColumnNames.ID_COLUMN, PROJECT_ID);
-            deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID);
+            deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID1);
+            deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID2);
 
             connection.commit();
         } catch (final Exception e)
@@ -353,7 +369,7 @@ public class SampleSearchManagerDBTest
     private void deleteRecord(final String tableName, final String key, final Object value)
     {
         sqlExecutor.executeUpdate(DELETE + SP + FROM + SP + tableName + NL +
-                WHERE + SP + key + EQ + QU, Arrays.asList(value));
+                WHERE + SP + key + EQ + QU, Collections.singletonList(value));
     }
 
     /**
@@ -389,7 +405,7 @@ public class SampleSearchManagerDBTest
     {
         final Set<Long> sampleIds = searchManager.searchForIDs(USER_ID, criterion);
         assertEquals(sampleIds.size(), 1);
-        assertEquals(sampleIds.iterator().next().longValue(), ID1);
+        assertEquals(sampleIds.iterator().next().longValue(), SAMPLE_ID1);
     }
 
 //    /**
@@ -402,39 +418,39 @@ public class SampleSearchManagerDBTest
 //        equalsCriterion.withCode().thatEquals(VERSION2);
 //        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
 //        assertEquals(equalsCriterionSampleIds.size(), 1);
-//        assertEquals(equalsCriterionSampleIds.iterator().next().longValue(), ID2);
+//        assertEquals(equalsCriterionSampleIds.iterator().next().longValue(), SAMPLE_ID2);
 //
 //        final SampleSearchCriteria lessThanCriterion = new SampleSearchCriteria();
 //        lessThanCriterion.withNumberProperty(ColumnNames.VERSION_COLUMN).thatIsLessThan(VERSION2);
 //        final Set<Long> lessThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, lessThanCriterion);
 //        assertFalse(lessThanCriterionSampleIds.isEmpty());
-//        assertTrue(lessThanCriterionSampleIds.contains(ID1));
-//        assertFalse(lessThanCriterionSampleIds.contains(ID2));
-//        assertFalse(lessThanCriterionSampleIds.contains(ID3));
+//        assertTrue(lessThanCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertFalse(lessThanCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertFalse(lessThanCriterionSampleIds.contains(SAMPLE_ID3));
 //
 //        final SampleSearchCriteria lessThanOrEqualsToCriterion = new SampleSearchCriteria();
 //        lessThanOrEqualsToCriterion.withNumberProperty(ColumnNames.VERSION_COLUMN).thatIsLessThanOrEqualTo(VERSION2);
 //        final Set<Long> lessThanOrEqualsToCriterionSampleIds = searchManager.searchForIDs(USER_ID, lessThanOrEqualsToCriterion);
 //        assertFalse(lessThanOrEqualsToCriterionSampleIds.isEmpty());
-//        assertTrue(lessThanOrEqualsToCriterionSampleIds.contains(ID1));
-//        assertTrue(lessThanOrEqualsToCriterionSampleIds.contains(ID2));
-//        assertFalse(lessThanOrEqualsToCriterionSampleIds.contains(ID3));
+//        assertTrue(lessThanOrEqualsToCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertTrue(lessThanOrEqualsToCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertFalse(lessThanOrEqualsToCriterionSampleIds.contains(SAMPLE_ID3));
 //
 //        final SampleSearchCriteria greaterThanCriterion = new SampleSearchCriteria();
 //        greaterThanCriterion.withNumberProperty(ColumnNames.VERSION_COLUMN).thatIsGreaterThan(VERSION2);
 //        final Set<Long> greaterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, greaterThanCriterion);
 //        assertFalse(greaterThanCriterionSampleIds.isEmpty());
-//        assertFalse(greaterThanCriterionSampleIds.contains(ID1));
-//        assertFalse(greaterThanCriterionSampleIds.contains(ID2));
-//        assertTrue(greaterThanCriterionSampleIds.contains(ID3));
+//        assertFalse(greaterThanCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertFalse(greaterThanCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertTrue(greaterThanCriterionSampleIds.contains(SAMPLE_ID3));
 //
 //        final SampleSearchCriteria greaterThanOrEqualsToCriterion = new SampleSearchCriteria();
 //        greaterThanOrEqualsToCriterion.withNumberProperty(ColumnNames.VERSION_COLUMN).thatIsGreaterThanOrEqualTo(VERSION2);
 //        final Set<Long> greaterThanOrEqualsToCriterionSampleIds = searchManager.searchForIDs(USER_ID, greaterThanOrEqualsToCriterion);
 //        assertFalse(greaterThanOrEqualsToCriterionSampleIds.isEmpty());
-//        assertFalse(greaterThanOrEqualsToCriterionSampleIds.contains(ID1));
-//        assertTrue(greaterThanOrEqualsToCriterionSampleIds.contains(ID2));
-//        assertTrue(greaterThanOrEqualsToCriterionSampleIds.contains(ID3));
+//        assertFalse(greaterThanOrEqualsToCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertTrue(greaterThanOrEqualsToCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertTrue(greaterThanOrEqualsToCriterionSampleIds.contains(SAMPLE_ID3));
 //    }
 
     /**
@@ -447,23 +463,23 @@ public class SampleSearchManagerDBTest
         equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE2);
         final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
         assertEquals(equalCriterionSampleIds.size(), 1);
-        assertTrue(equalCriterionSampleIds.contains(ID2));
+        assertTrue(equalCriterionSampleIds.contains(SAMPLE_ID2));
 
         final SampleSearchCriteria earlierThanCriterion = new SampleSearchCriteria();
         earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE2);
         final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, earlierThanCriterion);
         assertFalse(earlierThanCriterionSampleIds.isEmpty());
-        assertTrue(earlierThanCriterionSampleIds.contains(ID1));
-        assertTrue(earlierThanCriterionSampleIds.contains(ID2));
-        assertFalse(earlierThanCriterionSampleIds.contains(ID3));
+        assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(earlierThanCriterionSampleIds.contains(SAMPLE_ID3));
 
         final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE2);
         final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
-        assertFalse(laterThanCriterionSampleIds.contains(ID1));
-        assertTrue(laterThanCriterionSampleIds.contains(ID2));
-        assertTrue(laterThanCriterionSampleIds.contains(ID3));
+        assertFalse(laterThanCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(laterThanCriterionSampleIds.contains(SAMPLE_ID2));
+        assertTrue(laterThanCriterionSampleIds.contains(SAMPLE_ID3));
     }
 
     /**
@@ -476,23 +492,23 @@ public class SampleSearchManagerDBTest
         equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE_STRING2);
         final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
         assertEquals(equalCriterionSampleIds.size(), 1);
-        assertTrue(equalCriterionSampleIds.contains(ID2));
+        assertTrue(equalCriterionSampleIds.contains(SAMPLE_ID2));
 
         final SampleSearchCriteria earlierThanCriterion = new SampleSearchCriteria();
         earlierThanCriterion.withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE_STRING2);
         final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, earlierThanCriterion);
         assertFalse(earlierThanCriterionSampleIds.isEmpty());
-        assertTrue(earlierThanCriterionSampleIds.contains(ID1));
-        assertTrue(earlierThanCriterionSampleIds.contains(ID2));
-        assertFalse(earlierThanCriterionSampleIds.contains(ID3));
+        assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(earlierThanCriterionSampleIds.contains(SAMPLE_ID3));
 
         final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_STRING2);
         final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
-        assertFalse(laterThanCriterionSampleIds.contains(ID1));
-        assertTrue(laterThanCriterionSampleIds.contains(ID2));
-        assertTrue(laterThanCriterionSampleIds.contains(ID3));
+        assertFalse(laterThanCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(laterThanCriterionSampleIds.contains(SAMPLE_ID2));
+        assertTrue(laterThanCriterionSampleIds.contains(SAMPLE_ID3));
     }
 
 //    /**
@@ -523,9 +539,9 @@ public class SampleSearchManagerDBTest
         criterion.withCodes().thatIn(Arrays.asList(CODE1, CODE3));
         final Set<Long> criterionSampleIds = searchManager.searchForIDs(USER_ID, criterion);
         assertEquals(criterionSampleIds.size(), 2);
-        assertTrue(criterionSampleIds.contains(ID1));
-        assertFalse(criterionSampleIds.contains(ID2));
-        assertTrue(criterionSampleIds.contains(ID3));
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID1));
+        assertFalse(criterionSampleIds.contains(SAMPLE_ID2));
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID3));
     }
 
     /**
@@ -538,9 +554,9 @@ public class SampleSearchManagerDBTest
         criterion.withoutExperiment();
         final Set<Long> criterionSampleIds = searchManager.searchForIDs(USER_ID, criterion);
         assertFalse(criterionSampleIds.isEmpty());
-        assertTrue(criterionSampleIds.contains(ID1));
-        assertTrue(criterionSampleIds.contains(ID2));
-        assertFalse(criterionSampleIds.contains(ID3));
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(criterionSampleIds.contains(SAMPLE_ID3));
     }
 
     /**
@@ -553,9 +569,9 @@ public class SampleSearchManagerDBTest
         criterion.withoutProject();
         final Set<Long> criterionSampleIds = searchManager.searchForIDs(USER_ID, criterion);
         assertFalse(criterionSampleIds.isEmpty());
-        assertTrue(criterionSampleIds.contains(ID1));
-        assertFalse(criterionSampleIds.contains(ID2));
-        assertFalse(criterionSampleIds.contains(ID3));
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID1));
+        assertFalse(criterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(criterionSampleIds.contains(SAMPLE_ID3));
     }
 
     /**
@@ -568,24 +584,24 @@ public class SampleSearchManagerDBTest
         criterion.withoutSpace();
         final Set<Long> criterionSampleIds = searchManager.searchForIDs(USER_ID, criterion);
         assertFalse(criterionSampleIds.isEmpty());
-        assertFalse(criterionSampleIds.contains(ID1));
-        assertTrue(criterionSampleIds.contains(ID2));
-        assertTrue(criterionSampleIds.contains(ID3));
+        assertFalse(criterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID2));
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID3));
     }
 
-//    /**
-//     * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
-//     */
-//    @Test
-//    public void testQueryDBWithoutContainerFieldSearchCriteria()
-//    {
-//        final SampleSearchCriteria criterion = new SampleSearchCriteria();
-//        criterion.withoutContainer();
-//        final Set<Long> criterionSampleIds = searchManager.searchForIDs(USER_ID, criterion);
-//        assertFalse(criterionSampleIds.isEmpty());
-//        assertTrue(criterionSampleIds.contains(ID1));
-//        assertTrue(criterionSampleIds.contains(ID2));
-//        assertFalse(criterionSampleIds.contains(ID3));
-//    }
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithoutContainerFieldSearchCriteria()
+    {
+        final SampleSearchCriteria criterion = new SampleSearchCriteria();
+        criterion.withoutContainer();
+        final Set<Long> criterionSampleIds = searchManager.searchForIDs(USER_ID, criterion);
+        assertFalse(criterionSampleIds.isEmpty());
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(criterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(criterionSampleIds.contains(SAMPLE_ID3));
+    }
 
 }
