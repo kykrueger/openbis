@@ -104,6 +104,18 @@ public class DBTestHelper
 
     public static final String REGISTRATION_DATE_STRING3 = "2019-06-13 10:50:00 +0200";
 
+    public static final Date MODIFICATION_DATE1 = new Date(118, Calendar.JUNE, 11, 10, 50, 0);
+
+    public static final Date MODIFICATION_DATE2 = new Date(118, Calendar.JUNE, 12, 10, 50, 0);
+
+    public static final Date MODIFICATION_DATE3 = new Date(118, Calendar.JUNE, 13, 10, 50, 0);
+
+    public static final String MODIFICATION_DATE_STRING1 = "2018-06-11 10:50:00 +0200";
+
+    public static final String MODIFICATION_DATE_STRING2 = "2018-06-12 10:50:00 +0200";
+
+    public static final String MODIFICATION_DATE_STRING3 = "2018-06-13 10:50:00 +0200";
+
     public static final Date DEFAULT_DATE = new Date(119, Calendar.JUNE, 10, 10, 50, 0);
 
     private JDBCSQLExecutor sqlExecutor;
@@ -160,6 +172,7 @@ public class DBTestHelper
         valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
         valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
         valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
+        valuesMap1.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE1);
         valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
 
         final Map<String, Object> valuesMap2 = getDefaultValuesMap();
@@ -168,6 +181,7 @@ public class DBTestHelper
         valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
         valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
         valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
+        valuesMap2.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE2);
         valuesMap2.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
 
         final Map<String, Object> valuesMap3 = getDefaultValuesMap();
@@ -175,7 +189,7 @@ public class DBTestHelper
         valuesMap3.put(ColumnNames.ID_COLUMN, SAMPLE_ID3);
         valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
         valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
-        valuesMap3.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE3);
+        valuesMap3.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE3);
         valuesMap3.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
         valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, EXPERIMENT_ID);
         valuesMap3.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);

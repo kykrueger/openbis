@@ -16,6 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO;
@@ -32,6 +35,8 @@ import java.util.Set;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFICATION_DATE2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFICATION_DATE_STRING2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PERM_ID1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PERM_ID2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATION_DATE2;
@@ -162,10 +167,10 @@ public class SampleSearchManagerDBTest
 //    }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with date field search criteria using DB connection.
+     * Tests {@link StringFieldSearchCriteriaTranslator} with {@link RegistrationDateSearchCriteria} search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithDateField()
+    public void testQueryDBWithRegistrationDateField()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
         equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE2);
@@ -191,10 +196,40 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with date field search criteria (in string form) using DB connection.
+     * Tests {@link StringFieldSearchCriteriaTranslator} with {@link ModificationDateSearchCriteria} search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithStringDateField()
+    public void testQueryDBWithModificationDateField()
+    {
+        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+        equalsCriterion.withModificationDate().thatEquals(MODIFICATION_DATE2);
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+        assertEquals(equalCriterionSampleIds.size(), 1);
+        assertTrue(equalCriterionSampleIds.contains(SAMPLE_ID2));
+
+        final SampleSearchCriteria earlierThanCriterion = new SampleSearchCriteria();
+        earlierThanCriterion.withModificationDate().thatIsEarlierThanOrEqualTo(MODIFICATION_DATE2);
+        final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, earlierThanCriterion);
+        assertFalse(earlierThanCriterionSampleIds.isEmpty());
+        assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(earlierThanCriterionSampleIds.contains(SAMPLE_ID3));
+
+        final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
+        laterThanCriterion.withModificationDate().thatIsLaterThanOrEqualTo(MODIFICATION_DATE2);
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
+        assertFalse(laterThanCriterionSampleIds.isEmpty());
+        assertFalse(laterThanCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(laterThanCriterionSampleIds.contains(SAMPLE_ID2));
+        assertTrue(laterThanCriterionSampleIds.contains(SAMPLE_ID3));
+    }
+
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with {@link RegistrationDateSearchCriteria} field search criteria (in string form) using DB
+     * connection.
+     */
+    @Test
+    public void testQueryDBWithStringRegistrationDateField()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
         equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE_STRING2);
@@ -212,6 +247,36 @@ public class SampleSearchManagerDBTest
 
         final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
         laterThanCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_STRING2);
+        final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
+        assertFalse(laterThanCriterionSampleIds.isEmpty());
+        assertFalse(laterThanCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(laterThanCriterionSampleIds.contains(SAMPLE_ID2));
+        assertTrue(laterThanCriterionSampleIds.contains(SAMPLE_ID3));
+    }
+
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with {@link ModificationDateSearchCriteria} field search criteria (in string form) using DB
+     * connection.
+     */
+    @Test
+    public void testQueryDBWithStringDateField()
+    {
+        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+        equalsCriterion.withModificationDate().thatEquals(MODIFICATION_DATE_STRING2);
+        final Set<Long> equalCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+        assertEquals(equalCriterionSampleIds.size(), 1);
+        assertTrue(equalCriterionSampleIds.contains(SAMPLE_ID2));
+
+        final SampleSearchCriteria earlierThanCriterion = new SampleSearchCriteria();
+        earlierThanCriterion.withModificationDate().thatIsEarlierThanOrEqualTo(MODIFICATION_DATE_STRING2);
+        final Set<Long> earlierThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, earlierThanCriterion);
+        assertFalse(earlierThanCriterionSampleIds.isEmpty());
+        assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(earlierThanCriterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(earlierThanCriterionSampleIds.contains(SAMPLE_ID3));
+
+        final SampleSearchCriteria laterThanCriterion = new SampleSearchCriteria();
+        laterThanCriterion.withModificationDate().thatIsLaterThanOrEqualTo(MODIFICATION_DATE_STRING2);
         final Set<Long> laterThanCriterionSampleIds = searchManager.searchForIDs(USER_ID, laterThanCriterion);
         assertFalse(laterThanCriterionSampleIds.isEmpty());
         assertFalse(laterThanCriterionSampleIds.contains(SAMPLE_ID1));
@@ -289,6 +354,45 @@ public class SampleSearchManagerDBTest
         assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID1));
         assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID2));
         assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID3));
+    }
+
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with {@link UserIdsSearchCriteria} field search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithRegistrator()
+    {
+//        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+//        equalsCriterion.withPermId().thatEquals();
+//        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+////        assertEquals(equalsCriterionSampleIds.size(), 3);
+//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID3));
+
+//        final SampleSearchCriteria startsWithCriterion = new SampleSearchCriteria();
+//        startsWithCriterion.withPermId().thatStartsWith(PERM_ID1.substring(0, PERM_ID1.length() - 2));
+//        final Set<Long> startsWithCriterionSampleIds = searchManager.searchForIDs(USER_ID, startsWithCriterion);
+//        assertEquals(startsWithCriterionSampleIds.size(), 2);
+//        assertTrue(startsWithCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertFalse(startsWithCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertTrue(startsWithCriterionSampleIds.contains(SAMPLE_ID3));
+//
+//        final SampleSearchCriteria endsWithCriterion = new SampleSearchCriteria();
+//        endsWithCriterion.withPermId().thatEndsWith(PERM_ID1.substring(PERM_ID1.length() - 4));
+//        final Set<Long> endsWithCriterionSampleIds = searchManager.searchForIDs(USER_ID, endsWithCriterion);
+//        assertEquals(endsWithCriterionSampleIds.size(), 2);
+//        assertTrue(endsWithCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertTrue(endsWithCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertFalse(endsWithCriterionSampleIds.contains(SAMPLE_ID3));
+//
+//        final SampleSearchCriteria containsCriterion = new SampleSearchCriteria();
+//        containsCriterion.withPermId().thatContains(PERM_ID1.substring(4, 12));
+//        final Set<Long> containsCriterionSampleIds = searchManager.searchForIDs(USER_ID, containsCriterion);
+//        assertEquals(containsCriterionSampleIds.size(), 3);
+//        assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID3));
     }
 
     /**
