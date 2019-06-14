@@ -60,7 +60,7 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
         sqlBuilder.append(NL);
     }
 
-    private void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder) {
+    static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder) {
         if (value.getClass() == StringEqualToValue.class) {
             sqlBuilder.append(EQ).append(QU);
         } else if (value.getClass() == StringStartsWithValue.class) {

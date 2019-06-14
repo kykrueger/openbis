@@ -19,12 +19,34 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMPLE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CONTAINER_FROZEN_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DELETION_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_FROZEN_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_CHILDREN_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_COMPONENTS_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_DATA_SET_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_PARENTS_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ORIGINAL_DELETION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PARENT_SAMPLE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_FROZEN_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_FROZEN_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VERSION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROPERTY_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
@@ -48,7 +70,12 @@ public enum EntityMapper
             SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ID_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_TYPE_COLUMN,
             SAMPLE_PROPERTIES_TABLE, ID_COLUMN, SAMPLE_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_COLUMN,
             SAMPLE_RELATIONSHIPS_ALL_TABLE, ID_COLUMN, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN,
-            DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN);
+            DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN,
+            new String[] { ID_COLUMN, PERM_ID_COLUMN, CODE_COLUMN, EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
+                    MODIFICATION_TIMESTAMP_COLUMN, PERSON_REGISTERER_COLUMN, DELETION_COLUMN, ORIGINAL_DELETION_COLUMN, SPACE_COLUMN,
+                    PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, VERSION_COLUMN, PROJECT_COLUMN, FROZEN_COLUMN, FROZEN_FOR_COMPONENTS_COLUMN,
+                    FROZEN_FOR_CHILDREN_COLUMN, FROZEN_FOR_PARENTS_COLUMN, FROZEN_FOR_DATA_SET_COLUMN, SPACE_FROZEN_COLUMN, PROJECT_FROZEN_COLUMN,
+                    EXPERIMENT_FROZEN_COLUMN, CONTAINER_FROZEN_COLUMN });
 
     /*
      * Entities Table
@@ -112,13 +139,15 @@ public enum EntityMapper
 
     private String dataTableEntityIdField;
 
+    private String[] allFields;
+
     EntityMapper(String entitiesTable, String entitiesTableIdField, String entitiesTableEntityTypeIdField, String attributeTypesTable,
             String attributeTypesTableIdField, String entityTypesTable, String entityTypesTableIdField, String entityTypesAttributeTypesTable,
             String entityTypesAttributeTypesTableIdField, String entityTypesAttributeTypesTableEntityTypeIdField, String entityTypesAttributeTypesTableAttributeTypeIdField,
             String valuesTable, String valuesTableIdField, String valuesTableEntityIdField,
             String valuesTableEntityTypeAttributeTypeIdField, String relationshipsTable, String relationshipsTableIdField,
             String relationshipsTableParentIdField, String relationshipsTableChildIdField, String dataTable, String dataTableIdField,
-            String dataTableEntityIdField)
+            String dataTableEntityIdField, final String[] allFields)
     {
         this.entitiesTable = entitiesTable;
         this.entitiesTableIdField = entitiesTableIdField;
@@ -142,6 +171,7 @@ public enum EntityMapper
         this.dataTable = dataTable;
         this.dataTableIdField = dataTableIdField;
         this.dataTableEntityIdField = dataTableEntityIdField;
+        this.allFields = allFields;
     }
 
     public static EntityMapper toEntityMapper(final EntityKind entityKind)
@@ -257,6 +287,11 @@ public enum EntityMapper
     public String getDataTableEntityIdField()
     {
         return dataTableEntityIdField;
+    }
+
+    public String[] getAllFields()
+    {
+        return allFields;
     }
 
 }

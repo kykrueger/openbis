@@ -16,9 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO;
@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE3;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFICATION_DATE2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.MODIFICATION_DATE_STRING2;
@@ -357,18 +358,18 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with {@link UserIdsSearchCriteria} field search criteria using DB connection.
+     * Tests {@link StringFieldSearchCriteriaTranslator} with {@link AnyFieldSearchCriteria} field search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithRegistrator()
+    public void testQueryDBWithAnyField()
     {
-//        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
-//        equalsCriterion.withPermId().thatEquals();
-//        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
-////        assertEquals(equalsCriterionSampleIds.size(), 3);
-//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID1));
-//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID2));
-//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID3));
+        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+        equalsCriterion.withAnyField().thatEquals(CODE2);
+        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+        assertEquals(equalsCriterionSampleIds.size(), 1);
+        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID3));
 
 //        final SampleSearchCriteria startsWithCriterion = new SampleSearchCriteria();
 //        startsWithCriterion.withPermId().thatStartsWith(PERM_ID1.substring(0, PERM_ID1.length() - 2));

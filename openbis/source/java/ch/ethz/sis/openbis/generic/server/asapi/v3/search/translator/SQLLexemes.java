@@ -61,6 +61,8 @@ public class SQLLexemes
 
     public static final String AND = "AND";
 
+    public static final String OR = "OR";
+
     public static final String NULL = "NULL";
 
     public static final String IS_NOT_NULL = IS + SP + NOT + SP + NULL;
