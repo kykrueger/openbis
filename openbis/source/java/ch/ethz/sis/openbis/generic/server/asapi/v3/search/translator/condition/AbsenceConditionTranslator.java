@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TO_DELETE;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
@@ -22,12 +22,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCr
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.List;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NULL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 
@@ -38,22 +39,25 @@ public class AbsenceConditionTranslator extends AbstractConditionTranslator<ISea
             final List<Object> args,
             final StringBuilder sqlBuilder)
     {
+        final String alias = Translator.getAlias(0);
+        sqlBuilder.append(alias).append(PERIOD);
         if (criterion instanceof NoSampleContainerSearchCriteria)
         {
-            sqlBuilder.append(PART_OF_SAMPLE_COLUMN).append(SP).append(IS_NULL);
+            sqlBuilder.append(PART_OF_SAMPLE_COLUMN);
         } else if (criterion instanceof NoExperimentSearchCriteria)
         {
-            sqlBuilder.append(ColumnNames.EXPERIMENT_COLUMN).append(SP).append(IS_NULL);
+            sqlBuilder.append(ColumnNames.EXPERIMENT_COLUMN);
         } else if (criterion instanceof NoProjectSearchCriteria)
         {
-            sqlBuilder.append(ColumnNames.PROJECT_COLUMN).append(SP).append(IS_NULL);
+            sqlBuilder.append(ColumnNames.PROJECT_COLUMN);
         } else if (criterion instanceof NoSpaceSearchCriteria)
         {
-            sqlBuilder.append(ColumnNames.SPACE_COLUMN).append(SP).append(IS_NULL);
+            sqlBuilder.append(ColumnNames.SPACE_COLUMN);
         } else
         {
             throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
         }
+        sqlBuilder.append(SP).append(IS_NULL);
     }
 
 }
