@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
@@ -54,9 +55,15 @@ public class SampleSearchManagerDBTest
     }
 
     @BeforeClass
-    public void setUp() throws Exception
+    public void setUpClass() throws Exception
     {
         dbTestHelper.setUp();
+    }
+
+    @BeforeTest
+    public void setUp() throws Exception
+    {
+        dbTestHelper.resetConnection();
 
         final ISQLExecutor sqlExecutor = dbTestHelper.getSqlExecutor();
         final PostgresSearchDAO searchDAO = new PostgresSearchDAO(sqlExecutor);
@@ -66,19 +73,17 @@ public class SampleSearchManagerDBTest
         searchManager = new SampleSearchManager(searchDAO, authInfoProviderDAO);
     }
 
-
-
     @AfterClass
-    public void tearDown() throws Exception
+    public void tearDownClass() throws Exception
     {
-        dbTestHelper.tearDown();
+        dbTestHelper.cleanDB();
     }
 
     /**
      * Tests {@link StringFieldSearchCriteriaTranslator} with string field search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithStringFieldSearchCriteria()
+    public void testQueryDBWithCode()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
         equalsCriterion.withCode().thatEquals(CODE1);
@@ -114,7 +119,7 @@ public class SampleSearchManagerDBTest
 //     * Tests {@link StringFieldSearchCriteriaTranslator} using DB connection.
 //     */
 //    @Test
-//    public void testQueryDBWithNumberFieldSearchCriteria()
+//    public void testQueryDBWithNumberField()
 //    {
 //        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
 //        equalsCriterion.withCode().thatEquals(VERSION2);
@@ -159,7 +164,7 @@ public class SampleSearchManagerDBTest
      * Tests {@link StringFieldSearchCriteriaTranslator} with date field search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithDateFieldSearchCriteria()
+    public void testQueryDBWithDateField()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
         equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE2);
@@ -188,7 +193,7 @@ public class SampleSearchManagerDBTest
      * Tests {@link StringFieldSearchCriteriaTranslator} with date field search criteria (in string form) using DB connection.
      */
     @Test
-    public void testQueryDBWithStringDateFieldSearchCriteria()
+    public void testQueryDBWithStringDateField()
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
         equalsCriterion.withRegistrationDate().thatEquals(REGISTRATION_DATE_STRING2);
@@ -217,7 +222,7 @@ public class SampleSearchManagerDBTest
 //     * Tests {@link StringFieldSearchCriteriaTranslator} with boolean field search criteria using DB connection.
 //     */
 //    @Test
-//    public void testQueryDBWithBooleanFieldSearchCriteria()
+//    public void testQueryDBWithBooleanField()
 //    {
 //        final SampleSearchCriteria criterion = new SampleSearchCriteria();
 //    }
@@ -226,7 +231,7 @@ public class SampleSearchManagerDBTest
 //     * Tests {@link StringFieldSearchCriteriaTranslator} with enum field search criteria using DB connection.
 //     */
 //    @Test
-//    public void testQueryDBWithEnumFieldSearchCriteria()
+//    public void testQueryDBWithEnumField()
 //    {
 //        final SampleSearchCriteria criterion = new SampleSearchCriteria();
 //    }
@@ -235,7 +240,7 @@ public class SampleSearchManagerDBTest
      * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithCollectionFieldSearchCriteria()
+    public void testQueryDBWithCollectionField()
     {
         final SampleSearchCriteria criterion = new SampleSearchCriteria();
         criterion.withCodes().thatIn(Arrays.asList(CODE1, CODE3));
@@ -246,11 +251,26 @@ public class SampleSearchManagerDBTest
         assertTrue(criterionSampleIds.contains(SAMPLE_ID3));
     }
 
+//    /**
+//     * Tests {@link StringFieldSearchCriteriaTranslator} with string field search criteria using DB connection.
+//     */
+//    @Test
+//    public void testQueryDBWithPermId()
+//    {
+//        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+//        equalsCriterion.withPermId().thatEquals(PERM_ID2);
+//        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+//        assertEquals(equalsCriterionSampleIds.size(), 1);
+//        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID1));
+//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID2));
+//        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID3));
+//    }
+
     /**
      * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithoutExperimentFieldSearchCriteria()
+    public void testQueryDBWithoutExperimentField()
     {
         final SampleSearchCriteria criterion = new SampleSearchCriteria();
         criterion.withoutExperiment();
@@ -265,7 +285,7 @@ public class SampleSearchManagerDBTest
      * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithoutProjectFieldSearchCriteria()
+    public void testQueryDBWithoutProjectField()
     {
         final SampleSearchCriteria criterion = new SampleSearchCriteria();
         criterion.withoutProject();
@@ -280,7 +300,7 @@ public class SampleSearchManagerDBTest
      * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithoutSpaceFieldSearchCriteria()
+    public void testQueryDBWithoutSpaceField()
     {
         final SampleSearchCriteria criterion = new SampleSearchCriteria();
         criterion.withoutSpace();
@@ -295,7 +315,7 @@ public class SampleSearchManagerDBTest
      * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
      */
     @Test
-    public void testQueryDBWithoutContainerFieldSearchCriteria()
+    public void testQueryDBWithoutContainerField()
     {
         final SampleSearchCriteria criterion = new SampleSearchCriteria();
         criterion.withoutContainer();

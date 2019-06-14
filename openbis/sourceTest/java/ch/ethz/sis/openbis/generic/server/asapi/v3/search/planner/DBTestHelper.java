@@ -117,11 +117,21 @@ public class DBTestHelper
 
     public void setUp() throws Exception
     {
-        connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", "");
-        connection.setAutoCommit(false);
-        sqlExecutor = new JDBCSQLExecutor(connection);
+        initConnection(false);
 
         populateDB();
+    }
+
+    /**
+     * Initializes {@link #connection} and {@link #sqlExecutor}.
+     *
+     * @throws SQLException if an SQL exception occurs.
+     */
+    private void initConnection(final boolean autocommit) throws SQLException
+    {
+        connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", "");
+        connection.setAutoCommit(autocommit);
+        sqlExecutor = new JDBCSQLExecutor(connection);
     }
 
     private void populateDB() throws SQLException
@@ -132,36 +142,7 @@ public class DBTestHelper
             createProject();
             createExperimentType();
             createExperiment();
-
-            final Map<String, Object> valuesMap1 = getDefaultValuesMap();
-            valuesMap1.put(ColumnNames.ID_COLUMN, SAMPLE_ID1);
-            valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID1);
-            valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
-            valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
-            valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
-            valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
-
-            final Map<String, Object> valuesMap2 = getDefaultValuesMap();
-            valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
-            valuesMap2.put(ColumnNames.ID_COLUMN, SAMPLE_ID2);
-            valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
-            valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
-            valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
-            valuesMap2.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
-
-            final Map<String, Object> valuesMap3 = getDefaultValuesMap();
-            valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
-            valuesMap3.put(ColumnNames.ID_COLUMN, SAMPLE_ID3);
-            valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
-            valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
-            valuesMap3.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE3);
-            valuesMap3.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
-            valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, EXPERIMENT_ID);
-            valuesMap3.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);
-
-            insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
-            insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
-            insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap3);
+            createSamples();
 
             connection.commit();
         } catch (final Exception e)
@@ -169,6 +150,39 @@ public class DBTestHelper
             connection.rollback();
             throw e;
         }
+    }
+
+    private void createSamples()
+    {
+        final Map<String, Object> valuesMap1 = getDefaultValuesMap();
+        valuesMap1.put(ColumnNames.ID_COLUMN, SAMPLE_ID1);
+        valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID1);
+        valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
+        valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
+        valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
+        valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
+
+        final Map<String, Object> valuesMap2 = getDefaultValuesMap();
+        valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
+        valuesMap2.put(ColumnNames.ID_COLUMN, SAMPLE_ID2);
+        valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
+        valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
+        valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
+        valuesMap2.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
+
+        final Map<String, Object> valuesMap3 = getDefaultValuesMap();
+        valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
+        valuesMap3.put(ColumnNames.ID_COLUMN, SAMPLE_ID3);
+        valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
+        valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
+        valuesMap3.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE3);
+        valuesMap3.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
+        valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, EXPERIMENT_ID);
+        valuesMap3.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);
+
+        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
+        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
+        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap3);
     }
 
     private void createSpaces()
@@ -309,24 +323,12 @@ public class DBTestHelper
                 VALUES + SP + LP + questionMarks + RP, values);
     }
 
-    public void tearDown() throws Exception
+    public void cleanDB() throws Exception
     {
         try
         {
-            cleanDB();
-        } finally
-        {
-            if (connection != null)
-            {
-                connection.close();
-            }
-        }
-    }
+            connection.setAutoCommit(true);
 
-    private void cleanDB() throws SQLException
-    {
-        try
-        {
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID3);
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID2);
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID1);
@@ -336,12 +338,25 @@ public class DBTestHelper
             deleteRecord(TableNames.PROJECTS_TABLE, ColumnNames.ID_COLUMN, PROJECT_ID);
             deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID1);
             deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID2);
-
-            connection.commit();
-        } catch (final Exception e)
+        } finally
         {
-            connection.rollback();
-            throw e;
+            closeConnection();
+        }
+    }
+
+    public void resetConnection() throws SQLException
+    {
+        closeConnection();
+
+        // A different connection should be used to be able to clean up even when the transaction is set for rollback.
+        initConnection(true);
+    }
+
+    private void closeConnection() throws SQLException
+    {
+        if (connection != null)
+        {
+            connection.close();
         }
     }
 
