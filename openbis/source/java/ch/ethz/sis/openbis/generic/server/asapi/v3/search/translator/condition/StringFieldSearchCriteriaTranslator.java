@@ -51,7 +51,10 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
     {
         final AbstractStringValue value = criterion.getFieldValue();
 
-        sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(criterion.getFieldName());
+        final String criterionFieldName = criterion.getFieldName();
+        final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(criterionFieldName, criterionFieldName);
+
+        sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(fieldName);
         appendStringComparatorOp(value, sqlBuilder);
         args.add(value.getValue());
         sqlBuilder.append(NL);

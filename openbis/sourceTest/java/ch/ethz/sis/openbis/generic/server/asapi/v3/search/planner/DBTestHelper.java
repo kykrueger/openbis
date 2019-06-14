@@ -70,11 +70,11 @@ public class DBTestHelper
 
     public static final String DEFAULT_PERM_ID = "20190612105000000-0";
 
-    public static final String PERM_ID1 = "20190612105000000-1";
+    public static final String PERM_ID1 = "20190612105000000-1001";
 
-    public static final String PERM_ID2 = "20190612105000000-2";
+    public static final String PERM_ID2 = "20190612105000001-1001";
 
-    public static final String PERM_ID3 = "20190612105000000-3";
+    public static final String PERM_ID3 = "20190612105000000-1003";
 
     public static final String DEFAULT_CODE = "DEFAULT_UNIQUE_CODE";
 

@@ -32,6 +32,8 @@ import java.util.Set;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PERM_ID1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.PERM_ID2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATION_DATE2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.REGISTRATION_DATE_STRING2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID1;
@@ -87,19 +89,18 @@ public class SampleSearchManagerDBTest
     {
         final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
         equalsCriterion.withCode().thatEquals(CODE1);
+        checkCriterion(equalsCriterion);
 
         final SampleSearchCriteria containsCriterion = new SampleSearchCriteria();
         containsCriterion.withCode().thatContains(CODE1.substring(1, CODE1.length() - 1));
+        checkCriterion(containsCriterion);
 
         final SampleSearchCriteria startsWithCriterion = new SampleSearchCriteria();
         startsWithCriterion.withCode().thatStartsWith(CODE1.substring(0, 4));
+        checkCriterion(startsWithCriterion);
 
         final SampleSearchCriteria endsWithCriterion = new SampleSearchCriteria();
         endsWithCriterion.withCode().thatEndsWith(CODE1.substring(4));
-
-        checkCriterion(equalsCriterion);
-        checkCriterion(containsCriterion);
-        checkCriterion(startsWithCriterion);
         checkCriterion(endsWithCriterion);
     }
 
@@ -251,20 +252,44 @@ public class SampleSearchManagerDBTest
         assertTrue(criterionSampleIds.contains(SAMPLE_ID3));
     }
 
-//    /**
-//     * Tests {@link StringFieldSearchCriteriaTranslator} with string field search criteria using DB connection.
-//     */
-//    @Test
-//    public void testQueryDBWithPermId()
-//    {
-//        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
-//        equalsCriterion.withPermId().thatEquals(PERM_ID2);
-//        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
-//        assertEquals(equalsCriterionSampleIds.size(), 1);
-//        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID1));
-//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID2));
-//        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID3));
-//    }
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with string field search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithPermId()
+    {
+        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+        equalsCriterion.withPermId().thatEquals(PERM_ID2);
+        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+        assertEquals(equalsCriterionSampleIds.size(), 1);
+        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID3));
+
+        final SampleSearchCriteria startsWithCriterion = new SampleSearchCriteria();
+        startsWithCriterion.withPermId().thatStartsWith(PERM_ID1.substring(0, PERM_ID1.length() - 2));
+        final Set<Long> startsWithCriterionSampleIds = searchManager.searchForIDs(USER_ID, startsWithCriterion);
+        assertEquals(startsWithCriterionSampleIds.size(), 2);
+        assertTrue(startsWithCriterionSampleIds.contains(SAMPLE_ID1));
+        assertFalse(startsWithCriterionSampleIds.contains(SAMPLE_ID2));
+        assertTrue(startsWithCriterionSampleIds.contains(SAMPLE_ID3));
+
+        final SampleSearchCriteria endsWithCriterion = new SampleSearchCriteria();
+        endsWithCriterion.withPermId().thatEndsWith(PERM_ID1.substring(PERM_ID1.length() - 4));
+        final Set<Long> endsWithCriterionSampleIds = searchManager.searchForIDs(USER_ID, endsWithCriterion);
+        assertEquals(endsWithCriterionSampleIds.size(), 2);
+        assertTrue(endsWithCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(endsWithCriterionSampleIds.contains(SAMPLE_ID2));
+        assertFalse(endsWithCriterionSampleIds.contains(SAMPLE_ID3));
+
+        final SampleSearchCriteria containsCriterion = new SampleSearchCriteria();
+        containsCriterion.withPermId().thatContains(PERM_ID1.substring(4, 12));
+        final Set<Long> containsCriterionSampleIds = searchManager.searchForIDs(USER_ID, containsCriterion);
+        assertEquals(containsCriterionSampleIds.size(), 3);
+        assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID1));
+        assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID2));
+        assertTrue(containsCriterionSampleIds.contains(SAMPLE_ID3));
+    }
 
     /**
      * Tests {@link StringFieldSearchCriteriaTranslator} with collection field search criteria using DB connection.
