@@ -25,12 +25,12 @@ const styles = (theme) => ({
     height: '100%'
   },
   filterContainer: {
-    flex: '1 1 0',
+    flexGrow: 0,
     padding: theme.spacing.unit * 2,
     paddingBottom: 0
   },
   tableContainer: {
-    flex: '1 1 100%',
+    flexGrow: 1,
     overflow: 'auto',
     paddingLeft: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2
