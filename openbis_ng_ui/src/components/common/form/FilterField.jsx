@@ -19,7 +19,7 @@ const styles = () => ({
   }
 })
 
-class BrowserFilter extends React.Component {
+class FilterField extends React.Component {
 
   constructor(props){
     super(props)
@@ -91,4 +91,4 @@ class BrowserFilter extends React.Component {
 
 }
 
-export default withStyles(styles)(BrowserFilter)
+export default withStyles(styles)(FilterField)

@@ -6,7 +6,7 @@ import logger from '../../../common/logger.js'
 import * as selectors from '../../../store/selectors/selectors.js'
 import * as actions from '../../../store/actions/actions.js'
 
-import BrowserFilter from './BrowserFilter.jsx'
+import FilterField from './../form/FilterField.jsx'
 import BrowserNodes from './BrowserNodes.jsx'
 
 const styles = {
@@ -47,7 +47,7 @@ class Browser extends React.PureComponent {
 
     return (
       <div className={classes.container}>
-        <BrowserFilter
+        <FilterField
           filter={this.props.filter}
           filterChange={this.props.filterChange}
         />

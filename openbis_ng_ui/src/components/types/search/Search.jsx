@@ -11,6 +11,7 @@ import TableFooter from '@material-ui/core/TableFooter'
 import TableRow from '@material-ui/core/TableRow'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
 import Pagination from '../../common/table/Pagination.jsx'
+import FilterField from '../../common/form/FilterField.jsx'
 import * as pages from '../../../common/consts/pages.js'
 import * as objectTypes from '../../../common/consts/objectType.js'
 import * as actions from '../../../store/actions/actions.js'
@@ -18,10 +19,26 @@ import {facade, dto} from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = (theme) => ({
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%'
+  },
+  filterContainer: {
+    flex: '1 1 0',
+    padding: theme.spacing.unit * 2,
+    paddingBottom: 0
+  },
+  tableContainer: {
+    flex: '1 1 100%',
+    overflow: 'auto',
+    paddingLeft: theme.spacing.unit * 2,
+    paddingRight: theme.spacing.unit * 2
+  },
   table: {
     height: '100%'
   },
-  header: {
+  tableHeader: {
     '& th': {
       position: 'sticky',
       top: 0,
@@ -29,13 +46,13 @@ const styles = (theme) => ({
       backgroundColor: theme.palette.background.paper
     }
   },
-  spacer: {
+  tableSpacer: {
     height: '100%',
     '& td': {
       border: 0
     }
   },
-  footer: {
+  tableFooter: {
     '& td': {
       position: 'sticky',
       bottom: 0,
@@ -43,7 +60,7 @@ const styles = (theme) => ({
       backgroundColor: theme.palette.background.paper
     }
   },
-  link: {
+  tableLink: {
     fontSize: 'inherit'
   }
 })
@@ -67,7 +84,9 @@ class Search extends React.Component {
     super(props)
     this.state = {
       loaded: false,
+      filter: ''
     }
+    this.handleFilterChange = this.handleFilterChange.bind(this)
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleLinkClick = this.handleLinkClick.bind(this)
@@ -141,6 +160,12 @@ class Search extends React.Component {
     })
   }
 
+  handleFilterChange(filter){
+    this.setState(() => ({
+      filter
+    }))
+  }
+
   handleSortChange(column){
     return () => {
       this.setState((prevState) => ({
@@ -167,6 +192,22 @@ class Search extends React.Component {
       page: 0,
       pageSize
     }))
+  }
+
+  filter(types){
+    const filter = this.state.filter ? this.state.filter.trim().toUpperCase() : null
+
+    function matches(value){
+      if(filter){
+        return value ? value.trim().toUpperCase().includes(filter) : false
+      }else{
+        return true
+      }
+    }
+
+    return _.filter(types, type => {
+      return matches(type.code) || matches(type.description)
+    })
   }
 
   sort(types){
@@ -196,67 +237,78 @@ class Search extends React.Component {
     }
 
     const { classes } = this.props
-    const { page, pageSize, sort, sortDirection, allTypes } = this.state
+    const { page, pageSize, filter, sort, sortDirection, allTypes } = this.state
 
     let types = [...allTypes]
+    types = this.filter(types)
     types = this.sort(types)
     types = this.page(types)
 
     return (
-      <Table classes={{ root: classes.table }}>
-        <TableHead classes={{ root: classes.header }}>
-          <TableRow>
-            <TableCell>
-              <TableSortLabel
-                active={sort === 'code'}
-                direction={sortDirection}
-                onClick={this.handleSortChange('code')}
-              >
+      <div className={classes.container}>
+        <div className={classes.filterContainer}>
+          <FilterField
+            filter={filter}
+            filterChange={this.handleFilterChange}
+          />
+        </div>
+        <div className={classes.tableContainer}>
+          <Table classes={{ root: classes.table }}>
+            <TableHead classes={{ root: classes.tableHeader }}>
+              <TableRow>
+                <TableCell>
+                  <TableSortLabel
+                    active={sort === 'code'}
+                    direction={sortDirection}
+                    onClick={this.handleSortChange('code')}
+                  >
                   Code
-              </TableSortLabel>
-            </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={sort === 'description'}
-                direction={sortDirection}
-                onClick={this.handleSortChange('description')}
-              >
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sort === 'description'}
+                    direction={sortDirection}
+                    onClick={this.handleSortChange('description')}
+                  >
                 Description
-              </TableSortLabel>
-            </TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {types.map(type => (
-            <TableRow key={type.permId.entityKind + '-' + type.permId.permId} hover>
-              <TableCell>
-                <Link
-                  component="button"
-                  classes={{ root: classes.link }}
-                  onClick={this.handleLinkClick(type.permId)}>{type.code}
-                </Link>
-              </TableCell>
-              <TableCell>
-                {type.description}
-              </TableCell>
-            </TableRow>
-          ))}
-          <TableRow classes={{ root: classes.spacer }}>
-            <TableCell></TableCell>
-          </TableRow>
-        </TableBody>
-        <TableFooter classes={{ root: classes.footer }}>
-          <TableRow>
-            <Pagination
-              count={allTypes.length}
-              page={page}
-              pageSize={pageSize}
-              onPageChange={this.handlePageChange}
-              onPageSizeChange={this.handlePageSizeChange}
-            />
-          </TableRow>
-        </TableFooter>
-      </Table>
+                  </TableSortLabel>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {types.map(type => (
+                <TableRow key={type.permId.entityKind + '-' + type.permId.permId} hover>
+                  <TableCell>
+                    <Link
+                      component="button"
+                      classes={{ root: classes.tableLink }}
+                      onClick={this.handleLinkClick(type.permId)}>{type.code}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    {type.description}
+                  </TableCell>
+                </TableRow>
+              ))}
+              <TableRow classes={{ root: classes.tableSpacer }}>
+                <TableCell></TableCell>
+              </TableRow>
+            </TableBody>
+            <TableFooter classes={{ root: classes.tableFooter }}>
+              <TableRow>
+                <Pagination
+                  count={allTypes.length}
+                  page={page}
+                  pageSize={pageSize}
+                  onPageChange={this.handlePageChange}
+                  onPageSizeChange={this.handlePageSizeChange}
+                />
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </div>
+      </div>
     )
   }
 
