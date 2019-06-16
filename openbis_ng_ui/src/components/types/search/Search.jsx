@@ -10,8 +10,9 @@ import TableHead from '@material-ui/core/TableHead'
 import TableFooter from '@material-ui/core/TableFooter'
 import TableRow from '@material-ui/core/TableRow'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
-import Pagination from '../../common/table/Pagination.jsx'
 import FilterField from '../../common/form/FilterField.jsx'
+import ColumnsConfig from '../../common/table/ColumnsConfig.jsx'
+import Pagination from '../../common/table/Pagination.jsx'
 import * as pages from '../../../common/consts/pages.js'
 import * as objectTypes from '../../../common/consts/objectType.js'
 import * as actions from '../../../store/actions/actions.js'
@@ -72,6 +73,8 @@ const entityKindToObjecType = {
   'MATERIAL': objectTypes.MATERIAL_TYPE
 }
 
+const allColumns = ['code', 'description']
+
 function mapDispatchToProps(dispatch){
   return {
     objectOpen: (objectType, objectId) => { dispatch(actions.objectOpen(pages.TYPES, objectType, objectId)) }
@@ -84,9 +87,11 @@ class Search extends React.Component {
     super(props)
     this.state = {
       loaded: false,
-      filter: ''
+      filter: '',
+      visibleColumns: allColumns
     }
     this.handleFilterChange = this.handleFilterChange.bind(this)
+    this.handleColumnsChange = this.handleColumnsChange.bind(this)
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleLinkClick = this.handleLinkClick.bind(this)
@@ -98,7 +103,8 @@ class Search extends React.Component {
 
   load(){
     this.setState({
-      loaded: false
+      loaded: false,
+      columnConfigEl: null
     })
 
     Promise.all([
@@ -163,6 +169,12 @@ class Search extends React.Component {
   handleFilterChange(filter){
     this.setState(() => ({
       filter
+    }))
+  }
+
+  handleColumnsChange(visibleColumns){
+    this.setState(() => ({
+      visibleColumns
     }))
   }
 
@@ -237,7 +249,7 @@ class Search extends React.Component {
     }
 
     const { classes } = this.props
-    const { page, pageSize, filter, sort, sortDirection, allTypes } = this.state
+    const { page, pageSize, filter, visibleColumns, sort, sortDirection, allTypes } = this.state
 
     let types = [...allTypes]
     types = this.filter(types)
@@ -256,39 +268,51 @@ class Search extends React.Component {
           <Table classes={{ root: classes.table }}>
             <TableHead classes={{ root: classes.tableHeader }}>
               <TableRow>
-                <TableCell>
-                  <TableSortLabel
-                    active={sort === 'code'}
-                    direction={sortDirection}
-                    onClick={this.handleSortChange('code')}
-                  >
+                {
+                  visibleColumns.includes('code') &&
+                  <TableCell>
+                    <TableSortLabel
+                      active={sort === 'code'}
+                      direction={sortDirection}
+                      onClick={this.handleSortChange('code')}
+                    >
                   Code
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell>
-                  <TableSortLabel
-                    active={sort === 'description'}
-                    direction={sortDirection}
-                    onClick={this.handleSortChange('description')}
-                  >
+                    </TableSortLabel>
+                  </TableCell>
+                }
+                {
+                  visibleColumns.includes('description') &&
+                  <TableCell>
+                    <TableSortLabel
+                      active={sort === 'description'}
+                      direction={sortDirection}
+                      onClick={this.handleSortChange('description')}
+                    >
                 Description
-                  </TableSortLabel>
-                </TableCell>
+                    </TableSortLabel>
+                  </TableCell>
+                }
               </TableRow>
             </TableHead>
             <TableBody>
               {types.map(type => (
                 <TableRow key={type.permId.entityKind + '-' + type.permId.permId} hover>
-                  <TableCell>
-                    <Link
-                      component="button"
-                      classes={{ root: classes.tableLink }}
-                      onClick={this.handleLinkClick(type.permId)}>{type.code}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    {type.description}
-                  </TableCell>
+                  {
+                    visibleColumns.includes('code') &&
+                    <TableCell>
+                      <Link
+                        component="button"
+                        classes={{ root: classes.tableLink }}
+                        onClick={this.handleLinkClick(type.permId)}>{type.code}
+                      </Link>
+                    </TableCell>
+                  }
+                  {
+                    visibleColumns.includes('description') &&
+                    <TableCell>
+                      {type.description}
+                    </TableCell>
+                  }
                 </TableRow>
               ))}
               <TableRow classes={{ root: classes.tableSpacer }}>
@@ -297,6 +321,13 @@ class Search extends React.Component {
             </TableBody>
             <TableFooter classes={{ root: classes.tableFooter }}>
               <TableRow>
+                <TableCell>
+                  <ColumnsConfig
+                    allColumns={allColumns}
+                    visibleColumns={visibleColumns}
+                    onColumnsChange={this.handleColumnsChange}
+                  />
+                </TableCell>
                 <Pagination
                   count={allTypes.length}
                   page={page}
