@@ -1,12 +1,19 @@
 import _ from 'lodash'
 import React from 'react'
+import {withStyles} from '@material-ui/core/styles'
 import Popover from '@material-ui/core/Popover'
 import Button from '@material-ui/core/Button'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 import logger from '../../../common/logger.js'
 
-class ColumnsConfig extends React.Component {
+const styles = () => ({
+  container: {
+    flexGrow: 1
+  }
+})
+
+class ColumnConfig extends React.Component {
 
   constructor(props){
     super(props)
@@ -44,13 +51,13 @@ class ColumnsConfig extends React.Component {
   }
 
   render() {
-    logger.log(logger.DEBUG, 'ColumnsConfig.render')
+    logger.log(logger.DEBUG, 'ColumnConfig.render')
 
-    const { allColumns, visibleColumns } = this.props
+    const { classes, allColumns, visibleColumns } = this.props
     const { el } = this.state
 
     return (
-      <React.Fragment>
+      <div className={classes.container}>
         <Button
           variant="contained"
           onClick={this.handleOpen}
@@ -83,10 +90,12 @@ class ColumnsConfig extends React.Component {
             />
           ))}
         </Popover>
-      </React.Fragment>
+      </div>
     )
   }
 
 }
 
-export default ColumnsConfig
+export default _.flow(
+  withStyles(styles)
+)(ColumnConfig)

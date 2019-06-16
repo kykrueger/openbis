@@ -11,8 +11,8 @@ import TableFooter from '@material-ui/core/TableFooter'
 import TableRow from '@material-ui/core/TableRow'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
 import FilterField from '../../common/form/FilterField.jsx'
-import ColumnsConfig from '../../common/table/ColumnsConfig.jsx'
-import Pagination from '../../common/table/Pagination.jsx'
+import ColumnConfig from '../../common/table/ColumnConfig.jsx'
+import PageConfig from '../../common/table/PageConfig.jsx'
 import * as pages from '../../../common/consts/pages.js'
 import * as objectTypes from '../../../common/consts/objectType.js'
 import * as actions from '../../../store/actions/actions.js'
@@ -60,6 +60,9 @@ const styles = (theme) => ({
       zIndex: 10,
       backgroundColor: theme.palette.background.paper
     }
+  },
+  tableFooterContent: {
+    display: 'flex'
   },
   tableLink: {
     fontSize: 'inherit'
@@ -321,20 +324,22 @@ class Search extends React.Component {
             </TableBody>
             <TableFooter classes={{ root: classes.tableFooter }}>
               <TableRow>
-                <TableCell>
-                  <ColumnsConfig
-                    allColumns={allColumns}
-                    visibleColumns={visibleColumns}
-                    onColumnsChange={this.handleColumnsChange}
-                  />
+                <TableCell colSpan={Math.max(1, visibleColumns.length)}>
+                  <div className={classes.tableFooterContent}>
+                    <ColumnConfig
+                      allColumns={allColumns}
+                      visibleColumns={visibleColumns}
+                      onColumnsChange={this.handleColumnsChange}
+                    />
+                    <PageConfig
+                      count={allTypes.length}
+                      page={page}
+                      pageSize={pageSize}
+                      onPageChange={this.handlePageChange}
+                      onPageSizeChange={this.handlePageSizeChange}
+                    />
+                  </div>
                 </TableCell>
-                <Pagination
-                  count={allTypes.length}
-                  page={page}
-                  pageSize={pageSize}
-                  onPageChange={this.handlePageChange}
-                  onPageSizeChange={this.handlePageSizeChange}
-                />
               </TableRow>
             </TableFooter>
           </Table>
