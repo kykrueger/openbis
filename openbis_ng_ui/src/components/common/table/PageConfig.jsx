@@ -11,10 +11,23 @@ import logger from '../../../common/logger.js'
 
 const styles = () => ({
   container: {
-    display: 'flex'
-  },
-  buttons: {
+    display: 'flex',
+    alignItems: 'center',
     flexShrink: 0
+  },
+  pageSize: {
+    display: 'flex',
+    alignItems: 'center',
+    '& label': {
+      marginRight: '12px'
+    }
+  },
+  pageRange: {
+    marginLeft: '24px'
+  },
+  pageButtons: {
+    marginLeft: '12px',
+    marginRight: '-12px'
   }
 })
 
@@ -56,12 +69,12 @@ class PageConfig extends React.Component {
 
     return (
       <div className={classes.container}>
-        <div>
-          Rows per page:
+        <div className={classes.pageSize}>
+          <label>Rows per page:</label>
           <TextField
             select
             SelectProps={{
-              native: true,
+              native: true
             }}
             value={pageSize}
             onChange={this.handlePageSizeChange}
@@ -71,10 +84,10 @@ class PageConfig extends React.Component {
             ))}
           </TextField>
         </div>
-        <div>
+        <div className={classes.pageRange}>
           {page * pageSize + 1}-{Math.min(count, (page + 1) * pageSize)} of {count}
         </div>
-        <div className={classes.buttons}>
+        <div className={classes.pageButtons}>
           <IconButton
             onClick={this.handleFirstPageButtonClick}
             disabled={page === 0}

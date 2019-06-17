@@ -62,7 +62,8 @@ const styles = (theme) => ({
     }
   },
   tableFooterContent: {
-    display: 'flex'
+    display: 'flex',
+    alignItems: 'center'
   },
   tableLink: {
     fontSize: 'inherit'
