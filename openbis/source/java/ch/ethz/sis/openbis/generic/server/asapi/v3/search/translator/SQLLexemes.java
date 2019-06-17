@@ -75,6 +75,8 @@ public class SQLLexemes
 
     public static final String PERIOD = ".";
 
+    public static final String DOUBLE_COLON = "::";
+
     public static final String EQ = "=";
 
     public static final String GT = ">";

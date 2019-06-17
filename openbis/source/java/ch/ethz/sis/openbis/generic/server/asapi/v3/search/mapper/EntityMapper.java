@@ -26,7 +26,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_FROZEN_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_CHILDREN_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_COMPONENTS_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_COMPONENT_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_DATA_SET_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_PARENTS_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
@@ -73,7 +73,7 @@ public enum EntityMapper
             DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN,
             new String[] { ID_COLUMN, PERM_ID_COLUMN, CODE_COLUMN, EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
                     MODIFICATION_TIMESTAMP_COLUMN, PERSON_REGISTERER_COLUMN, DELETION_COLUMN, ORIGINAL_DELETION_COLUMN, SPACE_COLUMN,
-                    PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, VERSION_COLUMN, PROJECT_COLUMN, FROZEN_COLUMN, FROZEN_FOR_COMPONENTS_COLUMN,
+                    PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, VERSION_COLUMN, PROJECT_COLUMN, FROZEN_COLUMN, FROZEN_FOR_COMPONENT_COLUMN,
                     FROZEN_FOR_CHILDREN_COLUMN, FROZEN_FOR_PARENTS_COLUMN, FROZEN_FOR_DATA_SET_COLUMN, SPACE_FROZEN_COLUMN, PROJECT_FROZEN_COLUMN,
                     EXPERIMENT_FROZEN_COLUMN, CONTAINER_FROZEN_COLUMN });
 

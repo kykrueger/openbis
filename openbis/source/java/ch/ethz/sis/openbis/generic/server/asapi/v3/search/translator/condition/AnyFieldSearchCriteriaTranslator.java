@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.VARCHAR;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
@@ -58,7 +60,7 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
                 sqlBuilder.append(SP).append(SQLLexemes.OR).append(SP);
             }
 
-            sqlBuilder.append(alias).append(PERIOD).append(fieldName);
+            sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
             StringFieldSearchCriteriaTranslator.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder);
 
             args.add(value.getValue());
