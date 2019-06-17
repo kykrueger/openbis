@@ -48,51 +48,64 @@ public class DateFieldSearchCriteriaTranslator extends AbstractConditionTranslat
             final List<Object> args,
             final StringBuilder sqlBuilder)
     {
-        final Object fieldName = criterion.getFieldName();
-        final Object fieldValue = criterion.getFieldValue();
-
-        if (criterion instanceof RegistrationDateSearchCriteria)
-        {
-            sqlBuilder.append(REGISTRATION_TIMESTAMP_COLUMN);
-        } else if (criterion instanceof ModificationDateSearchCriteria)
-        {
-            sqlBuilder.append(MODIFICATION_TIMESTAMP_COLUMN);
-        } else
-        {
-            sqlBuilder.append(fieldName);
-        }
-
-        if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
-        {
-            sqlBuilder.append(EQ).append(QU);
-        } else if (fieldValue instanceof DateEarlierThanOrEqualToValue ||
-                fieldValue instanceof DateObjectEarlierThanOrEqualToValue)
-        {
-            sqlBuilder.append(LE).append(QU);
-        } else if (fieldValue instanceof DateLaterThanOrEqualToValue ||
-                fieldValue instanceof DateObjectLaterThanOrEqualToValue)
-        {
-            sqlBuilder.append(GE).append(QU);
-        } else
-        {
-            throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
-        }
-
-        if (fieldValue instanceof AbstractDateValue)
-        {
-            // String type date value.
-            final String dateString = ((AbstractDateValue) fieldValue).getValue();
-            try
+        switch (criterion.getFieldType()) {
+            case ATTRIBUTE:
             {
-                args.add(DATE_FORMAT.parse(dateString));
-            } catch (ParseException e)
-            {
-                throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e);
+                final Object fieldName = criterion.getFieldName();
+                final Object fieldValue = criterion.getFieldValue();
+
+                if (criterion instanceof RegistrationDateSearchCriteria)
+                {
+                    sqlBuilder.append(REGISTRATION_TIMESTAMP_COLUMN);
+                } else if (criterion instanceof ModificationDateSearchCriteria)
+                {
+                    sqlBuilder.append(MODIFICATION_TIMESTAMP_COLUMN);
+                } else
+                {
+                    sqlBuilder.append(fieldName);
+                }
+
+                if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
+                {
+                    sqlBuilder.append(EQ).append(QU);
+                } else if (fieldValue instanceof DateEarlierThanOrEqualToValue ||
+                        fieldValue instanceof DateObjectEarlierThanOrEqualToValue)
+                {
+                    sqlBuilder.append(LE).append(QU);
+                } else if (fieldValue instanceof DateLaterThanOrEqualToValue ||
+                        fieldValue instanceof DateObjectLaterThanOrEqualToValue)
+                {
+                    sqlBuilder.append(GE).append(QU);
+                } else
+                {
+                    throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
+                }
+
+                if (fieldValue instanceof AbstractDateValue)
+                {
+                    // String type date value.
+                    final String dateString = ((AbstractDateValue) fieldValue).getValue();
+                    try
+                    {
+                        args.add(DATE_FORMAT.parse(dateString));
+                    } catch (ParseException e)
+                    {
+                        throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e);
+                    }
+                } else
+                {
+                    // Date type date value.
+                    args.add(((AbstractDateObjectValue) fieldValue).getValue());
+                }
+                break;
             }
-        } else
-        {
-            // Date type date value.
-            args.add(((AbstractDateObjectValue) fieldValue).getValue());
+
+            case PROPERTY:
+            case ANY_PROPERTY:
+            case ANY_FIELD:
+            {
+                throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
+            }
         }
     }
 

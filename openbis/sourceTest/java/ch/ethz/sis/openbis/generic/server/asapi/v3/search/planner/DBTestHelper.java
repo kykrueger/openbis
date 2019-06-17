@@ -50,6 +50,10 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class DBTestHelper
 {
 
+    public static final String ID_DELIMITER = "/";
+
+    public static final String CONTAINER_DELIMITER = ":";
+
     public static final long USER_ID = 2L;
 
     public static final long SAMPLE_ID1 = 1001L;
@@ -77,6 +81,12 @@ public class DBTestHelper
     public static final String PERM_ID3 = "20190612105000000-1003";
 
     public static final String DEFAULT_CODE = "DEFAULT_UNIQUE_CODE";
+
+    public static final String PROJECT_CODE = "PROJECT_CODE";
+
+    public static final String SPACE_CODE1 = "MY_SPACE_UNIQUE_CODE1";
+
+    public static final String SPACE_CODE2 = "MY_SPACE_UNIQUE_CODE2";
 
     public static final String CODE1 = "MY_UNIQUE_CODE1";
 
@@ -182,7 +192,9 @@ public class DBTestHelper
         valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
         valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
         valuesMap2.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE2);
+        valuesMap2.put(ColumnNames.SPACE_COLUMN, SPACE_ID2);
         valuesMap2.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
+        valuesMap2.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);
 
         final Map<String, Object> valuesMap3 = getDefaultValuesMap();
         valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
@@ -203,7 +215,7 @@ public class DBTestHelper
     {
         final Map<String, Object> valuesMap1 = new HashMap<>();
         valuesMap1.put(ColumnNames.ID_COLUMN, SPACE_ID1);
-        valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
+        valuesMap1.put(ColumnNames.CODE_COLUMN, SPACE_CODE1);
         valuesMap1.put(ColumnNames.DESCRIPTION_COLUMN, null);
         valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
@@ -214,7 +226,7 @@ public class DBTestHelper
 
         final Map<String, Object> valuesMap2 = new HashMap<>();
         valuesMap2.put(ColumnNames.ID_COLUMN, SPACE_ID2);
-        valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
+        valuesMap2.put(ColumnNames.CODE_COLUMN, SPACE_CODE2);
         valuesMap2.put(ColumnNames.DESCRIPTION_COLUMN, null);
         valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap2.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
@@ -229,7 +241,7 @@ public class DBTestHelper
         final Map<String, Object> valuesMap = new HashMap<>();
         valuesMap.put(ColumnNames.ID_COLUMN, PROJECT_ID);
         valuesMap.put(ColumnNames.PERM_ID_COLUMN, "20190301152050019-11");
-        valuesMap.put(ColumnNames.CODE_COLUMN, DEFAULT_CODE);
+        valuesMap.put(ColumnNames.CODE_COLUMN, PROJECT_CODE);
         valuesMap.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
         valuesMap.put(ColumnNames.PERSON_LEADER_COLUMN, null);
         valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, null);

@@ -35,18 +35,30 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
 {
 
     @Override
-    public void translate(final CollectionFieldSearchCriteria<?> criterion,
-            final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final CollectionFieldSearchCriteria<?> criterion, final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
-        final Object fieldName = ATTRIBUTE_ID_TO_COLUMN_NAME.get(criterion.getFieldName());
-        final Collection<?> fieldValue = criterion.getFieldValue();
+        switch (criterion.getFieldType()) {
+            case ATTRIBUTE:
+            {
+                final Object fieldName = ATTRIBUTE_ID_TO_COLUMN_NAME.get(criterion.getFieldName());
+                final Collection<?> fieldValue = criterion.getFieldValue();
 
-        sqlBuilder.append(fieldName).append(SP).append(IN).append(SP).append(LP).
-                append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
-                append(RP);
+                sqlBuilder.append(fieldName).append(SP).append(IN).append(SP).append(LP).
+                        append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
+                        append(RP);
 
-        args.add(fieldValue.toArray(new Object[fieldValue.size()]));
+                args.add(fieldValue.toArray(new Object[fieldValue.size()]));
+                break;
+            }
+
+            case PROPERTY:
+            case ANY_PROPERTY:
+            case ANY_FIELD:
+            {
+                throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
+            }
+        }
     }
 
 }

@@ -44,29 +44,41 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
     public void translate(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
-        final String alias = Translator.getAlias(0);
-        final AbstractStringValue value = criterion.getFieldValue();
-        final String[] criterionFieldNames = entityMapper.getAllFields();
-
-
-        final AtomicBoolean first = new AtomicBoolean(true);
-        Arrays.stream(criterionFieldNames).forEach(fieldName ->
-        {
-            if (first.get())
+        switch (criterion.getFieldType()) {
+            case ANY_FIELD:
             {
-                first.set(false);
-            } else
-            {
-                sqlBuilder.append(SP).append(SQLLexemes.OR).append(SP);
+                final String alias = Translator.getAlias(0);
+                final AbstractStringValue value = criterion.getFieldValue();
+                final String[] criterionFieldNames = entityMapper.getAllFields();
+
+                final AtomicBoolean first = new AtomicBoolean(true);
+                Arrays.stream(criterionFieldNames).forEach(fieldName ->
+                {
+                    if (first.get())
+                    {
+                        first.set(false);
+                    } else
+                    {
+                        sqlBuilder.append(SP).append(SQLLexemes.OR).append(SP);
+                    }
+
+                    sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
+                    StringFieldSearchCriteriaTranslator.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder);
+
+                    args.add(value.getValue());
+                });
+
+                sqlBuilder.append(NL);
+                break;
             }
 
-            sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
-            StringFieldSearchCriteriaTranslator.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder);
-
-            args.add(value.getValue());
-        });
-
-        sqlBuilder.append(NL);
+            case PROPERTY:
+            case ANY_PROPERTY:
+            case ATTRIBUTE:
+            {
+                throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
+            }
+        }
     }
 
 }

@@ -50,12 +50,23 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
     public void translate(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
-        final AbstractNumberValue value = criterion.getFieldValue();
+        switch (criterion.getFieldType()) {
+            case ATTRIBUTE:
+            {
+                final AbstractNumberValue value = criterion.getFieldValue();
 
-        sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(criterion.getFieldName()).append(SP);
-        appendNumberComparatorOp(value, sqlBuilder);
-        sqlBuilder.append(NL);
-        args.add(value.getValue());
+                sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(criterion.getFieldName()).append(SP);
+                appendNumberComparatorOp(value, sqlBuilder);
+                sqlBuilder.append(NL);
+                args.add(value.getValue());
+            }
+            case PROPERTY:
+            case ANY_PROPERTY:
+            case ANY_FIELD:
+            {
+                throw new IllegalArgumentException();
+            }
+        }
     }
 
     private void appendNumberComparatorOp(final AbstractNumberValue value, final StringBuilder sqlBuilder) {

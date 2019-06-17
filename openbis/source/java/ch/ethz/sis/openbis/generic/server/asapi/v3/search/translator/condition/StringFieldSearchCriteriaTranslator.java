@@ -49,15 +49,27 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
     public void translate(final StringFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder)
     {
-        final AbstractStringValue value = criterion.getFieldValue();
+        switch (criterion.getFieldType()) {
+            case ATTRIBUTE:
+            {
+                final AbstractStringValue value = criterion.getFieldValue();
 
-        final String criterionFieldName = criterion.getFieldName();
-        final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(criterionFieldName, criterionFieldName);
+                final String criterionFieldName = criterion.getFieldName();
+                final String fieldName = Attributes.ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(criterionFieldName, criterionFieldName);
 
-        sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(fieldName);
-        appendStringComparatorOp(value, sqlBuilder);
-        args.add(value.getValue());
-        sqlBuilder.append(NL);
+                sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(fieldName);
+                appendStringComparatorOp(value, sqlBuilder);
+                args.add(value.getValue());
+                sqlBuilder.append(NL);
+                break;
+            }
+            case PROPERTY:
+            case ANY_PROPERTY:
+            case ANY_FIELD:
+            {
+                throw new IllegalArgumentException();
+            }
+        }
     }
 
     static void appendStringComparatorOp(final AbstractStringValue value, final StringBuilder sqlBuilder) {

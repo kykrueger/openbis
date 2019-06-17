@@ -35,9 +35,7 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SA
 public class AbsenceConditionTranslator extends AbstractConditionTranslator<ISearchCriteria>
 {
     @Override
-    public void translate(final ISearchCriteria criterion, final EntityMapper entityMapper,
-            final List<Object> args,
-            final StringBuilder sqlBuilder)
+    public void translate(final ISearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args, final StringBuilder sqlBuilder)
     {
         final String alias = Translator.getAlias(0);
         sqlBuilder.append(alias).append(PERIOD);
