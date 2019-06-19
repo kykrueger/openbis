@@ -1582,7 +1582,7 @@ var FormUtil = new function() {
 				$window.append("<br>");
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-						.append(" Enter your password to freeze the entities, after they are frozen no more changes will be allowed:"));
+						.append(" Enter your password to freeze the entities, after they are frozen no more changes will be possible:"));
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-warning-sign" }))
 						.append($("<span>", { style : "color:red; font-size: large;" }).append(" This operation is irreversible!")));
@@ -1611,7 +1611,7 @@ var FormUtil = new function() {
 				$window.submit(function() {
 					var username = mainController.serverFacade.getUserId();
 					var password = $passField.val();					
-					mainController.serverFacade.login(
+					new openbis().login(
 							username, 
 							password, 
 							function(data) { 
@@ -1659,7 +1659,7 @@ var FormUtil = new function() {
 												Util.unblockUI();
 											});
 										}
-									}, "freeze-api");
+									}, "freeze-api",  _this.showFreezingError);
 								}
 							});
 					Util.blockUI();
@@ -1681,6 +1681,10 @@ var FormUtil = new function() {
 					Util.unblockUI();
 				});
 			}
-		}, "freeze-api");
+		}, "freeze-api", _this.showFreezingError);
+	}
+	
+	this.showFreezingError = function(error) {
+		Util.showError(error.message);
 	}
 }

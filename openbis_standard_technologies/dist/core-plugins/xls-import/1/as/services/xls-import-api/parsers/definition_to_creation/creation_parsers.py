@@ -15,8 +15,12 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create import Vocabular
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create import VocabularyTermCreation
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id import VocabularyPermId
 from java.lang import UnsupportedOperationException
-from utils.openbis_utils import is_internal_namespace, get_script_name_for
 from ch.systemsx.cisd.common.exceptions import UserFailureException
+from utils.openbis_utils import is_internal_namespace, get_script_name_for
+from .creation_types import PropertyTypeDefinitionToCreationType, VocabularyDefinitionToCreationType, VocabularyTermDefinitionToCreationType, \
+                    PropertyAssignmentDefinitionToCreationType, SampleTypeDefinitionToCreationType, ExperimentTypeDefinitionToCreationType, \
+                    DatasetTypeDefinitionToCreationType, SpaceDefinitionToCreationType, ProjectDefinitionToCreationType, ExperimentDefinitionToCreationType, \
+                    SampleDefinitionToCreationType, ScriptDefinitionToCreationType
 
 
 def get_boolean_from_string(text):
@@ -30,7 +34,7 @@ class DefinitionToCreationParserFactory(object):
     @staticmethod
     def get_parsers(definition, context):
         if definition.type == u'VOCABULARY_TYPE':
-            return [VocabularyDefinitionToCreationParser()]
+            return [VocabularyDefinitionToCreationParser(), VocabularyTermDefinitionToCreationParser()]
         elif definition.type == u'SAMPLE_TYPE':
             return [SampleTypeDefinitionToCreationParser(), PropertyTypeDefinitionToCreationParser(),
                     ScriptDefinitionToCreationParser(context)]
@@ -56,14 +60,15 @@ class DefinitionToCreationParserFactory(object):
 
 
 class PropertyTypeDefinitionToCreationParser(object):
-    type = "PropertyTypeCreation"
 
     def parse(self, definition):
         property_creations = []
 
         for prop in definition.properties:
             property_type_creation = PropertyTypeCreation()
-            property_type_creation.code = prop.get(u'code')
+            code = prop.get(u'code')
+            code = code.upper() if code is not None else None
+            property_type_creation.code = code
             property_type_creation.label = prop.get(u'property label')
             property_type_creation.description = prop.get(u'description')
             property_type_creation.dataType = DataType.valueOf(prop.get(u'data type'))
@@ -74,59 +79,66 @@ class PropertyTypeDefinitionToCreationParser(object):
         return property_creations
 
     def get_type(self):
-        return PropertyTypeDefinitionToCreationParser.type
+        return PropertyTypeDefinitionToCreationType
 
 
 class VocabularyDefinitionToCreationParser(object):
-    type = "VocabularyCreation"
 
     def parse(self, definition):
         code = definition.attributes.get(u'code')
+        code = code.upper() if code is not None else None
         vocabulary_creation = VocabularyCreation()
         vocabulary_creation.code = code
         vocabulary_creation.internalNameSpace = is_internal_namespace(code)
         vocabulary_creation.description = definition.attributes.get(u'description')
 
+        return vocabulary_creation
+
+    def get_type(self):
+        return VocabularyDefinitionToCreationType
+
+
+class VocabularyTermDefinitionToCreationParser(object):
+
+    def parse(self, definition):
+        vocabulary_code = VocabularyPermId(definition.attributes.get(u'code'))
         vocabulary_creations_terms = []
         for prop in definition.properties:
             vocabulary_creation_term = VocabularyTermCreation()
             vocabulary_creation_term.code = prop.get(u'code')
             vocabulary_creation_term.label = prop.get(u'label')
             vocabulary_creation_term.description = prop.get(u'description')
+            vocabulary_creation_term.vocabularyId = vocabulary_code
             vocabulary_creations_terms.append(vocabulary_creation_term)
 
-        vocabulary_creation.terms = vocabulary_creations_terms
-
-        return vocabulary_creation
+        return vocabulary_creations_terms
 
     def get_type(self):
-        return VocabularyDefinitionToCreationParser.type
+        return VocabularyTermDefinitionToCreationType
 
 
 class PropertyAssignmentDefinitionToCreationParser(object):
-    type = "PropertyAssignmentCreation"
 
     def parse(self, prop):
         code = prop.get(u'code')
-        property_assingment_creation = PropertyAssignmentCreation()
+        property_assignment_creation = PropertyAssignmentCreation()
         is_mandatory = get_boolean_from_string(prop.get(u'mandatory'))
-        property_assingment_creation.mandatory = is_mandatory
+        property_assignment_creation.mandatory = is_mandatory
         should_show_in_edit_view = get_boolean_from_string(prop.get(u'show in edit views'))
-        property_assingment_creation.showInEditView = should_show_in_edit_view
-        property_assingment_creation.section = prop.get(u'section')
-        property_assingment_creation.propertyTypeId = PropertyTypePermId(code)
+        property_assignment_creation.showInEditView = should_show_in_edit_view
+        property_assignment_creation.section = prop.get(u'section')
+        property_assignment_creation.propertyTypeId = PropertyTypePermId(code)
         if u'dynamic script' in prop and prop.get(u'dynamic script') is not None:
             dynamic_script_path = prop.get(u'dynamic script')
-            property_assingment_creation.pluginId = PluginPermId(get_script_name_for(code, dynamic_script_path))
+            property_assignment_creation.pluginId = PluginPermId(get_script_name_for(code, dynamic_script_path))
 
-        return property_assingment_creation
+        return property_assignment_creation
 
     def get_type(self):
-        return PropertyAssignmentDefinitionToCreationParser.type
+        return PropertyAssignmentDefinitionToCreationType
 
 
 class SampleTypeDefinitionToCreationParser(object):
-    type = "SampleTypeCreation"
 
     def parse(self, definition):
         code = definition.attributes.get(u'code')
@@ -142,21 +154,20 @@ class SampleTypeDefinitionToCreationParser(object):
             validation_script_path = definition.attributes.get(u'validation script')
             sample_creation.validationPluginId = PluginPermId(get_script_name_for(code, validation_script_path))
 
-        property_assingment_creations = []
+        property_assignment_creations = []
         property_assignment_parser = PropertyAssignmentDefinitionToCreationParser()
         for prop in definition.properties:
-            property_assingment_creation = property_assignment_parser.parse(prop)
-            property_assingment_creations.append(property_assingment_creation)
+            property_assignment_creation = property_assignment_parser.parse(prop)
+            property_assignment_creations.append(property_assignment_creation)
 
-        sample_creation.propertyAssignments = property_assingment_creations
+        sample_creation.propertyAssignments = property_assignment_creations
         return sample_creation
 
     def get_type(self):
-        return SampleTypeDefinitionToCreationParser.type
+        return SampleTypeDefinitionToCreationType
 
 
 class ExperimentTypeDefinitionToCreationParser(object):
-    type = "ExperimentTypeCreation"
 
     def parse(self, definition):
         code = definition.attributes.get(u'code')
@@ -167,21 +178,20 @@ class ExperimentTypeDefinitionToCreationParser(object):
             validation_script_path = definition.attributes.get(u'validation script')
             experiment_type_creation.validationPluginId = PluginPermId(get_script_name_for(code, validation_script_path))
 
-        property_assingment_creations = []
+        property_assignment_creations = []
         property_assignment_parser = PropertyAssignmentDefinitionToCreationParser()
         for prop in definition.properties:
-            property_assingment_creation = property_assignment_parser.parse(prop)
-            property_assingment_creations.append(property_assingment_creation)
+            property_assignment_creation = property_assignment_parser.parse(prop)
+            property_assignment_creations.append(property_assignment_creation)
 
-        experiment_type_creation.propertyAssignments = property_assingment_creations
+        experiment_type_creation.propertyAssignments = property_assignment_creations
         return experiment_type_creation
 
     def get_type(self):
-        return ExperimentTypeDefinitionToCreationParser.type
+        return ExperimentTypeDefinitionToCreationType
 
 
 class DatasetTypeDefinitionToCreationParser(object):
-    type = "DatasetTypeCreation"
 
     def parse(self, definition):
         dataset_type_creation = DataSetTypeCreation()
@@ -192,21 +202,20 @@ class DatasetTypeDefinitionToCreationParser(object):
             validation_script_path = definition.attributes.get(u'validation script')
             dataset_type_creation.validationPluginId = PluginPermId(get_script_name_for(code, validation_script_path))
 
-        property_assingment_creations = []
+        property_assignment_creations = []
         property_assignment_parser = PropertyAssignmentDefinitionToCreationParser()
         for prop in definition.properties:
-            property_assingment_creation = property_assignment_parser.parse(prop)
-            property_assingment_creations.append(property_assingment_creation)
+            property_assignment_creation = property_assignment_parser.parse(prop)
+            property_assignment_creations.append(property_assignment_creation)
 
-        dataset_type_creation.propertyAssignments = property_assingment_creations
+        dataset_type_creation.propertyAssignments = property_assignment_creations
         return dataset_type_creation
 
     def get_type(self):
-        return DatasetTypeDefinitionToCreationParser.type
+        return DatasetTypeDefinitionToCreationType
 
 
 class SpaceDefinitionToCreationParser(object):
-    type = "SpaceCreation"
 
     def parse(self, definition):
         space_creations = []
@@ -220,11 +229,10 @@ class SpaceDefinitionToCreationParser(object):
         return space_creations
 
     def get_type(self):
-        return SpaceDefinitionToCreationParser.type
+        return SpaceDefinitionToCreationType
 
 
 class ProjectDefinitionToCreationParser(object):
-    type = "ProjectCreation"
 
     def parse(self, definition):
         project_creations = []
@@ -239,11 +247,10 @@ class ProjectDefinitionToCreationParser(object):
         return project_creations
 
     def get_type(self):
-        return ProjectDefinitionToCreationParser.type
+        return ProjectDefinitionToCreationType
 
 
 class ExperimentDefinitionToCreationParser(object):
-    type = "ExperimentCreation"
 
     def parse(self, definition):
         experiments = []
@@ -262,11 +269,10 @@ class ExperimentDefinitionToCreationParser(object):
         return experiments
 
     def get_type(self):
-        return ExperimentDefinitionToCreationParser.type
+        return ExperimentDefinitionToCreationType
 
 
 class SampleDefinitionToCreationParser(object):
-    type = "SampleCreation"
 
     def parse(self, definition):
         samples = []
@@ -292,11 +298,11 @@ class SampleDefinitionToCreationParser(object):
             if u'experiment' in sample_properties and sample_properties.get(u'experiment') is not None:
                 sample_creation.experimentId = CreationId(sample_properties.get(u'experiment'))
             if u'parents' in sample_properties and sample_properties.get(u'parents') is not None:
-                parent_creationids = []
+                parent_creation_ids = []
                 parents = sample_properties.get(u'parents').split('\n')
                 for parent in parents:
-                    parent_creationids.append(CreationId(parent))
-                sample_creation.parentIds = parent_creationids
+                    parent_creation_ids.append(CreationId(parent))
+                sample_creation.parentIds = parent_creation_ids
             if u'children' in sample_properties and sample_properties.get(u'children') is not None:
                 child_creationids = []
                 children = sample_properties.get(u'children').split('\n')
@@ -311,11 +317,11 @@ class SampleDefinitionToCreationParser(object):
         return samples
 
     def get_type(self):
-        return SampleDefinitionToCreationParser.type
+        return SampleDefinitionToCreationType
 
 
 class ScriptDefinitionToCreationParser(object):
-    type = "ScriptCreation"
+    type = ScriptDefinitionToCreationType
 
     def __init__(self, context=None):
         self.context = context
@@ -348,4 +354,4 @@ class ScriptDefinitionToCreationParser(object):
         return scripts
 
     def get_type(self):
-        return ScriptDefinitionToCreationParser.type
+        return ScriptDefinitionToCreationType

@@ -156,6 +156,11 @@ var Util = new function() {
 		this.showError(withHTML, andCallback, noBlock, true, false, true);
 	}
 	
+	this.showFailedServerCallError = function(error) {
+		var msg = error["message"]
+		this.showError("Call failed to server: " + (msg ? msg : JSON.stringify(error)));
+	}
+	
 	this.showError = function(withHTML, andCallback, noBlock, isUserError, isEnvironmentError, disableReport) {		
 		var userErrorWarning = "";
 		if(isUserError) {

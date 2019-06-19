@@ -29,6 +29,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 
 /**
  * @author Franz-Josef Elmer
@@ -86,6 +87,20 @@ public class SampleDeliverer extends AbstractEntityWithPermIdDeliverer
             }
         }
         operationLog.info(count + " of " + samplePermIds.size() + " samples have been delivered.");
+    }
+
+    @Override
+    protected List<String> getAllEntities(DeliveryExecutionContext executionContext, String sessionToken)
+    {
+        String sql = "select perm_id from samples where space_id is null";
+        Set<String> spaces = executionContext.getSpaces();
+        if (spaces.isEmpty() == false)
+        {
+            CommaSeparatedListBuilder builder = new CommaSeparatedListBuilder();
+            spaces.stream().forEach(space -> builder.append("'" + space + "'"));
+            sql += " or space_id in (select id from spaces where code in (" + builder + "))";
+        }
+        return super.getAllEntities(executionContext, sessionToken, sql);
     }
 
     private SampleFetchOptions createFullFetchOptions()

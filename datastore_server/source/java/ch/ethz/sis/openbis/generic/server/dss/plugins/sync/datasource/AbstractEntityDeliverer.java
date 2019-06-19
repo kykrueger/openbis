@@ -81,13 +81,12 @@ abstract class AbstractEntityDeliverer<T> implements IDeliverer
     @Override
     public void deliverEntities(DeliveryExecutionContext context) throws XMLStreamException
     {
-        IDataSourceQueryService queryService = context.getQueryService();
         String sessionToken = context.getSessionToken();
-        List<T> allEntities = getAllEntities(queryService, sessionToken);
+        List<T> allEntities = getAllEntities(context, sessionToken);
         executeInBatches(allEntities, entities -> deliverEntities(context, entities));
     }
     
-    protected List<T> getAllEntities(IDataSourceQueryService queryService, String sessionToken)
+    protected List<T> getAllEntities(DeliveryExecutionContext executionContext, String sessionToken)
     {
         return Collections.emptyList();
     }

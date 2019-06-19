@@ -280,11 +280,12 @@ war {
     
 }
 
-def downloadFile(url, filename) {
-  def file = project(':openbis').file("../openbis_standard_technologies/targets/downloads/$filename")
+def downloadCorePlugin(url, pluginname) {
+  def file = project(':openbis').file("../openbis_standard_technologies/targets/downloads/${pluginname}.zip")
   if (file.exists() == false || System.currentTimeMillis() - file.lastModified() > 3600000) {
     file.getParentFile().mkdirs()
     ext.executeFunction('curl', [url, '-sLk', '-o', file.getAbsolutePath()])
+    ext.executeFunction('unzip', ['-uqo', file.getAbsolutePath(), '-d', '../openbis_standard_technologies/targets/downloads/'])
   }
 }
 
@@ -294,30 +295,18 @@ task zipCorePlugins(type: SymZip) {
   includeEmptyDirs = false
   archiveName 'core-plugins.zip'
   
-  downloadFile('https://github.com/aarpon/obit_flow_core_technology/archive/release/19.x.zip', 'flow.zip')
-  downloadFile('https://github.com/aarpon/obit_microscopy_core_technology/archive/release/19.x.zip', 'microscopy.zip')
-  downloadFile('https://github.com/aarpon/obit_shared_core_technology/archive/release/19.x.zip', 'shared.zip')
+  downloadCorePlugin('https://github.com/aarpon/obit_flow_core_technology/archive/release/19.x.zip', 'flow')
+  downloadCorePlugin('https://github.com/aarpon/obit_microscopy_core_technology/archive/release/19.x.zip', 'microscopy')
+  downloadCorePlugin('https://github.com/aarpon/obit_shared_core_technology/archive/release/19.x.zip', 'shared')
   from project(':rtd_phosphonetx').fileTree(dir: 'source/core-plugins', includes:['proteomics/**', 'proteomics-optional/**'], excludes:['**/dss/**', '**/package-to-dist'])
   from project(':screening').fileTree(dir: 'source/core-plugins', includes:['screening/**', 'screening-optional/**'], excludes:['**/dss/**', '**/package-to-dist'])
   from project(':deep_sequencing_unit').fileTree(dir: 'source/core-plugins', includes:['illumina-ngs/**'], excludes:['**/dss/**', '**/package-to-dist'])
+  from fileTree(dir: 'targets/downloads/obit_flow_core_technology-release-19.x/core-plugins', includes:['flow/**'])
+  from fileTree(dir: 'targets/downloads/obit_microscopy_core_technology-release-19.x/core-plugins', includes:['microscopy/**'])
+  from fileTree(dir: 'targets/downloads/obit_shared_core_technology-release-19.x/core-plugins', includes:['shared/**'])
   from 'dist/core-plugins'
-  from zipTree('targets/downloads/flow.zip')
-  from zipTree('targets/downloads/microscopy.zip')
-  from zipTree('targets/downloads/shared.zip')
   from 'dist/server/core-plugins.properties'
   into 'core-plugins'
-  eachFile { FileCopyDetails fcd -> 
-    def rp = fcd.relativePath
-    if (rp.pathString.contains("obit_")) {
-      if (rp.pathString.contains("/core-plugins/") && fcd.name.equals("core-plugins.properties") == false) {
-        fcd.relativePath = new RelativePath(fcd.isDirectory() == false, rp.segments[2..-1] as String[])
-      } else if (fcd.name.equals("LICENSE")) {
-        fcd.relativePath = new RelativePath(true, ["core-plugins", rp.pathString.split("_")[1], "LICENSE"] as String[])
-      } else {
-        fcd.exclude()
-      }
-    }
-  }
 }
 
 def generateMD5(final file) {

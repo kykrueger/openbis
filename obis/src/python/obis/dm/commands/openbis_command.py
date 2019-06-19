@@ -178,7 +178,7 @@ class OpenbisCommand(object):
             try:
                 external_dms = self.openbis.create_external_data_management_system(external_dms_id, external_dms_id,
                                                                     "{}:/{}".format(hostname, edms_path))
-            except ValueError as error:
+            except Exception as error:
                 return CommandResult(returncode=-1, output=str(error))
         return CommandResult(returncode=0, output=external_dms)
 

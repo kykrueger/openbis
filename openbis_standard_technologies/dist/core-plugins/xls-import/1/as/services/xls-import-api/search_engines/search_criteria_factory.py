@@ -32,9 +32,9 @@ class SampleCreationSampleChildrenParentSearchCriteria(object):
         if identifier is not None:
             search_criteria = self.search_criteria_class()
             search_criteria.withAndOperator()
-            identier_parts = identifier.getParts()
-            space_code = identier_parts.spaceCodeOrNull
-            project_code = identier_parts.projectCodeOrNull
+            identifier_parts = identifier.getParts()
+            space_code = identifier_parts.spaceCodeOrNull
+            project_code = identifier_parts.projectCodeOrNull
             sample_code = identifier.sampleCode
             search_criteria.withCode().thatEquals(sample_code)
             if project_code is not None:
@@ -127,8 +127,20 @@ class DefaultCreationElementSearchCriteria(object):
             self.search_criteria.withCodes().thatIn([creation.code for creation in specific_creations])
         else:
             for creation in specific_creations:
-                self.search_criteria.withCode().thatEquals(creation.code)
+                self.search_criteria.withCodes().thatIn(creation.code)
             self.search_criteria.withOrOperator()
+        return self.search_criteria
+
+
+class VocabularyTermCreationVocabularyTermSearchCriteria(object):
+
+    def __init__(self, search_criteria_class):
+        self.search_criteria = search_criteria_class()
+
+    def get_search_criteria(self, specific_creations):
+        self.search_criteria.withCodes().thatIn([creation.code for creation in specific_creations])
+        self.search_criteria.withVocabulary().withCodes().thatIn([str(creation.vocabularyId) for creation in specific_creations])
+        self.search_criteria.withAndOperator()
         return self.search_criteria
 
 
