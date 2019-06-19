@@ -76,13 +76,13 @@ function simulateNodeIconClick(wrapper, id){
 }
 
 function simulateFilterChange(wrapper, filter){
-  let input = wrapper.find('BrowserFilter').find('input')
+  let input = wrapper.find('FilterField').find('input')
   input.instance().value = filter
   input.simulate('change')
 }
 
 function expectFilter(wrapper, expectedFilter){
-  const actualFilter = wrapper.find('BrowserFilter').map(node => {
+  const actualFilter = wrapper.find('FilterField').map(node => {
     return node.prop('filter')
   })[0]
   expect(actualFilter).toEqual(expectedFilter)
