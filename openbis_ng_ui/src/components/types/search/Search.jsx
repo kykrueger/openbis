@@ -69,7 +69,7 @@ const entityKindToObjecType = {
   'MATERIAL': objectTypes.MATERIAL_TYPE
 }
 
-const allColumns = ['code', 'description']
+const allColumns = ['kind', 'code', 'description']
 
 function mapDispatchToProps(dispatch){
   return {
@@ -109,11 +109,18 @@ class Search extends React.Component {
       this.searchDataSetTypes(),
       this.searchMaterialTypes()
     ]).then(([objectTypes, collectionTypes, dataSetTypes, materialTypes]) => {
+      let allTypes = [].concat(objectTypes, collectionTypes, dataSetTypes, materialTypes)
+
+      allTypes = allTypes.map(type => ({
+        ...type,
+        kind: type.permId.entityKind
+      }))
+
       this.setState(() => ({
         loaded: true,
         page: 0,
         pageSize: 10,
-        allTypes: [].concat(objectTypes, collectionTypes, dataSetTypes, materialTypes)
+        allTypes
       }))
     })
   }
@@ -215,7 +222,7 @@ class Search extends React.Component {
     }
 
     return _.filter(types, type => {
-      return matches(type.code) || matches(type.description)
+      return matches(type.kind) || matches(type.code) || matches(type.description)
     })
   }
 
@@ -266,6 +273,18 @@ class Search extends React.Component {
             <TableHead classes={{ root: classes.tableHeader }}>
               <TableRow>
                 {
+                  visibleColumns.includes('kind') &&
+                <TableCell>
+                  <TableSortLabel
+                    active={sort === 'kind'}
+                    direction={sortDirection}
+                    onClick={this.handleSortChange('kind')}
+                  >
+                Kind
+                  </TableSortLabel>
+                </TableCell>
+                }
+                {
                   visibleColumns.includes('code') &&
                   <TableCell>
                     <TableSortLabel
@@ -294,6 +313,12 @@ class Search extends React.Component {
             <TableBody>
               {pagedTypes.map(type => (
                 <TableRow key={type.permId.entityKind + '-' + type.permId.permId} hover>
+                  {
+                    visibleColumns.includes('kind') &&
+                  <TableCell>
+                    {type.permId.entityKind}
+                  </TableCell>
+                  }
                   {
                     visibleColumns.includes('code') &&
                     <TableCell>
