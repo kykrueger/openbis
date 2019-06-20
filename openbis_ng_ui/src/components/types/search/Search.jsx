@@ -164,6 +164,7 @@ class Search extends React.Component {
 
   handleFilterChange(filter){
     this.setState(() => ({
+      page: 0,
       filter
     }))
   }
@@ -247,10 +248,10 @@ class Search extends React.Component {
     const { classes } = this.props
     const { page, pageSize, filter, visibleColumns, sort, sortDirection, allTypes } = this.state
 
-    let types = [...allTypes]
-    types = this.filter(types)
-    types = this.sort(types)
-    types = this.page(types)
+    const types = [...allTypes]
+    const filteredTypes = this.filter(types)
+    const sortedTypes = this.sort(filteredTypes)
+    const pagedTypes = this.page(sortedTypes)
 
     return (
       <div className={classes.container}>
@@ -291,7 +292,7 @@ class Search extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {types.map(type => (
+              {pagedTypes.map(type => (
                 <TableRow key={type.permId.entityKind + '-' + type.permId.permId} hover>
                   {
                     visibleColumns.includes('code') &&
@@ -319,7 +320,7 @@ class Search extends React.Component {
         </div>
         <div className={classes.footerContainer}>
           <PageConfig
-            count={allTypes.length}
+            count={filteredTypes.length}
             page={page}
             pageSize={pageSize}
             onPageChange={this.handlePageChange}
