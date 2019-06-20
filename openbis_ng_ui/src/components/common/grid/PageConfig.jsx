@@ -96,7 +96,7 @@ class PageConfig extends React.Component {
         </div>
         <div className={classes.pageRange}>
           <Typography>
-            {page * pageSize + 1}-{Math.min(count, (page + 1) * pageSize)} of {count}
+            {Math.min(count, page * pageSize + 1)}-{Math.min(count, (page + 1) * pageSize)} of {count}
           </Typography>
         </div>
         <div className={classes.pageButtons}>

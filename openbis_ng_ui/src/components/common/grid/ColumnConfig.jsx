@@ -65,10 +65,8 @@ class ColumnConfig extends React.Component {
 
     return (
       <div className={classes.container}>
-        <IconButton>
-          <SettingsIcon
-            onClick={this.handleOpen}
-          />
+        <IconButton onClick={this.handleOpen}>
+          <SettingsIcon />
         </IconButton>
         <Popover
           open={Boolean(el)}
@@ -85,16 +83,16 @@ class ColumnConfig extends React.Component {
         >
           <ol className={classes.columns}>
             {allColumns.map(column => (
-              <li key={column}>
+              <li key={column.field}>
                 <FormControlLabel
                   control={
                     <Checkbox
-                      value={column}
-                      checked={visibleColumns.includes(column)}
+                      value={column.field}
+                      checked={visibleColumns.includes(column.field)}
                       onChange={this.handleChange}
                     />
                   }
-                  label={column}
+                  label={column.label || column.field}
                 />
               </li>
             ))}
