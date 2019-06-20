@@ -110,28 +110,28 @@ public class JDBCSQLExecutor implements ISQLExecutor
                 if (componentType.isPrimitive()) {
                     if (boolean.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.BOOLEAN;
+                        dbArrayTypeName = SQLTypes.BOOLEAN.toString();
                     } else if (byte.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.INT2;
+                        dbArrayTypeName = SQLTypes.INT2.toString();
                     } else if (char.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.CHARACTER;
+                        dbArrayTypeName = SQLTypes.CHARACTER.toString();
                     } else if (double.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.FLOAT8;
+                        dbArrayTypeName = SQLTypes.FLOAT8.toString();
                     } else if (float.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.FLOAT4;
+                        dbArrayTypeName = SQLTypes.FLOAT4.toString();
                     } else if (int.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.INT4;
+                        dbArrayTypeName = SQLTypes.INT4.toString();
                     } else if (long.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.INT8;
+                        dbArrayTypeName = SQLTypes.INT8.toString();
                     } else if (short.class.isAssignableFrom(componentType))
                     {
-                        dbArrayTypeName = SQLTypes.INT2;
+                        dbArrayTypeName = SQLTypes.INT2.toString();
                     } else
                     {
                         /* No else. No other primitive types exist. */
@@ -140,7 +140,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
                 } else
                 {
                     if (componentType.isAssignableFrom(String.class)) {
-                        dbArrayTypeName = SQLTypes.VARCHAR;
+                        dbArrayTypeName = SQLTypes.VARCHAR.toString();
                     } else
                     {
                         throw new IllegalArgumentException("Arrays of objects are not supported");

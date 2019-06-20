@@ -27,7 +27,11 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This is a refactoring of {@link ch.systemsx.cisd.openbis.generic.server.dataaccess.PropertyValidator} that takes some simple validations that do
@@ -77,7 +81,7 @@ public class SimplePropertyValidator
         }
     }
 
-    private final static String[] DATE_PATTERNS = createDatePatterns();
+    public final static String[] DATE_PATTERNS = createDatePatterns();
 
     private final static Map<DataTypeCode, IDataTypeValidator> dataTypeValidators =
             createDataTypeValidators();

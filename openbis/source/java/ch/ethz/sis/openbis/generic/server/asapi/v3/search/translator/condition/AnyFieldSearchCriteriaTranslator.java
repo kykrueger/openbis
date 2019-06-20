@@ -18,22 +18,42 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
-import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.BOOLEAN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.FLOAT4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.FLOAT8;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT8;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.TIMESTAMP_WITH_TZ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.VARCHAR;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FALSE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
 public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
 {
+
+    private final AtomicBoolean first = new AtomicBoolean();
+
     @Override
     public JoinInformation getJoinInformation(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper)
     {
@@ -49,26 +69,51 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
             {
                 final String alias = Translator.getAlias(0);
                 final AbstractStringValue value = criterion.getFieldValue();
-                final String[] criterionFieldNames = entityMapper.getAllFields();
+                final Map<String, SQLTypes> fieldToSQLTypeMap = entityMapper.getFieldToSQLTypeMap();
+                final String stringValue = value.getValue();
+                final Set<SQLTypes> compatibleSqlTypesForValue = findCompatibleSqlTypesForValue(stringValue);
 
-                final AtomicBoolean first = new AtomicBoolean(true);
-                Arrays.stream(criterionFieldNames).forEach(fieldName ->
+                first.set(true);
+                fieldToSQLTypeMap.forEach((fieldName, fieldSQLType) ->
                 {
-                    if (first.get())
+                    final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
+                    final boolean includeColumn = compatibleSqlTypesForValue.contains(fieldSQLType);
+
+                    if (!equalsToComparison || includeColumn)
                     {
-                        first.set(false);
-                    } else
-                    {
-                        sqlBuilder.append(SP).append(SQLLexemes.OR).append(SP);
+                        if (first.get())
+                        {
+                            first.set(false);
+                        } else
+                        {
+                            sqlBuilder.append(SP).append(SQLLexemes.OR).append(SP);
+                        }
                     }
 
-                    sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
-                    StringFieldSearchCriteriaTranslator.appendStringComparatorOp(criterion.getFieldValue(), sqlBuilder);
-
-                    args.add(value.getValue());
+                    if (equalsToComparison)
+                    {
+                        if (includeColumn)
+                        {
+                            sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(EQ).append(QU).append(DOUBLE_COLON).
+                                    append(fieldSQLType.toString());
+                            args.add(stringValue);
+                        }
+                    } else
+                    {
+                        sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
+                        StringFieldSearchCriteriaTranslator.appendStringComparatorOp(value, sqlBuilder);
+                        args.add(stringValue);
+                    }
                 });
 
+                if (args.isEmpty())
+                {
+                    // When there are no columns selected (no values added), then the query should return nothing
+                    sqlBuilder.append(FALSE);
+                }
+
                 sqlBuilder.append(NL);
+
                 break;
             }
 
@@ -77,6 +122,41 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
             case ATTRIBUTE:
             {
                 throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
+            }
+        }
+    }
+
+    private Set<SQLTypes> findCompatibleSqlTypesForValue(final String value)
+    {
+        final SimplePropertyValidator validator = new SimplePropertyValidator();
+        try
+        {
+            validator.validatePropertyValue(DataTypeCode.TIMESTAMP, value);
+            return EnumSet.of(TIMESTAMP_WITH_TZ);
+        } catch (UserFailureException e1)
+        {
+            try
+            {
+                validator.validatePropertyValue(DataTypeCode.BOOLEAN, value);
+                return EnumSet.of(BOOLEAN);
+            } catch (UserFailureException e2)
+            {
+                try
+                {
+                    validator.validatePropertyValue(DataTypeCode.INTEGER, value);
+                    return EnumSet.of(INT8, INT4, INT2, FLOAT4, FLOAT8);
+                } catch (UserFailureException e3)
+                {
+                    try
+                    {
+                        validator.validatePropertyValue(DataTypeCode.REAL, value);
+                        return EnumSet.of(FLOAT4, FLOAT8);
+                    } catch (UserFailureException e4)
+                    {
+                        validator.validatePropertyValue(DataTypeCode.VARCHAR, value);
+                        return EnumSet.of(VARCHAR);
+                    }
+                }
             }
         }
     }

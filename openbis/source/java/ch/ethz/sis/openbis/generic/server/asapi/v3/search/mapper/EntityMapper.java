@@ -17,36 +17,31 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CONTAINER_FROZEN_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DELETION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_FROZEN_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_CHILDREN_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_COMPONENT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_DATA_SET_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FROZEN_FOR_PARENTS_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ORIGINAL_DELETION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PARENT_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_FROZEN_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_FROZEN_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VERSION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROPERTY_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
@@ -70,12 +65,13 @@ public enum EntityMapper
             SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ID_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_TYPE_COLUMN,
             SAMPLE_PROPERTIES_TABLE, ID_COLUMN, SAMPLE_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_COLUMN,
             SAMPLE_RELATIONSHIPS_ALL_TABLE, ID_COLUMN, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN,
-            DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN,
-            new String[] { ID_COLUMN, PERM_ID_COLUMN, CODE_COLUMN, EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
-                    MODIFICATION_TIMESTAMP_COLUMN, PERSON_REGISTERER_COLUMN, DELETION_COLUMN, ORIGINAL_DELETION_COLUMN, SPACE_COLUMN,
-                    PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, VERSION_COLUMN, PROJECT_COLUMN, FROZEN_COLUMN, FROZEN_FOR_COMPONENT_COLUMN,
-                    FROZEN_FOR_CHILDREN_COLUMN, FROZEN_FOR_PARENTS_COLUMN, FROZEN_FOR_DATA_SET_COLUMN, SPACE_FROZEN_COLUMN, PROJECT_FROZEN_COLUMN,
-                    EXPERIMENT_FROZEN_COLUMN, CONTAINER_FROZEN_COLUMN });
+            DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN);
+
+    static
+    {
+        initSampleFieldToSQLTypeMap();
+        initSampleSqlTypeToFieldsMap();
+    }
 
     /*
      * Entities Table
@@ -139,7 +135,10 @@ public enum EntityMapper
 
     private String dataTableEntityIdField;
 
-    private String[] allFields;
+    private Map<String, SQLTypes> fieldToSQLTypeMap = new HashMap<>();
+
+    private Map<SQLTypes, Set<String>> sqlTypeToFieldsMap = new HashMap<>();
+
 
     EntityMapper(String entitiesTable, String entitiesTableIdField, String entitiesTableEntityTypeIdField, String attributeTypesTable,
             String attributeTypesTableIdField, String entityTypesTable, String entityTypesTableIdField, String entityTypesAttributeTypesTable,
@@ -147,7 +146,7 @@ public enum EntityMapper
             String valuesTable, String valuesTableIdField, String valuesTableEntityIdField,
             String valuesTableEntityTypeAttributeTypeIdField, String relationshipsTable, String relationshipsTableIdField,
             String relationshipsTableParentIdField, String relationshipsTableChildIdField, String dataTable, String dataTableIdField,
-            String dataTableEntityIdField, final String[] allFields)
+            String dataTableEntityIdField)
     {
         this.entitiesTable = entitiesTable;
         this.entitiesTableIdField = entitiesTableIdField;
@@ -171,7 +170,6 @@ public enum EntityMapper
         this.dataTable = dataTable;
         this.dataTableIdField = dataTableIdField;
         this.dataTableEntityIdField = dataTableEntityIdField;
-        this.allFields = allFields;
     }
 
     public static EntityMapper toEntityMapper(final EntityKind entityKind)
@@ -289,9 +287,37 @@ public enum EntityMapper
         return dataTableEntityIdField;
     }
 
-    public String[] getAllFields()
+    public Map<String, SQLTypes> getFieldToSQLTypeMap()
     {
-        return allFields;
+        return fieldToSQLTypeMap;
+    }
+
+    private static void initSampleFieldToSQLTypeMap()
+    {
+        final Map<String, SQLTypes> fields = SAMPLE.fieldToSQLTypeMap;
+        fields.put(PERM_ID_COLUMN, SQLTypes.VARCHAR);
+        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
+        fields.put(REGISTRATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(EXPERIMENT_COLUMN, SQLTypes.INT8);
+        fields.put(SAMPLE_TYPE_COLUMN, SQLTypes.INT8);
+        fields.put(PERSON_REGISTERER_COLUMN, SQLTypes.INT8);
+        fields.put(SPACE_COLUMN, SQLTypes.INT8);
+        fields.put(PART_OF_SAMPLE_COLUMN, SQLTypes.INT8);
+        fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
+        fields.put(PROJECT_COLUMN, SQLTypes.INT8);
+    }
+
+    private static void initSampleSqlTypeToFieldsMap()
+    {
+        final Map<SQLTypes, Set<String>> map = SAMPLE.sqlTypeToFieldsMap;
+        final Set<String> varcharColumns = new HashSet<>(Arrays.asList(PERM_ID_COLUMN, CODE_COLUMN));
+        final Set<String> timestampColumns = new HashSet<>(Arrays.asList(REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN));
+        final Set<String> int8Columns = new HashSet<>(Arrays.asList(EXPERIMENT_COLUMN, SAMPLE_TYPE_COLUMN, PERSON_REGISTERER_COLUMN, SPACE_COLUMN,
+                PART_OF_SAMPLE_COLUMN, PERSON_MODIFIER_COLUMN, PROJECT_COLUMN));
+        map.put(SQLTypes.VARCHAR, varcharColumns);
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, timestampColumns);
+        map.put(SQLTypes.INT8, int8Columns);
     }
 
 }
