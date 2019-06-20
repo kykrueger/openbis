@@ -1,15 +1,20 @@
-# Convert README.md markdown to README.rst reStructuredText
-pandoc --from=markdown --to=rst --output=README.rst README.md
-
 # create a source-distribution
+# be sure to bump you version number up!
 python setup.py sdist
 
 # see distributions
 ls -la dist/
 
 # upload distribution(s) to pypi
+# a version, once uploaded, cannot be overwritten in pypi
+# it only can be deleted.
+# for pre-releases use version number like 1.0.0.dev1, 1.0.0.dev2 etc.
 twine upload dist/*
 
-# upload distribution to pypi-test
+# upload distribution to test.pypi.org repository
+# repo must be specified in a [test] section in your ~/.pypirc file:
+# [test]
+# repository=https://test.pypi.org/legacy/
+#
 twine upload --repository test dist/*
 
