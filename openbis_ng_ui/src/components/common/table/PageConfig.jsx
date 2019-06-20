@@ -1,7 +1,9 @@
 import _ from 'lodash'
 import React from 'react'
 import {withStyles} from '@material-ui/core/styles'
+import Typography from '@material-ui/core/Typography'
 import TextField from '@material-ui/core/TextField'
+import FormControlLabel from '@material-ui/core/FormControlLabel'
 import IconButton from '@material-ui/core/IconButton'
 import FirstPageIcon from '@material-ui/icons/FirstPage'
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
@@ -15,12 +17,11 @@ const styles = () => ({
     alignItems: 'center',
     flexShrink: 0
   },
-  pageSize: {
-    display: 'flex',
-    alignItems: 'center',
-    '& label': {
-      marginRight: '12px'
-    }
+  pageSizeLabelPlacement: {
+    marginRight: 0
+  },
+  pageSizeLabel: {
+    marginRight: '12px'
   },
   pageRange: {
     marginLeft: '24px'
@@ -70,22 +71,33 @@ class PageConfig extends React.Component {
     return (
       <div className={classes.container}>
         <div className={classes.pageSize}>
-          <label>Rows per page:</label>
-          <TextField
-            select
-            SelectProps={{
-              native: true
+          <FormControlLabel
+            control={
+              <TextField
+                select
+                SelectProps={{
+                  native: true
+                }}
+                value={pageSize}
+                onChange={this.handlePageSizeChange}
+              >
+                {[5, 10, 20, 50, 100].map(pageSize => (
+                  <option key={pageSize} value={pageSize}>{pageSize}</option>
+                ))}
+              </TextField>
+            }
+            classes={{
+              label: classes.pageSizeLabel,
+              labelPlacementStart: classes.pageSizeLabelPlacement
             }}
-            value={pageSize}
-            onChange={this.handlePageSizeChange}
-          >
-            {[5, 10, 20, 50, 100].map(pageSize => (
-              <option key={pageSize} value={pageSize}>{pageSize}</option>
-            ))}
-          </TextField>
+            label="Rows per page: "
+            labelPlacement="start"
+          />
         </div>
         <div className={classes.pageRange}>
-          {page * pageSize + 1}-{Math.min(count, (page + 1) * pageSize)} of {count}
+          <Typography>
+            {page * pageSize + 1}-{Math.min(count, (page + 1) * pageSize)} of {count}
+          </Typography>
         </div>
         <div className={classes.pageButtons}>
           <IconButton

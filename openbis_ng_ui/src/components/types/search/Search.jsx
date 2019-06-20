@@ -7,7 +7,6 @@ import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
-import TableFooter from '@material-ui/core/TableFooter'
 import TableRow from '@material-ui/core/TableRow'
 import TableSortLabel from '@material-ui/core/TableSortLabel'
 import FilterField from '../../common/form/FilterField.jsx'
@@ -25,10 +24,15 @@ const styles = (theme) => ({
     flexDirection: 'column',
     height: '100%'
   },
-  filterContainer: {
+  headerContainer: {
     flexGrow: 0,
     padding: theme.spacing.unit * 2,
     paddingBottom: 0
+  },
+  footerContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end'
   },
   tableContainer: {
     flexGrow: 1,
@@ -52,18 +56,6 @@ const styles = (theme) => ({
     '& td': {
       border: 0
     }
-  },
-  tableFooter: {
-    '& td': {
-      position: 'sticky',
-      bottom: 0,
-      zIndex: 10,
-      backgroundColor: theme.palette.background.paper
-    }
-  },
-  tableFooterContent: {
-    display: 'flex',
-    alignItems: 'center'
   },
   tableLink: {
     fontSize: 'inherit'
@@ -262,7 +254,7 @@ class Search extends React.Component {
 
     return (
       <div className={classes.container}>
-        <div className={classes.filterContainer}>
+        <div className={classes.headerContainer}>
           <FilterField
             filter={filter}
             filterChange={this.handleFilterChange}
@@ -323,27 +315,21 @@ class Search extends React.Component {
                 <TableCell></TableCell>
               </TableRow>
             </TableBody>
-            <TableFooter classes={{ root: classes.tableFooter }}>
-              <TableRow>
-                <TableCell colSpan={Math.max(1, visibleColumns.length)}>
-                  <div className={classes.tableFooterContent}>
-                    <ColumnConfig
-                      allColumns={allColumns}
-                      visibleColumns={visibleColumns}
-                      onColumnsChange={this.handleColumnsChange}
-                    />
-                    <PageConfig
-                      count={allTypes.length}
-                      page={page}
-                      pageSize={pageSize}
-                      onPageChange={this.handlePageChange}
-                      onPageSizeChange={this.handlePageSizeChange}
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
-            </TableFooter>
           </Table>
+        </div>
+        <div className={classes.footerContainer}>
+          <PageConfig
+            count={allTypes.length}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={this.handlePageChange}
+            onPageSizeChange={this.handlePageSizeChange}
+          />
+          <ColumnConfig
+            allColumns={allColumns}
+            visibleColumns={visibleColumns}
+            onColumnsChange={this.handleColumnsChange}
+          />
         </div>
       </div>
     )

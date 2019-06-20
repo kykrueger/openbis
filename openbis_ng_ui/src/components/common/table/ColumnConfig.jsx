@@ -1,15 +1,22 @@
 import _ from 'lodash'
 import React from 'react'
 import {withStyles} from '@material-ui/core/styles'
+import IconButton from '@material-ui/core/IconButton'
+import SettingsIcon from '@material-ui/icons/Settings'
 import Popover from '@material-ui/core/Popover'
-import Button from '@material-ui/core/Button'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({
   container: {
-    flexGrow: 1
+    display: 'flex',
+    alignItems: 'center'
+  },
+  columns: {
+    listStyle: 'none',
+    padding: '10px 20px',
+    margin: 0
   }
 })
 
@@ -58,12 +65,11 @@ class ColumnConfig extends React.Component {
 
     return (
       <div className={classes.container}>
-        <Button
-          variant="contained"
-          onClick={this.handleOpen}
-        >
-        Columns
-        </Button>
+        <IconButton>
+          <SettingsIcon
+            onClick={this.handleOpen}
+          />
+        </IconButton>
         <Popover
           open={Boolean(el)}
           anchorEl={el}
@@ -77,18 +83,22 @@ class ColumnConfig extends React.Component {
             horizontal: 'center',
           }}
         >
-          {allColumns.map(column => (
-            <FormControlLabel key={column}
-              control={
-                <Checkbox
-                  value={column}
-                  checked={visibleColumns.includes(column)}
-                  onChange={this.handleChange}
+          <ol className={classes.columns}>
+            {allColumns.map(column => (
+              <li key={column}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      value={column}
+                      checked={visibleColumns.includes(column)}
+                      onChange={this.handleChange}
+                    />
+                  }
+                  label={column}
                 />
-              }
-              label={column}
-            />
-          ))}
+              </li>
+            ))}
+          </ol>
         </Popover>
       </div>
     )
