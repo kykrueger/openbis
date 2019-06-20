@@ -1,0 +1,15 @@
+# Convert README.md markdown to README.rst reStructuredText
+pandoc --from=markdown --to=rst --output=README.rst README.md
+
+# create a source-distribution
+python setup.py sdist
+
+# see distributions
+ls -la dist/
+
+# upload distribution(s) to pypi
+twine upload dist/*
+
+# upload distribution to pypi-test
+twine upload --repository test dist/*
+
