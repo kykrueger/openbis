@@ -11,7 +11,9 @@ class Experiment(OpenBisObject):
     def __init__(self, openbis_obj, type, project=None, data=None, props=None, code=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
-        self.__dict__['p'] = PropertyHolder(openbis_obj, type)
+        ph = PropertyHolder(openbis_obj, type)
+        self.__dict__['p'] = ph
+        self.__dict__['props'] = ph
         self.__dict__['a'] = AttrHolder(openbis_obj, 'Experiment', type)
 
         if data is not None:
@@ -62,10 +64,6 @@ class Experiment(OpenBisObject):
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'save()'
         ]
-
-    @property
-    def props(self):
-        return self.__dict__['p']
 
     @property
     def type(self):

@@ -13,7 +13,9 @@ class Sample(OpenBisObject):
     def __init__(self, openbis_obj, type, project=None, data=None, props=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
-        self.__dict__['p'] = PropertyHolder(openbis_obj, type)
+        ph = PropertyHolder(openbis_obj, type)
+        self.__dict__['p'] = ph
+        self.__dict__['props'] = ph
         self.__dict__['a'] = AttrHolder(openbis_obj, 'Sample', type)
 
         if data is not None:
@@ -62,26 +64,19 @@ class Sample(OpenBisObject):
 
     def __dir__(self):
         return [
-            'props', 
+            'p', 'props', 
+            'type',
             'get_parents()', 'get_children()', 'get_components()',
             'add_parents()', 'add_children()', 'add_components()', 
             'del_parents()', 'del_children()', 'del_components()',
             'set_parents()', 'set_children()', 'set_components()',
             'get_datasets()', 
-            'get_experiment()', 
             'space', 'project', 'experiment', 'container', 'tags',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'save()', 'delete()'
         ]
 
-    @property
-    def props(self):
-        return self.__dict__['p']
-
-    @property
-    def type(self):
-        return self.__dict__['type']
 
     def _container(self, value=None):
         if value is not None:
@@ -112,6 +107,10 @@ class Sample(OpenBisObject):
                 return self.openbis.get_sample(self.a._container['identifier'])
             except Exception:
                 pass
+
+    @property
+    def type(self):
+        return self.__dict__['type']
 
     @type.setter
     def type(self, type_name):

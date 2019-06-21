@@ -14,7 +14,9 @@ class Vocabulary(OpenBisObject):
             self._set_data(data)
             self.__dict__['terms'] = data['terms']
 
-        if terms is not None:
+        if terms is None:
+            self.__dict__['terms'] = []
+        else:
             self.__dict__['terms'] = terms
 
         if self.is_new:
@@ -37,29 +39,28 @@ class Vocabulary(OpenBisObject):
         """
         return self.openbis.get_terms(vocabulary=self.code)
 
+
     def add_term(self, code, label=None, description=None):
         """ Adds a term to this Vocabulary.
         If Vocabulary is already persistent, it is added by adding a new VocabularyTerm object.
         If Vocabulary is new, the term is added to the list of terms
         """
-        if self.is_new:
-            self.__dict__['terms'].append({
-                "code": code,
-                "label": label,
-                "description": description
-            })
-        else:
-            pass
+        self.__dict__['terms'].append({
+            "code": code,
+            "label": label,
+            "description": description
+        })
         
 
     def save(self):
+        terms = self.__dict__['terms']
+        for term in terms:
+            term["@type"]= "as.dto.vocabulary.create.VocabularyTermCreation"
+
         if self.is_new:
             request = self._new_attrs('createVocabularies')
-            # add the VocabularyTerm datatype
-            terms = self.__dict__['terms']
-            for term in terms:
-                term["@type"]= "as.dto.vocabulary.create.VocabularyTermCreation"
-            request['params'][1][0]['terms'] = terms 
+            if terms:
+                request['params'][1][0]['terms'] = terms 
             resp = self.openbis._post_request(self.openbis.as_v3, request)
 
             if VERBOSE: print("Vocabulary successfully created.")
@@ -69,6 +70,12 @@ class Vocabulary(OpenBisObject):
 
         else:
             request = self._up_attrs('updateVocabularies')
+            request['params'][1][0]['vocabularyId'] = {
+                "@type": "as.dto.vocabulary.id.IVocabularyId",
+                "vocabularyId" : self.code
+            }
+            if terms:
+                request['params'][1][0]['terms'] = terms 
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE: print("Vocabulary successfully updated.")
             data = self.openbis.get_vocabulary(self.permId, only_data=True)
@@ -81,14 +88,12 @@ class VocabularyTerm(OpenBisObject):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['a'] = AttrHolder(openbis_obj, 'VocabularyTerm')
 
-
         if data is not None:
             self._set_data(data)
 
         if kwargs is not None:
             for key in kwargs:
                 setattr(self, key, kwargs[key])
-
 
     @property
     def vocabularyCode(self):
