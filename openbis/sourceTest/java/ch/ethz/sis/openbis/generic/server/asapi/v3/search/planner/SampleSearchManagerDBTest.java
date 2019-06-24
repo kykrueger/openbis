@@ -490,7 +490,7 @@ public class SampleSearchManagerDBTest
     public void testQueryDBWithProperty()
     {
 //        final SampleSearchCriteria permIdCriterion = new SampleSearchCriteria();
-//        permIdCriterion.withProperty("");
+//        permIdCriterion.withNumberProperty(DBTestHelper.SAMPLE_PROPERTY_CODE2).thatEquals(DBTestHelper.SAMPLE_PROPERTY_VALUE2);
 //
 //        final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(USER_ID, permIdCriterion);
 //        assertEquals(permIdCriterionSampleIds.size(), 1);

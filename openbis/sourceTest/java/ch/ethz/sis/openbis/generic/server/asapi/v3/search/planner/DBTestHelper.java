@@ -84,6 +84,8 @@ public class DBTestHelper
 
     public static final long SAMPLE_TYPE_ID2 = 1002L;
 
+    public static final long SAMPLE_PROPERTY_VALUE2 = 101L;
+
     public static final String SAMPLE_PROPERTY_CODE2 = "TEST.LONG";
 
     public static final String DEFAULT_PERM_ID = "20190612105000000-0";
@@ -192,7 +194,7 @@ public class DBTestHelper
     private void createProperties()
     {
         createSampleProperty(SAMPLE_ID2, SAMPLE_PROPERTY_ID2, SAMPLE_TYPE_ID2, SAMPLE_TYPE_PROPERTY_TYPE_ID2,
-                SAMPLE_PROPERTY_TYPE_ID2, SAMPLE_PROPERTY_CODE2, String.valueOf(101L));
+                SAMPLE_PROPERTY_TYPE_ID2, SAMPLE_PROPERTY_CODE2, String.valueOf(SAMPLE_PROPERTY_VALUE2));
     }
 
     private void createSampleProperty(final long sampleId, final long samplePropertyId, final long sampleTypeId,
