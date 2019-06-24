@@ -27,8 +27,20 @@ class Search extends React.Component {
   constructor(props){
     super(props)
 
-    this.load = this.load.bind(this)
+    this.state = {
+      loaded: false
+    }
+
     this.handleLinkClick = this.handleLinkClick.bind(this)
+  }
+
+  componentDidMount(){
+    this.load().then(types => {
+      this.setState(()=>({
+        types,
+        loaded: true
+      }))
+    })
   }
 
   load(){
@@ -105,7 +117,12 @@ class Search extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'Search.render')
 
+    if(!this.state.loaded){
+      return null
+    }
+
     const { classes } = this.props
+    const { types } = this.state
 
     return (
       <Grid columns={[
@@ -126,7 +143,7 @@ class Search extends React.Component {
         {
           field: 'description',
         }
-      ]} rows={this.load} />
+      ]} data={types} />
     )
   }
 

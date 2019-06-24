@@ -71,7 +71,10 @@ class Grid extends React.Component {
     this.state = {
       loaded: false,
       filter: '',
-      visibleColumns: Object.keys(this.columnsMap)
+      page: 0,
+      pageSize: 10,
+      visibleColumns: Object.keys(this.columnsMap),
+      columnConfigEl: null
     }
 
     this.handleFilterChange = this.handleFilterChange.bind(this)
@@ -85,38 +88,40 @@ class Grid extends React.Component {
   }
 
   load(){
-    this.setState({
-      loaded: false,
-      columnConfigEl: null
-    })
-
-    let loader = null
-
-    if(_.isFunction(this.props.rows)){
-      loader = this.props.rows
-    }else{
-      loader = function(){
-        return new Promise(resolve => {
-          resolve(this.props.rows)
-        })
-      }
-    }
-
-    loader().then(rows => {
+    if(_.isFunction(this.props.data)){
+      this.props.data(this.loadConfig()).then(({ objects, totalCount }) => {
+        this.setState(() => ({
+          loaded: true,
+          rows: objects,
+          totalCount
+        }))
+      })
+    }else if(!this.state.loaded){
       this.setState(() => ({
         loaded: true,
-        page: 0,
-        pageSize: 10,
-        rows
+        rows: this.props.data,
+        totalCount: this.props.data.length
       }))
-    })
+    }
+  }
+
+  loadConfig(){
+    return {
+      filter: this.state.filter,
+      page: this.state.page,
+      pageSize: this.state.pageSize,
+      sort: this.state.sort,
+      sortDirection: this.state.sortDirection
+    }
   }
 
   handleFilterChange(filter){
     this.setState(() => ({
       page: 0,
       filter
-    }))
+    }), () => {
+      this.load()
+    })
   }
 
   handleColumnsChange(visibleColumns){
@@ -130,21 +135,27 @@ class Grid extends React.Component {
       this.setState((prevState) => ({
         sort: column,
         sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
-      }))
+      }), () => {
+        this.load()
+      })
     }
   }
 
   handlePageChange(page){
     this.setState(() => ({
       page
-    }))
+    }), () => {
+      this.load()
+    })
   }
 
   handlePageSizeChange(pageSize){
     this.setState(() => ({
       page: 0,
       pageSize
-    }))
+    }), () => {
+      this.load()
+    })
   }
 
   filter(rows){
@@ -169,6 +180,7 @@ class Grid extends React.Component {
 
   sort(rows){
     const { sort, sortDirection } = this.state
+
     if(sort){
       return rows.sort((t1, t2)=>{
         let sign = sortDirection === 'asc' ? 1 : -1
@@ -195,11 +207,7 @@ class Grid extends React.Component {
     }
 
     const { classes } = this.props
-    const { page, pageSize, filter, visibleColumns, sort, sortDirection, rows } = this.state
-
-    const filteredRows = this.filter([...rows])
-    const sortedRows = this.sort(filteredRows)
-    const pagedRows = this.page(sortedRows)
+    const { page, pageSize, filter, visibleColumns, sort, sortDirection, totalCount } = this.state
 
     return (
       <div className={classes.container}>
@@ -233,7 +241,7 @@ class Grid extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {pagedRows.map(row => {
+              {this.getCurrentRows().map(row => {
                 return (
                   <TableRow key={row.id} hover>
                     {this.columnsArray.map(column => {
@@ -258,7 +266,7 @@ class Grid extends React.Component {
         </div>
         <div className={classes.footerContainer}>
           <PageConfig
-            count={filteredRows.length}
+            count={totalCount}
             page={page}
             pageSize={pageSize}
             onPageChange={this.handlePageChange}
@@ -272,6 +280,17 @@ class Grid extends React.Component {
         </div>
       </div>
     )
+  }
+
+  getCurrentRows(){
+    if(_.isFunction(this.props.data)){
+      return this.state.rows
+    }else{
+      const filteredRows = this.filter([...this.state.rows])
+      const sortedRows = this.sort(filteredRows)
+      const pagedRows = this.page(sortedRows)
+      return pagedRows
+    }
   }
 
 }
