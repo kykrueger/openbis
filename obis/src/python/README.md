@@ -4,7 +4,7 @@ oBIS is a command-line tool to handle dataSets that are too big to store in open
 ## Prerequisites
 * python 3.6
 * git
-* git-annex
+* git-annex [Installation guide](https://git-annex.branchable.com/install/)
 
 
 ## Installation
