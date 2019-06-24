@@ -1,8 +1,8 @@
 import React from 'react'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../common/logger.js'
-import * as pages from '../../store/consts/pages.js'
-import * as objectType from '../../store/consts/objectType.js'
+import * as pages from '../../common/consts/pages.js'
+import * as objectType from '../../common/consts/objectType.js'
 
 import Browser from '../common/browser/Browser.jsx'
 import Content from '../common/content/Content.jsx'
@@ -11,6 +11,7 @@ import ObjectType from './objectType/ObjectType.jsx'
 import CollectionType from './collectionType/CollectionType.jsx'
 import DataSetType from './dataSetType/DataSetType.jsx'
 import MaterialType from './materialType/MaterialType.jsx'
+import Search from './search/Search.jsx'
 
 const styles = () => ({
   container: {
@@ -23,7 +24,8 @@ const objectTypeToComponent = {
   [objectType.OBJECT_TYPE]: ObjectType,
   [objectType.COLLECTION_TYPE]: CollectionType,
   [objectType.DATA_SET_TYPE]: DataSetType,
-  [objectType.MATERIAL_TYPE]: MaterialType
+  [objectType.MATERIAL_TYPE]: MaterialType,
+  [objectType.SEARCH]: Search
 }
 
 class Types extends React.Component {

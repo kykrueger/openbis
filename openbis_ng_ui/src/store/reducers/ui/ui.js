@@ -4,6 +4,7 @@ import pages from './pages/pages.js'
 
 export default combineReducers({
   loading,
+  search,
   currentPage,
   pages,
   error
@@ -13,6 +14,17 @@ function loading(state = false, action){
   switch (action.type) {
     case actions.SET_LOADING: {
       return action.payload.loading
+    }
+    default: {
+      return state
+    }
+  }
+}
+
+function search(state = '', action){
+  switch (action.type) {
+    case actions.SET_SEARCH: {
+      return action.payload.search
     }
     default: {
       return state

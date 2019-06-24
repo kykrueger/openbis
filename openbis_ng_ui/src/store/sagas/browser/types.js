@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import {putAndWait} from './../effects.js'
 import {dto} from '../../../services/openbis.js'
-import * as objectType from '../../consts/objectType.js'
+import * as objectType from '../../../common/consts/objectType.js'
 import * as actions from '../../actions/actions.js'
 import * as common from '../../common/browser.js'
 

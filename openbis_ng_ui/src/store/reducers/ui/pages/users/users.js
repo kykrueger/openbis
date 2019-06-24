@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import * as pages from '../../../../consts/pages.js'
+import * as pages from '../../../../../common/consts/pages.js'
 import * as page from '../common/page.js'
 
 export default function types(state = {}, action){
