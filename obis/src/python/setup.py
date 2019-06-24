@@ -23,7 +23,6 @@ setup(
     url='https://sissource.ethz.ch/sispub/openbis/tree/master/obis',
     author='ID SIS • ETH Zürich',
     author_email='swen@ethz.ch',
-    packages=find_packages(),
     license='Apache Software License Version 2.0',
     packages=['obis', 'obis.dm', 'obis.dm.commands', 'obis.scripts'],
     data_files=data_files,
