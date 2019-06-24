@@ -123,7 +123,7 @@ The settings are saved within the obis repository, in the `.obis` folder, as JSO
 }
 ```
 
-**Example `.obis/data_set.json`***
+**Example `.obis/data_set.json`**
 
 ```
 {
@@ -139,37 +139,49 @@ The settings are saved within the obis repository, in the `.obis` folder, as JSO
 
 **init**
 
-```obis init [folder]```
+```
+obis init [folder]
+```
 
 If a folder is given, obis will initialize that folder as an obis repository. If not, it will use the current folder.
 
 **init_analysis**
 
-```obis init_analysis [options] [folder]```
+```
+obis init_analysis [options] [folder]
+```
 
 With init_analysis, a repository can be created which is derived from a parent repository. If it is called from within a repository, that will be used as a parent. If not, the parent has to be given with the `-p` option.
 
 **commit**
 
-```obis commit [options]```
+```
+obis commit [options]
+```
 
 The `commit` command adds files to a new data set in openBIS. If the `-m` option is not used to define a commit message, the user will be asked to provide one.
 
 **sync**
 
-```obis sync```
+```
+obis sync
+```
 
 When git commits have been done manually, the `sync` command creates the corresponding data set in openBIS. Note that, when interacting with git directly, use the git annex commands whenever applicable, e.g. use "git annex add" instead of "git add".
 
 **status**
 
-```obis status [folder]```
+```
+obis status [folder]
+```
 
 This shows the status of the repository folder from which it is invoked, or the one given as a parameter. It shows file changes and whether the repository needs to be synchronized with openBIS.
 
 **clone**
 
-```obis clone [options] [data_set_id]```
+```
+obis clone [options] [data_set_id]
+```
 
 The `clone` command copies a repository associated with a data set and registers the new copy in openBIS. In case there are already multiple copied of the repository, obis will ask from which copy to clone. 
 
@@ -182,7 +194,9 @@ The `clone` command copies a repository associated with a data set and registers
 
 **move**
 
-```obis move [options] [data_set_id]```
+```
+obis move [options] [data_set_id]
+```
 
 The `move` command works the same as `clone`, except that the old repository will be removed.
 
@@ -190,7 +204,9 @@ Note: This command does not work when `obis_metadata_folder` is set.
 
 **download**
 
-```obis download [options] [data_set_id]```
+```
+obis download [options] [data_set_id]
+```
 
 The `download` command downloads the files of a data set. Contrary to `clone`, this will not register another copy in openBIS. It is only for accessing files. This command requires the DownloadHandler / FileInfoHandler microservices to be running and the `fileservice_url` needs to be configured.
 
