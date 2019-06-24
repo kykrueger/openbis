@@ -92,14 +92,14 @@ class Grid extends React.Component {
       this.props.data(this.loadConfig()).then(({ objects, totalCount }) => {
         this.setState(() => ({
           loaded: true,
-          rows: objects,
+          objects,
           totalCount
         }))
       })
     }else if(!this.state.loaded){
       this.setState(() => ({
         loaded: true,
-        rows: this.props.data,
+        objects: this.props.data,
         totalCount: this.props.data.length
       }))
     }
@@ -158,7 +158,7 @@ class Grid extends React.Component {
     })
   }
 
-  filter(rows){
+  filter(objects){
     const filter = this.state.filter ? this.state.filter.trim().toUpperCase() : null
 
     function matches(value){
@@ -169,7 +169,7 @@ class Grid extends React.Component {
       }
     }
 
-    return _.filter(rows, row => {
+    return _.filter(objects, row => {
       return this.state.visibleColumns.some(visibleColumn => {
         let column = this.columnsMap[visibleColumn]
         let value = _.get(row, column.field)
@@ -178,11 +178,11 @@ class Grid extends React.Component {
     })
   }
 
-  sort(rows){
+  sort(objects){
     const { sort, sortDirection } = this.state
 
     if(sort){
-      return rows.sort((t1, t2)=>{
+      return objects.sort((t1, t2)=>{
         let sign = sortDirection === 'asc' ? 1 : -1
         let column = this.columnsMap[sort]
         let v1 = _.get(t1, column.field) || ''
@@ -190,13 +190,13 @@ class Grid extends React.Component {
         return sign * v1.localeCompare(v2)
       })
     }else{
-      return rows
+      return objects
     }
   }
 
-  page(rows){
+  page(objects){
     const { page, pageSize } = this.state
-    return rows.slice(page*pageSize, Math.min(rows.length, (page+1)*pageSize))
+    return objects.slice(page*pageSize, Math.min(objects.length, (page+1)*pageSize))
   }
 
   render() {
@@ -208,6 +208,16 @@ class Grid extends React.Component {
 
     const { classes } = this.props
     const { page, pageSize, filter, visibleColumns, sort, sortDirection, totalCount } = this.state
+
+    let pagedObjects = null
+
+    if(_.isFunction(this.props.data)){
+      pagedObjects = this.state.objects
+    }else{
+      const filteredObjects = this.filter([...this.state.objects])
+      const sortedObjects = this.sort(filteredObjects)
+      pagedObjects = this.page(sortedObjects)
+    }
 
     return (
       <div className={classes.container}>
@@ -241,7 +251,7 @@ class Grid extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {this.getCurrentRows().map(row => {
+              {pagedObjects.map(row => {
                 return (
                   <TableRow key={row.id} hover>
                     {this.columnsArray.map(column => {
@@ -280,17 +290,6 @@ class Grid extends React.Component {
         </div>
       </div>
     )
-  }
-
-  getCurrentRows(){
-    if(_.isFunction(this.props.data)){
-      return this.state.rows
-    }else{
-      const filteredRows = this.filter([...this.state.rows])
-      const sortedRows = this.sort(filteredRows)
-      const pagedRows = this.page(sortedRows)
-      return pagedRows
-    }
   }
 
 }
