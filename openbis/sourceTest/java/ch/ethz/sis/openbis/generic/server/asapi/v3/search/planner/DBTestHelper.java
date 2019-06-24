@@ -54,6 +54,8 @@ public class DBTestHelper
 
     public static final String CONTAINER_DELIMITER = ":";
 
+    public static final long DATA_TYPE_ID = 1L;
+
     public static final long USER_ID = 2L;
 
     public static final long SAMPLE_ID1 = 1001L;
@@ -71,6 +73,18 @@ public class DBTestHelper
     public static final long EXPERIMENT_ID = 10003L;
 
     public static final long EXPERIMENT_TYPE_ID = 10004L;
+
+    public static final long SAMPLE_PROPERTY_ID2 = 1002L;
+
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID2 = 1002L;
+
+    public static final long SAMPLE_PROPERTY_TYPE_ID2 = 1002L;
+
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL2 = 2L;
+
+    public static final long SAMPLE_TYPE_ID2 = 1002L;
+
+    public static final String SAMPLE_PROPERTY_CODE2 = "TEST.LONG";
 
     public static final String DEFAULT_PERM_ID = "20190612105000000-0";
 
@@ -165,6 +179,7 @@ public class DBTestHelper
             createExperimentType();
             createExperiment();
             createSamples();
+            createProperties();
 
             connection.commit();
         } catch (final Exception e)
@@ -172,6 +187,47 @@ public class DBTestHelper
             connection.rollback();
             throw e;
         }
+    }
+
+    private void createProperties()
+    {
+        createSampleProperty(SAMPLE_ID2, SAMPLE_PROPERTY_ID2, SAMPLE_TYPE_ID2, SAMPLE_TYPE_PROPERTY_TYPE_ID2,
+                SAMPLE_PROPERTY_TYPE_ID2, SAMPLE_PROPERTY_CODE2, String.valueOf(101L));
+    }
+
+    private void createSampleProperty(final long sampleId, final long samplePropertyId, final long sampleTypeId,
+            final long sampleTypePropertyTypeId, final long propertyTypeId, final String code, final String value)
+    {
+        final Map<String, Object> sampleTypesValues = new HashMap<>();
+        sampleTypesValues.put(ColumnNames.ID_COLUMN, sampleTypeId);
+        sampleTypesValues.put(ColumnNames.CODE_COLUMN, code);
+        insertRecord(TableNames.SAMPLE_TYPES_TABLE, sampleTypesValues);
+
+        final Map<String, Object> propertyTypesValues = new HashMap<>();
+        propertyTypesValues.put(ColumnNames.ID_COLUMN, propertyTypeId);
+        propertyTypesValues.put(ColumnNames.CODE_COLUMN, code);
+        propertyTypesValues.put(ColumnNames.LABEL_COLUMN, code);
+        propertyTypesValues.put(ColumnNames.DESCRIPTION_COLUMN, code);
+        propertyTypesValues.put(ColumnNames.DATA_TYPE_COLUMN, DATA_TYPE_ID);
+        propertyTypesValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        insertRecord(TableNames.PROPERTY_TYPES_TABLE, propertyTypesValues);
+
+        final Map<String, Object> stptValues = new HashMap<>();
+        stptValues.put(ColumnNames.ID_COLUMN, sampleTypePropertyTypeId);
+        stptValues.put(ColumnNames.PROPERTY_TYPE_COLUMN, propertyTypeId);
+        stptValues.put(ColumnNames.SAMPLE_TYPE_COLUMN, sampleTypeId);
+        stptValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        stptValues.put(ColumnNames.ORDINAL_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL2);
+        insertRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, stptValues);
+
+        final Map<String, Object> samplePropertiesValues = new HashMap<>();
+        samplePropertiesValues.put(ColumnNames.ID_COLUMN, samplePropertyId);
+        samplePropertiesValues.put(ColumnNames.SAMPLE_COLUMN, sampleId);
+        samplePropertiesValues.put(ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, sampleTypePropertyTypeId);
+        samplePropertiesValues.put(ColumnNames.VALUE_COLUMN, value);
+        samplePropertiesValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        samplePropertiesValues.put(ColumnNames.PERSON_AUTHOR_COLUMN, USER_ID);
+        insertRecord(TableNames.SAMPLE_PROPERTIES_TABLE, samplePropertiesValues);
     }
 
     private void createSamples()
@@ -184,6 +240,7 @@ public class DBTestHelper
         valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
         valuesMap1.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE1);
         valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
+        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
 
         final Map<String, Object> valuesMap2 = getDefaultValuesMap();
         valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
@@ -195,6 +252,7 @@ public class DBTestHelper
         valuesMap2.put(ColumnNames.SPACE_COLUMN, SPACE_ID2);
         valuesMap2.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
         valuesMap2.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);
+        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
 
         final Map<String, Object> valuesMap3 = getDefaultValuesMap();
         valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
@@ -205,9 +263,6 @@ public class DBTestHelper
         valuesMap3.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
         valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, EXPERIMENT_ID);
         valuesMap3.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);
-
-        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
-        insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap3);
     }
 
@@ -354,6 +409,11 @@ public class DBTestHelper
         try
         {
             connection.setAutoCommit(true);
+
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID2);
+            deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID2);
+            deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID2);
+            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID2);
 
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID3);
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID2);
