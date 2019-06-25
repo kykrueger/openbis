@@ -61,10 +61,13 @@ class Grid extends React.Component {
   constructor(props){
     super(props)
 
+    const sortDefault = _.isFunction(props.data) ? false : true
+
     this.columnsArray = props.columns.map(column => ({
       ...column,
       label: column.label || _.upperFirst(column.field),
       render: column.render || (row => _.get(row, column.field)),
+      sort: column.sort === undefined ? sortDefault : Boolean(column.sort)
     }))
     this.columnsMap = _.keyBy(props.columns, 'field')
 
@@ -99,8 +102,7 @@ class Grid extends React.Component {
     }else if(!this.state.loaded){
       this.setState(() => ({
         loaded: true,
-        objects: this.props.data,
-        totalCount: this.props.data.length
+        objects: this.props.data
       }))
     }
   }
@@ -131,9 +133,12 @@ class Grid extends React.Component {
   }
 
   handleSortChange(column){
+    if(!column.sort){
+      return
+    }
     return () => {
       this.setState((prevState) => ({
-        sort: column,
+        sort: column.field,
         sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
       }), () => {
         this.load()
@@ -207,16 +212,19 @@ class Grid extends React.Component {
     }
 
     const { classes } = this.props
-    const { page, pageSize, filter, visibleColumns, sort, sortDirection, totalCount } = this.state
+    const { page, pageSize, filter, visibleColumns, sort, sortDirection } = this.state
 
     let pagedObjects = null
+    let totalCount = null
 
     if(_.isFunction(this.props.data)){
       pagedObjects = this.state.objects
+      totalCount = this.state.totalCount
     }else{
       const filteredObjects = this.filter([...this.state.objects])
       const sortedObjects = this.sort(filteredObjects)
       pagedObjects = this.page(sortedObjects)
+      totalCount = filteredObjects.length
     }
 
     return (
@@ -236,9 +244,9 @@ class Grid extends React.Component {
                     return (
                       <TableCell key={column.field}>
                         <TableSortLabel
-                          active={sort === column.field}
+                          active={column.sort && sort === column.field}
                           direction={sortDirection}
-                          onClick={this.handleSortChange(column.field)}
+                          onClick={this.handleSortChange(column)}
                         >
                           {column.label}
                         </TableSortLabel>
