@@ -483,20 +483,4 @@ public class SampleSearchManagerDBTest
         assertFalse(identifierCriterion4SampleIds.contains(SAMPLE_ID3));
     }
 
-    /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with property search criteria using DB connection.
-     */
-    @Test
-    public void testQueryDBWithProperty()
-    {
-//        final SampleSearchCriteria permIdCriterion = new SampleSearchCriteria();
-//        permIdCriterion.withNumberProperty(DBTestHelper.SAMPLE_PROPERTY_CODE2).thatEquals(DBTestHelper.SAMPLE_PROPERTY_VALUE2);
-//
-//        final Set<Long> permIdCriterionSampleIds = searchManager.searchForIDs(USER_ID, permIdCriterion);
-//        assertEquals(permIdCriterionSampleIds.size(), 1);
-//        assertFalse(permIdCriterionSampleIds.contains(SAMPLE_ID1));
-//        assertTrue(permIdCriterionSampleIds.contains(SAMPLE_ID2));
-//        assertFalse(permIdCriterionSampleIds.contains(SAMPLE_ID3));
-    }
-
 }

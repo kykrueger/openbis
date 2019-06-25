@@ -17,25 +17,14 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractNumberValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberGreaterThanValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberLessThanValue;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 
 import java.util.List;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GT;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 
 public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
@@ -56,7 +45,7 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
                 final AbstractNumberValue value = criterion.getFieldValue();
 
                 sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(criterion.getFieldName()).append(SP);
-                appendNumberComparatorOp(value, sqlBuilder);
+                TranslatorUtils.appendNumberComparatorOp(value, sqlBuilder);
                 sqlBuilder.append(NL);
                 args.add(value.getValue());
             }
@@ -67,23 +56,6 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
                 throw new IllegalArgumentException();
             }
         }
-    }
-
-    private void appendNumberComparatorOp(final AbstractNumberValue value, final StringBuilder sqlBuilder) {
-        if (value.getClass() == NumberEqualToValue.class) {
-            sqlBuilder.append(EQ);
-        } else if (value.getClass() == NumberLessThanValue.class) {
-            sqlBuilder.append(LT);
-        } else if (value.getClass() == NumberLessThanOrEqualToValue.class) {
-            sqlBuilder.append(LE);
-        } else if (value.getClass() == NumberGreaterThanValue.class) {
-            sqlBuilder.append(GT);
-        } else if (value.getClass() == NumberGreaterThanOrEqualToValue.class) {
-            sqlBuilder.append(GE);
-        } else {
-            throw new IllegalArgumentException("Unsupported AbstractNumberValue type: " + value.getClass().getSimpleName());
-        }
-        sqlBuilder.append(QU);
     }
 
 }
