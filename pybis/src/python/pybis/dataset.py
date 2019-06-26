@@ -701,3 +701,20 @@ class PhysicalData():
                 getattr(self, attr, '')
             ])
         return tabulate(lines, headers=headers)
+
+
+class LinkedData():
+    def __init__(self, data=None):
+        self.data = data if data is not None else []
+        self.attrs = ['externalCode', 'contentCopies']
+
+    def __dir__(self):
+        return self.attrs
+
+    def __getattr__(self, name):
+        if name in self.attrs:
+            if name in self.data:
+                return self.data[name]
+        else:
+            return ''
+
