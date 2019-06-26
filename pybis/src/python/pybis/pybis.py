@@ -506,14 +506,26 @@ def _subcriteria_for_code(code, object_type):
 
 class Openbis:
     """Interface for communicating with openBIS. 
-    A recent version of openBIS is required (minimum 16.05.2).
-    For creation of datasets, dataset-uploader-api needs to be installed.
+
+    Note:
+        * A recent version of openBIS is required (minimum 16.05.2).
+        * For creation of datasets, the dataset-uploader-api ingestion plugin must be present.
+
     """
 
     def __init__(self, url=None, verify_certificates=True, token=None,
     allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=False):
         """Initialize a new connection to an openBIS server.
-        :param host:
+
+        Examples:
+            o = Openbis('https://openbis.example.com')
+            o_test = Openbis('https://test_openbis.example.com:8443', verify_certificates=False)
+
+        Args:
+            url (str): https://openbis.example.com
+            verify_certificates (bool): set to False when you use self-signed certificates
+            token (str): a valid openBIS token. If not set, pybis will try to read a valid token from ~/.pybis
+            allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks (bool): False
         """
 
         if url is None:
@@ -568,7 +580,7 @@ class Openbis:
     def __dir__(self):
         return [
             'url', 'port', 'hostname',
-            'login()', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
+            'login(username, password, save_token=True)', 'logout()', 'is_session_active()', 'token', 'is_token_valid("")',
             "get_server_information()",
             "get_dataset('permId')",
             "get_datasets()",
@@ -1574,7 +1586,7 @@ class Openbis:
 
     def get_datasets(
         self, code=None, type=None, withParents=None, withChildren=None,
-        start_with=None, count=None,
+        start_with=None, count=None, kind=None,
         status=None, sample=None, experiment=None, project=None,
         tags=None, props=None, **properties
     ):
@@ -1618,6 +1630,12 @@ class Openbis:
         }
         fetchopts['from'] = start_with
         fetchopts['count'] = count
+        if kind:
+            kind = kind.upper()
+            if kind not in ['PHYSICAL_DATA', 'CONTAINER', 'LINK']:
+                raise ValueError("unknown dataSet kind: {}. It should be one of the following: PHYSICAL_DATA, CONTAINER or LINK".format(kind))
+            fetchopts['kind'] = kind
+            raise NotImplementedError('you cannot search for dataSet kinds yet')
 
         for option in ['tags', 'properties', 'sample', 'experiment', 'physicalData']:
             fetchopts[option] = fetch_option[option]
@@ -3127,21 +3145,6 @@ class Openbis:
         else:
             return dss[dss['code'] == dss_code]['downloadUrl'][0]
 
-
-class LinkedData():
-    def __init__(self, data=None):
-        self.data = data if data is not None else []
-        self.attrs = ['externalCode', 'contentCopies']
-
-    def __dir__(self):
-        return self.attrs
-
-    def __getattr__(self, name):
-        if name in self.attrs:
-            if name in self.data:
-                return self.data[name]
-        else:
-            return ''
 
 
 class ExternalDMS():
