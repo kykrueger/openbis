@@ -3,6 +3,7 @@
 * changed to v3 API when fetching datastores
 * gen_permId to generate unique permIds used for dataSets
 * support ELN-LIMS style identifiers: /SPACE/PROJECT/COLLECTION/OBJECT_CODE
+* terms now can be moved either to the top or after another term
 
 
 ## Changes with pybis-1.8.4
