@@ -166,6 +166,12 @@ def _type_for_id(ident, entity):
         # people tend to omit the / prefix of an identifier...
         if not ident.startswith('/'):
             ident = '/'+ident
+        # ELN-LIMS style contains also experiment in sample identifer, i.e. /space/project/experiment/sample_code
+        # we have to remove the experiment-code
+        if ident.count('/') == 4:
+            codes = ident.split('/')
+            ident = '/'.join([codes[0], codes[1], codes[2], codes[4]])
+
         search_request = {
             "identifier": ident.upper(),
             "@type": "as.dto.{}.id.{}Identifier".format(entity.lower(), entity_capitalize)
@@ -1625,6 +1631,7 @@ class Openbis:
         search_criteria['operator'] = 'AND'
 
         fetchopts = {
+            "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions",
             "containers": {"@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions"},
             "type": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"}
         }
