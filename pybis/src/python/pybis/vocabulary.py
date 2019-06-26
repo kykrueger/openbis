@@ -33,6 +33,12 @@ class Vocabulary(OpenBisObject):
             for key in kwargs:
                 setattr(self, key, kwargs[key])
 
+    def __dir__(self):
+        return [
+            'get_terms()',
+            'add_term(code, label, description)',
+            'save()',
+        ]
 
     def get_terms(self):
         """ Returns the VocabularyTerms of the given Vocabulary.
@@ -102,17 +108,64 @@ class VocabularyTerm(OpenBisObject):
         else:
             return self.data['permId']['vocabularyCode']
 
+    def __dir__(self):
+        return [
+            'code',
+            'vocabularyCode',
+            'label',
+            'description',
+            'official',
+            'ordinal',
+            'registrator',
+            'registrationDate',
+            'modifier',
+            'modificationDate',
+            'move_to_top()',
+            'move_after_term()',
+        ]
+
+    def move_to_top(self):
+        """ Moves the term on the top of the vocabularyTerm list,
+        i.e. the ordinal will change
+        """
+        self.previousTermId = ""
+
+    def move_after_term(self, term):
+        """ Moves the term just after the term given. This will result in an ordinal change.
+        """
+        self.previousTermId = term
 
     def _up_attrs(self):
         """ AttributeTerms behave quite differently to all other openBIS entities,
         that's why we need to override this method
         """
         attrs = {}
-        for attr in 'label description'.split():
+        for attr in 'label description official'.split():
             attrs[attr] = {
                 "value": getattr(self, attr),
                 "isModified": True,
                 "@type": "as.dto.common.update.FieldUpdateValue"
+            }
+
+        if not getattr(self, 'previousTermId') == None:
+            # internal attribute previousTermId has been touched:
+            # set value to either None (i.e. move it to the top) or
+            # set value to PREVIOUS_TERM like this:
+            value = self.previousTermId
+            if value == "":
+                value = None
+            else:
+                permId = {
+                    '@type'         : 'as.dto.vocabulary.id.VocabularyTermPermId',
+                    'vocabularyCode': self.vocabularyCode,
+                    'code'          : value 
+                }
+                value = permId
+
+            attrs['previousTermId'] = {
+                "isModified": True,
+                "@type": "as.dto.common.update.FieldUpdateValue",
+                "value": value,
             }
 
         attrs["vocabularyTermId"] = self.vocabularyTermId()

@@ -110,7 +110,7 @@ def openbis_definitions(entity):
         },
         "VocabularyTerm": {
             "attrs_new": "code vocabularyCode label description official ordinal".split(),
-            "attrs_up": "label description official ordinal".split(),
+            "attrs_up": "label description official previousTermId".split(),
             "attrs": "code vocabularyCode label description official ordinal registrator registrationDate modifier modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyTermId",
