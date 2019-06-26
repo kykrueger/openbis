@@ -512,3 +512,18 @@ term = o.new_term(
 term.save()
 ```
 
+**update VocabularyTerms**
+
+To change the ordinal of a term, it has to be moved either to the top with the `.move_to_top()` method or after another term using the `.move_after_term('TERM_BEFORE')` method.
+
+```
+voc = o.get_vocabulary('STORAGE')
+term = voc.get_terms()['RT']
+term.label = "Room Temperature"
+term.official = True
+term.move_to_top()
+term.move_after_term('-40')
+term.save()
+term.delete()
+```
+
