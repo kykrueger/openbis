@@ -42,6 +42,7 @@ class Search extends React.Component {
     return (
       <Grid
         id={ids.USERS_GRID_ID}
+        filter={this.props.objectId}
         columns={[
           {
             field: 'userId'

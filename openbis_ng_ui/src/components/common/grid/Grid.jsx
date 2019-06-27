@@ -83,7 +83,7 @@ class Grid extends React.Component {
 
     this.state = {
       loaded: false,
-      filter: '',
+      filter: this.props.filter || '',
       page: 0,
       pageSize: 10,
       visibleColumns: Object.keys(this.columnsMap),
