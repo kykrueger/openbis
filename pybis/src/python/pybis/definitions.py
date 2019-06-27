@@ -25,6 +25,8 @@ def openbis_definitions(entity):
             "attrs": "code description permId identifier space leader registrator registrationDate modifier modificationDate attachments".split(),
             "multi": "".split(),
             "identifier": "projectId",
+            "create": { "@type": "as.dto.project.create.ProjectCreation"},
+            "update": { "@type": "as.dto.project.upate.ProjectUpdate"},
         },
         "Experiment": {
             "attrs_new": "code type project tags attachments".split(),
@@ -32,6 +34,8 @@ def openbis_definitions(entity):
             "attrs": "code permId identifier type project tags registrator registrationDate modifier modificationDate attachments".split(),
             "multi": "tags attachments".split(),
             "identifier": "experimentId",
+            "create": { "@type": "as.dto.experiment.create.ExperimentCreation"},
+            "update": { "@type": "as.dto.experiment.upate.ExperimentUpdate"},
         },
         "Sample": {
             "attrs_new": "code type project parents children container components space experiment tags attachments".split(),
@@ -43,6 +47,8 @@ def openbis_definitions(entity):
                 'componentIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
             },
             "identifier": "sampleId",
+            "create": { "@type": "as.dto.sample.create.SampleCreation"},
+            "update": { "@type": "as.dto.sample.upate.SampleUpdate"},
             "cre_type": "as.dto.sample.create.SampleCreation",
             "multi": "parents children components tags attachments".split(),
         },
@@ -104,7 +110,7 @@ def openbis_definitions(entity):
         },
         "VocabularyTerm": {
             "attrs_new": "code vocabularyCode label description official ordinal".split(),
-            "attrs_up": "label description official ordinal".split(),
+            "attrs_up": "label description official previousTermId".split(),
             "attrs": "code vocabularyCode label description official ordinal registrator registrationDate modifier modificationDate".split(),
             "multi": "".split(),
             "identifier": "vocabularyTermId",
@@ -160,6 +166,7 @@ def openbis_definitions(entity):
             "userId": "userId",
             "users": "userIds",
             "description": "description",
+            "vocabulary": "vocabularyId",
         },
         "ids2type": {
             'spaceId': {'permId': {'@type': 'as.dto.space.id.SpacePermId'}},

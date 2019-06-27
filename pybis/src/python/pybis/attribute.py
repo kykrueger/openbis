@@ -105,9 +105,14 @@ class AttrHolder():
         defs = openbis_definitions(self.entity)
         attr2ids = openbis_definitions('attr2ids')
 
-        new_obj = {
-            "@type": "as.dto.{}.create.{}Creation".format(self.entity.lower(), self.entity)
-        }
+        new_obj = {}
+        if 'create' in defs:
+            new_obj = defs['create']
+        else:
+            # Guess the creation type based on the entity and the naming convention used in openBIS
+            new_obj = {
+                "@type": "as.dto.{}.create.{}Creation".format(self.entity.lower(), self.entity)
+            }
 
         for attr in defs['attrs_new']:
             items = None
@@ -151,7 +156,7 @@ class AttrHolder():
 
                 new_obj[key] = items
 
-        # guess the method name for creating a new entity and build the request
+        # if method_name is not defined: guess the method name for creating a new entity 
         if method_name is None:
             method_name = "create{}s".format(self.entity)
         request = {
@@ -171,10 +176,19 @@ class AttrHolder():
         defs = openbis_definitions(self._entity)
         attr2ids = openbis_definitions('attr2ids')
 
-        up_obj = {
-            "@type": "as.dto.{}.update.{}Update".format(self.entity.lower(), self.entity),
-            defs["identifier"]: self._permId
-        }
+        up_obj = {}
+        if 'update' in defs:
+            up_obj = defs['update']
+        else:
+            # guess the @type based on the entity
+            up_obj = {
+                "@type": "as.dto.{}.update.{}Update".format(
+                    self.entity.lower(), self.entity
+                ),
+            }
+
+        idenfier_name = defs["identifier"]
+        up_obj[identifier_name]: self._permId
 
         # look at all attributes available for that entity
         # that can be updated
@@ -266,6 +280,8 @@ class AttrHolder():
                     value = self.__dict__.get('_' + attr, {})
                     if value is None:
                         pass
+                    elif isinstance(value, bool):
+                        pass
                     elif isinstance(value, dict) and len(value) == 0:
                         # value is {}: it means that we want this attribute to be
                         # deleted, not updated.
@@ -287,6 +303,7 @@ class AttrHolder():
 
         # update an existing entity
         if method_name is None:
+            # if method_name is not defined: try to guess the method name
             method_name = "update{}s".format(self.entity)
         request = {
             "method": method_name,
