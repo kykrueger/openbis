@@ -2,9 +2,9 @@
 oBIS is a command-line tool to handle dataSets that are too big to store in openBIS but still need to be registered and tracked in openBIS.
 
 ## Prerequisites
-* python 3.6
-* git
-* git-annex [Installation guide](https://git-annex.branchable.com/install/)
+* python 3.6 or higher
+* git 2.11 or higher
+* git-annex 6 or higher [Installation guide](https://git-annex.branchable.com/install/)
 
 
 ## Installation
