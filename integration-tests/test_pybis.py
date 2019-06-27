@@ -24,7 +24,10 @@ class TestCase(systemtest.testcase.TestCase):
         self.USER_ID = 'SunWukong_' + str(randrange(100000))
         self.SAMPLE_CODE_1 = 'SAMPLE_' + str(randrange(100000))
         self.SAMPLE_CODE_2 = 'SAMPLE_' + str(randrange(100000))
+        self.OBJECT_CODE_1 = 'OBJECT_' + str(randrange(100000))
+        self.OBJECT_CODE_2 = 'OBJECT_' + str(randrange(100000))
         self.EXPERIMENT_CODE = "EXP_" + str(randrange(100000))
+        self.COLLECTION_CODE = "COL_" + str(randrange(100000))
         self.FILE = 'TEST_FILE_' + str(randrange(100000))
 
         self.installOpenbis()
@@ -43,12 +46,16 @@ class TestCase(systemtest.testcase.TestCase):
         self._test_groups(openbis)
         self._test_role_assignments(openbis)
         self._test_samples(openbis)
+        self._test_objects(openbis)
         self._test_experiments(openbis)
+        self._test_collections(openbis)
         self._test_datasets(openbis)
         self._test_entity_types(openbis)
+        # self._test_material_types(openbis)
         self._test_semantic_annotations(openbis)
         self._test_tags(openbis)
         self._test_vocabularies(openbis)
+        # self._test_plugins(openbis)
         self._test_logout(openbis)
 
 
@@ -85,6 +92,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.assertIn('spaces', openbis.spaces.df.code.values, self.SPACE)
         self.assertIn('spaces', openbis.get_spaces().df.code.values, self.SPACE)
         self.assertLength('spaces', 1, openbis.get_spaces(code=self.SPACE))
+        self.assertNotNone('space', openbis.get_space(code=self.SPACE))
 
 
     def _test_projects(self, openbis):
@@ -131,7 +139,6 @@ class TestCase(systemtest.testcase.TestCase):
         self.assertEquals('person.userId', self.USER_ID, person.userId)
         self.assertNotNone('person.permId', person.permId)
         self.assertIn('', openbis.get_persons().df.userId.values, person.userId)
-
         persons = openbis.get_persons(roleLevel="INSTANCE")
         self.assertIn('userIds', persons.df.userId.values, 'admin')
 
@@ -144,6 +151,9 @@ class TestCase(systemtest.testcase.TestCase):
         self.assertNone('group.permId', group.permId)
         group = group.save()
         self.assertNotNone('group.permId', group.permId)
+        # TODO: next lines cause the test _test_role_assignments() to fail.
+        # self.assertNotNone('group', openbis.get_group(code=group.permId))
+        # self.assertNotEmpty('groups', openbis.get_groups(code=group.permId))
 
 
     def _test_role_assignments(self, openbis):
@@ -170,6 +180,19 @@ class TestCase(systemtest.testcase.TestCase):
         self.assertLength('samples with code ' + self.SAMPLE_CODE_1, 0, samples)
         self.assertIn('deletions ids', openbis.get_deletions().permId.values, sample.permId)
 
+    def _test_objects(self, openbis):
+        util.printWhoAmI()
+        objects = openbis.get_objects(code=self.OBJECT_CODE_1)
+        self.assertLength('objects with code ' + self.OBJECT_CODE_1, 0, objects)
+        object = openbis.new_object(type="UNKNOWN", code=self.OBJECT_CODE_1, space=self.SPACE)
+        self.assertNone('object.permId', object.permId)
+        object.save()
+        self.assertNotNone('object.permId', object.permId)
+        object.delete("reason")
+        objects = openbis.get_objects(code=self.OBJECT_CODE_1)
+        self.assertLength('objects with code ' + self.OBJECT_CODE_1, 0, objects)
+        self.assertIn('deletions ids', openbis.get_deletions().permId.values, object.permId)
+
 
     def _test_experiments(self, openbis):
         util.printWhoAmI()
@@ -186,31 +209,68 @@ class TestCase(systemtest.testcase.TestCase):
         experiment.save()
         self.assertNotNone('experiment.permId', experiment.permId)
 
+    def _test_collections(self, openbis):
+        util.printWhoAmI()
+        # should check existing collection
+        self.assertNotEmpty('collections', openbis.get_collections())
+        self.assertLength('collections code=DEFAULT', 1, openbis.get_collections(code='DEFAULT'))
+        self.assertNotEmpty('collections type=UNKNOWN', openbis.get_collections(type='UNKNOWN'))
+        self.assertNotEmpty('collections project=DEFAULT', openbis.get_collections(project='DEFAULT'))
+        collection = openbis.get_collection('/DEFAULT/DEFAULT/DEFAULT')
+        self.assertEquals('collection.project.identifier', '/DEFAULT/DEFAULT', collection.project.identifier)
+        # should create new collection
+        collection = openbis.new_collection(type="UNKNOWN", code=self.COLLECTION_CODE, project="DEFAULT")
+        self.assertNone('collection.permId', collection.permId)
+        collection.save()
+        self.assertNotNone('collection.permId', collection.permId)
+
 
     def _test_datasets(self, openbis):
         util.printWhoAmI()
         sample = openbis.new_sample(type="UNKNOWN", code=self.SAMPLE_CODE_2, space=self.SPACE)
         sample.save()
+        obj = openbis.new_object(type="UNKNOWN", code=self.OBJECT_CODE_2, space=self.SPACE)
+        obj.save()
         with open(self.FILE, "w") as file:
             file.write("content")
         dataset = openbis.new_dataset(files=[self.FILE], type="UNKNOWN")
         dataset.sample = openbis.get_sample('/' + self.SPACE + '/' + self.SAMPLE_CODE_2)
+        dataset.object = openbis.get_object('/' + self.SPACE + '/' + self.OBJECT_CODE_2)
         self.assertNone('dataset.permId', dataset.permId)
         dataset.save()
         self.assertNotNone('dataset.permId', dataset.permId)
         self.assertIn('dataset.file_list', dataset.file_list, "original/" + self.FILE)
         host = dataset.download()
         self.assertTrue('downloaded file exists', os.path.exists(os.path.join(host, dataset.permId, "original", self.FILE)))
+        self.assertNotEmpty('datasets', openbis.get_datasets())
+        fetched_dataset = openbis.get_dataset(dataset.permId)
+        self.assertNotNone('dataset', fetched_dataset)
+        self.assertEquals('dataset.permId', dataset.permId, fetched_dataset.permId)
+        os.remove(self.FILE)
 
 
     def _test_entity_types(self, openbis):
         util.printWhoAmI()
-        for entity in ['dataset', 'experiment', 'sample']:
+        for entity in ['dataset', 'experiment', 'sample', 'collection', 'object']:
             method_all = getattr(openbis, 'get_' + entity + '_types')
             method_one = getattr(openbis, 'get_' + entity + '_type')
             self.assertNotEmpty(entity + ' types', method_all())
             entity_type = method_one('UNKNOWN')
             self.assertEquals('entity_type.code', 'UNKNOWN', entity_type.code)
+
+
+    # TODO: method openbis.new_material_type() does not exist.
+    # def _test_material_types(self, openbis):
+    #     util.printWhoAmI()
+    #     materialType = openbis.new_material_type(code=self.SPACE)
+    #     self.assertNone('materialType.permId', materialType.permId)
+    #     materialType.save()
+    #
+    #     material_types = openbis.get_material_types()
+    #     print('material_types: %s' % (material_types))
+    #     self.assertNotEmpty('material types', material_types)
+    #     found_material_type = openbis.get_material_type('UNKNOWN')
+    #     self.assertEquals('found_material_type.code', 'UNKNOWN', found_material_type.code)
 
 
     def _test_semantic_annotations(self, openbis):
@@ -224,6 +284,8 @@ class TestCase(systemtest.testcase.TestCase):
         self.assertNotNone('semantic annotation permId', sa.permId)
         sas = openbis.get_semantic_annotations()
         self.assertIn('semantic annotation permIds', sas.df.permId.values, sa.permId)
+        saved_sa = openbis.get_semantic_annotation(sa.permId)
+        self.assertNotNone('semantic annotation', saved_sa)
 
 
     def _test_tags(self, openbis):
@@ -233,13 +295,14 @@ class TestCase(systemtest.testcase.TestCase):
         tag.save()
         self.assertNotNone('tag.permId', tag.permId)
         self.assertIn('tag permIds', openbis.get_tags().df.permId.values, tag.permId)
+        self.assertNotNone('tag', openbis.get_tag(tag.permId))
 
 
     def _test_vocabularies(self, openbis):
         util.printWhoAmI()
         # should create vocabulary
         vocabulary = openbis.new_vocabulary(
-            code = 'VOBABULARY_1',
+            code = 'VOCABULARY_1',
             description = 'description',
             terms = [
                 { "code": "TERM1", "label": "label1", "description": "description1" },
@@ -250,9 +313,28 @@ class TestCase(systemtest.testcase.TestCase):
         vocabulary.save()
         self.assertNotNone('vocabulary.registrationDate', vocabulary.registrationDate)
         # should get terms
-        terms = openbis.get_terms(vocabulary='VOBABULARY_1')
-        self.assertIn('VOBABULARY_1 terms', terms.df.code.values, 'TERM1')
-        self.assertIn('VOBABULARY_1 terms', terms.df.code.values, 'TERM2')
+        terms = openbis.get_terms(vocabulary='VOCABULARY_1')
+        self.assertNotEmpty('terms', terms)
+        self.assertNotNone('term', openbis.get_term(code='TERM1', vocabularyCode='VOCABULARY_1'))
+        self.assertIn('VOCABULARY_1 terms', terms.df.code.values, 'TERM1')
+        self.assertIn('VOCABULARY_1 terms', terms.df.code.values, 'TERM2')
+        self.assertNotNone('vocabulary', openbis.get_vocabulary(code=vocabulary.code))
+        self.assertNotEmpty('vocabularies', openbis.get_vocabularies(code=vocabulary.code))
+
+
+    # TODO: plugin.save() is not working properly, it requires a tag to be present in the system.
+    # def _test_plugins(self, openbis):
+    #     util.printWhoAmI()
+    #     plugin = openbis.new_plugin()
+    #     plugin.script = 'print(\'Hello world\')'
+    #     self.assertNone('plugin.permId', plugin.permId)
+    #     plugin.save()
+    #     self.assertNotNone('plugin.permId', plugin.permId)
+    #     plugins = openbis.get_plugins()
+    #     self.assertNotEmpty('plugins', plugins)
+    #     self.assertIn('plugins', plugins, plugin)
+    #     plugin2 = openbis.get_plugin(plugin.permId)
+    #     self.assertNotNone('plugin', plugin2)
 
 
     def _test_logout(self, openbis):
