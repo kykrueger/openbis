@@ -4,6 +4,7 @@ import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
 import Grid from '../../common/grid/Grid.jsx'
+import * as ids from '../../../common/consts/ids.js'
 import * as pages from '../../../common/consts/pages.js'
 import * as objectTypes from '../../../common/consts/objectType.js'
 import * as actions from '../../../store/actions/actions.js'
@@ -125,25 +126,29 @@ class Search extends React.Component {
     const { types } = this.state
 
     return (
-      <Grid columns={[
-        {
-          field: 'permId.entityKind',
-          label: 'Kind',
-        },
-        {
-          field: 'code',
-          render: row => (
-            <Link
-              component="button"
-              classes={{ root: classes.tableLink }}
-              onClick={this.handleLinkClick(row.permId)}>{row.code}
-            </Link>
-          )
-        },
-        {
-          field: 'description',
-        }
-      ]} data={types} />
+      <Grid
+        id={ids.TYPES_GRID_ID}
+        columns={[
+          {
+            field: 'permId.entityKind',
+            label: 'Kind',
+          },
+          {
+            field: 'code',
+            render: row => (
+              <Link
+                component="button"
+                classes={{ root: classes.tableLink }}
+                onClick={this.handleLinkClick(row.permId)}>{row.code}
+              </Link>
+            )
+          },
+          {
+            field: 'description',
+          }
+        ]}
+        data={types}
+      />
     )
   }
 

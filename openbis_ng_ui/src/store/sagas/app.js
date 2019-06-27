@@ -30,11 +30,15 @@ function* login(action) {
   try{
     yield put(actions.setLoading(true))
 
-    let loginResponse = yield putAndWait(actions.apiRequest({method: 'login', params: [action.payload.username, action.payload.password]}))
+    let { username, password } = action.payload
+    let loginResponse = yield putAndWait(actions.apiRequest({method: 'login', params: [ username, password ]}))
 
     if(loginResponse.payload.result){
       yield put(actions.setCurrentPage(pages.TYPES))
-      yield put(actions.setSession(loginResponse.payload.result))
+      yield put(actions.setSession({
+        sessionToken: loginResponse.payload.result,
+        userName: username
+      }))
     }else{
       throw { message: 'Incorrect used or password' }
     }

@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
+import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
@@ -10,6 +11,9 @@ import TableSortLabel from '@material-ui/core/TableSortLabel'
 import FilterField from '../../common/form/FilterField.jsx'
 import ColumnConfig from '../../common/grid/ColumnConfig.jsx'
 import PageConfig from '../../common/grid/PageConfig.jsx'
+import * as ids from '../../../common/consts/ids.js'
+import * as selectors from '../../../store/selectors/selectors.js'
+import {facade, dto} from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = (theme) => ({
@@ -56,6 +60,12 @@ const styles = (theme) => ({
   }
 })
 
+function mapStateToProps(state){
+  return {
+    session: selectors.getSession(state)
+  }
+}
+
 class Grid extends React.Component {
 
   constructor(props){
@@ -91,30 +101,77 @@ class Grid extends React.Component {
   }
 
   load(){
-    if(_.isFunction(this.props.data)){
-      this.props.data(this.loadConfig()).then(({ objects, totalCount }) => {
+    this.loadSettings().then(() => {
+      this.loadData().then(() => {
         this.setState(() => ({
-          loaded: true,
+          loaded: true
+        }))
+      })
+    })
+  }
+
+  loadData(){
+    if(_.isFunction(this.props.data)){
+      let loadConfig = {
+        filter: this.state.filter,
+        page: this.state.page,
+        pageSize: this.state.pageSize,
+        sort: this.state.sort,
+        sortDirection: this.state.sortDirection
+      }
+      return this.props.data(loadConfig).then(({ objects, totalCount }) => {
+        this.setState(() => ({
           objects,
           totalCount
         }))
       })
     }else if(!this.state.loaded){
       this.setState(() => ({
-        loaded: true,
         objects: this.props.data
       }))
     }
+    return Promise.resolve()
   }
 
-  loadConfig(){
-    return {
-      filter: this.state.filter,
-      page: this.state.page,
+  loadSettings(){
+    let id = new dto.PersonPermId(this.props.session.userName)
+    let fo = new dto.PersonFetchOptions()
+    fo.withWebAppSettings(ids.WEB_APP_ID).withAllSettings()
+
+    return facade.getPersons([id], fo).then(map => {
+      let person = map[id]
+      let webAppSettings = person.webAppSettings[ids.WEB_APP_ID]
+      if(webAppSettings && webAppSettings.settings){
+        let gridSettings = webAppSettings.settings[this.props.id]
+        if(gridSettings){
+          let settings = JSON.parse(gridSettings.value)
+          if(settings){
+            this.setState(() => ({
+              ...settings
+            }))
+          }
+        }
+      }
+    })
+  }
+
+  saveSettings(){
+    let settings = {
       pageSize: this.state.pageSize,
       sort: this.state.sort,
-      sortDirection: this.state.sortDirection
+      sortDirection: this.state.sortDirection,
+      visibleColumns: this.state.visibleColumns
     }
+
+    let gridSettings = new dto.WebAppSettingCreation()
+    gridSettings.setName(this.props.id)
+    gridSettings.setValue(JSON.stringify(settings))
+
+    let update = new dto.PersonUpdate()
+    update.setUserId(new dto.PersonPermId(this.props.session.userName))
+    update.getWebAppSettings(ids.WEB_APP_ID).add(gridSettings)
+
+    facade.updatePersons([update])
   }
 
   handleFilterChange(filter){
@@ -129,7 +186,9 @@ class Grid extends React.Component {
   handleColumnsChange(visibleColumns){
     this.setState(() => ({
       visibleColumns
-    }))
+    }), () => {
+      this.saveSettings()
+    })
   }
 
   handleSortChange(column){
@@ -141,6 +200,7 @@ class Grid extends React.Component {
         sort: column.field,
         sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
       }), () => {
+        this.saveSettings()
         this.load()
       })
     }
@@ -159,6 +219,7 @@ class Grid extends React.Component {
       page: 0,
       pageSize
     }), () => {
+      this.saveSettings()
       this.load()
     })
   }
@@ -303,5 +364,6 @@ class Grid extends React.Component {
 }
 
 export default _.flow(
+  connect(mapStateToProps, null),
   withStyles(styles)
 )(Grid)
