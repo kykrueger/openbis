@@ -5,11 +5,13 @@
 # Requirement:
 #   The pybis module must be available.
 
-import settings
-import systemtest.testcase
-import systemtest.util as util
 import os
 from random import randrange
+
+import systemtest.testcase
+import systemtest.util as util
+
+import settings
 
 
 class TestCase(systemtest.testcase.TestCase):
@@ -147,21 +149,11 @@ class TestCase(systemtest.testcase.TestCase):
     def _test_role_assignments(self, openbis):
         util.printWhoAmI()
         # should find instance admin
-        for i, role_assignment in openbis.get_role_assignments().df.iterrows():
-            if role_assignment.user == "admin":
-                found = True
-                self.assertEquals('role', 'ADMIN', role_assignment.role)
-                self.assertEquals('roleLevel', 'INSTANCE', role_assignment.roleLevel)
-
-        self.assertTrue('found admin role', found)
-        self.assertEquals('role assignment id', '1', openbis.get_role_assignment(1).id)
-        # should assign role to user
-        openbis.assign_role("ADMIN", person=self.USER_ID)
         found = False
-        for i, role_assignment in openbis.get_role_assignments().df.iterrows():
-            if role_assignment.user == self.USER_ID:
-                found = True
-                self.assertEquals('role', 'ADMIN', role_assignment.role)
+        for role_assignment in openbis.get_role_assignments(user='admin'):
+            found = True
+            self.assertEquals('role', 'ADMIN', role_assignment.role)
+            self.assertEquals('roleLevel', 'INSTANCE', role_assignment.roleLevel)
         self.assertTrue('found admin role', found)
 
 
