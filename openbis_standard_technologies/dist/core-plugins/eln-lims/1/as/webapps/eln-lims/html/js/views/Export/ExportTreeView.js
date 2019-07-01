@@ -40,7 +40,7 @@ function ExportTreeView(exportTreeController, exportTreeModel) {
 		                                   "To export selectively only parts of a tree, open the nodes and select what to export."
 		]);
 		$infoBox.css("border", "none");
-		$header.append($infoBox);
+		$container.append($infoBox);
 		
 		var $tree = $("<div>", { "id" : "exportsTree" });
 		$formColumn.append($("<br>"));
@@ -49,9 +49,8 @@ function ExportTreeView(exportTreeController, exportTreeModel) {
 		$container.append($form);
 		
     	exportTreeModel.tree = TreeUtil.getCompleteTree($tree);
-    	
+
     	var $exportButton = $("<input>", { "type": "submit", "class" : "btn btn-primary", 'value' : 'Export Selected' });
-		$formColumn.append($("<br>"));
-		$formColumn.append($exportButton);
+		$header.append($exportButton);
 	}
 }
