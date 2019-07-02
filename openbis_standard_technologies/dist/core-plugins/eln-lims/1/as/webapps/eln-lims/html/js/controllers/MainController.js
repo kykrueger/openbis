@@ -376,11 +376,18 @@ function MainController(profile) {
 					break;
 				case "showExportTreePage":
 					document.title = "Export Builder";
-					var newView = new ExportTreeController(this);
-					var views = this._getNewViewModel(true, true, false);
-					newView.init(views);
-					this.currentView = newView;
+					var newExportView = new ExportTreeController(this);
+					var exportViews = this._getNewViewModel(true, true, false);
+					newExportView.init(exportViews);
+					this.currentView = newExportView;
 					//window.scrollTo(0,0);
+					break;
+				case "showResearchCollectionExportPage":
+					document.title = "Research Collection Export Builder";
+					var newResearchCollectionExportView = new ResearchCollectionExportController(this);
+					var researchCollectionExportViews = this._getNewViewModel(true, true, false);
+					newResearchCollectionExportView.init(researchCollectionExportViews);
+					this.currentView = newResearchCollectionExportView;
 					break;
 				case "showLabNotebookPage":
 					document.title = "Lab Notebook";

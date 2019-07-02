@@ -302,7 +302,19 @@ function ServerFacade(openbisServer) {
 			"entities" : entities,
 			"metadataOnly" : metadataOnly,
 		}, callbackFunction, "exports-api");
-	}
+	};
+
+	//
+	// Research collection export
+	//
+	this.exportRc = function(entities, includeRoot, metadataOnly, callbackFunction) {
+		this.customELNApi({
+			"method" : "exportAll",
+			"includeRoot" : includeRoot,
+			"entities" : entities,
+			"metadataOnly" : metadataOnly,
+		}, callbackFunction, "rc-exports-api");
+	};
 	
 	//
 	// Metadata Related Functions
