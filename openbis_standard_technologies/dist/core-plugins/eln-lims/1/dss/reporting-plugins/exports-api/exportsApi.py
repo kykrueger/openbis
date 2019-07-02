@@ -253,11 +253,10 @@ def cleanUp(tempDirPath, tempZipFilePath):
 
 
 # Generates ZIP file and stores it in workspace
-def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFileName, tempZipFilePath):
+def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFilePath):
     # Services used during the export process
     v3 = ServiceProvider.getV3ApplicationService();
     v3d = ServiceProvider.getApplicationContext().getBean(V3_DSS_BEAN);
-    dssComponent = DssComponentFactory.tryCreate(sessionToken, OPENBISURL);
     objectCache = {};
     objectMapper = GenericObjectMapper();
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -389,6 +388,10 @@ def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFil
 
     zos.close();
     fos.close();
+
+
+def generateDownloadUrl(sessionToken, tempZipFileName, tempZipFilePath):
+    dssComponent = DssComponentFactory.tryCreate(sessionToken, OPENBISURL);
 
     # Store on workspace to be able to generate a download link
     operationLog.info("Zip file can be found on the temporal directory: " + tempZipFilePath);

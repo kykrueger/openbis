@@ -18,9 +18,10 @@ import threading
 import time
 from ch.systemsx.cisd.common.logging import LogCategory
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
-from exportsApi import generateZipFile, cleanUp, displayResult, findEntitiesToExport, validateDataSize
 from java.io import File
 from org.apache.log4j import Logger
+
+from exportsApi import generateZipFile, cleanUp, displayResult, findEntitiesToExport, validateDataSize
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + ".rcExports.py")
 
@@ -64,13 +65,14 @@ def export(sessionToken, entities, includeRoot):
     tempZipFileName = tempDirName + ".zip"
     tempZipFilePath = tempDirPath + ".zip"
 
-    tempZipFileWorkspaceURL = generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFileName, tempZipFilePath)
+    generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFilePath)
 
     #Send Email
-    sendToDSpace(tempZipFileWorkspaceURL)
+    sendToDSpace(tempZipFileName, tempZipFilePath)
 
     cleanUp(tempDirPath, tempZipFilePath)
     return True
 
-def sendToDSpace(downloadURL):
+def sendToDSpace(tempZipFileName, tempZipFilePath):
+    pass
     # TODO

@@ -19,9 +19,10 @@ import time
 from ch.systemsx.cisd.common.logging import LogCategory
 from ch.systemsx.cisd.common.mail import EMailAddress
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
-from exportsApi import generateZipFile, cleanUp, displayResult, findEntitiesToExport, validateDataSize
 from java.io import File
 from org.apache.log4j import Logger
+
+from exportsApi import generateZipFile, cleanUp, displayResult, findEntitiesToExport, validateDataSize, generateDownloadUrl
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + ".generalExports.py")
 
@@ -67,7 +68,8 @@ def export(sessionToken, entities, includeRoot, userEmail, mailClient):
     tempZipFileName = tempDirName + ".zip"
     tempZipFilePath = tempDirPath + ".zip"
 
-    tempZipFileWorkspaceURL = generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFileName, tempZipFilePath)
+    generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFilePath)
+    tempZipFileWorkspaceURL = generateDownloadUrl(sessionToken, tempZipFileName, tempZipFilePath)
 
     #Send Email
     sendMail(mailClient, userEmail, tempZipFileWorkspaceURL)

@@ -41,7 +41,7 @@ function ResearchCollectionExportController(parentController) {
             if (error) {
                 Util.showError(error);
             } else {
-                Util.showSuccess("Export is being processed, you will receive an email when it is finished. If you logout the process will stop.", function() { Util.unblockUI(); });
+                Util.showSuccess("Export is being processed. If you logout the process will stop.", function() { Util.unblockUI(); });
                 mainController.refreshView();
             }
         });
