@@ -48,7 +48,7 @@ public class MasterdataHelper
     
     public static void createPropertiesIfMissing(String sessionToken, IApplicationServerApi v3) {
         PropertyTypeSearchCriteria propertyTypeSearchCriteria = new PropertyTypeSearchCriteria();
-        propertyTypeSearchCriteria.withCodes().setFieldValue(Arrays.asList("$NAME", "$DESCRIPTION", "NOTES", "$DEFAULT_OBJECT_TYPE", "$XMLCOMMENTS", "$ANNOTATIONS_STATE"));
+        propertyTypeSearchCriteria.withCodes().setFieldValue(Arrays.asList("$NAME", "DESCRIPTION", "NOTES", "$DEFAULT_OBJECT_TYPE", "$XMLCOMMENTS", "$ANNOTATIONS_STATE"));
         propertyTypeSearchCriteria.withOrOperator();
         
         List<PropertyType> propertyTypes = v3.searchPropertyTypes(sessionToken, propertyTypeSearchCriteria, new PropertyTypeFetchOptions()).getObjects();
@@ -63,7 +63,7 @@ public class MasterdataHelper
             if(propertyType.getCode().equals("$NAME")) {
                 name = true;
             }
-            if(propertyType.getCode().equals("$DESCRIPTION")) {
+            if(propertyType.getCode().equals("DESCRIPTION")) {
                 description = true;
             }
             if(propertyType.getCode().equals("NOTES")) {
@@ -94,7 +94,7 @@ public class MasterdataHelper
         
         if(!description) {
             PropertyTypeCreation DESCRIPTION = new PropertyTypeCreation();
-            DESCRIPTION.setCode("$DESCRIPTION");
+            DESCRIPTION.setCode("DESCRIPTION");
             DESCRIPTION.setLabel("Description");
             DESCRIPTION.setDescription("Description");
             DESCRIPTION.setDataType(DataType.VARCHAR);
@@ -260,7 +260,7 @@ public class MasterdataHelper
         NAME.setPropertyTypeId(new PropertyTypePermId("$NAME"));
         
         PropertyAssignmentCreation DESCRIPTION = new PropertyAssignmentCreation();
-        DESCRIPTION.setPropertyTypeId(new PropertyTypePermId("$DESCRIPTION"));
+        DESCRIPTION.setPropertyTypeId(new PropertyTypePermId("DESCRIPTION"));
         
         PropertyAssignmentCreation NOTES = new PropertyAssignmentCreation();
         NOTES.setPropertyTypeId(new PropertyTypePermId("NOTES"));
@@ -287,7 +287,7 @@ public class MasterdataHelper
         NAME.setPropertyTypeId(new PropertyTypePermId("$NAME"));
         
         PropertyAssignmentCreation DESCRIPTION = new PropertyAssignmentCreation();
-        DESCRIPTION.setPropertyTypeId(new PropertyTypePermId("$DESCRIPTION"));
+        DESCRIPTION.setPropertyTypeId(new PropertyTypePermId("DESCRIPTION"));
         
         PropertyAssignmentCreation XMLCOMMENTS = new PropertyAssignmentCreation();
         XMLCOMMENTS.setPropertyTypeId(new PropertyTypePermId("$XMLCOMMENTS"));
