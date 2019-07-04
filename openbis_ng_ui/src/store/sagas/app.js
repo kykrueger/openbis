@@ -63,10 +63,8 @@ function* logout() {
 
 function* search(action) {
   const {page, text} = action.payload
-  if(text && text.trim()){
-    yield put(actions.objectOpen(page, objectTypes.SEARCH, text.trim()))
-    yield put(actions.setSearch(''))
-  }
+  yield put(actions.objectOpen(page, objectTypes.SEARCH, text.trim()))
+  yield put(actions.setSearch(''))
 }
 
 function* currentPageChange(action){

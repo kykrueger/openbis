@@ -58,7 +58,7 @@ export const changedObjects = (state = [], action) => {
 export const selectedObject = (state = null, action) => {
   switch(action.type){
     case actions.SET_SELECTED_OBJECT: {
-      let newState = action.payload.type && action.payload.id ? { type: action.payload.type, id: action.payload.id } : null
+      let newState = action.payload.type !== undefined && action.payload.id !== undefined ? { type: action.payload.type, id: action.payload.id } : null
 
       if(_.isEqual(state, newState)){
         return state
