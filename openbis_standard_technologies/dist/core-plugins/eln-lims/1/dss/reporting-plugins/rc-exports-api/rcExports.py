@@ -13,17 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import sys
 import threading
 import time
+import urllib2
 from ch.systemsx.cisd.common.logging import LogCategory
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from java.io import File
 from org.apache.log4j import Logger
 
-from exportsApi import generateZipFile, cleanUp, displayResult, findEntitiesToExport, validateDataSize
+from exportsApi import generateZipFile, cleanUp, displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + ".rcExports.py")
+
 
 def process(tr, params, tableBuilder):
     method = params.get("method")
@@ -37,6 +39,7 @@ def process(tr, params, tableBuilder):
 
     displayResult(isOk, tableBuilder)
 
+
 def expandAndExport(tr, params):
     #Services used during the export process
     # TO-DO Login on the services as ETL server but on behalf of the user that makes the call
@@ -49,13 +52,14 @@ def expandAndExport(tr, params):
     includeRoot = params.get("includeRoot")
 
     operationLog.info("Found " + str(len(entitiesToExport)) + " entities to export, export thread will start")
-    thread = threading.Thread(target=export, args=(sessionToken, entitiesToExport, includeRoot))
+    thread = threading.Thread(target=export, args=(tr, sessionToken, entitiesToExport, includeRoot))
     thread.daemon = True
     thread.start()
 
     return True
 
-def export(sessionToken, entities, includeRoot):
+
+def export(tr, sessionToken, entities, includeRoot):
     #Create temporal folder
     tempDirName = "export_" + str(time.time())
     tempDirPathFile = File.createTempFile(tempDirName, None)
@@ -68,11 +72,29 @@ def export(sessionToken, entities, includeRoot):
     generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFilePath)
 
     #Send Email
-    sendToDSpace(tempZipFileName, tempZipFilePath)
+    sendToDSpace(tr, tempZipFileName, tempZipFilePath)
 
     cleanUp(tempDirPath, tempZipFilePath)
     return True
 
-def sendToDSpace(tempZipFileName, tempZipFilePath):
-    pass
-    # TODO
+
+def sendToDSpace(tr, tempZipFileName, tempZipFilePath):
+    print()
+    print(sys.version)
+    print()
+    fetchServiceDocument(tr)
+
+
+def fetchServiceDocument(tr):
+    user = getConfigurationProperty(tr, 'user')
+    password = getConfigurationProperty(tr, 'password')
+    realm = getConfigurationProperty(tr, 'realm')
+    url = getConfigurationProperty(tr, 'service-document-url')
+    pm = urllib2.HTTPPasswordMgr()
+    pm.add_password(realm, url, user, password)
+    authHandler = urllib2.HTTPBasicAuthHandler(pm)
+    opener = urllib2.build_opener(authHandler)
+    urllib2.install_opener(opener)
+    response = urllib2.urlopen(url)
+
+    print('Response: %s' % str(response))
