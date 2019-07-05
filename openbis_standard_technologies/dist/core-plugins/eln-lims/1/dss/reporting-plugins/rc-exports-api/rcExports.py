@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import sys
 import threading
 import time
 import urllib2
+import xml.etree.ElementTree as ET
 from ch.systemsx.cisd.common.logging import LogCategory
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from java.io import File
@@ -79,11 +79,9 @@ def export(tr, sessionToken, entities, includeRoot):
 
 
 def sendToDSpace(tr, tempZipFileName, tempZipFilePath):
-    print()
-    print(sys.version)
-    print()
-    fetchServiceDocument(tr)
-
+    collectionUrls = fetchServiceDocument(tr)
+    print('URLs: %s' % collectionUrls)
+    print('URLs count: %s' % len(collectionUrls))
 
 def fetchServiceDocument(tr):
     user = getConfigurationProperty(tr, 'user')
@@ -96,5 +94,10 @@ def fetchServiceDocument(tr):
     opener = urllib2.build_opener(authHandler)
     urllib2.install_opener(opener)
     response = urllib2.urlopen(url)
+    xmlText = response.read()
 
-    print('Response: %s' % str(response))
+    xmlRoot = ET.fromstring(xmlText)
+    collections = xmlRoot.findall('./xmlns:workspace/xmlns:collection[@href]', namespaces=dict(xmlns='http://www.w3.org/2007/app'))
+
+    collectionUrls = map(lambda collection: collection.attrib['href'], collections)
+    return collectionUrls
