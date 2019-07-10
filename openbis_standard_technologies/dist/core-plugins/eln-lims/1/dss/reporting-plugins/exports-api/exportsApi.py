@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from collections import deque
+
 import jarray
 # To obtain the openBIS URL
 from ch.systemsx.cisd.openbis.dss.generic.server import DataStoreServer;
 from ch.systemsx.cisd.openbis.generic.client.web.client.exception import UserFailureException
-from collections import deque
 # Zip Format
 from java.io import File;
 from java.io import FileInputStream;
