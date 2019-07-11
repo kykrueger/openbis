@@ -28,9 +28,9 @@ const styles = (theme) => ({
       backgroundColor: fade(theme.palette.common.white, 0.25),
     },
     borderRadius: theme.shape.borderRadius,
-    paddingLeft: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
-    marginRight: theme.spacing.unit * 2,
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    marginRight: theme.spacing(2),
     transition: theme.transitions.create('width'),
     width: '200px',
     '&:focus-within': {
@@ -38,8 +38,8 @@ const styles = (theme) => ({
     },
   },
   searchIcon: {
-    paddingLeft: theme.spacing.unit / 2,
-    paddingRight: theme.spacing.unit,
+    paddingLeft: theme.spacing(1) / 2,
+    paddingRight: theme.spacing(1),
     cursor: 'default'
   },
   searchClear: {

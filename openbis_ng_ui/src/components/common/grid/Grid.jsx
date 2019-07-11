@@ -24,7 +24,7 @@ const styles = (theme) => ({
   },
   headerContainer: {
     flexGrow: 0,
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing(2),
     paddingBottom: 0
   },
   footerContainer: {
@@ -35,8 +35,8 @@ const styles = (theme) => ({
   tableContainer: {
     flexGrow: 1,
     overflow: 'auto',
-    paddingLeft: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2)
   },
   table: {
     height: '100%'
@@ -325,9 +325,10 @@ class Grid extends React.Component {
                   <TableRow key={row.id} hover>
                     {this.columnsArray.map(column => {
                       if(visibleColumns.includes(column.field)){
+                        let rendered = column.render(row)
                         return (
                           <TableCell key={column.field}>
-                            {column.render(row)}
+                            {rendered ? rendered : <span>&nbsp;</span> }
                           </TableCell>
                         )
                       }else{

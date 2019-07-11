@@ -72,7 +72,7 @@ describe('browser', () => {
 function simulateNodeIconClick(wrapper, id){
   wrapper.findWhere(node => {
     return node.name() === 'BrowserNode' && node.prop('node').id === id
-  }).find('ListItemIcon').find('SvgIcon').first().simulate('click')
+  }).find('svg').first().simulate('click')
 }
 
 function simulateFilterChange(wrapper, filter){
