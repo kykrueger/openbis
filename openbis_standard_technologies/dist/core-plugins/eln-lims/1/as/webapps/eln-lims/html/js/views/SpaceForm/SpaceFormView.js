@@ -29,22 +29,24 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		
 		var typeTitle = "Space: ";
 		
-		var $formTitle = $("<h2>").append(typeTitle + this._spaceFormModel.space.code);
+		var $formTitle = $("<h2>").append(typeTitle + this._spaceFormModel.space);
 		
 		//
 		// Toolbar
 		//
 		var toolbarModel = [];
-		var $createProj = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-			_this._spaceFormController.createProject();
-		});
-		toolbarModel.push({ component : $createProj, tooltip: "Create Project" });
+		if (_this._allowedToCreateProject()) {
+			var $createProj = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+				_this._spaceFormController.createProject();
+			});
+			toolbarModel.push({ component : $createProj, tooltip: "Create Project" });
+		}
 
 		//Export
-		var $exportAll = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space.code, expand : true }], false);
+		var $exportAll = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space, expand : true }], false);
 		toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
 		
-		var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space.code, expand : true }], true);
+		var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space, expand : true }], true);
 		toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
 		
 		//Jupyter Button
@@ -80,4 +82,10 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		
 		$container.append($form);
 	}
+	
+	this._allowedToCreateProject = function() {
+		var space = this._spaceFormModel.v3_space;
+		return space.frozenForProjects == false;
+	}
+	
 }
