@@ -179,7 +179,7 @@ class Grid extends React.Component {
       page: 0,
       filter
     }), () => {
-      this.load()
+      this.loadData()
     })
   }
 
@@ -201,7 +201,7 @@ class Grid extends React.Component {
         sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
       }), () => {
         this.saveSettings()
-        this.load()
+        this.loadData()
       })
     }
   }
@@ -210,7 +210,7 @@ class Grid extends React.Component {
     this.setState(() => ({
       page
     }), () => {
-      this.load()
+      this.loadData()
     })
   }
 
@@ -220,7 +220,7 @@ class Grid extends React.Component {
       pageSize
     }), () => {
       this.saveSettings()
-      this.load()
+      this.loadData()
     })
   }
 
