@@ -5,7 +5,7 @@ import {withStyles} from '@material-ui/core/styles'
 import * as util from '../../../common/util.js'
 import logger from '../../../common/logger.js'
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     display: 'inline-flex',
     margin: '1px 30px 1px 1px',
@@ -19,7 +19,7 @@ const styles = () => ({
   hovered: {
     margin: '0px',
     border: '1px solid',
-    borderColor: 'rgba(0, 0, 0, 0.14)'
+    borderColor: theme.palette.action.selected
   },
 })
 

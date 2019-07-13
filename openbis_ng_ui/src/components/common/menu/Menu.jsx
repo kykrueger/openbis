@@ -22,10 +22,10 @@ const styles = (theme) => ({
     flexGrow: 1,
   },
   search: {
-    color: theme.palette.common.white,
-    backgroundColor: fade(theme.palette.common.white, 0.15),
+    color: theme.palette.background.paper,
+    backgroundColor: fade(theme.palette.background.paper, 0.15),
     '&:hover': {
-      backgroundColor: fade(theme.palette.common.white, 0.25),
+      backgroundColor: fade(theme.palette.background.paper, 0.25),
     },
     borderRadius: theme.shape.borderRadius,
     paddingLeft: theme.spacing(1),
