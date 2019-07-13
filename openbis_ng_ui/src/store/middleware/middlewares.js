@@ -1,3 +1,5 @@
 import stateChangeCheck from './stateChangeCheck.js'
-import loadingThrottle from './loadingThrottle.js'
-export default [stateChangeCheck]
+import { routerMiddleware } from 'connected-react-router'
+import history from '../history.js'
+
+export default [stateChangeCheck, routerMiddleware(history)]
