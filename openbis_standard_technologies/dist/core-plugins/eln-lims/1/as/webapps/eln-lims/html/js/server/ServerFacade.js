@@ -475,6 +475,15 @@ function ServerFacade(openbisServer) {
 			"method": "getSubmissionTypes",
 		}, callbackFunction, "rc-exports-api");
 	};
+
+	//
+	// Gets submission types
+	//
+	this.listSubmissionTypes = function(callbackFunction) {
+		this.customELNApi({
+			"method" : "getSubmissionTypes",
+		}, callbackFunction, "rc-exports-api");
+	};
 	
 	//
 	// Metadata Related Functions
