@@ -110,7 +110,6 @@ def strip_tags(html):
 
 
 def displayResult(isOk, tableBuilder, result=None):
-    print('displayResult(). isOk=%s, tableBuilder=%s, result=%s' % (isOk, str(tableBuilder), result))
     if isOk:
         tableBuilder.addHeader("STATUS");
         tableBuilder.addHeader("MESSAGE");
