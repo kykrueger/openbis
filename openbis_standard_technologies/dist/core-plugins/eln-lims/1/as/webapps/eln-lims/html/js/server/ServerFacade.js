@@ -909,7 +909,7 @@ function ServerFacade(openbisServer) {
 			try {
 				//Setting the searchCriteria given the advancedSearchCriteria model
 				var searchCriteria = new EntitySearchCriteria();
-			
+
 				//Setting the fetchOptions given standard settings
 				var fetchOptions = new EntityFetchOptions();
 				
@@ -1000,10 +1000,10 @@ function ServerFacade(openbisServer) {
 					if(advancedFetchOptions.withSample && fetchOptions.withSample) {
 						fetchOptions.withSample();
 					}
-					if(fetchOptions.withParents) {
+					if(fetchOptions.withParents && !(advancedFetchOptions.withParents === false)) {
 						fetchOptions.withParents();
 					}
-					if(fetchOptions.withChildren) {
+					if(fetchOptions.withChildren && !(advancedFetchOptions.withChildren === false)) {
 						var childrenFetchOptions = fetchOptions.withChildren();
 						if(advancedFetchOptions.withChildrenInfo) {
 							childrenFetchOptions.withType();
@@ -1044,12 +1044,9 @@ function ServerFacade(openbisServer) {
 						if(advancedFetchOptions.withChildrenType) {
 							childrenFetchOptions.withType();
 						}
-					}
-					if(advancedFetchOptions.withChildren) {
-						var childrenFetchOptions = fetchOptions.withChildren();
 						if(advancedFetchOptions.withChildrenProperties) {
-							childrenFetchOptions.withProperties();
-						}
+                            childrenFetchOptions.withProperties();
+                        }
 					}
 					if(advancedFetchOptions.withAncestors) {
 						var ancestorsFetchOptions = fetchOptions.withParents();
