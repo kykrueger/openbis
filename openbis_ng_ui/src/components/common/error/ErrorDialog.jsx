@@ -14,11 +14,11 @@ import logger from '../../../common/logger.js'
 import profile from '../../../profile.js'
 
 
-const dialogStyles = {
+const dialogStyles = (theme) => ({
   paper: {
-    backgroundColor: '#ffd2d2',
-  },
-}
+    backgroundColor: theme.palette.error.main
+  }
+})
 
 const StyledDialog = withStyles(dialogStyles)(Dialog)
 

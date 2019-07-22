@@ -62,9 +62,6 @@ class Search extends React.Component {
   searchObjectTypes(){
     let criteria = new dto.SampleTypeSearchCriteria()
     let fo = new dto.SampleTypeFetchOptions()
-
-    criteria.withCode().thatContains(this.props.objectId)
-
     return facade.searchSampleTypes(criteria, fo).then(result => {
       return result.objects
     })
@@ -73,9 +70,6 @@ class Search extends React.Component {
   searchCollectionTypes(){
     let criteria = new dto.ExperimentTypeSearchCriteria()
     let fo = new dto.ExperimentTypeFetchOptions()
-
-    criteria.withCode().thatContains(this.props.objectId)
-
     return facade.searchExperimentTypes(criteria, fo).then(result => {
       return result.objects
     })
@@ -84,9 +78,6 @@ class Search extends React.Component {
   searchDataSetTypes(){
     let criteria = new dto.DataSetTypeSearchCriteria()
     let fo = new dto.DataSetTypeFetchOptions()
-
-    criteria.withCode().thatContains(this.props.objectId)
-
     return facade.searchDataSetTypes(criteria, fo).then(result => {
       return result.objects
     })
@@ -95,9 +86,6 @@ class Search extends React.Component {
   searchMaterialTypes(){
     let criteria = new dto.MaterialTypeSearchCriteria()
     let fo = new dto.MaterialTypeFetchOptions()
-
-    criteria.withCode().thatContains(this.props.objectId)
-
     return facade.searchMaterialTypes(criteria, fo).then(result => {
       return result.objects
     })
@@ -128,6 +116,7 @@ class Search extends React.Component {
     return (
       <Grid
         id={ids.TYPES_GRID_ID}
+        filter={this.props.objectId}
         columns={[
           {
             field: 'permId.entityKind',

@@ -24,7 +24,7 @@ const styles = (theme) => ({
   },
   headerContainer: {
     flexGrow: 0,
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing(2),
     paddingBottom: 0
   },
   footerContainer: {
@@ -35,8 +35,8 @@ const styles = (theme) => ({
   tableContainer: {
     flexGrow: 1,
     overflow: 'auto',
-    paddingLeft: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2)
   },
   table: {
     height: '100%'
@@ -83,7 +83,7 @@ class Grid extends React.Component {
 
     this.state = {
       loaded: false,
-      filter: '',
+      filter: this.props.filter || '',
       page: 0,
       pageSize: 10,
       visibleColumns: Object.keys(this.columnsMap),
@@ -179,7 +179,7 @@ class Grid extends React.Component {
       page: 0,
       filter
     }), () => {
-      this.load()
+      this.loadData()
     })
   }
 
@@ -201,7 +201,7 @@ class Grid extends React.Component {
         sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
       }), () => {
         this.saveSettings()
-        this.load()
+        this.loadData()
       })
     }
   }
@@ -210,7 +210,7 @@ class Grid extends React.Component {
     this.setState(() => ({
       page
     }), () => {
-      this.load()
+      this.loadData()
     })
   }
 
@@ -220,7 +220,7 @@ class Grid extends React.Component {
       pageSize
     }), () => {
       this.saveSettings()
-      this.load()
+      this.loadData()
     })
   }
 
@@ -273,7 +273,7 @@ class Grid extends React.Component {
     }
 
     const { classes } = this.props
-    const { page, pageSize, filter, visibleColumns, sort, sortDirection } = this.state
+    const { page, pageSize, filter, visibleColumns } = this.state
 
     let pagedObjects = null
     let totalCount = null
@@ -300,40 +300,18 @@ class Grid extends React.Component {
           <Table classes={{ root: classes.table }}>
             <TableHead classes={{ root: classes.tableHeader }}>
               <TableRow>
-                {this.columnsArray.map(column => {
-                  if(visibleColumns.includes(column.field)){
-                    return (
-                      <TableCell key={column.field}>
-                        <TableSortLabel
-                          active={column.sort && sort === column.field}
-                          direction={sortDirection}
-                          onClick={this.handleSortChange(column)}
-                        >
-                          {column.label}
-                        </TableSortLabel>
-                      </TableCell>
-                    )
-                  }else{
-                    return null
-                  }
-                })}
+                {this.columnsArray.map(column =>
+                  this.renderHeaderCell(column)
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
               {pagedObjects.map(row => {
                 return (
                   <TableRow key={row.id} hover>
-                    {this.columnsArray.map(column => {
-                      if(visibleColumns.includes(column.field)){
-                        return (
-                          <TableCell key={column.field}>
-                            {column.render(row)}
-                          </TableCell>
-                        )
-                      }else{
-                        return null
-                      }
-                    })}
+                    {this.columnsArray.map(column =>
+                      this.renderRowCell(column, row)
+                    )}
                   </TableRow>
                 )
               })}
@@ -359,6 +337,49 @@ class Grid extends React.Component {
         </div>
       </div>
     )
+  }
+
+  renderHeaderCell(column){
+    const { visibleColumns, sort, sortDirection } = this.state
+
+    if(visibleColumns.includes(column.field)){
+      if(column.sort){
+        return (
+          <TableCell key={column.field}>
+            <TableSortLabel
+              active={sort === column.field}
+              direction={sortDirection}
+              onClick={this.handleSortChange(column)}
+            >
+              {column.label}
+            </TableSortLabel>
+          </TableCell>
+        )
+      }else{
+        return (
+          <TableCell key={column.field}>
+            {column.label}
+          </TableCell>
+        )
+      }
+    }else{
+      return null
+    }
+  }
+
+  renderRowCell(column, row){
+    const { visibleColumns } = this.state
+
+    if(visibleColumns.includes(column.field)){
+      let rendered = column.render(row)
+      return (
+        <TableCell key={column.field}>
+          {rendered ? rendered : <span>&nbsp;</span> }
+        </TableCell>
+      )
+    }else{
+      return null
+    }
   }
 
 }
