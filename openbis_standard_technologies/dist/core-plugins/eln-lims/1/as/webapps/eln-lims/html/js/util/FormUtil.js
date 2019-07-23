@@ -1509,7 +1509,29 @@ var FormUtil = new function() {
 		
 		return $freezeButton;
 	}
-	
+
+	this.createNewSample = function(experimentIdentifier) {
+    		var _this = this;
+    		var $dropdown = FormUtil.getSampleTypeDropdown("sampleTypeDropdown", true);
+    		Util.showDropdownAndBlockUI("sampleTypeDropdown", $dropdown);
+
+    		$("#sampleTypeDropdown").on("change", function(event) {
+    			var sampleTypeCode = $("#sampleTypeDropdown")[0].value;
+    			var argsMap = {
+    					"sampleTypeCode" : sampleTypeCode,
+    					"experimentIdentifier" : experimentIdentifier
+    			}
+
+    			var argsMapStr = JSON.stringify(argsMap);
+    			Util.unblockUI();
+    			mainController.changeView("showCreateSubExperimentPage", argsMapStr);
+    		});
+
+    		$("#sampleTypeDropdownCancel").on("click", function(event) {
+    			Util.unblockUI();
+    		});
+    }
+
 	this.showFreezeForm = function(entityType, permId) {
 		var _this = this;
 		
