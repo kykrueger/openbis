@@ -373,7 +373,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                             if(_this._sampleFormModel.views.auxContent) {
                                  _this._sampleFormModel.views.auxContent.empty();
                             }
-                            _this._sampleFormController.init(_this._sampleFormModel.views);
+                            _this._sampleFormController.init(_this._sampleFormModel.views, true);
                             Util.unblockUI();
                         });
 
