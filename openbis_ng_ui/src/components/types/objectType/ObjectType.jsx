@@ -4,8 +4,8 @@ import {connect} from 'react-redux'
 import {withStyles} from '@material-ui/core/styles'
 import ObjectTypeForm from './ObjectTypeForm.jsx'
 import ObjectTypeFooter from './ObjectTypeFooter.jsx'
-import * as pages from '../../../store/consts/pages.js'
-import * as objectTypes from '../../../store/consts/objectType.js'
+import * as pages from '../../../common/consts/pages.js'
+import * as objectTypes from '../../../common/consts/objectType.js'
 import * as actions from '../../../store/actions/actions.js'
 import logger from '../../../common/logger.js'
 import {facade, dto} from '../../../services/openbis.js'
@@ -19,11 +19,11 @@ const styles = (theme) => ({
   form: {
     flex: '1 1 0',
     overflow: 'auto',
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing(2)
   },
   footer: {
     flex: '0 0',
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing(2)
   }
 })
 

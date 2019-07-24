@@ -24,11 +24,19 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 	this.init = function(views) {
 		// Loading datasets
 		var _this = this;
+		_this._sampleFormModel.views = views;
+
 		if(mode !== FormMode.CREATE) {
 			require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
 					function(SamplePermId, SampleFetchOptions) {
 					var id = new SamplePermId(sample.permId);
-					mainController.openbisV3.getSamples([ id ], new SampleFetchOptions()).done(function(map) {
+					var fetchOptions = new SampleFetchOptions();
+					fetchOptions.withSpace();
+					fetchOptions.withProject();
+					fetchOptions.withExperiment();
+					fetchOptions.withParents();
+					fetchOptions.withChildren();
+					mainController.openbisV3.getSamples([ id ], fetchOptions).done(function(map) {
 		                _this._sampleFormModel.v3_sample = map[id];
 		                //
 		                mainController.serverFacade.listDataSetsForSample(_this._sampleFormModel.sample, true, function(datasets) {
@@ -43,22 +51,23 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		            });		
 			});
 		} else {
-			if(sample.sampleTypeCode === "ORDER") {
-				mainController.serverFacade.searchWithIdentifiers(["/ELN_SETTINGS/ORDER_TEMPLATE"], function(data) {
-					if(data[0]) { //Template found
-						sample.properties = data[0].properties;
-						sample.parents = data[0].parents;
-					}
-					//Load view
-					_this._sampleFormView.repaint(views, true);
-					Util.unblockUI();
-				});
-			} else {
-				//Load view
-				_this._sampleFormView.repaint(views);
-				Util.unblockUI();
-			}
-			
+//			if(sample.sampleTypeCode === "ORDER") {
+//				mainController.serverFacade.searchWithIdentifiers(["/ELN_SETTINGS/ORDER_TEMPLATE"], function(data) {
+//					if(data[0]) { //Template found
+//						sample.properties = data[0].properties;
+//					}
+//					//Load view
+//					_this._sampleFormView.repaint(views, true);
+//					Util.unblockUI();
+//				});
+//			} else {
+//				//Load view
+//				_this._sampleFormView.repaint(views);
+//				Util.unblockUI();
+//			}
+			//Load view
+            _this._sampleFormView.repaint(views);
+            Util.unblockUI();
 		}
 		
 	}

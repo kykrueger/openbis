@@ -12,10 +12,8 @@ import logger from '../../../common/logger.js'
 
 const styles = {
   icon: {
-    margin: '0px 8px'
-  },
-  text: {
-    marginLeft: '-16px'
+    margin: '0px 8px',
+    minWidth: '24px'
   }
 }
 
@@ -31,7 +29,7 @@ class BrowserNode extends React.Component {
         button
         selected={node.selected}
         onClick={() => this.props.nodeSelect(node.id)}
-        style={{paddingLeft: level * 20 + 'px'}}>
+        style={{paddingLeft: level * 24 + 'px'}}>
         {this.renderIcon(node)}
         {this.renderText(node)}
       </ListItem>
@@ -69,21 +67,17 @@ class BrowserNode extends React.Component {
         root: classes.icon
       }}>{icon}</ListItemIcon>
     }else{
-      return null
+      return <ListItemIcon classes={{
+        root: classes.icon
+      }}><span></span></ListItemIcon>
     }
   }
 
   renderText(node){
     logger.log(logger.DEBUG, 'BrowserNode.renderText "' + node.text + '"')
 
-    const classes = this.props.classes
-
     return <ListItemText
       primary={node.text}
-      inset={true}
-      classes={{
-        primary: classes.text
-      }}
     />
   }
 

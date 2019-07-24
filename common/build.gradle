@@ -40,10 +40,22 @@ dependencies {
 }
  
 test {
-    systemProperty "openbis.proxyHost", System.getProperty("openbis.proxyHost")
-    systemProperty "openbis.proxyPort", System.getProperty("openbis.proxyPort")
+    if (System.getProperty("openbis.proxyHost") != null) {
+        systemProperty "openbis.proxyHost", System.getProperty("openbis.proxyHost")
+    }
+    if (System.getProperty("openbis.proxyPort") != null) {
+        systemProperty "openbis.proxyPort", System.getProperty("openbis.proxyPort")
+    }
 }
 
 testJar {
 	from "source/java/genericCommonContext.xml"
+}
+
+sourceSets {
+	main {
+		resources {
+			srcDirs = ['source/java']
+		}
+	}
 }

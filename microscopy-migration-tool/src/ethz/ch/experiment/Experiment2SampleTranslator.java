@@ -140,7 +140,7 @@ public class Experiment2SampleTranslator
                 Map<String, String> properties = new HashMap<>();
                 properties.put("$NAME", attachment.getFileName());
                 if(attachment.getDescription() != null) {
-                    properties.put("$DESCRIPTION", attachment.getDescription());
+                    properties.put("DESCRIPTION", attachment.getDescription());
                 }
                 DatasetCreationHelper.createOneFileDataset(v3dss, sessionToken, EntityKind.SAMPLE, sampleIdentifier.getIdentifier(), "ATTACHMENT", attachment.getFileName(), attachment.getContent(), properties);
             }

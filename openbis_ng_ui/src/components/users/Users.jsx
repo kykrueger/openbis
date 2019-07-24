@@ -1,14 +1,15 @@
 import React from 'react'
 import {withStyles} from '@material-ui/core/styles'
 import logger from '../../common/logger.js'
-import * as pages from '../../store/consts/pages.js'
-import * as objectType from '../../store/consts/objectType.js'
+import * as pages from '../../common/consts/pages.js'
+import * as objectType from '../../common/consts/objectType.js'
 
 import Browser from '../common/browser/Browser.jsx'
 import Content from '../common/content/Content.jsx'
 
 import User from './user/User.jsx'
 import Group from './group/Group.jsx'
+import Search from './search/Search.jsx'
 
 const styles = () => ({
   container: {
@@ -19,7 +20,8 @@ const styles = () => ({
 
 const objectTypeToComponent = {
   [objectType.USER]: User,
-  [objectType.GROUP]: Group
+  [objectType.GROUP]: Group,
+  [objectType.SEARCH]: Search
 }
 
 class Users extends React.Component {

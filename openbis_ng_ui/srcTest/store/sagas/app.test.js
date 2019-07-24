@@ -1,7 +1,7 @@
 import { facade } from '../../../src/services/openbis.js'
 import * as actions from '../../../src/store/actions/actions.js'
 import * as selectors from '../../../src/store/selectors/selectors.js'
-import * as pages from '../../../src/store/consts/pages.js'
+import * as pages from '../../../src/common/consts/pages.js'
 import { createStore } from '../../../src/store/store.js'
 import * as fixture from '../../common/fixture.js'
 
@@ -21,7 +21,10 @@ describe('app', () => {
     store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
 
     const state = store.getState()
-    expect(selectors.getSession(state)).toEqual(fixture.TEST_SESSION_TOKEN)
+    expect(selectors.getSession(state)).toEqual({
+      sessionToken: fixture.TEST_SESSION_TOKEN,
+      userName: fixture.TEST_USER
+    })
     expect(selectors.getCurrentPage(state)).toEqual(pages.TYPES)
   })
 

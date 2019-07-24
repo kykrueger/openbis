@@ -37,6 +37,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.CreationId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -45,8 +47,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
@@ -1642,6 +1648,31 @@ public class UpdateSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testFreezingForComponentDeletions()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setCode("SAMPLE");
+        sampleCreation.setContainerId(sampleId);
+        SamplePermId compId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freezeForComponents();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteSamples(sessionToken, Arrays.asList(compId), deletionOptions),
+                // Then
+                "ERROR: Operation DELETE SAMPLE COMPONENT is not allowed because sample C1 is frozen.");
+    }
+
+    @Test
     public void testFreezingForChildren()
     {
         // Given
@@ -1662,6 +1693,31 @@ public class UpdateSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testFreezingForChildrenDeletions()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setCode("SAMPLE");
+        sampleCreation.setParentIds(Arrays.asList(sampleId));
+        SamplePermId childId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freezeForChildren();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteSamples(sessionToken, Arrays.asList(childId), deletionOptions),
+                // Then
+                "ERROR: Operation DELETE SAMPLE CHILD is not allowed because sample C1 is frozen.");
+    }
+
+    @Test
     public void testFreezingForParents()
     {
         // Given
@@ -1679,6 +1735,31 @@ public class UpdateSampleTest extends AbstractSampleTest
         assertUserFailureException(Void -> v3api.updateSamples(sessionToken, Arrays.asList(update2)),
                 // Then
                 "ERROR: Operation INSERT is not allowed because sample C2 or C1 is frozen.");
+    }
+
+    @Test
+    public void testFreezingForParentsDeletions()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        sampleCreation.setCode("SAMPLE");
+        sampleCreation.setChildIds(Arrays.asList(sampleId));
+        SamplePermId parentId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freezeForParents();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteSamples(sessionToken, Arrays.asList(parentId), deletionOptions),
+                // Then
+                "ERROR: Operation DELETE SAMPLE PARENT is not allowed because sample C1 is frozen.");
     }
 
     @Test
@@ -1704,10 +1785,41 @@ public class UpdateSampleTest extends AbstractSampleTest
                 "ERROR: Operation SET SAMPLE is not allowed because sample C1 is frozen for data set UST-D1.");
     }
 
+    @Test
+    public void testFreezingForDataSetDeletions()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
+        DataSetCreation dataSetCreation = new DataSetCreation();
+        dataSetCreation.setCode(PREFIX + "D1");
+        dataSetCreation.setTypeId(new EntityTypePermId("DELETION_TEST_CONTAINER", EntityKind.DATA_SET));
+        dataSetCreation.setDataStoreId(new DataStorePermId("STANDARD"));
+        dataSetCreation.setDataSetKind(DataSetKind.CONTAINER);
+        dataSetCreation.setSampleId(sampleId);
+        DataSetPermId dataSetId = v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation)).get(0);
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.freezeForDataSets();
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+        DataSetDeletionOptions deletionOptions = new DataSetDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteDataSets(sessionToken, Arrays.asList(dataSetId), deletionOptions),
+                // Then
+                "ERROR: Operation DELETE DATA SET is not allowed because sample C1 is frozen.");
+    }
+
     @Test(dataProvider = "freezeMethods")
     public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
     {
         // Given
+        RoleAssignmentCreation roleAssignmentCreation = new RoleAssignmentCreation();
+        roleAssignmentCreation.setRole(Role.ADMIN);
+        roleAssignmentCreation.setSpaceId(new SpacePermId("TEST-SPACE"));
+        roleAssignmentCreation.setUserId(new PersonPermId(TEST_POWER_USER_CISD));
+        v3api.createRoleAssignments(systemSessionToken, Arrays.asList(roleAssignmentCreation));
         final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
         SampleIdentifier sampleId = new SampleIdentifier("/CISD/C1");
         SampleUpdate update = new SampleUpdate();

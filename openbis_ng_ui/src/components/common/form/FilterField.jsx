@@ -19,10 +19,11 @@ const styles = () => ({
   }
 })
 
-class BrowserFilter extends React.Component {
+class FilterField extends React.Component {
 
   constructor(props){
     super(props)
+    this.filterRef = React.createRef()
     this.handleFilterChange = this.handleFilterChange.bind(this)
     this.handleFilterClear = this.handleFilterClear.bind(this)
   }
@@ -31,8 +32,10 @@ class BrowserFilter extends React.Component {
     this.props.filterChange(event.target.value)
   }
 
-  handleFilterClear(){
+  handleFilterClear(event){
+    event.preventDefault()
     this.props.filterChange('')
+    this.filterRef.current.focus()
   }
 
   render() {
@@ -47,6 +50,7 @@ class BrowserFilter extends React.Component {
         value={this.props.filter}
         onChange={this.handleFilterChange}
         InputProps={{
+          inputRef: this.filterRef,
           startAdornment: this.renderFilterIcon(),
           endAdornment: this.renderFilterClearIcon(),
           classes: {
@@ -75,7 +79,7 @@ class BrowserFilter extends React.Component {
         <InputAdornment position="end" classes={{
           root: classes.adornment
         }}>
-          <IconButton onClick={this.handleFilterClear}>
+          <IconButton onMouseDown={this.handleFilterClear}>
             <CloseIcon />
           </IconButton>
         </InputAdornment>
@@ -87,4 +91,4 @@ class BrowserFilter extends React.Component {
 
 }
 
-export default withStyles(styles)(BrowserFilter)
+export default withStyles(styles)(FilterField)

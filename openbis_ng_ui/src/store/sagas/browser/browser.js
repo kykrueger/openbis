@@ -3,7 +3,7 @@ import {put, takeEvery, select} from './../effects.js'
 
 import * as selectors from '../../selectors/selectors.js'
 import * as actions from '../../actions/actions.js'
-import * as pages from '../../consts/pages.js'
+import * as pages from '../../../common/consts/pages.js'
 import * as common from '../../common/browser.js'
 
 import * as typesBrowser from './types.js'

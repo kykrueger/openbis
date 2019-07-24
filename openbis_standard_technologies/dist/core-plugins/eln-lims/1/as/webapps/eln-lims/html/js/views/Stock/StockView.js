@@ -35,17 +35,16 @@ function StockView(stockController, stockView) {
 		var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
 			Util.blockUI();
 			var facade = mainController.serverFacade;
-			facade.listSpacesWithProjectsAndRoleAssignments(null, function(dataWithSpacesAndProjects) {
-				var spaces = dataWithSpacesAndProjects.result;
+			facade.listSpaces(function(spaces) {
 	            var stockSpaces = [];
 				for (var i = 0; i < spaces.length; i++) {
 	                var space = spaces[i];
-	                if(space.code === "STOCK_CATALOG" || space.code === "STOCK_ORDERS") {
-	                	stockSpaces.push({ type: "SPACE", permId : space.code, expand : true });
+	                if(space === "STOCK_CATALOG" || space === "STOCK_ORDERS") {
+	                	stockSpaces.push({ type: "SPACE", permId : space, expand : true });
 	                }
 	            }
 	            
-				facade.exportAll(stockSpaces, true, function(error, result) {
+				facade.exportAll(stockSpaces, true, false, function(error, result) {
 					if(error) {
 						Util.showError(error);
 					} else {

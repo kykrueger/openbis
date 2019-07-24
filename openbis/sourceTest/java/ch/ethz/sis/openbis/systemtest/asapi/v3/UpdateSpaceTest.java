@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.DataProvider;
@@ -26,8 +27,15 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.delete.ProjectDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
@@ -246,7 +254,7 @@ public class UpdateSpaceTest extends AbstractTest
     }
 
     @Test
-    public void testFreezingForProjects()
+    public void testFreezingForProjectCreations()
     {
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -266,7 +274,31 @@ public class UpdateSpaceTest extends AbstractTest
     }
 
     @Test
-    public void testFreezingForSamples()
+    public void testFreezingForProjectDeletions()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SpacePermId spaceId = new SpacePermId("CISD");
+        ProjectCreation projectCreation = new ProjectCreation();
+        projectCreation.setCode(PREFIX + "P1");
+        projectCreation.setSpaceId(spaceId);
+        v3api.createProjects(sessionToken, Arrays.asList(projectCreation));
+        SpaceUpdate spaceUpdate = new SpaceUpdate();
+        spaceUpdate.setSpaceId(spaceId);
+        spaceUpdate.freezeForProjects();
+        v3api.updateSpaces(sessionToken, Arrays.asList(spaceUpdate));
+        List<ProjectIdentifier> projects = Arrays.asList(new ProjectIdentifier("/CISD/" + projectCreation.getCode()));
+        ProjectDeletionOptions deletionOptions = new ProjectDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteProjects(sessionToken, projects, deletionOptions),
+                // Then
+                "ERROR: Operation DELETE PROJECT is not allowed because space CISD is frozen.");
+    }
+
+    @Test
+    public void testFreezingForSampleCreations()
     {
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -286,10 +318,39 @@ public class UpdateSpaceTest extends AbstractTest
                 "ERROR: Operation SET SPACE is not allowed because space CISD is frozen for sample UST-S1.");
     }
 
+    @Test
+    public void testFreezingForSampleDeletions()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        SpacePermId spaceId = new SpacePermId("CISD");
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setSpaceId(spaceId);
+        sampleCreation.setTypeId(new EntityTypePermId("NORMAL", EntityKind.SAMPLE));
+        sampleCreation.setCode(PREFIX + "S1");
+        SamplePermId samplePermId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
+        SpaceUpdate spaceUpdate = new SpaceUpdate();
+        spaceUpdate.setSpaceId(spaceId);
+        spaceUpdate.freezeForSamples();
+        v3api.updateSpaces(sessionToken, Arrays.asList(spaceUpdate));
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteSamples(sessionToken, Arrays.asList(samplePermId), deletionOptions),
+                // Then
+                "ERROR: Operation DELETE SAMPLE is not allowed because space CISD is frozen.");
+    }
+
     @Test(dataProvider = "freezeMethods")
     public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
     {
         // Given
+        RoleAssignmentCreation roleAssignmentCreation = new RoleAssignmentCreation();
+        roleAssignmentCreation.setRole(Role.ADMIN);
+        roleAssignmentCreation.setSpaceId(new SpacePermId("CISD"));
+        roleAssignmentCreation.setUserId(new PersonPermId(TEST_SPACE_ETLSERVER_TESTSPACE));
+        v3api.createRoleAssignments(systemSessionToken, Arrays.asList(roleAssignmentCreation));
         final String sessionToken = v3api.login(TEST_SPACE_ETLSERVER_TESTSPACE, PASSWORD);
         SpacePermId spaceId = new SpacePermId("TEST-SPACE");
         SpaceUpdate spaceUpdate = new SpaceUpdate();

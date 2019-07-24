@@ -17,7 +17,8 @@ const styles = {
     width: '100px'
   },
   component: {
-    flex: '1 1 100%'
+    flex: '1 1 100%',
+    overflow: 'auto'
   },
   visible: {
     display: 'block'
@@ -60,13 +61,15 @@ class Content extends React.Component {
         {
           this.props.openObjects.map(object => {
             let ObjectComponent = this.props.objectTypeToComponent[object.type]
-            let key = object.type + '/' + object.id
-            let visible = _.isEqual(object, this.props.selectedObject)
-            return (
-              <div key={key} className={util.classNames(classes.component, visible ? classes.visible : classes.hidden)}>
-                <ObjectComponent objectId={object.id} />
-              </div>
-            )
+            if(ObjectComponent){
+              let key = object.type + '/' + object.id
+              let visible = _.isEqual(object, this.props.selectedObject)
+              return (
+                <div key={key} className={util.classNames(classes.component, visible ? classes.visible : classes.hidden)}>
+                  <ObjectComponent objectId={object.id} />
+                </div>
+              )
+            }
           })
         }
       </div>

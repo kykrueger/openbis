@@ -21,7 +21,7 @@ function ExportTreeController(parentController) {
 	
 	this.init = function(views) {
 		exportTreeView.repaint(views);
-	}
+	};
 	
 	this.exportSelected = function() {
 		var selectedNodes = $(exportTreeModel.tree).fancytree('getTree').getSelectedNodes();
@@ -37,7 +37,7 @@ function ExportTreeController(parentController) {
 		}
 		
 		Util.blockUI();
-		mainController.serverFacade.exportAll(toExport, true, function(error, result) {
+		mainController.serverFacade.exportAll(toExport, true, false, function(error, result) {
 			if(error) {
 				Util.showError(error);
 			} else {
@@ -45,6 +45,5 @@ function ExportTreeController(parentController) {
 				mainController.refreshView();
 			}
 		});
-		
 	}
 }

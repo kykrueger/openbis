@@ -80,7 +80,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 
 			this._paintMainMenuSection($formColumn, texts.mainMenu);
 			this._paintStoragesSection($formColumn, texts.storages);
-			this._paintOrdersSection($formColumn, texts.orders);
+			this._paintTemplateSection($formColumn, texts.templates);
 			this._paintForcedDisableRtfSection($formColumn, texts.forcedDisableRTF);
 			this._paintForcedMonospaceSection($formColumn, texts.forceMonospaceFont);
 			this._paintInventorySpacesSection($formColumn, texts.inventorySpaces);
@@ -166,17 +166,36 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		dataGrid.init($gridContainer, extraOptions);
 	}
 	
-	this._paintOrdersSection = function($container, text) {
-		var $fieldset = this._getFieldset($container, text.title, "settings-section-orders");
+	this._paintTemplateSection = function($container, text) {
+		var $fieldset = this._getFieldset($container, text.title, "settings-section-templates");
 		$fieldset.append(FormUtil.getInfoText(text.info));
 
 		var $gridContainer = $("<div>");
+	    var $dropDownMenu = $("<span>", { class : 'dropdown' });
+        var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("Operations ").append($("<b>", { class : 'caret' }));
+        var $list = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'aria-labelledby' :'sampleTableDropdown' });
+        $dropDownMenu.append($caret);
+        $dropDownMenu.append($list);
+
+        var $createSampleOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Create ' + ELNDictionary.Sample + ''}).append('Create ' + ELNDictionary.Sample + ''));
+
+        var _this = this;
+        $createSampleOption.click(function() {
+            FormUtil.createNewSample("/" + _this._settingsFormModel.settingsSample.spaceCode + "/TEMPLATES/TEMPLATES_COLLECTION");
+        });
+        $list.append($createSampleOption);
+
+        $fieldset.append($dropDownMenu);
 		$fieldset.append($gridContainer);
 
 		var advancedSampleSearchCriteria = {
 				entityKind : "SAMPLE",
 				logicalOperator : "AND",
-				rules : { "1" : { type : "Attribute", name : "CODE", value : "ORDER_TEMPLATE" } }
+				rules : {
+				          "1" : { type : "Experiment",  name : "ATTR.CODE", value : "TEMPLATES_COLLECTION" },
+				          "2" : { type : "Project",     name : "ATTR.CODE", value : "TEMPLATES" },
+				          "3" : { type : "Space",       name : "ATTR.CODE", value : this._settingsFormModel.settingsSample.spaceCode }
+			    }
 		}
 		var dataGrid = SampleDataGridUtil.getSampleDataGrid(null, advancedSampleSearchCriteria, null, null, null, null, true, null, false);
 		var extraOptions = [];

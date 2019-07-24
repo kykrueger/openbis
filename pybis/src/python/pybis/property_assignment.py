@@ -28,7 +28,7 @@ class PropertyAssignments():
             'showParentMetadata', 'validationPlugin']
 
     def __dir__(self):
-        return self._attrs()
+        return self._attrs() + ['get_propertyAssignments()']
 
     def __getattr__(self, name):
         if name in self._attrs():

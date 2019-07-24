@@ -3,7 +3,7 @@ import { mount } from 'enzyme'
 import Browser from '../../../../src/components/common/browser/Browser.jsx'
 import { facade, dto } from '../../../../src/services/openbis.js'
 import * as actions from '../../../../src/store/actions/actions.js'
-import * as pages from '../../../../src/store/consts/pages.js'
+import * as pages from '../../../../src/common/consts/pages.js'
 import { createStore } from '../../../../src/store/store.js'
 import * as fixture from '../../../common/fixture.js'
 
@@ -72,17 +72,17 @@ describe('browser', () => {
 function simulateNodeIconClick(wrapper, id){
   wrapper.findWhere(node => {
     return node.name() === 'BrowserNode' && node.prop('node').id === id
-  }).find('ListItemIcon').find('SvgIcon').first().simulate('click')
+  }).find('svg').first().simulate('click')
 }
 
 function simulateFilterChange(wrapper, filter){
-  let input = wrapper.find('BrowserFilter').find('input')
+  let input = wrapper.find('FilterField').find('input')
   input.instance().value = filter
   input.simulate('change')
 }
 
 function expectFilter(wrapper, expectedFilter){
-  const actualFilter = wrapper.find('BrowserFilter').map(node => {
+  const actualFilter = wrapper.find('FilterField').map(node => {
     return node.prop('filter')
   })[0]
   expect(actualFilter).toEqual(expectedFilter)
