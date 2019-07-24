@@ -321,6 +321,75 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
+
+            // Templates
+            if(toolbarConfig.TEMPLATES) {
+                var $templateBtn = FormUtil.getButtonWithIcon("glyphicon-list-alt", function() {
+                    var criteria = {
+                        entityKind : "SAMPLE",
+                    	logicalOperator : "AND",
+                        rules : {
+                            "1" : { type : "Experiment",  name : "ATTR.CODE", value : "TEMPLATES_COLLECTION" },
+                    	    "2" : { type : "Project",     name : "ATTR.CODE", value : "TEMPLATES" },
+                    	    "2" : { type : "Attribute",   name : "SAMPLE_TYPE", value : _this._sampleFormModel.sample.sampleTypeCode },
+                        }
+                    }
+
+                    mainController.serverFacade.searchForSamplesAdvanced(criteria, {
+                    			only : true,
+                    			withProperties : true
+                    }, function(results) {
+                        var settingsForDropdown = [];
+                        for(var rIdx = 0; rIdx < results.totalCount; rIdx++) {
+                            var name = results.objects[rIdx].properties[profile.propertyReplacingCode];
+                            if(!name) {
+                                name = results.objects[rIdx].code;
+                            }
+                            settingsForDropdown.push({  label: name,
+                                                    value: results.objects[rIdx].identifier.identifier});
+                        }
+
+                        var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Select template");
+                        $dropdown.attr("id", "templatesDropdown");
+                        Util.showDropdownAndBlockUI("templatesDropdown", $dropdown);
+
+                        $("#templatesDropdown").on("change", function(event) {
+                            var sampleIdentifier = $("#templatesDropdown")[0].value;
+                            var sample = null;
+                            for(var rIdx = 0; rIdx < results.totalCount; rIdx++) {
+                                if(results.objects[rIdx].identifier.identifier === sampleIdentifier) {
+                                    sample = results.objects[rIdx];
+                                }
+                            }
+                            _this._sampleFormModel.sample.properties = sample.properties;
+                            delete _this._sampleFormModel.sample.properties[profile.propertyReplacingCode];
+
+                            if(_this._sampleFormModel.views.header) {
+                                _this._sampleFormModel.views.header.empty();
+                            }
+                            if(_this._sampleFormModel.views.content) {
+                                 _this._sampleFormModel.views.content.empty();
+                            }
+                            if(_this._sampleFormModel.views.auxContent) {
+                                 _this._sampleFormModel.views.auxContent.empty();
+                            }
+                            _this._sampleFormController.init(_this._sampleFormModel.views);
+                            Util.unblockUI();
+                        });
+
+                        $("#templatesDropdownCancel").on("click", function(event) {
+                            Util.unblockUI();
+                        });
+                    });
+                }, "Templates");
+                toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
+
+                // Show dropdown with all templates for the type
+                // Load the sample
+                // Set is as shown on the SampleFormController lines 53-66
+                // Repaint the view
+                // Do it works?
+            }
 		}
 		
 		if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo) {
