@@ -21,7 +21,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 //	this._storageControllers = [];
 	this._plateController = null;
 	
-	this.init = function(views) {
+	this.init = function(views, loadFromTemplate) {
 		// Loading datasets
 		var _this = this;
 		_this._sampleFormModel.views = views;
@@ -66,7 +66,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 //				Util.unblockUI();
 //			}
 			//Load view
-            _this._sampleFormView.repaint(views);
+            _this._sampleFormView.repaint(views, loadFromTemplate);
             Util.unblockUI();
 		}
 		
