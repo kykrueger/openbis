@@ -83,7 +83,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
                                 // Return the series name
                                 for (var i = 0; i < model.datasets.length; i++) {
                                     if (model.datasets[i].code === dataSetCode) {
-                                        return model.datasets[i].properties.MICROSCOPY_IMG_CONTAINER_NAME;
+                                        return model.datasets[0].properties["$NAME"];
                                     }
                                 }
 
@@ -127,7 +127,7 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
                             view.getDataSetText = function (dataSetCode) {
                                 // Return the series name
                                 if (model.dataSet.code === dataSetCode) {
-                                    return model.dataSet.properties.MICROSCOPY_IMG_CONTAINER_NAME;
+                                    return model.dataSet.properties["$NAME"];
                                 } else {
                                     // Fall-back (that should not happen)
                                     return dataSetCode;
@@ -190,8 +190,8 @@ $.extend(MicroscopyTechnology.prototype, ELNLIMSPlugin.prototype, {
 
             // Prepare the name to be shown
             var name;
-            if (sample.properties.MICROSCOPY_SAMPLE_NAME) {
-                name = sample.properties.MICROSCOPY_SAMPLE_NAME;
+            if (sample.properties["$NAME"]) {
+                name = sample.properties["$NAME"];
             } else {
                 name = sample.code;
             }
