@@ -23,7 +23,9 @@ function ResearchCollectionExportController(parentController) {
     };
 
     this.initialiseSubmissionTypesDropdown = function(callback) {
+        Util.blockUI();
         mainController.serverFacade.listSubmissionTypes(function(error, result) {
+            Util.unblockUI();
             if (error) {
                 Util.showError(error);
             } else {
