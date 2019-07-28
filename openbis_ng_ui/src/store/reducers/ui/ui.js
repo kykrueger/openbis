@@ -5,7 +5,6 @@ import pages from './pages/pages.js'
 export default combineReducers({
   loading,
   search,
-  currentPage,
   pages,
   error
 })
@@ -29,15 +28,6 @@ function search(state = '', action){
     default: {
       return state
     }
-  }
-}
-
-function currentPage(state = null, action){
-  switch(action.type){
-    case actions.SET_CURRENT_PAGE:
-      return action.payload.currentPage
-    default:
-      return state
   }
 }
 

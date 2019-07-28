@@ -15,7 +15,7 @@ export default function* browserSaga() {
   yield takeEvery(actions.BROWSER_NODE_SELECT, browserNodeSelect)
   yield takeEvery(actions.BROWSER_NODE_EXPAND, browserNodeExpand)
   yield takeEvery(actions.BROWSER_NODE_COLLAPSE, browserNodeCollapse)
-  yield takeEvery(actions.SET_SELECTED_OBJECT, setSelectedObject)
+  yield takeEvery(actions.ROUTE_CHANGE, routeChange)
 }
 
 function* browserInit(action) {
@@ -88,27 +88,31 @@ function* browserNodeCollapse(action){
   yield put(actions.browserRemoveExpandedNodes(action.payload.page, [action.payload.id]))
 }
 
-function* setSelectedObject(action){
-  let {page, type, id} = action.payload
-  let selectedObject = { type, id }
-  let allNodes = yield select(selectors.getAllBrowserNodes, page)
-  let allNodesAllLevels = common.getAllNodes(allNodes)
-
-  let idsToSelect = _.reduce(allNodesAllLevels, (array, node) => {
-    if(_.isEqual(selectedObject, node.object)){
-      array.push(node.id)
-    }
-    return array
-  }, [])
-
-  yield put(actions.browserSetSelectedNodes(page, idsToSelect))
-}
-
 function browserFilter(nodes, filter){
   filter = filter && filter.trim().toLowerCase() || ''
   return common.getMatchingNodes(nodes, node => {
     return node.text && node.text.toLowerCase().indexOf(filter) !== -1
   })
+}
+
+function* routeChange(action){
+  let route = action.payload.route
+  let browser = yield select(selectors.getBrowser, route.page)
+
+  if(browser){
+    let selectedObject = { type: route.type, id: route.id }
+    let allNodes = yield select(selectors.getAllBrowserNodes, route.page)
+    let allNodesAllLevels = common.getAllNodes(allNodes)
+
+    let idsToSelect = _.reduce(allNodesAllLevels, (array, node) => {
+      if(_.isEqual(selectedObject, node.object)){
+        array.push(node.id)
+      }
+      return array
+    }, [])
+
+    yield put(actions.browserSetSelectedNodes(route.page, idsToSelect))
+  }
 }
 
 function getBrowserImpl(page){

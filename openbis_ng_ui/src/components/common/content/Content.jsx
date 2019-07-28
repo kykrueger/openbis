@@ -28,11 +28,14 @@ const styles = {
   }
 }
 
-function mapStateToProps(state, ownProps){
-  return {
-    openObjects: selectors.getOpenObjects(state, ownProps.page),
-    changedObjects: selectors.getChangedObjects(state, ownProps.page),
-    selectedObject: selectors.getSelectedObject(state, ownProps.page)
+function mapStateToProps(){
+  const getSelectedObject = selectors.createGetSelectedObject()
+  return (state, ownProps) => {
+    return {
+      openObjects: selectors.getOpenObjects(state, ownProps.page),
+      changedObjects: selectors.getChangedObjects(state, ownProps.page),
+      selectedObject: getSelectedObject(state, ownProps.page)
+    }
   }
 }
 

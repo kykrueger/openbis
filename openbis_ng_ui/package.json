@@ -11,6 +11,7 @@
     "history": "^4.9.0",
     "install": "^0.13.0",
     "npm": "^6.10.0",
+    "path-to-regexp": "^3.0.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.6",
     "react-dnd": "^7.4.5",
@@ -66,7 +67,7 @@
     "unit": "jest",
     "lint": "eslint --ext .js,.jsx src test",
     "lint:fix": "eslint --ext .js,.jsx src test --fix",
-    "test": "jest",
+    "test": "node --inspect-brk=9229 ./node_modules/.bin/jest --runInBand",
     "test:watch": "npm test -- --watch"
   }
 }

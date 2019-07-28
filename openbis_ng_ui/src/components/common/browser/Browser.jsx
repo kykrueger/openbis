@@ -17,10 +17,13 @@ const styles = {
   }
 }
 
-function mapStateToProps(state, ownProps){
-  return {
-    filter: selectors.getBrowserFilter(state, ownProps.page),
-    nodes: selectors.getBrowserNodes(state, ownProps.page)
+function mapStateToProps(){
+  const getBrowserNodes = selectors.createGetBrowserNodes()
+  return (state, ownProps) => {
+    return {
+      filter: selectors.getBrowserFilter(state, ownProps.page),
+      nodes: getBrowserNodes(state, ownProps.page)
+    }
   }
 }
 

@@ -7,6 +7,17 @@ export function isPageAction(page, action){
   return action.type === actions.INIT || page === (action.payload && action.payload.page)
 }
 
+export const currentRoute = (state = null, action) => {
+  switch(action.type){
+    case actions.SET_CURRENT_ROUTE:{
+      return action.payload.currentRoute
+    }
+    default:{
+      return state
+    }
+  }
+}
+
 export const openObjects = (state = [], action) => {
   let newState = null
 
@@ -52,24 +63,5 @@ export const changedObjects = (state = [], action) => {
     return state
   } else {
     return newState
-  }
-}
-
-export const selectedObject = (state = null, action) => {
-  switch(action.type){
-    case actions.SET_SELECTED_OBJECT: {
-      const { type, id } = action.payload
-
-      let newState = (type === null || type === undefined) && (id === null || id === undefined) ? null :  { type: action.payload.type, id: action.payload.id }
-
-      if(_.isEqual(state, newState)){
-        return state
-      }else{
-        return newState
-      }
-    }
-    default:{
-      return state
-    }
   }
 }
