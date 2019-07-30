@@ -1,5 +1,3 @@
-import history from '../history.js'
-import * as pages from '../../common/consts/pages.js'
 import routes from '../../common/consts/routes.js'
 
 export const getLoading = (state) => {
@@ -10,14 +8,13 @@ export const getSearch = (state) => {
   return state.ui.search
 }
 
-export const getCurrentPage = (state) => {
-  let route = routes.parse(history.location.pathname)
+export const getRoute = (state) => {
+  return state.route
+}
 
-  if(route){
-    return route.page
-  }else{
-    return pages.TYPES
-  }
+export const getCurrentPage = (state) => {
+  let route = routes.parse(state.route)
+  return route.page
 }
 
 export const getError = (state) => {

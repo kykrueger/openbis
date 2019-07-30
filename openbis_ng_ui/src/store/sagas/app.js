@@ -3,7 +3,6 @@ import {facade, dto} from '../../services/openbis.js'
 import * as selectors from '../selectors/selectors.js'
 import * as actions from '../actions/actions.js'
 import * as objectTypes from '../../common/consts/objectType.js'
-import history from '../history.js'
 import routes from '../../common/consts/routes.js'
 
 export default function* appSaga() {
@@ -42,7 +41,8 @@ function* login(action) {
         userName: username
       }))
 
-      let route = routes.parse(history.location.pathname)
+      let path = yield select(selectors.getRoute)
+      let route = routes.parse(path)
       yield put(actions.routeChange(route.path))
     }else{
       throw { message: 'Incorrect used or password' }
@@ -94,10 +94,5 @@ function* errorChange(action){
 
 function* routeChange(action){
   const route = action.payload.route
-
-  if(history.location.pathname !== route){
-    history.push(route)
-  }
-
   yield put(actions.setRoute(route))
 }

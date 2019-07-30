@@ -7,9 +7,23 @@ let history = createHashHistory({
 })  
 
 history.configure = (store) => {
+
     history.listen((location) => {
         let route = routes.parse(location.pathname)
         store.dispatch(actions.routeChange(route.path))
+    })
+
+    let currentRoute = store.getState().route
+
+    store.subscribe(() => {
+        let newRoute = store.getState().route
+
+        if(newRoute !== currentRoute){
+            currentRoute = newRoute
+            if(currentRoute !== history.location.pathname){
+                history.push(currentRoute)
+            }
+        }
     })
 }
 
