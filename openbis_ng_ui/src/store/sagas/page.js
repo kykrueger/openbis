@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import {push} from 'connected-react-router'
 import {put, takeEvery, select} from './effects.js'
 import * as selectors from '../selectors/selectors.js'
 import * as actions from '../actions/actions.js'
@@ -17,7 +16,7 @@ export default function* pageSaga() {
 function* objectOpen(action) {
   let { page, type, id } = action.payload
   let route = routes.format({ page, type, id })
-  yield put(push(route))
+  yield put(actions.routeChange(route))
 }
 
 function* objectChange(action) {
@@ -54,15 +53,15 @@ function* objectClose(action) {
 
   if(selectedObject){
     let route = routes.format({ page, type: selectedObject.type, id: selectedObject.id })
-    yield put(push(route))
+    yield put(actions.routeChange(route))
   }else{
     let route = routes.format({ page })
-    yield put(push(route))
+    yield put(actions.routeChange(route))
   }
 }
 
 function* routeChange(action){
-  let route = action.payload.route
+  let route = routes.parse(action.payload.route)
 
   if(route.type && route.id){
     let openObjects = yield select(selectors.getOpenObjects, route.page)

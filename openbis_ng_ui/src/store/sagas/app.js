@@ -1,14 +1,12 @@
-import { push, LOCATION_CHANGE } from 'connected-react-router'
 import {call, put, putAndWait, takeEvery, select} from './effects.js'
 import {facade, dto} from '../../services/openbis.js'
 import * as selectors from '../selectors/selectors.js'
 import * as actions from '../actions/actions.js'
-import * as pages from '../../common/consts/pages.js'
-import routes from '../../common/consts/routes.js'
 import * as objectTypes from '../../common/consts/objectType.js'
+import history from '../history.js'
+import routes from '../../common/consts/routes.js'
 
 export default function* appSaga() {
-  yield takeEvery(LOCATION_CHANGE, locationChange)
   yield takeEvery(actions.INIT, init)
   yield takeEvery(actions.LOGIN, login)
   yield takeEvery(actions.LOGOUT, logout)
@@ -16,6 +14,7 @@ export default function* appSaga() {
   yield takeEvery(actions.CURRENT_PAGE_CHANGE, currentPageChange)
   yield takeEvery(actions.SEARCH_CHANGE, searchChange)
   yield takeEvery(actions.ERROR_CHANGE, errorChange)
+  yield takeEvery(actions.ROUTE_CHANGE, routeChange)
 }
 
 function* init() {
@@ -38,11 +37,13 @@ function* login(action) {
     let loginResponse = yield putAndWait(actions.apiRequest({method: 'login', params: [ username, password ]}))
 
     if(loginResponse.payload.result){
-      yield put(actions.currentPageChange(pages.TYPES))
       yield put(actions.setSession({
         sessionToken: loginResponse.payload.result,
         userName: username
       }))
+
+      let route = routes.parse(history.location.pathname)
+      yield put(actions.routeChange(route.path))
     }else{
       throw { message: 'Incorrect used or password' }
     }
@@ -76,10 +77,10 @@ function* currentPageChange(action){
   let route = yield select(selectors.getCurrentRoute, page)
 
   if(route){
-    yield put(push(route))
+    yield put(actions.routeChange(route))
   }else{
     route = routes.format({ page })
-    yield put(push(route))
+    yield put(actions.routeChange(route))
   }
 }
 
@@ -91,10 +92,12 @@ function* errorChange(action){
   yield put(actions.setError(action.payload.error))
 }
 
-function* locationChange(action){
-  let route = routes.parse(action.payload.location.pathname)
+function* routeChange(action){
+  const route = action.payload.route
 
-  if(route){
-    yield put(actions.routeChange(route))
+  if(history.location.pathname !== route){
+    history.push(route)
   }
+
+  yield put(actions.setRoute(route))
 }

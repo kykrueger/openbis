@@ -5,6 +5,7 @@ import * as selectors from '../../selectors/selectors.js'
 import * as actions from '../../actions/actions.js'
 import * as pages from '../../../common/consts/pages.js'
 import * as common from '../../common/browser.js'
+import routes from '../../../common/consts/routes.js'
 
 import * as typesBrowser from './types.js'
 import * as usersBrowser from './users.js'
@@ -96,7 +97,7 @@ function browserFilter(nodes, filter){
 }
 
 function* routeChange(action){
-  let route = action.payload.route
+  let route = routes.parse(action.payload.route)
   let browser = yield select(selectors.getBrowser, route.page)
 
   if(browser){

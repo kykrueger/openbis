@@ -2,10 +2,8 @@ import 'regenerator-runtime/runtime'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import { ConnectedRouter } from 'connected-react-router'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import DragAndDropProvider from './components/common/dnd/DragAndDropProvider.jsx'
-import history from './store/history.js'
 import indigo from '@material-ui/core/colors/indigo'
 import lightBlue from '@material-ui/core/colors/lightBlue'
 
@@ -31,9 +29,7 @@ const render = () => {
     <Provider store = { store }>
       <MuiThemeProvider theme={ theme }>
         <DragAndDropProvider>
-          <ConnectedRouter history={ history }>
             <App />
-          </ConnectedRouter>
         </DragAndDropProvider>
       </MuiThemeProvider>
     </Provider>,

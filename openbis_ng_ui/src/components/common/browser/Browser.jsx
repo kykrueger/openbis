@@ -31,7 +31,7 @@ function mapDispatchToProps(dispatch, ownProps){
   return {
     init: () => { dispatch(actions.browserInit(ownProps.page)) },
     filterChange: (filter) => { dispatch(actions.browserFilterChange(ownProps.page, filter)) },
-    nodeSelect: (id) => { dispatch(actions.browserNodeSelect(ownProps.page, id)) },
+    nodeSelect: (id) => {   dispatch(actions.browserNodeSelect(ownProps.page, id)) },
     nodeExpand: (id) => { dispatch(actions.browserNodeExpand(ownProps.page, id)) },
     nodeCollapse: (id) => { dispatch(actions.browserNodeCollapse(ownProps.page, id)) }
   }

@@ -11,6 +11,7 @@ export const SET_LOADING = 'SET_LOADING'
 export const SET_SEARCH = 'SET_SEARCH'
 export const SET_SESSION = 'SET_SESSION'
 export const SET_ERROR = 'SET_ERROR'
+export const SET_ROUTE = 'SET_ROUTE'
 
 export const init = () => ({
   type: INIT
@@ -89,5 +90,12 @@ export const setError = (error) => ({
   type: SET_ERROR,
   payload: {
     error
+  }
+})
+
+export const setRoute = (route) => ({
+  type: SET_ROUTE,
+  payload: {
+    route
   }
 })

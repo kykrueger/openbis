@@ -181,6 +181,20 @@ const routes = {
         type: objectTypes.GROUP
       })
     }
+  },
+  DEFAULT: {
+    format: (params) => {
+      return {
+        path: '/',
+        match: 0
+      }
+    },
+    parse: (path) => {
+      return {
+        path: '/',
+        page: pages.TYPES
+      }
+    }
   }
 }
 

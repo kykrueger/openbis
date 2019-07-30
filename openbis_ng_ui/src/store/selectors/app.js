@@ -1,3 +1,4 @@
+import history from '../history.js'
 import * as pages from '../../common/consts/pages.js'
 import routes from '../../common/consts/routes.js'
 
@@ -10,8 +11,7 @@ export const getSearch = (state) => {
 }
 
 export const getCurrentPage = (state) => {
-  let pathname = state.router.location.pathname
-  let route = routes.parse(pathname)
+  let route = routes.parse(history.location.pathname)
 
   if(route){
     return route.page

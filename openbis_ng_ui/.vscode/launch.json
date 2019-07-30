@@ -14,11 +14,11 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Single Test",
+            "name": "Debug Single Test",
             
             "runtimeExecutable": "npm",
             "runtimeArgs": [
-                "run-script", "test", 
+                "run-script", "test:debug", 
                 "--", "${file}"
             ],
             "console": "integratedTerminal",
@@ -28,11 +28,11 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch All Tests",
+            "name": "Debug All Tests",
             
             "runtimeExecutable": "npm",
             "runtimeArgs": [
-                "run-script", "test", 
+                "run-script", "test:debug", 
             ],
             "console": "integratedTerminal",
             "disableOptimisticBPs": true,

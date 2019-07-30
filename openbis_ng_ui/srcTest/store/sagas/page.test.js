@@ -55,7 +55,8 @@ describe('page', () => {
 })
 
 function expectSelectedObject(page, object){
-  expect(selectors.getSelectedObject(store.getState(), page)).toEqual(object)
+  let getSelectedObject = selectors.createGetSelectedObject()
+  expect(getSelectedObject(store.getState(), page)).toEqual(object)
 }
 
 function expectOpenObjects(page, objects){
