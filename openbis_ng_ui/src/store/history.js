@@ -18,9 +18,9 @@ history.configure = (store) => {
     store.subscribe(() => {
         let newRoute = store.getState().route
 
-        if(newRoute !== currentRoute){
+        if(newRoute && newRoute !== currentRoute){
             currentRoute = newRoute
-            if(currentRoute !== history.location.pathname){
+            if(currentRoute && currentRoute !== history.location.pathname){
                 history.push(currentRoute)
             }
         }
