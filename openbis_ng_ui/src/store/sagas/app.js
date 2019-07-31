@@ -59,6 +59,7 @@ function* logout() {
     yield put(actions.setLoading(true))
     yield putAndWait(actions.apiRequest({method: 'logout'}))
     yield put(actions.init())
+    yield put(actions.routeChange('/'))
   }catch(e){
     yield put(actions.setError(e))
   }finally{

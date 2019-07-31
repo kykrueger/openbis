@@ -34,18 +34,6 @@ function doParse(path, pattern, extraParams){
 }
 
 const routes = {
-  LOGIN: {
-    format: (params) => {
-      return doFormat(params, '/login', {
-        page: pages.LOGIN
-      })
-    },
-    parse: (path) => {
-      return doParse(path, '/login', {
-        page: pages.LOGIN
-      })
-    }
-  },
   TYPES: {
     format: (params) => {
       return doFormat(params, '/types', {
