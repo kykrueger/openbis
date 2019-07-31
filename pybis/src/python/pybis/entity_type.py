@@ -23,7 +23,9 @@ class EntityType():
             'showParentMetadata', 'validationPlugin']
 
     def __dir__(self):
-        return self._attrs()
+        return self._attrs() + [
+            'get_props()'
+        ]
 
     def __getattr__(self, name):
         if name in self._attrs():
@@ -38,12 +40,15 @@ class EntityType():
     def __ne__(self, other):
         return str(self) != str(other)
 
-    def get_propertyAssignments(self, including_vocabulary=False):
+    def get_props(self, including_vocabulary=False):
         attrs = ['code', 'label', 'description', 'dataType', 'mandatory', 'showInEditView', 'ordinal']
         if including_vocabulary:
             attrs.append('vocabulary')
         pas = [ {**pa['propertyType'], **pa} for pa in self.data['propertyAssignments'] ]
         return DataFrame(pas, columns=attrs)
+
+    get_propertyAssignments = get_props
+
 
     def codes(self):
         codes = []
