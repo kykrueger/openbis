@@ -29,10 +29,10 @@ from tabulate import tabulate
 from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
 from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
-from .entity_types import EntityType
+from .entity_type import EntityType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
-from .definitions import get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
+from .definitions import openbis_definitions, get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
 
 # import the various openBIS entities
 from .things import Things
@@ -100,6 +100,7 @@ def get_search_type_for_entity(entity, operator=None):
         "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
         "global": "as.dto.global.GlobalSearchObject",
         "plugin": "as.dto.plugin.search.PluginSearchCriteria",
+        "propertyType": "as.dto.property.search.PropertyTypeSearchCriteria",
     }
 
     sc = { "@type": search_criteria[entity] }
@@ -107,16 +108,6 @@ def get_search_type_for_entity(entity, operator=None):
         sc["operator"] = operator
 
     return sc
-
-def get_attrs_for_entity(entity):
-    """ For a given entity this method returns an iterator for all searchable
-    attributes.
-    """
-    search_args = {
-        "person": ['firstName','lastName','email','userId']
-    }
-    for search_arg in search_args[entity]:
-        yield search_arg
 
 
 def _type_for_id(ident, entity):
@@ -187,7 +178,8 @@ def get_search_criteria(entity, **search_args):
     search_criteria = get_search_type_for_entity(entity)
 
     criteria = []
-    for attr in get_attrs_for_entity(entity):
+    attrs = openbis_definitions(entity)['attrs']
+    for attr in attrs:
         if attr in search_args:
             sub_crit = get_search_type_for_entity(attr)
             sub_crit['fieldValue'] = get_field_value_search(attr, search_args[attr])
@@ -2535,6 +2527,47 @@ class Openbis:
             raise ValueError(
                 "pluginType must be one of the following: DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION")
         return Plugin(self, pluginType=pluginType, pluginKind=pluginKind, **kwargs) 
+        
+
+    def new_property_type(self, **kwargs):
+        pass
+
+    def get_property_type(self, code):
+        pass
+
+    def get_property_types(self, start_with=None, count=None, **search_args):
+        fetchopts = fetch_option['propertyType']
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
+        search_criteria = get_search_criteria('propertyType', **search_args)
+
+        request = {
+            "method": "searchPropertyTypes",
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts,
+            ],
+        }
+        attrs = openbis_definitions('propertyType')['attrs']
+        resp = self._post_request(self.as_v3, request)
+        if len(resp['objects']) == 0:
+            experiments = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
+            df = DataFrame(objects)
+            df['registrationDate'] = df['registrationDate'].map(format_timestamp)
+            df['registrator'] = df['registrator'].map(extract_person)
+
+        return Things(
+            openbis_obj = self,
+            entity = 'propertyType',
+            df = df[attrs],
+            start_with = start_with,
+            count = count,
+            totalCount = resp.get('totalCount'),
+        )
 
     
     def get_sample_types(self, type=None, start_with=None, count=None):
@@ -2552,13 +2585,13 @@ class Openbis:
     get_object_types = get_sample_types # Alias
 
     def get_sample_type(self, type):
-        property_asignments = self._get_types_of(
+        entityType = self._get_types_of(
             method_name         = "searchSampleTypes",
             entity              = "Sample",
             type_name           = type,
             optional_attributes = ["generatedCodePrefix", "validationPluginId"]
         )
-        return SampleType(self, property_asignments.data)
+        return SampleType(self, data=entityType.data)
     get_object_type = get_sample_type # Alias
 
 
@@ -3101,6 +3134,15 @@ class Openbis:
         return Sample(self, type=self.get_sample_type(type), project=project, data=None, props=props, **kwargs)
 
     new_object = new_sample # Alias
+
+    def new_sample_type(self, 
+            code,
+            **kwargs
+        ):
+        """ Creates a new sample type
+        """
+        return SampleType(self, code=code, **kwargs)
+
 
     def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given sample type.
