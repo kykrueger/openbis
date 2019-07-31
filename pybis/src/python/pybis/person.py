@@ -9,7 +9,7 @@ class Person(OpenBisObject):
 
     def __init__(self, openbis_obj, data=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Person' )
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'person' )
 
         if data is not None:
             self.a(data)
