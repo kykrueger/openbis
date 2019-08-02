@@ -48,6 +48,7 @@ from .tag import Tag
 from .sample_type import SampleType
 from .semantic_annotation import SemanticAnnotation
 from .plugin import Plugin
+from .property_type import PropertyType
 
 from pandas import DataFrame, Series
 import pandas as pd
@@ -608,6 +609,8 @@ class Openbis:
             "get_object_type('type')", # "get_sample_type(type))" alias
             "get_sample_types()",
             "get_object_types()", # "get_sample_types()" alias
+            "get_property_types()",
+            "get_property_type()",
             "get_semantic_annotations()",
             "get_semantic_annotation(permId, only_data = False)",
             "get_space(code)",
@@ -2184,7 +2187,7 @@ class Openbis:
             start_with = start_with,
             count = count,
             totalCount = resp.get('totalCount'),
-            )
+        )
 
 
     def get_vocabulary(self, code, only_data=False):
@@ -2532,14 +2535,43 @@ class Openbis:
     def new_property_type(self, **kwargs):
         pass
 
-    def get_property_type(self, code):
-        pass
+    def get_property_type(self, code, only_data=False):
+        identifiers = []
+        identifiers.append({
+            "permId": code,
+            "@type": "as.dto.property.id.PropertyTypePermId"
+        })
 
-    def get_property_types(self, start_with=None, count=None, **search_args):
+        fetchopts = fetch_option['propertyType']
+        options = ['vocabulary', 'materialType', 'semanticAnnotations', 'registrator']
+        for option in options:
+            fetchopts[option] = fetch_option[option]
+
+        request = {
+            "method": "getPropertyTypes",
+            "params": [
+                self.token,
+                identifiers,
+                fetchopts
+            ],
+        }
+        #return json.dumps(request)
+
+        resp = self._post_request(self.as_v3, request)
+        parse_jackson(resp)
+        if len(resp) == 0:
+            raise ValueError('no such propertyType: {}'.format(code))
+        for ident in resp:
+            if only_data:
+                return resp[ident]
+            else:
+                return PropertyType(openbis_obj=self, data=resp[ident])
+
+    def get_property_types(self, code=None, start_with=None, count=None):
         fetchopts = fetch_option['propertyType']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
-        search_criteria = get_search_criteria('propertyType', **search_args)
+        search_criteria = get_search_criteria('propertyType', code=code)
 
         request = {
             "method": "searchPropertyTypes",
@@ -2563,6 +2595,7 @@ class Openbis:
         return Things(
             openbis_obj = self,
             entity = 'propertyType',
+            single_item_method = self.get_property_type,
             df = df[attrs],
             start_with = start_with,
             count = count,
