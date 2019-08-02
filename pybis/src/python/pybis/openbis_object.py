@@ -1,12 +1,26 @@
 from .property import PropertyHolder
 from .attribute import AttrHolder
+from .utils import VERBOSE
 
 class OpenBisObject():
-    def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
+
+    def __init_subclass__(
+        cls,
+        entity=None
+    ):
+        """create a specialized parent class.
+        The class that inherits from OpenBisObject does not need
+        to implement its own __init__ method in order to provide the
+        entity name. Instead, it can pass the entity name as a param:
+        class XYZ(OpenBisObject, entity="myEntity")
+        """
+        cls._entity=entity
+
+    def __init__(self, openbis_obj, entity=None, type=None, data=None, props=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'DataSet', type)
+        self.__dict__['a'] = AttrHolder(openbis_obj, self._entity, type)
 
         # existing OpenBIS object
         if data is not None:
@@ -19,12 +33,6 @@ class OpenBisObject():
         if kwargs is not None:
             for key in kwargs:
                 setattr(self, key, kwargs[key])
-
-    def __eq__(self, other):
-        return str(self) == str(other)
-
-    def __ne__(self, other):
-        return str(self) != str(other)
 
     def _set_data(self, data):
         # assign the attribute data to self.a by calling it
@@ -92,3 +100,23 @@ class OpenBisObject():
         """same thing as _repr_html_() but for IPython
         """
         return self.a.__repr__()
+
+
+    def delete(self, reason):
+        """Delete this openbis entity.
+        A reason is mandatory to delete any entity.
+        """
+        if not self.data:
+            return
+
+        self.openbis.delete_openbis_entity(
+            entity=self._entity,
+            objectId=self.data['permId'],
+            reason=reason
+        )
+        if VERBOSE: print(
+            "{} {} successfully deleted.".format(
+                self._entity,
+                self.permId
+            )
+        )
