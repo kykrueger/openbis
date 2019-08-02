@@ -53,21 +53,21 @@ o.logout()
 ```
 o.get_experiment_types()
 et = o.get_experiment_type('TEST')
-et.get_propertyAssignments()
+et.get_props()
 
 o.get_sample_types()
 st = o.get_sample_type('YEAST')
-st.get_propertyAssignments()
+st.get_props()
 
 o.get_material_types()
 mt = o.get_material_type('GENE')
-mt.get_propertyAssignments()
+mt.get_props()
 
 o.get_dataset_types()
 dst = o.get_dataset_types()[0]
 dst = o.get_dataset_type('RAW_DATA')
-dst.get_propertyAssignments()
-dst.get_propertyAssignments(with_vocabulary=True)
+dst.get_props()
+dst.get_props(with_vocabulary=True)
 
 o.get_vocabularies()
 o.get_vocabulary('BACTERIAL_ANTIBIOTIC_RESISTANCE')
