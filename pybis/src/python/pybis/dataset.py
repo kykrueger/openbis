@@ -44,7 +44,7 @@ class DataSet(OpenBisObject):
             self.__dict__['files'] = files
 
         # initialize the attributes
-        super(DataSet, self).__init__(openbis_obj, type, data, props, **kwargs)
+        super(DataSet, self).__init__(openbis_obj, type=type, data=data, props=props, **kwargs)
 
         self.__dict__['files_in_wsp'] = []
 
