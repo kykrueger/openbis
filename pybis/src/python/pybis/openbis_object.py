@@ -6,7 +6,8 @@ class OpenBisObject():
 
     def __init_subclass__(
         cls,
-        entity=None
+        entity=None,
+        single_item_method_name=None
     ):
         """create a specialized parent class.
         The class that inherits from OpenBisObject does not need
@@ -15,8 +16,9 @@ class OpenBisObject():
         class XYZ(OpenBisObject, entity="myEntity")
         """
         cls._entity=entity
+        cls._single_item_method_name=single_item_method_name
 
-    def __init__(self, openbis_obj, entity=None, type=None, data=None, props=None, **kwargs):
+    def __init__(self, openbis_obj, type=None, data=None, props=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
@@ -82,6 +84,21 @@ class OpenBisObject():
             pass
     object = sample # Alias
 
+    @property
+    def _permId(self):
+        try:
+            return self.data['permId']
+        except Exception:
+            return ""
+
+    @property
+    def permId(self):
+        try:
+            return self.data['permId']['permId']
+        except Exception:
+            return ""
+        
+
     def __getattr__(self, name):
         return getattr(self.__dict__['a'], name)
 
@@ -120,3 +137,54 @@ class OpenBisObject():
                 self.permId
             )
         )
+
+    def _get_single_item_method(self):
+        single_item_method = None
+        if self._single_item_method_name:
+            single_item_method = getattr(
+                self.openbis, self._single_item_method_name
+            )
+        else:
+            # try to guess the method...
+            single_item_method = getattr(self.openbis, 'get_' + self.entity)
+
+        return single_item_method
+
+
+    def save(self):
+        get_single_item = self._get_single_item_method()
+        # check for mandatory properties before saving the object
+        props = None
+        if self.props:
+            for prop_name, prop in self.props._property_names.items():
+                if prop['mandatory']:
+                    if getattr(self.props, prop_name) is None \
+                    or getattr(self.props, prop_name) == "":
+                        raise ValueError(
+                            "Property '{}' is mandatory and must not be None".format(prop_name)
+                        )
+
+            props = self.p._all_props()
+
+        # NEW
+        if self.is_new:
+            request = self._new_attrs()
+            if props: request["params"][1][0]["properties"] = props
+
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+
+            if VERBOSE: print("{} successfully created.".format(self.entity))
+            new_entity_data = get_single_item(resp[0]['permId'], only_data=True)
+            self._set_data(new_entity_data)
+            return self
+
+        # UPDATE
+        else:
+            request = self._up_attrs(method_name=None, permId=self._permId)
+            if props: request["params"][1][0]["properties"] = props
+
+            resp = self.openbis._post_request(self.openbis.as_v3, request)
+            if VERBOSE: print("{} successfully updated.".format(self.entity))
+            new_entity_data = get_single_item(self.permId, only_data=True)
+            self._set_data(new_entity_data)
+
