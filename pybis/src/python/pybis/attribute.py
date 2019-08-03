@@ -1,6 +1,6 @@
 from pandas import DataFrame, Series
 from tabulate import tabulate
-from .definitions import openbis_definitions, fetch_option
+from .definitions import openbis_definitions, fetch_option, get_method_for_entity
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_person
 from .attachment import Attachment
 
@@ -97,7 +97,6 @@ class AttrHolder():
                 self.__dict__['_' + attr] = data.get(attr, None)
 
 
-
     def _new_attrs(self, method_name=None):
         """Returns the Python-equivalent JSON request when a new object is created.
         It is used internally by the save() method of a newly created object.
@@ -158,7 +157,7 @@ class AttrHolder():
 
         # if method_name is not defined: guess the method name for creating a new entity 
         if method_name is None:
-            method_name = "create{}s".format(self.entity)
+            method_name = get_method_for_entity(self.entity, 'create')
         request = {
             "method": method_name,
             "params": [
@@ -169,7 +168,7 @@ class AttrHolder():
         return request
 
 
-    def _up_attrs(self, method_name=None):
+    def _up_attrs(self, method_name=None, permId=None):
         """Returns the Python-equivalent JSON request when a new object is updated.
         It is used internally by the save() method of an object to be updated.
         """
@@ -187,8 +186,14 @@ class AttrHolder():
                 ),
             }
 
-        idenfier_name = defs["identifier"]
-        up_obj[identifier_name]: self._permId
+
+        # for some weird reasons, the permId is called differently
+        # for every openBIS entity, but only when updating...
+        identifier_name = defs["identifier"]
+        if permId:
+            up_obj[identifier_name] = permId
+        else:
+            up_obj[identifier_name] = self._permId
 
         # look at all attributes available for that entity
         # that can be updated
@@ -262,7 +267,7 @@ class AttrHolder():
                 # handle multivalue attributes (parents, children, tags etc.)
                 # we only cover the Set mechanism, which means we always update 
                 # all items in a list
-                if attr in defs['multi']:
+                if 'multi' in defs and attr in defs['multi']:
                     items = self.__dict__.get('_' + attr, [])
                     if items == None:
                         items = []
@@ -303,8 +308,7 @@ class AttrHolder():
 
         # update an existing entity
         if method_name is None:
-            # if method_name is not defined: try to guess the method name
-            method_name = "update{}s".format(self.entity)
+            method_name = get_method_for_entity(self.entity, 'update')
         request = {
             "method": method_name,
             "params": [
