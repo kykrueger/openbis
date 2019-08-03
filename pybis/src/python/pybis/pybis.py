@@ -48,7 +48,6 @@ from .tag import Tag
 from .sample_type import SampleType
 from .semantic_annotation import SemanticAnnotation
 from .plugin import Plugin
-from .property_type import PropertyType
 
 from pandas import DataFrame, Series
 import pandas as pd
@@ -2532,8 +2531,15 @@ class Openbis:
         return Plugin(self, pluginType=pluginType, pluginKind=pluginKind, **kwargs) 
         
 
-    def new_property_type(self, **kwargs):
-        pass
+    def new_property_type(self, code, dataType, **kwargs):
+        allowed_dataTypes = [
+            "INTEGER", "VARCHAR", "MULTILINE_VARCHAR", 
+            "REAL", "TIMESTAMP", "BOOLEAN", "CONTROLLEDVOCABULARY",
+            "MATERIAL", "HYPERLINK", "XML"
+        ]
+        if dataType not in allowed_dataTypes:
+            raise ValueError("please use one of these dataTypes: {}".format(allowed_dataTypes))
+        return PropertyType(openbis_obj=self, code=code, dataType=dataType, **kwargs)
 
     def get_property_type(self, code, only_data=False):
         identifiers = []
@@ -3305,3 +3311,11 @@ class ServerInformation():
             </table>
         """
         return html
+
+
+class PropertyType(
+    OpenBisObject, 
+    entity='propertyType',
+    single_item_method_name='get_property_type'
+):
+    pass
