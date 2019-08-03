@@ -81,6 +81,7 @@ def openbis_definitions(entity):
             "delete": {
                 "@type": "as.dto.property.delete.PropertyTypeDeletionOptions"
             },
+            "identifier": "typeId",
         },
         "SemanticAnnotation": {
             "attrs_new": "permId entityType propertyType predicateOntologyId predicateOntologyVersion predicateAccessionId descriptorOntologyId descriptorOntologyVersion descriptorAccessionId".split(),
@@ -325,7 +326,7 @@ def get_method_for_entity(entity, action):
 
     if entity == "Vocabulary":
         return "{}Vocabularies".format(action)
-    if entity == "propertyType":
-        return "{}PropertyTypes".format(action)
+    
+    cap_entity = entity[:1].upper() + entity[1:]
 
-    return "{}{}s".format(action, entity)
+    return "{}{}s".format(action, cap_entity)
