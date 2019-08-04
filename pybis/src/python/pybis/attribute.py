@@ -390,7 +390,7 @@ class AttrHolder():
                     elif "permId" in item:
                         values.append(item['permId'])
                     else:
-                        pass
+                        values.append(item)
                 return values
 
             # attribute contains a dictionary: same procedure as above.
