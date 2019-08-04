@@ -47,7 +47,6 @@ from .role_assignment import RoleAssignment
 from .tag import Tag
 from .sample_type import SampleType
 from .semantic_annotation import SemanticAnnotation
-from .plugin import Plugin
 
 from pandas import DataFrame, Series
 import pandas as pd
@@ -3317,5 +3316,12 @@ class PropertyType(
     OpenBisObject, 
     entity='propertyType',
     single_item_method_name='get_property_type'
+):
+    pass
+
+class Plugin(
+    OpenBisObject,
+    entity='plugin',
+    single_item_method_name='get_plugin'
 ):
     pass
