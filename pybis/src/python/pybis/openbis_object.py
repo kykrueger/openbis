@@ -1,6 +1,7 @@
 from .property import PropertyHolder
 from .attribute import AttrHolder
 from .utils import VERBOSE
+from .definitions import get_definition_for_entity
 
 class OpenBisObject():
 
@@ -35,6 +36,14 @@ class OpenBisObject():
         if kwargs is not None:
             for key in kwargs:
                 setattr(self, key, kwargs[key])
+
+    def __dir__(self):
+        defs = get_definition_for_entity(self.entity)
+        if self.is_new:
+            return defs['attrs_new']
+        else:
+            return defs['attrs']
+
 
     def _set_data(self, data):
         # assign the attribute data to self.a by calling it
