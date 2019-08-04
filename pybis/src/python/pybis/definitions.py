@@ -150,10 +150,10 @@ def openbis_definitions(entity):
             "delete": { "@type": "as.dto.vocabulary.delete.VocabularyTermDeletionOptions"},
             "fetch":  { "@type": "as.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions"},
         },
-        "Plugin": {
-            "attrs_new": "name description available script available script pluginType pluginKind entityKinds".split(),
-            "attrs_up": "description, available script available script pluginType pluginKind entityKinds".split(),
-            "attrs": "permId name description registrator registrationDate available script pluginType pluginKind entityKinds".split(),
+        "plugin": {
+            "attrs_new": "name description pluginType script available entityKind".split(),
+            "attrs_up": "description script available".split(),
+            "attrs": "permId name description registrator registrationDate pluginKind entityKinds pluginType script available".split(),
             "multi": "".split(),
             "identifier": "pluginId",
         },
