@@ -108,8 +108,7 @@ def strip_tags(html):
     return s.get_data()
 
 
-def displayResult(isOk, tableBuilder):
-    result = None;
+def displayResult(isOk, tableBuilder, result=None):
     if isOk:
         tableBuilder.addHeader("STATUS");
         tableBuilder.addHeader("MESSAGE");
@@ -167,11 +166,12 @@ def findEntitiesToExport(params):
     entities = params.get("entities");
 
     for entity in entities:
-        entityAsPythonMap = {"type": entity.get("type"), "permId": entity.get("permId"), "expand": entity.get("expand")};
-        addToExportWithoutRepeating(entitiesToExport, entityAsPythonMap);
+        entityAsPythonMap = { "type" : entity.get("type"), "permId" : entity.get("permId"), "expand" : entity.get("expand") };
+        entitiesToExport.append(entityAsPythonMap);
         if entity.get("expand"):
             entitiesToExpand.append(entityAsPythonMap);
 
+    operationLog.info("Found %d entities to expand." % len(entitiesToExpand))
     while entitiesToExpand:
         entityToExpand = entitiesToExpand.popleft();
         type = entityToExpand["type"];
@@ -183,7 +183,7 @@ def findEntitiesToExport(params):
             results = v3.searchSpaces(sessionToken, criteria, SpaceFetchOptions());
             operationLog.info("Found: " + str(results.getTotalCount()) + " spaces");
             for space in results.getObjects():
-                entityFound = {"type": "SPACE", "permId": space.getCode()};
+                entityFound = {"type": "SPACE", "permId": space.getCode(), "registrationDate": space.getRegistrationDate()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
                 entitiesToExpand.append(entityFound);
         if type == "SPACE":
@@ -192,7 +192,7 @@ def findEntitiesToExport(params):
             results = v3.searchProjects(sessionToken, criteria, ProjectFetchOptions());
             operationLog.info("Found: " + str(results.getTotalCount()) + " projects");
             for project in results.getObjects():
-                entityFound = {"type": "PROJECT", "permId": project.getPermId().getPermId()};
+                entityFound = {"type": "PROJECT", "permId": project.getPermId().getPermId(), "registrationDate": project.getRegistrationDate()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
                 entitiesToExpand.append(entityFound);
         if type == "PROJECT":
@@ -201,7 +201,8 @@ def findEntitiesToExport(params):
             results = v3.searchExperiments(sessionToken, criteria, ExperimentFetchOptions());
             operationLog.info("Found: " + str(results.getTotalCount()) + " experiments");
             for experiment in results.getObjects():
-                entityFound = {"type": "EXPERIMENT", "permId": experiment.getPermId().getPermId()};
+                entityFound = {"type": "EXPERIMENT", "permId": experiment.getPermId().getPermId(),
+                               "registrationDate": experiment.getRegistrationDate()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
                 entitiesToExpand.append(entityFound);
         if type == "EXPERIMENT":
@@ -213,25 +214,29 @@ def findEntitiesToExport(params):
             dCriteria = DataSetSearchCriteria();
             dCriteria.withExperiment().withPermId().thatEquals(permId);
             dCriteria.withoutSample();
-            dResults = v3.searchDataSets(sessionToken, dCriteria, DataSetFetchOptions());
+            fetchOptions = DataSetFetchOptions()
+            fetchOptions.withDataStore()
+            dResults = v3.searchDataSets(sessionToken, dCriteria, fetchOptions);
             operationLog.info("Found: " + str(dResults.getTotalCount()) + " datasets");
             for dataset in dResults.getObjects():
-                entityFound = {"type": "DATASET", "permId": dataset.getPermId().getPermId()};
+                entityFound = {"type": "DATASET", "permId": dataset.getPermId().getPermId(), "registrationDate": dataset.getRegistrationDate()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
                 entitiesToExpand.append(entityFound);
 
             operationLog.info("Found: " + str(results.getTotalCount()) + " samples");
             for sample in results.getObjects():
-                entityFound = {"type": "SAMPLE", "permId": sample.getPermId().getPermId()};
+                entityFound = {"type": "SAMPLE", "permId": sample.getPermId().getPermId(), "registrationDate": sample.getRegistrationDate()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
                 entitiesToExpand.append(entityFound);
         if type == "SAMPLE":
             criteria = DataSetSearchCriteria();
             criteria.withSample().withPermId().thatEquals(permId);
-            results = v3.searchDataSets(sessionToken, criteria, DataSetFetchOptions());
+            fetchOptions = DataSetFetchOptions()
+            fetchOptions.withDataStore()
+            results = v3.searchDataSets(sessionToken, criteria, fetchOptions);
             operationLog.info("Found: " + str(results.getTotalCount()) + " datasets");
             for dataset in results.getObjects():
-                entityFound = {"type": "DATASET", "permId": dataset.getPermId().getPermId()};
+                entityFound = {"type": "DATASET", "permId": dataset.getPermId().getPermId(), "registrationDate": dataset.getRegistrationDate()};
                 addToExportWithoutRepeating(entitiesToExport, entityFound);
                 entitiesToExpand.append(entityFound);
         if type == "DATASET" and not metadataOnly:
@@ -254,19 +259,28 @@ def cleanUp(tempDirPath, tempZipFilePath):
 
 # Generates ZIP file and stores it in workspace
 def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFilePath):
+    # Create Zip File
+    fos = FileOutputStream(tempZipFilePath);
+    zos = ZipOutputStream(fos);
+
+    generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath)
+
+    zos.close();
+    fos.close();
+
+
+def generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath):
     # Services used during the export process
     v3 = ServiceProvider.getV3ApplicationService();
     v3d = ServiceProvider.getApplicationContext().getBean(V3_DSS_BEAN);
     objectCache = {};
     objectMapper = GenericObjectMapper();
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
     # To avoid empty directories on the zip file, it makes the first found entity the base directory
     baseDirToCut = None;
+    fileMetadata = []
+    emptyZip = True
 
-    # Create Zip File
-    fos = FileOutputStream(tempZipFilePath);
-    zos = ZipOutputStream(fos);
     for entity in entities:
         type = entity["type"];
         permId = entity["permId"];
@@ -357,6 +371,7 @@ def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFil
             rawFile.getParentFile().mkdirs();
             IOUtils.copyLarge(rawFileInputStream, FileOutputStream(rawFile));
             addToZipFile(filePath, rawFile, zos);
+            emptyZip = False
 
         # To avoid empty directories on the zip file, it makes the first found entity the base directory
         if not includeRoot:
@@ -374,20 +389,25 @@ def generateZipFile(entities, includeRoot, sessionToken, tempDirPath, tempZipFil
         if entityObj is not None and entityFilePath is not None:
             # JSON
             entityJson = String(objectMapper.writeValueAsString(entityObj));
-            addFile(tempDirPath, entityFilePath, "json", entityJson.getBytes(), zos);
+            fileMetadatum = addFile(tempDirPath, entityFilePath, "json", entityJson.getBytes(), zos);
+            fileMetadata.append(fileMetadatum)
+            emptyZip = False
             # TEXT
             entityTXT = String(getTXT(entityObj, v3, sessionToken, False));
-            addFile(tempDirPath, entityFilePath, "txt", entityTXT.getBytes(), zos);
+            fileMetadatum = addFile(tempDirPath, entityFilePath, "txt", entityTXT.getBytes(), zos);
+            fileMetadata.append(fileMetadatum)
             # DOCX
             entityDOCX = getDOCX(entityObj, v3, sessionToken, False);
-            addFile(tempDirPath, entityFilePath, "docx", entityDOCX, zos);
+            fileMetadatum = addFile(tempDirPath, entityFilePath, "docx", entityDOCX, zos);
+            fileMetadata.append(fileMetadatum)
             # HTML
             entityHTML = getDOCX(entityObj, v3, sessionToken, True);
-            addFile(tempDirPath, entityFilePath, "html", entityHTML, zos);
+            fileMetadatum = addFile(tempDirPath, entityFilePath, "html", entityHTML, zos);
+            fileMetadata.append(fileMetadatum)
             operationLog.info("--> Entity type: " + type + " permId: " + permId + " post html.");
-
-    zos.close();
-    fos.close();
+    if emptyZip:
+        raise IOError('Nothing added to ZIP file.')
+    return fileMetadata
 
 
 def generateDownloadUrl(sessionToken, tempZipFileName, tempZipFilePath):
@@ -573,11 +593,24 @@ def getTXT(entityObj, v3, sessionToken, isRichText):
     return txtBuilder.toString();
 
 def addFile(tempDirPath, entityFilePath, extension, fileContent, zos):
-    entityFile = File(tempDirPath + entityFilePath + "." + extension);
+    entityFileNameWithExtension = entityFilePath + "." + extension
+    entityFile = File(tempDirPath + entityFileNameWithExtension);
     entityFile.getParentFile().mkdirs();
     IOUtils.write(fileContent, FileOutputStream(entityFile));
-    addToZipFile(entityFilePath + "." + extension, entityFile, zos);
+    addToZipFile(entityFileNameWithExtension, entityFile, zos);
     FileUtils.forceDelete(entityFile);
+
+    extensionToMimeType = {
+        'json': 'application/json',
+        'txt': 'text/plain',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'html': 'text/html',
+    }
+
+    return {
+        'fileName': entityFileNameWithExtension[1:],
+        'mimeType': extensionToMimeType.get(extension, 'application/octet-stream')
+    }
 
 def getFilePath(spaceCode, projCode, expCode, sampCode, dataCode):
     fileName = "";
@@ -594,18 +627,18 @@ def getFilePath(spaceCode, projCode, expCode, sampCode, dataCode):
     return fileName;
 
 def addToZipFile(path, file, zos):
-        fis = FileInputStream(file);
-        zipEntry = ZipEntry(path[1:]); # Making paths relative to make them compatible with Windows zip implementation
-        zos.putNextEntry(zipEntry);
+    fis = FileInputStream(file);
+    zipEntry = ZipEntry(path[1:]); # Making paths relative to make them compatible with Windows zip implementation
+    zos.putNextEntry(zipEntry);
 
-        bytes = jarray.zeros(1024, "b");
+    bytes = jarray.zeros(1024, "b");
+    length = fis.read(bytes);
+    while length >= 0:
+        zos.write(bytes, 0, length);
         length = fis.read(bytes);
-        while length >= 0:
-            zos.write(bytes, 0, length);
-            length = fis.read(bytes);
-        
-        zos.closeEntry();
-        fis.close();
+
+    zos.closeEntry();
+    fis.close();
 
 def getConfigurationProperty(transaction, propertyName):
     threadProperties = transaction.getGlobalState().getThreadParameters().getThreadProperties();

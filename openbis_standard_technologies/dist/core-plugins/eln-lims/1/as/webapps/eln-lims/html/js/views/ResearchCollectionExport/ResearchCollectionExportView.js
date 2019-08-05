@@ -15,37 +15,37 @@
  */
 
 function ResearchCollectionExportView(researchCollectionExportController, researchCollectionExportModel) {
-    var researchCollectionExportController = researchCollectionExportController;
-    var researchCollectionExportModel = researchCollectionExportModel;
     var exportTreeView = new ExportTreeView(researchCollectionExportController, researchCollectionExportModel);
 
     this.repaint = function(views) {
+        researchCollectionExportController.initialiseSubmissionTypesDropdown();
+
         var $header = views.header;
         var $container = views.content;
 
         var $form = $("<div>");
-
         var $formColumn = $("<form>", {
             'name': 'rcExportForm',
-            'role' : "form",
-            'action' : 'javascript:void(0);',
-            'onsubmit' : 'mainController.currentView.exportSelected();'
+            'role': 'form',
+            'action': 'javascript:void(0);',
+            'onsubmit': 'mainController.currentView.exportSelected();'
         });
-
         $form.append($formColumn);
 
-        var $infoBox = FormUtil.getInfoBox("You can select any parts of the accesible openBIS structure to export:", [
-            "If you select a tree node and do not expand it, everything below this node will be exported by default.",
-            "To export selectively only parts of a tree, open the nodes and select what to export."
+        var $infoBox = FormUtil.getInfoBox('You can select any parts of the accessible openBIS structure to export:', [
+            'If you select a tree node and do not expand it, everything below this node will be exported by default.',
+            'To export selectively only parts of a tree, open the nodes and select what to export.'
         ]);
-        $infoBox.css("border", "none");
+        $infoBox.css('border', 'none');
         $container.append($infoBox);
 
-        var $tree = $("<div>", { "id" : "exportsTree" });
-        $formColumn.append($("<br>"));
+        var $tree = $('<div>', { 'id' : 'exportsTree' });
+        $formColumn.append($('<br>'));
         $formColumn.append(FormUtil.getBox().append($tree));
 
         $container.append($form);
+
+        this.paintSubmissionTypeDropdown($container);
 
         researchCollectionExportModel.tree = TreeUtil.getCompleteTree($tree);
 
@@ -55,5 +55,21 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
         var $exportButton = $('<input>', { 'type': 'submit', 'class': 'btn btn-primary', 'value': 'Export Selected',
                 'onClick': '$("form[name=\'rcExportForm\']").submit()'});
         $header.append($exportButton);
+    };
+
+    this.paintSubmissionTypeDropdown = function($container) {
+        this.$submissionTypeDropdown = this.getSubmissionTypeDropdown();
+        var entityTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this.$submissionTypeDropdown, 'Submission Type', null, true);
+        entityTypeDropdownFormGroup.css('width', '50%');
+        $container.append(entityTypeDropdownFormGroup);
+    };
+
+    this.getSubmissionTypeDropdown = function() {
+        return FormUtil.getDropdown(researchCollectionExportModel.submissionTypes, 'Select a submission type');
+    };
+
+    this.refreshSubmissionTypeDropdown = function() {
+        FormUtil.setValuesToComponent(this.$submissionTypeDropdown, researchCollectionExportModel.submissionTypes);
     }
+
 }

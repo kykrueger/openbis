@@ -15,7 +15,6 @@
  */
 
 function ResearchCollectionExportController(parentController) {
-    var parentController = parentController;
     var researchCollectionExportModel = new ResearchCollectionExportModel();
     var researchCollectionExportView = new ResearchCollectionExportView(this, researchCollectionExportModel);
 
@@ -23,27 +22,106 @@ function ResearchCollectionExportController(parentController) {
         researchCollectionExportView.repaint(views);
     };
 
+    this.initialiseSubmissionTypesDropdown = function(callback) {
+        Util.blockUI();
+        mainController.serverFacade.listSubmissionTypes(function(error, result) {
+            Util.unblockUI();
+            if (error) {
+                Util.showError(error);
+            } else {
+                researchCollectionExportModel.submissionTypes = result.data.map(function (resultItem) {
+                    return {
+                        value: resultItem.url,
+                        label: resultItem.title
+                    };
+                });
+                researchCollectionExportView.refreshSubmissionTypeDropdown();
+            }
+        });
+    };
+
     this.exportSelected = function() {
+        var _this = this;
         var selectedNodes = $(researchCollectionExportModel.tree).fancytree('getTree').getSelectedNodes();
+
+        var selectedOption = researchCollectionExportView.$submissionTypeDropdown.find(":selected");
+        var submissionUrl = selectedOption.val();
+        var submissionType = selectedOption.text();
 
         var toExport = [];
         for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
             var node = selectedNodes[eIdx];
-            toExport.push({ type: node.data.entityType, permId : node.key, expand : !node.expanded });
+            toExport.push({type: node.data.entityType, permId: node.key, expand: !node.expanded});
         }
 
         if (toExport.length === 0) {
-            Util.showInfo("First select something to export.");
+            Util.showInfo('First select something to export.');
+        } else if (!submissionUrl) {
+            Util.showInfo('First select submission type.');
+        } else {
+            Util.blockUI();
+            this.getUserInformation(function(userInformation) {
+                mainController.serverFacade.exportRc(toExport, true, false, submissionUrl, submissionType, userInformation,
+                        function(operationExecutionPermId) {
+                            _this.waitForOpExecutionResponse(operationExecutionPermId, function(error, result) {
+                                Util.unblockUI();
+                                if (result && result.data && result.data.url) {
+                                    var win = window.open(result.data.url, '_blank');
+                                    win.focus();
+                                    mainController.refreshView();
+                                } else {
+                                    if (error) {
+                                        Util.showError(error);
+                                    } else {
+                                        Util.showError('Returned result format is not correct.');
+                                    }
+                                }
+                            });
+                        });
+            });
         }
+    };
 
-        Util.blockUI();
-        mainController.serverFacade.exportRc(toExport, true, false, function(error, result) {
-            if (error) {
-                Util.showError(error);
-            } else {
-                Util.showSuccess("Export is being processed. If you logout the process will stop.", function() { Util.unblockUI(); });
-                mainController.refreshView();
-            }
+    this.waitForOpExecutionResponse = function(operationExecutionPermIdString, callbackFunction) {
+        var _this = this;
+        require(["as/dto/operation/id/OperationExecutionPermId",
+                "as/dto/operation/fetchoptions/OperationExecutionFetchOptions"],
+            function(OperationExecutionPermId, OperationExecutionFetchOptions) {
+                var operationExecutionPermId = new OperationExecutionPermId(operationExecutionPermIdString);
+                var fetchOptions = new OperationExecutionFetchOptions();
+                var fetchOptionsDetails = fetchOptions.withDetails();
+                fetchOptionsDetails.withResults();
+                fetchOptionsDetails.withError();
+                mainController.openbisV3.getOperationExecutions([operationExecutionPermId], fetchOptions).done(function(results) {
+                    var result = results[operationExecutionPermIdString];
+                    var v2Result = null;
+                    if (result && result.details && result.details.results) {
+                        v2Result = result.details.results[0];
+                    }
+
+                    if (result && result.state === 'FINISHED') {
+                        mainController.serverFacade.customELNApiCallbackHandler(v2Result, callbackFunction);
+                    } else if (!result || result.state === 'FAILED') {
+                        mainController.serverFacade.customELNApiCallbackHandler(v2Result, callbackFunction);
+                    } else {
+                        setTimeout(function() {
+                            _this.waitForOpExecutionResponse(operationExecutionPermIdString, callbackFunction);
+                        }, 3000);
+                    }
+                });
+            });
+    };
+
+    this.getUserInformation = function(callback) {
+        var userId = mainController.serverFacade.getUserId();
+        mainController.serverFacade.getSessionInformation(function(sessionInfo) {
+            var userInformation = {
+                firstName: sessionInfo.person.firstName,
+                lastName: sessionInfo.person.lastName,
+                email: sessionInfo.person.email,
+                id: userId,
+            };
+            callback(userInformation);
         });
-    }
+    };
 }

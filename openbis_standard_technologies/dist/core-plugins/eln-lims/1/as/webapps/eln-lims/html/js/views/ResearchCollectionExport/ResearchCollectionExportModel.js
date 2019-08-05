@@ -15,5 +15,9 @@
  */
 
 function ResearchCollectionExportModel() {
+    this.submissionTypes = [];
 
+    this.addSubmissionType = function(submissionType) {
+        submissionTypes.push(submissionType);
+    };
 }
