@@ -140,10 +140,7 @@ def sendToDSpace(params, tr, tempZipFileName, tempZipFilePath):
         for key, value in headers.iteritems():
             request.header(key, str(value))
         response = request.method(HttpMethod.POST).file(Paths.get(tempZipFilePath), 'application/zip').send()
-        status = response.getStatus()
-        if status >= 300:
-            reason = response.getReason()
-            raise ValueError('Unsuccessful response from the server: %s %s' % (status, reason))
+        checkResponseStatus(response)
 
         xmlText = response.getContentAsString().encode('utf-8')
         xmlRoot = ET.fromstring(xmlText)
@@ -177,6 +174,7 @@ def authenticateUserJava(url, tr):
 
 def fetchServiceDocument(url, httpClient):
     response = httpClient.newRequest(url).method(HttpMethod.GET).send()
+    checkResponseStatus(response)
 
     xmlText = response.getContentAsString().encode('utf-8')
     xmlRoot = ET.fromstring(xmlText)
@@ -189,6 +187,13 @@ def fetchServiceDocument(url, httpClient):
         }
 
     return json.dumps(map(collectionToDictionaryMapper, collections))
+
+
+def checkResponseStatus(response):
+    status = response.getStatus()
+    if status >= 300:
+        reason = response.getReason()
+        raise ValueError('Unsuccessful response from the server: %s %s' % (status, reason))
 
 
 def generateInternalZipFile(entities, params, tempDirPath, tempZipFilePath):
