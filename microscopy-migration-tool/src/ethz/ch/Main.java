@@ -250,11 +250,11 @@ public class Main
         EntityPropertyCopy FACS_ARIA_TUBE_p =               new SamplePropertyCopy( "FACS_ARIA_TUBE",           "FACS_ARIA_TUBE_NAME",                 "$NAME");
         EntityPropertyCopy INFLUX_TUBE_p =                  new SamplePropertyCopy( "INFLUX_TUBE",              "INFLUX_TUBE_NAME",                    "$NAME");
         EntityPropertyCopy MOFLO_XDP_TUBE_p =               new SamplePropertyCopy( "MOFLO_XDP_TUBE",           "MOFLO_XDP_TUBE_NAME",                 "$NAME");
-        EntityPropertyCopy S3E_TUBE_p =                     new SamplePropertyCopy( "S3E_TUBE",                 "S3E_NAME",                            "$NAME");
+        EntityPropertyCopy S3E_TUBE_p =                     new SamplePropertyCopy( "S3E_TUBE",                 "S3E_TUBE_NAME",                        "$NAME");
         EntityPropertyCopy MICROSCOPY_SAMPLE_TYPE_p =       new SamplePropertyCopy( "MICROSCOPY_SAMPLE_TYPE",   "MICROSCOPY_SAMPLE_NAME",              "$NAME");
         EntityPropertyCopy MICROSCOPY_ACCESSORY_FILE_p =    new DataSetPropertyCopy("MICROSCOPY_ACCESSORY_FILE","MICROSCOPY_ACCESSORY_FILE_NAME",      "$NAME");
-        EntityPropertyCopy MICROSCOPY_IMAGE_CONTAINER_p =   new DataSetPropertyCopy("MICROSCOPY_IMAGE_CONTAINER","MICROSCOPY_IMAGE_CONTAINER_NAME",     "$NAME");
-        
+        EntityPropertyCopy MICROSCOPY_IMAGE_CONTAINER_p =   new DataSetPropertyCopy("MICROSCOPY_IMG_CONTAINER", "MICROSCOPY_IMG_CONTAINER_NAME",        "$NAME");
+
         List<EntityPropertyCopy> propertyCopiesMigrationConfig = Arrays.asList(LSR_FORTESSA_PLATE_p,
                 LSR_FORTESSA_TUBE_p,
                 LSR_FORTESSA_WELL_p,

@@ -5,10 +5,10 @@ import * as page from '../common/page.js'
 export default function types(state = {}, action){
   if(page.isPageAction(pages.USERS, action)){
     return combineReducers({
+      currentRoute: page.currentRoute,
       browser: page.browser,
       openObjects: page.openObjects,
-      changedObjects: page.changedObjects,
-      selectedObject: page.selectedObject
+      changedObjects: page.changedObjects
     })(state, action)
   }else{
     return state

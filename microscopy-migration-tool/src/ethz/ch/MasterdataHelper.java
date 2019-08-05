@@ -98,7 +98,6 @@ public class MasterdataHelper
             DESCRIPTION.setLabel("Description");
             DESCRIPTION.setDescription("Description");
             DESCRIPTION.setDataType(DataType.VARCHAR);
-            DESCRIPTION.setInternalNameSpace(true);
             toCreate.add(DESCRIPTION);
         }
         
