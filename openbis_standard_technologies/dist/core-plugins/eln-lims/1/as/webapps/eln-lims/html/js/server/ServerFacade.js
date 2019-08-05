@@ -302,7 +302,65 @@ function ServerFacade(openbisServer) {
 			"entities" : entities,
 			"metadataOnly" : metadataOnly,
 		}, callbackFunction, "exports-api");
-	}
+	};
+
+	//
+	// Research collection export
+	//
+	this.exportRc = function(entities, includeRoot, metadataOnly, submissionUrl, submissionType, userInformation, callbackFunction) {
+		this.asyncExportRc({
+			"method": "exportAll",
+			"includeRoot": includeRoot,
+			"entities": entities,
+			"metadataOnly": metadataOnly,
+			"submissionUrl": submissionUrl,
+			"submissionType": submissionType,
+            "userInformation": userInformation,
+			"originUrl": window.location.origin,
+			"sessionToken": this.openbisServer.getSession(),
+		}, callbackFunction, "rc-exports-api");
+	};
+
+	this.asyncExportRc = function(parameters, callbackFunction, serviceId) {
+		require(["as/dto/service/execute/ExecuteAggregationServiceOperation",
+				"as/dto/operation/AsynchronousOperationExecutionOptions", "as/dto/service/id/DssServicePermId",
+				"as/dto/datastore/id/DataStorePermId", "as/dto/service/execute/AggregationServiceExecutionOptions"],
+			function(ExecuteAggregationServiceOperation, AsynchronousOperationExecutionOptions, DssServicePermId, DataStorePermId,
+					 AggregationServiceExecutionOptions) {
+				var dataStoreId = new DataStorePermId("STANDARD");
+				var dssServicePermId = new DssServicePermId(serviceId, dataStoreId);
+				var options = new AggregationServiceExecutionOptions();
+
+				options.withParameter("sessionToken", parameters["sessionToken"]);
+
+				options.withParameter("entities", parameters["entities"]);
+				options.withParameter("includeRoot", parameters["includeRoot"]);
+				options.withParameter("metadataOnly", parameters["metadataOnly"]);
+				options.withParameter("method", parameters["method"]);
+				options.withParameter("originUrl", parameters["originUrl"]);
+				options.withParameter("submissionType", parameters["submissionType"]);
+				options.withParameter("submissionUrl", parameters["submissionUrl"]);
+				options.withParameter("entities", parameters["entities"]);
+				options.withParameter("userId", parameters["userInformation"]["id"]);
+				options.withParameter("userEmail", parameters["userInformation"]["email"]);
+				options.withParameter("userFirstName", parameters["userInformation"]["firstName"]);
+				options.withParameter("userLastName", parameters["userInformation"]["lastName"]);
+
+				var operation = new ExecuteAggregationServiceOperation(dssServicePermId, options);
+				mainController.openbisV3.executeOperations([operation], new AsynchronousOperationExecutionOptions()).done(function(results) {
+					callbackFunction(results.executionId.permId);
+				});
+			});
+	};
+
+	//
+	// Gets submission types
+	//
+	this.listSubmissionTypes = function(callbackFunction) {
+		this.customELNApi({
+			"method": "getSubmissionTypes",
+		}, callbackFunction, "rc-exports-api");
+	};
 	
 	//
 	// Metadata Related Functions
@@ -659,7 +717,6 @@ function ServerFacade(openbisServer) {
     this._callPasswordResetService = function(parameters, callbackFunction) {
         var _this = this;
         this.getOpenbisV3(function(openbisV3) {
-
             openbisV3.loginAsAnonymousUser().done(function(sessionToken) {
                 _this.openbisServer._internal.sessionToken = sessionToken;
 
@@ -682,6 +739,7 @@ function ServerFacade(openbisServer) {
     }
 
  	this.customELNApi = function(parameters, callbackFunction, service) {
+		var _this = this;
  		if(!service) {
  			service = "eln-lims-api";
  		}
@@ -693,24 +751,28 @@ function ServerFacade(openbisServer) {
  		
  		var dataStoreCode = profile.getDefaultDataStoreCode();
  		this.openbisServer.createReportFromAggregationService(dataStoreCode, service, parameters, function(data) {
- 			var error = null;
- 			var result = {};
- 			if(data.error) { //Error Case 1
- 				error = data.error.message;
- 			} else if (data.result.columns[1].title === "Error") { //Error Case 2
- 				error = data.result.rows[0][1].value;
- 			} else if (data.result.columns[0].title === "STATUS" && data.result.rows[0][0].value === "OK") { //Success Case
- 				result.message = data.result.rows[0][1].value;
- 				result.data = data.result.rows[0][2].value;
- 				if(result.data) {
- 					result.data = JSON.parse(result.data);
- 				}
- 			} else {
- 				error = "Unknown Error.";
- 			}
- 			callbackFunction(error, result);
+			_this.customELNApiCallbackHandler(data, callbackFunction);
  		});
-	}
+	};
+
+	this.customELNApiCallbackHandler = function(data, callbackFunction) {
+		var error = null;
+		var result = {};
+		if (data && data.error) { //Error Case 1
+			error = data.error.message;
+		} else if (data && data.result.columns[1].title === "Error") { //Error Case 2
+			error = data.result.rows[0][1].value;
+		} else if (data && data.result.columns[0].title === "STATUS" && data.result.rows[0][0].value === "OK") { //Success Case
+			result.message = data.result.rows[0][1].value;
+			result.data = data.result.rows[0][2].value;
+			if(result.data) {
+				result.data = JSON.parse(result.data);
+			}
+		} else {
+			error = "Unknown Error.";
+		}
+		callbackFunction(error, result);
+	};
 
 	this.customELNASAPI = function(parameters, callbackFunction) {
 		this.customASService(parameters, callbackFunction, "as-eln-lims-api");
@@ -2563,10 +2625,10 @@ function ServerFacade(openbisServer) {
 
 	this.getSessionInformation = function(callbackFunction) {
 		mainController.openbisV3.getSessionInformation().done(function(sessionInfo) {
-                callbackFunction(sessionInfo);
+			callbackFunction(sessionInfo);
         }).fail(function(result) {
-				Util.showFailedServerCallError(result);
-				callbackFunction(false);
+			Util.showFailedServerCallError(result);
+			callbackFunction(false);
 		});
 	}
 

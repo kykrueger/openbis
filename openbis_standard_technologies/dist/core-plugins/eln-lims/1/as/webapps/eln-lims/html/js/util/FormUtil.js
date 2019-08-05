@@ -322,25 +322,28 @@ var FormUtil = new function() {
 		Select2Manager.add($dropdown);
 		return $dropdown;
 	}
-	
-	this.getPlainDropdown = function(mapVals, placeHolder) {
 
-		var $component = $("<select>", {class : 'form-control'});
-		if(placeHolder) {
-			$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
-		}
-		for(var mIdx = 0; mIdx < mapVals.length; mIdx++) {
+	this.setValuesToComponent = function ($component, mapVals) {
+		for (var mIdx = 0; mIdx < mapVals.length; mIdx++) {
 			var $option = $("<option>").attr('value', mapVals[mIdx].value).text(mapVals[mIdx].label);
-			if(mapVals[mIdx].disabled) {
+			if (mapVals[mIdx].disabled) {
 				$option.attr('disabled', '');
 			}
-			if(mapVals[mIdx].selected) {
+			if (mapVals[mIdx].selected) {
 				$option.attr('selected', '');
 			}
 			$component.append($option);
 		}
+	};
+
+	this.getPlainDropdown = function(mapVals, placeHolder) {
+		var $component = $("<select>", {class : 'form-control'});
+		if (placeHolder) {
+			$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
+		}
+		this.setValuesToComponent($component, mapVals);
 		return $component;
-	}
+	};
 	
 	this.getDataSetsDropDown = function(code, dataSetTypes) {
 		var $component = $("<select>", { class : 'form-control ' });
@@ -350,11 +353,11 @@ var FormUtil = new function() {
 		
 		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text('Select a dataset type'));
 		
-		for(var i = 0; i < dataSetTypes.length; i++) {
+		for (var i = 0; i < dataSetTypes.length; i++) {
 			var datasetType = dataSetTypes[i];
 			var label = Util.getDisplayNameFromCode(datasetType.code);
 			var description = Util.getEmptyIfNull(datasetType.description);
-			if(description !== "") {
+			if (description !== "") {
 				label += " (" + description + ")";
 			}
 			
