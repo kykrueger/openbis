@@ -153,7 +153,7 @@ def openbis_definitions(entity):
         "plugin": {
             "attrs_new": "name description pluginType script available entityKind".split(),
             "attrs_up": "description script available".split(),
-            "attrs": "permId name description registrator registrationDate pluginKind entityKinds pluginType script available".split(),
+            "attrs": "permId name description registrator registrationDate pluginKind entityKind pluginType script available".split(),
             "multi": "".split(),
             "identifier": "pluginId",
             "pluginType": ['DYNAMIC_PROPERTY', 'MANAGED_PROPERTY', 'ENTITY_VALIDATION'],
