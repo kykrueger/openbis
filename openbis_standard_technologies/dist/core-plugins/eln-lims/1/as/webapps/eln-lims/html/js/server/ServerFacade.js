@@ -332,7 +332,6 @@ function ServerFacade(openbisServer) {
 				var dssServicePermId = new DssServicePermId(serviceId, dataStoreId);
 				var options = new AggregationServiceExecutionOptions();
 
-				options.withParameter("dataStoreCode", dataStoreCode);
 				options.withParameter("sessionToken", parameters["sessionToken"]);
 
 				options.withParameter("entities", parameters["entities"]);
