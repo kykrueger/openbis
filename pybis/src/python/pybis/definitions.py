@@ -153,7 +153,7 @@ def openbis_definitions(entity):
         "plugin": {
             "attrs_new": "name description pluginType script available entityKind".split(),
             "attrs_up": "description script available".split(),
-            "attrs": "permId name description registrator registrationDate pluginKind entityKind pluginType script available".split(),
+            "attrs": "permId name description registrator registrationDate pluginKind entityKinds pluginType script available".split(),
             "multi": "".split(),
             "identifier": "pluginId",
             "pluginType": ['DYNAMIC_PROPERTY', 'MANAGED_PROPERTY', 'ENTITY_VALIDATION'],
@@ -318,7 +318,22 @@ def get_type_for_entity(entity, action):
         raise ValueError('unknown action: {}'.format(action))
 
     definition = openbis_definitions(entity)
-    return definition[action]
+    if action in definition:
+        return definition[action]
+    else:
+        # try to guess type, according to the naming scheme
+        cap_entity = entity[:1].upper() + entity[1:]
+        noun = {
+            "create": "Creation",
+            "update": "Update",
+            "delete": "DeletionOptions",
+            "fetch" : "FetchOptions"
+        }
+        return {
+            "@type": "as.dto.{}.{}.{}{}"
+            .format(entity.lower(), action, cap_entity, noun[action])
+        }
+
 
 def get_method_for_entity(entity, action):
     action = action.lower()
@@ -329,3 +344,4 @@ def get_method_for_entity(entity, action):
     cap_entity = entity[:1].upper() + entity[1:]
 
     return "{}{}s".format(action, cap_entity)
+
