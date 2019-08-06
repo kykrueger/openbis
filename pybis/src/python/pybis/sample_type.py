@@ -1,12 +1,17 @@
 from .property_assignment import PropertyAssignments
 from .semantic_annotation import SemanticAnnotation
 from .attribute import AttrHolder
-from .entity_type import EntityType
+#from .entity_type import EntityType
+from .openbis_object import OpenBisObject 
 
-class SampleType(EntityType):
+class SampleType(
+    OpenBisObject,
+    entity='sampleType',
+    single_item_method_name='get_sample_type'
+):
     """ Helper class for sample types, adding functionality.
     """
-    def __init__(self, openbis_obj, data=None, **kwargs):
+    def __init_old__(self, openbis_obj, data=None, **kwargs):
 
         # call __init__ of EntityType parent class
         super().__init__(openbis_obj, data)
