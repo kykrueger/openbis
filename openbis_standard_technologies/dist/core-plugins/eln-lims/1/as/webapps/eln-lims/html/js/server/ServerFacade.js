@@ -327,10 +327,12 @@ function ServerFacade(openbisServer) {
 				"as/dto/datastore/id/DataStorePermId", "as/dto/service/execute/AggregationServiceExecutionOptions"],
 			function(ExecuteAggregationServiceOperation, AsynchronousOperationExecutionOptions, DssServicePermId, DataStorePermId,
 					 AggregationServiceExecutionOptions) {
-				var dataStoreId = new DataStorePermId("STANDARD");
+				var dataStoreCode = profile.getDefaultDataStoreCode();
+				var dataStoreId = new DataStorePermId(dataStoreCode);
 				var dssServicePermId = new DssServicePermId(serviceId, dataStoreId);
 				var options = new AggregationServiceExecutionOptions();
 
+				options.withParameter("dataStoreCode", dataStoreCode);
 				options.withParameter("sessionToken", parameters["sessionToken"]);
 
 				options.withParameter("entities", parameters["entities"]);
