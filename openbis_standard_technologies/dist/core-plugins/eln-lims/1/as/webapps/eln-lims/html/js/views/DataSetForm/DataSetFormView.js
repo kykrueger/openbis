@@ -618,7 +618,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					continue;
 				}
 				
-				if(propertyType.code === "$XMLCOMMENTS") {
+				if($.inArray(propertyType.code, profile.jExcelFields) !== -1) {
+                    var $jexcelContainer = $("<div>");
+                    $fieldset.append(FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label));
+                    JExcelEditorManager.createField($jexcelContainer, this._dataSetFormModel.mode, propertyType.code, this._dataSetFormModel.dataSet);
+                    continue;
+                } else if(propertyType.code === "$XMLCOMMENTS") {
 					var $commentsContainer = $("<div>");
 					$fieldset.append($commentsContainer);
 					var isAvailable = this._dataSetFormController._addCommentsWidget($commentsContainer);
