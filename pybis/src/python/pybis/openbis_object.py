@@ -134,7 +134,7 @@ class OpenBisObject():
         """
         if not self.data:
             return
-
+ 
         self.openbis.delete_openbis_entity(
             entity=self._entity,
             objectId=self.data['permId'],
