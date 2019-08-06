@@ -628,7 +628,8 @@ class Openbis:
             "get_role_assignments()",
             "get_role_assignment(techId)",
             "get_plugins()",
-            "get_plugin(name)",
+            "get_plugin(code)",
+            "new_plugin(code)",
             "new_group(code, description, userIds)",
             'new_space(name, description)',
             'new_project(space, code, description, attachments)',
@@ -636,6 +637,8 @@ class Openbis:
             'new_collection(type, code, project, props={})',
             'new_sample(type, space, project, experiment, parents)',
             'new_object(type, space, project, experiment, parents)', # 'new_sample(type, space, project, experiment)' alias
+            'new_sample_type()',
+            'new_object_type()',
             'new_dataset(type, parent, experiment, sample, files=[], folder, props={})',
             'new_semantic_annotation(entityType, propertyType)',
             'update_sample(sampleId, space, project, experiment, parents, children, components, properties, tagIds, attachments)',
@@ -2506,28 +2509,17 @@ class Openbis:
                 else:
                     return Plugin(self, data=resp[permId])
 
-    def new_plugin(self, pluginType= "MANAGED_PROPERTY", pluginKind = "JYTHON", **kwargs):
-        """ Note: not functional yet. Creates a new Plugin in openBIS. The attribute pluginKind must be one of
-        the following:
-        DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION;
-
-        Usage::
-            o.new_plugin(
-                name = 'name of plugin',
-                description = '...',
-                pluginType  = "ENTITY_VALIDATION",
-                script      = "def a():\n  pass",
-                available   = True,
-                entityKind  = None
-            )
+    def new_plugin(self, name, pluginType, **kwargs):
+        """ Creates a new Plugin in openBIS. 
+ 
+        name        -- name of the plugin
+        description --
+        pluginType  -- DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION
+        entityKind  -- MATERIAL, EXPERIMENT, SAMPLE, DATA_SET
+        script      -- string of the script itself
+        available   --
         """
-
-        if pluginType not in [
-            'DYNAMIC_PROPERTY', 'MANAGED_PROPERTY', 'ENTITY_VALIDATION'
-        ]:
-            raise ValueError(
-                "pluginType must be one of the following: DYNAMIC_PROPERTY, MANAGED_PROPERTY, ENTITY_VALIDATION")
-        return Plugin(self, pluginType=pluginType, pluginKind=pluginKind, **kwargs) 
+        return Plugin(self, name=name, pluginType=pluginType, **kwargs) 
         
 
     def new_property_type(self, code, dataType, **kwargs):
@@ -2537,7 +2529,10 @@ class Openbis:
             "MATERIAL", "HYPERLINK", "XML"
         ]
         if dataType not in allowed_dataTypes:
-            raise ValueError("please use one of these dataTypes: {}".format(allowed_dataTypes))
+            raise ValueError(
+                "please use one of these dataTypes: {}"
+                .format(allowed_dataTypes)
+            )
         return PropertyType(openbis_obj=self, code=code, dataType=dataType, **kwargs)
 
     def get_property_type(self, code, only_data=False):
@@ -2712,14 +2707,12 @@ class Openbis:
             optional_attributes = []
 
         search_request = {
-            "@type": "as.dto.{}.search.{}TypeSearchCriteria".format(
-                entity.lower(), entity
-            )
+            "@type": "as.dto.{}.search.{}TypeSearchCriteria"
+            .format(entity.lower(), entity)
         }
         fetch_options = {
-            "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions".format(
-                entity.lower(), entity
-            )
+            "@type": "as.dto.{}.fetchoptions.{}TypeFetchOptions"
+            .format(entity.lower(), entity)
         }
         fetch_options['from'] = start_with
         fetch_options['count'] = count
@@ -3180,6 +3173,8 @@ class Openbis:
         """ Creates a new sample type
         """
         return SampleType(self, code=code, **kwargs)
+
+    new_object_type = new_sample_type
 
 
     def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, props=None, folder=None, **kwargs):
