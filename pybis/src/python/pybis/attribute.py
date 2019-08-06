@@ -1,6 +1,6 @@
 from pandas import DataFrame, Series
 from tabulate import tabulate
-from .definitions import openbis_definitions, fetch_option, get_method_for_entity
+from .definitions import openbis_definitions, fetch_option, get_method_for_entity, get_type_for_entity
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_person
 from .attachment import Attachment
 
@@ -102,17 +102,8 @@ class AttrHolder():
         """Returns the Python-equivalent JSON request when a new object is created.
         It is used internally by the save() method of a newly created object.
         """
-        #defs = openbis_definitions(self.entity)
         attr2ids = openbis_definitions('attr2ids')
-
-        new_obj = {}
-        if 'create' in self._defs:
-            new_obj = defs['create']
-        else:
-            # Guess the creation type based on the entity and the naming convention used in openBIS
-            new_obj = {
-                "@type": "as.dto.{}.create.{}Creation".format(self.entity.lower(), self.entity)
-            }
+        new_obj = get_type_for_entity(self.entity, 'create')
 
         for attr in self._defs['attrs_new']:
             items = None
@@ -176,17 +167,7 @@ class AttrHolder():
         #defs = openbis_definitions(self._entity)
         attr2ids = openbis_definitions('attr2ids')
 
-        up_obj = {}
-        if 'update' in self._defs:
-            up_obj = self._defs['update']
-        else:
-            # guess the @type based on the entity
-            up_obj = {
-                "@type": "as.dto.{}.update.{}Update".format(
-                    self.entity.lower(), self.entity
-                ),
-            }
-
+        up_obj = get_type_for_entity(self.entity, 'update')
 
         # for some weird reasons, the permId is called differently
         # for every openBIS entity, but only when updating...
@@ -903,7 +884,8 @@ class AttrHolder():
             <tbody>
         """
 
-        for attr in self._defs['attrs']:
+        attrs = self._defs['attrs_new'] if self.is_new else self._defs['attrs']
+        for attr in attrs:
             if attr == 'attachments':
                 continue
             html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
@@ -927,7 +909,8 @@ class AttrHolder():
 
         headers = ['attribute', 'value']
         lines = []
-        for attr in self._defs['attrs']:
+        attrs = self._defs['attrs_new'] if self.is_new else self._defs['attrs']
+        for attr in attrs:
             if attr == 'attachments':
                 continue
             elif attr == 'users' and '_users' in self.__dict__:
