@@ -14,18 +14,18 @@
 # limitations under the License.
 #
 # MasterDataRegistrationTransaction Class
+import sys
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
 from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
-from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
-from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
 from ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl import MasterDataRegistrationHelper
-import sys
 
 helper = MasterDataRegistrationHelper(sys.path)
 api = CommonServiceProvider.getApplicationContext().getBean(ApplicationServerApi.INTERNAL_SERVICE_NAME)
 sessionToken = api.loginAsSystem()
 props = CustomASServiceExecutionOptions().withParameter('xls', helper.listXlsByteArrays())\
-    .withParameter('xls_name', 'ELN-LIMS').withParameter('update_mode', 'IGNORE_EXISTING')\
+    .withParameter('xls_name', 'ELN-LIMS').withParameter('update_mode', 'UPDATE_EXISTING')\
     .withParameter('scripts', helper.getAllScripts())
 result = api.executeCustomASService(sessionToken, CustomASServiceCode("xls-import-api"), props);
 print("======================== master-data xls ingestion result ========================")
