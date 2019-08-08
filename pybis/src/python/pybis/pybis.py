@@ -29,7 +29,7 @@ from tabulate import tabulate
 from . import data_set as pbds
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
 from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
-from .entity_type import EntityType
+from .entity_type import EntityType, SampleType, DataSetType, MaterialType, ExperimentType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
 from .definitions import openbis_definitions, get_definition_for_entity, fetch_option, get_fetchoption_for_entity, get_type_for_entity, get_method_for_entity
@@ -45,7 +45,6 @@ from .person import Person
 from .group import Group
 from .role_assignment import RoleAssignment
 from .tag import Tag
-from .sample_type import SampleType
 from .semantic_annotation import SemanticAnnotation
 
 from pandas import DataFrame, Series
@@ -452,7 +451,7 @@ def _subcriteria_for_permid(permids, entity, parents_or_children='', operator='A
     return criteria
 
 
-def _subcriteria_for_code(code, object_type):
+def _subcriteria_for_code(code, entity):
     """ Creates the often used search criteria for code values. Returns a dictionary.
 
     Example::
@@ -482,8 +481,9 @@ def _subcriteria_for_code(code, object_type):
             fieldname = "code"
             fieldtype = "as.dto.common.search.CodeSearchCriteria"
 
-          
-        search_criteria = get_search_type_for_entity(object_type.lower())
+         
+        #search_criteria = get_search_type_for_entity(entity.lower())
+        search_criteria = get_type_for_entity(entity, 'search')
         search_criteria['criteria'] = [{
             "fieldName": fieldname,
             "fieldType": "ATTRIBUTE",
@@ -497,8 +497,8 @@ def _subcriteria_for_code(code, object_type):
         search_criteria["operator"] = "AND"
         return search_criteria
     else:
-        return get_search_type_for_entity(object_type.lower())
-
+        return get_type_for_entity(entity, 'search')
+        #return get_search_type_for_entity(entity.lower())
 
 
 class Openbis:
@@ -609,6 +609,7 @@ class Openbis:
             "get_object_types()", # "get_sample_types()" alias
             "get_property_types()",
             "get_property_type()",
+            "new_property_type()",
             "get_semantic_annotations()",
             "get_semantic_annotation(permId, only_data = False)",
             "get_space(code)",
@@ -2522,18 +2523,8 @@ class Openbis:
         return Plugin(self, name=name, pluginType=pluginType, **kwargs) 
         
 
-    def new_property_type(self, code, dataType, **kwargs):
-        allowed_dataTypes = [
-            "INTEGER", "VARCHAR", "MULTILINE_VARCHAR", 
-            "REAL", "TIMESTAMP", "BOOLEAN", "CONTROLLEDVOCABULARY",
-            "MATERIAL", "HYPERLINK", "XML"
-        ]
-        if dataType not in allowed_dataTypes:
-            raise ValueError(
-                "please use one of these dataTypes: {}"
-                .format(allowed_dataTypes)
-            )
-        return PropertyType(openbis_obj=self, code=code, dataType=dataType, **kwargs)
+    def new_property_type(self, code, label, description, dataType, **kwargs):
+        return PropertyType(openbis_obj=self, code=code, label=label, description=description, dataType=dataType, **kwargs)
 
     def get_property_type(self, code, only_data=False):
         identifiers = []
@@ -2555,7 +2546,6 @@ class Openbis:
                 fetchopts
             ],
         }
-        #return json.dumps(request)
 
         resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
@@ -2603,44 +2593,6 @@ class Openbis:
         )
 
     
-    def get_sample_types(self, type=None, start_with=None, count=None):
-        """ Returns a list of all available sample types
-        """
-        return self._get_types_of(
-            method_name         = "searchSampleTypes",
-            entity              = "Sample",
-            type_name           = type,
-            optional_attributes = ["generatedCodePrefix"],
-            start_with          = start_with,
-            count               = count,
-        )
-
-    get_object_types = get_sample_types # Alias
-
-    def get_sample_type(self, type):
-        entityType = self._get_types_of(
-            method_name         = "searchSampleTypes",
-            entity              = "Sample",
-            type_name           = type,
-            optional_attributes = ["generatedCodePrefix", "validationPluginId"]
-        )
-        return SampleType(self, data=entityType.data)
-    get_object_type = get_sample_type # Alias
-
-
-    def get_experiment_types(self, type=None, start_with=None, count=None):
-        """ Returns a list of all available experiment types
-        """
-        return self._get_types_of(
-            method_name         = "searchExperimentTypes",
-            entity              = "Experiment",
-            type_name           = type,
-            start_with          = start_with,
-            count               = count,
-        )
-    get_collection_types = get_experiment_types  # Alias
-
-
     def get_experiment_type(self, type):
         try:
             return self._get_types_of(
@@ -2652,18 +2604,6 @@ class Openbis:
            raise ValueError("No such experiment type: {}".format(type))
     get_collection_type = get_experiment_type  # Alias
 
-
-    def get_material_types(self, type=None, start_with=None, count=None):
-        """ Returns a list of all available material types
-        """
-        return self._get_types_of(
-            method_name         = "searchMaterialTypes",
-            entity              = "Material",
-            type_name           = type,
-            start_with          = start_with,
-            count               = count,
-        )
-
     def get_material_type(self, type):
         try:
             return self._get_types_of(
@@ -2674,16 +2614,6 @@ class Openbis:
         except Exception:
             raise ValueError("No such material type: {}".format(type))
 
-    def get_dataset_types(self, type=None, start_with=None, count=None):
-        """ Returns a list (DataFrame object) of all currently available dataset types
-        """
-        return self._get_types_of(
-            "searchDataSetTypes", "DataSet", type,
-            optional_attributes=['kind'],
-            start_with=start_with,
-            count=count,
-        )
-
     def get_dataset_type(self, type):
         return self._get_types_of(
             method_name         = "searchDataSetTypes", 
@@ -2691,6 +2621,132 @@ class Openbis:
             type_name           = type,
             optional_attributes = ['kind']
         )
+
+    def get_material_types(self, type=None, start_with=None, count=None):
+        """ Returns a list of all available material types
+        """
+        return self.get_entity_types(
+            entity     = 'materialType',
+            cls        = MaterialType,
+            type       = type,
+            start_with = start_with,
+            count      = count
+        )
+
+    def get_experiment_types(self, type=None, start_with=None, count=None):
+        """ Returns a list of all available experiment types
+        """
+        return self.get_entity_types(
+            entity     = 'experimentType',
+            cls        = ExperimentType,
+            type       = type,
+            start_with = start_with,
+            count      = count
+        )
+    get_collection_types = get_experiment_types  # Alias
+
+    def get_dataset_types(self, type=None, start_with=None, count=None):
+        """ Returns a list of all available dataSet types
+        """
+        return self.get_entity_types(
+            entity     = 'dataSetType',
+            cls        = DataSetType,
+            type       = type,
+            start_with = start_with,
+            count      = count
+        )
+
+    def get_sample_types(self, type=None, start_with=None, count=None):
+        """ Returns a list of all available sample types
+        """
+        return self.get_entity_types(
+            entity     = 'sampleType',
+            cls        = SampleType,
+            type       = type,
+            start_with = start_with,
+            count      = count
+        )
+
+    get_object_types = get_sample_types # Alias
+
+    def get_sample_type(self, type, only_data=False):
+        entityType = self._get_types_of(
+            method_name         = "searchSampleTypes",
+            entity              = "Sample",
+            type_name           = type,
+            optional_attributes = ["generatedCodePrefix", "validationPluginId"]
+        )
+        if only_data:
+            return entityType.data
+        else:
+            return SampleType(self, data=entityType.data)
+    get_object_type = get_sample_type # Alias
+
+
+    def get_entity_types(
+        self, entity, cls, type=None,
+        start_with=None, count=None,
+    ):
+        method_name = get_method_for_entity(entity, 'search')
+        if type is not None:
+            search_request = _subcriteria_for_code(type, entity)
+        else:
+            search_request = get_type_for_entity(entity, 'search')
+
+        fetch_options = get_fetchoption_for_entity(entity)
+        fetch_options['from'] = start_with
+        fetch_options['count'] = count
+
+        request = {
+            "method": method_name,
+            "params": [
+                self.token, 
+                search_request, 
+                fetch_options
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+        parse_jackson(resp)
+
+        entity_types = []
+        defs = get_definition_for_entity(entity)
+        attrs = defs['attrs']
+        if len(resp['objects']) == 0:
+            entity_types = DataFrame(columns=attrs)
+        else:
+            objects = resp['objects']
+            parse_jackson(objects)
+            entity_types = DataFrame(objects)
+            entity_types['permId'] = entity_types['permId'].map(extract_permid)
+            entity_types['modificationDate'] = entity_types['modificationDate'].map(format_timestamp)
+        return Things(
+            openbis_obj = self,
+            entity = entity,
+            df = entity_types[attrs],
+            start_with = start_with,
+            count = count,
+            totalCount = resp.get('totalCount'),
+        )
+
+    def get_entity_type(
+        self, entity, cls,
+        start_with=None, count=None,
+    ):
+        method_name = get_method_for_entity(entity, 'search')
+        search_request = get_type_for_entity(entity, 'search')
+        fetch_options = get_fetchoption_for_entity(entity)
+        fetch_options['from'] = start_with
+        fetch_options['count'] = count
+
+        request = {
+            "method": method_name,
+            "params": [
+                self.token, 
+                search_request, 
+                fetch_options
+            ],
+        }
+
 
     def _get_types_of(
         self, method_name, entity, type_name=None,
@@ -3170,12 +3226,17 @@ class Openbis:
             code,
             **kwargs
         ):
-        """ Creates a new sample type
-        """
         return SampleType(self, code=code, **kwargs)
 
     new_object_type = new_sample_type
 
+    def new_dataset_type(self, 
+            code,
+            **kwargs
+        ):
+        return DataSetType(self, code=code, **kwargs)
+
+    new_object_type = new_sample_type
 
     def new_dataset(self, type=None, kind='PHYSICAL_DATA', files=None, props=None, folder=None, **kwargs):
         """ Creates a new dataset of a given sample type.
