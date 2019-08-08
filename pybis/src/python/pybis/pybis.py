@@ -2592,28 +2592,6 @@ class Openbis:
             totalCount = resp.get('totalCount'),
         )
 
-    
-    def get_experiment_type(self, type):
-        try:
-            return self._get_types_of(
-                method_name     = "searchExperimentTypes",
-                entity          = "Experiment",
-                type_name       = type
-            )
-        except Exception:
-           raise ValueError("No such experiment type: {}".format(type))
-    get_collection_type = get_experiment_type  # Alias
-
-    def get_material_type(self, type):
-        try:
-            return self._get_types_of(
-                method_name     = "searchMaterialTypes", 
-                entity          = "Material", 
-                type_name       = type
-            ) 
-        except Exception:
-            raise ValueError("No such material type: {}".format(type))
-
     def get_dataset_type(self, type):
         return self._get_types_of(
             method_name         = "searchDataSetTypes", 
@@ -2633,6 +2611,14 @@ class Openbis:
             count      = count
         )
 
+    def get_material_type(self, type, only_data=False):
+        return self.get_entity_type(
+            entity     = 'materialType',
+            cls        = MaterialType,
+            identifier = type,
+            only_data  = only_data,
+        )
+
     def get_experiment_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available experiment types
         """
@@ -2645,6 +2631,15 @@ class Openbis:
         )
     get_collection_types = get_experiment_types  # Alias
 
+    def get_experiment_type(self, type, only_data=False):
+        return self.get_entity_type(
+            entity     = 'experimentType',
+            cls        = ExperimentType,
+            identifier = type,
+            only_data  = only_data,
+        )
+    get_collection_type = get_experiment_type  # Alias
+
     def get_dataset_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available dataSet types
         """
@@ -2654,6 +2649,14 @@ class Openbis:
             type       = type,
             start_with = start_with,
             count      = count
+        )
+
+    def get_dataset_type(self, type, only_data=False):
+        return self.get_entity_type(
+            entity     = 'dataSetType',
+            identifier = type,
+            cls        = DataSetType,
+            only_data  = only_data,
         )
 
     def get_sample_types(self, type=None, start_with=None, count=None):
@@ -2673,6 +2676,7 @@ class Openbis:
             entity     = 'sampleType',
             identifier = type,
             cls        = SampleType,
+            only_data  = only_data,
         )
     get_object_type = get_sample_type # Alias
 
@@ -2712,11 +2716,14 @@ class Openbis:
             entity_types = DataFrame(objects)
             entity_types['permId'] = entity_types['permId'].map(extract_permid)
             entity_types['modificationDate'] = entity_types['modificationDate'].map(format_timestamp)
+
+        single_item_method = getattr(self, cls._single_item_method_name)
         return Things(
             openbis_obj = self,
             entity = entity,
             df = entity_types[attrs],
             start_with = start_with,
+            single_item_method = single_item_method, 
             count = count,
             totalCount = resp.get('totalCount'),
         )
