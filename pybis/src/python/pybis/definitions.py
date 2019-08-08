@@ -318,6 +318,10 @@ fetch_option = {
         "type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}
     },
     "samples": {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"},
+    "sampleType": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"},
+    "materialType": {"@type": "as.dto.material.fetchoptions.MaterialTypeFetchOptions"},
+    "dataSetType": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
+    "experimentType": {"@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions"},
     "dataSet": {
         "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions",
         "type":       {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
@@ -367,7 +371,6 @@ fetch_option = {
     "semanticAnnotations": {
         "@type": "as.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions"
     },
-    "materialType": { "@type": "as.dto.material.fetchoptions.MaterialTypeFetchOptions" },
     "tags": {"@type": "as.dto.tag.fetchoptions.TagFetchOptions"},
     "tag": {"@type": "as.dto.tag.fetchoptions.TagFetchOptions"},
     "attachments": {"@type": "as.dto.attachment.fetchoptions.AttachmentFetchOptions"},
