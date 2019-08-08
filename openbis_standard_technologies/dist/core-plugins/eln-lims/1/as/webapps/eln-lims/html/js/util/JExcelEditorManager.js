@@ -6,15 +6,17 @@ var JExcelEditorManager = new function() {
         var _this = this;
         return function() {
             var jExcelEditor = _this.jExcelEditors[guid];
-            var data = jExcelEditor.getData();
-            var style = jExcelEditor.getStyle();
-            var meta = jExcelEditor.getMeta();
-            var jExcelEditorValue = {
-                data : data,
-                style : style,
-                meta : meta
+            if(jExcelEditor) {
+                var data = jExcelEditor.getData();
+                var style = jExcelEditor.getStyle();
+                var meta = jExcelEditor.getMeta();
+                var jExcelEditorValue = {
+                    data : data,
+                    style : style,
+                    meta : meta
+                }
+                entity.properties[propertyCode] = "<DATA>" + JSON.stringify(jExcelEditorValue) + "</DATA>";
             }
-            entity.properties[propertyCode] = "<DATA>" + JSON.stringify(jExcelEditorValue) + "</DATA>";
         }
     }
 
@@ -56,15 +58,36 @@ var JExcelEditorManager = new function() {
                     { type:'color', content:'format_color_fill', k:'background-color' },
             ];
         }
-        var jexcelField = jexcel($container[0], {
+
+        var options = {
             data: data,
             style: style,
             meta: meta,
             editable : mode == FormMode.EDIT,
             minDimensions:[30, 30],
             toolbar: toolbar,
-            onchange: onChangeHandler
-        });
+            onchange: onChangeHandler,
+            onchangestyle: onChangeHandler,
+            onchangemeta: onChangeHandler
+
+        };
+
+        if(mode != FormMode.EDIT) {
+            options.allowInsertRow = false;
+            options.allowManualInsertRow = false;
+            options.allowInsertColumn = false;
+            options.allowManualInsertColumn = false;
+            options.allowDeleteRow = false;
+            options.allowDeleteColumn = false;
+            options.allowRenameColumn = false;
+            options.allowComments = false;
+
+            options.contextMenu = function(obj, x, y, e) {
+                return [];
+            }
+        }
+
+        var jexcelField = jexcel($container[0], options);
 
         this.jExcelEditors[guid] = jexcelField;
 	}
