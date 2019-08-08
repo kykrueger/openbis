@@ -1,3 +1,9 @@
+## Changes with pybis-1.9.0
+
+* new: search, create, update and delete Property Types
+* new: search, create, update and delete Plugins
+* new: create and update Sample Types
+
 ## Changes with pybis-1.8.5
 
 * changed to v3 API when fetching datastores
