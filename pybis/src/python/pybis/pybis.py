@@ -2666,22 +2666,15 @@ class Openbis:
             start_with = start_with,
             count      = count
         )
-
     get_object_types = get_sample_types # Alias
 
     def get_sample_type(self, type, only_data=False):
-        entityType = self._get_types_of(
-            method_name         = "searchSampleTypes",
-            entity              = "Sample",
-            type_name           = type,
-            optional_attributes = ["generatedCodePrefix", "validationPluginId"]
+        return self.get_entity_type(
+            entity     = 'sampleType',
+            identifier = type,
+            cls        = SampleType,
         )
-        if only_data:
-            return entityType.data
-        else:
-            return SampleType(self, data=entityType.data)
     get_object_type = get_sample_type # Alias
-
 
     def get_entity_types(
         self, entity, cls, type=None,
@@ -2728,25 +2721,42 @@ class Openbis:
             totalCount = resp.get('totalCount'),
         )
 
-    def get_entity_type(
-        self, entity, cls,
-        start_with=None, count=None,
-    ):
-        method_name = get_method_for_entity(entity, 'search')
-        search_request = get_type_for_entity(entity, 'search')
+    def get_entity_type(self, entity, identifier, cls, only_data=False):
+        method_name = get_method_for_entity(entity, 'get')
         fetch_options = get_fetchoption_for_entity(entity)
-        fetch_options['from'] = start_with
-        fetch_options['count'] = count
+        identifiers = []
+        if not isinstance(identifier, list):
+            identifier = [identifier]
+
+        for ident in identifier:
+            identifiers.append({
+                "permId": ident,
+                #"entityKind": entity.upper(),
+                "@type" : "as.dto.entitytype.id.EntityTypePermId",
+            })
 
         request = {
             "method": method_name,
             "params": [
                 self.token, 
-                search_request, 
+                identifiers,
                 fetch_options
             ],
         }
+        resp = self._post_request(self.as_v3, request)
+        parse_jackson(resp)
+        if len(identifiers) == 1:
+            if len(resp) == 0:
+                raise ValueError('no such {}: {}'.format(entity, identifier[0]))
 
+        for ident in resp:
+            if only_data:
+                return resp[ident]
+            else:
+                return cls(
+                    openbis_obj = self,
+                    data = resp[ident]
+                )
 
     def _get_types_of(
         self, method_name, entity, type_name=None,
