@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, Scientific IT Services
+ * Copyright 2011 ETH Zuerich, CISD
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-function SettingsFormModel(settingsSample, mode) {
-	this.settingsSample = settingsSample;
-	this.mode = mode;
-	this.customWidgetSettings = [];
+function ResearchCollectionExportModel() {
+    this.submissionTypes = [];
+
+    this.addSubmissionType = function(submissionType) {
+        submissionTypes.push(submissionType);
+    };
 }

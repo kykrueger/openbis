@@ -36,6 +36,10 @@ ELNDictionary.settingsView = {
 			title : "Main Menu",
 			info : "These options give the opportunity to the administrator to show/hide different sections of the user interface from the main menu.",
 		},
+		customWidgets : {
+		    title : "Custom Widgets",
+            info : "Assign custom widgets to properties!",
+		},
 		forcedDisableRTF : {
 			title : "Forced Disable RTF",
 			info : "By default all MULTILINE_VARCHAR properties have RTF. Use this section to disable the RTF on specific properties.",

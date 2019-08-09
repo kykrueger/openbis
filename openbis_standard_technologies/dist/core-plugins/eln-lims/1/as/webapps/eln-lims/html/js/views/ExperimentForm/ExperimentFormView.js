@@ -399,8 +399,13 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			} else if(propertyType.dinamic && this._experimentFormController.mode === FormMode.CREATE) { //Skip
 				continue;
 			}
-			
-			if(propertyType.code === "$XMLCOMMENTS") {
+
+            if($.inArray(propertyType.code, profile.jExcelFields) !== -1) {
+                var $jexcelContainer = $("<div>");
+                $fieldset.append(FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label));
+                JExcelEditorManager.createField($jexcelContainer, this._experimentFormModel.mode, propertyType.code, this._experimentFormModel.experiment);
+                continue;
+            } else if(propertyType.code === "$XMLCOMMENTS") {
 				var $commentsContainer = $("<div>");
 				$fieldset.append($commentsContainer);
 				var isAvailable = this._experimentFormController._addCommentsWidget($commentsContainer);

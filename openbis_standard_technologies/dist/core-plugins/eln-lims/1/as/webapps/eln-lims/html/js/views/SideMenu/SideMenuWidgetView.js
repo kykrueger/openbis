@@ -267,7 +267,16 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         
         if(profile.mainMenu.showExports) {
             var exportBuilderLink = _this.getLinkForNode("Export Builder", "EXPORT_BUILDER", "showExportTreePage", null);
-            treeModelUtils.push({ displayName: "Export Builder", title : exportBuilderLink, entityType: "EXPORT_BUILDER", key : "EXPORT_BUILDER", folder : false, lazy : false, view : "showExportTreePage", icon : "glyphicon glyphicon-export" });
+            treeModelUtils.push({ displayName: "Export Builder", title : exportBuilderLink, entityType: "EXPORT_BUILDER", key : "EXPORT_BUILDER",
+                    folder : false, lazy : false, view : "showExportTreePage", icon : "glyphicon glyphicon-export" });
+        }
+
+        if (profile.mainMenu.showResearchCollectionExportBuilder) {
+            var researchCollectionExportBuilderLink = _this.getLinkForNode("Research Collection Export Builder", "RESEARCH_COLLECTION_EXPORT_BUILDER",
+                "showResearchCollectionExportPage", null);
+            treeModelUtils.push({ displayName: "Research Collection Export Builder", title: researchCollectionExportBuilderLink,
+                entityType: "RESEARCH_COLLECTION_EXPORT_BUILDER", key: "RESEARCH_COLLECTION_EXPORT_BUILDER", folder: false, lazy: false,
+                view: "showResearchCollectionExportPage" });
         }
         
         if(profile.mainMenu.showStorageManager) {
@@ -811,6 +820,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             stock.setExpanded(true);
         }
         
+        setCustomIcon($tree, "RESEARCH_COLLECTION_EXPORT_BUILDER", "./img/research-collection-icon.png");
         setCustomIcon($tree, "JUPYTER_WORKSPACE", "./img/jupyter-icon.png");
         setCustomIcon($tree, "NEW_JUPYTER_NOTEBOOK", "./img/jupyter-icon.png");
     }

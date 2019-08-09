@@ -61,6 +61,8 @@ $.extend(DefaultProfile.prototype, {
 				showVocabularyViewer : true,
 				showUserManager : true,
 				showUserProfile : true,
+				showResearchCollectionExportBuilder : false,
+				showZenodoExportBuilder : false,
 		}
 		
 		this.orderLabInfo = {
@@ -132,7 +134,9 @@ $.extend(DefaultProfile.prototype, {
 		this.EDMSs = {
 //				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
 		}
-		
+
+		this.jExcelFields = [];
+
 		this.plugins = [new GenericTechnology(), new LifeSciencesTechnology(), new MicroscopyTechnology(), new FlowCytometryTechnology()];
 		this.sampleFormTop = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {

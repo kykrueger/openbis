@@ -22,6 +22,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 
 	this._mainMenuItemsTableModel = null;
 	this._forcedDisableRTFTableModel = null;
+	this._customWidgetsTableModel = null;
 	this._forcedMonospaceTableModel = null;
 	this._inventorySpacesTableModel = null;
 	this._sampleTypeDefinitionsMiscellaneousSettingsTableModels = {}; // key: sample type; value: table model
@@ -81,6 +82,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			this._paintMainMenuSection($formColumn, texts.mainMenu);
 			this._paintStoragesSection($formColumn, texts.storages);
 			this._paintTemplateSection($formColumn, texts.templates);
+			this._paintCustomWidgetsSection($formColumn, texts.customWidgets);
 			this._paintForcedDisableRtfSection($formColumn, texts.forcedDisableRTF);
 			this._paintForcedMonospaceSection($formColumn, texts.forceMonospaceFont);
 			this._paintInventorySpacesSection($formColumn, texts.inventorySpaces);
@@ -170,10 +172,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		var $fieldset = this._getFieldset($container, text.title, "settings-section-templates");
 		$fieldset.append(FormUtil.getInfoText(text.info));
 
-		var $gridContainer = $("<div>");
+		var $dropdownContainer = $("<p>");
 	    var $dropDownMenu = $("<span>", { class : 'dropdown' });
         var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("Operations ").append($("<b>", { class : 'caret' }));
         var $list = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'aria-labelledby' :'sampleTableDropdown' });
+        $dropdownContainer.append($dropDownMenu);
         $dropDownMenu.append($caret);
         $dropDownMenu.append($list);
 
@@ -185,7 +188,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
         });
         $list.append($createSampleOption);
 
-        $fieldset.append($dropDownMenu);
+        $fieldset.append($dropdownContainer);
+
+        var $gridContainer = $("<div>");
 		$fieldset.append($gridContainer);
 
 		var advancedSampleSearchCriteria = {
@@ -216,6 +221,14 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		this._forcedDisableRTFTableModel = this._getForcedDisableRTFTableModel();
 		$fieldset.append(this._getTable(this._forcedDisableRTFTableModel));
 	}
+
+    this._paintCustomWidgetsSection = function($container, text) {
+    		var $fieldset = this._getFieldset($container, text.title, "settings-section-custom-widgets");
+    		$fieldset.append(FormUtil.getInfoText(text.info));
+    		this._customWidgetsTableModel = this._getCustomWidgetsTableModel();
+    		$fieldset.append(this._getTable(this._customWidgetsTableModel));
+    }
+
 
 	this._paintForcedMonospaceSection = function($container, text) {
 		var $fieldset = this._getFieldset($container, text.title, "settings-section-monospace");
@@ -275,6 +288,50 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			options : this._settingsFormController.getForcedDisableRTFOptions(),
 			initialValues : this._profileToEdit.forcedDisableRTF,
 		});
+	}
+
+	this._getCustomWidgetsTableModel = function() {
+        return this._getDoubleColumnDropdownTableModel({
+            columnName : "Property Type",
+    	    placeholder : "select property type",
+    	    options : profile.allPropertyTypes.map(function(_) { return _.code; })
+        }, {
+    	    columnName : "Widget",
+            placeholder : "select widget",
+            options : ["Default", "Word Processor", "Spreadsheet"]
+        }, this._settingsFormModel.customWidgetSettings);
+        // [{ "Property Type" : "$NAME", "Widget" : "Word Processor" }]
+    }
+
+	this._getDoubleColumnDropdownTableModel = function(params, paramsB, initialValues) {
+		var tableModel = this._getTableModel();
+		tableModel.dynamicRows = true;
+		// define columns
+		tableModel.columns = [{ label : params.columnName }, { label : paramsB.columnName }];
+		tableModel.rowBuilders[params.columnName] = function(rowData) {
+			return FormUtil.getDropdown(params.options.map(function(option) {
+				return {
+					label : Util.getDisplayNameFromCode(option),
+					value : option,
+					selected : option === rowData[params.columnName],
+				};
+			}), params.placeholder);
+		}
+		tableModel.rowBuilders[paramsB.columnName] = function(rowData) {
+            return FormUtil.getDropdown(paramsB.options.map(function(option) {
+        	    return {
+        		    label : option,
+        		    value : option,
+        		    selected : option === rowData[paramsB.columnName],
+                };
+            }), paramsB.placeholder);
+        }
+		// add data
+		for (var item of initialValues) {
+			tableModel.addRow(item);
+		}
+
+		return tableModel;
 	}
 
 	this._getForcedMonospaceTableModel = function() {

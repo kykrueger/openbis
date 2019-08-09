@@ -711,6 +711,11 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			
 			if(propertyType.code === "$ANNOTATIONS_STATE" || propertyType.code === "$FREEFORM_TABLE_STATE" || propertyType.code === "$ORDER.ORDER_STATE" ) {
 				continue;
+			} else if($.inArray(propertyType.code, profile.jExcelFields) !== -1) {
+                var $jexcelContainer = $("<div>");
+                $fieldset.append(FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label));
+                JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
+                continue;
 			} else if(propertyType.code === "$XMLCOMMENTS") {
 				var $commentsContainer = $("<div>");
 				$fieldset.append($commentsContainer);
