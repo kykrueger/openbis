@@ -44,10 +44,6 @@ def insertPublication(context, parameters):
 
     v3 = context.applicationService
 
-    name = parameters.get('name')
-    if name is None:
-        raise UserFailureException('name parameter missing')
-
     sampleId = createPublicationSample(parameters, sessionToken, v3).get(0)
     createDataSet(parameters, sessionToken, v3, sampleId)
 
@@ -57,13 +53,18 @@ def insertPublication(context, parameters):
 
 
 def createDataSet(parameters, sessionToken, v3, sampleId):
-    openBISRelatedIdentifiers = parameters.get('openBISRelatedIdentifiers').split(',')
-    identifiers = ArrayList(len(openBISRelatedIdentifiers))
-    for identifier in openBISRelatedIdentifiers:
-        identifiers.add(DataSetPermId(identifier))
+    openBISRelatedIdentifiersString = parameters.get('openBISRelatedIdentifiers')
 
-    dataSetIds = v3.getDataSets(sessionToken, identifiers, DataSetFetchOptions()).keys()
-    operationLog.debug('Found %d data sets.' % len(dataSetIds))
+    if openBISRelatedIdentifiersString is not None:
+        openBISRelatedIdentifiers = openBISRelatedIdentifiersString.split(',')
+        identifiers = ArrayList(len(openBISRelatedIdentifiers))
+        for identifier in openBISRelatedIdentifiers:
+            identifiers.add(DataSetPermId(identifier))
+        dataSetIds = v3.getDataSets(sessionToken, identifiers, DataSetFetchOptions()).keys()
+        operationLog.debug('Found %d data sets.' % len(dataSetIds))
+    else:
+        dataSetIds = None
+        operationLog.debug('No data sets searched.')
 
     dataStoreCode = getDefaultDataStoreCode(v3, sessionToken)
 
@@ -72,8 +73,11 @@ def createDataSet(parameters, sessionToken, v3, sampleId):
     dataSetCreation.setTypeId(EntityTypePermId('PUBLICATION_DATA', EntityKind.DATA_SET))
     dataSetCreation.setSampleId(sampleId)
     dataSetCreation.setDataSetKind(DataSetKind.CONTAINER)
-    dataSetCreation.setComponentIds(dataSetIds)
     dataSetCreation.setDataStoreId(DataStorePermId(dataStoreCode))
+
+    if dataSetIds is not None:
+        dataSetCreation.setComponentIds(dataSetIds)
+
     v3.createDataSets(sessionToken, [dataSetCreation])
 
 
@@ -84,16 +88,34 @@ def getDefaultDataStoreCode(v3, sessionToken):
 
 def createPublicationSample(parameters, sessionToken, v3):
     publicationOrganization = parameters.get('publicationOrganization')
+    if publicationOrganization is None:
+        raise ValueError('publicationOrganization parameter is None.')
+
+    name = parameters.get('name')
+    if name is None:
+        raise ValueError('name parameter is None.')
+
     publicationType = parameters.get('publicationType')  # The only valid value for now is "Public Repository"
+    if publicationType is None:
+        raise ValueError('publicationType parameter is None.')
+
     publicationDescription = parameters.get('publicationDescription')  # Can be empty
+    if publicationDescription is None:
+        publicationDescription = ''
+
     publicationURL = parameters.get('publicationURL')
+    if publicationURL is None:
+        raise ValueError('publicationURL parameter is None.')
+
     publicationIdentifier = parameters.get('publicationIdentifier')
+    if publicationIdentifier is None:
+        raise ValueError('publicationIdentifier parameter is None.')
 
     sampleCreation = SampleCreation()
     sampleCreation.setTypeId(EntityTypePermId('PUBLICATION'))
     sampleCreation.setExperimentId(ExperimentIdentifier('/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION'))
     sampleCreation.setSpaceId(SpacePermId('PUBLICATIONS'))
-    sampleCreation.setProperty('$NAME', 'TEST NAME')
+    sampleCreation.setProperty('$NAME', name)
     sampleCreation.setProperty('$PUBLICATION.ORGANIZATION', publicationOrganization)
     sampleCreation.setProperty('$PUBLICATION.TYPE', publicationType)
     sampleCreation.setProperty('$PUBLICATION.IDENTIFIER', publicationIdentifier)
