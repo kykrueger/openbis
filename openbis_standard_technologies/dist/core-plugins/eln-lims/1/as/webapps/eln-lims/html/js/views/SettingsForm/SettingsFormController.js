@@ -21,17 +21,21 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	this._settingsManager = new SettingsManager(this._mainController.serverFacade);
 
 	this.init = function(views) {
-		var runningProfile = jQuery.extend(true, {}, profile);
-		var profileToEdit = null;
-		
-		if(settingsSample.properties["$ELN_SETTINGS"]) {
-			profileToEdit = JSON.parse(settingsSample.properties["$ELN_SETTINGS"]);
-		} else {
-			profileToEdit = runningProfile;
-		}
-		
-		this._settingsManager.applySettingsToProfile(profileToEdit, runningProfile);
-		this._settingsFormView.repaint(views, runningProfile);
+	    var _this = this;
+	    mainController.serverFacade.getCustomWidgetSettings(function(customWidgetSettings) {
+	        var runningProfile = jQuery.extend(true, {}, profile);
+            var profileToEdit = null;
+
+            if(settingsSample.properties["$ELN_SETTINGS"]) {
+                profileToEdit = JSON.parse(settingsSample.properties["$ELN_SETTINGS"]);
+            } else {
+                profileToEdit = runningProfile;
+            }
+
+            _this._settingsManager.applySettingsToProfile(profileToEdit, runningProfile);
+            _this._settingsFormView.repaint(views, runningProfile);
+            _this._settingsFormModel.customWidgetSettings = customWidgetSettings;
+	    });
 	}
 
 	this.save = function(settings) {

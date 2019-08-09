@@ -67,7 +67,31 @@ function ServerFacade(openbisServer) {
 	}
 	
 	this.openbisServer.setResponseInterceptor(responseInterceptor);
-	
+
+	//
+	// Custom Widget Settings
+	//
+	this.getCustomWidgetSettings = function(doneCallback) {
+        require([ "openbis", "as/dto/property/search/PropertyTypeSearchCriteria", "as/dto/property/fetchoptions/PropertyTypeFetchOptions" ],
+        function(openbis, PropertyTypeSearchCriteria, PropertyTypeFetchOptions) {
+            var ptsc = new PropertyTypeSearchCriteria();
+            var ptfo = new PropertyTypeFetchOptions();
+            mainController.openbisV3.searchPropertyTypes(ptsc, ptfo).done(function(searchResult) {
+                var customWidgetProperties = [];
+                for(var oIdx = 0; oIdx < searchResult.totalCount; oIdx++) {
+                    var propertyType = searchResult.objects[oIdx];
+                    if(propertyType.metaData["custom_widget"]) {
+                        customWidgetProperties.push({
+                            "Property Type" : propertyType.code,
+                            "Widget" : propertyType.metaData["custom_widget"]
+                        });
+                    }
+                }
+                doneCallback(customWidgetProperties);
+            });
+        });
+    }
+
 	//
 	// Display Settings
 	//
