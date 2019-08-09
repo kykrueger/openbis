@@ -269,12 +269,14 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             var exportBuilderLink = _this.getLinkForNode("Export Builder", "EXPORT_BUILDER", "showExportTreePage", null);
             treeModelUtils.push({ displayName: "Export Builder", title : exportBuilderLink, entityType: "EXPORT_BUILDER", key : "EXPORT_BUILDER",
                     folder : false, lazy : false, view : "showExportTreePage", icon : "glyphicon glyphicon-export" });
+        }
 
+        if (profile.mainMenu.showResearchCollectionExportBuilder) {
             var researchCollectionExportBuilderLink = _this.getLinkForNode("Research Collection Export Builder", "RESEARCH_COLLECTION_EXPORT_BUILDER",
-                    "showResearchCollectionExportPage", null);
+                "showResearchCollectionExportPage", null);
             treeModelUtils.push({ displayName: "Research Collection Export Builder", title: researchCollectionExportBuilderLink,
-                    entityType: "RESEARCH_COLLECTION_EXPORT_BUILDER", key: "RESEARCH_COLLECTION_EXPORT_BUILDER", folder: false, lazy: false,
-                    view: "showResearchCollectionExportPage" });
+                entityType: "RESEARCH_COLLECTION_EXPORT_BUILDER", key: "RESEARCH_COLLECTION_EXPORT_BUILDER", folder: false, lazy: false,
+                view: "showResearchCollectionExportPage" });
         }
         
         if(profile.mainMenu.showStorageManager) {
