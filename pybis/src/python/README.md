@@ -53,15 +53,15 @@ o.logout()
 ```
 o.get_experiment_types()
 et = o.get_experiment_type('TEST')
-et.get_props()
+et.get_props() # returns assigned property types
 
 o.get_sample_types()
 st = o.get_sample_type('YEAST')
-st.get_props()
+st.get_props() # returns assigned property types
 
 o.get_material_types()
 mt = o.get_material_type('GENE')
-mt.get_props()
+mt.get_props() # returns assigned property types
 
 o.get_dataset_types()
 dst = o.get_dataset_types()[0]
@@ -69,10 +69,37 @@ dst = o.get_dataset_type('RAW_DATA')
 dst.get_props()
 dst.get_props(with_vocabulary=True)
 
+o.get_property_types()
+pt = o.get_property_type('BARCODE_COMPLEXITY_CHECKER')
+pt.attrs.all()
+
+o.get_plugins()
+pl = o.get_plugin('Diff_time')
+pl.script  # the Jython script that processes this property
+
 o.get_vocabularies()
 o.get_vocabulary('BACTERIAL_ANTIBIOTIC_RESISTANCE')
 o.get_terms(vocabulary='STORAGE')
 o.get_tags()
+```
+
+## create masterdata
+```
+pl = o.new_plugin(
+	name='my_new_entry_validation_plugin',
+	pluginType='ENTITY_VALIDATION' # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
+	pl.entityKind = None # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+	pl.script = 'def calculate(): pass'  # JYTHON script
+)
+pl.save()
+
+pt = o.new_property_type(
+	code='MY_NEW_PROPERTY_TYPE', 
+	label='yet another property type', 
+   description='my first property',
+   dataType='VARCHAR'
+)
+# dataType can be any of ['INTEGER', 'VARCHAR', 'MULTILINE_VARCHAR', 'REAL', 'TIMESTAMP', 'BOOLEAN', 'CONTROLLEDVOCABULARY', 'MATERIAL', 'HYPERLINK', 'XML']
 ```
 
 ## Users, Groups and RoleAssignments
