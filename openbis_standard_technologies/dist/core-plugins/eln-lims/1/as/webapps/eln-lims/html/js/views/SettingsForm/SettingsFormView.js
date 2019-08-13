@@ -61,7 +61,11 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			} else { //Create and Edit
 				//Save
 				var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", (function() {
-					this._settingsFormController.save(this._getSettings());
+				    var widgetSettings = null;
+				    if(profile.isAdmin) {
+				        widgetSettings = this._customWidgetsTableModel.getValues();
+				    }
+					this._settingsFormController.save(this._getSettings(), widgetSettings);
 				}).bind(this), "Save");
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");
@@ -82,7 +86,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			this._paintMainMenuSection($formColumn, texts.mainMenu);
 			this._paintStoragesSection($formColumn, texts.storages);
 			this._paintTemplateSection($formColumn, texts.templates);
-			this._paintCustomWidgetsSection($formColumn, texts.customWidgets);
+			if(profile.isAdmin) {
+	            this._paintCustomWidgetsSection($formColumn, texts.customWidgets);
+			}
 			this._paintForcedDisableRtfSection($formColumn, texts.forcedDisableRTF);
 			this._paintForcedMonospaceSection($formColumn, texts.forceMonospaceFont);
 			this._paintInventorySpacesSection($formColumn, texts.inventorySpaces);
@@ -298,9 +304,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
         }, {
     	    columnName : "Widget",
             placeholder : "select widget",
-            options : ["Default", "Word Processor", "Spreadsheet"]
+            options : ["Word Processor", "Spreadsheet"]
         }, this._settingsFormModel.customWidgetSettings);
-        // [{ "Property Type" : "$NAME", "Widget" : "Word Processor" }]
     }
 
 	this._getDoubleColumnDropdownTableModel = function(params, paramsB, initialValues) {

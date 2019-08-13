@@ -135,7 +135,7 @@ $.extend(DefaultProfile.prototype, {
 //				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
 		}
 
-		this.jExcelFields = [];
+        this.customWidgetSettings = {};
 
 		this.plugins = [new GenericTechnology(), new LifeSciencesTechnology(), new MicroscopyTechnology(), new FlowCytometryTechnology()];
 		this.sampleFormTop = function($container, model) {
@@ -1133,6 +1133,17 @@ $.extend(DefaultProfile.prototype, {
 				callback();
 			}));
 		}
+
+		this.initCustomWidgetSettings = function(callback) {
+		    var _this = this;
+		    this.serverFacade.getCustomWidgetSettings(function(customWidgetSettings) {
+		        for(var cwIdx = 0; cwIdx < customWidgetSettings.length; cwIdx++) {
+		            var cw = customWidgetSettings[cwIdx];
+		            _this.customWidgetSettings[cw["Property Type"]] = cw["Widget"];
+		        }
+		        callback();
+		    });
+		}
 		
 		this.initServerInfo = function(callback) {
 			var _this = this;
@@ -1171,14 +1182,16 @@ $.extend(DefaultProfile.prototype, {
 									_this.initServerInfo(function() {
 										_this.isFileAuthUser(function() {
 											_this.initSpaces(function() {
-												_this.initSettings(function() {
-													//Check if the new storage system can be enabled
-													var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");
-													var storagePositionType = _this.getSampleTypeForSampleTypeCode("STORAGE_POSITION");										
-													_this.storagesConfiguration = { 
-															"isEnabled" : storageRack && storagePositionType
-													};
-													callbackWhenDone();
+											    _this.initCustomWidgetSettings(function() {
+                                                    _this.initSettings(function() {
+                                                        //Check if the new storage system can be enabled
+                                                        var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");
+                                                        var storagePositionType = _this.getSampleTypeForSampleTypeCode("STORAGE_POSITION");
+                                                        _this.storagesConfiguration = {
+                                                                "isEnabled" : storageRack && storagePositionType
+                                                        };
+                                                        callbackWhenDone();
+                                                    });
 												});
 											});
 										});

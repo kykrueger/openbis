@@ -38,10 +38,21 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	    });
 	}
 
-	this.save = function(settings) {
-		this._settingsManager.validateAndsave(this._settingsFormModel.settingsSample, settings, (function() {
-			this._mainController.changeView("showSettingsPage", this._settingsFormModel.settingsSample.identifier);
-		}).bind(this));
+	this.save = function(settings, widgetSettings) {
+	    var _this = this;
+	    var onSave = function() {
+	        _this._settingsManager.validateAndsave(_this._settingsFormModel.settingsSample, settings, (function() {
+                _this._mainController.changeView("showSettingsPage", _this._settingsFormModel.settingsSample.identifier);
+            }));
+	    }
+
+	    if(widgetSettings) {
+	        Util.blockUI();
+            this._mainController.serverFacade.setCustomWidgetSettings(widgetSettings, onSave);
+        } else {
+            onSave();
+        }
+
 	}
 
 	this.getAllDatasetTypeCodeOptions = this._settingsManager.getAllDatasetTypeCodeOptions;
