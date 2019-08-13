@@ -304,9 +304,8 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
         }, {
     	    columnName : "Widget",
             placeholder : "select widget",
-            options : ["Default", "Word Processor", "Spreadsheet"]
+            options : ["Word Processor", "Spreadsheet"]
         }, this._settingsFormModel.customWidgetSettings);
-        // [{ "Property Type" : "$NAME", "Widget" : "Word Processor" }]
     }
 
 	this._getDoubleColumnDropdownTableModel = function(params, paramsB, initialValues) {
