@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-function ResearchCollectionExportView(researchCollectionExportController, researchCollectionExportModel) {
+function ZenodoExportView(exportController, exportModel) {
     this.repaint = function(views) {
-        researchCollectionExportController.initialiseSubmissionTypesDropdown();
-
         var $header = views.header;
         var $container = views.content;
 
@@ -43,31 +41,9 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
 
         $container.append($form);
 
-        this.paintSubmissionTypeDropdown($container);
+        exportModel.tree = TreeUtil.getCompleteTree($tree);
 
-        researchCollectionExportModel.tree = TreeUtil.getCompleteTree($tree);
-
-        var $formTitle = $('<h2>').append('Research Collection Export Builder');
+        var $formTitle = $('<h2>').append('Zenodo Export Builder');
         $header.append($formTitle);
-
-        var $exportButton = $('<input>', { 'type': 'submit', 'class': 'btn btn-primary', 'value': 'Export Selected',
-                'onClick': '$("form[name=\'rcExportForm\']").submit()'});
-        $header.append($exportButton);
     };
-
-    this.paintSubmissionTypeDropdown = function($container) {
-        this.$submissionTypeDropdown = this.getSubmissionTypeDropdown();
-        var entityTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this.$submissionTypeDropdown, 'Submission Type', null, true);
-        entityTypeDropdownFormGroup.css('width', '50%');
-        $container.append(entityTypeDropdownFormGroup);
-    };
-
-    this.getSubmissionTypeDropdown = function() {
-        return FormUtil.getDropdown(researchCollectionExportModel.submissionTypes, 'Select a submission type');
-    };
-
-    this.refreshSubmissionTypeDropdown = function() {
-        FormUtil.setValuesToComponent(this.$submissionTypeDropdown, researchCollectionExportModel.submissionTypes);
-    }
-
 }

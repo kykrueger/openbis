@@ -278,6 +278,12 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 entityType: "RESEARCH_COLLECTION_EXPORT_BUILDER", key: "RESEARCH_COLLECTION_EXPORT_BUILDER", folder: false, lazy: false,
                 view: "showResearchCollectionExportPage" });
         }
+
+        if (profile.mainMenu.showZenodoExportBuilder) {
+            var zenodoExportBuilderLink = _this.getLinkForNode("Zenodo Export Builder", "ZENODO_EXPORT_BUILDER", "showZenodoExportPage", null);
+            treeModelUtils.push({ displayName: "Zenodo Export Builder", title: zenodoExportBuilderLink, entityType: "ZENODO_EXPORT_BUILDER",
+                    key: "ZENODO_EXPORT_BUILDER", folder: false, lazy: false, view: "showZenodoExportPage", icon: "glyphicon glyphicon-export" });
+        }
         
         if(profile.mainMenu.showStorageManager) {
             var storageManagerLink = _this.getLinkForNode("Storage Manager", "STORAGE_MANAGER", "showStorageManager", null);
