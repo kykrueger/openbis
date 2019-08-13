@@ -20,7 +20,14 @@ var JExcelEditorManager = new function() {
         }
     }
 
+    this.getObjectFunction = function(guid) {
+        return function() {
+
+        }
+    }
+
 	this.createField = function($container, mode, propertyCode, entity) {
+	    debugger;
 	    $container.attr('style', 'width: 100%; height: 450px; overflow-y: scroll; overflow-x: scroll;');
 
 	    var data = [];
@@ -42,37 +49,20 @@ var JExcelEditorManager = new function() {
 	    }
 
         var guid = Util.guid();
-	    var onChangeHandler = this.getOnChange(guid, propertyCode, entity);
-
-        var toolbar = null;
-
-        if(mode == FormMode.EDIT) {
-            toolbar = [
-                    { type:'select', k:'font-family', v:['Arial','Verdana'] },
-                    { type:'select', k:'font-size', v:['9px','10px','11px','12px','13px','14px','15px','16px','17px','18px','19px','20px'] },
-                    { type:'i', content:'format_align_left', k:'text-align', v:'left' },
-                    { type:'i', content:'format_align_center', k:'text-align', v:'center' },
-                    { type:'i', content:'format_align_right', k:'text-align', v:'right' },
-                    { type:'i', content:'format_bold', k:'font-weight', v:'bold' },
-                    { type:'color', content:'format_color_text', k:'color' },
-                    { type:'color', content:'format_color_fill', k:'background-color' },
-            ];
-        }
 
         var options = {
-            data: data,
-            style: style,
-            meta: meta,
-            editable : mode == FormMode.EDIT,
-            minDimensions:[30, 30],
-            toolbar: toolbar,
-            onchange: onChangeHandler,
-            onchangestyle: onChangeHandler,
-            onchangemeta: onChangeHandler
-
+                    data: data,
+                    style: style,
+                    meta: meta,
+                    editable : mode !== FormMode.VIEW,
+                    minDimensions:[30, 30],
+                    toolbar: null,
+                    onchange: null,
+                    onchangestyle: null,
+                    onchangemeta: null
         };
 
-        if(mode != FormMode.EDIT) {
+        if(mode === FormMode.VIEW) {
             options.allowInsertRow = false;
             options.allowManualInsertRow = false;
             options.allowInsertColumn = false;
@@ -85,10 +75,26 @@ var JExcelEditorManager = new function() {
             options.contextMenu = function(obj, x, y, e) {
                 return [];
             }
+        } else {
+            var onChangeHandler = this.getOnChange(guid, propertyCode, entity);
+            options.onchange = onChangeHandler;
+            options.onchangestyle = onChangeHandler;
+            options.onchangemeta = onChangeHandler;
+
+            options.toolbar = [
+                    { type:'select', k:'font-family', v:['Arial','Verdana'] },
+                    { type:'select', k:'font-size', v:['9px','10px','11px','12px','13px','14px','15px','16px','17px','18px','19px','20px'] },
+                    { type:'i', content:'format_align_left', k:'text-align', v:'left' },
+                    { type:'i', content:'format_align_center', k:'text-align', v:'center' },
+                    { type:'i', content:'format_align_right', k:'text-align', v:'right' },
+                    { type:'i', content:'format_bold', k:'font-weight', v:'bold' },
+                    { type:'color', content:'format_color_text', k:'color' },
+                    { type:'color', content:'format_color_fill', k:'background-color' },
+                    { type:'i', content:'note', onclick: this.getObjectFunction(guid) },
+            ];
         }
 
         var jexcelField = jexcel($container[0], options);
-
         this.jExcelEditors[guid] = jexcelField;
 	}
 }
