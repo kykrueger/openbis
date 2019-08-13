@@ -137,8 +137,6 @@ $.extend(DefaultProfile.prototype, {
 
         this.customWidgetSettings = {};
 
-		this.jExcelFields = [];
-
 		this.plugins = [new GenericTechnology(), new LifeSciencesTechnology(), new MicroscopyTechnology(), new FlowCytometryTechnology()];
 		this.sampleFormTop = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {
