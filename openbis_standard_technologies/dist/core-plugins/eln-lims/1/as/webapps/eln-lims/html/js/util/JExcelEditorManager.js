@@ -21,13 +21,50 @@ var JExcelEditorManager = new function() {
     }
 
     this.getObjectFunction = function(guid) {
+        var _this = this;
         return function() {
+            var component = "<div>"
+                component += "<legend>Insert Object</legend>";
+            	component += "<div>";
 
+                component += "<div class='form-group'>";
+                component += "<label class='control-label'>Object:</label>";
+                component += "<div>";
+                component += "<div id='objectSelector'></div>";
+                component += "</div>";
+                component += "</div>";
+
+                component += "<div class='form-group'>";
+                component += "<label class='control-label'>Options:</label>";
+                component += "<div class='controls'>";
+                component += "<span class='checkbox'><label><input type='checkbox' id='insertHeaders'> Insert Headers </label></span>";
+                component += "</div>";
+                component += "</div>";
+
+                component += "</div>";
+                component += "</div>";
+                Util.blockUI(component + "<a class='btn btn-default' id='insertAccept'>Accept</a> <a class='btn btn-default' id='insertCancel'>Cancel</a>", FormUtil.getDialogCss());
+
+                var advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(true, true, "Select Object", false, true, false, false);
+                advancedEntitySearchDropdown.init($("#objectSelector"));
+
+                $("#insertCancel").on("click", function(event) {
+                    Util.unblockUI();
+                });
+
+                $("#insertAccept").on("click", function(event) {
+                    var jExcelEditor = _this.jExcelEditors[guid];
+                    var insertHeaders = $("#insertHeaders")[0].checked;
+                    var selected = advancedEntitySearchDropdown.getSelected();
+                    if(selected.length > 0) {
+
+                    }
+                    Util.unblockUI();
+                });
         }
     }
 
 	this.createField = function($container, mode, propertyCode, entity) {
-	    debugger;
 	    $container.attr('style', 'width: 100%; height: 450px; overflow-y: scroll; overflow-x: scroll;');
 
 	    var data = [];
@@ -90,7 +127,7 @@ var JExcelEditorManager = new function() {
                     { type:'i', content:'format_bold', k:'font-weight', v:'bold' },
                     { type:'color', content:'format_color_text', k:'color' },
                     { type:'color', content:'format_color_fill', k:'background-color' },
-                    { type:'i', content:'note', onclick: this.getObjectFunction(guid) },
+                    { type:'i', content:'input', onclick: this.getObjectFunction(guid) },
             ];
         }
 
