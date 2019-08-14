@@ -71,12 +71,12 @@ class Person(OpenBisObject):
             if space is None:
                 query['space'] = ''
             else:
-                query['space'] = space.upper()
+                query['space'] = space.code.upper()
 
             if project is None:
                 query['project'] = ''
             else:
-                query['project'] = project.upper()
+                query['project'] = project.code.upper()
 
             # build a query string for dataframe
             querystr = " & ".join( 
@@ -108,12 +108,6 @@ class Person(OpenBisObject):
     def save(self):
         if self.is_new:
             request = self._new_attrs()
-            # for new and updated objects, the parameter is
-            # unfortunately called homeSpaceId, spaceId throws no error
-            # but makes no change either
-            if "spaceId" in request['params'][1][0]:
-                request['params'][1][0]['homeSpaceId'] =  request['params'][1][0]['spaceId']
-                del(request['params'][1][0]['spaceId'])
             resp = self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE: print("Person successfully created.")
             new_person_data = self.openbis.get_person(resp[0]['permId'], only_data=True)
@@ -122,12 +116,6 @@ class Person(OpenBisObject):
 
         else:
             request = self._up_attrs()
-            # for new and updated objects, the parameter is
-            # unfortunately called homeSpaceId, spaceId throws no error
-            # but makes no change either
-            if "spaceId" in request['params'][1][0]:
-                request['params'][1][0]['homeSpaceId'] =  request['params'][1][0]['spaceId']
-                del(request['params'][1][0]['spaceId'])
             self.openbis._post_request(self.openbis.as_v3, request)
             if VERBOSE: print("Person successfully updated.")
             new_person_data = self.openbis.get_person(self.permId, only_data=True)
