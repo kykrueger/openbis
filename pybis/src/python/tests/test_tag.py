@@ -17,7 +17,7 @@ def test_crud_tag(openbis_instance):
 
     assert tag.code == tag_name
     assert tag.description == description
-    assert tag.permId is None
+    assert tag.permId == ''
 
     tag.save()
 
