@@ -323,7 +323,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
 
             // Templates
-            if(toolbarConfig.TEMPLATES) {
+            if(toolbarConfig.TEMPLATES && this._sampleFormModel.mode === FormMode.CREATE) {
                 var $templateBtn = FormUtil.getButtonWithIcon("glyphicon-list-alt", function() {
                     var criteria = {
                         entityKind : "SAMPLE",
@@ -383,12 +383,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                     });
                 }, "Templates");
                 toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
-
-                // Show dropdown with all templates for the type
-                // Load the sample
-                // Set is as shown on the SampleFormController lines 53-66
-                // Repaint the view
-                // Do it works?
             }
 		}
 		
