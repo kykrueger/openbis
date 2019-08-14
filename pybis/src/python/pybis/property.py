@@ -9,11 +9,13 @@ class PropertyHolder():
         self.__dict__['_property_names'] = {}
         if type is not None:
             self.__dict__['_type'] = type
-            for prop in type.data['propertyAssignments']:
-                property_name = prop['propertyType']['code'].lower()
-                self._property_names[property_name]=prop['propertyType']
-                self._property_names[property_name]['mandatory'] = prop['mandatory']
-                self._property_names[property_name]['showInEditView'] = prop['showInEditView']
+            if 'propertyAssignments' in type.data \
+               and type.data['propertyAssignments'] is not None:
+                for prop in type.data['propertyAssignments']:
+                    property_name = prop['propertyType']['code'].lower()
+                    self._property_names[property_name]=prop['propertyType']
+                    self._property_names[property_name]['mandatory'] = prop['mandatory']
+                    self._property_names[property_name]['showInEditView'] = prop['showInEditView']
 
     def _get_terms(self, vocabulary):
         return self._openbis.get_terms(vocabulary)
