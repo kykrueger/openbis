@@ -23,6 +23,17 @@ var JExcelEditorManager = new function() {
     this.getObjectFunction = function(guid) {
         var _this = this;
         return function() {
+            var jExcelEditor = _this.jExcelEditors[guid];
+            var x = null;
+            var y = null;
+            if(jExcelEditor.selectedCell) {
+                x = parseInt(jExcelEditor.selectedCell[0]);
+                y = parseInt(jExcelEditor.selectedCell[1]);
+            } else {
+                Util.showInfo("Select a cell first.");
+                return;
+            }
+
             var component = "<div>"
                 component += "<legend>Insert Object</legend>";
             	component += "<div>";
@@ -53,13 +64,40 @@ var JExcelEditorManager = new function() {
                 });
 
                 $("#insertAccept").on("click", function(event) {
-                    var jExcelEditor = _this.jExcelEditors[guid];
                     var insertHeaders = $("#insertHeaders")[0].checked;
                     var selected = advancedEntitySearchDropdown.getSelected();
-                    if(selected.length > 0) {
+                    var lastEntityKindType = null;
 
+                    if(selected.length > 0) {
+                        for(var sIdx = 0; sIdx < selected.length; sIdx++) {
+                            var entity = selected[sIdx];
+                            var entityKindType = entity["@type"] + ":" + entity.type.code;
+                            var entityTable = _this.getEntityAsTable(entity);
+
+                            if(insertHeaders && lastEntityKindType !== entityKindType) {
+                                //Insert Labels
+                                for(var lIdx = 0; lIdx < entityTable.label.length; lIdx++) {
+                                    var label = entityTable.label[lIdx];
+                                    if(label) {
+                                        jExcelEditor.setValueFromCoords(x+lIdx, y, label, true);
+                                    }
+                                }
+                                y++;
+                            }
+
+                            //Insert Values
+                            for(var vIdx = 0; vIdx < entityTable.value.length; vIdx++) {
+                                var value = entityTable.value[vIdx];
+                                if(value) {
+                                    jExcelEditor.setValueFromCoords(x+vIdx, y, value, true);
+                                }
+                            }
+                            y++;
+                        }
+                        Util.unblockUI();
+                    } else {
+                        Util.showInfo("Select an object first.", function() {}, true);
                     }
-                    Util.unblockUI();
                 });
         }
     }
@@ -133,5 +171,35 @@ var JExcelEditorManager = new function() {
 
         var jexcelField = jexcel($container[0], options);
         this.jExcelEditors[guid] = jexcelField;
+	}
+
+	this.getEntityAsTable = function(entity) {
+	    var tableModel = {
+	        code : [],
+	        label : [],
+	        value : [],
+	        dataType : [],
+	    }
+
+	    if(entity["@type"] === "as.dto.sample.Sample") {
+            var sampleType = profile.getSampleTypeForSampleTypeCode(entity.type.code);
+
+            tableModel.code.push("");
+            tableModel.label.push("Identifier");
+            tableModel.value.push(entity.identifier.identifier);
+            tableModel.dataType.push("");
+
+            for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
+                var propertyGroup = sampleType.propertyTypeGroups[i].propertyTypes;
+                for(var j = 0; j < propertyGroup.length; j++) {
+            	    var propertyType = propertyGroup[j];
+            	    tableModel.code.push(propertyType.code);
+            	    tableModel.label.push(propertyType.label);
+            	    tableModel.value.push(entity.properties[propertyType.code]);
+            	    tableModel.dataType.push(propertyType.dataType);
+                }
+            }
+	    }
+	    return tableModel;
 	}
 }

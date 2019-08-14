@@ -224,7 +224,7 @@ $.extend(DefaultProfile.prototype, {
 		this.inventorySpacesPostFixes = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"];
 		this.inventorySpaces = []; 
 		//Ending in "ELN_SETTINGS", "STOCK_ORDERS"
-		this.inventorySpacesReadOnlyPostFixes = ["ELN_SETTINGS", "STOCK_ORDERS"];
+		this.inventorySpacesReadOnlyPostFixes = ["ELN_SETTINGS", "STOCK_ORDERS", "PUBLICATIONS"];
 		this.inventorySpacesReadOnly = []; 
 		//Ending in "STORAGE"
 		this.storageSpacesPostFixes = ["STORAGE"];
