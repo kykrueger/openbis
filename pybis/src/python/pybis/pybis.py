@@ -2444,6 +2444,8 @@ class Openbis:
         fetchopts = fetch_option['plugin']
         for option in ['registrator']:
             fetchopts[option] = fetch_option[option]
+        fetchopts['from'] = start_with
+        fetchopts['count'] = count
 
         request = {
             "method": "searchPlugins",
