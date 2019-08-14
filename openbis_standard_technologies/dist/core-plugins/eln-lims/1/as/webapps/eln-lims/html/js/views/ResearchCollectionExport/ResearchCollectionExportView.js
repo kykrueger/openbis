@@ -50,7 +50,7 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
         var $formTitle = $('<h2>').append('Research Collection Export Builder');
         $header.append($formTitle);
 
-        var $exportButton = $('<input>', { 'type': 'submit', 'class': 'btn btn-primary', 'value': 'Export Selected',
+        var $exportButton = $('<input>', {'type': 'submit', 'class': 'btn btn-primary', 'value': 'Export Selected',
                 'onClick': '$("form[name=\'rcExportForm\']").submit()'});
         $header.append($exportButton);
     };

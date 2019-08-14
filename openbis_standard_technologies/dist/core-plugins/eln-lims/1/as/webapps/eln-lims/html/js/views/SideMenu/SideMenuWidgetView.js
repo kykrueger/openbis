@@ -269,32 +269,32 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             var treeModelExports = [];
 
             if (profile.mainMenu.showExports) {
-                var exportBuilderLink = _this.getLinkForNode("Export Builder", "EXPORT_BUILDER", "showExportTreePage", null);
+                var exportBuilderLink = _this.getLinkForNode("Export to ZIP", "EXPORT_TO_ZIP", "showExportTreePage", null);
                 treeModelExports.push({
-                    displayName: "Export Builder", title: exportBuilderLink, entityType: "EXPORT_BUILDER", key: "EXPORT_BUILDER",
+                    displayName: "Export to ZIP", title: exportBuilderLink, entityType: "EXPORT_TO_ZIP", key: "EXPORT_TO_ZIP",
                     folder: false, lazy: false, view: "showExportTreePage", icon: "glyphicon glyphicon-export"
                 });
             }
 
             if (profile.mainMenu.showResearchCollectionExportBuilder) {
-                var researchCollectionExportBuilderLink = _this.getLinkForNode("Research Collection Export Builder",
-                        "RESEARCH_COLLECTION_EXPORT_BUILDER", "showResearchCollectionExportPage", null);
+                var researchCollectionExportBuilderLink = _this.getLinkForNode("Export to Research Collection",
+                        "EXPORT_TO_RESEARCH_COLLECTION", "showResearchCollectionExportPage", null);
                 treeModelExports.push({
-                    displayName: "Research Collection Export Builder", title: researchCollectionExportBuilderLink,
-                    entityType: "RESEARCH_COLLECTION_EXPORT_BUILDER", key: "RESEARCH_COLLECTION_EXPORT_BUILDER", folder: false, lazy: false,
+                    displayName: "Export to Research Collection", title: researchCollectionExportBuilderLink,
+                    entityType: "EXPORT_TO_RESEARCH_COLLECTION", key: "EXPORT_TO_RESEARCH_COLLECTION", folder: false, lazy: false,
                     view: "showResearchCollectionExportPage", icon: "./img/research-collection-icon.png"
                 });
             }
 
             if (profile.mainMenu.showZenodoExportBuilder) {
-                var zenodoExportBuilderLink = _this.getLinkForNode("Zenodo Export Builder", "ZENODO_EXPORT_BUILDER", "showZenodoExportPage", null);
+                var zenodoExportBuilderLink = _this.getLinkForNode("Export to Zenodo", "EXPORT_TO_ZENODO", "showZenodoExportPage", null);
                 treeModelExports.push({
-                    displayName: "Zenodo Export Builder", title: zenodoExportBuilderLink, entityType: "ZENODO_EXPORT_BUILDER",
-                    key: "ZENODO_EXPORT_BUILDER", folder: false, lazy: false, view: "showZenodoExportPage", icon: "glyphicon glyphicon-export"
+                    displayName: "Export to Zenodo", title: zenodoExportBuilderLink, entityType: "EXPORT_TO_ZENODO",
+                    key: "EXPORT_TO_ZENODO", folder: false, lazy: false, view: "showZenodoExportPage", icon: "glyphicon glyphicon-export"
                 });
             }
 
-            treeModelUtils.push({ displayName: "Export", title: "Export", entityType: "EXPORT", key: "EXPORT", folder: true, lazy: false,
+            treeModelUtils.push({ displayName: "Exports", title: "Exports", entityType: "EXPORTS", key: "EXPORTS", folder: true, lazy: false,
                     expanded: false, children: treeModelExports, icon: "glyphicon glyphicon-export" });
         }
         
@@ -322,22 +322,22 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         treeModel.push({ displayName: "About", title : "About", entityType: "ABOUT", key : "ABOUT", folder : false, lazy : false, view : "showAbout", icon : "glyphicon glyphicon-info-sign" });
         
         var glyph_opts = {
-                map: {
-                  doc: "glyphicon glyphicon-file",
-                  docOpen: "glyphicon glyphicon-file",
-                  checkbox: "glyphicon glyphicon-unchecked",
-                  checkboxSelected: "glyphicon glyphicon-check",
-                  checkboxUnknown: "glyphicon glyphicon-share",
-                  dragHelper: "glyphicon glyphicon-play",
-                  dropMarker: "glyphicon glyphicon-arrow-right",
-                  error: "glyphicon glyphicon-warning-sign",
-                  expanderClosed: "glyphicon glyphicon-plus-sign",
-                  expanderLazy: "glyphicon glyphicon-plus-sign",  // glyphicon-expand
-                  expanderOpen: "glyphicon glyphicon-minus-sign",  // glyphicon-collapse-down
-                  folder: "glyphicon glyphicon-folder-close",
-                  folderOpen: "glyphicon glyphicon-folder-open",
-                  loading: "glyphicon glyphicon-refresh"
-                }
+            map: {
+                doc: "glyphicon glyphicon-file",
+                docOpen: "glyphicon glyphicon-file",
+                checkbox: "glyphicon glyphicon-unchecked",
+                checkboxSelected: "glyphicon glyphicon-check",
+                checkboxUnknown: "glyphicon glyphicon-share",
+                dragHelper: "glyphicon glyphicon-play",
+                dropMarker: "glyphicon glyphicon-arrow-right",
+                error: "glyphicon glyphicon-warning-sign",
+                expanderClosed: "glyphicon glyphicon-plus-sign",
+                expanderLazy: "glyphicon glyphicon-plus-sign",  // glyphicon-expand
+                expanderOpen: "glyphicon glyphicon-minus-sign",  // glyphicon-collapse-down
+                folder: "glyphicon glyphicon-folder-close",
+                folderOpen: "glyphicon glyphicon-folder-open",
+                loading: "glyphicon glyphicon-refresh"
+            }
         };
         
         var onLazyLoad = function(event, data) {
@@ -400,7 +400,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                         });
                         });
                     });
-            }
+            };
             
             switch(type) {
                 case "LAB_NOTEBOOK":
@@ -680,24 +680,24 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                 });
                                 
                             }
-                        }
+                        };
                         
                         var getCancelResultsFunction = function(dfd) {
-                                return function() {
-                                    dfd.resolve([]);
-                                }
-                        }
+                            return function() {
+                                dfd.resolve([]);
+                            }
+                        };
                         
                         if(samplesToShow.length > 50) {
-                                var toExecute = function() {
-                                    Util.blockUIConfirm("Do you want to show " + samplesWithoutELNParents.length + " " + ELNDictionary.Samples + " on the tree?", 
-                                            getOkResultsFunction(dfd, samplesToShow),
-                                            getCancelResultsFunction(dfd));
-                            }
+                            var toExecute = function() {
+                                Util.blockUIConfirm("Do you want to show " + samplesWithoutELNParents.length + " " + ELNDictionary.Samples + " on the tree?",
+                                        getOkResultsFunction(dfd, samplesToShow),
+                                        getCancelResultsFunction(dfd));
+                            };
                             
-                                setTimeout(toExecute, 1000);
+                            setTimeout(toExecute, 1000);
                         } else {
-                                getOkResultsFunction(dfd, samplesToShow)();
+                            getOkResultsFunction(dfd, samplesToShow)();
                         }
                     });
                     break;
@@ -841,7 +841,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         
         setCustomIcon($tree, "JUPYTER_WORKSPACE", "./img/jupyter-icon.png");
         setCustomIcon($tree, "NEW_JUPYTER_NOTEBOOK", "./img/jupyter-icon.png");
-    }
+    };
     
     function setCustomIcon($tree, nodeKey, iconImage) {
         var node = $tree.fancytree("getTree").getNodeByKey(nodeKey);

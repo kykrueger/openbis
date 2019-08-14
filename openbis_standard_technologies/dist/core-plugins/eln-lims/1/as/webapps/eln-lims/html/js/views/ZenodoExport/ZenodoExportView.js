@@ -45,5 +45,9 @@ function ZenodoExportView(exportController, exportModel) {
 
         var $formTitle = $('<h2>').append('Zenodo Export Builder');
         $header.append($formTitle);
+
+        var $exportButton = $('<input>', { 'type': 'submit', 'class': 'btn btn-primary', 'value': 'Export Selected',
+            'onClick': '$("form[name=\'rcExportForm\']").submit()'});
+        $header.append($exportButton);
     };
 }
