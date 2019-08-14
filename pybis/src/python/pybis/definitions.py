@@ -15,7 +15,7 @@ def openbis_definitions(entity):
             "multi": "".split(),
             "identifier": "spaceId",
             "create": { "@type": "as.dto.space.create.SpaceCreation"},
-            "update": { "@type": "as.dto.space.upate.SpaceUpdate"},
+            "update": { "@type": "as.dto.space.update.SpaceUpdate"},
             "delete": { "@type": "as.dto.space.delete.SpaceDeletionOptions"},
             "fetch":  { "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
         },
@@ -26,7 +26,7 @@ def openbis_definitions(entity):
             "multi": "".split(),
             "identifier": "projectId",
             "create": { "@type": "as.dto.project.create.ProjectCreation"},
-            "update": { "@type": "as.dto.project.upate.ProjectUpdate"},
+            "update": { "@type": "as.dto.project.update.ProjectUpdate"},
         },
         "Experiment": {
             "attrs_new": "code type project tags attachments".split(),
@@ -35,7 +35,7 @@ def openbis_definitions(entity):
             "multi": "tags attachments".split(),
             "identifier": "experimentId",
             "create": { "@type": "as.dto.experiment.create.ExperimentCreation"},
-            "update": { "@type": "as.dto.experiment.upate.ExperimentUpdate"},
+            "update": { "@type": "as.dto.experiment.update.ExperimentUpdate"},
         },
         "Sample": {
             "attrs_new": "code type project parents children container components space experiment tags attachments".split(),
@@ -48,7 +48,7 @@ def openbis_definitions(entity):
             },
             "identifier": "sampleId",
             "create": { "@type": "as.dto.sample.create.SampleCreation"},
-            "update": { "@type": "as.dto.sample.upate.SampleUpdate"},
+            "update": { "@type": "as.dto.sample.update.SampleUpdate"},
             "delete": { "@type": "as.dto.sample.delete.SampleDeletionOptions"},
             "cre_type": "as.dto.sample.create.SampleCreation",
             "multi": "parents children components tags attachments".split(),
@@ -183,7 +183,7 @@ def openbis_definitions(entity):
             "cre_type": "as.dto.sample.create.SampleCreation",
             "multi": "parents children components tags attachments".split(),
         },
-        "DataSet": {
+        "dataSet": {
             "attrs_new": "type code kind experiment sample parents children components containers tags".split(),
             "attrs_up": "parents children experiment sample components containers tags".split(),
             "attrs": "code permId type kind experiment sample parents children components containers tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore size measured".split(),
@@ -257,10 +257,11 @@ def openbis_definitions(entity):
             "multi": "users".split(),
             "identifier": "groupId",
         },
-        "RoleAssignment" : {
+        "roleAssignment" : {
             "attrs": "id user authorizationGroup role roleLevel space project registrator registrationDate".split(),
             "attrs_new": "role roleLevel user authorizationGroup role space project".split(),
             "attrs_up": "role roleLevel user authorizationGroup role space project".split(),
+            "role": ['POWER_USER', 'OBSERVER', 'USER', 'DISABLED', 'ADMIN', 'ETL_SERVER']
         },
         "attr2ids": {
             "space": "spaceId",
@@ -318,10 +319,54 @@ fetch_option = {
         "type": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"}
     },
     "samples": {"@type": "as.dto.sample.fetchoptions.SampleFetchOptions"},
-    "sampleType": {"@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"},
-    "materialType": {"@type": "as.dto.material.fetchoptions.MaterialTypeFetchOptions"},
-    "dataSetType": {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
-    "experimentType": {"@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions"},
+    "sampleType": {
+        "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+        "propertyAssignments": {
+            "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
+            "propertyType": {
+                "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
+                "vocabulary": {
+                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
+                }
+            }
+        }
+    },
+    "materialType": {
+        "@type": "as.dto.material.fetchoptions.MaterialTypeFetchOptions",
+        "propertyAssignments": {
+            "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
+            "propertyType": {
+                "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
+                "vocabulary": {
+                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
+                }
+            }
+        }
+    },
+    "dataSetType": {
+        "@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions",
+        "propertyAssignments": {
+            "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
+            "propertyType": {
+                "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
+                "vocabulary": {
+                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
+                }
+            }
+        }
+    },
+    "experimentType": {
+        "@type": "as.dto.experiment.fetchoptions.ExperimentTypeFetchOptions",
+        "propertyAssignments": {
+            "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
+            "propertyType": {
+                "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
+                "vocabulary": {
+                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
+                }
+            }
+        } 
+    },
     "dataSet": {
         "@type": "as.dto.dataset.fetchoptions.DataSetFetchOptions",
         "type":       {"@type": "as.dto.dataset.fetchoptions.DataSetTypeFetchOptions"},
@@ -339,6 +384,9 @@ fetch_option = {
     "linkedData": {
         "externalDms": {"@type": "as.dto.externaldms.fetchoptions.ExternalDmsFetchOptions"},
         "@type": "as.dto.dataset.fetchoptions.LinkedDataFetchOptions"
+    },
+    "roleAssignment": {
+        "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions",
     },
     "roleAssignments": {
         "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions",
