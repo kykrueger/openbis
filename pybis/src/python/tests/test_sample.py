@@ -20,10 +20,9 @@ def test_create_delete_sample(space):
     sample_code = 'test_sample_'+timestamp
     sample = o.new_sample(code=sample_code, type=sample_type, space=space)
     assert sample is not None
-    assert sample.space == space
+    assert sample.space.code == space.code
     assert sample.code == sample_code
-    
-    assert sample.permId is None
+    assert sample.permId == ''
     sample.save()
 
     # now there should appear a permId
@@ -58,7 +57,7 @@ def test_create_delete_space_sample(space):
 
     sample = space.new_sample(code=sample_code, type=sample_type)
     assert sample is not None
-    assert sample.space == space
+    assert sample.space.code == space.code
     assert sample.code == sample_code
     sample.save()
     assert sample.permId is not None
@@ -79,11 +78,11 @@ def test_parent_child(space):
 
     ex_sample_parents = sample_child.get_parents()
     ex_sample_parent = ex_sample_parents[0]
-    assert ex_sample_parent.identifier == '/DEFAULT/{}'.format(parent_code).upper()
+    assert ex_sample_parent.identifier == '/{}/{}'.format(space.code, parent_code).upper()
 
     ex_sample_children = ex_sample_parent.get_children()
     ex_sample_child = ex_sample_children[0]
-    assert ex_sample_child.identifier == '/DEFAULT/{}'.format(child_code).upper()
+    assert ex_sample_child.identifier == '/{}/{}'.format(space.code, child_code).upper()
 
     sample_parent.delete('sample parent-child creation test on '+timestamp)
     sample_child.delete('sample parent-child creation test on '+timestamp)
