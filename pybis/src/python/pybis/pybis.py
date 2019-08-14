@@ -92,7 +92,6 @@ def get_search_type_for_entity(entity, operator=None):
         "vocabulary_term": "as.dto.vocabulary.search.VocabularyTermSearchCriteria",
         "tag": "as.dto.tag.search.TagSearchCriteria",
         "authorizationGroup": "as.dto.authorizationgroup.search.AuthorizationGroupSearchCriteria",
-        "roleAssignment": "as.dto.roleassignment.search.RoleAssignmentSearchCriteria",
         "person": "as.dto.person.search.PersonSearchCriteria",
         "code": "as.dto.common.search.CodeSearchCriteria",
         "sample_type": "as.dto.sample.search.SampleTypeSearchCriteria",
@@ -765,7 +764,7 @@ class Openbis:
         if resp.ok:
             resp = resp.json()
             if 'error' in resp:
-                if DEBUG_LEVEL >= LOG_ERROR: print(json.dumps(request))
+                print(json.dumps(request))
                 raise ValueError(resp['error']['message'])
             elif 'result' in resp:
                 return resp['result']
@@ -1001,7 +1000,8 @@ class Openbis:
     def get_role_assignments(self, start_with=None, count=None, **search_args):
         """ Get the assigned roles for a given group, person or space
         """
-        search_criteria = get_search_type_for_entity('roleAssignment', 'AND')
+        entity = 'roleAssignment'
+        search_criteria = get_type_for_entity(entity, 'search')
         allowed_search_attrs = ['role', 'roleLevel', 'user', 'group', 'person', 'space']
 
         sub_crit = []
@@ -1043,14 +1043,15 @@ class Openbis:
 
         search_criteria['criteria'] = sub_crit
 
-        fetchopts = fetch_option['roleAssignments']
+        method_name = get_method_for_entity(entity, 'search')
+        fetchopts = fetch_option[entity]
         fetchopts['from'] = start_with
         fetchopts['count'] = count
         for option in ['space', 'project', 'user', 'authorizationGroup','registrator']:
             fetchopts[option] = fetch_option[option]
 
         request = {
-            "method": "searchRoleAssignments",
+            "method": method_name,
             "params": [
                 self.token,
                 search_criteria,
@@ -1086,10 +1087,8 @@ class Openbis:
         """ Fetches one assigned role by its techId.
         """
 
-        fetchopts = {
-            "@type": "as.dto.roleassignment.fetchoptions.RoleAssignmentFetchOptions"
-        }
-        for option in ['roleAssignments', 'space', 'project', 'user', 'authorizationGroup','registrator']:
+        fetchopts = fetch_option['roleAssignment']
+        for option in ['space', 'project', 'user', 'authorizationGroup','registrator']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1127,7 +1126,10 @@ class Openbis:
             - a space
             - a project
         """
-         
+        role = role.upper()
+        defs = get_definition_for_entity('roleAssignment')
+        if role not in defs['role']:
+            raise ValueError("Role should be one of these: {}".format(defs['role']))
         userId = None
         groupId = None
         spaceId = None
@@ -1206,7 +1208,7 @@ class Openbis:
         fetchopts = fetch_option['authorizationGroup']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
-        for option in ['roleAssignments', 'registrator', 'users']:
+        for option in ['roleAssignment', 'registrator', 'users']:
             fetchopts[option] = fetch_option[option]
         request = {
             "method": "searchAuthorizationGroups",
@@ -1300,7 +1302,7 @@ class Openbis:
         fetchopts = {
             "@type": "as.dto.person.fetchoptions.PersonFetchOptions"
         }
-        for option in ['space', 'project']:
+        for option in ['roleAssignments', 'space']:
             fetchopts[option] = fetch_option[option]
 
         request = {
@@ -1432,7 +1434,7 @@ class Openbis:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
         if type:
-            sub_criteria.append(_subcriteria_for_code(type, 'sample_type'))
+            sub_criteria.append(_subcriteria_for_code(type, 'sampleType'))
         if tags:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if code:
@@ -2592,14 +2594,6 @@ class Openbis:
             totalCount = resp.get('totalCount'),
         )
 
-    def get_dataset_type(self, type):
-        return self._get_types_of(
-            method_name         = "searchDataSetTypes", 
-            entity              = "DataSet",
-            type_name           = type,
-            optional_attributes = ['kind']
-        )
-
     def get_material_types(self, type=None, start_with=None, count=None):
         """ Returns a list of all available material types
         """
@@ -3054,7 +3048,7 @@ class Openbis:
         """
 
         parse_jackson(response)
-        attrs = ['identifier', 'permId', 'experiment', 'sample_type',
+        attrs = ['identifier', 'permId', 'experiment', 'type',
                  'registrator', 'registrationDate', 'modifier', 'modificationDate']
         if len(response) == 0:
             samples = DataFrame(columns=attrs)
@@ -3067,7 +3061,7 @@ class Openbis:
             samples['identifier'] = samples['identifier'].map(extract_identifier)
             samples['permId'] = samples['permId'].map(extract_permid)
             samples['experiment'] = samples['experiment'].map(extract_nested_identifier)
-            samples['sample_type'] = samples['type'].map(extract_nested_permid)
+            samples['type'] = samples['type'].map(extract_nested_permid)
 
         if props is not None:
             if isinstance(props, str):
@@ -3294,8 +3288,6 @@ class Openbis:
         kwargs['chosenFromList'] = chosenFromList
         return Vocabulary(self, data=None, terms=terms, **kwargs)
 
-        
-
     def _get_dss_url(self, dss_code=None):
         """ internal method to get the downloadURL of a datastore.
         """
@@ -3304,7 +3296,6 @@ class Openbis:
             return dss['downloadUrl'][0]
         else:
             return dss[dss['code'] == dss_code]['downloadUrl'][0]
-
 
 
 class ExternalDMS():
