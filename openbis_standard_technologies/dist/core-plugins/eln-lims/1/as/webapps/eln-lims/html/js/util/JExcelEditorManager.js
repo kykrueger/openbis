@@ -15,7 +15,7 @@ var JExcelEditorManager = new function() {
                     style : style,
                     meta : meta
                 }
-                entity.properties[propertyCode] = "<DATA>" + JSON.stringify(jExcelEditorValue) + "</DATA>";
+                entity.properties[propertyCode] = "<DATA>" + window.btoa(JSON.stringify(jExcelEditorValue)) + "</DATA>";
             }
         }
     }
@@ -114,7 +114,7 @@ var JExcelEditorManager = new function() {
 	        var jExcelEditorValue = null;
 	        if(jExcelEditorValueAsStringWithTags) {
 	            var jExcelEditorValueAsStringNoTags = jExcelEditorValueAsStringWithTags.substring(6, jExcelEditorValueAsStringWithTags.length - 7);
-                jExcelEditorValue = JSON.parse(jExcelEditorValueAsStringNoTags);
+                jExcelEditorValue = JSON.parse(window.atob(jExcelEditorValueAsStringNoTags));
 	        }
 	        if(jExcelEditorValue) {
 	            data = jExcelEditorValue.data;
