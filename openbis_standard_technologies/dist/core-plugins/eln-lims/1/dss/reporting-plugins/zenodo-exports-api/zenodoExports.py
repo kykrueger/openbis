@@ -32,7 +32,7 @@ from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 from org.json import JSONObject
 
-from exportsApi import findEntitiesToExport, validateDataSize, getConfigurationProperty, generateZipFile, checkResponseStatus
+from exportsApi import findEntitiesToExport, validateDataSize, getConfigurationProperty, generateZipFile, checkResponseStatus, displayResult
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.zenodoExports.py')
 
@@ -45,6 +45,7 @@ def process(tr, params, tableBuilder):
 
     if method == 'exportAll':
         resultUrl = expandAndExport(tr, params)
+        displayResult(resultUrl is not None, tableBuilder, '{"url": "' + resultUrl + '"}' if resultUrl is not None else None)
 
 
 def expandAndExport(tr, params):
