@@ -14,10 +14,27 @@
 # limitations under the License.
 #
 
-from ch.systemsx.cisd.common.logging import LogCategory
-from org.apache.log4j import Logger
+from __future__ import print_function
 
-operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.rcExports.py')
+import traceback
+
+import time
+from ch.systemsx.cisd.common.logging import LogCategory
+from java.io import File
+from java.nio.file import Paths
+from org.apache.commons.io import FileUtils
+from org.apache.log4j import Logger
+from org.eclipse.jetty.client import HttpClient
+from org.eclipse.jetty.client.util import MultiPartContentProvider
+from org.eclipse.jetty.client.util import PathContentProvider
+from org.eclipse.jetty.client.util import StringContentProvider
+from org.eclipse.jetty.http import HttpMethod
+from org.eclipse.jetty.util.ssl import SslContextFactory
+from org.json import JSONObject
+
+from exportsApi import findEntitiesToExport, validateDataSize, getConfigurationProperty, generateZipFile, checkResponseStatus
+
+operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.zenodoExports.py')
 
 
 def process(tr, params, tableBuilder):
@@ -27,8 +44,120 @@ def process(tr, params, tableBuilder):
     tr.setUserId(userId)
 
     if method == 'exportAll':
-        resultUrl = export(tr, params)
+        resultUrl = expandAndExport(tr, params)
 
 
-def export(tr, params):
-    pass
+def expandAndExport(tr, params):
+    entitiesToExport = findEntitiesToExport(params)
+    validateDataSize(entitiesToExport, tr)
+
+    userInformation = {
+        'firstName': params.get('userFirstName'),
+        'lastName': params.get('userLastName'),
+        'email': params.get('userEmail'),
+    }
+
+    operationLog.info('Found ' + str(len(entitiesToExport)) + ' entities to export')
+    return export(entities=entitiesToExport, tr=tr, params=params, userInformation=userInformation)
+
+
+def export(entities, tr, params, userInformation):
+    #Create temporal folder
+    timeNow = time.time()
+
+    exportDirName = 'export_' + str(timeNow)
+    exportDir = File.createTempFile(exportDirName, None)
+    exportDirPath = exportDir.getCanonicalPath()
+    exportDir.delete()
+    exportDir.mkdir()
+
+    contentZipFileName = 'content.zip'
+    contentDirName = 'content_' + str(timeNow)
+    contentDir = File.createTempFile(contentDirName, None, exportDir)
+    contentDirPath = contentDir.getCanonicalPath()
+    contentDir.delete()
+    contentDir.mkdir()
+
+    contentZipFilePath = exportDirPath + '/' + contentZipFileName
+
+    exportZipFilePath = exportDirPath + '.zip'
+    exportZipFileName = exportDirName + '.zip'
+
+    generateZipFile(entities, params, contentDirPath, contentZipFilePath)
+    FileUtils.forceDelete(File(contentDirPath))
+
+    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFileName=contentZipFileName, tempZipFilePath=contentZipFilePath)
+    # cleanUp(exportDirPath, exportZipFilePath)
+    return resultUrl
+
+
+def sendToZenodo(tr, params, tempZipFileName, tempZipFilePath):
+    depositRootUrl = 'https://localhost/api/deposit/depositions'
+
+    accessToken = str(getConfigurationProperty(tr, 'accessToken'))
+    operationLog.info('accessToken: %s' % accessToken)
+
+    headers = {
+        # 'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + accessToken,
+    }
+
+    httpClient = None
+    try:
+        httpClient = createHttpClient()
+
+        httpClient.setFollowRedirects(False)
+        httpClient.start()
+
+        depositionData = createDepositionResource(httpClient.newRequest(depositRootUrl), accessToken)
+
+        print('depositionData="%s"' % depositionData.toString())
+        print('depositionId=%d' % depositionData.get('id'))
+        depositionLinks = depositionData.get('links')
+        depositUrl = depositionLinks.get('files')
+
+        print('depositUrl=%s' % depositUrl)
+
+        submissionResult = submitFile(tempZipFilePath, accessToken, httpClient.newRequest(depositUrl))
+
+        print('submissionResult=%s' % submissionResult.toString())
+
+        result = depositionLinks.get('html')
+        print('result="%s"' % result)
+        return result
+    except Exception as e:
+        operationLog.error('Exception at: ' + traceback.format_exc())
+        operationLog.error('Exception: ' + str(e))
+        raise e
+    finally:
+        if httpClient is not None:
+            httpClient.stop()
+
+
+def submitFile(tempZipFilePath, accessToken, request):
+    multiPart = MultiPartContentProvider()
+    multiPart.addFilePart('file', 'content.zip', PathContentProvider(Paths.get(tempZipFilePath)), None)
+    multiPart.close()
+    addAuthenticationHeader(accessToken, request)
+    response = request.method(HttpMethod.POST).content(multiPart).send()
+    checkResponseStatus(response)
+    contentStr = response.getContentAsString()
+    return JSONObject(contentStr)
+
+
+def createDepositionResource(request, accessToken):
+    addAuthenticationHeader(accessToken, request)
+    response = request.method(HttpMethod.POST).content(StringContentProvider("{}"), "application/json").send()
+    checkResponseStatus(response)
+    contentStr = response.getContentAsString()
+    return JSONObject(contentStr)
+
+
+def addAuthenticationHeader(accessToken, request):
+    request.header('Authorization', 'Bearer ' + accessToken)
+
+
+def createHttpClient():
+    sslContextFactory = SslContextFactory()
+    sslContextFactory.setTrustAll(True)
+    return HttpClient(sslContextFactory)

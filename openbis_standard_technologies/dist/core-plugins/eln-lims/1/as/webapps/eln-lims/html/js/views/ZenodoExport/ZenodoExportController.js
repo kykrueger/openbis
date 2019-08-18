@@ -26,10 +26,6 @@ function ZenodoExportController(parentController) {
         var _this = this;
         var selectedNodes = $(exportModel.tree).fancytree('getTree').getSelectedNodes();
 
-        var selectedOption = exportView.$submissionTypeDropdown.find(":selected");
-        var submissionUrl = selectedOption.val();
-        var submissionType = selectedOption.text();
-
         var toExport = [];
         for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
             var node = selectedNodes[eIdx];
@@ -38,12 +34,10 @@ function ZenodoExportController(parentController) {
 
         if (toExport.length === 0) {
             Util.showInfo('First select something to export.');
-        } else if (!submissionUrl) {
-            Util.showInfo('First select submission type.');
         } else {
             Util.blockUI();
             this.getUserInformation(function(userInformation) {
-                mainController.serverFacade.exportRc(toExport, true, false, submissionUrl, submissionType, userInformation,
+                mainController.serverFacade.exportZenodo(toExport, true, false, userInformation,
                         function(operationExecutionPermId) {
                             _this.waitForOpExecutionResponse(operationExecutionPermId, function(error, result) {
                                 Util.unblockUI();

@@ -35,7 +35,8 @@ from org.eclipse.jetty.client.util import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 
-from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, generateFilesInZip, addToZipFile, cleanUp
+from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, generateFilesInZip, addToZipFile, cleanUp, \
+    generateZipFile, checkResponseStatus
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.rcExports.py')
 
@@ -106,7 +107,7 @@ def export(entities, tr, params, userInformation):
     exportZipFilePath = exportDirPath + '.zip'
     exportZipFileName = exportDirName + '.zip'
 
-    generateInternalZipFile(entities, params, contentDirPath, contentZipFilePath)
+    generateZipFile(entities, params, contentDirPath, contentZipFilePath)
     FileUtils.forceDelete(File(contentDirPath))
 
     generateExternalZipFile(params=params, exportDirPath=exportDirPath, contentZipFilePath=contentZipFilePath, contentZipFileName=contentZipFileName,
@@ -187,35 +188,6 @@ def fetchServiceDocument(url, httpClient):
         }
 
     return json.dumps(map(collectionToDictionaryMapper, collections))
-
-
-def checkResponseStatus(response):
-    status = response.getStatus()
-    if status >= 300:
-        reason = response.getReason()
-        raise ValueError('Unsuccessful response from the server: %s %s' % (status, reason))
-
-
-def generateInternalZipFile(entities, params, tempDirPath, tempZipFilePath):
-    # Generates ZIP file with selected item for export
-
-    sessionToken = params.get('sessionToken')
-    includeRoot = params.get('includeRoot')
-
-    fos = None
-    zos = None
-    try:
-        fos = FileOutputStream(tempZipFilePath)
-        zos = ZipOutputStream(fos)
-
-        fileMetadata = generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath)
-    finally:
-        if zos is not None:
-            zos.close()
-        if fos is not None:
-            fos.close()
-
-    return fileMetadata
 
 
 def generateExternalZipFile(params, exportDirPath, contentZipFilePath, contentZipFileName, exportZipFileName, userInformation, entities):
