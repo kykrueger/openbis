@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApi;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.authentication.IPrincipalProvider;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -82,7 +82,7 @@ public class SingleSignOnServlet extends AbstractServlet
     private IOpenBisSessionManager sessionManager;
     
     @Autowired
-    private ApplicationServerApi applicationServerApi;
+    private IApplicationServerInternalApi applicationServerApi;
     
     private final Map<String, String> sessionTokenBySessionId = new HashMap<>();
 
@@ -116,10 +116,10 @@ public class SingleSignOnServlet extends AbstractServlet
                     return principal;
                 }
             });
-        applicationServerApi.tryToAuthenticate(sessionToken);
+        applicationServerApi.registerUser(sessionToken);
         sessionTokenBySessionId.put(sessionId, sessionToken);
         
-        operationLog.info("Session " + sessionToken + " created for session id " + sessionId);
+        operationLog.info("Session token " + sessionToken + " created for SSO session id " + sessionId);
         redirectToApp(request, response, sessionToken);
     }
 
