@@ -104,9 +104,6 @@ function ZenodoExportController(parentController) {
         var userId = mainController.serverFacade.getUserId();
         mainController.serverFacade.getSessionInformation(function(sessionInfo) {
             var userInformation = {
-                firstName: sessionInfo.person.firstName,
-                lastName: sessionInfo.person.lastName,
-                email: sessionInfo.person.email,
                 id: userId,
             };
             callback(userInformation);

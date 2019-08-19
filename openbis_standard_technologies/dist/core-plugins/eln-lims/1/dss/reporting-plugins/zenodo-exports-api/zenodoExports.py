@@ -32,7 +32,7 @@ from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 from org.json import JSONObject
 
-from exportsApi import findEntitiesToExport, validateDataSize, getConfigurationProperty, generateZipFile, checkResponseStatus, displayResult
+from exportsApi import findEntitiesToExport, validateDataSize, getConfigurationProperty, generateZipFile, checkResponseStatus, displayResult, cleanUp
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.zenodoExports.py')
 
@@ -52,17 +52,11 @@ def expandAndExport(tr, params):
     entitiesToExport = findEntitiesToExport(params)
     validateDataSize(entitiesToExport, tr)
 
-    userInformation = {
-        'firstName': params.get('userFirstName'),
-        'lastName': params.get('userLastName'),
-        'email': params.get('userEmail'),
-    }
-
     operationLog.info('Found ' + str(len(entitiesToExport)) + ' entities to export')
-    return export(entities=entitiesToExport, tr=tr, params=params, userInformation=userInformation)
+    return export(entities=entitiesToExport, tr=tr, params=params)
 
 
-def export(entities, tr, params, userInformation):
+def export(entities, tr, params):
     #Create temporal folder
     timeNow = time.time()
 
@@ -82,26 +76,20 @@ def export(entities, tr, params, userInformation):
     contentZipFilePath = exportDirPath + '/' + contentZipFileName
 
     exportZipFilePath = exportDirPath + '.zip'
-    exportZipFileName = exportDirName + '.zip'
 
     generateZipFile(entities, params, contentDirPath, contentZipFilePath)
     FileUtils.forceDelete(File(contentDirPath))
 
-    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFileName=contentZipFileName, tempZipFilePath=contentZipFilePath)
+    resultUrl = sendToZenodo(tr=tr, tempZipFilePath=contentZipFilePath)
     # cleanUp(exportDirPath, exportZipFilePath)
     return resultUrl
 
 
-def sendToZenodo(tr, params, tempZipFileName, tempZipFilePath):
-    depositRootUrl = 'https://localhost/api/deposit/depositions'
+def sendToZenodo(tr, tempZipFilePath):
+    depositRootUrl = str(getConfigurationProperty(tr, 'zenodoUrl')) + '/api/deposit/depositions'
 
     accessToken = str(getConfigurationProperty(tr, 'accessToken'))
     operationLog.info('accessToken: %s' % accessToken)
-
-    headers = {
-        # 'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + accessToken,
-    }
 
     httpClient = None
     try:
@@ -112,19 +100,12 @@ def sendToZenodo(tr, params, tempZipFileName, tempZipFilePath):
 
         depositionData = createDepositionResource(httpClient.newRequest(depositRootUrl), accessToken)
 
-        print('depositionData="%s"' % depositionData.toString())
-        print('depositionId=%d' % depositionData.get('id'))
         depositionLinks = depositionData.get('links')
         depositUrl = depositionLinks.get('files')
 
-        print('depositUrl=%s' % depositUrl)
-
-        submissionResult = submitFile(tempZipFilePath, accessToken, httpClient.newRequest(depositUrl))
-
-        print('submissionResult=%s' % submissionResult.toString())
+        submitFile(tempZipFilePath, accessToken, httpClient.newRequest(depositUrl))
 
         result = depositionLinks.get('html')
-        print('result="%s"' % result)
         return result
     except Exception as e:
         operationLog.error('Exception at: ' + traceback.format_exc())
