@@ -2530,12 +2530,18 @@ class Openbis:
     def new_property_type(self, code, label, description, dataType, **kwargs):
         return PropertyType(openbis_obj=self, code=code, label=label, description=description, dataType=dataType, **kwargs)
 
-    def get_property_type(self, code, only_data=False):
+    def get_property_type(self, code, only_data=False, start_with=None, count=None):
         identifiers = []
-        identifiers.append({
-            "permId": code,
-            "@type": "as.dto.property.id.PropertyTypePermId"
-        })
+        only_one = False
+        if not isinstance(code, list):
+            code = [code]
+            only_one = True
+
+        for c in code:
+            identifiers.append({
+                "permId": c,
+                "@type": "as.dto.property.id.PropertyTypePermId"
+            })
 
         fetchopts = fetch_option['propertyType']
         options = ['vocabulary', 'materialType', 'semanticAnnotations', 'registrator']
@@ -2553,13 +2559,43 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
         parse_jackson(resp)
-        if len(resp) == 0:
-            raise ValueError('no such propertyType: {}'.format(code))
-        for ident in resp:
-            if only_data:
-                return resp[ident]
-            else:
-                return PropertyType(openbis_obj=self, data=resp[ident])
+
+        if only_one:
+            if len(resp) == 0:
+                raise ValueError('no such propertyType: {}'.format(code))
+            for ident in resp:
+                if only_data:
+                    return resp[ident]
+                else:
+                    return PropertyType(
+                        openbis_obj = self,
+                        data=resp[ident]
+                    )
+        # return a list of objects
+        else:
+            return self._property_type_things(
+                objects    = list(resp.values()),
+                start_with = start_with,
+                count      = count,
+                totalCount = len(resp),
+            )
+            #attrs = openbis_definitions('propertyType')['attrs']
+            #if len(resp) == 0:
+            #    df = DataFrame(columns=attrs)
+            #else:
+            #    df = DataFrame(list(resp.values()))
+            #    df['registrationDate'] = df['registrationDate'].map(format_timestamp)
+            #    df['registrator'] = df['registrator'].map(extract_person)
+
+            #return Things(
+            #    openbis_obj = self,
+            #    entity = 'propertyType',
+            #    single_item_method = self.get_property_type,
+            #    df = df[attrs],
+            #    start_with = start_with,
+            #    count = count,
+            #    totalCount = len(resp),
+            #)
 
     def get_property_types(self, code=None, start_with=None, count=None):
         fetchopts = fetch_option['propertyType']
@@ -2575,17 +2611,48 @@ class Openbis:
                 fetchopts,
             ],
         }
-        attrs = openbis_definitions('propertyType')['attrs']
+
         resp = self._post_request(self.as_v3, request)
-        if len(resp['objects']) == 0:
-            experiments = DataFrame(columns=attrs)
+        objects = resp['objects']
+        parse_jackson(objects)
+        return self._property_type_things(
+            objects=objects,
+            start_with = start_with,
+            count      = count,
+            totalCount = resp.get('totalCount')
+        )
+
+        #attrs = openbis_definitions('propertyType')['attrs']
+        #if len(resp['objects']) == 0:
+        #    df = DataFrame(columns=attrs)
+        #else:
+        #    objects = resp['objects']
+        #    parse_jackson(objects)
+        #    df = DataFrame(objects)
+        #    df['registrationDate'] = df['registrationDate'].map(format_timestamp)
+        #    df['registrator'] = df['registrator'].map(extract_person)
+
+        #return Things(
+        #    openbis_obj = self,
+        #    entity = 'propertyType',
+        #    single_item_method = self.get_property_type,
+        #    df = df[attrs],
+        #    start_with = start_with,
+        #    count = count,
+        #    totalCount = resp.get('totalCount'),
+        #)
+
+    def _property_type_things(self, objects, start_with=None, count=None, totalCount=None):
+        """takes a list of objects and returns a Things object
+        """
+        attrs = openbis_definitions('propertyType')['attrs']
+        if len(objects) == 0:
+            df = DataFrame(columns=attrs)
         else:
-            objects = resp['objects']
-            parse_jackson(objects)
             df = DataFrame(objects)
             df['registrationDate'] = df['registrationDate'].map(format_timestamp)
             df['registrator'] = df['registrator'].map(extract_person)
-
+        
         return Things(
             openbis_obj = self,
             entity = 'propertyType',
@@ -2593,7 +2660,7 @@ class Openbis:
             df = df[attrs],
             start_with = start_with,
             count = count,
-            totalCount = resp.get('totalCount'),
+            totalCount = totalCount,
         )
 
     def get_material_types(self, type=None, start_with=None, count=None):
@@ -2984,10 +3051,10 @@ class Openbis:
         :param sample_identifiers: A list of sample identifiers to retrieve.
         """
 
-        just_one = True
+        only_one = True
         identifiers = []
         if isinstance(sample_ident, list):
-            just_one = False
+            only_one = False
             for ident in sample_ident:
                 identifiers.append(
                     _type_for_id(ident, 'sample')
@@ -3022,7 +3089,7 @@ class Openbis:
 
         resp = self._post_request(self.as_v3, request)
 
-        if just_one:
+        if only_one:
             if len(resp) == 0:
                 raise ValueError('no such sample found: {}'.format(sample_ident))
 
