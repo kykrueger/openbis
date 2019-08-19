@@ -81,7 +81,7 @@ def export(entities, tr, params):
     FileUtils.forceDelete(File(contentDirPath))
 
     resultUrl = sendToZenodo(tr=tr, tempZipFilePath=contentZipFilePath)
-    # cleanUp(exportDirPath, exportZipFilePath)
+    FileUtils.forceDelete(File(exportDirPath))
     return resultUrl
 
 
