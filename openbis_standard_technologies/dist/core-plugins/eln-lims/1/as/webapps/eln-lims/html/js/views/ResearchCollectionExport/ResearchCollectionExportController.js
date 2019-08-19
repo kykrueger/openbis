@@ -56,6 +56,8 @@ function ResearchCollectionExportController(parentController) {
 
         if (toExport.length === 0) {
             Util.showInfo('First select something to export.');
+        } else if (!this.isValid(toExport)) {
+            Util.showInfo('Not only spaces and the root should be selected. It will result in an empty export file.');
         } else if (!submissionUrl) {
             Util.showInfo('First select submission type.');
         } else {
@@ -80,6 +82,16 @@ function ResearchCollectionExportController(parentController) {
                         });
             });
         }
+    };
+
+    this.isValid = function(toExport) {
+        for (var i = 0; i < toExport.length; i++) {
+            var value = toExport[i];
+            if (value.type !== 'ROOT' && value.type !== 'SPACE' || value.expand) {
+                return true;
+            }
+        }
+        return false;
     };
 
     this.waitForOpExecutionResponse = function(operationExecutionPermIdString, callbackFunction) {
