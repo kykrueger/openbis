@@ -51,23 +51,30 @@ o.logout()
 
 ## browsing masterdata
 ```
-o.get_experiment_types()
-et = o.get_experiment_type('TEST')
-et.get_props() # returns assigned property types
 
-o.get_sample_types()
+sample_types = o.get_sample_types()
+sample_types.df  # get DataFrame
+st = o.get_sample_types()[3]
 st = o.get_sample_type('YEAST')
-st.get_props() # returns assigned property types
+st.get_property_assignments()
+st.assign_property(
+	prop='diff_time',
+	section = '',
+	ordinal = 5,
+	mandatory = True,
+	initialValueForExistingEntities = 'initial value'
+	showInEditView = True,
+	showRawValueInForms = True
+)
 
 o.get_material_types()
-mt = o.get_material_type('GENE')
-mt.get_props() # returns assigned property types
+# etc. — see above
 
 o.get_dataset_types()
-dst = o.get_dataset_types()[0]
-dst = o.get_dataset_type('RAW_DATA')
-dst.get_props()
-dst.get_props(with_vocabulary=True)
+# etc. — see above
+
+o.get_experiment_types()
+# etc. — see above
 
 o.get_property_types()
 pt = o.get_property_type('BARCODE_COMPLEXITY_CHECKER')
@@ -86,10 +93,10 @@ o.get_tags()
 ## create masterdata
 ```
 pl = o.new_plugin(
-	name='my_new_entry_validation_plugin',
-	pluginType='ENTITY_VALIDATION' # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
-	pl.entityKind = None # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
-	pl.script = 'def calculate(): pass'  # JYTHON script
+	name       ='my_new_entry_validation_plugin',
+	pluginType ='ENTITY_VALIDATION',               # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
+	entityKind = None,                             # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+	script     = 'def calculate(): pass'           # a JYTHON script
 )
 pl.save()
 
