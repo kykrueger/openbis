@@ -21,13 +21,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.ApplicationServerApi;
 import ch.systemsx.cisd.authentication.IPrincipalProvider;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -78,12 +81,16 @@ public class SingleSignOnServlet extends AbstractServlet
     @Resource(name = ComponentNames.SESSION_MANAGER)
     private IOpenBisSessionManager sessionManager;
     
+    @Autowired
+    private ApplicationServerApi applicationServerApi;
+    
     private final Map<String, String> sessionTokenBySessionId = new HashMap<>();
 
     @Override
     @RequestMapping({ SERVLET_NAME })
     protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
     {
+        operationLog.info("handle sso");
         String sessionId = getHeader(request, SESSION_ID_KEY, DEFAULT_SESSION_ID_KEY);
         String sessionToken = sessionTokenBySessionId.get(sessionId);
         if (sessionToken != null)
@@ -91,6 +98,8 @@ public class SingleSignOnServlet extends AbstractServlet
             Session session = sessionManager.tryGetSession(sessionToken);
             if (session != null)
             {
+                sessionToken = session.getSessionToken();
+                redirectToApp(request, response, sessionToken);
                 return;
             }
         }
@@ -101,16 +110,40 @@ public class SingleSignOnServlet extends AbstractServlet
         Principal principal = new Principal(userId, firstName, lastName, email, true);
         sessionToken = sessionManager.tryToOpenSession(userId, new IPrincipalProvider()
             {
-                
                 @Override
                 public Principal tryToGetPrincipal(String userID)
                 {
                     return principal;
                 }
             });
+        applicationServerApi.tryToAuthenticate(sessionToken);
         sessionTokenBySessionId.put(sessionId, sessionToken);
+        
         operationLog.info("Session " + sessionToken + " created for session id " + sessionId);
-        response.sendRedirect(configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, DEFAULT_REDIRECT_URL));
+        redirectToApp(request, response, sessionToken);
+    }
+
+    protected void redirectToApp(HttpServletRequest request, HttpServletResponse response, String sessionToken) throws IOException
+    {
+        String host = request.getHeader("Host");
+        String redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, 
+                "https://bs-openbis-sis-ci-switchaai.ethz.ch:8443/openbis/webapp/eln-lims");
+        operationLog.info("redirect to " + redirectUrl);
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies)
+        {
+            if (cookie.getName().equals("openbis"))
+            {
+                cookie.setValue("");
+                cookie.setPath("/");
+                cookie.setMaxAge(0);
+                response.addCookie(cookie);
+            }
+        }
+        Cookie cookie = new Cookie("openbis", sessionToken);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        response.sendRedirect(redirectUrl);
     }
 
     private String getHeader(HttpServletRequest request, String keyProperty, String defaultKey)
@@ -121,6 +154,7 @@ public class SingleSignOnServlet extends AbstractServlet
         {
             return header;
         }
+        operationLog.error("Missing header '" + key + "'.");
         throw new IllegalArgumentException("Missing header '" + key + "'.");
     }
 
