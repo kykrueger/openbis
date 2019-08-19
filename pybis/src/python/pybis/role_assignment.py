@@ -8,7 +8,7 @@ class RoleAssignment(OpenBisObject):
 
     def __init__(self, openbis_obj, data=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'RoleAssignment' )
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'roleAssignment' )
 
         if data is not None:
             self.a(data)

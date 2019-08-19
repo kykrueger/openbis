@@ -17,30 +17,31 @@ def test_create_delete_experiment(space):
         # experiments must be assigned to a project
         e_new = o.new_experiment(
             code=new_code,
-            type='DEFAULT_EXPERIMENT',
+            type='UNKNOWN',
         )
+
+    project = o.get_projects()[0]
 
     e_new = o.new_experiment(
         code=new_code,
-        project='DEFAULT',
-        type='DEFAULT_EXPERIMENT',
+        project=project,
+        type='UNKNOWN',
     )
     assert e_new.project is not None
-    assert e_new.permId is None
+    assert e_new.permId == ''
 
     e_new.save()
 
     assert e_new.permId is not None
     assert e_new.code == new_code.upper()
-    assert e_new.identifier == '/DEFAULT/DEFAULT/'+new_code.upper()
 
-    e_exists = o.get_experiment('/DEFAULT/DEFAULT/'+new_code.upper())
+    e_exists = o.get_experiment(e_new.permId)
     assert e_exists is not None
 
     e_new.delete('delete test experiment '+new_code.upper())
 
     with pytest.raises(ValueError):
-        e_no_longer_exists = o.get_experiment('/DEFAULT/DEFAULT/'+new_code.upper())
+        e_no_longer_exists = o.get_experiment(e_exists.permId)
 
 
 def test_get_experiments(space):
