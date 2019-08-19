@@ -415,13 +415,17 @@ class AttrHolder():
             name = name_map[name]
 
         if self._is_new:
-            #if name not in self._allowed_attrs_new:
             if name not in self._defs['attrs_new']:
-                raise ValueError("No such attribute: «{}» for entity: {}".format(name, self.entity))
+                raise ValueError(
+                    "No such attribute: «{}» for entity: {}. Allowed attributes are: {}"
+                    .format(name, self.entity, self._defs['attrs_new'])
+                )
         else:
-            #if name not in self._allowed_attrs_up:
             if name not in self._defs['attrs_up']:
-                raise ValueError("No such attribute: «{}» for entity: {}".format(name, self.entity))
+                raise ValueError(
+                    "No such attribute: «{}» for entity: {}. Allowed attributes are: {}"
+                    .format(name, self.entity, self._defs['attrs_up'])
+                )
 
         if name in ["parents", "children", "components"]:
 
