@@ -13,21 +13,18 @@ import urllib.parse
 
 # needed for Data upload
 PYBIS_PLUGIN = "dataset-uploader-api"
-dataset_definitions = openbis_definitions('DataSet')
+dataset_definitions = openbis_definitions('dataSet')
 
 
-class DataSet(OpenBisObject):
+class DataSet(
+    OpenBisObject,
+    entity='dataSet',
+    single_item_method_name='get_dataset',
+):
     """ DataSet are openBIS objects that contain the actual files.
     """
 
     def __init__(self, openbis_obj, type, data=None, files=None, folder=None, kind=None, props=None, **kwargs):
-
-        if kwargs is None:
-            kwargs = {}
-        else:
-            for key in kwargs:
-                if key not in dataset_definitions['attrs_new']:
-                    raise ValueError("{} is not a valid attribute for a DataSet".format(key))
 
         if kind == 'PHYSICAL_DATA':
             if files is None:
@@ -44,7 +41,7 @@ class DataSet(OpenBisObject):
             self.__dict__['files'] = files
 
         # initialize the attributes
-        super(DataSet, self).__init__(openbis_obj, type, data, props, **kwargs)
+        super().__init__(openbis_obj, type=type, data=data, props=props, **kwargs)
 
         self.__dict__['files_in_wsp'] = []
 
