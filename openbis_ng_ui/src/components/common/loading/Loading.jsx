@@ -3,13 +3,13 @@ import {withStyles} from '@material-ui/core/styles'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import logger from '../../../common/logger.js'
 
-const styles = {
+const styles = (theme) => ({
   loader: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     zIndex: 1000,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.palette.background.paper,
     opacity: 0.8,
     textAlign: 'center',
   },
@@ -18,7 +18,7 @@ const styles = {
     top: '20%',
     left: 'calc(50% - 20px)'
   }
-}
+})
 
 class Loading extends React.Component {
 

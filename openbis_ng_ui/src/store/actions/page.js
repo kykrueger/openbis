@@ -6,7 +6,7 @@ export const ADD_OPEN_OBJECT = 'ADD_OPEN_OBJECT'
 export const REMOVE_OPEN_OBJECT = 'REMOVE_OPEN_OBJECT'
 export const ADD_CHANGED_OBJECT = 'ADD_CHANGED_OBJECT'
 export const REMOVE_CHANGED_OBJECT = 'REMOVE_CHANGED_OBJECT'
-export const SET_SELECTED_OBJECT = 'SET_SELECTED_OBJECT'
+export const SET_CURRENT_ROUTE = 'SET_CURRENT_ROUTE'
 
 export const objectOpen = (page, type, id) => ({
   type: OBJECT_OPEN,
@@ -72,11 +72,10 @@ export const removeChangedObject = (page, type, id) => ({
   }
 })
 
-export const setSelectedObject = (page, type, id) => ({
-  type: SET_SELECTED_OBJECT,
+export const setCurrentRoute = (page, currentRoute) => ({
+  type: SET_CURRENT_ROUTE,
   payload: {
     page,
-    type,
-    id
+    currentRoute
   }
 })

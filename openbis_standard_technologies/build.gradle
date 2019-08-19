@@ -115,7 +115,7 @@ dependencies {
 
 }
 
-sourceSets { 
+sourceSets {
 	test {
 		resources {
 			srcDirs = ['source/java', 'sourceTest/java']

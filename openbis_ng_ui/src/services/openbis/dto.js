@@ -1,6 +1,8 @@
 const CLASS_FULL_NAMES = [
   'as/dto/person/search/PersonSearchCriteria',
   'as/dto/person/fetchoptions/PersonFetchOptions',
+  'as/dto/person/id/PersonPermId',
+  'as/dto/person/update/PersonUpdate',
   'as/dto/authorizationgroup/search/AuthorizationGroupSearchCriteria',
   'as/dto/authorizationgroup/fetchoptions/AuthorizationGroupFetchOptions',
   'as/dto/entitytype/id/EntityTypePermId',
@@ -23,7 +25,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/material/search/MaterialSearchCriteria',
   'as/dto/vocabulary/search/VocabularyTermSearchCriteria',
   'as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions',
-  'as/dto/plugin/id/PluginPermId'
+  'as/dto/plugin/id/PluginPermId',
+  'as/dto/webapp/create/WebAppSettingCreation',
 ]
 
 class Dto {

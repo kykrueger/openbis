@@ -16,11 +16,11 @@ const styles = (theme) => ({
   row: {
     backgroundColor: theme.palette.background.paper,
     '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      backgroundColor: theme.palette.action.hover,
       cursor: 'pointer'
     },
     '&$selected': {
-      backgroundColor: 'rgba(0, 0, 0, 0.14)'
+      backgroundColor: theme.palette.action.selected
     }
   },
   selected: {},

@@ -21,7 +21,10 @@ describe('app', () => {
     store.dispatch(actions.login(fixture.TEST_USER, fixture.TEST_PASSWORD))
 
     const state = store.getState()
-    expect(selectors.getSession(state)).toEqual(fixture.TEST_SESSION_TOKEN)
+    expect(selectors.getSession(state)).toEqual({
+      sessionToken: fixture.TEST_SESSION_TOKEN,
+      userName: fixture.TEST_USER
+    })
     expect(selectors.getCurrentPage(state)).toEqual(pages.TYPES)
   })
 

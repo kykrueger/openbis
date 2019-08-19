@@ -41,7 +41,7 @@ describe('browser', () => {
     store.dispatch(actions.browserInit(pages.USERS))
 
     const state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, false, [
           node(['users', fixture.ANOTHER_USER_DTO.userId, fixture.ALL_USERS_GROUP_DTO.code]),
@@ -89,7 +89,7 @@ describe('browser', () => {
     store.dispatch(actions.browserFilterChange(pages.USERS, fixture.ANOTHER_GROUP_DTO.code.toUpperCase()))
 
     const state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], true, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], true, false, [
           node(['users', fixture.ANOTHER_USER_DTO.userId, fixture.ANOTHER_GROUP_DTO.code])
@@ -125,7 +125,7 @@ describe('browser', () => {
     store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
 
     let state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, false),
         node(['users', fixture.TEST_USER_DTO.userId], false, true)
@@ -160,7 +160,7 @@ describe('browser', () => {
     store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.ANOTHER_USER_DTO.userId])))
 
     let state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, true),
         node(['users', fixture.TEST_USER_DTO.userId], false, false)
@@ -191,7 +191,7 @@ describe('browser', () => {
     store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users'])))
 
     let state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, true, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, false),
         node(['users', fixture.TEST_USER_DTO.userId], false, false)
@@ -224,7 +224,7 @@ describe('browser', () => {
     store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
 
     let state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, false, [
         node(['users', fixture.TEST_USER_DTO.userId], false, true, [
           node(['users', fixture.TEST_USER_DTO.userId, fixture.TEST_GROUP_DTO.code], false, false)
@@ -243,7 +243,7 @@ describe('browser', () => {
     store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId])))
 
     state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, false, [
         node(['users', fixture.TEST_USER_DTO.userId], false, true, [
           node(['users', fixture.TEST_USER_DTO.userId, fixture.TEST_GROUP_DTO.code], false, false)
@@ -279,7 +279,7 @@ describe('browser', () => {
     store.dispatch(actions.browserNodeExpand(pages.USERS, nodeId(['groups'])))
 
     let state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users']),
       node(['groups'], true, false, [
         node(['groups', fixture.TEST_GROUP_DTO.code])
@@ -292,7 +292,7 @@ describe('browser', () => {
     store.dispatch(actions.browserNodeCollapse(pages.USERS, nodeId(['groups'])))
 
     state = store.getState()
-    expectNodes(selectors.getBrowserNodes(state, pages.USERS), [
+    expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users']),
       node(['groups'], false, false, [
         node(['groups', fixture.TEST_GROUP_DTO.code])
@@ -340,7 +340,7 @@ function expectNodes(actualNodes, expectedNodes){
 }
 
 function expectSelectedObject(page, object){
-  expect(selectors.getSelectedObject(store.getState(), page)).toEqual(object)
+  expect(selectors.createGetSelectedObject()(store.getState(), page)).toEqual(object)
 }
 
 function expectOpenObjects(page, objects){

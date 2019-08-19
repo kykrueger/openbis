@@ -9,6 +9,7 @@ import Content from '../common/content/Content.jsx'
 
 import User from './user/User.jsx'
 import Group from './group/Group.jsx'
+import Search from './search/Search.jsx'
 
 const styles = () => ({
   container: {
@@ -19,7 +20,8 @@ const styles = () => ({
 
 const objectTypeToComponent = {
   [objectType.USER]: User,
-  [objectType.GROUP]: Group
+  [objectType.GROUP]: Group,
+  [objectType.SEARCH]: Search
 }
 
 class Users extends React.Component {

@@ -1,3 +1,5 @@
+import routes from '../../common/consts/routes.js'
+
 export const getLoading = (state) => {
   return state.ui.loading
 }
@@ -6,12 +8,13 @@ export const getSearch = (state) => {
   return state.ui.search
 }
 
-export const getCurrentPage = (state) => {
-  return state.ui.currentPage
+export const getRoute = (state) => {
+  return state.route
 }
 
-export const getPage = (state) => {
-  return state.ui.pages[getCurrentPage(state)]
+export const getCurrentPage = (state) => {
+  let route = routes.parse(state.route)
+  return route.page
 }
 
 export const getError = (state) => {

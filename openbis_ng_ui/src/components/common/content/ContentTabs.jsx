@@ -4,19 +4,10 @@ import {withStyles} from '@material-ui/core/styles'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
 import CloseIcon from '@material-ui/icons/Close'
+import * as objectTypes from '../../../common/consts/objectType.js'
 import logger from '../../../common/logger.js'
 
 const styles = {
-  tabsRoot: {
-    height: '48px'
-  },
-  tabsScrollable: {
-    overflow: 'auto',
-    marginBottom: '0px !important'
-  },
-  tabsScrollButtons: {
-    height: '48px'
-  },
   tabRoot: {
     textTransform: 'none'
   },
@@ -26,7 +17,6 @@ const styles = {
   tabLabel: {
     display: 'inline-flex',
     alignItems: 'center',
-    marginRight: '-16px'
   }
 }
 
@@ -52,11 +42,6 @@ class ContentTabs extends React.Component {
         value={_.findIndex(this.props.objects, this.props.selectedObject)}
         variant="scrollable"
         scrollButtons="on"
-        classes={{
-          root: classes.tabsRoot,
-          scrollable: classes.tabsScrollable,
-          scrollButtons: classes.tabsScrollButtons
-        }}
         onChange={this.handleTabChange}
       >
         {this.props.objects.map(object =>
@@ -72,7 +57,18 @@ class ContentTabs extends React.Component {
   }
 
   renderLabel(object){
-    let label = _.find(this.props.changedObjects, object) ? object.id + '*' : object.id
+    let changed = _.find(this.props.changedObjects, object) ? '*' : ''
+    let label = null
+
+    switch(object.type){
+      case objectTypes.SEARCH:
+        label = 'search: ' + object.id
+        break
+      default:
+        label = object.id + changed
+        break
+    }
+
     return <span className={this.props.classes.tabLabel}>{label}{this.renderIcon(object)}</span>
   }
 

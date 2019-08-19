@@ -19,11 +19,11 @@ const styles = (theme) => ({
   form: {
     flex: '1 1 0',
     overflow: 'auto',
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing(2)
   },
   footer: {
     flex: '0 0',
-    padding: theme.spacing.unit * 2
+    padding: theme.spacing(2)
   }
 })
 
