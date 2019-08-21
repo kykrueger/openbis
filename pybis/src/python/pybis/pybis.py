@@ -2579,23 +2579,6 @@ class Openbis:
                 count      = count,
                 totalCount = len(resp),
             )
-            #attrs = openbis_definitions('propertyType')['attrs']
-            #if len(resp) == 0:
-            #    df = DataFrame(columns=attrs)
-            #else:
-            #    df = DataFrame(list(resp.values()))
-            #    df['registrationDate'] = df['registrationDate'].map(format_timestamp)
-            #    df['registrator'] = df['registrator'].map(extract_person)
-
-            #return Things(
-            #    openbis_obj = self,
-            #    entity = 'propertyType',
-            #    single_item_method = self.get_property_type,
-            #    df = df[attrs],
-            #    start_with = start_with,
-            #    count = count,
-            #    totalCount = len(resp),
-            #)
 
     def get_property_types(self, code=None, start_with=None, count=None):
         fetchopts = fetch_option['propertyType']
@@ -2621,26 +2604,6 @@ class Openbis:
             count      = count,
             totalCount = resp.get('totalCount')
         )
-
-        #attrs = openbis_definitions('propertyType')['attrs']
-        #if len(resp['objects']) == 0:
-        #    df = DataFrame(columns=attrs)
-        #else:
-        #    objects = resp['objects']
-        #    parse_jackson(objects)
-        #    df = DataFrame(objects)
-        #    df['registrationDate'] = df['registrationDate'].map(format_timestamp)
-        #    df['registrator'] = df['registrator'].map(extract_person)
-
-        #return Things(
-        #    openbis_obj = self,
-        #    entity = 'propertyType',
-        #    single_item_method = self.get_property_type,
-        #    df = df[attrs],
-        #    start_with = start_with,
-        #    count = count,
-        #    totalCount = resp.get('totalCount'),
-        #)
 
     def _property_type_things(self, objects, start_with=None, count=None, totalCount=None):
         """takes a list of objects and returns a Things object
@@ -2794,16 +2757,14 @@ class Openbis:
     def get_entity_type(self, entity, identifier, cls, only_data=False):
         method_name = get_method_for_entity(entity, 'get')
         fetch_options = get_fetchoption_for_entity(entity)
-        #import json
-        #print(json.dumps(fetch_options))
-        identifiers = []
+
         if not isinstance(identifier, list):
             identifier = [identifier]
 
+        identifiers = []
         for ident in identifier:
             identifiers.append({
                 "permId": ident,
-                #"entityKind": entity.upper(),
                 "@type" : "as.dto.entitytype.id.EntityTypePermId",
             })
 
@@ -2820,7 +2781,6 @@ class Openbis:
         if len(identifiers) == 1:
             if len(resp) == 0:
                 raise ValueError('no such {}: {}'.format(entity, identifier[0]))
-
         for ident in resp:
             if only_data:
                 return resp[ident]
