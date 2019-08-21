@@ -3,26 +3,27 @@ from texttable import Texttable
 from pandas import DataFrame
 from .openbis_object import OpenBisObject
 from .things import Things
-from .utils import check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_permid, extract_code
+from .utils import check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_permid, extract_code, extract_name
 
 class EntityType:
     """ EntityTypes define a variety of an entity, eg. sample, dataSet, experiment
     This is the parent class of the SampleType, DataSetType, ExperimentType and
     MaterialType classes.
-    """
+    """ 
 
     def __init__(self, openbis_obj, data=None, **kwargs):
-
+        """This __init__ is called by OpenBisObject.__init__
+        It stores the propertyAssignments data into the _propertyAssignments
+        dict
+        """
+        pas = []
         if data is not None and 'propertyAssignments' in data: 
-            pas = [ 
-                {**pa['propertyType'], **pa} 
-                for pa in data['propertyAssignments'] 
-            ]
-            self.__dict__['_propertyAssignments'] = pas
+            pas = data['propertyAssignments'] 
+        self.__dict__['_propertyAssignments'] = pas
 
-        super().__init__(openbis_obj, data=data, **kwargs)
 
     def __str__(self):
+
         """String representation of this entity type
         """
         return self.data['code']
@@ -39,8 +40,8 @@ class EntityType:
             'get_property_assignments()',
             'assign_property()',
             'revoke_property()',
-            'move_to_top()',
-            'move_after_property()',
+            'move_property_to_top()',
+            'move_property_after()',
         ]
 
     def __getattr__(self, name):
@@ -58,17 +59,17 @@ class EntityType:
 
     def get_property_assignments(self):
         attrs = [
-            'code', 'label', 'description', 'dataType',
-            'showInEditView', 'section', 'ordinal',
-            'entityType', 'propertyType',
-            'mandatory', 'showRawValuesInForms',
-            'semanticAnnotationsInherited',
+            'propertyType',
+            'section', 'ordinal',
+            'mandatory', 'initialValueForExistingEntities', 
+            'showInEditView', 'showRawValueInForms',
             'registrator', 'registrationDate', 'plugin'
         ]
-
+        
         pas = self.__dict__['_propertyAssignments']
         df = DataFrame(pas, columns=attrs)
         df['propertyType'] = df['propertyType'].map(extract_code)
+        df['plugin'] = df['plugin'].map(extract_code)
         df['registrationDate'] = df['registrationDate'].map(format_timestamp)
 
         return Things(
@@ -82,7 +83,7 @@ class EntityType:
         )
 
     def assign_property(self, 
-        prop, 
+        property, plugin=None,
         section=None, ordinal=None,
         mandatory=False, initialValueForExistingEntities=None,
         showInEditView=True, showRawValueInForms=True
@@ -94,18 +95,47 @@ class EntityType:
         property mandatory later, you have to define an initialValueForExistingEntities too.
 
         """
-        if 'propertyAssignments' not in self.__dict__:
-            self.__dict__['propertyAssignments'] = {}
+        pas = self.__dict__['_propertyAssignments']
+        new_assignment = {
+            "section": section,
+            "ordinal": ordinal,
+            "mandatory": mandatory,
+            "initialValueForExistingEntities": initialValueForExistingEntities,
+            "showInEditView": showInEditView,
+            "showRawValueInForms": showRawValueInForms,
+            "propertyType" : {
+                "permId": property.upper(),
+                "@type": "as.dto.property.id.PropertyTypePermId"
+            },
+            "@type": "as.dto.property.create.PropertyAssignmentCreation",
+        }
+        if plugin is not None:
+            new_assignment['pluginId'] = {
+                "permId": plugin.upper(),
+                "@type": "as.dto.plugin.id.PluginPermId"
+            }
+        pas.append(new_assignment)
 
-
+    @property
+    def validationPlugin(self):
+        try:
+            return self.openbis.get_plugin(self._validationPlugin['name'])
+        except Exception:
+            pass
 
 
     def revoke_property(self, 
-        prop, 
+        property, 
         forceRemovingAssignments=False
     ):
-        if 'propertyAssignments' not in self.__dict__:
-            self.__dict__['propertyAssignments'] = {}
+        raise ValueError("not implemented yet")
+
+    def move_property_to_top(self, property):
+        raise ValueError("not implemented yet")
+
+    def move_property_after(self, property, after_property):
+        raise ValueError("not implemented yet")
+
 
     def codes(self):
         codes = []
@@ -119,6 +149,11 @@ class SampleType(
     entity='sampleType',
     single_item_method_name='get_sample_type'
 ):
+
+    def __init__(self, openbis_obj, type=None, data=None, props=None, **kwargs):
+        OpenBisObject.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+        EntityType.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+        
 
     def __dir__(self):
         return [

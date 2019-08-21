@@ -105,6 +105,8 @@ def split_identifier(ident):
 def format_timestamp(ts):
     if ts is None:
         return ''
+    if ts != ts:  # test for NaN
+        return ''
     return datetime.fromtimestamp(round(ts/1000)).strftime('%Y-%m-%d %H:%M:%S')
 
 
@@ -140,6 +142,10 @@ def extract_code(obj):
         return '' if obj is None else str(obj)
     return '' if obj['code'] is None else obj['code']
 
+def extract_name(obj):
+    if not isinstance(obj, dict):
+        return '' if obj is None else str(obj)
+    return '' if obj['name'] is None else obj['name']
 
 def extract_deletion(obj):
     del_objs = []
