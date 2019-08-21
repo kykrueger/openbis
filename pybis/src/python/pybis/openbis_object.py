@@ -37,6 +37,7 @@ class OpenBisObject():
             for key in kwargs:
                 setattr(self, key, kwargs[key])
 
+
     def __dir__(self):
         defs = get_definition_for_entity(self.entity)
         if self.is_new:

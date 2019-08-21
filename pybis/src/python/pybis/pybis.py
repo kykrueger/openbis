@@ -2794,6 +2794,8 @@ class Openbis:
     def get_entity_type(self, entity, identifier, cls, only_data=False):
         method_name = get_method_for_entity(entity, 'get')
         fetch_options = get_fetchoption_for_entity(entity)
+        #import json
+        #print(json.dumps(fetch_options))
         identifiers = []
         if not isinstance(identifier, list):
             identifier = [identifier]
