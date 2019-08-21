@@ -69,7 +69,7 @@ class EntityType:
         pas = self.__dict__['_propertyAssignments']
         df = DataFrame(pas, columns=attrs)
         df['propertyType'] = df['propertyType'].map(extract_code)
-        df['plugin'] = df['plugin'].map(extract_code)
+        df['plugin'] = df['plugin'].map(extract_name)
         df['registrationDate'] = df['registrationDate'].map(format_timestamp)
 
         return Things(
