@@ -385,6 +385,8 @@ class AttrHolder():
                     return self.__dict__[int_name]['identifier']
                 elif "code" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['code']
+                elif "name" in self.__dict__[int_name]:
+                    return self.__dict__[int_name]['name']
                 elif "userId" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['userId']
                 elif "permId" in self.__dict__[int_name]:
@@ -786,8 +788,6 @@ class AttrHolder():
                 "permId": userId,
                 "@type": "as.dto.person.id.PersonPermId"
             })
-    set_members = set_users  # Alias
-
         
     def add_users(self, userIds):
         if userIds is None:
