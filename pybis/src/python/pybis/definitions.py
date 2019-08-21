@@ -324,12 +324,11 @@ fetch_option = {
         "propertyAssignments": {
             "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
             "propertyType": {
-                "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
-                "vocabulary": {
-                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
-                }
+                "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions"
             },
-            "plugin": {"@type": "as.dto.plugin.fetchoptions.PluginFetchOptions"}
+            "plugin": {
+                "@type": "as.dto.plugin.fetchoptions.PluginFetchOptions"
+            }
         },
         "validationPlugin": {
             "@type": "as.dto.plugin.fetchoptions.PluginFetchOptions",
@@ -341,11 +340,10 @@ fetch_option = {
             "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
             "propertyType": {
                 "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
-                "vocabulary": {
-                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
-                }
             },
-            "plugin": {"@type": "as.dto.plugin.fetchoptions.PluginFetchOptions"}
+            "plugin": {
+                "@type": "as.dto.plugin.fetchoptions.PluginFetchOptions"
+            }
         },
         "validationPlugin": {
             "@type": "as.dto.plugin.fetchoptions.PluginFetchOptions",
@@ -357,9 +355,9 @@ fetch_option = {
             "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
             "propertyType": {
                 "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
-                "vocabulary": {
-                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
-                }
+            },
+            "plugin": {
+                "@type": "as.dto.plugin.fetchoptions.PluginFetchOptions"
             }
         },
         "validationPlugin": {
@@ -372,9 +370,9 @@ fetch_option = {
             "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions",
             "propertyType": {
                 "@type": "as.dto.property.fetchoptions.PropertyTypeFetchOptions",
-                "vocabulary": {
-                    "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions",
-                }
+            },
+            "plugin": {
+                "@type": "as.dto.plugin.fetchoptions.PluginFetchOptions"
             }
         }, 
         "validationPlugin": {
