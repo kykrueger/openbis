@@ -76,6 +76,7 @@ class EntityType:
             openbis_obj = self.openbis,
             entity = 'propertyType',
             single_item_method = self.openbis.get_property_type,
+            identifier_name = 'propertyType',
             df = df,
             start_with = 1,
             count = len(pas),
