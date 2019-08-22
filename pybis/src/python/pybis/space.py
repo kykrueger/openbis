@@ -11,18 +11,6 @@ class Space(
     """ managing openBIS spaces
     """
 
-    def __init__(self, openbis_obj, data=None, **kwargs):
-        self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'space' )
-
-        if data is not None:
-            self.a(data)
-            self.__dict__['data'] = data
-
-        if kwargs is not None:
-            for key in kwargs:
-                setattr(self, key, kwargs[key])
-
     def __dir__(self):
         """all the available methods and attributes that should be displayed
         when using the autocompletion feature (TAB) in Jupyter

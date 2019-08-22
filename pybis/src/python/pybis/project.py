@@ -9,18 +9,6 @@ class Project(
     single_item_method_name='get_project'
 ):
 
-    def __init__(self, openbis_obj, data=None, **kwargs):
-        self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'project')
-
-        if data is not None:
-            self.a(data)
-            self.__dict__['data'] = data
-
-        if kwargs is not None:
-            for key in kwargs:
-                setattr(self, key, kwargs[key])
-
     def _modifiable_attrs(self):
         return
 
