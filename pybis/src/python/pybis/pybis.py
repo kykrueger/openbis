@@ -1208,7 +1208,7 @@ class Openbis:
         fetchopts = fetch_option['authorizationGroup']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
-        for option in ['roleAssignment', 'registrator', 'users']:
+        for option in ['roleAssignments', 'registrator', 'users']:
             fetchopts[option] = fetch_option[option]
         request = {
             "method": "searchAuthorizationGroups",
