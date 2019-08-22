@@ -3,7 +3,11 @@ from .openbis_object import OpenBisObject
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
 
 
-class Space(OpenBisObject):
+class Space(
+    OpenBisObject,
+    entity='space',
+    single_item_method_name='get_space'
+):
     """ managing openBIS spaces
     """
 
@@ -59,27 +63,4 @@ class Space(OpenBisObject):
     def new_sample(self, **kwargs):
         return self.openbis.new_sample(space=self, **kwargs)
 
-    def delete(self, reason):
-        self.openbis.delete_openbis_entity(
-            entity='space',
-            objectId=self._permId,
-            reason='No reason given'
-        )
-        if VERBOSE: print("Space {} has been sucsessfully deleted.".format(self.permId))
-
-    def save(self):
-        if self.is_new:
-            request = self._new_attrs()
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE: print("Space successfully created.")
-            new_space_data = self.openbis.get_space(resp[0]['permId'], only_data=True)
-            self._set_data(new_space_data)
-            return self
-
-        else:
-            request = self._up_attrs()
-            self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE: print("Space successfully updated.")
-            new_space_data = self.openbis.get_space(self.permId, only_data=True)
-            self._set_data(new_space_data)
 

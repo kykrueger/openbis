@@ -3,10 +3,15 @@ from .openbis_object import OpenBisObject
 from .utils import VERBOSE
 
 
-class Project(OpenBisObject):
+class Project(
+    OpenBisObject,
+    entity='project',
+    single_item_method_name='get_project'
+):
+
     def __init__(self, openbis_obj, data=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Project')
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'project')
 
         if data is not None:
             self.a(data)
@@ -49,22 +54,3 @@ class Project(OpenBisObject):
 
     def get_datasets(self):
         return self.openbis.get_datasets(project=self.permId)
-
-    def delete(self, reason):
-        self.openbis.delete_entity(entity='Project', id=self.permId, reason=reason)
-        if VERBOSE: print("Project {} successfully deleted.".format(self.permId))
-
-    def save(self):
-        if self.is_new:
-            request = self._new_attrs()
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE: print("Project successfully created.")
-            new_project_data = self.openbis.get_project(resp[0]['permId'], only_data=True)
-            self._set_data(new_project_data)
-            return self
-        else:
-            request = self._up_attrs()
-            self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE: print("Project successfully updated.")
-
-
