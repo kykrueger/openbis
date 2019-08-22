@@ -97,6 +97,9 @@ class EntityType:
 
         """
         pas = self.__dict__['_propertyAssignments']
+
+        # assign property type
+        property_type = self.openbis.get_property_type(property)
         new_assignment = {
             "section": section,
             "ordinal": ordinal,
@@ -104,26 +107,16 @@ class EntityType:
             "initialValueForExistingEntities": initialValueForExistingEntities,
             "showInEditView": showInEditView,
             "showRawValueInForms": showRawValueInForms,
-            "propertyType" : {
-                "permId": property.upper(),
-                "@type": "as.dto.property.id.PropertyTypePermId"
-            },
+            "propertyType": property_type.data,
             "@type": "as.dto.property.create.PropertyAssignmentCreation",
         }
+
+        # assign plugin
         if plugin is not None:
-            new_assignment['pluginId'] = {
-                "permId": plugin.upper(),
-                "@type": "as.dto.plugin.id.PluginPermId"
-            }
+            plugin_obj = self.openbis.get_plugin(plugin)
+            new_assignment['plugin'] = plugin_obj.data
+
         pas.append(new_assignment)
-
-    @property
-    def validationPlugin(self):
-        try:
-            return self.openbis.get_plugin(self._validationPlugin['name'])
-        except Exception:
-            pass
-
 
     def revoke_property(self, 
         property, 
@@ -137,6 +130,16 @@ class EntityType:
     def move_property_after(self, property, after_property):
         raise ValueError("not implemented yet")
 
+
+    @property
+    def validationPlugin(self):
+        """Returns a validation plugin object when called.
+        Returns None when no validation plugin is defined.
+        """
+        try:
+            return self.openbis.get_plugin(self._validationPlugin['name'])
+        except Exception:
+            pass
 
     def codes(self):
         codes = []
