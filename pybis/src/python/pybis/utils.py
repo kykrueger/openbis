@@ -18,7 +18,7 @@ def parse_jackson(input_json):
     interesting=['tags', 'registrator', 'modifier', 'owner', 'type', 'parents', 
         'children', 'containers', 'container', 'properties', 'experiment', 'sample',
         'project', 'space', 'propertyType', 'entityType', 'propertyType', 'propertyAssignment',
-        'externalDms', 'roleAssignments', 'user', 'authorizationGroup', 'vocabulary'
+        'externalDms', 'roleAssignments', 'user', 'users', 'authorizationGroup', 'vocabulary'
     ]
     found = {} 
     def build_cache(graph):
