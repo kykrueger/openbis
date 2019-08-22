@@ -8,7 +8,7 @@ def openbis_definitions(entity):
     (Entity-Name in camel-case, starting with lowercase letter, with Id added)
     """
     entities = {
-        "Space": {
+        "space": {
             "attrs_new": "code description".split(),
             "attrs_up": "description".split(),
             "attrs": "code permId description registrator registrationDate modifier modificationDate".split(),
@@ -19,7 +19,7 @@ def openbis_definitions(entity):
             "delete": { "@type": "as.dto.space.delete.SpaceDeletionOptions"},
             "fetch":  { "@type": "as.dto.space.fetchoptions.SpaceFetchOptions"},
         },
-        "Project": {
+        "project": {
             "attrs_new": "code description space attachments".split(),
             "attrs_up": "description space attachments".split(),
             "attrs": "code description permId identifier space leader registrator registrationDate modifier modificationDate attachments".split(),
@@ -28,7 +28,7 @@ def openbis_definitions(entity):
             "create": { "@type": "as.dto.project.create.ProjectCreation"},
             "update": { "@type": "as.dto.project.update.ProjectUpdate"},
         },
-        "Experiment": {
+        "experiment": {
             "attrs_new": "code type project tags attachments".split(),
             "attrs_up": "project tags attachments".split(),
             "attrs": "code permId identifier type project tags registrator registrationDate modifier modificationDate attachments".split(),
@@ -37,7 +37,7 @@ def openbis_definitions(entity):
             "create": { "@type": "as.dto.experiment.create.ExperimentCreation"},
             "update": { "@type": "as.dto.experiment.update.ExperimentUpdate"},
         },
-        "Sample": {
+        "sample": {
             "attrs_new": "code type project parents children container components space experiment tags attachments".split(),
             "attrs_up": "project parents children container components space experiment tags attachments".split(),
             "attrs": "code permId identifier type project parents children components space experiment tags registrator registrationDate modifier modificationDate attachments container".split(),
