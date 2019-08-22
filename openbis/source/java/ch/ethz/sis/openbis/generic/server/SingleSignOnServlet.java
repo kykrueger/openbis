@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,6 +37,7 @@ import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
+import ch.systemsx.cisd.common.string.Template;
 import ch.systemsx.cisd.openbis.generic.client.web.server.AbstractServlet;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
@@ -68,10 +70,14 @@ public class SingleSignOnServlet extends AbstractServlet
     public static final String EMAIL_KEY = "email-key";
 
     public static final String DEFAULT_EMAIL_KEY = "mail";
-    
+
     public static final String REDIRECT_URL_KEY = "redirect-url";
-    
+
     public static final String DEFAULT_REDIRECT_URL = "webapp/eln-lims";
+
+    private static final String SINGLE_SIGN_ON_REDIRECT_URL_TEMPLATE_PROPERTY = "single-sign-on.redirect-url-template";
+
+    private static final String DEFAULT_SINGLE_SIGN_ON_REDIRECT_URL_TEMPLATE = "https://${host}/openbis/webapp/eln-lims";
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, SingleSignOnServlet.class);
 
@@ -80,17 +86,26 @@ public class SingleSignOnServlet extends AbstractServlet
 
     @Resource(name = ComponentNames.SESSION_MANAGER)
     private IOpenBisSessionManager sessionManager;
-    
+
     @Autowired
     private IApplicationServerInternalApi applicationServerApi;
-    
+
     private final Map<String, String> sessionTokenBySessionId = new HashMap<>();
+
+    private Template template;
+
+    @Override
+    protected void initServletContext(ServletContext servletContext)
+    {
+        template = new Template(configurer.getResolvedProps().getProperty(SINGLE_SIGN_ON_REDIRECT_URL_TEMPLATE_PROPERTY,
+                DEFAULT_SINGLE_SIGN_ON_REDIRECT_URL_TEMPLATE));
+        template.createFreshCopy().bind("host", ""); // Check that template contains '${host}'
+    }
 
     @Override
     @RequestMapping({ SERVLET_NAME })
     protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
     {
-        operationLog.info("handle sso");
         String sessionId = getHeader(request, SESSION_ID_KEY, DEFAULT_SESSION_ID_KEY);
         String sessionToken = sessionTokenBySessionId.get(sessionId);
         if (sessionToken != null)
@@ -103,7 +118,7 @@ public class SingleSignOnServlet extends AbstractServlet
                 return;
             }
         }
-        String userId = getHeader(request, USER_ID_KEY, DEFAULT_USER_ID_KEY);
+        String userId = getHeader(request, USER_ID_KEY, DEFAULT_USER_ID_KEY).replace("@", "_AT_");
         String firstName = getHeader(request, FIRST_NAME_KEY, DEFAULT_FIRST_NAME_KEY);
         String lastName = getHeader(request, LAST_NAME_KEY, DEFAULT_LAST_NAME_KEY);
         String email = getHeader(request, EMAIL_KEY, DEFAULT_EMAIL_KEY);
@@ -118,16 +133,18 @@ public class SingleSignOnServlet extends AbstractServlet
             });
         applicationServerApi.registerUser(sessionToken);
         sessionTokenBySessionId.put(sessionId, sessionToken);
-        
+
         operationLog.info("Session token " + sessionToken + " created for SSO session id " + sessionId);
         redirectToApp(request, response, sessionToken);
     }
 
     protected void redirectToApp(HttpServletRequest request, HttpServletResponse response, String sessionToken) throws IOException
     {
-        String host = request.getHeader("Host");
-        String redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, 
-                "https://bs-openbis-sis-ci-switchaai.ethz.ch:8443/openbis/webapp/eln-lims");
+        String host = request.getHeader("X-Forwarded-Host");
+        operationLog.info("host: " + host);
+        Template template2 = template.createFreshCopy();
+        template2.bind("host", host);
+        String redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, template2.createText());
         operationLog.info("redirect to " + redirectUrl);
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies)
