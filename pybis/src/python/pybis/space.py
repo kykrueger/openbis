@@ -9,7 +9,7 @@ class Space(OpenBisObject):
 
     def __init__(self, openbis_obj, data=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Space' )
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'space' )
 
         if data is not None:
             self.a(data)
@@ -60,7 +60,11 @@ class Space(OpenBisObject):
         return self.openbis.new_sample(space=self, **kwargs)
 
     def delete(self, reason):
-        self.openbis.delete_entity(entity='Space', id=self.permId, reason=reason)
+        self.openbis.delete_openbis_entity(
+            entity='space',
+            objectId=self._permId,
+            reason='No reason given'
+        )
         if VERBOSE: print("Space {} has been sucsessfully deleted.".format(self.permId))
 
     def save(self):
