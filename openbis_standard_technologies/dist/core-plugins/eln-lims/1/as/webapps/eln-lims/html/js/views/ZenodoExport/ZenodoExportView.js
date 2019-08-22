@@ -28,12 +28,19 @@ function ZenodoExportView(exportController, exportModel) {
         });
         $form.append($formColumn);
 
-        var $infoBox = FormUtil.getInfoBox('You can select any parts of the accessible openBIS structure to export:', [
+        var $infoBox1 = FormUtil.getInfoBox('You can select any parts of the accessible openBIS structure to export:', [
             'If you select a tree node and do not expand it, everything below this node will be exported by default.',
             'To export selectively only parts of a tree, open the nodes and select what to export.'
         ]);
-        $infoBox.css('border', 'none');
-        $container.append($infoBox);
+        $infoBox1.css('border', 'none');
+        $container.append($infoBox1);
+
+        var $infoBox2 = FormUtil.getInfoBox('Publication time constraint', [
+            'After the resource has been exported it should be published in Zenodo UI within 2 hours.',
+            'Otherwise, the publication metadata will not be registered in openBIS.'
+        ]);
+        $infoBox2.css('border', 'none');
+        $container.append($infoBox2);
 
         var $tree = $('<div>', { 'id' : 'exportsTree' });
         $formColumn.append($('<br>'));

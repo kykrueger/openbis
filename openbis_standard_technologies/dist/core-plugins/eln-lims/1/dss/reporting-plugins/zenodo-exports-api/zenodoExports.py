@@ -16,10 +16,14 @@
 
 from __future__ import print_function
 
+import json
 import traceback
 
 import time
 from ch.systemsx.cisd.common.logging import LogCategory
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
+from com.sun.xml.internal.ws.policy.privateutil.PolicyUtils import ServiceProvider
 from java.io import File
 from java.nio.file import Paths
 from org.apache.commons.io import FileUtils
@@ -53,7 +57,26 @@ def expandAndExport(tr, params):
     validateDataSize(entitiesToExport, tr)
 
     operationLog.info('Found ' + str(len(entitiesToExport)) + ' entities to export')
-    return export(entities=entitiesToExport, tr=tr, params=params)
+    exportUrl = export(entities=entitiesToExport, tr=tr, params=params)
+
+    # registerPublicationInOpenbis(params=params, exportUrl=exportUrl)
+
+    return exportUrl
+
+
+def registerPublicationInOpenbis(params, exportUrl):
+    sessionToken = params.get('sessionToken')
+    v3 = ServiceProvider.getV3ApplicationService()
+    id = CustomASServiceCode('publication-api')
+    options = CustomASServiceExecutionOptions() \
+        .withParameter('method', 'insertPublication') \
+        .withParameter('publicationURL', exportUrl)
+    # .withParameter('openBISRelatedIdentifiers', ...)
+    # .withParameter('publicationOrganization', ...)
+    # .withParameter('name', ...)
+    # .withParameter('publicationType', ...)
+    # .withParameter('publicationIdentifier', ...)
+    result = v3.executeCustomASService(sessionToken, id, options)
 
 
 def export(entities, tr, params):
@@ -102,8 +125,14 @@ def sendToZenodo(tr, tempZipFilePath):
 
         depositionLinks = depositionData.get('links')
         depositUrl = depositionLinks.get('files')
+        selfUrl = depositionLinks.get('self')
+        publishUrl = depositionLinks.get('publish')
 
-        submitFile(tempZipFilePath, accessToken, httpClient.newRequest(depositUrl))
+        submitFile(httpClient.newRequest(depositUrl), accessToken, tempZipFilePath)
+        addMetadata(httpClient.newRequest(selfUrl), accessToken)
+        publish(httpClient.newRequest(publishUrl), accessToken)
+
+        retrieve(httpClient.newRequest(selfUrl), accessToken)
 
         result = depositionLinks.get('html')
         return result
@@ -116,7 +145,7 @@ def sendToZenodo(tr, tempZipFilePath):
             httpClient.stop()
 
 
-def submitFile(tempZipFilePath, accessToken, request):
+def submitFile(request, accessToken, tempZipFilePath):
     multiPart = MultiPartContentProvider()
     multiPart.addFilePart('file', 'content.zip', PathContentProvider(Paths.get(tempZipFilePath)), None)
     multiPart.close()
@@ -124,13 +153,59 @@ def submitFile(tempZipFilePath, accessToken, request):
     response = request.method(HttpMethod.POST).content(multiPart).send()
     checkResponseStatus(response)
     contentStr = response.getContentAsString()
+
+    print('submitFile(). contentStr="%s"' % contentStr)
+
     return JSONObject(contentStr)
+
+
+def addMetadata(request, accessToken):
+    data = {
+        'metadata': {
+            'title': 'Sample upload',
+            'license': 'cc-zero',
+            'upload_type': 'poster',
+            'description': 'This is a sample upload',
+            'creators': [{'name': userId, 'affiliation': 'Zenodo'}]
+        }
+    }
+
+    addAuthenticationHeader(accessToken, request)
+    jsonString = json.dumps(data)
+    print('addMetadata(). jsonString="%s"' % jsonString)
+    response = request.method(HttpMethod.PUT).content(StringContentProvider(jsonString), 'application/json').send()
+
+    contentStr = response.getContentAsString()
+    print('addMetadata(). contentStr="%s"' % contentStr)
+
+    checkResponseStatus(response)
+
+
+def retrieve(request, accessToken):
+    addAuthenticationHeader(accessToken, request)
+    response = request.method(HttpMethod.GET).send()
+
+    contentStr = response.getContentAsString()
+    print('retrieve(). retrieve="%s"' % contentStr)
+
+    checkResponseStatus(response)
+
+
+def publish(request, accessToken):
+    addAuthenticationHeader(accessToken, request)
+    response = request.method(HttpMethod.POST).send()
+
+    contentStr = response.getContentAsString()
+    print('publish(). contentStr="%s"' % contentStr)
+
+    checkResponseStatus(response)
 
 
 def createDepositionResource(request, accessToken):
     addAuthenticationHeader(accessToken, request)
-    response = request.method(HttpMethod.POST).content(StringContentProvider("{}"), "application/json").send()
+    response = request.method(HttpMethod.POST).content(StringContentProvider('{}'), 'application/json').send()
     checkResponseStatus(response)
+
     contentStr = response.getContentAsString()
     return JSONObject(contentStr)
 
