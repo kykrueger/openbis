@@ -43,7 +43,7 @@ class OpenBisObject():
         if self.is_new:
             return defs['attrs_new']
         else:
-            return defs['attrs']
+            return list(set(defs['attrs'] + defs['attrs_up']))
 
 
     def _set_data(self, data):
