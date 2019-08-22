@@ -250,7 +250,7 @@ def openbis_definitions(entity):
             "multi": "".split(),
             "identifier": "userId",
         },
-        "AuthorizationGroup" : {
+        "authorizationGroup" : {
             "attrs_new": "code description userIds".split(),
             "attrs_up": "code description userIds".split(),
             "attrs": "permId code description registrator registrationDate modificationDate users".split(),
