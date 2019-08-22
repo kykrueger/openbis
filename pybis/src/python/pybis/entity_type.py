@@ -3,7 +3,8 @@ from texttable import Texttable
 from pandas import DataFrame
 from .openbis_object import OpenBisObject
 from .things import Things
-from .utils import check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_permid, extract_code, extract_name
+from .utils import check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_permid, extract_code, extract_name, VERBOSE
+from .definitions import get_method_for_entity, get_type_for_entity
 
 class EntityType:
     """ EntityTypes define a variety of an entity, eg. sample, dataSet, experiment
@@ -90,16 +91,18 @@ class EntityType:
         showInEditView=True, showRawValueInForms=True
 
     ):
-        """The section groups certain properties.
-        The ordinal is defining the rank in the list where the property appears.
-        The mandatory defines whether a property must be filled in. If you make a
-        property mandatory later, you have to define an initialValueForExistingEntities too.
-
+        """The «section» groups certain properties.
+        The «ordinal» is defining the rank in the list where the property appears.
+        The «mandatory» defines whether a property must be filled in. If you make a
+        property mandatory after you already created entities, you have to define an
+        «initialValueForExistingEntities» too.
         """
-        pas = self.__dict__['_propertyAssignments']
+        if self.is_new:
+            raise ValueError("Please save {} first".format(self.entity))
 
-        # assign property type
-        property_type = self.openbis.get_property_type(property)
+        property_type = self.openbis.get_property_type(property.upper())
+        pt_permid = property_type._permId
+        pt_permid.pop('@id')
         new_assignment = {
             "section": section,
             "ordinal": ordinal,
@@ -107,23 +110,65 @@ class EntityType:
             "initialValueForExistingEntities": initialValueForExistingEntities,
             "showInEditView": showInEditView,
             "showRawValueInForms": showRawValueInForms,
-            "propertyType": property_type.data,
+            "propertyTypeId": pt_permid,
             "@type": "as.dto.property.create.PropertyAssignmentCreation",
         }
 
         # assign plugin
         if plugin is not None:
             plugin_obj = self.openbis.get_plugin(plugin)
-            new_assignment['plugin'] = plugin_obj.data
+            new_assignment['plugin'] = plugin_obj.name
 
-        pas.append(new_assignment)
+        request = self._get_request_for_pa(new_assignment, 'Add')
+        resp  = self.openbis._post_request(self.openbis.as_v3, request)
+        if not resp and VERBOSE:
+            print("Property {} assigned to {}".format(property, self.permId))
 
-    def revoke_property(self, 
-        property, 
-        forceRemovingAssignments=False
-    ):
-        raise ValueError("not implemented yet")
+    def revoke_property(self, property, force=False):
+        items = {
+            "entityTypeId": self._permId,
+            "propertyTypeId": {
+                "permId": property.upper(),
+                "@type" : "as.dto.property.id.PropertyTypePermId"
+            },
+            "@type": "as.dto.property.id.PropertyAssignmentPermId"
+        }
+        request = self._get_request_for_pa(items, 'Remove', force)
+        resp  = self.openbis._post_request(self.openbis.as_v3, request)
+        if not resp and VERBOSE:
+            print("Property {} revoked from {}".format(property, self.permId))
+        
 
+    def _get_request_for_pa(self, items, item_action, force=False):
+
+        method  = get_method_for_entity(self.entity, 'update')
+        entity_type = get_type_for_entity(self.entity, 'update')
+
+        list_action_type = "as.dto.common.update.ListUpdateAction"+item_action
+
+        request= {
+            "method": method,
+            "params": [
+                self.openbis.token,
+                [{
+                    "propertyAssignments": {
+                        "actions": [{
+                            "items": [{
+                                **items,
+                            }],
+                            "@type": list_action_type
+                        }],
+                        "@type": "as.dto.entitytype.update.PropertyAssignmentListUpdateValue",
+                        "forceRemovingAssignments": force
+                    },
+                    **entity_type,
+                    "typeId": self._permId
+                }]
+            ]
+        }
+
+        return request
+        
     def move_property_to_top(self, property):
         raise ValueError("not implemented yet")
 
