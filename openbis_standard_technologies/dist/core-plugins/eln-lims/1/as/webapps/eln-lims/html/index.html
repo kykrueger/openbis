@@ -324,7 +324,14 @@
 					$.trim($('#password').val()), 
 					function(data) { mainController.enterApp(data, username, password) });
 		});
-		
+		var singleSignOnUrlTemplate = mainController.profile.singleSignOnUrlTemplate;
+		if (singleSignOnUrlTemplate) {
+			var $container = $("#single-sign-on-login");
+			$container.empty();
+			var url = mainController.profile.singleSignOnUrlTemplate.replace("${host}", window.location.hostname);
+			$container.append($("<a>", {href: url, text: mainController.profile.singleSignOnLinkLabel}));
+		}
+
 		mainController.serverFacade.ifRestoredSessionActive(function(data) { mainController.enterApp(data) });
 		
 		// Make the ENTER key the default button
@@ -386,6 +393,7 @@
 
 
 			<center>
+				<div id="single-sign-on-login"></div>
 				<div id="password-reset-container"></div>
 
 				<div style="margin-bottom: 5px;">Compatible With:</div>

@@ -141,10 +141,9 @@ public class SingleSignOnServlet extends AbstractServlet
     protected void redirectToApp(HttpServletRequest request, HttpServletResponse response, String sessionToken) throws IOException
     {
         String host = request.getHeader("X-Forwarded-Host");
-        operationLog.info("host: " + host);
-        Template template2 = template.createFreshCopy();
-        template2.bind("host", host);
-        String redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, template2.createText());
+        Template template = this.template.createFreshCopy();
+        template.bind("host", host);
+        String redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, template.createText());
         operationLog.info("redirect to " + redirectUrl);
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies)
