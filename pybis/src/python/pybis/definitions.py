@@ -10,8 +10,8 @@ def openbis_definitions(entity):
     entities = {
         "space": {
             "attrs_new": "code description".split(),
-            "attrs_up": "description".split(),
-            "attrs": "code permId description registrator registrationDate modifier modificationDate".split(),
+            "attrs_up": "description freeze freezeForProjects freezeForSamples".split(),
+            "attrs": "code permId description frozen frozenForProjects frozenForSamples registrator registrationDate modificationDate".split(),
             "multi": "".split(),
             "identifier": "spaceId",
             "create": { "@type": "as.dto.space.create.SpaceCreation"},
@@ -21,8 +21,8 @@ def openbis_definitions(entity):
         },
         "project": {
             "attrs_new": "code description space attachments".split(),
-            "attrs_up": "description space attachments".split(),
-            "attrs": "code description permId identifier space leader registrator registrationDate modifier modificationDate attachments".split(),
+            "attrs_up": "description space attachments freeze freezeForExperiments freezeForSamples".split(),
+            "attrs": "code description permId identifier space leader registrator registrationDate modifier modificationDate attachments frozen frozenForExperiments frozenForSamples".split(),
             "multi": "".split(),
             "identifier": "projectId",
             "create": { "@type": "as.dto.project.create.ProjectCreation"},
@@ -30,8 +30,8 @@ def openbis_definitions(entity):
         },
         "experiment": {
             "attrs_new": "code type project tags attachments".split(),
-            "attrs_up": "project tags attachments".split(),
-            "attrs": "code permId identifier type project tags registrator registrationDate modifier modificationDate attachments".split(),
+            "attrs_up": "project tags attachments freeze freezeForDataSets freezeForSamples".split(),
+            "attrs": "code permId identifier type project tags registrator registrationDate modifier modificationDate attachments frozen frozenForDataSets frozenForSamples".split(),
             "multi": "tags attachments".split(),
             "identifier": "experimentId",
             "create": { "@type": "as.dto.experiment.create.ExperimentCreation"},
@@ -39,8 +39,8 @@ def openbis_definitions(entity):
         },
         "sample": {
             "attrs_new": "code type project parents children container components space experiment tags attachments".split(),
-            "attrs_up": "project parents children container components space experiment tags attachments".split(),
-            "attrs": "code permId identifier type project parents children components space experiment tags registrator registrationDate modifier modificationDate attachments container".split(),
+            "attrs_up": "project parents children container components space experiment tags attachments freeze freezeForComponents freezeForChildren freezeForParents freezeForDataSets".split(),
+            "attrs": "code permId identifier type project parents children components space experiment tags registrator registrationDate modifier modificationDate attachments container frozen frozenForComponents frozenForChildren frozenForParents frozenForDataSets".split(),
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
                 'childIds': {'permId': {'@type': 'as.dto.sample.id.SamplePermId'}},
@@ -185,8 +185,8 @@ def openbis_definitions(entity):
         },
         "dataSet": {
             "attrs_new": "type code kind experiment sample parents children components containers tags".split(),
-            "attrs_up": "parents children experiment sample components containers tags".split(),
-            "attrs": "code permId type kind experiment sample parents children components containers tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore size measured".split(),
+            "attrs_up": "parents children experiment sample components containers tags freeze freezeForChildren freezeForParents freezeForComponents freezeForContainers".split(),
+            "attrs": "code permId type kind experiment sample parents children components containers tags accessDate dataProducer dataProductionDate registrator registrationDate modifier modificationDate dataStore measured frozen frozenForChildren frozenForParents frozenForComponents frozenForContainers".split(),
 
             "ids2type": {
                 'parentIds': {'permId': {'@type': 'as.dto.dataset.id.DataSetPermId'}},

@@ -16,12 +16,11 @@ class Space(
         when using the autocompletion feature (TAB) in Jupyter
         """
         return [
-            'code', 'permId', 'description', 'registrator', 'registrationDate', 'modificationDate', 
             'get_projects()', 
-            "new_project(code='', description='', attachments)", 
+            "new_project()", 
             'get_samples()', 
             'delete()'
-        ]
+        ] + super().__dir__()
 
     def __str__(self):
         return self.data.get('code', None)

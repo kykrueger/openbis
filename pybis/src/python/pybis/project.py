@@ -16,12 +16,13 @@ class Project(
         """all the available methods and attributes that should be displayed
         when using the autocompletion feature (TAB) in Jupyter
         """
-        return ['code', 'permId', 'identifier', 'description', 'space', 'registrator',
-                'registrationDate', 'modifier', 'modificationDate', 'add_attachment()',
-                'get_attachments()', 'download_attachments()',
-                'get_experiments()', 'get_samples()', 'get_datasets()',
-                'save()', 'delete()'
-                ]
+
+        return [
+            'add_attachment()',
+            'get_attachments()', 'download_attachments()',
+            'get_experiments()', 'get_samples()', 'get_datasets()',
+            'save()', 'delete()'
+        ] + super().__dir__()
 
     def get_samples(self, **kwargs):
         return self.openbis.get_samples(project=self.permId, **kwargs)
