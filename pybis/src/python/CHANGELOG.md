@@ -3,7 +3,7 @@
 * new: search, create, update and delete Property Types
 * new: search, create, update and delete Plugins
 * new: create and update Sample Types
-* freeze features for all entities
+* freeze entities to prevent changes
 
 ## Changes with pybis-1.8.5
 
