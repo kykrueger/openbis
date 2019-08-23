@@ -4,6 +4,7 @@
 * new: search, create, update and delete Plugins
 * new: create and update Sample Types
 * freeze entities to prevent changes
+* added more tests
 
 ## Changes with pybis-1.8.5
 

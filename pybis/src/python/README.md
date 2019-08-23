@@ -519,7 +519,7 @@ o.get_tag('TAG_Name')
 
 tag.get_experiments()
 tag.get_samples()
-tag.get_owner()
+tag.get_owner()   # returns a person object
 tag.delete('why?')
 ```
 
