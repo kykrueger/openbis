@@ -4,8 +4,6 @@ from .openbis_object import OpenBisObject
 from .definitions import openbis_definitions
 from .utils import VERBOSE
 
-sample_definitions = openbis_definitions('sample')
-
 class Sample(
     OpenBisObject,
     entity='sample',
@@ -79,7 +77,7 @@ class Sample(
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'save()', 'delete()'
-        ]
+        ] + super().__dir__()
 
 
     def _container(self, value=None):
