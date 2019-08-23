@@ -96,25 +96,16 @@ class DataSet(
 
     def __dir__(self):
         return [
-            'permId',
-            'kind',
-            'props', 
             'get_parents()', 'get_children()', 'get_components()', 'get_contained()', 'get_containers()',
             'add_parents()', 'add_children()', 'add_components()', 'add_contained()', 'add_containers()', 
             'del_parents()', 'del_children()', 'del_components()', 'del_contained()', 'del_containers()',
             'set_parents()', 'set_children()', 'set_components()', 'set_contained()', 'set_containers()',
-            'sample', 
-            'experiment', 
-            'collection', 
-            'dataStore',
-            'physicalData',
-            'linkedData',
-            'tags', 'set_tags()', 'add_tags()', 'del_tags()',
+            'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files(start_folder='/')", 'file_list',
             'download(files=None, destination=None, wait_until_finished=True)', 
-            'status', 'size', 'archive()', 'unarchive()' 
-        ]
+            'archive()', 'unarchive()' 
+        ] + super().__dir__()
 
     def __setattr__(self, name, value):
         if name in ['folder']:

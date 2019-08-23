@@ -51,11 +51,15 @@ o.logout()
 
 ## browsing masterdata
 ```
-
-sample_types = o.get_sample_types()
-sample_types.df  # get DataFrame
-st = o.get_sample_types()[3]
+sample_types = o.get_sample_types()  # get a list of sample types 
+sample_types.df                      # DataFrame object
+st = o.get_sample_types()[3]         # get 4th element of that list
 st = o.get_sample_type('YEAST')
+st.code
+st.generatedCodePrefix
+st.attrs.all()                       # get all attributs as a dict
+st.validationPlugin                  # returns a plugin object
+
 st.get_property_assignments()
 st.assign_property(
 	prop='diff_time',
@@ -90,7 +94,7 @@ o.get_terms(vocabulary='STORAGE')
 o.get_tags()
 ```
 
-## create masterdata
+## create plugins and property types
 ```
 pl = o.new_plugin(
 	name       ='my_new_entry_validation_plugin',
@@ -107,6 +111,8 @@ pt = o.new_property_type(
    dataType='VARCHAR'
 )
 # dataType can be any of ['INTEGER', 'VARCHAR', 'MULTILINE_VARCHAR', 'REAL', 'TIMESTAMP', 'BOOLEAN', 'CONTROLLEDVOCABULARY', 'MATERIAL', 'HYPERLINK', 'XML']
+
+
 ```
 
 ## Users, Groups and RoleAssignments

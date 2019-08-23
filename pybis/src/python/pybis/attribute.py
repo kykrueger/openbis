@@ -268,11 +268,13 @@ class AttrHolder():
                     if value is None:
                         pass
                     elif isinstance(value, bool):
-                        up_obj[attr] = {
-                            "value": value,
-                            "isModified": True,
-                            "@type": "as.dto.common.update.FieldUpdateValue"
-                        }
+                        # for boolean values no type is needed
+                        up_obj[attr] = value
+                        #{
+                        #    "value": value,
+                        #    "isModified": True,
+                        #    "@type": "as.dto.common.update.FieldUpdateValue"
+                        #}
                     elif isinstance(value, dict) and len(value) == 0:
                         # value is {}: it means that we want this attribute to be
                         # deleted, not updated.
@@ -385,6 +387,8 @@ class AttrHolder():
                     return self.__dict__[int_name]['identifier']
                 elif "code" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['code']
+                elif "name" in self.__dict__[int_name]:
+                    return self.__dict__[int_name]['name']
                 elif "userId" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['userId']
                 elif "permId" in self.__dict__[int_name]:
@@ -786,8 +790,6 @@ class AttrHolder():
                 "permId": userId,
                 "@type": "as.dto.person.id.PersonPermId"
             })
-    set_members = set_users  # Alias
-
         
     def add_users(self, userIds):
         if userIds is None:

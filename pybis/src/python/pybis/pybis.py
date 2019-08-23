@@ -1208,7 +1208,7 @@ class Openbis:
         fetchopts = fetch_option['authorizationGroup']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
-        for option in ['roleAssignment', 'registrator', 'users']:
+        for option in ['roleAssignments', 'registrator', 'users']:
             fetchopts[option] = fetch_option[option]
         request = {
             "method": "searchAuthorizationGroups",
@@ -1336,16 +1336,18 @@ class Openbis:
         dataset, you need to specify in which space it should live.
         """
 
+        method = get_method_for_entity('space', 'search')
         search_criteria = _subcriteria_for_code(code, 'space')
         fetchopts = fetch_option['space']
         fetchopts['from'] = start_with
         fetchopts['count'] = count
         request = {
-            "method": "searchSpaces",
-            "params": [self.token,
-                       search_criteria,
-                       fetchopts,
-                       ],
+            "method": method,
+            "params": [
+                self.token,
+                search_criteria,
+                fetchopts,
+            ],
         }
         resp = self._post_request(self.as_v3, request)
 
@@ -1375,8 +1377,10 @@ class Openbis:
         for option in ['registrator']:
             fetchopts[option] = fetch_option[option]
 
+        method = get_method_for_entity('space', 'get')
+
         request = {
-            "method": "getSpaces",
+            "method": method,
             "params": [
                 self.token,
                 [{
@@ -1811,24 +1815,21 @@ class Openbis:
         """Deletes Spaces, Projects, Experiments, Samples and DataSets
         """
 
-        entity_type = "as.dto.{}.id.{}{}{}".format(
-            entity.lower(), entity,
-            id_name[0].upper(), id_name[1:]
-        )
+        type = get_type_for_entity(entity, 'delete')
+        method = get_method_for_entity(entity, 'delete')
         request = {
-            "method": "delete{}s".format(entity),
+            "method": method,
             "params": [
                 self.token,
                 [
                     {
                         id_name: id,
-                        "@type": entity_type
+                        "@type": type
                     }
                 ],
                 {
                     "reason": reason,
-                    "@type": "as.dto.{}.delete.{}DeletionOptions".format(
-                        entity.lower(), entity)
+                    "@type": type
                 }
             ]
         }
@@ -1904,7 +1905,11 @@ class Openbis:
             if only_data:
                 return resp[projectId]
 
-            return Project(self, resp[projectId])
+            return Project(
+                openbis_obj=self, 
+                type=None,
+                data=resp[projectId]
+            )
 
         else:
             search_criteria = _gen_search_criteria({
@@ -1923,7 +1928,11 @@ class Openbis:
             if only_data:
                 return resp['objects'][0]
 
-            return Project(self, resp['objects'][0])
+            return Project(
+                openbis_obj=self, 
+                type=None,
+                data=resp['objects'][0]
+            )
 
     def get_projects(
         self, space=None, code=None,
@@ -2579,23 +2588,6 @@ class Openbis:
                 count      = count,
                 totalCount = len(resp),
             )
-            #attrs = openbis_definitions('propertyType')['attrs']
-            #if len(resp) == 0:
-            #    df = DataFrame(columns=attrs)
-            #else:
-            #    df = DataFrame(list(resp.values()))
-            #    df['registrationDate'] = df['registrationDate'].map(format_timestamp)
-            #    df['registrator'] = df['registrator'].map(extract_person)
-
-            #return Things(
-            #    openbis_obj = self,
-            #    entity = 'propertyType',
-            #    single_item_method = self.get_property_type,
-            #    df = df[attrs],
-            #    start_with = start_with,
-            #    count = count,
-            #    totalCount = len(resp),
-            #)
 
     def get_property_types(self, code=None, start_with=None, count=None):
         fetchopts = fetch_option['propertyType']
@@ -2621,26 +2613,6 @@ class Openbis:
             count      = count,
             totalCount = resp.get('totalCount')
         )
-
-        #attrs = openbis_definitions('propertyType')['attrs']
-        #if len(resp['objects']) == 0:
-        #    df = DataFrame(columns=attrs)
-        #else:
-        #    objects = resp['objects']
-        #    parse_jackson(objects)
-        #    df = DataFrame(objects)
-        #    df['registrationDate'] = df['registrationDate'].map(format_timestamp)
-        #    df['registrator'] = df['registrator'].map(extract_person)
-
-        #return Things(
-        #    openbis_obj = self,
-        #    entity = 'propertyType',
-        #    single_item_method = self.get_property_type,
-        #    df = df[attrs],
-        #    start_with = start_with,
-        #    count = count,
-        #    totalCount = resp.get('totalCount'),
-        #)
 
     def _property_type_things(self, objects, start_with=None, count=None, totalCount=None):
         """takes a list of objects and returns a Things object
@@ -2794,14 +2766,14 @@ class Openbis:
     def get_entity_type(self, entity, identifier, cls, only_data=False):
         method_name = get_method_for_entity(entity, 'get')
         fetch_options = get_fetchoption_for_entity(entity)
-        identifiers = []
+
         if not isinstance(identifier, list):
             identifier = [identifier]
 
+        identifiers = []
         for ident in identifier:
             identifiers.append({
                 "permId": ident,
-                #"entityKind": entity.upper(),
                 "@type" : "as.dto.entitytype.id.EntityTypePermId",
             })
 
@@ -2818,7 +2790,6 @@ class Openbis:
         if len(identifiers) == 1:
             if len(resp) == 0:
                 raise ValueError('no such {}: {}'.format(entity, identifier[0]))
-
         for ident in resp:
             if only_data:
                 return resp[ident]

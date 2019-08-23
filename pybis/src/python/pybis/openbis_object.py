@@ -37,12 +37,13 @@ class OpenBisObject():
             for key in kwargs:
                 setattr(self, key, kwargs[key])
 
+
     def __dir__(self):
         defs = get_definition_for_entity(self.entity)
         if self.is_new:
             return defs['attrs_new']
         else:
-            return defs['attrs']
+            return list(set(defs['attrs'] + defs['attrs_up']))
 
 
     def _set_data(self, data):
