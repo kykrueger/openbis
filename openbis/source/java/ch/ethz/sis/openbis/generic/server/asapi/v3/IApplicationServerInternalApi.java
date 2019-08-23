@@ -30,4 +30,7 @@ public interface IApplicationServerInternalApi extends IApplicationServerApi
     @Transactional
     public String loginAsSystem();
 
+    @Transactional
+    public void registerUser(String sessionToken);
+
 }

@@ -214,7 +214,7 @@ function ServerFacade(openbisServer) {
 	//
 	this.getUserId = function() {
 		var sessionId = this.openbisServer.getSession();
-		var userId = sessionId.substring(0, sessionId.indexOf("-"));
+		var userId = sessionId.substring(0, sessionId.lastIndexOf("-"));
 		return userId;
 	}
 	

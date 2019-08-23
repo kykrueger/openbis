@@ -134,7 +134,9 @@ $.extend(DefaultProfile.prototype, {
 		this.EDMSs = {
 //				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
 		}
-
+		this.singleSignOnUrlTemplate = null;
+		this.singleSignOnLinkLabel = 'Single Sign On Login';
+		
         this.customWidgetSettings = {};
 
 		this.plugins = [new GenericTechnology(), new LifeSciencesTechnology(), new MicroscopyTechnology(), new FlowCytometryTechnology()];
