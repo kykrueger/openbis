@@ -207,7 +207,7 @@ def openbis_definitions(entity):
         "tag": {
             "attrs_new": "code description".split(),
             "attrs_up": "description".split(),
-            "attrs": "permId code description registrationDate".split(),
+            "attrs": "permId code description registrationDate owner".split(),
             "multi": "".split(),
             "identifier": "tagId",
         },
