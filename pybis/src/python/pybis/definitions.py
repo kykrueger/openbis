@@ -204,7 +204,7 @@ def openbis_definitions(entity):
             "multi": "".split(),
             "identifier": "materialId",
         },
-        "Tag": {
+        "tag": {
             "attrs_new": "code description".split(),
             "attrs_up": "description".split(),
             "attrs": "permId code description registrationDate".split(),
