@@ -22,15 +22,15 @@ const styles = (theme) => ({
     flexGrow: 1,
   },
   search: {
-    color: theme.palette.common.white,
-    backgroundColor: fade(theme.palette.common.white, 0.15),
+    color: theme.palette.background.paper,
+    backgroundColor: fade(theme.palette.background.paper, 0.15),
     '&:hover': {
-      backgroundColor: fade(theme.palette.common.white, 0.25),
+      backgroundColor: fade(theme.palette.background.paper, 0.25),
     },
     borderRadius: theme.shape.borderRadius,
-    paddingLeft: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
-    marginRight: theme.spacing.unit * 2,
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    marginRight: theme.spacing(2),
     transition: theme.transitions.create('width'),
     width: '200px',
     '&:focus-within': {
@@ -38,8 +38,8 @@ const styles = (theme) => ({
     },
   },
   searchIcon: {
-    paddingLeft: theme.spacing.unit / 2,
-    paddingRight: theme.spacing.unit,
+    paddingLeft: theme.spacing(1) / 2,
+    paddingRight: theme.spacing(1),
     cursor: 'default'
   },
   searchClear: {

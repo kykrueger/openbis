@@ -524,6 +524,12 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    public void registerUser(String sessionToken)
+    {
+        tryToAuthenticate(sessionToken);
+    }
+
+    @Override
     @Transactional
     public String loginAsAnonymousUser()
     {

@@ -5,7 +5,7 @@ import logger from '../../../common/logger.js'
 
 const styles = (theme) => ({
   button: {
-    marginRight: theme.spacing.unit * 2
+    marginRight: theme.spacing(2)
   }
 })
 

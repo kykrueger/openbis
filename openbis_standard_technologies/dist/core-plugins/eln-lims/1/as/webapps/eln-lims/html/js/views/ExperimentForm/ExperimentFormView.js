@@ -77,53 +77,57 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 		var toolbarModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
-			//Create Experiment Step
-			var mandatorySampleTypeCode = null;
-			var mandatorySampleType = null;
-			
-			if(this._experimentFormModel.experiment && 
-					this._experimentFormModel.experiment.properties &&
-					this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"]) {
-				mandatorySampleTypeCode = this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"];
-			} else if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
-				mandatorySampleTypeCode = "EXPERIMENTAL_STEP";
+			if (_this._allowedToCreateSample()) {
+				//Create Experiment Step
+				var mandatorySampleTypeCode = null;
+				var mandatorySampleType = null;
+				
+				if(this._experimentFormModel.experiment && 
+						this._experimentFormModel.experiment.properties &&
+						this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"]) {
+					mandatorySampleTypeCode = this._experimentFormModel.experiment.properties["$DEFAULT_OBJECT_TYPE"];
+				} else if(profile.getSampleTypeForSampleTypeCode("EXPERIMENTAL_STEP")) {
+					mandatorySampleTypeCode = "EXPERIMENTAL_STEP";
+				}
+				
+				mandatorySampleType = profile.getSampleTypeForSampleTypeCode(mandatorySampleTypeCode);
+				
+				if(mandatorySampleType) {
+					var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+						var argsMap = {
+								"sampleTypeCode" : mandatorySampleTypeCode,
+								"experimentIdentifier" : _this._experimentFormModel.experiment.identifier
+						}
+						var argsMapStr = JSON.stringify(argsMap);
+						Util.unblockUI();
+						mainController.changeView("showCreateSubExperimentPage", argsMapStr);
+					});
+					toolbarModel.push({ component : $createBtn, tooltip: "Create " + Util.getDisplayNameFromCode(mandatorySampleTypeCode) });
+				}
 			}
-			
-			mandatorySampleType = profile.getSampleTypeForSampleTypeCode(mandatorySampleTypeCode);
-			
-			if(mandatorySampleType) {
-				var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-					var argsMap = {
-							"sampleTypeCode" : mandatorySampleTypeCode,
-							"experimentIdentifier" : _this._experimentFormModel.experiment.identifier
-					}
-					var argsMapStr = JSON.stringify(argsMap);
-					Util.unblockUI();
-					mainController.changeView("showCreateSubExperimentPage", argsMapStr);
-				});
-				toolbarModel.push({ component : $createBtn, tooltip: "Create " + Util.getDisplayNameFromCode(mandatorySampleTypeCode) });
-			}
-			
-			if(!_this._experimentFormModel.v3_experiment.frozen) {
+			if (_this._allowedToEdit()) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					mainController.changeView("showEditExperimentPageFromIdentifier", _this._experimentFormModel.experiment.identifier);
 				});
 				toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
-				
+			}
+			if (_this._allowedToMove()) {
 				//Move
 				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
 					var moveEntityController = new MoveEntityController("EXPERIMENT", experimentFormModel.experiment.permId);
 					moveEntityController.init();
 				});
 				toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
-				
+			}
+			if (_this._allowedToDelete()) {
 				//Delete
 				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
 					_this._experimentFormController.deleteExperiment(reason);
 				}, true);
 				toolbarModel.push({ component : $deleteBtn, tooltip: "Delete" });
-			
+			}
+			if(_this._allowedToRegisterDataSet()) {
 				//Create Dataset
 				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
 					mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
@@ -273,7 +277,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				// Viewer
 				_this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, data.objects[0], mainController.serverFacade, profile.getDefaultDataStoreURL(), null, false, true);
 				_this._experimentFormModel.dataSetViewer.init();
-				if(_this._experimentFormModel.mode === FormMode.VIEW && !_this._experimentFormModel.v3_experiment.frozen) {
+				if(_this._experimentFormModel.mode === FormMode.VIEW && _this._allowedToRegisterDataSet()) {
 					// Uploader
 					var $dataSetFormController = new DataSetFormController(_this, FormMode.CREATE, data.objects[0], null, true);
 					var viewsForDS = {
@@ -395,8 +399,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			} else if(propertyType.dinamic && this._experimentFormController.mode === FormMode.CREATE) { //Skip
 				continue;
 			}
-			
-			if(propertyType.code === "$XMLCOMMENTS") {
+
+            if(propertyType.code === "$XMLCOMMENTS") {
 				var $commentsContainer = $("<div>");
 				$fieldset.append($commentsContainer);
 				var isAvailable = this._experimentFormController._addCommentsWidget($commentsContainer);
@@ -419,11 +423,18 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				}
 				
 				if(this._experimentFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
-					if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
-						$controlGroup = FormUtil.createPropertyField(propertyType, value);
-					} else {
-						continue;
-					}
+		            if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
+                        var customWidget = profile.customWidgetSettings[propertyType.code];
+                        if(customWidget === 'Spreadsheet') {
+                    	    var $jexcelContainer = $("<div>");
+                            JExcelEditorManager.createField($jexcelContainer, this._experimentFormModel.mode, propertyType.code, this._experimentFormModel.experiment);
+                            $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+                        } else {
+                    	    $controlGroup = FormUtil.createPropertyField(propertyType, value);
+                        }
+                    } else {
+                        continue;
+                    }
 				} else {
 					var $component = null;
 					if(propertyType.code === "$DEFAULT_OBJECT_TYPE") {
@@ -468,10 +479,28 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					if(propertyType.managed || propertyType.dinamic) {
 						$component.prop('disabled', true);
 					}
-					
-					if(propertyType.dataType === "MULTILINE_VARCHAR") {
-						$component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
-					} else if(propertyType.dataType === "TIMESTAMP") {
+
+					var customWidget = profile.customWidgetSettings[propertyType.code];
+                    if(customWidget) {
+                        switch(customWidget) {
+                            case 'Word Processor':
+                                if(propertyType.dataType === "MULTILINE_VARCHAR") {
+                    		        $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
+                    	        } else {
+                    		        alert("Word Processor only works with MULTILINE_VARCHAR data type.");
+                    		    }
+                                break;
+                    	    case 'Spreadsheet':
+                    	        if(propertyType.dataType === "XML") {
+                                    var $jexcelContainer = $("<div>");
+                                    JExcelEditorManager.createField($jexcelContainer, this._experimentFormModel.mode, propertyType.code, this._experimentFormModel.experiment);
+                                    $component = $jexcelContainer;
+                    		    } else {
+                    		        alert("Spreadsheet only works with XML data type.");
+                    		    }
+                    		    break;
+                        }
+                    } else if(propertyType.dataType === "TIMESTAMP") {
 						$component.on("dp.change", changeEvent(propertyType));
 					} else {
 						$component.change(changeEvent(propertyType));
@@ -535,5 +564,32 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	this._updateLoadingToNotAvailableImage = function() {
 		var notLoadedImages = $("[data-preview-loaded='false']");
 		notLoadedImages.attr('src', "./img/image_unavailable.png");
+	}
+	
+	this._allowedToCreateSample = function() {
+		var experiment = this._experimentFormModel.v3_experiment;
+		var project = experiment.project;
+		var space = project.space;
+		return experiment.frozenForSamples == false && project.frozenForSamples == false && space.frozenForSamples == false;
+	}
+	
+	this._allowedToEdit = function() {
+		var experiment = this._experimentFormModel.v3_experiment;
+		return experiment.frozen == false;
+	}
+
+	this._allowedToMove = function() {
+		var experiment = this._experimentFormModel.v3_experiment;
+		return experiment.project.frozenForExperiments == false;
+	}
+	
+	this._allowedToDelete = function() {
+		var experiment = this._experimentFormModel.v3_experiment;
+		return experiment.frozen == false && experiment.project.frozenForExperiments == false;
+	}
+	
+	this._allowedToRegisterDataSet = function() {
+		var experiment = this._experimentFormModel.v3_experiment;
+		return experiment.frozenForDataSets == false;
 	}
 }

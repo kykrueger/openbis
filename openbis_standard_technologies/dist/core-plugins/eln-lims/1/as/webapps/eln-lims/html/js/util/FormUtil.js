@@ -322,25 +322,28 @@ var FormUtil = new function() {
 		Select2Manager.add($dropdown);
 		return $dropdown;
 	}
-	
-	this.getPlainDropdown = function(mapVals, placeHolder) {
 
-		var $component = $("<select>", {class : 'form-control'});
-		if(placeHolder) {
-			$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
-		}
-		for(var mIdx = 0; mIdx < mapVals.length; mIdx++) {
+	this.setValuesToComponent = function ($component, mapVals) {
+		for (var mIdx = 0; mIdx < mapVals.length; mIdx++) {
 			var $option = $("<option>").attr('value', mapVals[mIdx].value).text(mapVals[mIdx].label);
-			if(mapVals[mIdx].disabled) {
+			if (mapVals[mIdx].disabled) {
 				$option.attr('disabled', '');
 			}
-			if(mapVals[mIdx].selected) {
+			if (mapVals[mIdx].selected) {
 				$option.attr('selected', '');
 			}
 			$component.append($option);
 		}
+	};
+
+	this.getPlainDropdown = function(mapVals, placeHolder) {
+		var $component = $("<select>", {class : 'form-control'});
+		if (placeHolder) {
+			$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
+		}
+		this.setValuesToComponent($component, mapVals);
 		return $component;
-	}
+	};
 	
 	this.getDataSetsDropDown = function(code, dataSetTypes) {
 		var $component = $("<select>", { class : 'form-control ' });
@@ -350,11 +353,11 @@ var FormUtil = new function() {
 		
 		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text('Select a dataset type'));
 		
-		for(var i = 0; i < dataSetTypes.length; i++) {
+		for (var i = 0; i < dataSetTypes.length; i++) {
 			var datasetType = dataSetTypes[i];
 			var label = Util.getDisplayNameFromCode(datasetType.code);
 			var description = Util.getEmptyIfNull(datasetType.description);
-			if(description !== "") {
+			if (description !== "") {
 				label += " (" + description + ")";
 			}
 			
@@ -1361,8 +1364,8 @@ var FormUtil = new function() {
 		});
 	}
 
-	// params.space: space code (set this or project)
-	// params.project: project code (set this or space)
+	// params.space: space code (or space code of project)
+	// params.project: project code
 	// params.acceptCallback: function to be called with (shareWith, groupOrUser)
 	this.showAuthorizationDialog = function(params) {
 
@@ -1370,7 +1373,7 @@ var FormUtil = new function() {
 		Util.blockUI();
 
 		mainController.serverFacade.searchRoleAssignments({
-			space: params.space ? params.space.code : null,
+			space: params.space ? params.space : (params.project ? params.project.spaceCode : null),
 			project: params.project ? params.project.code : null,
 		}, function(roleAssignments) {
 
@@ -1378,7 +1381,7 @@ var FormUtil = new function() {
 
 			// components
 			var $roleAssignmentTable = _this._getRoleAssignmentTable(roleAssignments, _this._revokeRoleAssignment.bind(_this, params));
-			var spaceOrProjectLabel = params.space ? params.space.code : params.project.code;
+			var spaceOrProjectLabel = params.space ? params.space : params.project.code;
 			var $roleDropdown = FormUtil.getDropdown([
 				{ label: 'Observer', value: 'OBSERVER', selected: true },
 				{ label: 'User', value: 'USER' },
@@ -1453,7 +1456,7 @@ var FormUtil = new function() {
 			user: grantTo == "User" ? groupOrUser : null,
 			group: grantTo == "Group" ? groupOrUser.toUpperCase() : null,
 			role: role,
-			space: dialogParams.space ? dialogParams.space.code : null,
+			space: dialogParams.space ? dialogParams.space : null,
 			project: dialogParams.project ? dialogParams.project.permId : null,
 		}, function(success, result) {
 			if (success) {
@@ -1509,7 +1512,29 @@ var FormUtil = new function() {
 		
 		return $freezeButton;
 	}
-	
+
+	this.createNewSample = function(experimentIdentifier) {
+    		var _this = this;
+    		var $dropdown = FormUtil.getSampleTypeDropdown("sampleTypeDropdown", true);
+    		Util.showDropdownAndBlockUI("sampleTypeDropdown", $dropdown);
+
+    		$("#sampleTypeDropdown").on("change", function(event) {
+    			var sampleTypeCode = $("#sampleTypeDropdown")[0].value;
+    			var argsMap = {
+    					"sampleTypeCode" : sampleTypeCode,
+    					"experimentIdentifier" : experimentIdentifier
+    			}
+
+    			var argsMapStr = JSON.stringify(argsMap);
+    			Util.unblockUI();
+    			mainController.changeView("showCreateSubExperimentPage", argsMapStr);
+    		});
+
+    		$("#sampleTypeDropdownCancel").on("click", function(event) {
+    			Util.unblockUI();
+    		});
+    }
+
 	this.showFreezeForm = function(entityType, permId) {
 		var _this = this;
 		
@@ -1565,7 +1590,7 @@ var FormUtil = new function() {
 						entity = entityMap[key];
 						if(entity.type == entityTypeOrder[typeOrder]) {
 							$table.append($("<tr>")
-									.append($("<td>").append(_this._getBooleanField('freezing-form-' + key.replace("+", "-"), entity.displayName, true)))
+									.append($("<td>").append(_this._getBooleanField(_this._createFormFieldId(key), entity.displayName, true)))
 									.append($("<td>").append(getTypeDisplayName(entity.type)))
 									.append($("<td>").append(entity.permId))
 									.append($("<td>").append(entity.displayName))
@@ -1609,34 +1634,35 @@ var FormUtil = new function() {
 				$window.append($btnAccept).append('&nbsp;').append($btnCancel);
 				
 				$window.submit(function() {
-					var username = mainController.serverFacade.getUserId();
-					var password = $passField.val();					
-					new openbis().login(
-							username, 
-							password, 
-							function(data) { 
-								if(data.result == null) {
-									Util.showUserError('The given password is not correct.');
-								} else {
-									var sessionToken = data.result;
-									
-									
-									for (key in entityMap) {
-										if(!$('#freezing-form-' + key.replace("+", "-"))[0].checked) {
-											delete entityMap[key];
+					if (_this._atLeastOnyEntitySelectedHasBeenSelectedForFreezing(entityMap)) {
+						var username = mainController.serverFacade.getUserId();
+						var password = $passField.val();					
+						new openbis().login(
+								username, 
+								password, 
+								function(data) { 
+									if(data.result == null) {
+										Util.showUserError('The given password is not correct.');
+									} else {
+										var sessionToken = data.result;
+										
+										
+										for (key in entityMap) {
+											if(!$('#' + _this._createFormFieldId(key))[0].checked) {
+												delete entityMap[key];
+											}
 										}
-									}
-									
-									var parameters = {
-											"method" : "freeze",
-											"sessionToken" : sessionToken,
-											"freezeList" : entityMap
-									}
-									mainController.serverFacade.customASService(parameters, function(result) {
-										if(result.status === "OK") {
-											Util.showSuccess("Freezing succeeded.", function() {
-												Util.unblockUI();
-												switch(entityType) {
+										
+										var parameters = {
+												"method" : "freeze",
+												"sessionToken" : sessionToken,
+												"freezeList" : entityMap
+										}
+										mainController.serverFacade.customASService(parameters, function(result) {
+											if(result.status === "OK") {
+												Util.showSuccess("Freezing succeeded.", function() {
+													Util.unblockUI();
+													switch(entityType) {
 													case "SPACE":
 														mainController.changeView('showSpacePage', permId);
 														break;
@@ -1652,17 +1678,22 @@ var FormUtil = new function() {
 													case "DATASET":
 														mainController.changeView('showViewDataSetPageFromPermId', permId);
 														break;
-												}
-											});
-										} else {
-											Util.showUserError('Freezing failed.', function() {
-												Util.unblockUI();
-											});
-										}
-									}, "freeze-api",  _this.showFreezingError);
-								}
-							});
-					Util.blockUI();
+													}
+												});
+											} else {
+												Util.showUserError('Freezing failed.', function() {
+													Util.unblockUI();
+												});
+											}
+										}, "freeze-api",  _this.showFreezingError);
+									}
+								});
+						Util.blockUI();
+					} else {
+						Util.showUserError('Nothing selected for freezing.', function() {
+							Util.unblockUI();
+						});
+					}
 				});
 					
 				var css = {
@@ -1682,6 +1713,19 @@ var FormUtil = new function() {
 				});
 			}
 		}, "freeze-api", _this.showFreezingError);
+	}
+	
+	this._atLeastOnyEntitySelectedHasBeenSelectedForFreezing = function(entityMap) {
+		for (key in entityMap) {
+			if ($('#' + this._createFormFieldId(key))[0].checked) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	this._createFormFieldId = function(key) {
+		return 'freezing-form-' + key.replace("+", "-");
 	}
 	
 	this.showFreezingError = function(error) {

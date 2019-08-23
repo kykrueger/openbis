@@ -29,7 +29,7 @@ const render = () => {
     <Provider store = { store }>
       <MuiThemeProvider theme={ theme }>
         <DragAndDropProvider>
-          <App />
+            <App />
         </DragAndDropProvider>
       </MuiThemeProvider>
     </Provider>,
