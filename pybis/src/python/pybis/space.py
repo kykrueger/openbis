@@ -3,33 +3,24 @@ from .openbis_object import OpenBisObject
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
 
 
-class Space(OpenBisObject):
+class Space(
+    OpenBisObject,
+    entity='space',
+    single_item_method_name='get_space'
+):
     """ managing openBIS spaces
     """
-
-    def __init__(self, openbis_obj, data=None, **kwargs):
-        self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Space' )
-
-        if data is not None:
-            self.a(data)
-            self.__dict__['data'] = data
-
-        if kwargs is not None:
-            for key in kwargs:
-                setattr(self, key, kwargs[key])
 
     def __dir__(self):
         """all the available methods and attributes that should be displayed
         when using the autocompletion feature (TAB) in Jupyter
         """
         return [
-            'code', 'permId', 'description', 'registrator', 'registrationDate', 'modificationDate', 
             'get_projects()', 
-            "new_project(code='', description='', attachments)", 
+            "new_project()", 
             'get_samples()', 
             'delete()'
-        ]
+        ] + super().__dir__()
 
     def __str__(self):
         return self.data.get('code', None)
@@ -59,23 +50,4 @@ class Space(OpenBisObject):
     def new_sample(self, **kwargs):
         return self.openbis.new_sample(space=self, **kwargs)
 
-    def delete(self, reason):
-        self.openbis.delete_entity(entity='Space', id=self.permId, reason=reason)
-        if VERBOSE: print("Space {} has been sucsessfully deleted.".format(self.permId))
-
-    def save(self):
-        if self.is_new:
-            request = self._new_attrs()
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE: print("Space successfully created.")
-            new_space_data = self.openbis.get_space(resp[0]['permId'], only_data=True)
-            self._set_data(new_space_data)
-            return self
-
-        else:
-            request = self._up_attrs()
-            self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE: print("Space successfully updated.")
-            new_space_data = self.openbis.get_space(self.permId, only_data=True)
-            self._set_data(new_space_data)
 

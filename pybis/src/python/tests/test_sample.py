@@ -17,7 +17,7 @@ def test_create_delete_sample(space):
         assert "should not have been created" is None
 
     timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
-    sample_code = 'test_sample_'+timestamp
+    sample_code = 'test_sample_'+timestamp+"_"+str(random.randint(0,1000))
     sample = o.new_sample(code=sample_code, type=sample_type, space=space)
     assert sample is not None
     assert sample.space.code == space.code
@@ -53,7 +53,7 @@ def test_create_delete_space_sample(space):
     o=space.openbis
     sample_type = 'UNKNOWN'
     timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
-    sample_code = 'test_sample_'+timestamp
+    sample_code = 'test_sample_'+timestamp+"_"+str(random.randint(0,1000))
 
     sample = space.new_sample(code=sample_code, type=sample_type)
     assert sample is not None
@@ -67,7 +67,7 @@ def test_parent_child(space):
     o=space.openbis
     sample_type = 'UNKNOWN'
     timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
-    parent_code = 'parent_sample_{}'.format(timestamp)
+    parent_code = 'parent_sample_{}'.format(timestamp)+"_"+str(random.randint(0,1000))
     sample_parent = o.new_sample(code=parent_code, type=sample_type, space=space)
     sample_parent.save()
 

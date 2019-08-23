@@ -153,10 +153,8 @@ class Things():
                     get_item = getattr(self.openbis, 'get_' + self.entity)
                 if self.additional_identifier is None:
                     return get_item(row[self.identifier_name].values[0])
-                    #return getattr(self.openbis, 'get_' + self.entity)(row[self.identifier_name].values[0])
                 ## get an entry using two keys
                 else:
-                    #return getattr(self.openbis, 'get_' + self.entity)(
                     return get_item(
                             row[self.identifier_name].values[0],
                             row[self.additional_identifier].values[0]
