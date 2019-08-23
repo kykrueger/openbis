@@ -1245,7 +1245,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._allowedToCreateChild = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return sample.frozenForChildren == false && sample.experiment.frozenForSamples == false;
+		return sample.frozenForChildren == false && (!sample.experiment || sample.experiment.frozenForSamples == false);
 	}
 	
 	this._allowedToEdit = function() {
@@ -1255,21 +1255,21 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 	
 	this._allowedToMove = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return sample.experiment.frozenForSamples == false;
+		return !sample.experiment || sample.experiment.frozenForSamples == false;
 	}
 	
 	this._allowedToDelete = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return sample.frozen == false && sample.experiment.frozenForSamples == false;
+		return sample.frozen == false && (!sample.experiment || sample.experiment.frozenForSamples == false);
 	}
 	
 	this._allowedToCopy = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return sample.experiment.frozenForSamples == false;
+		return !sample.experiment || sample.experiment.frozenForSamples == false;
 	}
 	
 	this._allowedToRegisterDataSet = function() {
 		var sample = this._sampleFormModel.v3_sample;
-		return sample.frozenForDataSets == false && sample.experiment.frozenForDataSets == false;
+		return sample.frozenForDataSets == false && (!sample.experiment || sample.experiment.frozenForDataSets == false);
 	}
 }
