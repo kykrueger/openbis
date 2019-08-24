@@ -21,9 +21,9 @@ import traceback
 
 import time
 from ch.systemsx.cisd.common.logging import LogCategory
+from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
-from com.sun.xml.internal.ws.policy.privateutil.PolicyUtils import ServiceProvider
 from java.io import File
 from java.nio.file import Paths
 from org.apache.commons.io import FileUtils
@@ -36,6 +36,7 @@ from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 from org.json import JSONObject
 
+from ch.ethz.sis import JobScheduler
 from exportsApi import findEntitiesToExport, validateDataSize, getConfigurationProperty, generateZipFile, checkResponseStatus, displayResult, cleanUp
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.zenodoExports.py')
@@ -64,21 +65,6 @@ def expandAndExport(tr, params):
     return exportUrl
 
 
-def registerPublicationInOpenbis(params, exportUrl):
-    sessionToken = params.get('sessionToken')
-    v3 = ServiceProvider.getV3ApplicationService()
-    id = CustomASServiceCode('publication-api')
-    options = CustomASServiceExecutionOptions() \
-        .withParameter('method', 'insertPublication') \
-        .withParameter('publicationURL', exportUrl)
-    # .withParameter('openBISRelatedIdentifiers', ...)
-    # .withParameter('publicationOrganization', ...)
-    # .withParameter('name', ...)
-    # .withParameter('publicationType', ...)
-    # .withParameter('publicationIdentifier', ...)
-    result = v3.executeCustomASService(sessionToken, id, options)
-
-
 def export(entities, tr, params):
     #Create temporal folder
     timeNow = time.time()
@@ -103,12 +89,12 @@ def export(entities, tr, params):
     generateZipFile(entities, params, contentDirPath, contentZipFilePath)
     FileUtils.forceDelete(File(contentDirPath))
 
-    resultUrl = sendToZenodo(tr=tr, tempZipFilePath=contentZipFilePath)
+    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFilePath=contentZipFilePath)
     FileUtils.forceDelete(File(exportDirPath))
     return resultUrl
 
 
-def sendToZenodo(tr, tempZipFilePath):
+def sendToZenodo(tr, params, tempZipFilePath):
     depositRootUrl = str(getConfigurationProperty(tr, 'zenodoUrl')) + '/api/deposit/depositions'
 
     accessToken = str(getConfigurationProperty(tr, 'accessToken'))
@@ -130,9 +116,13 @@ def sendToZenodo(tr, tempZipFilePath):
 
         submitFile(httpClient.newRequest(depositUrl), accessToken, tempZipFilePath)
         addMetadata(httpClient.newRequest(selfUrl), accessToken)
-        publish(httpClient.newRequest(publishUrl), accessToken)
+        # publish(httpClient.newRequest(publishUrl), accessToken)
 
-        retrieve(httpClient.newRequest(selfUrl), accessToken)
+        zenodoCallable = ZenodoCallable()
+        zenodoCallable.params = params
+        zenodoCallable.accessToken = accessToken
+        zenodoCallable.selfUrl = selfUrl
+        zenodoCallable.scheduleMetadataCheck()
 
         result = depositionLinks.get('html')
         return result
@@ -154,8 +144,6 @@ def submitFile(request, accessToken, tempZipFilePath):
     checkResponseStatus(response)
     contentStr = response.getContentAsString()
 
-    print('submitFile(). contentStr="%s"' % contentStr)
-
     return JSONObject(contentStr)
 
 
@@ -164,19 +152,17 @@ def addMetadata(request, accessToken):
         'metadata': {
             'title': 'Sample upload',
             'license': 'cc-zero',
-            'upload_type': 'poster',
+            'upload_type': 'dataset',
             'description': 'This is a sample upload',
-            'creators': [{'name': userId, 'affiliation': 'Zenodo'}]
+            'creators': [{'name': userId}]
         }
     }
 
     addAuthenticationHeader(accessToken, request)
     jsonString = json.dumps(data)
-    print('addMetadata(). jsonString="%s"' % jsonString)
     response = request.method(HttpMethod.PUT).content(StringContentProvider(jsonString), 'application/json').send()
 
     contentStr = response.getContentAsString()
-    print('addMetadata(). contentStr="%s"' % contentStr)
 
     checkResponseStatus(response)
 
@@ -184,19 +170,16 @@ def addMetadata(request, accessToken):
 def retrieve(request, accessToken):
     addAuthenticationHeader(accessToken, request)
     response = request.method(HttpMethod.GET).send()
-
     contentStr = response.getContentAsString()
-    print('retrieve(). retrieve="%s"' % contentStr)
-
     checkResponseStatus(response)
+
+    return JSONObject(contentStr)
 
 
 def publish(request, accessToken):
     addAuthenticationHeader(accessToken, request)
     response = request.method(HttpMethod.POST).send()
-
     contentStr = response.getContentAsString()
-    print('publish(). contentStr="%s"' % contentStr)
 
     checkResponseStatus(response)
 
@@ -218,3 +201,55 @@ def createHttpClient():
     sslContextFactory = SslContextFactory()
     sslContextFactory.setTrustAll(True)
     return HttpClient(sslContextFactory)
+
+
+class ZenodoCallable(object):
+    params = None
+    accessToken = None
+    selfUrl = None
+
+    def scheduleMetadataCheck(self):
+        JobScheduler.scheduleRepeatedRequest(60000, 60, self.call)
+
+    def call(self):
+        httpClient = None
+        result = False
+        try:
+            httpClient = createHttpClient()
+
+            httpClient.setFollowRedirects(False)
+            httpClient.start()
+
+            publicationJson = retrieve(httpClient.newRequest(self.selfUrl), self.accessToken)
+
+            if publicationJson.get('submitted'):
+                operationLog.info('Publication #%d submitted. Registering metadata.' % publicationJson.get('id'))
+                self.registerPublicationInOpenbis(publicationJson.get('metadata'))
+                result = True
+            else:
+                operationLog.info('Publication #%d not submitted yet.' % publicationJson.get('id'))
+        except Exception as e:
+            operationLog.error('Exception at: ' + traceback.format_exc())
+            operationLog.error('Exception: ' + str(e))
+            raise e
+        finally:
+            if httpClient is not None:
+                httpClient.stop()
+
+        return result
+
+    def registerPublicationInOpenbis(self, publicationMetadataJson):
+        sessionToken = self.params.get('sessionToken')
+        v3 = ServiceProvider.getV3ApplicationService()
+        id = CustomASServiceCode('publication-api')
+        options = CustomASServiceExecutionOptions() \
+            .withParameter('method', 'insertPublication') \
+            .withParameter('publicationURL', self.selfUrl) \
+            .withParameter('openBISRelatedIdentifiers', 'no-id') \
+            .withParameter('publicationOrganization', 'Zenodo') \
+            .withParameter('name', publicationMetadataJson.get('title')) \
+            .withParameter('publicationDescription', publicationMetadataJson.get('description')) \
+            .withParameter('publicationType', publicationMetadataJson.get('upload_type')) \
+            .withParameter('publicationIdentifier', publicationMetadataJson.get('doi'))
+        result = v3.executeCustomASService(sessionToken, id, options)
+        return result
