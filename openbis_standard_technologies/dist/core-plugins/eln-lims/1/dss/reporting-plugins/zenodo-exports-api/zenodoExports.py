@@ -209,7 +209,7 @@ class ZenodoCallable(object):
     selfUrl = None
 
     def scheduleMetadataCheck(self):
-        JobScheduler.scheduleRepeatedRequest(60000, 60, self.call)
+        JobScheduler.scheduleRepeatedRequest(120000, 60, self.call)
 
     def call(self):
         httpClient = None
