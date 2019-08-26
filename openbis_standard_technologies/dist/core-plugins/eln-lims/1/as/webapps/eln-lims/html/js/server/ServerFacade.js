@@ -92,6 +92,24 @@ function ServerFacade(openbisServer) {
         });
     }
 
+    this.setCustomWidgetSettings = function(widgetSettings, doneCallback) {
+        require([ "openbis", "as/dto/property/update/PropertyTypeUpdate", "as/dto/property/id/PropertyTypePermId", "as/dto/common/update/ListUpdateActionAdd" ],
+        function(openbis, PropertyTypeUpdate, PropertyTypePermId) {
+            var ptus = [];
+            for(var uIdx = 0; uIdx < widgetSettings.length; uIdx++) {
+                var ptu = new PropertyTypeUpdate();
+                ptu.setTypeId(new PropertyTypePermId(widgetSettings[uIdx]["Property Type"]));
+                var luaa = new ListUpdateActionAdd();
+                luaa.setItems([{"custom_widget" : widgetSettings[uIdx]["Widget"] }])
+                ptu.setMetaDataActions([luaa]);
+                ptus.push(ptu);
+            }
+            mainController.openbisV3.updatePropertyTypes(ptus).done(function() {
+                doneCallback();
+            });
+        });
+    }
+
 	//
 	// Display Settings
 	//
@@ -196,7 +214,7 @@ function ServerFacade(openbisServer) {
 	//
 	this.getUserId = function() {
 		var sessionId = this.openbisServer.getSession();
-		var userId = sessionId.substring(0, sessionId.indexOf("-"));
+		var userId = sessionId.substring(0, sessionId.lastIndexOf("-"));
 		return userId;
 	}
 	

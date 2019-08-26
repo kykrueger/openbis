@@ -51,28 +51,68 @@ o.logout()
 
 ## browsing masterdata
 ```
-o.get_experiment_types()
-et = o.get_experiment_type('TEST')
-et.get_propertyAssignments()
-
-o.get_sample_types()
+sample_types = o.get_sample_types()  # get a list of sample types 
+sample_types.df                      # DataFrame object
+st = o.get_sample_types()[3]         # get 4th element of that list
 st = o.get_sample_type('YEAST')
-st.get_propertyAssignments()
+st.code
+st.generatedCodePrefix
+st.attrs.all()                       # get all attributs as a dict
+st.validationPlugin                  # returns a plugin object
+
+st.get_property_assignments()
+st.assign_property(
+	prop='diff_time',
+	section = '',
+	ordinal = 5,
+	mandatory = True,
+	initialValueForExistingEntities = 'initial value'
+	showInEditView = True,
+	showRawValueInForms = True
+)
 
 o.get_material_types()
-mt = o.get_material_type('GENE')
-mt.get_propertyAssignments()
+# etc. — see above
 
 o.get_dataset_types()
-dst = o.get_dataset_types()[0]
-dst = o.get_dataset_type('RAW_DATA')
-dst.get_propertyAssignments()
-dst.get_propertyAssignments(with_vocabulary=True)
+# etc. — see above
+
+o.get_experiment_types()
+# etc. — see above
+
+o.get_property_types()
+pt = o.get_property_type('BARCODE_COMPLEXITY_CHECKER')
+pt.attrs.all()
+
+o.get_plugins()
+pl = o.get_plugin('Diff_time')
+pl.script  # the Jython script that processes this property
 
 o.get_vocabularies()
 o.get_vocabulary('BACTERIAL_ANTIBIOTIC_RESISTANCE')
 o.get_terms(vocabulary='STORAGE')
 o.get_tags()
+```
+
+## create plugins and property types
+```
+pl = o.new_plugin(
+	name       ='my_new_entry_validation_plugin',
+	pluginType ='ENTITY_VALIDATION',               # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
+	entityKind = None,                             # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+	script     = 'def calculate(): pass'           # a JYTHON script
+)
+pl.save()
+
+pt = o.new_property_type(
+	code='MY_NEW_PROPERTY_TYPE', 
+	label='yet another property type', 
+   description='my first property',
+   dataType='VARCHAR'
+)
+# dataType can be any of ['INTEGER', 'VARCHAR', 'MULTILINE_VARCHAR', 'REAL', 'TIMESTAMP', 'BOOLEAN', 'CONTROLLEDVOCABULARY', 'MATERIAL', 'HYPERLINK', 'XML']
+
+
 ```
 
 ## Users, Groups and RoleAssignments

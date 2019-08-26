@@ -4,10 +4,12 @@ from .openbis_object import OpenBisObject
 from .definitions import openbis_definitions
 from .utils import VERBOSE
 
-sample_definitions = openbis_definitions('Sample')
-
-class Sample(OpenBisObject):
-    """ A Sample is one of the most commonly used objects in openBIS.
+class Sample(
+    OpenBisObject,
+    entity='sample',
+    single_item_method_name='get_sample'
+):
+    """ A Sample (new: Object) is one of the most commonly used entities in openBIS.
     """
 
     def __init__(self, openbis_obj, type, project=None, data=None, props=None, **kwargs):
@@ -16,7 +18,7 @@ class Sample(OpenBisObject):
         ph = PropertyHolder(openbis_obj, type)
         self.__dict__['p'] = ph
         self.__dict__['props'] = ph
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Sample', type)
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'sample', type)
 
         if data is not None:
             self._set_data(data)
@@ -75,7 +77,7 @@ class Sample(OpenBisObject):
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'save()', 'delete()'
-        ]
+        ] + super().__dir__()
 
 
     def _container(self, value=None):
@@ -145,36 +147,6 @@ class Sample(OpenBisObject):
             setattr(self.p, prop, properties[prop])
 
     set_props = set_properties
-
-    def save(self):
-        for prop_name, prop in self.props._property_names.items():
-            if prop['mandatory']:
-                if getattr(self.props, prop_name) is None or getattr(self.props, prop_name) == "":
-                    raise ValueError("Property '{}' is mandatory and must not be None".format(prop_name))
-
-        props = self.p._all_props()
-
-        if self.is_new:
-            request = self._new_attrs()
-            request["params"][1][0]["properties"] = props
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-
-            if VERBOSE: print("Sample successfully created.")
-            new_sample_data = self.openbis.get_sample(resp[0]['permId'], only_data=True)
-            self._set_data(new_sample_data)
-            return self
-
-        else:
-            request = self._up_attrs()
-            request["params"][1][0]["properties"] = props
-            self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE: print("Sample successfully updated.")
-            new_sample_data = self.openbis.get_sample(self.permId, only_data=True)
-            self._set_data(new_sample_data)
-
-    def delete(self, reason):
-        self.openbis.delete_entity(entity='Sample',id=self.permId, reason=reason)
-        if VERBOSE: print("Sample {} successfully deleted.".format(self.permId))
 
     def get_datasets(self, **kwargs):
         return self.openbis.get_datasets(sample=self.permId, **kwargs)

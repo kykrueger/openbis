@@ -15,8 +15,90 @@ var JExcelEditorManager = new function() {
                     style : style,
                     meta : meta
                 }
-                entity.properties[propertyCode] = "<DATA>" + JSON.stringify(jExcelEditorValue) + "</DATA>";
+                entity.properties[propertyCode] = "<DATA>" + window.btoa(JSON.stringify(jExcelEditorValue)) + "</DATA>";
             }
+        }
+    }
+
+    this.getObjectFunction = function(guid) {
+        var _this = this;
+        return function() {
+            var jExcelEditor = _this.jExcelEditors[guid];
+            var x = null;
+            var y = null;
+            if(jExcelEditor.selectedCell) {
+                x = parseInt(jExcelEditor.selectedCell[0]);
+                y = parseInt(jExcelEditor.selectedCell[1]);
+            } else {
+                Util.showInfo("Select a cell first.");
+                return;
+            }
+
+            var component = "<div>"
+                component += "<legend>Insert Object</legend>";
+            	component += "<div>";
+
+                component += "<div class='form-group'>";
+                component += "<label class='control-label'>Object:</label>";
+                component += "<div>";
+                component += "<div id='objectSelector'></div>";
+                component += "</div>";
+                component += "</div>";
+
+                component += "<div class='form-group'>";
+                component += "<label class='control-label'>Options:</label>";
+                component += "<div class='controls'>";
+                component += "<span class='checkbox'><label><input type='checkbox' id='insertHeaders'> Insert Headers </label></span>";
+                component += "</div>";
+                component += "</div>";
+
+                component += "</div>";
+                component += "</div>";
+                Util.blockUI(component + "<a class='btn btn-default' id='insertAccept'>Accept</a> <a class='btn btn-default' id='insertCancel'>Cancel</a>", FormUtil.getDialogCss());
+
+                var advancedEntitySearchDropdown = new AdvancedEntitySearchDropdown(true, true, "Select Object", false, true, false, false);
+                advancedEntitySearchDropdown.init($("#objectSelector"));
+
+                $("#insertCancel").on("click", function(event) {
+                    Util.unblockUI();
+                });
+
+                $("#insertAccept").on("click", function(event) {
+                    var insertHeaders = $("#insertHeaders")[0].checked;
+                    var selected = advancedEntitySearchDropdown.getSelected();
+                    var lastEntityKindType = null;
+
+                    if(selected.length > 0) {
+                        for(var sIdx = 0; sIdx < selected.length; sIdx++) {
+                            var entity = selected[sIdx];
+                            var entityKindType = entity["@type"] + ":" + entity.type.code;
+                            var entityTable = _this.getEntityAsTable(entity);
+
+                            if(insertHeaders && lastEntityKindType !== entityKindType) {
+                                //Insert Labels
+                                for(var lIdx = 0; lIdx < entityTable.label.length; lIdx++) {
+                                    var label = entityTable.label[lIdx];
+                                    if(label) {
+                                        jExcelEditor.setValueFromCoords(x+lIdx, y, label, true);
+                                    }
+                                }
+                                y++;
+                            }
+
+                            //Insert Values
+                            for(var vIdx = 0; vIdx < entityTable.value.length; vIdx++) {
+                                var value = entityTable.value[vIdx];
+                                if(value) {
+                                    jExcelEditor.setValueFromCoords(x+vIdx, y, value, true);
+                                }
+                            }
+                            y++;
+                        }
+                        Util.unblockUI();
+                    } else {
+                        Util.showInfo("Select an object first.", function() {}, true);
+                    }
+                });
         }
     }
 
@@ -32,7 +114,7 @@ var JExcelEditorManager = new function() {
 	        var jExcelEditorValue = null;
 	        if(jExcelEditorValueAsStringWithTags) {
 	            var jExcelEditorValueAsStringNoTags = jExcelEditorValueAsStringWithTags.substring(6, jExcelEditorValueAsStringWithTags.length - 7);
-                jExcelEditorValue = JSON.parse(jExcelEditorValueAsStringNoTags);
+                jExcelEditorValue = JSON.parse(window.atob(jExcelEditorValueAsStringNoTags));
 	        }
 	        if(jExcelEditorValue) {
 	            data = jExcelEditorValue.data;
@@ -42,37 +124,20 @@ var JExcelEditorManager = new function() {
 	    }
 
         var guid = Util.guid();
-	    var onChangeHandler = this.getOnChange(guid, propertyCode, entity);
-
-        var toolbar = null;
-
-        if(mode == FormMode.EDIT) {
-            toolbar = [
-                    { type:'select', k:'font-family', v:['Arial','Verdana'] },
-                    { type:'select', k:'font-size', v:['9px','10px','11px','12px','13px','14px','15px','16px','17px','18px','19px','20px'] },
-                    { type:'i', content:'format_align_left', k:'text-align', v:'left' },
-                    { type:'i', content:'format_align_center', k:'text-align', v:'center' },
-                    { type:'i', content:'format_align_right', k:'text-align', v:'right' },
-                    { type:'i', content:'format_bold', k:'font-weight', v:'bold' },
-                    { type:'color', content:'format_color_text', k:'color' },
-                    { type:'color', content:'format_color_fill', k:'background-color' },
-            ];
-        }
 
         var options = {
-            data: data,
-            style: style,
-            meta: meta,
-            editable : mode == FormMode.EDIT,
-            minDimensions:[30, 30],
-            toolbar: toolbar,
-            onchange: onChangeHandler,
-            onchangestyle: onChangeHandler,
-            onchangemeta: onChangeHandler
-
+                    data: data,
+                    style: style,
+                    meta: meta,
+                    editable : mode !== FormMode.VIEW,
+                    minDimensions:[30, 30],
+                    toolbar: null,
+                    onchange: null,
+                    onchangestyle: null,
+                    onchangemeta: null
         };
 
-        if(mode != FormMode.EDIT) {
+        if(mode === FormMode.VIEW) {
             options.allowInsertRow = false;
             options.allowManualInsertRow = false;
             options.allowInsertColumn = false;
@@ -85,10 +150,56 @@ var JExcelEditorManager = new function() {
             options.contextMenu = function(obj, x, y, e) {
                 return [];
             }
+        } else {
+            var onChangeHandler = this.getOnChange(guid, propertyCode, entity);
+            options.onchange = onChangeHandler;
+            options.onchangestyle = onChangeHandler;
+            options.onchangemeta = onChangeHandler;
+
+            options.toolbar = [
+                    { type:'select', k:'font-family', v:['Arial','Verdana'] },
+                    { type:'select', k:'font-size', v:['9px','10px','11px','12px','13px','14px','15px','16px','17px','18px','19px','20px'] },
+                    { type:'i', content:'format_align_left', k:'text-align', v:'left' },
+                    { type:'i', content:'format_align_center', k:'text-align', v:'center' },
+                    { type:'i', content:'format_align_right', k:'text-align', v:'right' },
+                    { type:'i', content:'format_bold', k:'font-weight', v:'bold' },
+                    { type:'color', content:'format_color_text', k:'color' },
+                    { type:'color', content:'format_color_fill', k:'background-color' },
+                    { type:'i', content:'input', onclick: this.getObjectFunction(guid) },
+            ];
         }
 
         var jexcelField = jexcel($container[0], options);
-
         this.jExcelEditors[guid] = jexcelField;
+	}
+
+	this.getEntityAsTable = function(entity) {
+	    var tableModel = {
+	        code : [],
+	        label : [],
+	        value : [],
+	        dataType : [],
+	    }
+
+	    if(entity["@type"] === "as.dto.sample.Sample") {
+            var sampleType = profile.getSampleTypeForSampleTypeCode(entity.type.code);
+
+            tableModel.code.push("");
+            tableModel.label.push("Identifier");
+            tableModel.value.push(entity.identifier.identifier);
+            tableModel.dataType.push("");
+
+            for(var i = 0; i < sampleType.propertyTypeGroups.length; i++) {
+                var propertyGroup = sampleType.propertyTypeGroups[i].propertyTypes;
+                for(var j = 0; j < propertyGroup.length; j++) {
+            	    var propertyType = propertyGroup[j];
+            	    tableModel.code.push(propertyType.code);
+            	    tableModel.label.push(propertyType.label);
+            	    tableModel.value.push(entity.properties[propertyType.code]);
+            	    tableModel.dataType.push(propertyType.dataType);
+                }
+            }
+	    }
+	    return tableModel;
 	}
 }

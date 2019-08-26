@@ -41,8 +41,7 @@
 	<link type="text/css" rel="stylesheet" href="./lib/c3/c3.min.css"></script>
 	<link type="text/css" rel="stylesheet" href="./lib/jsuites/jsuites.css"></script>
 	<link type="text/css" rel="stylesheet" href="./lib/jexcel/jexcel.css"></script>
-
-	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Material+Icons" />
+	<link type="text/css" rel="stylesheet" href="./lib/material-icons/material-icons.css"></script>
 
 	<!-- ELN UI Stylesheets -->
 	<link type="text/css" rel="stylesheet" href="./css/style.css" />
@@ -329,7 +328,14 @@
 					$.trim($('#password').val()), 
 					function(data) { mainController.enterApp(data, username, password) });
 		});
-		
+		var singleSignOnUrlTemplate = mainController.profile.singleSignOnUrlTemplate;
+		if (singleSignOnUrlTemplate) {
+			var $container = $("#single-sign-on-login");
+			$container.empty();
+			var url = mainController.profile.singleSignOnUrlTemplate.replace("${host}", window.location.hostname);
+			$container.append($("<a>", {href: url, text: mainController.profile.singleSignOnLinkLabel}));
+		}
+
 		mainController.serverFacade.ifRestoredSessionActive(function(data) { mainController.enterApp(data) });
 		
 		// Make the ENTER key the default button
@@ -391,6 +397,7 @@
 
 
 			<center>
+				<div id="single-sign-on-login"></div>
 				<div id="password-reset-container"></div>
 
 				<div style="margin-bottom: 5px;">Compatible With:</div>

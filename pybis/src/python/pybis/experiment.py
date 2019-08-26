@@ -4,39 +4,13 @@ from .openbis_object import OpenBisObject
 from .definitions import openbis_definitions
 from .utils import VERBOSE
 
-class Experiment(OpenBisObject):
-    """ 
+class Experiment(
+    OpenBisObject,
+    entity='experiment',
+    single_item_method_name='get_experiment'
+):
+    """Handling experiment (collection) entities in openBIS 
     """
-
-    def __init__(self, openbis_obj, type, project=None, data=None, props=None, code=None, **kwargs):
-        self.__dict__['openbis'] = openbis_obj
-        self.__dict__['type'] = type
-        ph = PropertyHolder(openbis_obj, type)
-        self.__dict__['p'] = ph
-        self.__dict__['props'] = ph
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Experiment', type)
-
-        if data is not None:
-            self._set_data(data)
-
-        if project is not None:
-            setattr(self, 'project', project)
-
-        if props is not None:
-            for key in props:
-                setattr(self.p, key, props[key])
-
-        if code is not None:
-            self.code = code
-
-        if kwargs is not None:
-            defs = openbis_definitions('Experiment')
-            for key in kwargs:
-                if key in defs['attrs']:
-                    setattr(self, key, kwargs[key])
-                else:
-                    raise ValueError("{attr} is not a known attribute for an Experiment".format(attr=key))
-
 
     def _set_data(self, data):
         # assign the attribute data to self.a by calling it
@@ -55,15 +29,11 @@ class Experiment(OpenBisObject):
         # the list of possible methods/attributes displayed
         # when invoking TAB-completition
         return [
-            'code', 'permId', 'identifier',
-            'type', 'project',
-            'props.', 
-            'project', 'tags', 'attachments', 'data',
             'get_datasets()', 'get_samples()',
             'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             'save()'
-        ]
+        ] + super().__dir__()
 
     @property
     def type(self):
@@ -94,36 +64,6 @@ class Experiment(OpenBisObject):
 
     set_props = set_properties
 
-    def save(self):
-        for prop_name, prop in self.props._property_names.items():
-            if prop['mandatory']:
-                if getattr(self.props, prop_name) is None or getattr(self.props, prop_name) == "":
-                    raise ValueError("Property '{}' is mandatory and must not be None".format(prop_name))
-
-        if self.is_new:
-            request = self._new_attrs()
-            props = self.p._all_props()
-            request["params"][1][0]["properties"] = props
-            resp = self.openbis._post_request(self.openbis.as_v3, request)
-
-            if VERBOSE: print("Experiment successfully created.")
-            new_exp_data = self.openbis.get_experiment(resp[0]['permId'], only_data=True)
-            self._set_data(new_exp_data)
-            return self
-        else:
-            request = self._up_attrs()
-            props = self.p._all_props()
-            request["params"][1][0]["properties"] = props
-            self.openbis._post_request(self.openbis.as_v3, request)
-            if VERBOSE: print("Experiment successfully updated.")
-            new_exp_data = self.openbis.get_experiment(self.permId, only_data=True)
-            self._set_data(new_exp_data)
-
-    def delete(self, reason):
-        if self.permId is None:
-            return None
-        self.openbis.delete_entity(entity='Experiment', id=self.permId, reason=reason)
-        if VERBOSE: print("Experiment {} successfully deleted.".format(self.permId))
 
     def get_datasets(self, **kwargs):
         if self.permId is None:

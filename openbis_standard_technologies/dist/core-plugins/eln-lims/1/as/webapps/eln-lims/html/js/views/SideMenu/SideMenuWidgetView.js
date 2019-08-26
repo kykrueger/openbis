@@ -106,9 +106,14 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         searchElement.css({"margin-right" : "2px"});
         
         var logoutButton = FormUtil.getButtonWithIcon("glyphicon-off", function() {
-            $('body').addClass('bodyLogin');
-            mainController.serverFacade.logout();
-        });
+            $('body').addClass('bodyLogin');
+            var logoutTemplate = mainController.profile.singleSignOnUrlLogoutTemplate;
+            if (logoutTemplate) {
+                window.location = logoutTemplate.replace("${host}", window.location.hostname);
+            } else {
+                mainController.serverFacade.logout();
+            }
+         });
         
         var $searchForm = $("<form>", { "onsubmit": "return false;" })
                             .append(logoutButton)
