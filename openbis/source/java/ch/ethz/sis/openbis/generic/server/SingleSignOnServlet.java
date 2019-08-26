@@ -17,6 +17,8 @@
 package ch.ethz.sis.openbis.generic.server;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -108,6 +110,18 @@ public class SingleSignOnServlet extends AbstractServlet
     {
         String sessionId = getHeader(request, SESSION_ID_KEY, DEFAULT_SESSION_ID_KEY);
         String sessionToken = sessionTokenBySessionId.get(sessionId);
+        String returnURL = request.getParameter("return");
+        if (returnURL != null)
+        {
+            handleLogOut(request, response, sessionId, sessionToken, returnURL);
+        } else
+        {
+            handleLogIn(request, response, sessionId, sessionToken);
+        }
+    }
+
+    private void handleLogIn(HttpServletRequest request, HttpServletResponse response, String sessionId, String sessionToken) throws IOException
+    {
         if (sessionToken != null)
         {
             Session session = sessionManager.tryGetSession(sessionToken);
@@ -138,13 +152,40 @@ public class SingleSignOnServlet extends AbstractServlet
         redirectToApp(request, response, sessionToken);
     }
 
-    protected void redirectToApp(HttpServletRequest request, HttpServletResponse response, String sessionToken) throws IOException
+    private void handleLogOut(HttpServletRequest request, HttpServletResponse response, String sessionId, String sessionToken, String returnURL)
+            throws IOException
+    {
+        operationLog.info("log out session id: " + sessionId);
+        if (sessionToken != null)
+        {
+            Session session = sessionManager.tryGetSession(sessionToken);
+            if (session != null)
+            {
+                sessionManager.closeSession(sessionToken);
+                operationLog.info("Session " + sessionToken + " closed.");
+            }
+        }
+        operationLog.info("Redirect to " + returnURL);
+        removeOpenbisCookies(request, response);
+        response.sendRedirect(returnURL);
+    }
+
+    private void redirectToApp(HttpServletRequest request, HttpServletResponse response, String sessionToken) throws IOException
     {
         String host = request.getHeader("X-Forwarded-Host");
         Template template = this.template.createFreshCopy();
         template.bind("host", host);
         String redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, template.createText());
         operationLog.info("redirect to " + redirectUrl);
+        removeOpenbisCookies(request, response);
+        Cookie cookie = new Cookie("openbis", sessionToken);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        response.sendRedirect(redirectUrl);
+    }
+
+    private void removeOpenbisCookies(HttpServletRequest request, HttpServletResponse response)
+    {
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies)
         {
@@ -156,10 +197,6 @@ public class SingleSignOnServlet extends AbstractServlet
                 response.addCookie(cookie);
             }
         }
-        Cookie cookie = new Cookie("openbis", sessionToken);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-        response.sendRedirect(redirectUrl);
     }
 
     private String getHeader(HttpServletRequest request, String keyProperty, String defaultKey)
