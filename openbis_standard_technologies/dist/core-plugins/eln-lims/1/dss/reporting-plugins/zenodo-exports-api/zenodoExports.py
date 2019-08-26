@@ -60,8 +60,6 @@ def expandAndExport(tr, params):
     operationLog.info('Found ' + str(len(entitiesToExport)) + ' entities to export')
     exportUrl = export(entities=entitiesToExport, tr=tr, params=params)
 
-    # registerPublicationInOpenbis(params=params, exportUrl=exportUrl)
-
     return exportUrl
 
 
@@ -84,17 +82,15 @@ def export(entities, tr, params):
 
     contentZipFilePath = exportDirPath + '/' + contentZipFileName
 
-    exportZipFilePath = exportDirPath + '.zip'
-
     generateZipFile(entities, params, contentDirPath, contentZipFilePath)
     FileUtils.forceDelete(File(contentDirPath))
 
-    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFilePath=contentZipFilePath)
+    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFilePath=contentZipFilePath, entities=entities)
     FileUtils.forceDelete(File(exportDirPath))
     return resultUrl
 
 
-def sendToZenodo(tr, params, tempZipFilePath):
+def sendToZenodo(tr, params, tempZipFilePath, entities):
     depositRootUrl = str(getConfigurationProperty(tr, 'zenodoUrl')) + '/api/deposit/depositions'
 
     accessToken = str(getConfigurationProperty(tr, 'accessToken'))
@@ -112,16 +108,13 @@ def sendToZenodo(tr, params, tempZipFilePath):
         depositionLinks = depositionData.get('links')
         depositUrl = depositionLinks.get('files')
         selfUrl = depositionLinks.get('self')
-        publishUrl = depositionLinks.get('publish')
 
         submitFile(httpClient.newRequest(depositUrl), accessToken, tempZipFilePath)
         addMetadata(httpClient.newRequest(selfUrl), accessToken)
-        # publish(httpClient.newRequest(publishUrl), accessToken)
 
-        zenodoCallable = ZenodoCallable()
-        zenodoCallable.params = params
-        zenodoCallable.accessToken = accessToken
-        zenodoCallable.selfUrl = selfUrl
+        entityPermIds = map(lambda entity: entity['permId'], entities)
+        zenodoCallable = ZenodoCallable(params, accessToken, selfUrl,
+                                        reduce(lambda str, permId: str + ',' + permId, entityPermIds))
         zenodoCallable.scheduleMetadataCheck()
 
         result = depositionLinks.get('html')
@@ -150,10 +143,10 @@ def submitFile(request, accessToken, tempZipFilePath):
 def addMetadata(request, accessToken):
     data = {
         'metadata': {
-            'title': 'Sample upload',
+            'title': str(time.time()),
             'license': 'cc-zero',
             'upload_type': 'dataset',
-            'description': 'This is a sample upload',
+            'description': 'Add some description.',
             'creators': [{'name': userId}]
         }
     }
@@ -162,8 +155,6 @@ def addMetadata(request, accessToken):
     jsonString = json.dumps(data)
     response = request.method(HttpMethod.PUT).content(StringContentProvider(jsonString), 'application/json').send()
 
-    contentStr = response.getContentAsString()
-
     checkResponseStatus(response)
 
 
@@ -171,17 +162,14 @@ def retrieve(request, accessToken):
     addAuthenticationHeader(accessToken, request)
     response = request.method(HttpMethod.GET).send()
     contentStr = response.getContentAsString()
+
+    # If the resource has been deleted instead of published return None.
+    if response.getStatus() == 410:
+        return None
+
     checkResponseStatus(response)
 
     return JSONObject(contentStr)
-
-
-def publish(request, accessToken):
-    addAuthenticationHeader(accessToken, request)
-    response = request.method(HttpMethod.POST).send()
-    contentStr = response.getContentAsString()
-
-    checkResponseStatus(response)
 
 
 def createDepositionResource(request, accessToken):
@@ -207,27 +195,44 @@ class ZenodoCallable(object):
     params = None
     accessToken = None
     selfUrl = None
+    permIdsStr = None
+
+    def __init__(self, params, accessToken, selfUrl, permIdsStr):
+        self.params = params
+        self.accessToken = accessToken
+        self.selfUrl = selfUrl
+        self.permIdsStr = permIdsStr
 
     def scheduleMetadataCheck(self):
         JobScheduler.scheduleRepeatedRequest(120000, 60, self.call)
 
     def call(self):
         httpClient = None
-        result = False
+
+        # Whether this method returned a completion result and it should not be called repeatedly.
+        actionCompleted = False
+
         try:
             httpClient = createHttpClient()
 
             httpClient.setFollowRedirects(False)
             httpClient.start()
 
-            publicationJson = retrieve(httpClient.newRequest(self.selfUrl), self.accessToken)
-
-            if publicationJson.get('submitted'):
-                operationLog.info('Publication #%d submitted. Registering metadata.' % publicationJson.get('id'))
-                self.registerPublicationInOpenbis(publicationJson.get('metadata'))
-                result = True
-            else:
-                operationLog.info('Publication #%d not submitted yet.' % publicationJson.get('id'))
+            try:
+                publicationJson = retrieve(httpClient.newRequest(self.selfUrl), self.accessToken)
+                if publicationJson is None:
+                    operationLog.info('Publication at the URL has been deleted.' % self.selfUrl)
+                    actionCompleted = True
+                elif publicationJson.get('submitted'):
+                    operationLog.info('Publication #%d submitted. Registering metadata.' % publicationJson.get('id'))
+                    self.registerPublicationInOpenbis(publicationJson.get('metadata'))
+                    actionCompleted = True
+                else:
+                    operationLog.info('Publication #%d not submitted yet.' % publicationJson.get('id'))
+            except Exception as e:
+                operationLog.error('Exception at: ' + traceback.format_exc())
+                operationLog.error('Exception: ' + str(e))
+                actionCompleted = False
         except Exception as e:
             operationLog.error('Exception at: ' + traceback.format_exc())
             operationLog.error('Exception: ' + str(e))
@@ -236,7 +241,8 @@ class ZenodoCallable(object):
             if httpClient is not None:
                 httpClient.stop()
 
-        return result
+        return actionCompleted
+
 
     def registerPublicationInOpenbis(self, publicationMetadataJson):
         sessionToken = self.params.get('sessionToken')
@@ -245,7 +251,7 @@ class ZenodoCallable(object):
         options = CustomASServiceExecutionOptions() \
             .withParameter('method', 'insertPublication') \
             .withParameter('publicationURL', self.selfUrl) \
-            .withParameter('openBISRelatedIdentifiers', 'no-id') \
+            .withParameter('openBISRelatedIdentifiers', self.permIdsStr) \
             .withParameter('publicationOrganization', 'Zenodo') \
             .withParameter('name', publicationMetadataJson.get('title')) \
             .withParameter('publicationDescription', publicationMetadataJson.get('description')) \
