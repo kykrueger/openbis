@@ -17,6 +17,8 @@
 package ch.ethz.sis.openbis.generic.server;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,8 +108,34 @@ public class SingleSignOnServlet extends AbstractServlet
     @RequestMapping({ SERVLET_NAME })
     protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
     {
+        operationLog.info("handle SSO");
+        printParameters(request);
         String sessionId = getHeader(request, SESSION_ID_KEY, DEFAULT_SESSION_ID_KEY);
         String sessionToken = sessionTokenBySessionId.get(sessionId);
+        String returnURL = request.getParameter("return");
+        operationLog.info("returnURL:"+returnURL);
+        if (returnURL != null)
+        {
+            handleLogOut(request, response, sessionId, sessionToken, returnURL);
+        } else
+        {
+            handleLogIn(request, response, sessionId, sessionToken);
+        }
+    }
+    
+    private void printParameters(HttpServletRequest request)
+    {
+        Enumeration parameterNames = request.getParameterNames();
+        while (parameterNames.hasMoreElements())
+        {
+            String nextElement = (String) parameterNames.nextElement();
+            String[] parameterValues = request.getParameterValues(nextElement);
+            operationLog.info(nextElement+" = "+Arrays.asList(parameterValues));
+        }
+    }
+
+    private void handleLogIn(HttpServletRequest request, HttpServletResponse response, String sessionId, String sessionToken) throws IOException
+    {
         if (sessionToken != null)
         {
             Session session = sessionManager.tryGetSession(sessionToken);
@@ -137,14 +165,45 @@ public class SingleSignOnServlet extends AbstractServlet
         operationLog.info("Session token " + sessionToken + " created for SSO session id " + sessionId);
         redirectToApp(request, response, sessionToken);
     }
+    
+    private void handleLogOut(HttpServletRequest request, HttpServletResponse response, String sessionId, String sessionToken, String returnURL) throws IOException
+    {
+        operationLog.info("LOG OUT, session id: " + sessionId);
+        for (Object entry : request.getParameterMap().entrySet())
+        {
+            operationLog.info("PARAMETER: " + entry);
+        }
+        if (sessionToken != null)
+        {
+            Session session = sessionManager.tryGetSession(sessionToken);
+            if (session != null)
+            {
+                sessionManager.closeSession(sessionToken);
+                operationLog.info("Session closed");
+            }
+        }
+        operationLog.info("Redirect to " + returnURL);
+        removeOpenbisCookies(request, response);
+        response.sendRedirect(returnURL);
+    }
+    
 
-    protected void redirectToApp(HttpServletRequest request, HttpServletResponse response, String sessionToken) throws IOException
+    private void redirectToApp(HttpServletRequest request, HttpServletResponse response, String sessionToken) throws IOException
     {
         String host = request.getHeader("X-Forwarded-Host");
         Template template = this.template.createFreshCopy();
         template.bind("host", host);
         String redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, template.createText());
         operationLog.info("redirect to " + redirectUrl);
+        removeOpenbisCookies(request, response);
+        Cookie cookie = new Cookie("openbis", sessionToken);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        response.sendRedirect(redirectUrl);
+    }
+
+    private void removeOpenbisCookies(HttpServletRequest request, HttpServletResponse response)
+    {
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies)
         {
@@ -156,10 +215,6 @@ public class SingleSignOnServlet extends AbstractServlet
                 response.addCookie(cookie);
             }
         }
-        Cookie cookie = new Cookie("openbis", sessionToken);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-        response.sendRedirect(redirectUrl);
     }
 
     private String getHeader(HttpServletRequest request, String keyProperty, String defaultKey)
