@@ -646,3 +646,32 @@ def getConfigurationProperty(transaction, propertyName):
         return threadProperties.getProperty(propertyName);
     except:
         return None
+
+
+def generateZipFile(entities, params, tempDirPath, tempZipFilePath):
+    # Generates ZIP file with selected item for export
+
+    sessionToken = params.get('sessionToken')
+    includeRoot = params.get('includeRoot')
+
+    fos = None
+    zos = None
+    try:
+        fos = FileOutputStream(tempZipFilePath)
+        zos = ZipOutputStream(fos)
+
+        fileMetadata = generateFilesInZip(zos, entities, includeRoot, sessionToken, tempDirPath)
+    finally:
+        if zos is not None:
+            zos.close()
+        if fos is not None:
+            fos.close()
+
+    return fileMetadata
+
+
+def checkResponseStatus(response):
+    status = response.getStatus()
+    if status >= 300:
+        reason = response.getReason()
+        raise ValueError('Unsuccessful response from the server: %s %s' % (status, reason))

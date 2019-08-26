@@ -14,39 +14,17 @@
  * limitations under the License.
  */
 
-function ResearchCollectionExportController(parentController) {
-    var researchCollectionExportModel = new ResearchCollectionExportModel();
-    var researchCollectionExportView = new ResearchCollectionExportView(this, researchCollectionExportModel);
+function ZenodoExportController(parentController) {
+    var exportModel = new ZenodoExportModel();
+    var exportView = new ZenodoExportView(this, exportModel);
 
     this.init = function(views) {
-        researchCollectionExportView.repaint(views);
-    };
-
-    this.initialiseSubmissionTypesDropdown = function() {
-        Util.blockUI();
-        mainController.serverFacade.listSubmissionTypes(function(error, result) {
-            Util.unblockUI();
-            if (error) {
-                Util.showError(error);
-            } else {
-                researchCollectionExportModel.submissionTypes = result.data.map(function (resultItem) {
-                    return {
-                        value: resultItem.url,
-                        label: resultItem.title
-                    };
-                });
-                researchCollectionExportView.refreshSubmissionTypeDropdown();
-            }
-        });
+        exportView.repaint(views);
     };
 
     this.exportSelected = function() {
         var _this = this;
-        var selectedNodes = $(researchCollectionExportModel.tree).fancytree('getTree').getSelectedNodes();
-
-        var selectedOption = researchCollectionExportView.$submissionTypeDropdown.find(":selected");
-        var submissionUrl = selectedOption.val();
-        var submissionType = selectedOption.text();
+        var selectedNodes = $(exportModel.tree).fancytree('getTree').getSelectedNodes();
 
         var toExport = [];
         for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
@@ -58,12 +36,10 @@ function ResearchCollectionExportController(parentController) {
             Util.showInfo('First select something to export.');
         } else if (!this.isValid(toExport)) {
             Util.showInfo('Not only spaces and the root should be selected. It will result in an empty export file.');
-        } else if (!submissionUrl) {
-            Util.showInfo('First select submission type.');
         } else {
             Util.blockUI();
             this.getUserInformation(function(userInformation) {
-                mainController.serverFacade.exportRc(toExport, true, false, submissionUrl, submissionType, userInformation,
+                mainController.serverFacade.exportZenodo(toExport, true, false, userInformation,
                         function(operationExecutionPermId) {
                             _this.waitForOpExecutionResponse(operationExecutionPermId, function(error, result) {
                                 Util.unblockUI();
@@ -96,8 +72,8 @@ function ResearchCollectionExportController(parentController) {
 
     this.waitForOpExecutionResponse = function(operationExecutionPermIdString, callbackFunction) {
         var _this = this;
-        require(["as/dto/operation/id/OperationExecutionPermId",
-                "as/dto/operation/fetchoptions/OperationExecutionFetchOptions"],
+        require(['as/dto/operation/id/OperationExecutionPermId',
+                'as/dto/operation/fetchoptions/OperationExecutionFetchOptions'],
             function(OperationExecutionPermId, OperationExecutionFetchOptions) {
                 var operationExecutionPermId = new OperationExecutionPermId(operationExecutionPermIdString);
                 var fetchOptions = new OperationExecutionFetchOptions();
@@ -128,9 +104,6 @@ function ResearchCollectionExportController(parentController) {
         var userId = mainController.serverFacade.getUserId();
         mainController.serverFacade.getSessionInformation(function(sessionInfo) {
             var userInformation = {
-                firstName: sessionInfo.person.firstName,
-                lastName: sessionInfo.person.lastName,
-                email: sessionInfo.person.email,
                 id: userId,
             };
             callback(userInformation);
