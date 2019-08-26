@@ -361,8 +361,6 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                                     sample = results.objects[rIdx];
                                 }
                             }
-                            _this._sampleFormModel.sample.properties = sample.properties;
-                            delete _this._sampleFormModel.sample.properties[profile.propertyReplacingCode];
 
                             if(_this._sampleFormModel.views.header) {
                                 _this._sampleFormModel.views.header.empty();
