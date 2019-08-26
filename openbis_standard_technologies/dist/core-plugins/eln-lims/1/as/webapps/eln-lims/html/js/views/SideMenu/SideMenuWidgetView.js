@@ -300,7 +300,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             }
 
             treeModelUtils.push({ displayName: "Exports", title: "Exports", entityType: "EXPORTS", key: "EXPORTS", folder: true, lazy: false,
-                    expanded: false, children: treeModelExports, icon: "glyphicon glyphicon-export" });
+                    expanded: false, children: treeModelExports, view: "showBlancPage", icon: "glyphicon glyphicon-export" });
         }
         
         if(profile.mainMenu.showStorageManager) {
@@ -323,7 +323,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             treeModelUtils.push({ displayName: "Settings", title : settingsLink, entityType: "SETTINGS", key : "SETTINGS", folder : false, lazy : false, view : "showSettingsPage", icon : "glyphicon glyphicon-cog" });
         }
 
-        treeModel.push({ displayName: "Utilities", title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, icon : "glyphicon glyphicon-wrench" });
+        treeModel.push({ displayName: "Utilities", title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, view: "showBlancPage", icon : "glyphicon glyphicon-wrench" });
         treeModel.push({ displayName: "About", title : "About", entityType: "ABOUT", key : "ABOUT", folder : false, lazy : false, view : "showAbout", icon : "glyphicon glyphicon-info-sign" });
         
         var glyph_opts = {
