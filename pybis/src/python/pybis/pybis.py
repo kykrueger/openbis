@@ -2121,39 +2121,6 @@ class Openbis:
                     return VocabularyTerm(self, resp[ident])
 
 
-    def _get_any_entity(self, identifier, entity, only_data=False, method=None):
-
-        entity_def = get_definition_for_entity(entity)
-
-        # guess the method to fetch an entity
-        if method is None:
-            method = 'get' + entity + 's'
-
-        search_request = _type_for_id(identifier, entity)
-        fetchopts = get_fetchoption_for_entity(entity)
-        
-        request = {
-            "method": method,
-            "params": [
-                self.token,
-                [search_request],
-                fetchopts
-            ],
-        }
-        resp = self._post_request(self.as_v3, request)
-
-        if resp is None or len(resp) == 0:
-            raise ValueError('no {} found with identifier: {}'.format(entity, identifier))
-        else:
-            parse_jackson(resp)
-            for ident in resp:
-                if only_data:
-                    return resp[ident]
-                else:
-                    # get a dynamic instance of that class
-                    klass = globals()[entity]
-                    return klass(self, resp[ident])
-
 
     def get_vocabularies(self, code=None, start_with=None, count=None):
         """ Returns information about vocabulary
@@ -2206,7 +2173,34 @@ class Openbis:
     def get_vocabulary(self, code, only_data=False):
         """ Returns the details of a given vocabulary (including vocabulary terms)
         """
-        return self._get_any_entity(code, 'Vocabulary', only_data=only_data, method='getVocabularies')
+
+        entity = 'vocabulary'
+        method_name = get_method_for_entity(entity, 'get')
+        objectIds = _type_for_id(code.upper(), entity)
+        fetchopts = fetch_option[entity]
+        
+        request = {
+            "method": method_name,
+            "params": [
+                self.token,
+                [objectIds],
+                fetchopts
+            ],
+        }
+        resp = self._post_request(self.as_v3, request)
+
+        if len(resp) == 0:
+            raise ValueError('no {} found with identifier: {}'.format(entity, code))
+        else:
+            parse_jackson(resp)
+            for ident in resp:
+                if only_data:
+                    return resp[ident]
+                else:
+                    return Vocabulary(
+                        openbis_obj=self, 
+                        data=resp[ident]
+                    )
 
 
     def new_tag(self, code, description=None):
