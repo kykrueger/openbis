@@ -26,9 +26,9 @@ def validate_data(xls_byte_arrays, update_mode, xls_name):
 
 
 def get_property(key, defaultValue):
-    propertyConfigurer = CommonServiceProvider.getApplicationContext().getBean("propertyConfigurer");
-    properties = propertyConfigurer.getResolvedProps();
-    return properties.getProperty(key, defaultValue);
+    propertyConfigurer = CommonServiceProvider.getApplicationContext().getBean("propertyConfigurer")
+    properties = propertyConfigurer.getResolvedProps()
+    return properties.getProperty(key, defaultValue)
 
 
 def read_versioning_information(xls_version_filepath):
@@ -93,7 +93,8 @@ def process(context, parameters):
                     if code in versioning_information:
                         version = versioning_information[code]
                     else:
-                        version = creations_metadata.get_metadata_for(creation_type, creation).version if update_mode != "UPDATE_IF_EXISTS" else 0
+                        version = creations_metadata.get_metadata_for(creation_type,
+                                                                      creation).version if update_mode != "UPDATE_IF_EXISTS" else 0
                     versioning_information[code] = int(version)
     else:
         versioning_information = {}
@@ -101,12 +102,14 @@ def process(context, parameters):
             if creation_type in versionable_types:
                 for creation in creation_collection:
                     code = get_metadata_name_for(creation_type, creation)
-                    versioning_information[code] = creations_metadata.get_metadata_for(creation_type, creation).version if update_mode != "UPDATE_IF_EXISTS" else 0
+                    versioning_information[code] = creations_metadata.get_metadata_for(creation_type,
+                                                                                       creation).version if update_mode != "UPDATE_IF_EXISTS" else 0
 
     existing_elements = search_engine.find_all_existing_elements(creations)
     entity_kinds = search_engine.find_existing_entity_kind_definitions_for(creations)
     existing_vocabularies = search_engine.find_all_existing_vocabularies()
-    existing_unified_kinds = unify_properties_representation_of(creations, entity_kinds, existing_vocabularies, existing_elements)
+    existing_unified_kinds = unify_properties_representation_of(creations, entity_kinds, existing_vocabularies,
+                                                                existing_elements)
     creations = PropertiesLabelHandler.rewrite_property_labels_to_codes(creations, existing_unified_kinds)
     server_duplicates_handler = OpenbisDuplicatesHandler(creations, creations_metadata, existing_elements,
                                                          versioning_information, update_mode)
@@ -117,4 +120,3 @@ def process(context, parameters):
     all_versioning_information[xls_version_name] = versioning_information
     save_versioning_information(all_versioning_information, xls_version_filepath)
     return res
-
