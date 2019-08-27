@@ -190,7 +190,7 @@ var FormUtil = new function() {
 				$component.attr('required', '');
 			}
 			
-			$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text("Select a Storage"));
+			$component.append($("<option>").attr('value', '').attr('selected', '').text("Select a Storage"));
 			for(var idx = 0; idx < storageConfigurations.length; idx++) {
 				var storageConfiguration = storageConfigurations[idx];
 				var label = null;
@@ -246,7 +246,7 @@ var FormUtil = new function() {
 			$component.attr('required', '');
 		}
 		
-		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text("Select an " + ELNDictionary.sample + " type"));
+		$component.append($("<option>").attr('value', '').attr('selected', '').text("Select an " + ELNDictionary.sample + " type"));
 		for(var i = 0; i < sampleTypes.length; i++) {
 			var sampleType = sampleTypes[i];
 			
@@ -339,7 +339,7 @@ var FormUtil = new function() {
 	this.getPlainDropdown = function(mapVals, placeHolder) {
 		var $component = $("<select>", {class : 'form-control'});
 		if (placeHolder) {
-			$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
+			$component.append($("<option>").attr('value', '').attr('selected', '').text(placeHolder));
 		}
 		this.setValuesToComponent($component, mapVals);
 		return $component;
@@ -351,7 +351,7 @@ var FormUtil = new function() {
 		
 		$component.attr('required', '');
 		
-		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text('Select a dataset type'));
+		$component.append($("<option>").attr('value', '').attr('selected', '').text('Select a dataset type'));
 		
 		for (var i = 0; i < dataSetTypes.length; i++) {
 			var datasetType = dataSetTypes[i];
@@ -430,7 +430,7 @@ var FormUtil = new function() {
             		} else if(withExperiments) {
             			placeHolder = "Select an " + ELNDictionary.getExperimentDualName();
             		}
-            		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
+            		$component.append($("<option>").attr('value', '').attr('selected', '').text(placeHolder));
             		for(var pIdx = 0; pIdx < projectsToUse.length; pIdx++) {
             			var project = projectsToUse[pIdx];
             			var projectIdentifier = IdentifierUtil.getProjectIdentifier(project.spaceCode, project.code);
@@ -778,7 +778,7 @@ var FormUtil = new function() {
 			$component.attr('required', '');
 		}
 		
-		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(alt));
+		$component.append($("<option>").attr('value', '').attr('selected', '').text(alt));
 		for(var i = 0; i < terms.length; i++) {
 			$component.append($("<option>").attr('value',terms[i].code).text(terms[i].label));
 		}
