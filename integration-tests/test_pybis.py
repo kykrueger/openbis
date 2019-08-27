@@ -31,7 +31,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.FILE = 'TEST_FILE_' + str(randrange(100000))
 
         self.installOpenbis()
-        self.installPybis()
+        #self.installPybis()
         self.openbisController = self.createOpenbisController()
         self.openbisController.createTestDatabase("openbis")
         self.openbisController.allUp()
@@ -86,10 +86,9 @@ class TestCase(systemtest.testcase.TestCase):
     def _test_spaces(self, openbis):
         util.printWhoAmI()
         space = openbis.new_space(code=self.SPACE)
-        self.assertNone('space.permId', space.permId)
+        self.assertLength('space.permId', 0, space.permId)
         space.save()
         self.assertEquals('space.permId', self.SPACE, space.permId)
-        self.assertIn('spaces', openbis.spaces.df.code.values, self.SPACE)
         self.assertIn('spaces', openbis.get_spaces().df.code.values, self.SPACE)
         self.assertLength('spaces', 1, openbis.get_spaces(code=self.SPACE))
         self.assertNotNone('space', openbis.get_space(code=self.SPACE))
@@ -132,7 +131,7 @@ class TestCase(systemtest.testcase.TestCase):
         # should create new person
         person = openbis.new_person(self.USER_ID)
         self.assertEquals('person.userId', self.USER_ID, person.userId)
-        self.assertNone('person.permId', person.permId)
+        self.assertLength('person.permId', 0, person.permId)
         self.openbisController.addUser(self.USER_ID, 'password')
         person.save()
         person = openbis.get_person(self.USER_ID)
@@ -148,7 +147,7 @@ class TestCase(systemtest.testcase.TestCase):
         group_id = "test_group"
         group = openbis.new_group(group_id)
         self.assertEquals('group.code', group_id, group.code)
-        self.assertNone('group.permId', group.permId)
+        self.assertLength('group.permId', 0, group.permId)
         group = group.save()
         self.assertNotNone('group.permId', group.permId)
         # TODO: next lines cause the test _test_role_assignments() to fail.
@@ -172,10 +171,10 @@ class TestCase(systemtest.testcase.TestCase):
         samples = openbis.get_samples(code=self.SAMPLE_CODE_1)
         self.assertLength('samples with code ' + self.SAMPLE_CODE_1, 0, samples)
         sample = openbis.new_sample(type="UNKNOWN", code=self.SAMPLE_CODE_1, space=self.SPACE)
-        self.assertNone('sample.permId', sample.permId)
+        self.assertLength('sample.permId', 0, sample.permId)
         sample.save()
         self.assertNotNone('sample.permId', sample.permId)
-        openbis.delete_entity("Sample", sample.permId, "reason")
+        sample.delete("reason")
         samples = openbis.get_samples(code=self.SAMPLE_CODE_1)
         self.assertLength('samples with code ' + self.SAMPLE_CODE_1, 0, samples)
         self.assertIn('deletions ids', openbis.get_deletions().permId.values, sample.permId)
@@ -185,7 +184,7 @@ class TestCase(systemtest.testcase.TestCase):
         objects = openbis.get_objects(code=self.OBJECT_CODE_1)
         self.assertLength('objects with code ' + self.OBJECT_CODE_1, 0, objects)
         object = openbis.new_object(type="UNKNOWN", code=self.OBJECT_CODE_1, space=self.SPACE)
-        self.assertNone('object.permId', object.permId)
+        self.assertLength('object.permId', 0, object.permId)
         object.save()
         self.assertNotNone('object.permId', object.permId)
         object.delete("reason")
@@ -205,7 +204,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.assertEquals('experiment.project.identifier', '/DEFAULT/DEFAULT', experiment.project.identifier)
         # should create new experiment
         experiment = openbis.new_experiment(type="UNKNOWN", code=self.EXPERIMENT_CODE, project="DEFAULT")
-        self.assertNone('experiment.permId', experiment.permId)
+        self.assertLength('experiment.permId', 0, experiment.permId)
         experiment.save()
         self.assertNotNone('experiment.permId', experiment.permId)
 
@@ -220,7 +219,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.assertEquals('collection.project.identifier', '/DEFAULT/DEFAULT', collection.project.identifier)
         # should create new collection
         collection = openbis.new_collection(type="UNKNOWN", code=self.COLLECTION_CODE, project="DEFAULT")
-        self.assertNone('collection.permId', collection.permId)
+        self.assertLength('collection.permId', 0, collection.permId)
         collection.save()
         self.assertNotNone('collection.permId', collection.permId)
 
@@ -236,7 +235,7 @@ class TestCase(systemtest.testcase.TestCase):
         dataset = openbis.new_dataset(files=[self.FILE], type="UNKNOWN")
         dataset.sample = openbis.get_sample('/' + self.SPACE + '/' + self.SAMPLE_CODE_2)
         dataset.object = openbis.get_object('/' + self.SPACE + '/' + self.OBJECT_CODE_2)
-        self.assertNone('dataset.permId', dataset.permId)
+        self.assertLength('dataset.permId', 0, dataset.permId)
         dataset.save()
         self.assertNotNone('dataset.permId', dataset.permId)
         self.assertIn('dataset.file_list', dataset.file_list, "original/" + self.FILE)
@@ -263,7 +262,7 @@ class TestCase(systemtest.testcase.TestCase):
     # def _test_material_types(self, openbis):
     #     util.printWhoAmI()
     #     materialType = openbis.new_material_type(code=self.SPACE)
-    #     self.assertNone('materialType.permId', materialType.permId)
+    #     self.assertLength('materialType.permId', 0, materialType.permId)
     #     materialType.save()
     #
     #     material_types = openbis.get_material_types()
@@ -291,7 +290,7 @@ class TestCase(systemtest.testcase.TestCase):
     def _test_tags(self, openbis):
         util.printWhoAmI()
         tag = openbis.new_tag('TAG1')
-        self.assertNone('tag.permId', tag.permId)
+        self.assertLength('tag.permId', 0, tag.permId)
         tag.save()
         self.assertNotNone('tag.permId', tag.permId)
         self.assertIn('tag permIds', openbis.get_tags().df.permId.values, tag.permId)
