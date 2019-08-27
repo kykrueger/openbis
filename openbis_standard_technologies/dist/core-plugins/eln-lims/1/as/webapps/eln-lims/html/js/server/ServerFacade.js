@@ -1521,33 +1521,70 @@ function ServerFacade(openbisServer) {
 		});
 	}
 
+    this.getResultsWithBrokenEqualsFix = function(hackFixForBrokenEquals, results, operator) {
+        if (!operator) {
+            operator = "AND";
+        }
+
+        if(hackFixForBrokenEquals.length > 0 && results) {
+            var filteredResults = [];
+            var resultsValid = new Array(results.length);
+            for (var vIdx = 0; vIdx < resultsValid.length; vIdx++) {
+                switch(operator) {
+                    case "AND":
+                        resultsValid[vIdx] = true;
+                        break;
+                    case "OR":
+                        resultsValid[vIdx] = false;
+                        break;
+                }
+            }
+
+            for(var rIdx = 0; rIdx < results.length; rIdx++) {
+        	    var result = results[rIdx];
+        	    for(var fIdx = 0; fIdx < hackFixForBrokenEquals.length; fIdx++) {
+        		    if(	result &&
+        		        result.properties &&
+        			    result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value) {
+        			    switch(operator) {
+                            case "AND":
+                                resultsValid[rIdx] = resultsValid[rIdx] && true;
+                                break;
+                            case "OR":
+                                resultsValid[rIdx] = resultsValid[rIdx] || true;
+                                break;
+                        }
+        		    } else {
+                        switch(operator) {
+                            case "AND":
+                                resultsValid[rIdx] = resultsValid[rIdx] && false;
+                                break;
+                            case "OR":
+                                resultsValid[rIdx] = resultsValid[rIdx] || false;
+                                break;
+                        }
+        	        }
+                }
+            }
+
+            for(var rIdx = 0; rIdx < results.length; rIdx++) {
+        	    if(resultsValid[rIdx]) {
+        	        filteredResults.push(results[rIdx]);
+        	    }
+            }
+
+            results = filteredResults;
+        }
+
+        return results;
+    }
+
 	this.searchForEntityAdvanced = function(advancedSearchCriteria, advancedFetchOptions, callback, criteriaClass, fetchOptionsClass, searchMethodName) {
+		var _this = this;
 		var searchFunction = function(searchCriteria, fetchOptions, hackFixForBrokenEquals) {
 			mainController.openbisV3[searchMethodName](searchCriteria, fetchOptions)
 			.done(function(apiResults) {
-				//
-				// Fix For broken equals PART 2
-				//
-				var results = apiResults.objects;
-				var filteredResults = [];
-				if(hackFixForBrokenEquals.length > 0 && results) {
-					for(var rIdx = 0; rIdx < results.length; rIdx++) {
-						var result = results[rIdx];
-						for(var fIdx = 0; fIdx < hackFixForBrokenEquals.length; fIdx++) {
-							if(	result && 
-								result.properties && 
-								result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value) {
-								filteredResults.push(result);
-							}
-						}
-					}
-				} else {
-					filteredResults = results;
-				}
-				apiResults.objects = filteredResults;
-				//
-				// Fix For broken equals PART 2 - END
-				//
+				apiResults.objects = _this.getResultsWithBrokenEqualsFix(hackFixForBrokenEquals, apiResults.objects, advancedSearchCriteria.logicalOperator);
 				callback(apiResults);
 			})
 			.fail(function(result) {
@@ -1870,14 +1907,14 @@ function ServerFacade(openbisServer) {
 		var localReference = this;
 		
 		//
-		// Fix For broken equals PART 1
+		// Collection Rules for broken equals Fix
 		// Currently the back-end matches whole words instead doing a standard EQUALS
 		// This fixes some most used cases for the storage system, but other use cases that use subcriterias can fail
 		//
 		var hackFixForBrokenEquals = [];
 		if(sampleCriteria.matchClauses) {
 			for(var cIdx = 0; cIdx < sampleCriteria.matchClauses.length; cIdx++) {
-				if(sampleCriteria.matchClauses[cIdx]["@type"] === "PropertyMatchClause" && 
+				if(sampleCriteria.matchClauses[cIdx]["@type"] === "PropertyMatchClause" &&
 						sampleCriteria.matchClauses[cIdx]["compareMode"] === "EQUALS") {
 					hackFixForBrokenEquals.push({
 						propertyCode : sampleCriteria.matchClauses[cIdx].propertyCode,
@@ -1889,32 +1926,11 @@ function ServerFacade(openbisServer) {
 		//
 		// Fix For broken equals PART 1 - END
 		//
-		
+		var _this = this;
 		this.openbisServer.searchForSamplesWithFetchOptions(sampleCriteria, options, function(data) {
 			var results = localReference.getInitializedSamples(data.result);
-			//
-			// Fix For broken equals PART 2
-			//
-			var filteredResults = [];
-			if(hackFixForBrokenEquals.length > 0 && results) {
-				for(var rIdx = 0; rIdx < results.length; rIdx++) {
-					var result = results[rIdx];
-					for(var fIdx = 0; fIdx < hackFixForBrokenEquals.length; fIdx++) {
-						if(	result && 
-							result.properties && 
-							result.properties[hackFixForBrokenEquals[fIdx].propertyCode] === hackFixForBrokenEquals[fIdx].value) {
-							filteredResults.push(result);
-						}
-					}
-				}
-			} else {
-				filteredResults = results;
-			}
-			//
-			// Fix For broken equals PART 2 - END
-			//
-			
-			callbackFunction(filteredResults);
+			results = _this.getResultsWithBrokenEqualsFix(hackFixForBrokenEquals, results, "AND");
+			callbackFunction(results);
 		});
 	}
 	

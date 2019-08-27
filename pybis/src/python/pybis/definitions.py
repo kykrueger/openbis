@@ -211,8 +211,8 @@ def openbis_definitions(entity):
             "multi": "".split(),
             "identifier": "tagId",
         },
-        "Vocabulary": {
-            "attrs_new": "code description managedInternally internalNameSpace chosenFromList urlTemplate".split(),
+        "vocabulary": {
+            "attrs_new": "code description managedInternally internalNameSpace chosenFromList urlTemplate terms".split(),
             "attrs_up": "description managedInternally internalNameSpace chosenFromList urlTemplate".split(),
             "attrs": "code description managedInternally internalNameSpace chosenFromList urlTemplate registrator registrationDate modifier modificationDate".split(),
             "multi": "".split(),
@@ -487,7 +487,7 @@ def get_type_for_entity(entity, action):
 def get_method_for_entity(entity, action):
     action = action.lower()
 
-    if entity == "Vocabulary":
+    if entity == "vocabulary":
         return "{}Vocabularies".format(action)
     
     cap_entity = entity[:1].upper() + entity[1:]

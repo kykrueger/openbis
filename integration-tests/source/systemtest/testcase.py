@@ -280,10 +280,12 @@ class TestCase(object):
         return ScreeningTestClient(self, installPath)
 
     def installPybis(self):
-        zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'pybis-')
+        #zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'pybis-')
         installPath = "%s/pybis" % self.playgroundFolder
-        util.unzip(zipFile, installPath)
-        util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of pybis failed.")
+        #util.unzip(zipFile, installPath)
+        #util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of pybis failed.")
+        # install the local pybis in editable-mode (-e)
+        util.executeCommand(['pip', 'install', '-e', '../pybis/src/python'], "Installation of pybis failed.")
 
     def installObis(self):
         zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'obis-')
