@@ -281,18 +281,19 @@ class TestCase(object):
 
     def installPybis(self):
         #zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'pybis-')
-        installPath = "%s/pybis" % self.playgroundFolder
+        #installPath = "%s/pybis" % self.playgroundFolder
         #util.unzip(zipFile, installPath)
         #util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of pybis failed.")
         # install the local pybis in editable-mode (-e)
         util.executeCommand(['pip', 'install', '-e', '../pybis/src/python'], "Installation of pybis failed.")
 
     def installObis(self):
-        zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'obis-')
-        installPath = "%s/obis" % self.playgroundFolder
-        util.unzip(zipFile, installPath)
-        print('pip install ' + installPath + '/src/python')
-        util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of obis failed.")
+        #zipFile = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'obis-')
+        #installPath = "%s/obis" % self.playgroundFolder
+        #util.unzip(zipFile, installPath)
+        #print('pip install ' + installPath + '/src/python')
+        #util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of obis failed.")
+        util.executeCommand(['pip', 'install', '-e', '../pybis/src/python'], "Installation of pybis failed.")
 
 
     def getTemplatesFolder(self):
