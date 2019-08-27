@@ -39,6 +39,27 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	}
 
 	this.save = function(settings, widgetSettings) {
+	    if(widgetSettings) { // Validate Widget Settings
+            for(var idx = 0; idx < widgetSettings.length; idx++) {
+                var widget = widgetSettings[idx];
+                var property = profile.getPropertyType(widget["Property Type"]);
+                switch(widget.Widget) {
+                    case "Word Processor":
+                        if(property.dataType !== "MULTILINE_VARCHAR") {
+                            Util.showUserError("Word Processor only works with MULTILINE_VARCHAR data type.", function() {}, true);
+                            return;
+                        }
+                        break;
+                    case "Spreadsheet":
+                        if(property.dataType !== "XML") {
+                            Util.showUserError("Spreadsheet only works with XML data type.", function() {}, true);
+                            return;
+                        }
+                        break;
+                }
+            }
+	    }
+
 	    var _this = this;
 	    var onSave = function() {
 	        _this._settingsManager.validateAndsave(_this._settingsFormModel.settingsSample, settings, (function() {

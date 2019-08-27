@@ -138,6 +138,11 @@ public class ServiceProvider
         return ((IApplicationServerApi) getApplicationContext().getBean(V3_APPLICATION_SERVICE_BEAN));
     }
 
+    public static IDataStoreServerApi getV3DataStoreService()
+    {
+        return ((IDataStoreServerApi) getApplicationContext().getBean(DataStoreServerApi.INTERNAL_SERVICE_NAME));
+    }
+
     public static IGeneralInformationService getGeneralInformationService()
     {
         return ((IGeneralInformationService) getApplicationContext().getBean(

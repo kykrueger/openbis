@@ -389,6 +389,13 @@ function MainController(profile) {
 					newResearchCollectionExportView.init(researchCollectionExportViews);
 					this.currentView = newResearchCollectionExportView;
 					break;
+				case "showZenodoExportPage":
+					document.title = "Zenodo Export Builder";
+					var newZenodoExportView = new ZenodoExportController(this);
+					var zenodoExportViews = this._getNewViewModel(true, true, false);
+					newZenodoExportView.init(zenodoExportViews);
+					this.currentView = newZenodoExportView;
+					break;
 				case "showLabNotebookPage":
 					document.title = "Lab Notebook";
 					var newView = new LabNotebookController(this);
