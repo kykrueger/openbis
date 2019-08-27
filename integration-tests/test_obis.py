@@ -41,7 +41,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.OPENBIS_URL = 'https://localhost:8443/openbis'
 
         self.installOpenbis()
-        # self.installPybis()
+        self.installPybis()
         self.installObis()
         self.openbisController = self.createOpenbisController()
         self.openbisController.createTestDatabase("openbis")
