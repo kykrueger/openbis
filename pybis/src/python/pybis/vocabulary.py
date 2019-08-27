@@ -1,14 +1,18 @@
 from .utils import VERBOSE
 from .openbis_object import OpenBisObject 
 from .attribute import AttrHolder
-from .definitions import openbis_definitions, fetch_option
+from .definitions import openbis_definitions, fetch_option, get_type_for_entity, get_method_for_entity
 import json
 
-class Vocabulary(OpenBisObject):
+class Vocabulary(
+    OpenBisObject,
+    entity='vocabulary',
+    single_item_method_name='get_vocabulary'
+):
 
-    def __init__(self, openbis_obj, data=None, terms=None, **kwargs):
+    def __init__old_(self, openbis_obj, data=None, terms=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Vocabulary')
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'vocabulary')
 
         if data is not None:
             self._set_data(data)
@@ -56,10 +60,41 @@ class Vocabulary(OpenBisObject):
             "label": label,
             "description": description
         })
+
+    def delete(self, reason):
+        """Delete this vocabulary
+        """
+        if not self.data:
+            return
+
+        delete_type = get_type_for_entity('vocabulary', 'delete')
+        method = get_method_for_entity('vocabulary', 'delete')
+
+        request = {
+           "method": method,
+           "params": [
+                self.openbis.token,
+                [{
+                    "permId": self.code,
+                    "@type": "as.dto.vocabulary.id.VocabularyPermId"
+                }],
+                {
+                    "reason": reason,
+                    **delete_type
+                }
+            ]
+        }
+        resp = self.openbis._post_request(self.openbis.as_v3, request)
+        if VERBOSE: print(
+            "{} {} successfully deleted.".format(
+                self.entity,
+                self.code
+            )
+        )
         
 
     def save(self):
-        terms = self.__dict__['terms']
+        terms = self._terms
         for term in terms:
             term["@type"]= "as.dto.vocabulary.create.VocabularyTermCreation"
 

@@ -1,0 +1,17 @@
+# add the source folder to the PYTHONPATH:
+
+export PYTHONPATH=/Users/vermeul/openbis/integration-tests/source:/Users/vermeul/openbis/integration-tests/sourceTest:$PYTHONPATH
+
+# make sure you test the develop-version of pybis or obis
+
+cd ~/openbis/pybis/src/python
+pip install -e .
+
+# ... and prevent this test-suite to install pybis from some source
+vim openbis/integration-tests/source/test_pybis.py
+
+# on line 34, make sure that
+
+    #self.installPybis()
+
+# is commented out, otherwise your installation is being overwritten

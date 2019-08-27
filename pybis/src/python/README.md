@@ -194,11 +194,13 @@ project.download_attachments()
 
 project.code
 project.description
-project.registrator
-project.registrationDate
-project.modifier
-project.modificationDate
+# ... and many more
 project.attrs.all()                   # returns a dict containing all attributes
+
+project.freeze = True
+project.freezeForExperiments = True
+project.freezeForSamples = True
+
 ```
 
 ## Samples
@@ -300,6 +302,12 @@ samples = o.get_samples(
 )
 samples.df                            # returns a pandas DataFrame object
 samples.get_datasets(type='ANALYZED_DATA')
+
+sample.freeze = True
+sample.freezeForComponents = True
+sample.freezeForChildren = True
+sample.freezeForParents = True
+sample.freezeForDataSets = True
 ```
 
 ## Experiments
@@ -346,6 +354,10 @@ exp.registrator
 exp.registrationDate
 exp.modifier
 exp.modificationDate
+
+exp.freeze = True
+exp.freezeForDataSets = True
+exp.freezeForSamples = True
 ```
 
 ## Datasets
@@ -442,6 +454,12 @@ datasets.df                       # get a pandas dataFrame object
 for dataset in datasets:
     print(dataset.permID)
     dataset.delete('give me a reason')
+
+ds.freeze = True
+ds.freezeForChildren = True
+ds.freezeForParents = True
+ds.freezeForComponents = True
+ds.freezeForContainers = True
 ```
 
 ## Semantic Annotations
@@ -501,7 +519,8 @@ o.get_tag('TAG_Name')
 
 tag.get_experiments()
 tag.get_samples()
-tag.delete()
+tag.get_owner()   # returns a person object
+tag.delete('why?')
 ```
 
 ## Vocabulary and VocabularyTerms
