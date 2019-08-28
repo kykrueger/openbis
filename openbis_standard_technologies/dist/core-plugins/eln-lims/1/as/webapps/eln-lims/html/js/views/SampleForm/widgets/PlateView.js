@@ -803,7 +803,7 @@ function PlateView(plateController, plateModel) {
 			$component.attr('disabled', '');
 		}
 		
-		var $defaultOption = $("<option>").attr('value', '').text('Select an annotation');
+		var $defaultOption = $("<option>").attr('value', '').attr('disabled', '').text('Select an annotation');
 		if(!selectedAnnotation) {
 			$defaultOption.attr('selected', '');
 		}
