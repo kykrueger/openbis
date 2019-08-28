@@ -351,7 +351,7 @@ var FormUtil = new function() {
 		
 		$component.attr('required', '');
 		
-		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text('Select a dataset type'));
+		$component.append($("<option>").attr('value', '').attr('selected', '').text('Select a dataset type'));
 		
 		for (var i = 0; i < dataSetTypes.length; i++) {
 			var datasetType = dataSetTypes[i];
@@ -778,7 +778,7 @@ var FormUtil = new function() {
 			$component.attr('required', '');
 		}
 		
-		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(alt));
+		$component.append($("<option>").attr('value', '').attr('selected', '').text(alt));
 		for(var i = 0; i < terms.length; i++) {
 			$component.append($("<option>").attr('value',terms[i].code).text(terms[i].label));
 		}
