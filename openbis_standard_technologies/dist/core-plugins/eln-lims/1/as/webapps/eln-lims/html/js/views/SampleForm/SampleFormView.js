@@ -361,6 +361,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                                     sample = results.objects[rIdx];
                                 }
                             }
+                            _this._sampleFormModel.sample.properties = sample.properties;
 
                             if(_this._sampleFormModel.views.header) {
                                 _this._sampleFormModel.views.header.empty();
