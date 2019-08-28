@@ -293,7 +293,7 @@ class TestCase(object):
         #util.unzip(zipFile, installPath)
         #print('pip install ' + installPath + '/src/python')
         #util.executeCommand(['pip', 'install', installPath + '/src/python'], "Installation of obis failed.")
-        util.executeCommand(['pip', 'install', '-e', '../pybis/src/python'], "Installation of pybis failed.")
+        util.executeCommand(['pip', 'install', '-e', '../obis/src/python'], "Installation of pybis failed.")
 
 
     def getTemplatesFolder(self):
