@@ -54,7 +54,12 @@ function ServerFacade(openbisServer) {
 			if(response.error.message === "Session no longer available. Please login again.") {
 				isError = true;
 				Util.showError(response.error.message, function() {
-					location.reload(true);
+					var logoutTemplate = mainController.profile.singleSignOnUrlLogoutTemplate;
+					if (logoutTemplate) {
+						window.location = logoutTemplate.replace("${host}", window.location.hostname);
+					} else {
+						location.reload(true);
+					}
 				}, true);
 			} else if(response.error === "Request failed: ") {
 				Util.showError(response.error + "openBIS or DSS cannot be reached. Please try again or contact your admin.", null, true, false, true);

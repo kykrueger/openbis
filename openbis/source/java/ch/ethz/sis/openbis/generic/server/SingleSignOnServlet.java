@@ -108,6 +108,7 @@ public class SingleSignOnServlet extends AbstractServlet
     @RequestMapping({ SERVLET_NAME })
     protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
     {
+        operationLog.info("handle sso event");
         String sessionId = getHeader(request, SESSION_ID_KEY, DEFAULT_SESSION_ID_KEY);
         String sessionToken = sessionTokenBySessionId.get(sessionId);
         String returnURL = request.getParameter("return");
@@ -148,7 +149,7 @@ public class SingleSignOnServlet extends AbstractServlet
         applicationServerApi.registerUser(sessionToken);
         sessionTokenBySessionId.put(sessionId, sessionToken);
 
-        operationLog.info("Session token " + sessionToken + " created for SSO session id " + sessionId);
+        operationLog.info("Session token " + sessionToken + " created for SSO session id " + sessionId + " (" + sessionTokenBySessionId.size() + ")");
         redirectToApp(request, response, sessionToken);
     }
 
@@ -156,6 +157,7 @@ public class SingleSignOnServlet extends AbstractServlet
             throws IOException
     {
         operationLog.info("log out session id: " + sessionId);
+        sessionTokenBySessionId.remove(sessionId);
         if (sessionToken != null)
         {
             Session session = sessionManager.tryGetSession(sessionToken);
