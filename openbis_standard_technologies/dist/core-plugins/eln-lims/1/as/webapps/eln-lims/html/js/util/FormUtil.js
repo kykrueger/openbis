@@ -282,7 +282,7 @@ var FormUtil = new function() {
 			$component.attr("required", "");
 		}
 
-		var $emptyOption = $("<option>").attr("value", "").text("Select an " + ELNDictionary.getExperimentDualName() + " type");
+		var $emptyOption = $("<option>").attr("value", "").attr('disabled', '').text("Select an " + ELNDictionary.getExperimentDualName() + " type");
 		if (!defaultValue || defaultValue === "") {
 			$emptyOption.attr("selected", "");
 		}

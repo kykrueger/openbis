@@ -82,12 +82,15 @@ function ProjectFormView(projectFormController, projectFormModel) {
 					var $experimentTypeDropdown = FormUtil.getInlineExperimentTypeDropdown("new-experiment-type-dropdown", true, defaultValue);
 
 					var $createExpBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-						// var experimentTypeCode = $experimentTypeDropdown.value;
 						var experimentTypeCode = $("#new-experiment-type-dropdown")[0].value;
-						_this._projectFormController.createNewExperiment(experimentTypeCode);
+
+						if (experimentTypeCode && experimentTypeCode !== "") {
+							_this._projectFormController.createNewExperiment(experimentTypeCode);
+						}
 					});
+
 					toolbarModel.push({ component: $createExpBtn, tooltip: "Create " + experimentKindName });
-					toolbarModel.push({ component: $experimentTypeDropdown, tooltip: "Type of the " + experimentKindName + " to create" })
+					toolbarModel.push({ component: $experimentTypeDropdown, tooltip: "Type of the " + experimentKindName + " to create" });
 				}
 			}
 			if(_this._allowedToEdit()) {
