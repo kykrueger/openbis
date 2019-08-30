@@ -779,7 +779,7 @@ var FormUtil = new function() {
 		}
 		
 		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(alt));
-		$component.append($("<option>").attr('value', '').text(''));
+		$component.append($("<option>").attr('value', '').text('(empty)'));
 
 		for(var i = 0; i < terms.length; i++) {
 			$component.append($("<option>").attr('value',terms[i].code).text(terms[i].label));
