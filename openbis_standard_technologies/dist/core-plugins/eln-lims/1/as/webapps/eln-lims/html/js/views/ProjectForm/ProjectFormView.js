@@ -67,11 +67,13 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				var isDefaultExperimentPresent = mainController.profile.getExperimentTypeForExperimentTypeCode("DEFAULT_EXPERIMENT") != null;
 				if(isDefaultExperimentPresent) {
 					var newExperimentTypeDropdownId = "new-experiment-type-dropdown";
-					var defaultValueKey = entityPath + "-FORM-" + newExperimentTypeDropdownId;
+					var defaultValueKey = entityPath.text() + "-FORM-" + newExperimentTypeDropdownId;
 
 					this._projectFormController.getDefaultSpaceValue(defaultValueKey, function (settingsValue) {
-						var defaultValue = settingsValue;
-						if (profile.isInventorySpace(_this._projectFormModel.project.spaceCode)) {
+						var defaultValue;
+						if (settingsValue) {
+							defaultValue = settingsValue;
+						} else if (profile.isInventorySpace(_this._projectFormModel.project.spaceCode)) {
 							var experimentType = profile.getExperimentTypeForExperimentTypeCode(_this._projectFormModel.project.spaceCode);
 							if (experimentType) {
 								defaultValue = _this._projectFormModel.project.spaceCode;
@@ -82,7 +84,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 							defaultValue = "DEFAULT_EXPERIMENT";
 						}
 
-						$("option[value=" + defaultValue + "]").attr("selected", "");
+						$("option[value=" + defaultValue + "]").prop("selected", true);
 					});
 
 					var $experimentTypeDropdown = FormUtil.getInlineExperimentTypeDropdown(newExperimentTypeDropdownId, true);
@@ -96,6 +98,10 @@ function ProjectFormView(projectFormController, projectFormModel) {
 
 					toolbarModel.push({ component: $createExpBtn, tooltip: "Create " + experimentKindName });
 					toolbarModel.push({ component: $experimentTypeDropdown, tooltip: "Type of the " + experimentKindName + " to create" });
+
+					$experimentTypeDropdown.change(function(event) {
+						_this._projectFormController.setDefaultSpaceValue(defaultValueKey, $(event.target).val());
+					});
 				}
 			}
 			if(_this._allowedToEdit()) {
