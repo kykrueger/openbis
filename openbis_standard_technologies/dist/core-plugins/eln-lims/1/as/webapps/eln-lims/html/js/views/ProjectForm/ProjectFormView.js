@@ -66,23 +66,28 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				//Create Experiment
 				var isDefaultExperimentPresent = mainController.profile.getExperimentTypeForExperimentTypeCode("DEFAULT_EXPERIMENT") != null;
 				if(isDefaultExperimentPresent) {
-					var defaultValue = null;
+					var newExperimentTypeDropdownId = "new-experiment-type-dropdown";
+					var defaultValueKey = entityPath + "-FORM-" + newExperimentTypeDropdownId;
 
-					if (profile.isInventorySpace(_this._projectFormModel.project.spaceCode)) {
-						var experimentType = profile.getExperimentTypeForExperimentTypeCode(_this._projectFormModel.project.spaceCode);
-						if (experimentType) {
-							defaultValue = _this._projectFormModel.project.spaceCode;
+					this._projectFormController.getDefaultSpaceValue(defaultValueKey, function (settingsValue) {
+						var defaultValue = settingsValue;
+						if (profile.isInventorySpace(_this._projectFormModel.project.spaceCode)) {
+							var experimentType = profile.getExperimentTypeForExperimentTypeCode(_this._projectFormModel.project.spaceCode);
+							if (experimentType) {
+								defaultValue = _this._projectFormModel.project.spaceCode;
+							} else {
+								defaultValue = "";
+							}
 						} else {
-							defaultValue = "";
+							defaultValue = "DEFAULT_EXPERIMENT";
 						}
-					} else {
-						defaultValue = "DEFAULT_EXPERIMENT";
-					}
 
-					var $experimentTypeDropdown = FormUtil.getInlineExperimentTypeDropdown("new-experiment-type-dropdown", true, defaultValue);
+						$("option[value=" + defaultValue + "]").attr("selected", "");
+					});
 
+					var $experimentTypeDropdown = FormUtil.getInlineExperimentTypeDropdown(newExperimentTypeDropdownId, true);
 					var $createExpBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-						var experimentTypeCode = $("#new-experiment-type-dropdown")[0].value;
+						var experimentTypeCode = $("#" + newExperimentTypeDropdownId)[0].value;
 
 						if (experimentTypeCode && experimentTypeCode !== "") {
 							_this._projectFormController.createNewExperiment(experimentTypeCode);
