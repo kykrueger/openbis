@@ -17,10 +17,10 @@
 package ch.ethz.sis.openbis.generic.server;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletContext;
@@ -109,6 +109,7 @@ public class SingleSignOnServlet extends AbstractServlet
     protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
     {
         operationLog.info("handle sso event");
+        removeStaleSessions();
         String sessionId = getHeader(request, SESSION_ID_KEY, DEFAULT_SESSION_ID_KEY);
         String sessionToken = sessionTokenBySessionId.get(sessionId);
         String returnURL = request.getParameter("return");
@@ -118,6 +119,18 @@ public class SingleSignOnServlet extends AbstractServlet
         } else
         {
             handleLogIn(request, response, sessionId, sessionToken);
+        }
+    }
+    
+    private void removeStaleSessions()
+    {
+        for (Entry<String, String> entry : new ArrayList<>(sessionTokenBySessionId.entrySet()))
+        {
+            String sessionToken = entry.getValue();
+            if (sessionManager.tryGetSession(sessionToken) == null)
+            {
+                sessionTokenBySessionId.remove(entry.getKey());
+            }
         }
     }
 

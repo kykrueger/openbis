@@ -107,12 +107,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         
         var logoutButton = FormUtil.getButtonWithIcon("glyphicon-off", function() {
             $('body').addClass('bodyLogin');
-            var logoutTemplate = mainController.profile.singleSignOnUrlLogoutTemplate;
-            if (logoutTemplate) {
-                window.location = logoutTemplate.replace("${host}", window.location.hostname);
-            } else {
-                mainController.serverFacade.logout();
-            }
+            mainController.serverFacade.logout();
          });
         
         var $searchForm = $("<form>", { "onsubmit": "return false;" })
