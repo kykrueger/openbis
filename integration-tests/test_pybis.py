@@ -31,7 +31,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.FILE = 'TEST_FILE_' + str(randrange(100000))
 
         self.installOpenbis()
-        #self.installPybis()
+        self.installPybis()
         self.openbisController = self.createOpenbisController()
         self.openbisController.createTestDatabase("openbis")
         self.openbisController.allUp()

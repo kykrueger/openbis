@@ -1176,7 +1176,17 @@ var FormUtil = new function() {
 	}
 
 	this._getDropboxFolderName = function(nameElements, dataSetTypeCode, name) {
-		var folderName = nameElements.join("+");
+		var folderName = "";
+
+		for(var nIdx = 0; nIdx < nameElements.length; nIdx++) {
+		    if(nameElements[nIdx]) {
+		        if(nIdx !== 0) {
+		            folderName += "+";
+		        }
+		        folderName += nameElements[nIdx];
+		    }
+		}
+
 		for (var optionalPart of [dataSetTypeCode, name]) {
 			if (optionalPart) {
 				folderName += "+" + optionalPart;				

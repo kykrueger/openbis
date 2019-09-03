@@ -106,9 +106,14 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         searchElement.css({"margin-right" : "2px"});
         
         var logoutButton = FormUtil.getButtonWithIcon("glyphicon-off", function() {
-            $('body').addClass('bodyLogin');
-            mainController.serverFacade.logout();
-        });
+            $('body').addClass('bodyLogin');
+            var logoutTemplate = mainController.profile.singleSignOnUrlLogoutTemplate;
+            if (logoutTemplate) {
+                window.location = logoutTemplate.replace("${host}", window.location.hostname);
+            } else {
+                mainController.serverFacade.logout();
+            }
+         });
         
         var $searchForm = $("<form>", { "onsubmit": "return false;" })
                             .append(logoutButton)
@@ -203,7 +208,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 sortField = "displayName";
             }
             // descending order for registrationDate
-            if (sortField == "registrationDate") {
+            if (sortField === "registrationDate") {
                 return naturalSort(resultB[sortField], resultA[sortField]);
             }
             return naturalSort(resultA[sortField], resultB[sortField]);
@@ -226,8 +231,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         }
         
         if(profile.mainMenu.showStock) {
-            var inventoryLink = _this.getLinkForNode("Stock", "STOCK", "showStockPage", null);
-            treeModel.push({ displayName: "Stock", title : inventoryLink, entityType: "STOCK", key : "STOCK", folder : true, lazy : true, view : "showStockPage", icon: "fa fa-shopping-cart" });
+            var stockLink = _this.getLinkForNode("Stock", "STOCK", "showStockPage", null);
+            treeModel.push({ displayName: "Stock", title : stockLink, entityType: "STOCK", key : "STOCK", folder : true, lazy : true, view : "showStockPage", icon: "fa fa-shopping-cart" });
         }
         
         var treeModelUtils = [];
@@ -241,8 +246,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         }
         
         if(profile.mainMenu.showUserProfile && profile.isFileAuthenticationService && profile.isFileAuthenticationUser) {
-            var settingsLink = _this.getLinkForNode("User Profile", "USER_PROFILE", "showUserProfilePage", null);
-            treeModelUtils.push({ title : settingsLink, entityType: "USER_PROFILE", key : "USER_PROFILE", folder : false, lazy : false, view : "showUserProfilePage", icon : "glyphicon glyphicon-user" });
+            var userProfileLink = _this.getLinkForNode("User Profile", "USER_PROFILE", "showUserProfilePage", null);
+            treeModelUtils.push({ title : userProfileLink, entityType: "USER_PROFILE", key : "USER_PROFILE", folder : false, lazy : false, view : "showUserProfilePage", icon : "glyphicon glyphicon-user" });
         }
 
         if(profile.mainMenu.showDrawingBoard) {
@@ -264,19 +269,38 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             var advancedSearchLink = _this.getLinkForNode("Advanced Search", "ADVANCED_SEARCH", "showAdvancedSearchPage", null);
             treeModelUtils.push({ displayName: "Advanced Search", title : advancedSearchLink, entityType: "ADVANCED_SEARCH", key : "ADVANCED_SEARCH", folder : false, lazy : false, view : "showAdvancedSearchPage", icon : "glyphicon glyphicon-search" });
         }
-        
-        if(profile.mainMenu.showExports) {
-            var exportBuilderLink = _this.getLinkForNode("Export Builder", "EXPORT_BUILDER", "showExportTreePage", null);
-            treeModelUtils.push({ displayName: "Export Builder", title : exportBuilderLink, entityType: "EXPORT_BUILDER", key : "EXPORT_BUILDER",
-                    folder : false, lazy : false, view : "showExportTreePage", icon : "glyphicon glyphicon-export" });
-        }
 
-        if (profile.mainMenu.showResearchCollectionExportBuilder) {
-            var researchCollectionExportBuilderLink = _this.getLinkForNode("Research Collection Export Builder", "RESEARCH_COLLECTION_EXPORT_BUILDER",
-                "showResearchCollectionExportPage", null);
-            treeModelUtils.push({ displayName: "Research Collection Export Builder", title: researchCollectionExportBuilderLink,
-                entityType: "RESEARCH_COLLECTION_EXPORT_BUILDER", key: "RESEARCH_COLLECTION_EXPORT_BUILDER", folder: false, lazy: false,
-                view: "showResearchCollectionExportPage" });
+        if (profile.mainMenu.showExports || profile.mainMenu.showResearchCollectionExportBuilder || profile.mainMenu.showZenodoExportBuilder) {
+            var treeModelExports = [];
+
+            if (profile.mainMenu.showExports) {
+                var exportBuilderLink = _this.getLinkForNode("Export to ZIP", "EXPORT_TO_ZIP", "showExportTreePage", null);
+                treeModelExports.push({
+                    displayName: "Export to ZIP", title: exportBuilderLink, entityType: "EXPORT_TO_ZIP", key: "EXPORT_TO_ZIP",
+                    folder: false, lazy: false, view: "showExportTreePage", icon: "glyphicon glyphicon-export"
+                });
+            }
+
+            if (profile.mainMenu.showResearchCollectionExportBuilder) {
+                var researchCollectionExportBuilderLink = _this.getLinkForNode("Export to Research Collection",
+                        "EXPORT_TO_RESEARCH_COLLECTION", "showResearchCollectionExportPage", null);
+                treeModelExports.push({
+                    displayName: "Export to Research Collection", title: researchCollectionExportBuilderLink,
+                    entityType: "EXPORT_TO_RESEARCH_COLLECTION", key: "EXPORT_TO_RESEARCH_COLLECTION", folder: false, lazy: false,
+                    view: "showResearchCollectionExportPage", icon: "./img/research-collection-icon.png"
+                });
+            }
+
+            if (profile.mainMenu.showZenodoExportBuilder) {
+                var zenodoExportBuilderLink = _this.getLinkForNode("Export to Zenodo", "EXPORT_TO_ZENODO", "showZenodoExportPage", null);
+                treeModelExports.push({
+                    displayName: "Export to Zenodo", title: zenodoExportBuilderLink, entityType: "EXPORT_TO_ZENODO",
+                    key: "EXPORT_TO_ZENODO", folder: false, lazy: false, view: "showZenodoExportPage", icon: "glyphicon glyphicon-export"
+                });
+            }
+
+            treeModelUtils.push({ displayName: "Exports", title: "Exports", entityType: "EXPORTS", key: "EXPORTS", folder: true, lazy: false,
+                    expanded: false, children: treeModelExports, view: "showBlancPage", icon: "glyphicon glyphicon-export" });
         }
         
         if(profile.mainMenu.showStorageManager) {
@@ -299,26 +323,26 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             treeModelUtils.push({ displayName: "Settings", title : settingsLink, entityType: "SETTINGS", key : "SETTINGS", folder : false, lazy : false, view : "showSettingsPage", icon : "glyphicon glyphicon-cog" });
         }
 
-        treeModel.push({ displayName: "Utilities", title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, icon : "glyphicon glyphicon-wrench" });
+        treeModel.push({ displayName: "Utilities", title : "Utilities", entityType: "UTILITIES", key : "UTILITIES", folder : true, lazy : false, expanded : true, children : treeModelUtils, view: "showBlancPage", icon : "glyphicon glyphicon-wrench" });
         treeModel.push({ displayName: "About", title : "About", entityType: "ABOUT", key : "ABOUT", folder : false, lazy : false, view : "showAbout", icon : "glyphicon glyphicon-info-sign" });
         
         var glyph_opts = {
-                map: {
-                  doc: "glyphicon glyphicon-file",
-                  docOpen: "glyphicon glyphicon-file",
-                  checkbox: "glyphicon glyphicon-unchecked",
-                  checkboxSelected: "glyphicon glyphicon-check",
-                  checkboxUnknown: "glyphicon glyphicon-share",
-                  dragHelper: "glyphicon glyphicon-play",
-                  dropMarker: "glyphicon glyphicon-arrow-right",
-                  error: "glyphicon glyphicon-warning-sign",
-                  expanderClosed: "glyphicon glyphicon-plus-sign",
-                  expanderLazy: "glyphicon glyphicon-plus-sign",  // glyphicon-expand
-                  expanderOpen: "glyphicon glyphicon-minus-sign",  // glyphicon-collapse-down
-                  folder: "glyphicon glyphicon-folder-close",
-                  folderOpen: "glyphicon glyphicon-folder-open",
-                  loading: "glyphicon glyphicon-refresh"
-                }
+            map: {
+                doc: "glyphicon glyphicon-file",
+                docOpen: "glyphicon glyphicon-file",
+                checkbox: "glyphicon glyphicon-unchecked",
+                checkboxSelected: "glyphicon glyphicon-check",
+                checkboxUnknown: "glyphicon glyphicon-share",
+                dragHelper: "glyphicon glyphicon-play",
+                dropMarker: "glyphicon glyphicon-arrow-right",
+                error: "glyphicon glyphicon-warning-sign",
+                expanderClosed: "glyphicon glyphicon-plus-sign",
+                expanderLazy: "glyphicon glyphicon-plus-sign",  // glyphicon-expand
+                expanderOpen: "glyphicon glyphicon-minus-sign",  // glyphicon-collapse-down
+                folder: "glyphicon glyphicon-folder-close",
+                folderOpen: "glyphicon glyphicon-folder-open",
+                loading: "glyphicon glyphicon-refresh"
+            }
         };
         
         var onLazyLoad = function(event, data) {
@@ -381,7 +405,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                         });
                         });
                     });
-            }
+            };
             
             switch(type) {
                 case "LAB_NOTEBOOK":
@@ -450,7 +474,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                     registrationDate: space.registrationDate,
                                 };
                                 if(!space.getCode().endsWith("STOCK_CATALOG") && !space.getCode().endsWith("STOCK_ORDERS")) {
-                                        results.push(spaceNode);
+                                    results.push(spaceNode);
                                 }
                             }
                         }
@@ -661,24 +685,24 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                                 });
                                 
                             }
-                        }
+                        };
                         
                         var getCancelResultsFunction = function(dfd) {
-                                return function() {
-                                    dfd.resolve([]);
-                                }
-                        }
+                            return function() {
+                                dfd.resolve([]);
+                            }
+                        };
                         
                         if(samplesToShow.length > 50) {
-                                var toExecute = function() {
-                                    Util.blockUIConfirm("Do you want to show " + samplesWithoutELNParents.length + " " + ELNDictionary.Samples + " on the tree?", 
-                                            getOkResultsFunction(dfd, samplesToShow),
-                                            getCancelResultsFunction(dfd));
-                            }
+                            var toExecute = function() {
+                                Util.blockUIConfirm("Do you want to show " + samplesWithoutELNParents.length + " " + ELNDictionary.Samples + " on the tree?",
+                                        getOkResultsFunction(dfd, samplesToShow),
+                                        getCancelResultsFunction(dfd));
+                            };
                             
-                                setTimeout(toExecute, 1000);
+                            setTimeout(toExecute, 1000);
                         } else {
-                                getOkResultsFunction(dfd, samplesToShow)();
+                            getOkResultsFunction(dfd, samplesToShow)();
                         }
                     });
                     break;
@@ -820,10 +844,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             stock.setExpanded(true);
         }
         
-        setCustomIcon($tree, "RESEARCH_COLLECTION_EXPORT_BUILDER", "./img/research-collection-icon.png");
         setCustomIcon($tree, "JUPYTER_WORKSPACE", "./img/jupyter-icon.png");
         setCustomIcon($tree, "NEW_JUPYTER_NOTEBOOK", "./img/jupyter-icon.png");
-    }
+    };
     
     function setCustomIcon($tree, nodeKey, iconImage) {
         var node = $tree.fancytree("getTree").getNodeByKey(nodeKey);
