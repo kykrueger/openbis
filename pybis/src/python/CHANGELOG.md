@@ -1,3 +1,8 @@
+## Changes with pybis-1.9.1
+
+* bugfix: controlled vocabulary
+
+
 ## Changes with pybis-1.9.0
 
 * new: search, create, update and delete Property Types
@@ -5,6 +10,7 @@
 * new: create and update Sample Types
 * freeze entities to prevent changes
 * added more tests
+
 
 ## Changes with pybis-1.8.5
 
