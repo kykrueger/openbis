@@ -16,7 +16,6 @@
 # MasterDataRegistrationTransaction Class
 from ch.ethz.sis.openbis.generic.server.asapi.v3 import ApplicationServerApi
 from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
-from ch.systemsx.cisd.openbis.generic.server import ComponentNames
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
 from ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl import MasterDataRegistrationHelper
@@ -29,15 +28,6 @@ props = CustomASServiceExecutionOptions().withParameter('xls', helper.listXlsByt
     .withParameter('xls_name', 'ELN-LIMS').withParameter('update_mode', 'IGNORE_EXISTING')\
     .withParameter('scripts', helper.getAllScripts())
 result = api.executeCustomASService(sessionToken, CustomASServiceCode("xls-import-api"), props);
-# Updating MULTILINE_VARCHAR to use "Word Processor" for all Properties
-daoFactory = CommonServiceProvider.getApplicationContext().getBean(ComponentNames.DAO_FACTORY);
-currentSession = daoFactory.getSessionFactory().getCurrentSession();
-SQL = "UPDATE property_types SET meta_data = cast(:meta_data AS jsonb) WHERE id IN (SELECT id FROM property_types WHERE daty_id = (SELECT id FROM data_types WHERE code = 'MULTILINE_VARCHAR'))";
-meta_data = "{ \"custom_widget\" : \"Word Processor\" }";
-sqlQuery = currentSession.createSQLQuery(SQL);
-sqlQuery.setParameter("meta_data", meta_data);
-sqlQuery.executeUpdate();
-#
 print("======================== master-data xls ingestion result ========================")
 print(result)
 print("======================== master-data xls ingestion result ========================")
