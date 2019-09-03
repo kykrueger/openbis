@@ -274,15 +274,20 @@ var FormUtil = new function() {
 		return $component;
 	}
 	
-	this.getExperimentTypeDropdown = function(id, isRequired) {
+	this.getExperimentTypeDropdown = function(id, isRequired, defaultValue) {
 		var experimentTypes = this.profile.allExperimentTypes;
 		
-		var $component = $("<select>", {"id" : id, class : 'form-control'});
+		var $component = $("<select>", {"id" : id, class : "form-control"});
 		if (isRequired) {
-			$component.attr('required', '');
+			$component.attr("required", "");
 		}
-		
-		$component.append($("<option>").attr('value', '').attr('selected', '').text("Select an " + ELNDictionary.getExperimentDualName() + " type"));
+
+		var $emptyOption = $("<option>").attr("value", "").attr('disabled', '').text("Select an " + ELNDictionary.getExperimentDualName() + " type");
+		if (!defaultValue || defaultValue === "") {
+			$emptyOption.attr("selected", "");
+		}
+
+		$component.append($emptyOption);
 		for(var i = 0; i < experimentTypes.length; i++) {
 			var experimentType = experimentTypes[i];
 			if(profile.isExperimentTypeHidden(experimentType.code)) {
@@ -294,12 +299,22 @@ var FormUtil = new function() {
 			if(description !== "") {
 				label += " (" + description + ")";
 			}
-			
-			$component.append($("<option>").attr('value',experimentType.code).text(label));
+
+			var $option = $("<option>").attr("value", experimentType.code).text(label);
+			if (experimentType.code === defaultValue) {
+				$option.attr("selected", "");
+			}
+			$component.append($option);
 		}
 		Select2Manager.add($component);
 		return $component;
-	}
+	};
+
+	this.getInlineExperimentTypeDropdown = function(id, isRequired, defaultValue) {
+		var $wrapper = $("<span>", { class : "dropdown" });
+		$wrapper.append(this.getExperimentTypeDropdown(id, isRequired, defaultValue));
+		return $wrapper;
+	};
 	
 	this.getSpaceDropdown = function(id, isRequired) {
 		var spaces = this.profile.allSpaces;
@@ -351,7 +366,7 @@ var FormUtil = new function() {
 		
 		$component.attr('required', '');
 		
-		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text('Select a dataset type'));
+		$component.append($("<option>").attr('value', '').attr('selected', '').text('Select a dataset type'));
 		
 		for (var i = 0; i < dataSetTypes.length; i++) {
 			var datasetType = dataSetTypes[i];
@@ -779,6 +794,8 @@ var FormUtil = new function() {
 		}
 		
 		$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(alt));
+		$component.append($("<option>").attr('value', '').text('(empty)'));
+
 		for(var i = 0; i < terms.length; i++) {
 			$component.append($("<option>").attr('value',terms[i].code).text(terms[i].label));
 		}

@@ -4,16 +4,28 @@ var JExcelEditorManager = new function() {
 
     this.getOnChange = function(guid, propertyCode, entity) {
         var _this = this;
-        return function() {
+        return function(el, record, x, y, value) {
             var jExcelEditor = _this.jExcelEditors[guid];
             if(jExcelEditor) {
+                // Change column width
+                var columnWidth = parseInt(jExcelEditor.getWidth(x));
+                var td = el.children[1].children[0].children[2].children[y].children[parseInt(x)+1];
+                var columnScrollWidth = td.scrollWidth;
+
+                if(columnScrollWidth > columnWidth) {
+                    jExcelEditor.setWidth(x, columnScrollWidth + 10);
+                }
+
+                // Save Editor
                 var data = jExcelEditor.getData();
                 var style = jExcelEditor.getStyle();
                 var meta = jExcelEditor.getMeta();
+                var width = jExcelEditor.getWidth();
                 var jExcelEditorValue = {
                     data : data,
                     style : style,
-                    meta : meta
+                    meta : meta,
+                    width : width
                 }
                 entity.properties[propertyCode] = "<DATA>" + window.btoa(JSON.stringify(jExcelEditorValue)) + "</DATA>";
             }
@@ -108,7 +120,7 @@ var JExcelEditorManager = new function() {
 	    var data = [];
 	    var style = null;
 	    var meta = null;
-
+        var width = null;
 	    if(entity.properties && entity.properties[propertyCode]) {
 	        var jExcelEditorValueAsStringWithTags = entity.properties[propertyCode];
 	        var jExcelEditorValue = null;
@@ -120,6 +132,7 @@ var JExcelEditorManager = new function() {
 	            data = jExcelEditorValue.data;
 	            style = jExcelEditorValue.style;
 	            meta = jExcelEditorValue.meta;
+	            width = jExcelEditorValue.width;
 	        }
 	    }
 
@@ -136,6 +149,10 @@ var JExcelEditorManager = new function() {
                     onchangestyle: null,
                     onchangemeta: null
         };
+
+        if(width) {
+            options.colWidths = width;
+        }
 
         if(mode === FormMode.VIEW) {
             options.allowInsertRow = false;
