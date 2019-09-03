@@ -778,11 +778,17 @@ span.fancytree-custom-icon {
   box-sizing: initial !important;
 }
 
+.jexcel_toolbar {
+    position: sticky;
+    top: 0px;
+    z-index : 800;
+}
+
 .jcolor-content > table > tr > td {
     padding : 7px !important;
 }
 
+
 .jexcel > thead > tr > td {
-    position : relative !important;
     z-index : auto !important;
 }
