@@ -197,6 +197,9 @@ function MainController(profile) {
 													
 													Util.unblockUI();
 													LayoutManager.resize(mainController.views, true); // Maybe fixes white screen on startup?
+
+													// Keep Alive
+													localReference.serverFacade.scheduleKeepAlive();
 												});
 											};
 											
