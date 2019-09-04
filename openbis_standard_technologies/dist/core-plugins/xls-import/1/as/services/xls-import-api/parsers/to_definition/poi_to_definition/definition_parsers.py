@@ -35,12 +35,7 @@ class PropertiesOnlyDefinitionParser(object):
             'PROPERTIES_VALUES_ROW_START': PROPERTIES_VALUES_ROW_START
         }
 
-        print("PREPREPRPPRE")
-        print(poi_definition)
         poi_definition = PoiCleaner.clean_data(poi_definition, row_numbers)
-        print("POSOPOPSPOPSPOSPOOPS")
-        print(poi_definition)
-
         definition = Definition()
         definition.type = poi_definition[DEFINITION_TYPE_ROW][DEFINITION_TYPE_CELL]
         if PropertiesOnlyDefinitionParser.hasProperties(poi_definition):
