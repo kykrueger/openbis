@@ -187,7 +187,7 @@ function ServerFacade(openbisServer) {
 
     this.scheduleKeepAlive = function() {
         var _this = this;
-        var TIMEOUT = 30000; //30 Seconds
+        var TIMEOUT = 60000; //60 Seconds
 
         setTimeout(function(){
             _this.keepAlive();
@@ -198,11 +198,9 @@ function ServerFacade(openbisServer) {
 	    var _this = this;
 	    mainController.openbisV3.isSessionActive().done(function(isSessionActive) {
 	        var timeStamp = Math.floor(Date.now() / 1000);
-            console.log("done - " + timeStamp + " - " + isSessionActive);
             _this.scheduleKeepAlive();
 	    }).fail(function(error) {
             var timeStamp = Math.floor(Date.now() / 1000);
-            console.log("fail - " + timeStamp + " - ERROR");
             _this.scheduleKeepAlive();
         });
 	}
