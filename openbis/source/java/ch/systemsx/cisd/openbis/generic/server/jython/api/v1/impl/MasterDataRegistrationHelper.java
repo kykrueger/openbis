@@ -47,7 +47,7 @@ public class MasterDataRegistrationHelper {
                 String systemPathString = String.valueOf(systemPath);
                 if (systemPathString.contains("core-plugins")) {
                     masterDataFolder = new File(new File(systemPathString), "master-data");
-                    if (masterDataFolder.exists()) {
+                    if (masterDataFolder.exists() == false) {
                         throw new IllegalArgumentException("Folder does not exist: " + masterDataFolder.getAbsolutePath());
                     }
                     if (masterDataFolder.isFile()) {
