@@ -75,7 +75,6 @@ public class ImportVocabularyTypesTest extends AbstractImportTest
     {
         String f = ImportVocabularyTypesTest.class.getName().replace(".", "/");
         FILES_DIR = f.substring(0, f.length() - ImportVocabularyTypesTest.class.getSimpleName().length()) + "/test_files/";
-
     }
 
     @BeforeMethod
