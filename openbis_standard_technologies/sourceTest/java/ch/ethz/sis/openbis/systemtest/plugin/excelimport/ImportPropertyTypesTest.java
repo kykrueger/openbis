@@ -50,6 +50,10 @@ public class ImportPropertyTypesTest extends AbstractImportTest {
 
     private static final String PROPERTY_NON_VOCAB_TYPE_VOCABULARY_CODE = "property_types/vocabcode_when_not_vocabtype.xls";
 
+    private static final String PROPERTY_DUPLICATES_DIFFERENT = "property_types/duplicates_different.xls";
+
+    private static final String PROPERTY_TYPES_DUPLICATES_SAME = "property_types/duplicates_same.xls";
+
     private static final String PROPERTY_VOCABULARY_ON_SERVER = "property_types/with_vocab_on_server.xls";
 
     private static final String PROPERTY_VOCAB_TYPE = "property_types/with_vocab.xls";
@@ -98,6 +102,23 @@ public class ImportPropertyTypesTest extends AbstractImportTest {
         assertNull(notes.getVocabulary());
     }
 
+    @Test
+    @DirtiesContext
+    public void testDuplicatesPropertiesAreAllowedIfTheyAreTheSame() throws IOException {
+        // GIVEN
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROPERTY_TYPES_DUPLICATES_SAME)));
+        // WHEN
+        PropertyType notes = TestUtils.getPropertyType(v3api, sessionToken, "NOTES");
+        // THEN
+        assertEquals(notes.getCode(), "NOTES");
+        assertEquals(notes.getLabel(), "Notes");
+        assertEquals(notes.getDataType(), DataType.MULTILINE_VARCHAR);
+        assertEquals(notes.getDescription(), "Notes Descripton");
+        assertFalse(notes.isInternalNameSpace());
+        assertFalse(notes.isManagedInternally());
+        assertNull(notes.getVocabulary());
+    }
+
     @Test(expectedExceptions = UserFailureException.class)
     public void testPropertyTypeNoCode() throws IOException {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROPERTY_NO_CODE)));
@@ -106,6 +127,11 @@ public class ImportPropertyTypesTest extends AbstractImportTest {
     @Test(expectedExceptions = UserFailureException.class)
     public void testPropertyTypeNoLabel() throws IOException {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROPERTY_NO_LABEL)));
+    }
+
+    @Test(expectedExceptions = UserFailureException.class)
+    public void testPropertyTypesDuplicatesAreDifferent() throws IOException {
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROPERTY_DUPLICATES_DIFFERENT)));
     }
 
     @Test(expectedExceptions = UserFailureException.class)

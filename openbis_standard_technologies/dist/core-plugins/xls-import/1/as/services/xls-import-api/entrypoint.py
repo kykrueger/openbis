@@ -6,7 +6,7 @@ from ch.systemsx.cisd.openbis.generic.server import CommonServiceProvider
 from parsers import get_creations_from, get_definitions_from_xls, get_definitions_from_csv, get_creation_metadata_from, \
     CreationOrUpdateToOperationParser, versionable_types
 from processors import OpenbisDuplicatesHandler, PropertiesLabelHandler, DuplicatesHandler, \
-    unify_properties_representation_of
+    unify_properties_representation_of, validate_creations
 from search_engines import SearchEngine
 from utils import FileHandler
 from utils.openbis_utils import get_version_name_for, get_metadata_name_for
@@ -77,6 +77,7 @@ def process(context, parameters):
     definitions = get_definitions_from_xls(xls_byte_arrays)
     definitions.extend(get_definitions_from_csv(csv_strings))
     creations = get_creations_from(definitions, FileHandler(scripts))
+    validate_creations(creations)
     creations_metadata = get_creation_metadata_from(definitions)
     creations = DuplicatesHandler.get_distinct_creations(creations)
     xls_version_filepath = get_property("xls-import.version-data-file", "../../../xls-import-version-info.json")
