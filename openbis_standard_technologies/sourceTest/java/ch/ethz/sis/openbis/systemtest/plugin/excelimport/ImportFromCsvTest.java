@@ -8,6 +8,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -31,17 +32,10 @@ public class ImportFromCsvTest extends AbstractImportTest {
 
     private static final String FULL_TYPES_CSV = "csv/types.csv";
 
-    private String sessionToken;
-
     @BeforeClass
     public void setupClass() throws IOException {
         String f = ImportExperimentTypesTest.class.getName().replace(".", "/");
         FILES_DIR = f.substring(0, f.length() - ImportExperimentTypesTest.class.getSimpleName().length()) + "/test_files/";
-    }
-
-    @BeforeMethod
-    public void beforeTest() {
-        sessionToken = v3api.login(TEST_USER, PASSWORD);
     }
 
     @Test

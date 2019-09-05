@@ -2,8 +2,11 @@ package ch.ethz.sis.openbis.systemtest.plugin.excelimport;
 
 import java.io.File;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
@@ -12,9 +15,18 @@ import ch.systemsx.cisd.openbis.generic.shared.coreplugin.CorePluginsUtils;
 
 public class AbstractImportTest extends AbstractTransactionalTestNGSpringContextTests {
 
-    protected String FILES_DIR;
-
     private String XLS_VERSIONING_DIR = "xls-import.version-data-file";
+
+    private static final String TEST_USER = "test";
+
+    private static final String PASSWORD = "password";
+
+    @Autowired
+    protected IApplicationServerInternalApi v3api;
+
+    protected String sessionToken;
+
+    protected String FILES_DIR;
 
     @BeforeSuite
     public void setupSuite() {
@@ -24,10 +36,18 @@ public class AbstractImportTest extends AbstractTransactionalTestNGSpringContext
         TestInitializer.initEmptyDbNoIndex();
     }
 
+    @BeforeMethod
+    public void beforeTest() {
+        sessionToken = v3api.login(TEST_USER, PASSWORD);
+        System.out.println("AHAHHAHAHAHHA");
+        System.out.println(sessionToken);
+    }
+
     @AfterMethod
     public void afterTest() {
         File f = new File("./versioning.bin");
         f.delete();
+        v3api.logout(sessionToken);
     }
 
 }
