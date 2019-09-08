@@ -6,14 +6,13 @@ import EditableField from '../../common/form/EditableField.jsx'
 import logger from '../../../common/logger.js'
 
 class ObjectTypePropertyType extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
     this.renderField = this.renderField.bind(this)
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleChange(event){
+  handleChange(event) {
     event.stopPropagation()
     let propertyType = _.find(this.props.propertyTypes, propertyType => {
       return propertyType.code === event.target.value
@@ -21,23 +20,23 @@ class ObjectTypePropertyType extends React.Component {
     this.props.onChange(this.props.property.id, 'propertyType', propertyType)
   }
 
-  render(){
+  render() {
     logger.log(logger.DEBUG, 'ObjectTypePropertyType.render')
 
     return <EditableField renderField={this.renderField} />
   }
 
-  renderField({ref, edited, handleBlur}){
-    const {property, propertyTypes} = this.props
-    const {propertyType} = property
+  renderField({ ref, edited, handleBlur }) {
+    const { property, propertyTypes } = this.props
+    const { propertyType } = property
 
-    if(edited){
+    if (edited) {
       return (
         <TextField
           inputRef={ref}
           select
           SelectProps={{
-            native: true,
+            native: true
           }}
           value={propertyType ? propertyType.code : ''}
           onChange={this.handleChange}
@@ -46,32 +45,34 @@ class ObjectTypePropertyType extends React.Component {
           error={this.hasError()}
           helperText={this.getError()}
         >
-          <option value=""></option>
-          {propertyTypes && propertyTypes.map(propertyType => (
-            <option key={propertyType.code} value={propertyType.code}>{propertyType.code}</option>
-          ))}
+          <option value=''></option>
+          {propertyTypes &&
+            propertyTypes.map(propertyType => (
+              <option key={propertyType.code} value={propertyType.code}>
+                {propertyType.code}
+              </option>
+            ))}
         </TextField>
       )
-    }else{
+    } else {
       return (
         <div>
           <div>{propertyType ? propertyType.code : ''}</div>
-          {this.hasError() &&
+          {this.hasError() && (
             <FormHelperText error={true}>{this.getError()}</FormHelperText>
-          }
+          )}
         </div>
       )
     }
   }
 
-  hasError(){
+  hasError() {
     return this.getError() ? true : false
   }
 
-  getError(){
+  getError() {
     return this.props.property.errors['propertyType']
   }
-
 }
 
 export default ObjectTypePropertyType

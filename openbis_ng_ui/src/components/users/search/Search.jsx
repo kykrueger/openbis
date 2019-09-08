@@ -1,18 +1,17 @@
 import React from 'react'
 import Grid from '../../common/grid/Grid.jsx'
 import * as ids from '../../../common/consts/ids.js'
-import {facade, dto} from '../../../services/openbis.js'
+import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 class Search extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
 
     this.load = this.load.bind(this)
   }
 
-  load({ filter, page, pageSize }){
+  load({ filter, page, pageSize }) {
     let criteria = new dto.PersonSearchCriteria()
     let fo = new dto.PersonFetchOptions()
 
@@ -22,7 +21,7 @@ class Search extends React.Component {
     criteria.withLastName().thatContains(filter)
 
     fo.count(pageSize)
-    fo.from(page*pageSize)
+    fo.from(page * pageSize)
 
     return facade.searchPersons(criteria, fo).then(result => {
       let objects = result.objects.map(user => ({
@@ -58,7 +57,6 @@ class Search extends React.Component {
       />
     )
   }
-
 }
 
 export default Search

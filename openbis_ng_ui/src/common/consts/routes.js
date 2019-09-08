@@ -4,56 +4,56 @@ import pathToRegexp from 'path-to-regexp'
 import * as pages from './pages.js'
 import * as objectTypes from './objectType.js'
 
-function doFormat(actualParams, pattern, requiredParams){
-  if(_.isMatch(actualParams, requiredParams)){
+function doFormat(actualParams, pattern, requiredParams) {
+  if (_.isMatch(actualParams, requiredParams)) {
     let toPath = pathToRegexp.compile(pattern)
     return {
       path: toPath(actualParams),
       match: Object.keys(requiredParams).length
     }
-  }else{
+  } else {
     return null
   }
 }
 
-function doParse(path, pattern, extraParams){
+function doParse(path, pattern, extraParams) {
   let match = matchPath(path, {
     path: pattern,
     exact: true,
     strict: false
   })
-  if(match){
+  if (match) {
     return {
       path: match.url,
       ...match.params,
       ...extraParams
     }
-  }else{
+  } else {
     return null
   }
 }
 
 const routes = {
   TYPES: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/types', {
         page: pages.TYPES
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/types', {
         page: pages.TYPES
       })
     }
   },
   TYPES_SEARCH: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/typesSearch/:id', {
         page: pages.TYPES,
         type: objectTypes.SEARCH
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/typesSearch/:id', {
         page: pages.TYPES,
         type: objectTypes.SEARCH
@@ -61,13 +61,13 @@ const routes = {
     }
   },
   OBJECT_TYPE: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/objectType/:id', {
         page: pages.TYPES,
         type: objectTypes.OBJECT_TYPE
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/objectType/:id', {
         page: pages.TYPES,
         type: objectTypes.OBJECT_TYPE
@@ -75,13 +75,13 @@ const routes = {
     }
   },
   COLLECTION_TYPE: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/collectionType/:id', {
         page: pages.TYPES,
         type: objectTypes.COLLECTION_TYPE
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/collectionType/:id', {
         page: pages.TYPES,
         type: objectTypes.COLLECTION_TYPE
@@ -89,13 +89,13 @@ const routes = {
     }
   },
   DATA_SET_TYPE: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/datasetType/:id', {
         page: pages.TYPES,
         type: objectTypes.DATA_SET_TYPE
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/datasetType/:id', {
         page: pages.TYPES,
         type: objectTypes.DATA_SET_TYPE
@@ -103,13 +103,13 @@ const routes = {
     }
   },
   MATERIAL_TYPE: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/materialType/:id', {
         page: pages.TYPES,
         type: objectTypes.MATERIAL_TYPE
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/materialType/:id', {
         page: pages.TYPES,
         type: objectTypes.MATERIAL_TYPE
@@ -117,25 +117,25 @@ const routes = {
     }
   },
   USERS: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/users', {
         page: pages.USERS
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/users', {
         page: pages.USERS
       })
     }
   },
   USERS_SEARCH: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/usersSearch/:id', {
         page: pages.USERS,
         type: objectTypes.SEARCH
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/usersSearch/:id', {
         page: pages.USERS,
         type: objectTypes.SEARCH
@@ -143,13 +143,13 @@ const routes = {
     }
   },
   USER: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/user/:id', {
         page: pages.USERS,
         type: objectTypes.USER
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/user/:id', {
         page: pages.USERS,
         type: objectTypes.USER
@@ -157,13 +157,13 @@ const routes = {
     }
   },
   GROUP: {
-    format: (params) => {
+    format: params => {
       return doFormat(params, '/group/:id', {
         page: pages.USERS,
         type: objectTypes.GROUP
       })
     },
-    parse: (path) => {
+    parse: path => {
       return doParse(path, '/group/:id', {
         page: pages.USERS,
         type: objectTypes.GROUP
@@ -171,13 +171,13 @@ const routes = {
     }
   },
   DEFAULT: {
-    format: (params) => {
+    format: () => {
       return {
         path: '/',
         match: 0
       }
     },
-    parse: (path) => {
+    parse: () => {
       return {
         path: '/',
         page: pages.TYPES
@@ -186,30 +186,30 @@ const routes = {
   }
 }
 
-function format(params){
+function format(params) {
   let keys = Object.keys(routes)
   let bestPath = null
   let bestMatch = 0
-  for(let i = 0; i < keys.length; i++){
+  for (let i = 0; i < keys.length; i++) {
     let route = routes[keys[i]]
-    try{
+    try {
       let result = route.format(params)
-      if(result && result.match > bestMatch){
+      if (result && result.match > bestMatch) {
         bestPath = result.path
       }
-    }catch(err){
+    } catch (err) {
       // ignore problems with incorrect params
     }
   }
   return bestPath
 }
 
-function parse(path){
+function parse(path) {
   let keys = Object.keys(routes)
-  for(let i = 0; i < keys.length; i++){
+  for (let i = 0; i < keys.length; i++) {
     let route = routes[keys[i]]
     let params = route.parse(path)
-    if(params){
+    if (params) {
       return params
     }
   }

@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import IconButton from '@material-ui/core/IconButton'
 import SettingsIcon from '@material-ui/icons/Settings'
 import Popover from '@material-ui/core/Popover'
@@ -21,8 +21,7 @@ const styles = () => ({
 })
 
 class ColumnConfig extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
     this.state = {
       el: null
@@ -32,25 +31,25 @@ class ColumnConfig extends React.Component {
     this.handleChange = this.handleChange.bind(this)
   }
 
-  handleOpen(event){
+  handleOpen(event) {
     this.setState({
       el: event.currentTarget
     })
   }
 
-  handleClose(){
+  handleClose() {
     this.setState({
       el: null
     })
   }
 
-  handleChange(event){
+  handleChange(event) {
     let columns = [...this.props.visibleColumns]
     let column = event.target.value
 
-    if(columns.includes(column)){
+    if (columns.includes(column)) {
       _.pull(columns, column)
-    }else{
+    } else {
       columns.push(column)
     }
 
@@ -74,11 +73,11 @@ class ColumnConfig extends React.Component {
           onClose={this.handleClose}
           anchorOrigin={{
             vertical: 'top',
-            horizontal: 'center',
+            horizontal: 'center'
           }}
           transformOrigin={{
             vertical: 'bottom',
-            horizontal: 'center',
+            horizontal: 'center'
           }}
         >
           <ol className={classes.columns}>
@@ -101,9 +100,6 @@ class ColumnConfig extends React.Component {
       </div>
     )
   }
-
 }
 
-export default _.flow(
-  withStyles(styles)
-)(ColumnConfig)
+export default _.flow(withStyles(styles))(ColumnConfig)

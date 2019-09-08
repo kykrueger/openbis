@@ -1,5 +1,5 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import logger from '../../common/logger.js'
 import * as pages from '../../common/consts/pages.js'
 import * as objectType from '../../common/consts/objectType.js'
@@ -15,7 +15,7 @@ const styles = () => ({
   container: {
     display: 'flex',
     width: '100%'
-  },
+  }
 })
 
 const objectTypeToComponent = {
@@ -25,7 +25,6 @@ const objectTypeToComponent = {
 }
 
 class Users extends React.Component {
-
   render() {
     logger.log(logger.DEBUG, 'Users.render')
 
@@ -33,12 +32,14 @@ class Users extends React.Component {
 
     return (
       <div className={classes.container}>
-        <Browser page={pages.USERS}/>
-        <Content page={pages.USERS} objectTypeToComponent={objectTypeToComponent}/>
+        <Browser page={pages.USERS} />
+        <Content
+          page={pages.USERS}
+          objectTypeToComponent={objectTypeToComponent}
+        />
       </div>
     )
   }
-
 }
 
 export default withStyles(styles)(Users)

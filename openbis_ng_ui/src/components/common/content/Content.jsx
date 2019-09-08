@@ -1,7 +1,7 @@
 import React from 'react'
 import _ from 'lodash'
-import {connect} from 'react-redux'
-import {withStyles} from '@material-ui/core/styles'
+import { connect } from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 import * as util from '../../../common/util.js'
 import * as selectors from '../../../store/selectors/selectors.js'
@@ -24,11 +24,11 @@ const styles = {
     display: 'block'
   },
   hidden: {
-    display: 'none',
+    display: 'none'
   }
 }
 
-function mapStateToProps(){
+function mapStateToProps() {
   const getSelectedObject = selectors.createGetSelectedObject()
   return (state, ownProps) => {
     return {
@@ -39,15 +39,18 @@ function mapStateToProps(){
   }
 }
 
-function mapDispatchToProps(dispatch, ownProps){
+function mapDispatchToProps(dispatch, ownProps) {
   return {
-    objectSelect: (type, id) => { dispatch(actions.objectOpen(ownProps.page, type, id)) },
-    objectClose: (type, id) => { dispatch(actions.objectClose(ownProps.page, type, id)) }
+    objectSelect: (type, id) => {
+      dispatch(actions.objectOpen(ownProps.page, type, id))
+    },
+    objectClose: (type, id) => {
+      dispatch(actions.objectClose(ownProps.page, type, id))
+    }
   }
 }
 
 class Content extends React.Component {
-
   render() {
     logger.log(logger.DEBUG, 'Content.render')
 
@@ -60,27 +63,35 @@ class Content extends React.Component {
           changedObjects={this.props.changedObjects}
           selectedObject={this.props.selectedObject}
           objectSelect={this.props.objectSelect}
-          objectClose={this.props.objectClose} />
-        {
-          this.props.openObjects.map(object => {
-            let ObjectComponent = this.props.objectTypeToComponent[object.type]
-            if(ObjectComponent){
-              let key = object.type + '/' + object.id
-              let visible = _.isEqual(object, this.props.selectedObject)
-              return (
-                <div key={key} className={util.classNames(classes.component, visible ? classes.visible : classes.hidden)}>
-                  <ObjectComponent objectId={object.id} />
-                </div>
-              )
-            }
-          })
-        }
+          objectClose={this.props.objectClose}
+        />
+        {this.props.openObjects.map(object => {
+          let ObjectComponent = this.props.objectTypeToComponent[object.type]
+          if (ObjectComponent) {
+            let key = object.type + '/' + object.id
+            let visible = _.isEqual(object, this.props.selectedObject)
+            return (
+              <div
+                key={key}
+                className={util.classNames(
+                  classes.component,
+                  visible ? classes.visible : classes.hidden
+                )}
+              >
+                <ObjectComponent objectId={object.id} />
+              </div>
+            )
+          }
+        })}
       </div>
     )
   }
 }
 
 export default _.flow(
-  connect(mapStateToProps, mapDispatchToProps),
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  ),
   withStyles(styles)
 )(Content)

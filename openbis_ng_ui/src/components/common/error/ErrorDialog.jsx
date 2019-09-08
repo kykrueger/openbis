@@ -13,8 +13,7 @@ import Slide from '@material-ui/core/Slide'
 import logger from '../../../common/logger.js'
 import profile from '../../../profile.js'
 
-
-const dialogStyles = (theme) => ({
+const dialogStyles = theme => ({
   paper: {
     backgroundColor: theme.palette.error.main
   }
@@ -25,31 +24,45 @@ const StyledDialog = withStyles(dialogStyles)(Dialog)
 const ANIMATION_TIME_MS = 250
 
 function Transition(props) {
-  return <Slide
-    direction="up"
-    timeout={{ enter: ANIMATION_TIME_MS, exit: ANIMATION_TIME_MS }}
-    {...props}
-  />
+  return (
+    <Slide
+      direction='up'
+      timeout={{ enter: ANIMATION_TIME_MS, exit: ANIMATION_TIME_MS }}
+      {...props}
+    />
+  )
 }
 
 class ErrorDialog extends React.Component {
-
   state = {
-    open: true,
+    open: true
   }
 
   getErrorMailtoHref() {
     let report =
-      'agent: ' + navigator.userAgent + '%0D%0A' +
-      'domain: ' + location.hostname + '%0D%0A' +
-      'timestamp: ' + new Date() + '%0D%0A' +
-      'href: ' + location.href.replace(new RegExp('&', 'g'), ' - ') + '%0D%0A' +
-      'error: ' + JSON.stringify(this.props.error['data'])
+      'agent: ' +
+      navigator.userAgent +
+      '%0D%0A' +
+      'domain: ' +
+      location.hostname +
+      '%0D%0A' +
+      'timestamp: ' +
+      new Date() +
+      '%0D%0A' +
+      'href: ' +
+      location.href.replace(new RegExp('&', 'g'), ' - ') +
+      '%0D%0A' +
+      'error: ' +
+      JSON.stringify(this.props.error['data'])
 
     let href =
-      'mailto:' + profile.devEmail +
-      '?subject=openBIS Error Report [' + location.hostname + ']' +
-      '&body=' + report
+      'mailto:' +
+      profile.devEmail +
+      '?subject=openBIS Error Report [' +
+      location.hostname +
+      ']' +
+      '&body=' +
+      report
     return href
   }
 
@@ -63,25 +76,23 @@ class ErrorDialog extends React.Component {
 
     return (
       <StyledDialog
-        open={ this.state.open }
-        onClose={ this.props.closeError }
-        scroll="paper"
-        aria-labelledby="error-dialog-title"
-        fullWidth={ true }
-        maxWidth="md"
+        open={this.state.open}
+        onClose={this.props.closeError}
+        scroll='paper'
+        aria-labelledby='error-dialog-title'
+        fullWidth={true}
+        maxWidth='md'
         TransitionComponent={Transition}
       >
-        <DialogTitle id="error-dialog-title">Error</DialogTitle>
+        <DialogTitle id='error-dialog-title'>Error</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            { this.props.error.message }
-          </DialogContentText>
+          <DialogContentText>{this.props.error.message}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={ this.close.bind(this) } color="primary">
+          <Button onClick={this.close.bind(this)} color='primary'>
             Dismiss
           </Button>
-          <Button color="primary" href={this.getErrorMailtoHref()}>
+          <Button color='primary' href={this.getErrorMailtoHref()}>
             Send error report
           </Button>
         </DialogActions>
@@ -91,7 +102,7 @@ class ErrorDialog extends React.Component {
 }
 
 ErrorDialog.propTypes = {
-  error: PropTypes.any.isRequired,
+  error: PropTypes.any.isRequired
 }
 
 export default ErrorDialog

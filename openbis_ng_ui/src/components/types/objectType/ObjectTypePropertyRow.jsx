@@ -9,10 +9,10 @@ import ObjectTypePropertyCell from './ObjectTypePropertyCell.jsx'
 import ObjectTypePropertyPreview from './ObjectTypePropertyPreview.jsx'
 import ObjectTypePropertyType from './ObjectTypePropertyType.jsx'
 import ObjectTypePropertyMandatory from './ObjectTypePropertyMandatory.jsx'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
-const styles = (theme) => ({
+const styles = theme => ({
   row: {
     backgroundColor: theme.palette.background.paper,
     '&:hover': {
@@ -34,7 +34,7 @@ const source = {
     return { sourceIndex: props.index }
   },
   endDrag(props, monitor) {
-    if(monitor.getItem() && monitor.getDropResult()){
+    if (monitor.getItem() && monitor.getDropResult()) {
       const { sourceIndex } = monitor.getItem()
       const { targetIndex } = monitor.getDropResult()
       props.onReorder(sourceIndex, targetIndex)
@@ -64,28 +64,27 @@ function targetCollect(connect, monitor) {
 }
 
 class ObjectTypePropertyRow extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
     this.handleRef = React.createRef()
     this.rowRef = React.createRef()
     this.handleSelect = this.handleSelect.bind(this)
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.props.connectDragSource(this.handleRef.current)
     this.props.connectDragPreview(this.rowRef.current)
     this.props.connectDropTarget(this.rowRef.current)
   }
 
-  handleSelect(){
+  handleSelect() {
     this.props.onSelect(this.props.property.id)
   }
 
-  render(){
+  render() {
     logger.log(logger.DEBUG, 'ObjectTypePropertyRow.render')
 
-    const {classes, property} = this.props
+    const { classes, property } = this.props
 
     return (
       <RootRef rootRef={this.rowRef}>
@@ -115,22 +114,18 @@ class ObjectTypePropertyRow extends React.Component {
     )
   }
 
-  renderPreview(){
-    const {property} = this.props
+  renderPreview() {
+    const { property } = this.props
 
-    if(property.propertyType){
-      return (
-        <ObjectTypePropertyPreview
-          property={property}
-        />
-      )
-    }else{
-      return (<div></div>)
+    if (property.propertyType) {
+      return <ObjectTypePropertyPreview property={property} />
+    } else {
+      return <div></div>
     }
   }
 
-  renderPropertyType(){
-    const {property, propertyTypes, onChange} = this.props
+  renderPropertyType() {
+    const { property, propertyTypes, onChange } = this.props
 
     return (
       <ObjectTypePropertyType
@@ -141,16 +136,12 @@ class ObjectTypePropertyRow extends React.Component {
     )
   }
 
-  renderMandatory(){
-    const {property, onChange} = this.props
+  renderMandatory() {
+    const { property, onChange } = this.props
     return (
-      <ObjectTypePropertyMandatory
-        property={property}
-        onChange={onChange}
-      />
+      <ObjectTypePropertyMandatory property={property} onChange={onChange} />
     )
   }
-
 }
 
 export default _.flow(

@@ -22,19 +22,22 @@ beforeEach(() => {
 })
 
 describe('browser', () => {
-
   test('init', () => {
     facade.searchPersons.mockReturnValue({
-      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
+      objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
     facade.searchAuthorizationGroups.mockReturnValue({
-      objects: [ fixture.TEST_GROUP_DTO, fixture.ANOTHER_GROUP_DTO, fixture.ALL_USERS_GROUP_DTO ]
+      objects: [
+        fixture.TEST_GROUP_DTO,
+        fixture.ANOTHER_GROUP_DTO,
+        fixture.ALL_USERS_GROUP_DTO
+      ]
     })
 
     dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
       return {
-        withUsers: function(){}
+        withUsers: function() {}
       }
     })
 
@@ -44,24 +47,56 @@ describe('browser', () => {
     expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], false, false, [
-          node(['users', fixture.ANOTHER_USER_DTO.userId, fixture.ALL_USERS_GROUP_DTO.code]),
-          node(['users', fixture.ANOTHER_USER_DTO.userId, fixture.ANOTHER_GROUP_DTO.code])
+          node([
+            'users',
+            fixture.ANOTHER_USER_DTO.userId,
+            fixture.ALL_USERS_GROUP_DTO.code
+          ]),
+          node([
+            'users',
+            fixture.ANOTHER_USER_DTO.userId,
+            fixture.ANOTHER_GROUP_DTO.code
+          ])
         ]),
         node(['users', fixture.TEST_USER_DTO.userId], false, false, [
-          node(['users', fixture.TEST_USER_DTO.userId, fixture.ALL_USERS_GROUP_DTO.code]),
-          node(['users', fixture.TEST_USER_DTO.userId, fixture.TEST_GROUP_DTO.code])
+          node([
+            'users',
+            fixture.TEST_USER_DTO.userId,
+            fixture.ALL_USERS_GROUP_DTO.code
+          ]),
+          node([
+            'users',
+            fixture.TEST_USER_DTO.userId,
+            fixture.TEST_GROUP_DTO.code
+          ])
         ])
       ]),
       node(['groups'], false, false, [
         node(['groups', fixture.ALL_USERS_GROUP_DTO.code], false, false, [
-          node(['groups', fixture.ALL_USERS_GROUP_DTO.code, fixture.ANOTHER_USER_DTO.userId]),
-          node(['groups', fixture.ALL_USERS_GROUP_DTO.code, fixture.TEST_USER_DTO.userId])
+          node([
+            'groups',
+            fixture.ALL_USERS_GROUP_DTO.code,
+            fixture.ANOTHER_USER_DTO.userId
+          ]),
+          node([
+            'groups',
+            fixture.ALL_USERS_GROUP_DTO.code,
+            fixture.TEST_USER_DTO.userId
+          ])
         ]),
         node(['groups', fixture.ANOTHER_GROUP_DTO.code], false, false, [
-          node(['groups', fixture.ANOTHER_GROUP_DTO.code, fixture.ANOTHER_USER_DTO.userId])
+          node([
+            'groups',
+            fixture.ANOTHER_GROUP_DTO.code,
+            fixture.ANOTHER_USER_DTO.userId
+          ])
         ]),
         node(['groups', fixture.TEST_GROUP_DTO.code], false, false, [
-          node(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId])
+          node([
+            'groups',
+            fixture.TEST_GROUP_DTO.code,
+            fixture.TEST_USER_DTO.userId
+          ])
         ])
       ])
     ])
@@ -72,27 +107,40 @@ describe('browser', () => {
 
   test('filter', () => {
     facade.searchPersons.mockReturnValue({
-      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
+      objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
     facade.searchAuthorizationGroups.mockReturnValue({
-      objects: [ fixture.TEST_GROUP_DTO, fixture.ANOTHER_GROUP_DTO, fixture.ALL_USERS_GROUP_DTO ]
+      objects: [
+        fixture.TEST_GROUP_DTO,
+        fixture.ANOTHER_GROUP_DTO,
+        fixture.ALL_USERS_GROUP_DTO
+      ]
     })
 
     dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
       return {
-        withUsers: function(){}
+        withUsers: function() {}
       }
     })
 
     store.dispatch(actions.browserInit(pages.USERS))
-    store.dispatch(actions.browserFilterChange(pages.USERS, fixture.ANOTHER_GROUP_DTO.code.toUpperCase()))
+    store.dispatch(
+      actions.browserFilterChange(
+        pages.USERS,
+        fixture.ANOTHER_GROUP_DTO.code.toUpperCase()
+      )
+    )
 
     const state = store.getState()
     expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], true, false, [
         node(['users', fixture.ANOTHER_USER_DTO.userId], true, false, [
-          node(['users', fixture.ANOTHER_USER_DTO.userId, fixture.ANOTHER_GROUP_DTO.code])
+          node([
+            'users',
+            fixture.ANOTHER_USER_DTO.userId,
+            fixture.ANOTHER_GROUP_DTO.code
+          ])
         ])
       ]),
       node(['groups'], true, false, [
@@ -106,7 +154,7 @@ describe('browser', () => {
 
   test('select node', () => {
     facade.searchPersons.mockReturnValue({
-      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
+      objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
     facade.searchAuthorizationGroups.mockReturnValue({
@@ -115,14 +163,22 @@ describe('browser', () => {
 
     dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
       return {
-        withUsers: function(){}
+        withUsers: function() {}
       }
     })
 
-    let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
+    let testUserObject = fixture.object(
+      objectType.USER,
+      fixture.TEST_USER_DTO.userId
+    )
 
     store.dispatch(actions.browserInit(pages.USERS))
-    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
+    store.dispatch(
+      actions.browserNodeSelect(
+        pages.USERS,
+        nodeId(['users', fixture.TEST_USER_DTO.userId])
+      )
+    )
 
     let state = store.getState()
     expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
@@ -139,7 +195,7 @@ describe('browser', () => {
 
   test('select another node', () => {
     facade.searchPersons.mockReturnValue({
-      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
+      objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
     facade.searchAuthorizationGroups.mockReturnValue({
@@ -148,16 +204,32 @@ describe('browser', () => {
 
     dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
       return {
-        withUsers: function(){}
+        withUsers: function() {}
       }
     })
 
-    let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
-    let anotherUserObject = fixture.object(objectType.USER, fixture.ANOTHER_USER_DTO.userId)
+    let testUserObject = fixture.object(
+      objectType.USER,
+      fixture.TEST_USER_DTO.userId
+    )
+    let anotherUserObject = fixture.object(
+      objectType.USER,
+      fixture.ANOTHER_USER_DTO.userId
+    )
 
     store.dispatch(actions.browserInit(pages.USERS))
-    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
-    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.ANOTHER_USER_DTO.userId])))
+    store.dispatch(
+      actions.browserNodeSelect(
+        pages.USERS,
+        nodeId(['users', fixture.TEST_USER_DTO.userId])
+      )
+    )
+    store.dispatch(
+      actions.browserNodeSelect(
+        pages.USERS,
+        nodeId(['users', fixture.ANOTHER_USER_DTO.userId])
+      )
+    )
 
     let state = store.getState()
     expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
@@ -174,7 +246,7 @@ describe('browser', () => {
 
   test('select virtual node', () => {
     facade.searchPersons.mockReturnValue({
-      objects: [ fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO ]
+      objects: [fixture.TEST_USER_DTO, fixture.ANOTHER_USER_DTO]
     })
 
     facade.searchAuthorizationGroups.mockReturnValue({
@@ -183,7 +255,7 @@ describe('browser', () => {
 
     dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
       return {
-        withUsers: function(){}
+        withUsers: function() {}
       }
     })
 
@@ -205,34 +277,58 @@ describe('browser', () => {
 
   test('select two nodes that represent the same object', () => {
     facade.searchPersons.mockReturnValue({
-      objects: [ fixture.TEST_USER_DTO ]
+      objects: [fixture.TEST_USER_DTO]
     })
 
     facade.searchAuthorizationGroups.mockReturnValue({
-      objects: [ fixture.TEST_GROUP_DTO ]
+      objects: [fixture.TEST_GROUP_DTO]
     })
 
     dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
       return {
-        withUsers: function(){}
+        withUsers: function() {}
       }
     })
 
-    let testUserObject = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
+    let testUserObject = fixture.object(
+      objectType.USER,
+      fixture.TEST_USER_DTO.userId
+    )
 
     store.dispatch(actions.browserInit(pages.USERS))
-    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['users', fixture.TEST_USER_DTO.userId])))
+    store.dispatch(
+      actions.browserNodeSelect(
+        pages.USERS,
+        nodeId(['users', fixture.TEST_USER_DTO.userId])
+      )
+    )
 
     let state = store.getState()
     expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, false, [
         node(['users', fixture.TEST_USER_DTO.userId], false, true, [
-          node(['users', fixture.TEST_USER_DTO.userId, fixture.TEST_GROUP_DTO.code], false, false)
+          node(
+            [
+              'users',
+              fixture.TEST_USER_DTO.userId,
+              fixture.TEST_GROUP_DTO.code
+            ],
+            false,
+            false
+          )
         ])
       ]),
       node(['groups'], false, false, [
         node(['groups', fixture.TEST_GROUP_DTO.code], false, false, [
-          node(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId], false, true)
+          node(
+            [
+              'groups',
+              fixture.TEST_GROUP_DTO.code,
+              fixture.TEST_USER_DTO.userId
+            ],
+            false,
+            true
+          )
         ])
       ])
     ])
@@ -240,18 +336,43 @@ describe('browser', () => {
     expectSelectedObject(pages.USERS, testUserObject)
     expectOpenObjects(pages.USERS, [testUserObject])
 
-    store.dispatch(actions.browserNodeSelect(pages.USERS, nodeId(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId])))
+    store.dispatch(
+      actions.browserNodeSelect(
+        pages.USERS,
+        nodeId([
+          'groups',
+          fixture.TEST_GROUP_DTO.code,
+          fixture.TEST_USER_DTO.userId
+        ])
+      )
+    )
 
     state = store.getState()
     expectNodes(selectors.createGetBrowserNodes()(state, pages.USERS), [
       node(['users'], false, false, [
         node(['users', fixture.TEST_USER_DTO.userId], false, true, [
-          node(['users', fixture.TEST_USER_DTO.userId, fixture.TEST_GROUP_DTO.code], false, false)
+          node(
+            [
+              'users',
+              fixture.TEST_USER_DTO.userId,
+              fixture.TEST_GROUP_DTO.code
+            ],
+            false,
+            false
+          )
         ])
       ]),
       node(['groups'], false, false, [
         node(['groups', fixture.TEST_GROUP_DTO.code], false, false, [
-          node(['groups', fixture.TEST_GROUP_DTO.code, fixture.TEST_USER_DTO.userId], false, true)
+          node(
+            [
+              'groups',
+              fixture.TEST_GROUP_DTO.code,
+              fixture.TEST_USER_DTO.userId
+            ],
+            false,
+            true
+          )
         ])
       ])
     ])
@@ -266,12 +387,12 @@ describe('browser', () => {
     })
 
     facade.searchAuthorizationGroups.mockReturnValue({
-      objects: [ fixture.TEST_GROUP_DTO ]
+      objects: [fixture.TEST_GROUP_DTO]
     })
 
     dto.AuthorizationGroupFetchOptions.mockImplementation(() => {
       return {
-        withUsers: function(){}
+        withUsers: function() {}
       }
     })
 
@@ -302,34 +423,33 @@ describe('browser', () => {
     expectSelectedObject(pages.USERS, null)
     expectOpenObjects(pages.USERS, [])
   })
-
 })
 
-function nodeId(idParts){
+function nodeId(idParts) {
   return idParts.join('/')
 }
 
-function node(idParts, expanded = false, selected = false, children){
+function node(idParts, expanded = false, selected = false, children) {
   let node = {
     id: nodeId(idParts),
     expanded,
     selected
   }
 
-  if(children !== undefined){
+  if (children !== undefined) {
     node['children'] = children
   }
 
   return node
 }
 
-function expectNodes(actualNodes, expectedNodes){
+function expectNodes(actualNodes, expectedNodes) {
   const keys = new Set(['id', 'expanded', 'selected', 'children'])
 
   var actualNodesClone = _.cloneDeep(actualNodes)
   common.mapNodes(null, actualNodesClone, (parent, node) => {
     _.keys(node).forEach(key => {
-      if(!keys.has(key)){
+      if (!keys.has(key)) {
         delete node[key]
       }
     })
@@ -339,10 +459,12 @@ function expectNodes(actualNodes, expectedNodes){
   expect(actualNodesClone).toEqual(expectedNodes)
 }
 
-function expectSelectedObject(page, object){
-  expect(selectors.createGetSelectedObject()(store.getState(), page)).toEqual(object)
+function expectSelectedObject(page, object) {
+  expect(selectors.createGetSelectedObject()(store.getState(), page)).toEqual(
+    object
+  )
 }
 
-function expectOpenObjects(page, objects){
+function expectOpenObjects(page, objects) {
   expect(selectors.getOpenObjects(store.getState(), page)).toEqual(objects)
 }

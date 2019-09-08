@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import React from 'react'
-import {connect} from 'react-redux'
-import {withStyles} from '@material-ui/core/styles'
+import { connect } from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -13,10 +13,10 @@ import ColumnConfig from '../../common/grid/ColumnConfig.jsx'
 import PageConfig from '../../common/grid/PageConfig.jsx'
 import * as ids from '../../../common/consts/ids.js'
 import * as selectors from '../../../store/selectors/selectors.js'
-import {facade, dto} from '../../../services/openbis.js'
+import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
-const styles = (theme) => ({
+const styles = theme => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -60,15 +60,14 @@ const styles = (theme) => ({
   }
 })
 
-function mapStateToProps(state){
+function mapStateToProps(state) {
   return {
     session: selectors.getSession(state)
   }
 }
 
 class Grid extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
 
     const sortDefault = _.isFunction(props.data) ? false : true
@@ -96,11 +95,11 @@ class Grid extends React.Component {
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.load()
   }
 
-  load(){
+  load() {
     this.loadSettings().then(() => {
       this.loadData().then(() => {
         this.setState(() => ({
@@ -110,8 +109,8 @@ class Grid extends React.Component {
     })
   }
 
-  loadData(){
-    if(_.isFunction(this.props.data)){
+  loadData() {
+    if (_.isFunction(this.props.data)) {
       let loadConfig = {
         filter: this.state.filter,
         page: this.state.page,
@@ -125,7 +124,7 @@ class Grid extends React.Component {
           totalCount
         }))
       })
-    }else if(!this.state.loaded){
+    } else if (!this.state.loaded) {
       this.setState(() => ({
         objects: this.props.data
       }))
@@ -133,7 +132,7 @@ class Grid extends React.Component {
     return Promise.resolve()
   }
 
-  loadSettings(){
+  loadSettings() {
     let id = new dto.PersonPermId(this.props.session.userName)
     let fo = new dto.PersonFetchOptions()
     fo.withWebAppSettings(ids.WEB_APP_ID).withAllSettings()
@@ -141,11 +140,11 @@ class Grid extends React.Component {
     return facade.getPersons([id], fo).then(map => {
       let person = map[id]
       let webAppSettings = person.webAppSettings[ids.WEB_APP_ID]
-      if(webAppSettings && webAppSettings.settings){
+      if (webAppSettings && webAppSettings.settings) {
         let gridSettings = webAppSettings.settings[this.props.id]
-        if(gridSettings){
+        if (gridSettings) {
           let settings = JSON.parse(gridSettings.value)
-          if(settings){
+          if (settings) {
             this.setState(() => ({
               ...settings
             }))
@@ -155,7 +154,7 @@ class Grid extends React.Component {
     })
   }
 
-  saveSettings(){
+  saveSettings() {
     let settings = {
       pageSize: this.state.pageSize,
       sort: this.state.sort,
@@ -174,63 +173,85 @@ class Grid extends React.Component {
     facade.updatePersons([update])
   }
 
-  handleFilterChange(filter){
-    this.setState(() => ({
-      page: 0,
-      filter
-    }), () => {
-      this.loadData()
-    })
+  handleFilterChange(filter) {
+    this.setState(
+      () => ({
+        page: 0,
+        filter
+      }),
+      () => {
+        this.loadData()
+      }
+    )
   }
 
-  handleColumnsChange(visibleColumns){
-    this.setState(() => ({
-      visibleColumns
-    }), () => {
-      this.saveSettings()
-    })
+  handleColumnsChange(visibleColumns) {
+    this.setState(
+      () => ({
+        visibleColumns
+      }),
+      () => {
+        this.saveSettings()
+      }
+    )
   }
 
-  handleSortChange(column){
-    if(!column.sort){
+  handleSortChange(column) {
+    if (!column.sort) {
       return
     }
     return () => {
-      this.setState((prevState) => ({
-        sort: column.field,
-        sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
-      }), () => {
-        this.saveSettings()
-        this.loadData()
-      })
+      this.setState(
+        prevState => ({
+          sort: column.field,
+          sortDirection: prevState.sortDirection === 'asc' ? 'desc' : 'asc'
+        }),
+        () => {
+          this.saveSettings()
+          this.loadData()
+        }
+      )
     }
   }
 
-  handlePageChange(page){
-    this.setState(() => ({
-      page
-    }), () => {
-      this.loadData()
-    })
+  handlePageChange(page) {
+    this.setState(
+      () => ({
+        page
+      }),
+      () => {
+        this.loadData()
+      }
+    )
   }
 
-  handlePageSizeChange(pageSize){
-    this.setState(() => ({
-      page: 0,
-      pageSize
-    }), () => {
-      this.saveSettings()
-      this.loadData()
-    })
+  handlePageSizeChange(pageSize) {
+    this.setState(
+      () => ({
+        page: 0,
+        pageSize
+      }),
+      () => {
+        this.saveSettings()
+        this.loadData()
+      }
+    )
   }
 
-  filter(objects){
-    const filter = this.state.filter ? this.state.filter.trim().toUpperCase() : null
+  filter(objects) {
+    const filter = this.state.filter
+      ? this.state.filter.trim().toUpperCase()
+      : null
 
-    function matches(value){
-      if(filter){
-        return value ? value.trim().toUpperCase().includes(filter) : false
-      }else{
+    function matches(value) {
+      if (filter) {
+        return value
+          ? value
+              .trim()
+              .toUpperCase()
+              .includes(filter)
+          : false
+      } else {
         return true
       }
     }
@@ -244,31 +265,34 @@ class Grid extends React.Component {
     })
   }
 
-  sort(objects){
+  sort(objects) {
     const { sort, sortDirection } = this.state
 
-    if(sort){
-      return objects.sort((t1, t2)=>{
+    if (sort) {
+      return objects.sort((t1, t2) => {
         let sign = sortDirection === 'asc' ? 1 : -1
         let column = this.columnsMap[sort]
         let v1 = _.get(t1, column.field) || ''
         let v2 = _.get(t2, column.field) || ''
         return sign * v1.localeCompare(v2)
       })
-    }else{
+    } else {
       return objects
     }
   }
 
-  page(objects){
+  page(objects) {
     const { page, pageSize } = this.state
-    return objects.slice(page*pageSize, Math.min(objects.length, (page+1)*pageSize))
+    return objects.slice(
+      page * pageSize,
+      Math.min(objects.length, (page + 1) * pageSize)
+    )
   }
 
   render() {
     logger.log(logger.DEBUG, 'Grid.render')
 
-    if(!this.state.loaded){
+    if (!this.state.loaded) {
       return <React.Fragment />
     }
 
@@ -278,10 +302,10 @@ class Grid extends React.Component {
     let pagedObjects = null
     let totalCount = null
 
-    if(_.isFunction(this.props.data)){
+    if (_.isFunction(this.props.data)) {
       pagedObjects = this.state.objects
       totalCount = this.state.totalCount
-    }else{
+    } else {
       const filteredObjects = this.filter([...this.state.objects])
       const sortedObjects = this.sort(filteredObjects)
       pagedObjects = this.page(sortedObjects)
@@ -291,18 +315,13 @@ class Grid extends React.Component {
     return (
       <div className={classes.container}>
         <div className={classes.headerContainer}>
-          <FilterField
-            filter={filter}
-            filterChange={this.handleFilterChange}
-          />
+          <FilterField filter={filter} filterChange={this.handleFilterChange} />
         </div>
         <div className={classes.tableContainer}>
           <Table classes={{ root: classes.table }}>
             <TableHead classes={{ root: classes.tableHeader }}>
               <TableRow>
-                {this.columnsArray.map(column =>
-                  this.renderHeaderCell(column)
-                )}
+                {this.columnsArray.map(column => this.renderHeaderCell(column))}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -339,11 +358,11 @@ class Grid extends React.Component {
     )
   }
 
-  renderHeaderCell(column){
+  renderHeaderCell(column) {
     const { visibleColumns, sort, sortDirection } = this.state
 
-    if(visibleColumns.includes(column.field)){
-      if(column.sort){
+    if (visibleColumns.includes(column.field)) {
+      if (column.sort) {
         return (
           <TableCell key={column.field}>
             <TableSortLabel
@@ -355,36 +374,34 @@ class Grid extends React.Component {
             </TableSortLabel>
           </TableCell>
         )
-      }else{
-        return (
-          <TableCell key={column.field}>
-            {column.label}
-          </TableCell>
-        )
+      } else {
+        return <TableCell key={column.field}>{column.label}</TableCell>
       }
-    }else{
+    } else {
       return null
     }
   }
 
-  renderRowCell(column, row){
+  renderRowCell(column, row) {
     const { visibleColumns } = this.state
 
-    if(visibleColumns.includes(column.field)){
+    if (visibleColumns.includes(column.field)) {
       let rendered = column.render(row)
       return (
         <TableCell key={column.field}>
-          {rendered ? rendered : <span>&nbsp;</span> }
+          {rendered ? rendered : <span>&nbsp;</span>}
         </TableCell>
       )
-    }else{
+    } else {
       return null
     }
   }
-
 }
 
 export default _.flow(
-  connect(mapStateToProps, null),
+  connect(
+    mapStateToProps,
+    null
+  ),
   withStyles(styles)
 )(Grid)

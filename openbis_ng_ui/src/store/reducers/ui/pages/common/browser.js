@@ -10,12 +10,12 @@ export const browser = combineReducers({
   expandedNodes
 })
 
-function filter(state = '', action){
-  switch(action.type){
+function filter(state = '', action) {
+  switch (action.type) {
     case actions.BROWSER_SET_FILTER:
-      if(_.isEqual(state, action.payload.filter)){
+      if (_.isEqual(state, action.payload.filter)) {
         return state
-      }else{
+      } else {
         return action.payload.filter
       }
     default:
@@ -23,8 +23,8 @@ function filter(state = '', action){
   }
 }
 
-function nodes(state = [], action){
-  switch(action.type){
+function nodes(state = [], action) {
+  switch (action.type) {
     case actions.BROWSER_SET_NODES:
       return action.payload.nodes
     default:
@@ -32,12 +32,12 @@ function nodes(state = [], action){
   }
 }
 
-function selectedNodes(state = [], action){
-  switch(action.type){
+function selectedNodes(state = [], action) {
+  switch (action.type) {
     case actions.BROWSER_SET_SELECTED_NODES:
-      if(_.isEqual(state, action.payload.ids)){
+      if (_.isEqual(state, action.payload.ids)) {
         return state
-      }else{
+      } else {
         return action.payload.ids
       }
     default:
@@ -45,43 +45,43 @@ function selectedNodes(state = [], action){
   }
 }
 
-function visibleNodes(state = [], action){
-  switch(action.type){
-    case actions.BROWSER_SET_VISIBLE_NODES:{
-      if(_.isEqual(state, action.payload.ids)){
+function visibleNodes(state = [], action) {
+  switch (action.type) {
+    case actions.BROWSER_SET_VISIBLE_NODES: {
+      if (_.isEqual(state, action.payload.ids)) {
         return state
       } else {
         return action.payload.ids
       }
     }
-    default:{
+    default: {
       return state
     }
   }
 }
 
-function expandedNodes(state = [], action){
+function expandedNodes(state = [], action) {
   let newState = null
 
-  switch(action.type){
-    case actions.BROWSER_SET_EXPANDED_NODES:{
+  switch (action.type) {
+    case actions.BROWSER_SET_EXPANDED_NODES: {
       newState = action.payload.ids
       break
     }
-    case actions.BROWSER_ADD_EXPANDED_NODES:{
+    case actions.BROWSER_ADD_EXPANDED_NODES: {
       newState = _.union(state, action.payload.ids)
       break
     }
-    case actions.BROWSER_REMOVE_EXPANDED_NODES:{
+    case actions.BROWSER_REMOVE_EXPANDED_NODES: {
       newState = _.without(state, ...action.payload.ids)
       break
     }
-    default:{
+    default: {
       return state
     }
   }
 
-  if(_.isEqual(state, newState)){
+  if (_.isEqual(state, newState)) {
     return state
   } else {
     return newState
