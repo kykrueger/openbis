@@ -192,9 +192,13 @@ function format(params){
   let bestMatch = 0
   for(let i = 0; i < keys.length; i++){
     let route = routes[keys[i]]
-    let result = route.format(params)
-    if(result && result.match > bestMatch){
-      bestPath = result.path
+    try{
+      let result = route.format(params)
+      if(result && result.match > bestMatch){
+        bestPath = result.path
+      }
+    }catch(err){
+      // ignore problems with incorrect params
     }
   }
   return bestPath

@@ -69,7 +69,9 @@ function* logout() {
 
 function* search(action) {
   const {page, text} = action.payload
-  yield put(actions.objectOpen(page, objectTypes.SEARCH, text.trim()))
+  if(text.trim().length > 0){
+    yield put(actions.objectOpen(page, objectTypes.SEARCH, text.trim()))
+  }
   yield put(actions.setSearch(''))
 }
 
