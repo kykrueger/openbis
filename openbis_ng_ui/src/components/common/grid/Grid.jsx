@@ -22,11 +22,6 @@ const styles = theme => ({
     flexDirection: 'column',
     height: '100%'
   },
-  headerContainer: {
-    flexGrow: 0,
-    padding: theme.spacing(2),
-    paddingBottom: 0
-  },
   footerContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -82,7 +77,7 @@ class Grid extends React.Component {
 
     this.state = {
       loaded: false,
-      filter: this.props.filter || '',
+      filters: this.props.filters || {},
       page: 0,
       pageSize: 10,
       visibleColumns: Object.keys(this.columnsMap),
@@ -112,7 +107,7 @@ class Grid extends React.Component {
   loadData() {
     if (_.isFunction(this.props.data)) {
       let loadConfig = {
-        filter: this.state.filter,
+        filters: this.state.filters,
         page: this.state.page,
         pageSize: this.state.pageSize,
         sort: this.state.sort,
@@ -173,11 +168,16 @@ class Grid extends React.Component {
     facade.updatePersons([update])
   }
 
-  handleFilterChange(filter) {
+  handleFilterChange(column, filter) {
+    let filters = {
+      ...this.state.filters,
+      [column]: filter
+    }
+
     this.setState(
       () => ({
         page: 0,
-        filter
+        filters
       }),
       () => {
         this.loadData()
@@ -239,17 +239,13 @@ class Grid extends React.Component {
   }
 
   filter(objects) {
-    const filter = this.state.filter
-      ? this.state.filter.trim().toUpperCase()
-      : null
-
-    function matches(value) {
+    function matches(value, filter) {
       if (filter) {
         return value
           ? value
               .trim()
               .toUpperCase()
-              .includes(filter)
+              .includes(filter.trim().toUpperCase())
           : false
       } else {
         return true
@@ -257,11 +253,13 @@ class Grid extends React.Component {
     }
 
     return _.filter(objects, row => {
-      return this.state.visibleColumns.some(visibleColumn => {
-        let column = this.columnsMap[visibleColumn]
-        let value = _.get(row, column.field)
-        return matches(value)
+      let matchesAll = true
+      this.state.visibleColumns.forEach(visibleColumn => {
+        let value = _.get(row, visibleColumn)
+        let filter = this.state.filters[visibleColumn]
+        matchesAll = matchesAll && matches(value, filter)
       })
+      return matchesAll
     })
   }
 
@@ -297,7 +295,7 @@ class Grid extends React.Component {
     }
 
     const { classes } = this.props
-    const { page, pageSize, filter, visibleColumns } = this.state
+    const { page, pageSize, visibleColumns } = this.state
 
     let pagedObjects = null
     let totalCount = null
@@ -314,12 +312,12 @@ class Grid extends React.Component {
 
     return (
       <div className={classes.container}>
-        <div className={classes.headerContainer}>
-          <FilterField filter={filter} filterChange={this.handleFilterChange} />
-        </div>
         <div className={classes.tableContainer}>
           <Table classes={{ root: classes.table }}>
             <TableHead classes={{ root: classes.tableHeader }}>
+              <TableRow>
+                {this.columnsArray.map(column => this.renderFilterCell(column))}
+              </TableRow>
               <TableRow>
                 {this.columnsArray.map(column => this.renderHeaderCell(column))}
               </TableRow>
@@ -377,6 +375,24 @@ class Grid extends React.Component {
       } else {
         return <TableCell key={column.field}>{column.label}</TableCell>
       }
+    } else {
+      return null
+    }
+  }
+
+  renderFilterCell(column) {
+    const { visibleColumns, filters } = this.state
+
+    if (visibleColumns.includes(column.field)) {
+      let filter = filters[column.field] || ''
+      let filterChange = filter => {
+        this.handleFilterChange(column.field, filter)
+      }
+      return (
+        <TableCell key={column.field}>
+          <FilterField filter={filter} filterChange={filterChange} />
+        </TableCell>
+      )
     } else {
       return null
     }

@@ -58,10 +58,19 @@ class Search extends React.Component {
         dataSetTypes,
         materialTypes
       )
-      return allTypes.map(type => ({
-        ...type,
-        id: type.permId.entityKind + '-' + type.permId.permId
-      }))
+
+      let query = this.props.objectId.toUpperCase()
+
+      return allTypes
+        .filter(
+          type =>
+            (type.code && type.code.toUpperCase().includes(query)) ||
+            (type.description && type.description.toUpperCase().includes(query))
+        )
+        .map(type => ({
+          ...type,
+          id: type.permId.entityKind + '-' + type.permId.permId
+        }))
     })
   }
 
@@ -125,7 +134,6 @@ class Search extends React.Component {
     return (
       <Grid
         id={ids.TYPES_GRID_ID}
-        filter={this.props.objectId}
         columns={[
           {
             field: 'permId.entityKind',
