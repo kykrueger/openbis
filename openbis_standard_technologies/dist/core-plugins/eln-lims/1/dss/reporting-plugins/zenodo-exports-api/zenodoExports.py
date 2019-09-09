@@ -110,7 +110,7 @@ def sendToZenodo(tr, params, tempZipFilePath, entities):
         selfUrl = depositionLinks.get('self')
 
         submitFile(httpClient.newRequest(depositUrl), accessToken, tempZipFilePath)
-        addMetadata(httpClient.newRequest(selfUrl), accessToken)
+        addMetadata(params, httpClient.newRequest(selfUrl), accessToken)
 
         entityPermIds = map(lambda entity: entity['permId'], entities)
         zenodoCallable = ZenodoCallable(params, accessToken, selfUrl,
@@ -140,10 +140,10 @@ def submitFile(request, accessToken, tempZipFilePath):
     return JSONObject(contentStr)
 
 
-def addMetadata(request, accessToken):
+def addMetadata(params, request, accessToken):
     data = {
         'metadata': {
-            'title': str(time.time()),
+            'title': params.get('submissionTitle'),
             'license': 'cc-zero',
             'upload_type': 'dataset',
             'description': 'Add some description.',
