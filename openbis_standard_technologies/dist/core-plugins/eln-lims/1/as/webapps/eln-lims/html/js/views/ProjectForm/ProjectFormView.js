@@ -78,7 +78,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 							if (experimentType) {
 								defaultValue = _this._projectFormModel.project.spaceCode;
 							} else {
-								defaultValue = "";
+								defaultValue = "COLLECTION";
 							}
 						} else {
 							defaultValue = "DEFAULT_EXPERIMENT";
