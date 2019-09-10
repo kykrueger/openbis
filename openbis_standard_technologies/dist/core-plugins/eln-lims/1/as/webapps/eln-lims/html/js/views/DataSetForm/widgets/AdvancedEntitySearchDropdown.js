@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-function AdvancedEntitySearchDropdown(	isMultiple,
-										isRequired,
-										placeholder,
-										selectsExperiments,
-										selectsSamples,
-										selectsDatasets,
-										selectsProjects) {
+function AdvancedEntitySearchDropdown(isMultiple,
+									  isRequired,
+									  placeholder,
+									  selectsExperiments,
+									  selectsSamples,
+									  selectsDatasets,
+									  selectsProjects,
+									  selectSpaces) {
 	var isMultiple = isMultiple;
 	var isRequired = isRequired;
 	var placeholder = placeholder;
@@ -28,6 +29,7 @@ function AdvancedEntitySearchDropdown(	isMultiple,
 	var selectsSamples = selectsSamples;
 	var selectsDatasets = selectsDatasets;
 	var selectsProjects = selectsProjects;
+	var selectSpaces = selectSpaces;
 	var $select = FormUtil.getPlainDropdown({}, "");
 	var storedParams = null;
 	

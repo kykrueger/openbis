@@ -15,15 +15,18 @@ function MoveEntityController(entityType, entityPermId) {
 			case "DATASET":
 				mainController.serverFacade.searchForDataSetsAdvanced(criteria, null, callback);
 				break;
+			case "PROJECT":
+				mainController.serverFacade.searchForProjectsAdvanced(criteria, null, callback);
+				break;
 		}
-	}
+	};
 	
 	this.init = function() {
 		searchAndCallback(function(result) {
 			moveEntityModel.entity = result.objects[0];
 			moveEntityView.repaint();
 		});
-	}
+	};
 	
 	var waitForIndexUpdate = function() {
 		searchAndCallback(function(result) {
