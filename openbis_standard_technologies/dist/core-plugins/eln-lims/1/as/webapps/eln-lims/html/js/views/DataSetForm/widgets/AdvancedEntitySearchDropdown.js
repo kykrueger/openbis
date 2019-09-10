@@ -164,6 +164,9 @@ function AdvancedEntitySearchDropdown(isMultiple,
 			if(entity.identifier && entity.identifier.identifier) {
 				text = entity.identifier.identifier;
 			}
+			if(!entity.identifier && entity.code) {
+				text = Util.getDisplayNameFromCode(entity.code);
+			}
 			if(profile.propertyReplacingCode && entity.properties && entity.properties[profile.propertyReplacingCode]) {
 				text += " (" + entity.properties[profile.propertyReplacingCode] + ")";
 			}
@@ -235,7 +238,19 @@ function AdvancedEntitySearchDropdown(isMultiple,
 			withSampleProperties : true, 
 			withExperimentProperties : true 
 		}, function(results) { results.type = "DataSets"; action(results) });
-	}
+	};
+
+	var searchSpace = function (action) {
+		var criteria = {
+			entityKind: "SPACE",
+			logicalOperator: "OR",
+			rules: {
+				"UUIDv4-1": { type: "Property/Attribute", name: "ATTR.CODE", operator: "thatContains", value: storedParams.data.q }
+			}
+		};
+		mainController.serverFacade.searchForSpacesAdvanced(criteria, {
+		}, function(results) { results.type = "Spaces"; action(results); });
+	};
 	
 	//
 	// Build Select
@@ -313,6 +328,9 @@ function AdvancedEntitySearchDropdown(isMultiple,
 						}
 						if(selectsDatasets) {
 							searches.push(searchDataset);
+						}
+						if (selectSpaces) {
+							searches.push(searchSpace)
 						}
 						      
 						var action = null;
