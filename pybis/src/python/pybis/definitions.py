@@ -461,12 +461,12 @@ def get_fetchoption_for_entity(entity):
     except KeyError as e:
         return {}
 
-def get_type_for_entity(entity, action):
+def get_type_for_entity(entity, action, parents_or_children=''):
     if action not in "create update delete search".split():
         raise ValueError('unknown action: {}'.format(action))
 
     definition = openbis_definitions(entity)
-    if action in definition:
+    if action in definition and not parents_or_children:
         return definition[action]
     else:
         # try to guess type, according to the naming scheme
@@ -478,10 +478,16 @@ def get_type_for_entity(entity, action):
             "search": "SearchCriteria",
         }
         
-        return {
-            "@type": "as.dto.{}.{}.{}{}"
-            .format(entity.lower(), action, cap_entity, noun[action])
-        }
+        if parents_or_children:
+            return {
+                "@type": "as.dto.{}.{}.{}{}{}"
+                .format(entity.lower(), action, cap_entity, parents_or_children, noun[action])
+            }
+        else:
+            return {
+                "@type": "as.dto.{}.{}.{}{}"
+                .format(entity.lower(), action, cap_entity, noun[action])
+            }
 
 
 def get_method_for_entity(entity, action):
