@@ -1,3 +1,11 @@
+## Changes with pybis-1.9.2
+
+* searches for datasets and samples are highly improved
+* search parameters can accept a code, an identifier or an openbis entity
+* searching for all datasets in a project now works
+* bugfixes
+
+
 ## Changes with pybis-1.9.1
 
 * bugfix: controlled vocabulary
