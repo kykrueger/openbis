@@ -1,5 +1,5 @@
 /**
- * (c) jExcel v3.4.1
+ * (c) jExcel v3.4.4
  * 
  * Author: Paul Hodel <paul.hodel@gmail.com>
  * Website: https://bossanova.uk/jexcel/
@@ -111,10 +111,14 @@ var jexcel = (function(el, options) {
         meta: null,
         // Style
         style:null,
+        // Execute formulas
+        parseFormulas:true,
+        autoIncrement:true,
         // Event handles
         onload:null,
         onchange:null,
         onbeforechange:null,
+        onafterchanges:null,
         onbeforeinsertrow: null,
         oninsertrow:null,
         onbeforeinsertcolumn: null,
@@ -175,7 +179,7 @@ var jexcel = (function(el, options) {
             noCellsSelected: 'No cells selected',
         },
         // About message
-        about:"jExcel CE Spreadsheet\nVersion 3.4.1\nAuthor: Paul Hodel <paul.hodel@gmail.com>\nWebsite: https://jexcel.net/v3",
+        about:"jExcel CE Spreadsheet\nVersion 3.4.4\nAuthor: Paul Hodel <paul.hodel@gmail.com>\nWebsite: https://jexcel.net/v3",
     };
 
     // Loading initial configuration from user
@@ -220,6 +224,7 @@ var jexcel = (function(el, options) {
     obj.style = [];
     obj.meta = [];
     obj.data = null;
+    obj.border = {};
 
     // Internal controllers
     obj.cursor = null;
@@ -516,9 +521,6 @@ var jexcel = (function(el, options) {
         // Fullscreen
         if (obj.options.fullscreen == true) {
             el.classList.add('fullscreen');
-            if (obj.options.toolbar) {
-                el.classList.add('with-toolbar');
-            }
         } else {
             // Overflow
             if (obj.options.tableOverflow == true) {
@@ -531,6 +533,11 @@ var jexcel = (function(el, options) {
                     obj.content.style.width = obj.options.tableWidth;
                 }
             }
+        }
+
+        // With toolbars
+        if (obj.options.toolbar) {
+            el.classList.add('with-toolbar');
         }
 
         // Actions
@@ -830,7 +837,7 @@ var jexcel = (function(el, options) {
                 td.appendChild(img);
             }
         } else {
-            if ((''+value).substr(0,1) == '=') {
+            if ((''+value).substr(0,1) == '=' && obj.options.parseFormulas == true) {
                 value = obj.executeFormula(value, i, j)
             }
             if (obj.options.columns[i].mask) {
@@ -1469,6 +1476,13 @@ var jexcel = (function(el, options) {
                 }
             }
 
+            // On edition end
+            if (! obj.ignoreEvents) {
+                if (typeof(obj.options.oneditionend) == 'function') {
+                    obj.options.oneditionend(el, cell, x, y, value, save);
+                }
+            }
+
             // Update values
             var ignoreEvents = obj.ignoreEvents ? true : false;
             var ignoreHistory = obj.ignoreHistory ? true : false;
@@ -1508,6 +1522,13 @@ var jexcel = (function(el, options) {
 
             // Restore value
             cell.innerHTML = obj.edition[1];
+
+            // On edition end
+            if (! obj.ignoreEvents) {
+                if (typeof(obj.options.oneditionend) == 'function') {
+                    obj.options.oneditionend(el, cell, x, y, value, save);
+                }
+            }
         }
 
         // Remove editor class
@@ -1515,14 +1536,37 @@ var jexcel = (function(el, options) {
 
         // Finish edition
         obj.edition = null;
+    }
 
-        // On edition end
-        if (! obj.ignoreEvents) {
-            if (typeof(obj.options.oneditionend) == 'function') {
-                obj.options.oneditionend(el, cell, x, y, value);
-            }
-        }
-    },
+    /**
+     * Get the cell object
+     * 
+     * @param object cell
+     * @return string value
+     */
+    obj.getCell = function(cell) {
+        // Convert in case name is excel liked ex. A10, BB92
+        cell = jexcel.getIdFromColumnName(cell, true);
+        var x = cell[0];
+        var y = cell[1];
+
+        return obj.records[y][x];
+    }
+
+    /**
+     * Get label
+     * 
+     * @param object cell
+     * @return string value
+     */
+    obj.getLabel = function(cell) {
+        // Convert in case name is excel liked ex. A10, BB92
+        cell = jexcel.getIdFromColumnName(cell, true);
+        var x = cell[0];
+        var y = cell[1];
+
+        return obj.records[y][x].innerHTML;
+    }
 
     /**
      * Get the value from a cell
@@ -1638,6 +1682,13 @@ var jexcel = (function(el, options) {
 
         // Update table with custom configurations if applicable
         obj.updateTable();
+
+        // On after change
+        if (! obj.ignoreEvents) {
+            if (typeof(obj.options.onafterchanges) == 'function') {
+                obj.options.onafterchanges(el, records, value);
+            }
+        }
     }
 
     /**
@@ -1664,6 +1715,13 @@ var jexcel = (function(el, options) {
 
         // Update table with custom configurations if applicable
         obj.updateTable();
+
+        // On after change
+        if (! obj.ignoreEvents) {
+            if (typeof(obj.options.onafterchanges) == 'function') {
+                obj.options.onafterchanges(el, records, value);
+            }
+        }
     }
 
     /**
@@ -1689,6 +1747,13 @@ var jexcel = (function(el, options) {
                 records:records,
                 selection:obj.selectedCell,
             });
+
+            // On after change
+            if (! obj.ignoreEvents) {
+                if (typeof(obj.options.onafterchanges) == 'function') {
+                    obj.options.onafterchanges(el, records);
+                }
+            }
         }
     }
 
@@ -1710,7 +1775,7 @@ var jexcel = (function(el, options) {
                     var val = obj.options.onbeforechange(el, obj.records[y][x], x, y, value);
 
                     // If you return something this will overwrite the value
-                    if (val != 'undefined') {
+                    if (val != undefined) {
                         value = val;
                     }
                 }
@@ -1776,13 +1841,9 @@ var jexcel = (function(el, options) {
                     }
                 } else {
                     // Update data and cell
-                    if (obj.options.columns[x].autoCasting != false) { 
-                        obj.options.data[y][x] = (value && Number(value) == value) ? Number(value) : value;
-                    } else {
-                        obj.options.data[y][x] = value;
-                    }
+                    obj.options.data[y][x] = value;
                     // Label
-                    if (('' + value).substr(0,1) == '=') {
+                    if (('' + value).substr(0,1) == '='  && obj.options.parseFormulas == true) {
                         value = obj.executeFormula(value, x, y);
                     }
                     if (obj.options.columns[x].mask) {
@@ -1881,7 +1942,7 @@ var jexcel = (function(el, options) {
                         var value = data[posy][posx];
                     }
 
-                    if (value && t0 == t1) {
+                    if (value && t0 == t1 && obj.options.autoIncrement == true) {
                         if (obj.options.columns[i].type == 'text' || obj.options.columns[i].type == 'number') {
                             if ((''+value).substr(0,1) == '=') {
                                 var tokens = value.match(/([A-Z]+[0-9]+)/g);
@@ -1943,6 +2004,42 @@ var jexcel = (function(el, options) {
 
         // Update table with custom configuration if applicable
         obj.updateTable();
+
+        // On after change
+        if (! obj.ignoreEvents) {
+            if (typeof(obj.options.onafterchanges) == 'function') {
+                obj.options.onafterchanges(el, records);
+            }
+        }
+    }
+
+    obj.setBorder = function(x1, y1, x2, y2, border) {
+        if (! obj.border[border]) {
+            obj.border[border] = document.createElement('div');
+            obj.border[border].classList.add('jexcel_border');
+            if (border == 'copying') {
+                obj.border[border].classList.add('jexcel_copying');
+            } else {
+                obj.border[border].style.borderColor = border;
+                //obj.border[border].style.backgroundColor = 'rgba(0,0,0,0.1)';
+            }
+            el.appendChild(obj.border[border]);
+        }
+
+        // Get last cell
+        var first = obj.records[x1][y1].getBoundingClientRect();
+        var x1 = first.left;
+        var y1 = first.top;
+
+        var last = obj.records[x2][y2].getBoundingClientRect();
+        var w1 = (last.left + last.width) - first.left - 2;
+        var h1 = (last.top + last.height) - first.top - 2;
+
+        // Place the corner in the correct place
+        obj.border[border].style.top = y1 + 'px';
+        obj.border[border].style.left = x1 + 'px';
+        obj.border[border].style.width = w1 + 'px';
+        obj.border[border].style.height = h1 + 'px';
     }
 
     /**
@@ -2510,18 +2607,26 @@ var jexcel = (function(el, options) {
     /**
      * Get the row height
      * 
-     * @param row - row number (first column is: 0)
+     * @param row - row number (first row is: 0)
      * @return height - current row height
      */
     obj.getHeight = function(row) {
         if (! row) {
+            // Get height of all rows
+            var data = [];
+            for (var j = 0; j < obj.rows.length; j++) {
+                var h = obj.rows[j].style.height;
+                if (h) {
+                    data[j] = h;
+                }
+            }
         } else {
-            // In case the column is an object
+            // In case the row is an object
             if (typeof(row) == 'object') {
                 row = $(row).getAttribute('data-y');
             }
 
-            data = obj.rows[row].getAttribute('height')
+            var data = obj.rows[row].style.height;
         }
 
         return data;
@@ -3941,14 +4046,14 @@ var jexcel = (function(el, options) {
      * Show index column
      */
     obj.showIndex = function() {
-        obj.colgroupContainer.children[0].width = 40;
+        obj.table.classList.remove('jexcel_hidden_index');
     }
 
     /**
      * Hide index column
      */
     obj.hideIndex = function() {
-        obj.colgroupContainer.children[0].width = 0;
+        obj.table.classList.add('jexcel_hidden_index');
     }
 
     /**
@@ -4108,11 +4213,13 @@ var jexcel = (function(el, options) {
             tokensUpdate(tokens);
         }
 
+        // String
+        var evalstring = '';
+
         // Get tokens
         var tokens = expression.match(/([A-Z]+[0-9]+)/g);
 
         if (tokens) {
-            var evalstring = "";
             for (var i = 0; i < tokens.length; i++) {
                 // Keep chain
                 if (! obj.formula[tokens[i]]) {
@@ -4125,8 +4232,6 @@ var jexcel = (function(el, options) {
 
                 // Do not calculate again
                 if (eval('typeof(' + tokens[i] + ') == "undefined"')) {
-                    // Declaretion
-                    evalstring += "var " + tokens[i] + " = null;";
                     // Coords
                     var position = jexcel.getIdFromColumnName(tokens[i], 1);
                     // Get value
@@ -4142,32 +4247,24 @@ var jexcel = (function(el, options) {
                         value = obj.executeFormula(value, position[0], position[1]);
                     }
                     // Type!
-                    if ((''+value).trim() == '' || value != Number(value)) {
-                        // Trying any formatted number
-                        var number = ('' + value);
-                        var decimal = obj.options.columns[position[0]].decimal || '.';
-                        number = number.split(decimal);
-                        number[0] = number[0].match(/[+-]?[0-9]/g);
-                        if (number[0]) {
-                            number[0] = number[0].join('');
-                        } 
-                        if (number[1]) {
-                            number[1] = number[1].match(/[0-9]*/g).join('');
-                        }
-                        // Got a valid number
-                        if (number[0] && Number(number[0]) >= 0) {
-                            if (! number[1]) {
-                                evalstring += "var " + tokens[i] + " = " + number[0] + ".00;";
-                            } else {
-                                evalstring += "var " + tokens[i] + " = " + number[0] + '.' + number[1] + ";";
-                            }
-                        } else {
-                            // Render as string
-                            evalstring += "var " + tokens[i] + " = '" + value + "';";
-                        }
+                    if ((''+value).trim() == '') {
+                        // Null
+                        evalstring += "var " + tokens[i] + " = null;";
                     } else {
-                        // Number
-                        evalstring += "var " + tokens[i] + " = " + value + ";";
+                        if (value == Number(value)) {
+                            // Number
+                            evalstring += "var " + tokens[i] + " = " + value + ";";
+                        } else {
+                            // Trying any formatted number
+                            var number = null;
+                            if (number = obj.parseNumber(value, position[0])) {
+                                // Render as number
+                                evalstring += "var " + tokens[i] + " = " + number + ";";
+                            } else {
+                                // Render as string
+                                evalstring += "var " + tokens[i] + " = '" + value + "';";
+                            }
+                        }
                     }
                 }
             }
@@ -4183,6 +4280,38 @@ var jexcel = (function(el, options) {
         }
 
         return res;
+    }
+
+    /**
+     * Trying to extract a number from a string
+     **/
+    obj.parseNumber = function(value, columnNumber) {
+        // Decimal point
+        var decimal = columnNumber && obj.options.columns[columnNumber].decimal ? obj.options.columns[columnNumber].decimal : '.';
+
+        // Parse both parts of the number
+        var number = ('' + value);
+        number = number.split(decimal);
+        number[0] = number[0].match(/[+-]?[0-9]/g);
+        if (number[0]) {
+            number[0] = number[0].join('');
+        } 
+        if (number[1]) {
+            number[1] = number[1].match(/[0-9]*/g).join('');
+        }
+
+        // Is a valid number 
+        if (number[0] && Number(number[0]) >= 0) {
+            if (! number[1]) {
+                var value = Number(number[0] + '.00');
+            } else {
+                var value = Number(number[0] + '.' + number[1]);
+            }
+        } else {
+            var value = null;
+        }
+
+        return value;
     }
 
     /**
@@ -4908,6 +5037,9 @@ var jexcel = (function(el, options) {
                 } else if (quantyOfPages - obj.pageNumber < 5) {
                     var startNumber = quantyOfPages - 9;
                     var finalNumber = quantyOfPages;
+                    if (startNumber < 1) {
+                        startNumber = 1;
+                    }
                 } else {
                     var startNumber = obj.pageNumber - 4;
                     var finalNumber = obj.pageNumber + 5;
@@ -5081,33 +5213,13 @@ var jexcel = (function(el, options) {
                 obj.textarea.value = str;
             }
             obj.textarea.select();
-            jexcel.copyControls.enabled = false;
             document.execCommand("copy");
-            jexcel.copyControls.enabled = true;
         }
 
         // Keep data
         obj.data = str; 
         // Keep non visible information
         obj.hashString = obj.hash(obj.textarea.value); 
-
-        // Highlight
-        /*for (var i = 0; i < obj.highlighted.length; i++) {
-            obj.highlighted[i].classList.add('copying');
-
-            if (obj.highlighted[i].classList.contains('highlight-top')) {
-                obj.highlighted[i].classList.add('copying-top');
-            }
-            if (obj.highlighted[i].classList.contains('highlight-right')) {
-                obj.highlighted[i].classList.add('copying-right');
-            }
-            if (obj.highlighted[i].classList.contains('highlight-bottom')) {
-                obj.highlighted[i].classList.add('copying-bottom');
-            }
-            if (obj.highlighted[i].classList.contains('highlight-left')) {
-                obj.highlighted[i].classList.add('copying-left');
-            }
-        }*/
 
         return str;
     }
@@ -5165,7 +5277,7 @@ var jexcel = (function(el, options) {
                         var columnName = jexcel.getColumnNameFromId([colIndex, rowIndex]);
                         newStyle[columnName] = style[styleIndex];
                         oldStyle[columnName] = obj.getStyle(columnName);
-                        obj.records[rowIndex][colIndex].style = style[styleIndex];
+                        obj.records[rowIndex][colIndex].setAttribute('style', style[styleIndex]);
                         styleIndex++
                     }
                     i++;
@@ -5198,13 +5310,13 @@ var jexcel = (function(el, options) {
                 oldStyle:oldStyle,
             });
 
+            // Update table
+            obj.updateTable();
+
             // Paste event
             if (typeof(obj.options.onpaste) == 'function') {
                 obj.options.onpaste(el, records);
             }
-
-            // Update table
-            obj.updateTable();
         }
     }
 
@@ -5872,8 +5984,6 @@ jexcel.destroy = function(element, destroyEventHandlers) {
             document.removeEventListener("mousemove", jexcel.mouseMoveControls);
             document.removeEventListener("mouseover", jexcel.mouseOverControls);
             document.removeEventListener("dblclick", jexcel.doubleClickControls);
-            document.removeEventListener("copy", jexcel.copyControls);
-            document.removeEventListener("cut", jexcel.cutControls);
             document.removeEventListener("paste", jexcel.pasteControls);
             document.removeEventListener("contextmenu", jexcel.contextMenuControls);
             document.removeEventListener("touchstart", jexcel.touchStartControls);
@@ -5891,8 +6001,6 @@ jexcel.build = function() {
     document.addEventListener("mousemove", jexcel.mouseMoveControls);
     document.addEventListener("mouseover", jexcel.mouseOverControls);
     document.addEventListener("dblclick", jexcel.doubleClickControls);
-    document.addEventListener("copy", jexcel.copyControls);
-    document.addEventListener("cut", jexcel.cutControls);
     document.addEventListener("paste", jexcel.pasteControls);
     document.addEventListener("contextmenu", jexcel.contextMenuControls);
     document.addEventListener("touchstart", jexcel.touchStartControls);
@@ -6158,6 +6266,25 @@ jexcel.keyDownControls = function(e) {
                             // Ctrl + Z
                             jexcel.current.undo();
                             e.preventDefault();
+                        } else if (e.which == 67) {
+                            // Ctrl + C
+                            jexcel.current.copy(true);
+                            e.preventDefault();
+                        } else if (e.which == 67) {
+                            // Ctrl + C
+                            jexcel.current.copy(true);
+                            e.preventDefault();
+                        } else if (e.which == 88) {
+                            // Ctrl + X
+                            if (jexcel.current.options.editable == true) {
+                                jexcel.cutControls();
+                            } else {
+                                jexcel.copyControls();
+                            }
+                            e.preventDefault();
+                        } else if (e.which == 86) {
+                            // Ctrl + V
+                            jexcel.pasteControls();
                         }
                     } else {
                         if (jexcel.current.selectedCell) {
@@ -6177,6 +6304,9 @@ jexcel.keyDownControls = function(e) {
                                             // Start edition
                                             jexcel.current.openEditor(jexcel.current.records[rowId][columnId], true);
                                         }
+                                    } else if (e.keyCode == 113) {
+                                        // Start edition with current content F2
+                                        jexcel.current.openEditor(jexcel.current.records[rowId][columnId], false);
                                     } else if ((e.keyCode == 8) ||
                                                (e.keyCode >= 48 && e.keyCode <= 57) ||
                                                (e.keyCode >= 65 && e.keyCode <= 90) ||
@@ -6188,9 +6318,6 @@ jexcel.keyDownControls = function(e) {
                                         if (jexcel.current.options.columns[columnId].type == 'calendar') {
                                             e.preventDefault();
                                         }
-                                    } else if (e.keyCode == 113) {
-                                        // Start edition with current content F2
-                                        jexcel.current.openEditor(jexcel.current.records[rowId][columnId], false);
                                     }
                                 }
                             }
@@ -6789,11 +6916,13 @@ jexcel.cutControls = function(e) {
 jexcel.pasteControls = function(e) {
     if (jexcel.current && jexcel.current.selectedCell) {
         if (! jexcel.current.edition) {
-            if (e.clipboardData) {
-                if (jexcel.current.options.editable == true) {
+            if (jexcel.current.options.editable == true) {
+                if (e && e.clipboardData) {
                     jexcel.current.paste(jexcel.current.selectedCell[0], jexcel.current.selectedCell[1], e.clipboardData.getData('text'));
+                    e.preventDefault();
+                } else if (window.clipboardData) {
+                    jexcel.current.paste(jexcel.current.selectedCell[0], jexcel.current.selectedCell[1], window.clipboardData.getData('text'));
                 }
-                e.preventDefault();
             }
         }
     }
@@ -6870,8 +6999,6 @@ jexcel.touchEndControls = function(e) {
         jexcel.timeControl = null;
     }
 }
-
-jexcel.copyControls.enabled = true;
 
 /**
  * Jquery Support

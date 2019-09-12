@@ -17,10 +17,10 @@
 package ch.ethz.sis.openbis.generic.server;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletContext;
@@ -51,6 +51,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 @Controller
 public class SingleSignOnServlet extends AbstractServlet
 {
+    private static final String OPENBIS_COOKIE = "openbis";
+
     public static final String SERVLET_NAME = "ssos";
 
     public static final String SESSION_ID_KEY = "session-id-key";
@@ -108,15 +110,32 @@ public class SingleSignOnServlet extends AbstractServlet
     @RequestMapping({ SERVLET_NAME })
     protected void respondToRequest(HttpServletRequest request, HttpServletResponse response) throws Exception, IOException
     {
+        operationLog.info("handle sso event");
+        removeStaleSessions();
         String sessionId = getHeader(request, SESSION_ID_KEY, DEFAULT_SESSION_ID_KEY);
-        String sessionToken = sessionTokenBySessionId.get(sessionId);
-        String returnURL = request.getParameter("return");
-        if (returnURL != null)
+        synchronized (this)
         {
-            handleLogOut(request, response, sessionId, sessionToken, returnURL);
-        } else
+            String sessionToken = sessionTokenBySessionId.get(sessionId);
+            String returnURL = request.getParameter("return");
+            if (returnURL != null)
+            {
+                handleLogOut(request, response, sessionId, sessionToken, returnURL);
+            } else
+            {
+                handleLogIn(request, response, sessionId, sessionToken);
+            }
+        }
+    }
+
+    private void removeStaleSessions()
+    {
+        for (Entry<String, String> entry : new ArrayList<>(sessionTokenBySessionId.entrySet()))
         {
-            handleLogIn(request, response, sessionId, sessionToken);
+            String sessionToken = entry.getValue();
+            if (sessionManager.tryGetSession(sessionToken) == null)
+            {
+                sessionTokenBySessionId.remove(entry.getKey());
+            }
         }
     }
 
@@ -148,7 +167,7 @@ public class SingleSignOnServlet extends AbstractServlet
         applicationServerApi.registerUser(sessionToken);
         sessionTokenBySessionId.put(sessionId, sessionToken);
 
-        operationLog.info("Session token " + sessionToken + " created for SSO session id " + sessionId);
+        operationLog.info("Session token " + sessionToken + " created for SSO session id " + sessionId + " (" + sessionTokenBySessionId.size() + ")");
         redirectToApp(request, response, sessionToken);
     }
 
@@ -156,6 +175,7 @@ public class SingleSignOnServlet extends AbstractServlet
             throws IOException
     {
         operationLog.info("log out session id: " + sessionId);
+        sessionTokenBySessionId.remove(sessionId);
         if (sessionToken != null)
         {
             Session session = sessionManager.tryGetSession(sessionToken);
@@ -178,7 +198,7 @@ public class SingleSignOnServlet extends AbstractServlet
         String redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, template.createText());
         operationLog.info("redirect to " + redirectUrl);
         removeOpenbisCookies(request, response);
-        Cookie cookie = new Cookie("openbis", sessionToken);
+        Cookie cookie = new Cookie(OPENBIS_COOKIE, sessionToken);
         cookie.setPath("/");
         response.addCookie(cookie);
         response.sendRedirect(redirectUrl);
@@ -189,7 +209,7 @@ public class SingleSignOnServlet extends AbstractServlet
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies)
         {
-            if (cookie.getName().equals("openbis"))
+            if (cookie.getName().equals(OPENBIS_COOKIE))
             {
                 cookie.setValue("");
                 cookie.setPath("/");
