@@ -240,7 +240,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             treeModelUtils.push({ title : jupyterNotebook, entityType: "NEW_JUPYTER_NOTEBOOK", key : "NEW_JUPYTER_NOTEBOOK", folder : false, lazy : false, view : "showNewJupyterNotebookCreator" });
         }
         
-        if(profile.mainMenu.showUserProfile && profile.isFileAuthenticationService && profile.isFileAuthenticationUser) {
+        if(profile.mainMenu.showUserProfile) {
             var userProfileLink = _this.getLinkForNode("User Profile", "USER_PROFILE", "showUserProfilePage", null);
             treeModelUtils.push({ title : userProfileLink, entityType: "USER_PROFILE", key : "USER_PROFILE", folder : false, lazy : false, view : "showUserProfilePage", icon : "glyphicon glyphicon-user" });
         }
