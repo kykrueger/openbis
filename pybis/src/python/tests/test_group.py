@@ -27,12 +27,12 @@ def test_crud_group(openbis_instance, group):
     changed_description = 'changed description of group ' + group.code
     group.description = changed_description
     group.save()
-    group_changed = openbis_instance.get_group(code=group.code)
+    group_changed = openbis_instance.get_group(group.code)
     assert group_changed.description == changed_description
 
     group.delete('test')
     with pytest.raises(ValueError):
-        group_not_exists = openbis_instance.get_group(code=group.code)
+        group_not_exists = openbis_instance.get_group(group.code)
         assert group_not_exists is None
 
 

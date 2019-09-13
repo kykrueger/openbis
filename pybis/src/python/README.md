@@ -126,9 +126,9 @@ group.assign_role(role='ADMIN', space='DEFAULT')
 group.get_roles() 
 group.revoke_role(role='ADMIN', space='DEFAULT')
 
-group.add_persons(['admin'])
-group.get_persons()
-group.del_persons(['admin'])
+group.add_members(['admin'])
+group.get_members()
+group.del_members(['admin'])
 group.delete()
 
 o.get_persons()
