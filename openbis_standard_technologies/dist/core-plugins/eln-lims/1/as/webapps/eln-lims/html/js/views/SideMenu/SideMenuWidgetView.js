@@ -277,15 +277,16 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 });
             }
 
-            if (profile.mainMenu.showResearchCollectionExportBuilder) {
-                var researchCollectionExportBuilderLink = _this.getLinkForNode("Export to Research Collection",
-                        "EXPORT_TO_RESEARCH_COLLECTION", "showResearchCollectionExportPage", null);
-                treeModelExports.push({
-                    displayName: "Export to Research Collection", title: researchCollectionExportBuilderLink,
-                    entityType: "EXPORT_TO_RESEARCH_COLLECTION", key: "EXPORT_TO_RESEARCH_COLLECTION", folder: false, lazy: false,
-                    view: "showResearchCollectionExportPage", icon: "./img/research-collection-icon.png"
-                });
-            }
+            // Not fully implemented yet.
+            // if (profile.mainMenu.showResearchCollectionExportBuilder) {
+            //     var researchCollectionExportBuilderLink = _this.getLinkForNode("Export to Research Collection",
+            //             "EXPORT_TO_RESEARCH_COLLECTION", "showResearchCollectionExportPage", null);
+            //     treeModelExports.push({
+            //         displayName: "Export to Research Collection", title: researchCollectionExportBuilderLink,
+            //         entityType: "EXPORT_TO_RESEARCH_COLLECTION", key: "EXPORT_TO_RESEARCH_COLLECTION", folder: false, lazy: false,
+            //         view: "showResearchCollectionExportPage", icon: "./img/research-collection-icon.png"
+            //     });
+            // }
 
             if (profile.mainMenu.showZenodoExportBuilder) {
                 var zenodoExportBuilderLink = _this.getLinkForNode("Export to Zenodo", "EXPORT_TO_ZENODO", "showZenodoExportPage", null);
