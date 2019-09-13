@@ -19,6 +19,8 @@ function UserProfileController(mainController, mode) {
 	this._userProfileModel = new UserProfileModel(mode);
 	this._userProfileView = new UserProfileView(this, this._userProfileModel);
 
+    this._zenodoApiTokenKey = "personal-zenodo-api-token";
+
 	this.init = function(views) {
         this._userProfileView.repaint(views);
 	}
@@ -49,6 +51,8 @@ function UserProfileController(mainController, mode) {
 			return;
 		}
 		var userId = this._mainController.serverFacade.getUserId();
+
+		this.setSettingValue(this._zenodoApiTokenKey, userInformation.zenodoToken);
 		this._mainController.serverFacade.updateUserInformation(userId, userInformation, (function(ok) {
 			if (ok) {
 				Util.showInfo("Profile saved. You will be logged out automatically in order to reload the profile data upon login.", (function() {
@@ -73,5 +77,13 @@ function UserProfileController(mainController, mode) {
 		return this._mainController.profile.isFileAuthenticationService &&
 				this._mainController.profile.isFileAuthenticationUser;
 	}
+
+	this.getSettingValue = function (key, callback) {
+		this._mainController.serverFacade.getSetting(key, callback);
+	};
+
+	this.setSettingValue = function (key, value) {
+		this._mainController.serverFacade.setSetting(key, value);
+	};
 
 }
