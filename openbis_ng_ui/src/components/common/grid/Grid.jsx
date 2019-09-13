@@ -237,9 +237,9 @@ class Grid extends React.Component {
     let targetIndex = _.findIndex(columns, ['field', targetField])
 
     if (sourceIndex !== -1 && targetIndex !== -1) {
-      let temp = columns[sourceIndex]
-      columns[sourceIndex] = columns[targetIndex]
-      columns[targetIndex] = temp
+      let source = columns[sourceIndex]
+      columns.splice(sourceIndex, 1)
+      columns.splice(targetIndex, 0, source)
     }
 
     this.setState(
