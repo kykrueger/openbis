@@ -87,9 +87,29 @@ function MainController(profile) {
 	//
 	// Validates and enters the app
 	//
-	
+
 	this.enterApp = function(data, username, password) {
+	    var _this = this;
+	    if(data && !username && !password) {
+	        this.openbisV1.listDataStores(function(result) {
+	            if(result && result.error && result.error.message) {
+	                var callback = function() {Util.unblockUI();};
+	                Util.showUserError(result.error.message, callback);
+	            } else {
+	                _this.initApp(data, username, password);
+	            }
+	        });
+	    } else {
+	        this.initApp(data, username, password);
+	    }
+	}
+
+	this.initApp = function(data, username, password) {
 		var localReference = this;
+		//
+		// Check
+		//
+
 		//
 		// Check Credentials
 		//
