@@ -1135,7 +1135,7 @@ class Openbis:
                     else:
                         groupId = search_args[attr].code
                     sub_crit.append(
-                        _subcriteria_for_permid(groupId, 'AuthorizationGroup')
+                        _subcriteria_for_permid(groupId, 'authorizationGroup')
                     )
                 elif attr == 'role':
                     # TODO
