@@ -22,9 +22,9 @@ export const createGetSelectedObject = () => {
     [getCurrentRoute],
     path => {
       logger.log(logger.DEBUG, 'pageSelector.getSelectedObject')
-      if(path){
+      if (path) {
         let route = routes.parse(path)
-        if(route && route.type && route.id){
+        if (route && route.type && route.id) {
           return { type: route.type, id: route.id }
         }
       }

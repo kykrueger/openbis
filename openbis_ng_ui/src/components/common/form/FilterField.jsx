@@ -1,5 +1,5 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
 import IconButton from '@material-ui/core/IconButton'
@@ -20,19 +20,18 @@ const styles = () => ({
 })
 
 class FilterField extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
     this.filterRef = React.createRef()
     this.handleFilterChange = this.handleFilterChange.bind(this)
     this.handleFilterClear = this.handleFilterClear.bind(this)
   }
 
-  handleFilterChange(event){
+  handleFilterChange(event) {
     this.props.filterChange(event.target.value)
   }
 
-  handleFilterClear(event){
+  handleFilterClear(event) {
     event.preventDefault()
     this.props.filterChange('')
     this.filterRef.current.focus()
@@ -46,7 +45,7 @@ class FilterField extends React.Component {
     return (
       <TextField
         className={classes.field}
-        placeholder="Filter"
+        placeholder='Filter'
         value={this.props.filter}
         onChange={this.handleFilterChange}
         InputProps={{
@@ -56,39 +55,45 @@ class FilterField extends React.Component {
           classes: {
             input: classes.input
           }
-        }}/>
+        }}
+      />
     )
   }
 
-  renderFilterIcon(){
+  renderFilterIcon() {
     const classes = this.props.classes
     return (
-      <InputAdornment position="start" classes={{
-        root: classes.adornment
-      }}>
+      <InputAdornment
+        position='start'
+        classes={{
+          root: classes.adornment
+        }}
+      >
         <FilterIcon />
       </InputAdornment>
     )
   }
 
-  renderFilterClearIcon(){
+  renderFilterClearIcon() {
     const classes = this.props.classes
 
-    if(this.props.filter){
+    if (this.props.filter) {
       return (
-        <InputAdornment position="end" classes={{
-          root: classes.adornment
-        }}>
+        <InputAdornment
+          position='end'
+          classes={{
+            root: classes.adornment
+          }}
+        >
           <IconButton onMouseDown={this.handleFilterClear}>
             <CloseIcon />
           </IconButton>
         </InputAdornment>
       )
-    }else{
-      return (<React.Fragment></React.Fragment>)
+    } else {
+      return <React.Fragment></React.Fragment>
     }
   }
-
 }
 
 export default withStyles(styles)(FilterField)

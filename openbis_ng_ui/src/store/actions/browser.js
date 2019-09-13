@@ -12,7 +12,7 @@ export const BROWSER_SET_EXPANDED_NODES = 'BROWSER_SET_EXPANDED_NODES'
 export const BROWSER_ADD_EXPANDED_NODES = 'BROWSER_ADD_EXPANDED_NODES'
 export const BROWSER_REMOVE_EXPANDED_NODES = 'BROWSER_REMOVE_EXPANDED_NODES'
 
-export const browserInit = (page) => ({
+export const browserInit = page => ({
   type: BROWSER_INIT,
   payload: {
     page

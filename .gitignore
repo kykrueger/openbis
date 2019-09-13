@@ -12,3 +12,4 @@ openbis/source/core-plugins
 **/.pydevproject
 **/.shredder
 ivy-repository
+**/.idea

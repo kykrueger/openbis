@@ -16,9 +16,7 @@ beforeEach(() => {
 })
 
 describe('browser', () => {
-
-  test('test', (done) => {
-
+  test('test', done => {
     dto.SampleTypeFetchOptions.mockImplementation(() => ({
       withPropertyAssignments: () => ({
         withPropertyType: () => ({
@@ -46,79 +44,103 @@ describe('browser', () => {
       })
     }))
 
-    facade.getSampleTypes.mockReturnValue(Promise.resolve({
-      'TEST_OBJECT_TYPE': {
-        code: 'TEST_OBJECT_TYPE',
-        propertyAssignments: [{
-          propertyType: {
-            code: 'VARCHAR_PROPERTY_TYPE',
-            label: 'varchar label',
-            description: 'varchar description',
-            dataType: 'VARCHAR'
-          },
-          mandatory: false
-        },{
-          propertyType: {
-            code: 'MATERIAL_PROPERTY_TYPE',
-            label: 'material label',
-            description: 'material description',
-            dataType: 'MATERIAL'
-          },
-          mandatory: true
-        },{
-          propertyType: {
-            code: 'DICTIONARY_PROPERTY_TYPE',
-            label: 'dictionary label',
-            description: 'dictionary description',
-            dataType: 'CONTROLLEDVOCABULARY',
-            vocabulary: {
-              code: 'VOCABULARY_1'
+    facade.getSampleTypes.mockReturnValue(
+      Promise.resolve({
+        TEST_OBJECT_TYPE: {
+          code: 'TEST_OBJECT_TYPE',
+          propertyAssignments: [
+            {
+              propertyType: {
+                code: 'VARCHAR_PROPERTY_TYPE',
+                label: 'varchar label',
+                description: 'varchar description',
+                dataType: 'VARCHAR'
+              },
+              mandatory: false
+            },
+            {
+              propertyType: {
+                code: 'MATERIAL_PROPERTY_TYPE',
+                label: 'material label',
+                description: 'material description',
+                dataType: 'MATERIAL'
+              },
+              mandatory: true
+            },
+            {
+              propertyType: {
+                code: 'DICTIONARY_PROPERTY_TYPE',
+                label: 'dictionary label',
+                description: 'dictionary description',
+                dataType: 'CONTROLLEDVOCABULARY',
+                vocabulary: {
+                  code: 'VOCABULARY_1'
+                }
+              },
+              mandatory: true
             }
+          ]
+        }
+      })
+    )
+
+    facade.searchPropertyTypes.mockReturnValue(
+      Promise.resolve({
+        objects: [
+          {
+            code: 'VARCHAR_PROPERTY_TYPE'
           },
-          mandatory: true
-        }]
-      }
-    }))
+          {
+            code: 'MATERIAL_PROPERTY_TYPE'
+          },
+          {
+            code: 'DICTIONARY_PROPERTY_TYPE'
+          }
+        ]
+      })
+    )
 
-    facade.searchPropertyTypes.mockReturnValue(Promise.resolve({
-      objects: [{
-        code: 'VARCHAR_PROPERTY_TYPE'
-      },{
-        code: 'MATERIAL_PROPERTY_TYPE'
-      },{
-        code: 'DICTIONARY_PROPERTY_TYPE'
-      }]
-    }))
+    facade.searchMaterials.mockReturnValue(
+      Promise.resolve({
+        objects: [
+          {
+            code: 'MATERIAL_1'
+          },
+          {
+            code: 'MATERIAL_2'
+          },
+          {
+            code: 'MATERIAL_3'
+          }
+        ]
+      })
+    )
 
-    facade.searchMaterials.mockReturnValue(Promise.resolve({
-      objects: [{
-        code: 'MATERIAL_1'
-      },{
-        code: 'MATERIAL_2'
-      }, {
-        code: 'MATERIAL_3'
-      }]
-    }))
-
-    facade.searchVocabularyTerms.mockReturnValue(Promise.resolve({
-      objects: [{
-        code: 'TERM_1'
-      },{
-        code: 'TERM_2'
-      }, {
-        code: 'TERM_3'
-      }]
-    }))
+    facade.searchVocabularyTerms.mockReturnValue(
+      Promise.resolve({
+        objects: [
+          {
+            code: 'TERM_1'
+          },
+          {
+            code: 'TERM_2'
+          },
+          {
+            code: 'TERM_3'
+          }
+        ]
+      })
+    )
 
     store.dispatch(actions.init())
 
     let wrapper = mount(
       <DragAndDropProvider>
-        <ObjectType store={store} objectId="TEST_OBJECT_TYPE"/>
+        <ObjectType store={store} objectId='TEST_OBJECT_TYPE' />
       </DragAndDropProvider>
     )
 
-    setTimeout(()=>{
+    setTimeout(() => {
       wrapper.update()
 
       expectTitle(wrapper, 'TEST_OBJECT_TYPE')
@@ -128,47 +150,62 @@ describe('browser', () => {
 
       expectPropertyMandatory(wrapper, 1, 'true')
       expectPropertyType(wrapper, 1, 'MATERIAL_PROPERTY_TYPE')
-      expectPropertyPreviewMaterial(wrapper, 1, ['', 'MATERIAL_1', 'MATERIAL_2', 'MATERIAL_3'])
+      expectPropertyPreviewMaterial(wrapper, 1, [
+        '',
+        'MATERIAL_1',
+        'MATERIAL_2',
+        'MATERIAL_3'
+      ])
 
       expectPropertyMandatory(wrapper, 2, 'true')
       expectPropertyType(wrapper, 2, 'DICTIONARY_PROPERTY_TYPE')
-      expectPropertyPreviewDictionary(wrapper, 2, ['', 'TERM_1', 'TERM_2', 'TERM_3'])
+      expectPropertyPreviewDictionary(wrapper, 2, [
+        '',
+        'TERM_1',
+        'TERM_2',
+        'TERM_3'
+      ])
 
       done()
     }, 0)
   })
-
 })
 
-function expectTitle(wrapper, expectedTitle){
+function expectTitle(wrapper, expectedTitle) {
   const actualTitle = wrapper.find('ObjectTypeTitle').text()
   expect(actualTitle).toEqual(expectedTitle)
 }
 
-function expectPropertyMandatory(wrapper, index, expected){
+function expectPropertyMandatory(wrapper, index, expected) {
   let row = wrapper.find('ObjectTypePropertyRow').at(index)
   let actual = row.find('ObjectTypePropertyMandatory').text()
   expect(actual).toEqual(expected)
 }
 
-function expectPropertyType(wrapper, index, expected){
+function expectPropertyType(wrapper, index, expected) {
   let row = wrapper.find('ObjectTypePropertyRow').at(index)
   let actual = row.find('ObjectTypePropertyType').text()
   expect(actual).toEqual(expected)
 }
 
-function expectPropertyPreviewMaterial(wrapper, index, expected){
+function expectPropertyPreviewMaterial(wrapper, index, expected) {
   let row = wrapper.find('ObjectTypePropertyRow').at(index)
-  let actual = row.find('ObjectTypePropertyPreview').find('option').map(node => {
-    return node.prop('value')
-  })
+  let actual = row
+    .find('ObjectTypePropertyPreview')
+    .find('option')
+    .map(node => {
+      return node.prop('value')
+    })
   expect(actual).toEqual(expected)
 }
 
-function expectPropertyPreviewDictionary(wrapper, index, expected){
+function expectPropertyPreviewDictionary(wrapper, index, expected) {
   let row = wrapper.find('ObjectTypePropertyRow').at(index)
-  let actual = row.find('ObjectTypePropertyPreview').find('option').map(node => {
-    return node.prop('value')
-  })
+  let actual = row
+    .find('ObjectTypePropertyPreview')
+    .find('option')
+    .map(node => {
+      return node.prop('value')
+    })
   expect(actual).toEqual(expected)
 }

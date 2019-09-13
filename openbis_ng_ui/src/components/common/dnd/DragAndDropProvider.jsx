@@ -4,7 +4,6 @@ import HTML5Backend from 'react-dnd-html5-backend'
 import logger from '../../../common/logger.js'
 
 class DragAndDropProvider extends React.Component {
-
   render() {
     logger.log(logger.DEBUG, 'DragAndDropProvider.render')
 

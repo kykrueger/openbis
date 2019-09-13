@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import React from 'react'
 import TableCell from '@material-ui/core/TableCell'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({
@@ -11,7 +11,6 @@ const styles = () => ({
 })
 
 class ObjectTypePropertyCell extends React.Component {
-
   render() {
     logger.log(logger.DEBUG, 'ObjectTypePropertyCell.render')
 
@@ -23,9 +22,6 @@ class ObjectTypePropertyCell extends React.Component {
       </TableCell>
     )
   }
-
 }
 
-export default _.flow(
-  withStyles(styles)
-)(ObjectTypePropertyCell)
+export default _.flow(withStyles(styles))(ObjectTypePropertyCell)

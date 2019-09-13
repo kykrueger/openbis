@@ -15,10 +15,12 @@ beforeEach(() => {
 })
 
 describe('page', () => {
-
   test('objectOpen objectClose', () => {
     let object1 = fixture.object(objectType.USER, fixture.TEST_USER_DTO.userId)
-    let object2 = fixture.object(objectType.USER, fixture.ANOTHER_USER_DTO.userId)
+    let object2 = fixture.object(
+      objectType.USER,
+      fixture.ANOTHER_USER_DTO.userId
+    )
     let object3 = fixture.object(objectType.GROUP, fixture.TEST_GROUP_DTO.code)
 
     store.dispatch(actions.objectOpen(pages.USERS, object1.type, object1.id))
@@ -51,14 +53,13 @@ describe('page', () => {
     expectSelectedObject(pages.USERS, null)
     expectOpenObjects(pages.USERS, [])
   })
-
 })
 
-function expectSelectedObject(page, object){
+function expectSelectedObject(page, object) {
   let getSelectedObject = selectors.createGetSelectedObject()
   expect(getSelectedObject(store.getState(), page)).toEqual(object)
 }
 
-function expectOpenObjects(page, objects){
+function expectOpenObjects(page, objects) {
   expect(selectors.getOpenObjects(store.getState(), page)).toEqual(objects)
 }

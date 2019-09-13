@@ -1,6 +1,6 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
-import {connect} from 'react-redux'
+import { withStyles } from '@material-ui/core/styles'
+import { connect } from 'react-redux'
 import flow from 'lodash/flow'
 
 import Button from '@material-ui/core/Button'
@@ -17,39 +17,37 @@ const styles = {
     marginTop: '10%',
     marginBottom: '10em',
     width: '30em',
-    margin: '0 auto',
+    margin: '0 auto'
   },
   textField: {
-    width: '100%',
+    width: '100%'
   },
   button: {
-    marginTop: '1em',
+    marginTop: '1em'
   },
   container: {
     width: '100%',
     height: '100%',
-    overflow: 'auto',
-  },
+    overflow: 'auto'
+  }
 }
 
 function mapStateToProps() {
-  return {
-  }
+  return {}
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    login: (user, password) => dispatch(actions.login(user, password)),
+    login: (user, password) => dispatch(actions.login(user, password))
   }
 }
 
 class WithLogin extends React.Component {
-
   state = {}
 
   handleChange = name => event => {
     this.setState({
-      [name]: event.target.value,
+      [name]: event.target.value
     })
   }
 
@@ -74,41 +72,39 @@ class WithLogin extends React.Component {
           <form>
             <Card className={classes.card}>
               <CardContent>
-                <Typography variant="h6">
-                  Login
-                </Typography>
+                <Typography variant='h6'>Login</Typography>
                 <TextField
-                  id="standard-name"
-                  label="User"
+                  id='standard-name'
+                  label='User'
                   className={classes.textField}
-                  margin="normal"
-                  autoComplete="username"
+                  margin='normal'
+                  autoComplete='username'
                   autoFocus={true}
-                  onKeyPress={(e) => {
+                  onKeyPress={e => {
                     this.keyPress(e)
                   }}
                   onChange={this.handleChange('user')}
                 />
                 <TextField
-                  id="standard-password-input"
-                  label="Password"
+                  id='standard-password-input'
+                  label='Password'
                   className={classes.textField}
-                  type="password"
-                  autoComplete="current-password"
-                  margin="normal"
-                  onKeyPress={(e) => {
+                  type='password'
+                  autoComplete='current-password'
+                  margin='normal'
+                  onKeyPress={e => {
                     this.keyPress(e)
                   }}
                   onChange={this.handleChange('password')}
                 />
                 <Button
                   onClick={this.login}
-                  color="primary"
+                  color='primary'
                   className={classes.button}
-                  variant="contained">
+                  variant='contained'
+                >
                   Login
                 </Button>
-
               </CardContent>
             </Card>
           </form>
@@ -119,6 +115,9 @@ class WithLogin extends React.Component {
 }
 
 export default flow(
-  connect(mapStateToProps, mapDispatchToProps),
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  ),
   withStyles(styles)
 )(WithLogin)

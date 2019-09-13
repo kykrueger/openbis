@@ -51,7 +51,8 @@ function ServerFacade(openbisServer) {
 	var responseInterceptor = function(response, action){
 		var isError = false;
 		if(response && response.error) {
-			if(response.error.message === "Session no longer available. Please login again.") {
+			if(response.error.message === "Session no longer available. Please login again."
+					|| response.error.message.endsWith("is invalid: user is not logged in.")) {
 				isError = true;
 				Util.showError(response.error.message, function() {
 					location.reload(true);
@@ -184,7 +185,27 @@ function ServerFacade(openbisServer) {
         });
 	}
 	*/
-	
+
+    this.scheduleKeepAlive = function() {
+        var _this = this;
+        var TIMEOUT = 60000; //60 Seconds
+
+        setTimeout(function(){
+            _this.keepAlive();
+        }, TIMEOUT);
+    }
+
+	this.keepAlive = function() {
+	    var _this = this;
+	    mainController.openbisV3.isSessionActive().done(function(isSessionActive) {
+	        var timeStamp = Math.floor(Date.now() / 1000);
+            _this.scheduleKeepAlive();
+	    }).fail(function(error) {
+            var timeStamp = Math.floor(Date.now() / 1000);
+            _this.scheduleKeepAlive();
+        });
+	}
+
 	this.getPersons = function(personIds, callbackFunction) {
 		if(!mainController.openbisV3.getPersons) {
 			return null; // In case the method doesn't exist, do nothing
@@ -396,7 +417,7 @@ function ServerFacade(openbisServer) {
 			});
 	};
 
-    this.exportZenodo = function(entities, includeRoot, metadataOnly, userInformation, callbackFunction) {
+    this.exportZenodo = function(entities, includeRoot, metadataOnly, userInformation, title, accessToken, callbackFunction) {
         this.asyncExportZenodo({
             "method": "exportAll",
             "includeRoot": includeRoot,
@@ -405,6 +426,8 @@ function ServerFacade(openbisServer) {
             "userInformation": userInformation,
             "originUrl": window.location.origin,
             "sessionToken": this.openbisServer.getSession(),
+			"submissionTitle": title,
+			"accessToken": accessToken
         }, callbackFunction, "zenodo-exports-api");
     };
 
@@ -420,7 +443,6 @@ function ServerFacade(openbisServer) {
 				var options = new AggregationServiceExecutionOptions();
 
 				options.withParameter("sessionToken", parameters["sessionToken"]);
-
 				options.withParameter("entities", parameters["entities"]);
 				options.withParameter("includeRoot", parameters["includeRoot"]);
 				options.withParameter("metadataOnly", parameters["metadataOnly"]);
@@ -429,6 +451,8 @@ function ServerFacade(openbisServer) {
 				options.withParameter("submissionType", parameters["submissionType"]);
 				options.withParameter("submissionUrl", parameters["submissionUrl"]);
 				options.withParameter("entities", parameters["entities"]);
+				options.withParameter("submissionTitle", parameters["submissionTitle"]);
+				options.withParameter("accessToken", parameters["accessToken"]);
 				options.withParameter("userId", parameters["userInformation"]["id"]);
 				options.withParameter("userEmail", parameters["userInformation"]["email"]);
 				options.withParameter("userFirstName", parameters["userInformation"]["firstName"]);

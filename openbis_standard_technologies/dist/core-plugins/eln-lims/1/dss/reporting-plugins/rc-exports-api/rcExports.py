@@ -271,7 +271,7 @@ def generateXML(zipOutputStream, fileMetadata, exportDirPath, submissionType, us
     titleField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
     titleField.set('mdschema', 'dc')
     titleField.set('element', 'title')
-    titleField.text = str(time.time())
+    titleField.text = ''
 
     typeField = ET.SubElement(dim, ET.QName(dimNS, 'field'))
     typeField.set('mdschema', 'dc')

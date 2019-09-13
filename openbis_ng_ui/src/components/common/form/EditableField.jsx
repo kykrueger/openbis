@@ -1,11 +1,11 @@
 import _ from 'lodash'
 import React from 'react'
 import EditIcon from '@material-ui/icons/EditOutlined'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import * as util from '../../../common/util.js'
 import logger from '../../../common/logger.js'
 
-const styles = (theme) => ({
+const styles = theme => ({
   container: {
     display: 'inline-flex',
     margin: '1px 30px 1px 1px',
@@ -20,12 +20,11 @@ const styles = (theme) => ({
     margin: '0px',
     border: '1px solid',
     borderColor: theme.palette.action.selected
-  },
+  }
 })
 
 class EditableField extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
     this.state = {
       edited: false,
@@ -38,32 +37,35 @@ class EditableField extends React.Component {
     this.handleBlur = this.handleBlur.bind(this)
   }
 
-  handleMouseEnter(){
+  handleMouseEnter() {
     this.setState(() => ({
       hovered: true
     }))
   }
 
-  handleMouseLeave(){
+  handleMouseLeave() {
     this.setState(() => ({
       hovered: false
     }))
   }
 
-  handleClick(event){
+  handleClick(event) {
     event.stopPropagation()
 
-    if(!this.state.edited){
-      this.setState(() => ({
-        edited: true
-      }), () => {
-        this.ref.current.focus()
-      })
+    if (!this.state.edited) {
+      this.setState(
+        () => ({
+          edited: true
+        }),
+        () => {
+          this.ref.current.focus()
+        }
+      )
     }
   }
 
-  handleBlur(){
-    if(this.state.edited){
+  handleBlur() {
+    if (this.state.edited) {
       this.setState(() => ({
         edited: false,
         hovered: false
@@ -71,24 +73,29 @@ class EditableField extends React.Component {
     }
   }
 
-  render(){
+  render() {
     logger.log(logger.DEBUG, 'EditableField.render')
 
-    const {classes} = this.props
-    const {edited, hovered} = this.state
+    const { classes } = this.props
+    const { edited, hovered } = this.state
 
-    let classNames = util.classNames(classes.container, hovered ? classes.hovered : null, edited ? classes.edited : null)
+    let classNames = util.classNames(
+      classes.container,
+      hovered ? classes.hovered : null,
+      edited ? classes.edited : null
+    )
 
-    if(edited){
+    if (edited) {
       return (
-        <span
-          className={classNames}
-          onClick={this.handleClick}
-        >
-          {this.props.renderField({edited: true, handleBlur: this.handleBlur, ref: this.ref})}
+        <span className={classNames} onClick={this.handleClick}>
+          {this.props.renderField({
+            edited: true,
+            handleBlur: this.handleBlur,
+            ref: this.ref
+          })}
         </span>
       )
-    }else{
+    } else {
       return (
         <span
           className={classNames}
@@ -96,17 +103,16 @@ class EditableField extends React.Component {
           onMouseLeave={this.handleMouseLeave}
           onClick={this.handleClick}
         >
-          {this.props.renderField({edited: false, handleBlur: this.handleBlur, ref: this.ref})}
-          {hovered &&
-            <EditIcon className={classes.icon} />
-          }
+          {this.props.renderField({
+            edited: false,
+            handleBlur: this.handleBlur,
+            ref: this.ref
+          })}
+          {hovered && <EditIcon className={classes.icon} />}
         </span>
       )
     }
   }
-
 }
 
-export default _.flow(
-  withStyles(styles),
-)(EditableField)
+export default _.flow(withStyles(styles))(EditableField)

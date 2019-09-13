@@ -5,8 +5,8 @@ import TextField from '@material-ui/core/TextField'
 import Checkbox from '@material-ui/core/Checkbox'
 import InfoIcon from '@material-ui/icons/InfoOutlined'
 import Tooltip from '@material-ui/core/Tooltip'
-import {withStyles} from '@material-ui/core/styles'
-import {facade, dto} from '../../../services/openbis.js'
+import { withStyles } from '@material-ui/core/styles'
+import { facade, dto } from '../../../services/openbis.js'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({
@@ -21,48 +21,49 @@ const styles = () => ({
 })
 
 class ObjectTypePropertyPreview extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
     this.state = {
       vocabularyValue: '',
-      materialValue: '',
+      materialValue: ''
     }
     this.setMaterial = this.setMaterial.bind(this)
     this.setVocabulary = this.setVocabulary.bind(this)
   }
 
   static getDerivedStateFromProps(props, state) {
-    if(!state.property
-      || state.property.propertyType !== props.property.propertyType
-      || state.property.mandatory !== props.property.mandatory){
+    if (
+      !state.property ||
+      state.property.propertyType !== props.property.propertyType ||
+      state.property.mandatory !== props.property.mandatory
+    ) {
       return {
         loaded: false,
         property: props.property,
         vocabularyTerms: [],
         materials: []
       }
-    }else{
+    } else {
       return null
     }
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.load()
   }
 
-  componentDidUpdate(){
+  componentDidUpdate() {
     this.load()
   }
 
-  load(){
-    if(this.state.loaded){
+  load() {
+    if (this.state.loaded) {
       return
     }
 
-    const {propertyType} = this.state.property
+    const { propertyType } = this.state.property
 
-    switch(propertyType.dataType){
+    switch (propertyType.dataType) {
       case 'CONTROLLEDVOCABULARY':
         this.loadVocabulary()
         return
@@ -77,13 +78,18 @@ class ObjectTypePropertyPreview extends React.Component {
     }
   }
 
-  render(){
+  render() {
     logger.log(logger.DEBUG, 'ObjectTypePropertyPreview.render')
 
-    const {classes} = this.props
+    const { classes } = this.props
 
     return (
-      <div className={classes.container} onClick={(event) => {event.stopPropagation()}}>
+      <div
+        className={classes.container}
+        onClick={event => {
+          event.stopPropagation()
+        }}
+      >
         {this.renderField()}
         <Tooltip title={this.getDescription()}>
           <InfoIcon />
@@ -92,10 +98,10 @@ class ObjectTypePropertyPreview extends React.Component {
     )
   }
 
-  renderField(){
-    const {propertyType} = this.state.property
+  renderField() {
+    const { propertyType } = this.state.property
 
-    switch(propertyType.dataType){
+    switch (propertyType.dataType) {
       case 'BOOLEAN':
         return this.renderBoolean()
       case 'VARCHAR':
@@ -114,53 +120,53 @@ class ObjectTypePropertyPreview extends React.Component {
     }
   }
 
-  renderBoolean(){
-    const {classes} = this.props
+  renderBoolean() {
+    const { classes } = this.props
     return (
-      <FormControlLabel classes={{ root: classes.boolean }}
+      <FormControlLabel
+        classes={{ root: classes.boolean }}
         control={<Checkbox />}
         label={this.getLabel()}
       />
     )
   }
 
-  renderVarchar(){
+  renderVarchar() {
     return (
-      <TextField
-        label={this.getLabel()}
-        fullWidth={true}
-        variant="filled"
-      />
+      <TextField label={this.getLabel()} fullWidth={true} variant='filled' />
     )
   }
 
-  renderMultilineVarchar(){
+  renderMultilineVarchar() {
     return (
       <TextField
         label={this.getLabel()}
         multiline={true}
         fullWidth={true}
-        variant="filled"
+        variant='filled'
       />
     )
   }
 
-  renderNumber(){
+  renderNumber() {
     return (
       <TextField
         label={this.getLabel()}
-        type="number"
+        type='number'
         fullWidth={true}
-        variant="filled"
+        variant='filled'
       />
     )
   }
 
-  loadVocabulary(){
+  loadVocabulary() {
     let criteria = new dto.VocabularyTermSearchCriteria()
     let fo = new dto.VocabularyTermFetchOptions()
 
-    criteria.withVocabulary().withCode().thatEquals(this.state.property.propertyType.vocabulary.code)
+    criteria
+      .withVocabulary()
+      .withCode()
+      .thatEquals(this.state.property.propertyType.vocabulary.code)
 
     return facade.searchVocabularyTerms(criteria, fo).then(result => {
       this.setState(() => ({
@@ -170,45 +176,50 @@ class ObjectTypePropertyPreview extends React.Component {
     })
   }
 
-  getVocabulary(){
+  getVocabulary() {
     return this.state.vocabularyValue
   }
 
-  setVocabulary(event){
+  setVocabulary(event) {
     const value = event.target.value
     this.setState(() => ({
       vocabularyValue: value
     }))
   }
 
-  renderVocabulary(){
+  renderVocabulary() {
     return (
       <TextField
         select
         SelectProps={{
-          native: true,
+          native: true
         }}
         label={this.getLabel()}
         value={this.getVocabulary()}
         onChange={this.setVocabulary}
         fullWidth={true}
-        variant="filled"
+        variant='filled'
       >
-        <option value=""></option>
+        <option value=''></option>
         {this.state.vocabularyTerms.map(term => (
-          <option key={term.code} value={term.code}>{term.label || term.code}</option>
+          <option key={term.code} value={term.code}>
+            {term.label || term.code}
+          </option>
         ))}
       </TextField>
     )
   }
 
-  loadMaterial(){
+  loadMaterial() {
     let criteria = new dto.MaterialSearchCriteria()
     let fo = new dto.MaterialFetchOptions()
 
     let materialType = this.state.property.propertyType.materialType
-    if(materialType){
-      criteria.withType().withId().thatEquals(materialType.permId)
+    if (materialType) {
+      criteria
+        .withType()
+        .withId()
+        .thatEquals(materialType.permId)
     }
 
     return facade.searchMaterials(criteria, fo).then(result => {
@@ -219,54 +230,53 @@ class ObjectTypePropertyPreview extends React.Component {
     })
   }
 
-  getMaterial(){
+  getMaterial() {
     return this.state.materialValue
   }
 
-  setMaterial(event){
+  setMaterial(event) {
     const value = event.target.value
     this.setState(() => ({
       materialValue: value
     }))
   }
 
-  renderMaterial(){
+  renderMaterial() {
     return (
       <TextField
         select
         SelectProps={{
-          native: true,
+          native: true
         }}
         label={this.getLabel()}
         value={this.getMaterial()}
         onChange={this.setMaterial}
         fullWidth={true}
-        variant="filled"
+        variant='filled'
       >
-        <option value=""></option>
+        <option value=''></option>
         {this.state.materials.map(material => (
-          <option key={material.code} value={material.code}>{material.code}</option>
+          <option key={material.code} value={material.code}>
+            {material.code}
+          </option>
         ))}
       </TextField>
     )
   }
 
-  renderUnsupported(){
-    return (<div>unsupported</div>)
+  renderUnsupported() {
+    return <div>unsupported</div>
   }
 
-  getLabel(){
+  getLabel() {
     let mandatory = this.state.property.mandatory
     let label = this.state.property.propertyType.label
     return mandatory ? label + '*' : label
   }
 
-  getDescription(){
+  getDescription() {
     return this.state.property.propertyType.description
   }
-
 }
 
-export default _.flow(
-  withStyles(styles)
-)(ObjectTypePropertyPreview)
+export default _.flow(withStyles(styles))(ObjectTypePropertyPreview)
