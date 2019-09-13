@@ -1,3 +1,8 @@
+## Changes with pybis-1.9.3
+
+* fixed documentation: add_members (not add_persons)
+* bugfix role assignments of groups
+
 ## Changes with pybis-1.9.2
 
 * searches for datasets and samples are highly improved
