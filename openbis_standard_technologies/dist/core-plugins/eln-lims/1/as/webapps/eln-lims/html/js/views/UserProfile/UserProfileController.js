@@ -18,8 +18,7 @@ function UserProfileController(mainController, mode) {
 	this._mainController = mainController;
 	this._userProfileModel = new UserProfileModel(mode);
 	this._userProfileView = new UserProfileView(this, this._userProfileModel);
-
-    this._zenodoApiTokenKey = "personal-zenodo-api-token";
+    this._zenodoApiTokenKey = this._mainController.zenodoApiTokenKey;
 
 	this.init = function(views) {
         this._userProfileView.repaint(views);

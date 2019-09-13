@@ -77,7 +77,7 @@ function UserProfileView(userProfileController, userProfileModel) {
 
             this._userProfileController.getSettingValue(this._userProfileController._zenodoApiTokenKey, (function (settingsValue) {
                 if (settingsValue) {
-                    this._$zenodoToken.val(settingsValue);
+                    this._$zenodoToken.val(settingsValue.trim());
                 }
             }).bind(this));
             $formColumn.append(this._getFormGroup(this._$zenodoToken, "Zenodo API Token:"));
@@ -94,7 +94,6 @@ function UserProfileView(userProfileController, userProfileModel) {
                 this._$zenodoToken.prop("disabled", true);
             }
         }).bind(this));
-
     }
 
 	this._getOptionsMenu = function() {

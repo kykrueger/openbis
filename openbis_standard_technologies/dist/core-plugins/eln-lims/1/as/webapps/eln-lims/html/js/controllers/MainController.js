@@ -83,6 +83,8 @@ function MainController(profile) {
 	
 	//Functionality to keep state
 	this.backStack = [];
+
+	this.zenodoApiTokenKey = "personal-zenodo-api-token";
 	
 	//
 	// Validates and enters the app
