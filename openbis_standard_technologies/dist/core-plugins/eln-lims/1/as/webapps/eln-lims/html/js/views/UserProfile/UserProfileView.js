@@ -72,7 +72,8 @@ function UserProfileView(userProfileController, userProfileModel) {
             this._$emailInput.val(getUserInformation.email);
             $formColumn.append(this._getFormGroup(this._$emailInput, "Email:"));
             // disable in view mode
-            if (this._userProfileModel.mode === FormMode.VIEW) {
+            if (this._userProfileModel.mode === FormMode.VIEW ||
+                    !this._userProfileController.isFileAuthentication()) {
                 this._$firstNameInput.prop("disabled", true);
                 this._$lastNameInput.prop("disabled", true);
                 this._$emailInput.prop("disabled", true);

@@ -69,4 +69,9 @@ function UserProfileController(mainController, mode) {
 		return errors;
 	}
 
+	this.isFileAuthentication = function() {
+		return this._mainController.profile.isFileAuthenticationService &&
+				this._mainController.profile.isFileAuthenticationUser;
+	}
+
 }
