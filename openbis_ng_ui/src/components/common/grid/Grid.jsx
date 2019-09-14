@@ -25,7 +25,10 @@ const styles = theme => ({
   footerContainer: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-end'
+    justifyContent: 'flex-end',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: theme.palette.background.secondary
   },
   tableContainer: {
     flexGrow: 1,
@@ -41,7 +44,8 @@ const styles = theme => ({
       position: 'sticky',
       top: 0,
       zIndex: 10,
-      backgroundColor: theme.palette.background.paper
+      fontWeight: 'bold',
+      backgroundColor: theme.palette.background.primary
     }
   },
   tableSpacer: {
@@ -370,11 +374,11 @@ class Grid extends React.Component {
       <div className={classes.container}>
         <div className={classes.tableContainer}>
           <Table classes={{ root: classes.table }}>
-            <TableHead classes={{ root: classes.tableHeader }}>
+            <TableHead>
               <TableRow>
                 {columns.map(column => this.renderFilterCell(column))}
               </TableRow>
-              <TableRow>
+              <TableRow classes={{ root: classes.tableHeader }}>
                 {columns.map(column => this.renderHeaderCell(column))}
               </TableRow>
             </TableHead>
