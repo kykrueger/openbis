@@ -45,7 +45,13 @@ const styles = theme => ({
       top: 0,
       zIndex: 10,
       fontWeight: 'bold',
-      backgroundColor: theme.palette.background.primary
+      backgroundColor: theme.palette.background.primary,
+      borderRightStyle: 'solid',
+      borderRightWidth: '1px',
+      borderRightColor: theme.palette.background.secondary
+    },
+    '& th:last-of-type': {
+      borderRightWidth: 0
     }
   },
   tableSpacer: {
