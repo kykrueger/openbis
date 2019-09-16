@@ -35,17 +35,17 @@ export const createGetBrowserNodes = () => {
       let nodes = browser.nodes
 
       nodes = common.mapNodes(null, nodes, (parent, node) => {
-        if(visibleNodes.has(node.id)){
+        if (visibleNodes.has(node.id)) {
           let selected = selectedNodes.has(node.id)
           let expanded = expandedNodes.has(node.id)
           return Object.assign({ selected, expanded }, node)
-        }else{
+        } else {
           return null
         }
       })
 
       nodes = common.mapNodes(null, nodes, (parent, node) => {
-        if(_.size(node.children) === 0){
+        if (_.size(node.children) === 0) {
           delete node['children']
         }
         return node

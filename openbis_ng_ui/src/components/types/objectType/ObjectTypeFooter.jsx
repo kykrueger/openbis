@@ -1,16 +1,15 @@
 import React from 'react'
 import Button from '@material-ui/core/Button'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
-const styles = (theme) => ({
+const styles = theme => ({
   button: {
     marginRight: theme.spacing(2)
   }
 })
 
 class ObjectTypeFooter extends React.Component {
-
   render() {
     logger.log(logger.DEBUG, 'ObjectTypeFooter.render')
 
@@ -47,7 +46,6 @@ class ObjectTypeFooter extends React.Component {
       </div>
     )
   }
-
 }
 
 export default withStyles(styles)(ObjectTypeFooter)

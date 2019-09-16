@@ -1,12 +1,12 @@
 import _ from 'lodash'
-import {putAndWait} from './../effects.js'
-import {dto} from '../../../services/openbis.js'
+import { putAndWait } from './../effects.js'
+import { dto } from '../../../services/openbis.js'
 import * as objectType from '../../../common/consts/objectType.js'
 import * as actions from '../../actions/actions.js'
 import * as common from '../../common/browser.js'
 
 export function* createNodes() {
-  let {users, groups} = yield getUsersAndGroups()
+  let { users, groups } = yield getUsersAndGroups()
 
   let userNodes = _.map(users, user => {
     return {
@@ -44,32 +44,39 @@ export function* createNodes() {
 
   common.sortNodes(groupNodes)
 
-  let nodes = [{
-    id: 'users',
-    text: 'Users',
-    children: userNodes
-  }, {
-    id: 'groups',
-    text: 'Groups',
-    children: groupNodes
-  }]
+  let nodes = [
+    {
+      id: 'users',
+      text: 'Users',
+      children: userNodes
+    },
+    {
+      id: 'groups',
+      text: 'Groups',
+      children: groupNodes
+    }
+  ]
 
   return nodes
 }
 
-function* getUsersAndGroups(){
-  let getUsersReponse = yield putAndWait(actions.apiRequest({
-    method: 'searchPersons',
-    params: [new dto.PersonSearchCriteria(), new dto.PersonFetchOptions()]
-  }))
+function* getUsersAndGroups() {
+  let getUsersReponse = yield putAndWait(
+    actions.apiRequest({
+      method: 'searchPersons',
+      params: [new dto.PersonSearchCriteria(), new dto.PersonFetchOptions()]
+    })
+  )
 
   let groupFetchOptions = new dto.AuthorizationGroupFetchOptions()
   groupFetchOptions.withUsers()
 
-  let getGroupsReponse = yield putAndWait(actions.apiRequest({
-    method: 'searchAuthorizationGroups',
-    params: [new dto.AuthorizationGroupSearchCriteria(), groupFetchOptions]
-  }))
+  let getGroupsReponse = yield putAndWait(
+    actions.apiRequest({
+      method: 'searchAuthorizationGroups',
+      params: [new dto.AuthorizationGroupSearchCriteria(), groupFetchOptions]
+    })
+  )
 
   let users = {}
   let groups = {}
@@ -88,7 +95,7 @@ function* getUsersAndGroups(){
       code: group.code,
       userIds: group.users.reduce((groupUserIds, groupUser) => {
         let user = users[groupUser.userId]
-        if(user){
+        if (user) {
           user.groupIds.push(group.code)
           groupUserIds.push(user.userId)
         }
@@ -97,5 +104,5 @@ function* getUsersAndGroups(){
     }
   })
 
-  return {users, groups}
+  return { users, groups }
 }

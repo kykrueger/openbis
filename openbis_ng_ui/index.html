@@ -2,18 +2,19 @@
 <html lang="en" style="height: 100%;">
   <head>
     <title>openBIS / React</title>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <link rel="shortcut icon" href="#" />
     <style>
       body {
         height: 100%;
-        min-height:100%;
+        min-height: 100%;
         margin: 0px 0px 0px 0px;
       }
       #app {
         height: 100%;
       }
-      #app > div, #app > div > div {
+      #app > div,
+      #app > div > div {
         height: 100%;
       }
       #error {
@@ -23,15 +24,18 @@
     <script>
       function loadError() {
         window.onload = function() {
-          let text = "Error: Could not connect to openBIS."
-          let h2 = document.createElement("h2")
+          let text = 'Error: Could not connect to openBIS.'
+          let h2 = document.createElement('h2')
           var textnode = document.createTextNode(text)
           h2.appendChild(textnode)
-          document.getElementById("error").appendChild(h2)
+          document.getElementById('error').appendChild(h2)
         }
       }
     </script>
-    <script src="/openbis/resources/api/v3/config.js" onerror="loadError()"></script>
+    <script
+      src="/openbis/resources/api/v3/config.js"
+      onerror="loadError()"
+    ></script>
     <script src="/openbis/resources/api/v3/require.js"></script>
   </head>
   <body>

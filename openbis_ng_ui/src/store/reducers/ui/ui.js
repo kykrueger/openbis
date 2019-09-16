@@ -9,7 +9,7 @@ export default combineReducers({
   error
 })
 
-function loading(state = false, action){
+function loading(state = false, action) {
   switch (action.type) {
     case actions.SET_LOADING: {
       return action.payload.loading
@@ -20,7 +20,7 @@ function loading(state = false, action){
   }
 }
 
-function search(state = '', action){
+function search(state = '', action) {
   switch (action.type) {
     case actions.SET_SEARCH: {
       return action.payload.search
@@ -31,7 +31,7 @@ function search(state = '', action){
   }
 }
 
-function error(state = null, action){
+function error(state = null, action) {
   switch (action.type) {
     case actions.SET_ERROR: {
       return action.payload.error

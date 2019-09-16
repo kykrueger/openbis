@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import TextField from '@material-ui/core/TextField'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -33,8 +33,7 @@ const styles = () => ({
 })
 
 class PageConfig extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
     this.handlePageSizeChange = this.handlePageSizeChange.bind(this)
     this.handleFirstPageButtonClick = this.handleFirstPageButtonClick.bind(this)
@@ -43,7 +42,7 @@ class PageConfig extends React.Component {
     this.handleLastPageButtonClick = this.handleLastPageButtonClick.bind(this)
   }
 
-  handlePageSizeChange(event){
+  handlePageSizeChange(event) {
     this.props.onPageSizeChange(event.target.value)
   }
 
@@ -60,13 +59,15 @@ class PageConfig extends React.Component {
   }
 
   handleLastPageButtonClick() {
-    this.props.onPageChange(Math.max(0, Math.ceil(this.props.count / this.props.pageSize) - 1))
+    this.props.onPageChange(
+      Math.max(0, Math.ceil(this.props.count / this.props.pageSize) - 1)
+    )
   }
 
   render() {
     logger.log(logger.DEBUG, 'PageConfig.render')
 
-    const { classes, count, page, pageSize} = this.props
+    const { classes, count, page, pageSize } = this.props
 
     return (
       <div className={classes.container}>
@@ -82,7 +83,9 @@ class PageConfig extends React.Component {
                 onChange={this.handlePageSizeChange}
               >
                 {[5, 10, 20, 50, 100].map(pageSize => (
-                  <option key={pageSize} value={pageSize}>{pageSize}</option>
+                  <option key={pageSize} value={pageSize}>
+                    {pageSize}
+                  </option>
                 ))}
               </TextField>
             }
@@ -90,37 +93,42 @@ class PageConfig extends React.Component {
               label: classes.pageSizeLabel,
               labelPlacementStart: classes.pageSizeLabelPlacement
             }}
-            label="Rows per page: "
-            labelPlacement="start"
+            label='Rows per page: '
+            labelPlacement='start'
           />
         </div>
         <div className={classes.pageRange}>
           <Typography>
-            {Math.min(count, page * pageSize + 1)}-{Math.min(count, (page + 1) * pageSize)} of {count}
+            {Math.min(count, page * pageSize + 1)}-
+            {Math.min(count, (page + 1) * pageSize)} of {count}
           </Typography>
         </div>
         <div className={classes.pageButtons}>
           <IconButton
             onClick={this.handleFirstPageButtonClick}
             disabled={page === 0}
-            aria-label="First Page"
+            aria-label='First Page'
           >
             <FirstPageIcon />
           </IconButton>
-          <IconButton onClick={this.handleBackButtonClick} disabled={page === 0} aria-label="Previous Page">
+          <IconButton
+            onClick={this.handleBackButtonClick}
+            disabled={page === 0}
+            aria-label='Previous Page'
+          >
             <KeyboardArrowLeft />
           </IconButton>
           <IconButton
             onClick={this.handleNextButtonClick}
             disabled={page >= Math.ceil(count / pageSize) - 1}
-            aria-label="Next Page"
+            aria-label='Next Page'
           >
             <KeyboardArrowRight />
           </IconButton>
           <IconButton
             onClick={this.handleLastPageButtonClick}
             disabled={page >= Math.ceil(count / pageSize) - 1}
-            aria-label="Last Page"
+            aria-label='Last Page'
           >
             <LastPageIcon />
           </IconButton>
@@ -128,9 +136,6 @@ class PageConfig extends React.Component {
       </div>
     )
   }
-
 }
 
-export default _.flow(
-  withStyles(styles)
-)(PageConfig)
+export default _.flow(withStyles(styles))(PageConfig)

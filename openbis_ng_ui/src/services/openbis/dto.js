@@ -26,27 +26,32 @@ const CLASS_FULL_NAMES = [
   'as/dto/vocabulary/search/VocabularyTermSearchCriteria',
   'as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions',
   'as/dto/plugin/id/PluginPermId',
-  'as/dto/webapp/create/WebAppSettingCreation',
+  'as/dto/webapp/create/WebAppSettingCreation'
 ]
 
 class Dto {
-
-  init(){
+  init() {
     let _this = this
 
-    let load = function(index){
+    let load = function(index) {
       return new Promise((resolve, reject) => {
-        if(index < CLASS_FULL_NAMES.length){
+        if (index < CLASS_FULL_NAMES.length) {
           let classFullName = CLASS_FULL_NAMES[index]
-          let className = classFullName.substring(classFullName.lastIndexOf('/') + 1)
+          let className = classFullName.substring(
+            classFullName.lastIndexOf('/') + 1
+          )
           /* eslint-disable-next-line no-undef */
-          requirejs([classFullName], clazz => {
-            _this[className] = clazz
-            return load(index + 1).then(resolve, reject)
-          }, error => {
-            reject(error)
-          })
-        }else{
+          requirejs(
+            [classFullName],
+            clazz => {
+              _this[className] = clazz
+              return load(index + 1).then(resolve, reject)
+            },
+            error => {
+              reject(error)
+            }
+          )
+        } else {
           resolve()
         }
       })
@@ -54,14 +59,13 @@ class Dto {
 
     return load(0)
   }
-
 }
 
 const dto = new Dto()
 
 CLASS_FULL_NAMES.forEach(classFullName => {
   let className = classFullName.substring(classFullName.lastIndexOf('/') + 1)
-  dto[className] = function(){}
+  dto[className] = function() {}
 })
 
 export { dto }

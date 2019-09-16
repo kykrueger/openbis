@@ -381,9 +381,9 @@ def _subcriteria_for_tags(tags):
     if not isinstance(tags, list):
         tags = [tags]
 
-    criterias = []
+    criteria = []
     for tag in tags:
-        criterias.append({
+        criteria.append({
             "fieldName": "code",
             "fieldType": "ATTRIBUTE",
             "fieldValue": {
@@ -396,7 +396,7 @@ def _subcriteria_for_tags(tags):
     return {
         "@type": "as.dto.tag.search.TagSearchCriteria",
         "operator": "AND",
-        "criteria": criterias
+        "criteria": criteria
     }
 
 
@@ -423,14 +423,99 @@ def _subcriteria_for_properties(prop, val):
         }
     }
 
+def _subcriteria_for(thing, entity, parents_or_children='', operator='AND'):
+    """Returns the sub-search criteria for «thing», which can be either:
+    - a python object (sample, dataSet, experiment)
+    - a permId
+    - an identifier
+    - a code
+    """
+
+    if isinstance(thing, str):
+        if is_permid(thing):
+            return _subcriteria_for_permid(
+                thing, 
+                entity=entity,
+                parents_or_children=parents_or_children,
+                operator=operator
+            )
+        elif is_identifier(thing):
+            return _subcriteria_for_identifier(
+                thing, 
+                entity=entity,
+                parents_or_children=parents_or_children,
+                operator=operator
+            )
+        else:
+            # look for code
+            return _subcriteria_for_code_new(
+                thing,
+                entity=entity,
+                parents_or_children=parents_or_children,
+                operator=operator
+            )
+
+    elif isinstance(thing, list):
+        criteria = []
+        for element in thing:
+            crit = _subcriteria_for(element, entity, parents_or_children, operator)
+            criteria += crit["criteria"]
+
+        return {
+            "criteria": criteria,
+            "@type": crit["@type"],
+            "operator": "OR"
+        }
+    elif thing is None:
+        # we just need the type
+        search_type = get_type_for_entity(entity, 'search', parents_or_children)
+        return {
+            "criteria": [],
+            **search_type,
+            "operator": operator
+        }
+    else:
+        # we passed an object
+        return _subcriteria_for_permid(
+            thing.permId, 
+            entity=entity,
+            parents_or_children=parents_or_children,
+            operator=operator
+        )
+        
+
+def _subcriteria_for_identifier(ids, entity, parents_or_children='', operator='AND'):
+    if not isinstance(ids, list):
+        ids = [ids]
+
+    criteria = []
+    for id in ids:
+        criteria.append({
+            "@type": "as.dto.common.search.IdentifierSearchCriteria",
+            "fieldValue": {
+                "value": id,
+                "@type": "as.dto.common.search.StringEqualToValue"
+            },
+            "fieldType": "ATTRIBUTE",
+            "fieldName": "identifier"
+        })
+
+    search_type = get_type_for_entity(entity, 'search', parents_or_children)
+    return {
+        "criteria": criteria,
+        **search_type,
+        "operator": operator
+    }
+    return criteria
+
 
 def _subcriteria_for_permid(permids, entity, parents_or_children='', operator='AND'):
     if not isinstance(permids, list):
         permids = [permids]
 
-    criterias = []
+    criteria = []
     for permid in permids:
-        criterias.append({
+        criteria.append({
             "@type": "as.dto.common.search.PermIdSearchCriteria",
             "fieldValue": {
                 "value": permid,
@@ -440,14 +525,36 @@ def _subcriteria_for_permid(permids, entity, parents_or_children='', operator='A
             "fieldName": "code"
         })
 
-    criteria = {
-        "criteria": criterias,
-        "@type": "as.dto.{}.search.{}{}SearchCriteria".format(
-            entity.lower(), entity, parents_or_children
-        ),
+    search_type = get_type_for_entity(entity, 'search', parents_or_children)
+    return {
+        "criteria": criteria,
+        **search_type,
         "operator": operator
     }
-    return criteria
+
+
+def _subcriteria_for_code_new(codes, entity, parents_or_children='', operator='AND'):
+    if not isinstance(codes, list):
+        codes = [codes]
+
+    criteria = []
+    for code in codes:
+        criteria.append({
+            "@type": "as.dto.common.search.CodeSearchCriteria",
+            "fieldValue": {
+                "value": code,
+                "@type": "as.dto.common.search.StringEqualToValue"
+            },
+            "fieldType": "ATTRIBUTE",
+            "fieldName": "code"
+        })
+
+    search_type = get_type_for_entity(entity, 'search', parents_or_children)
+    return {
+        "criteria": criteria,
+        **search_type,
+        "operator": operator
+    }
 
 
 def _subcriteria_for_code(code, entity):
@@ -1028,7 +1135,7 @@ class Openbis:
                     else:
                         groupId = search_args[attr].code
                     sub_crit.append(
-                        _subcriteria_for_permid(groupId, 'AuthorizationGroup')
+                        _subcriteria_for_permid(groupId, 'authorizationGroup')
                     )
                 elif attr == 'role':
                     # TODO
@@ -1403,37 +1510,34 @@ class Openbis:
 
     def get_samples(
         self, identifier=None, code=None, permId=None,
-        space=None, project=None, experiment=None, type=None,
+        space=None, project=None, experiment=None, collection=None, type=None,
         start_with=None, count=None,
         withParents=None, withChildren=None, tags=None, props=None, **properties
     ):
         """ Get a list of all samples for a given space/project/experiment (or any combination)
         """
 
+        if collection is not None:
+            experiment = collection
+
         sub_criteria = []
 
-        # v3 API does not offer a search for identifiers. We need to do a combined search instead:
-        # space && code or
-        # space && project && code
         if identifier:
-            identifier = identifier.lstrip('/')
-            elements = identifier.split('/')
-            if len(elements) == 2:
-                space = elements[0]
-                code  = elements[1]
-            elif len(elements) == 3:
-                space = elements[0]
-                code  = elements[2]
-            else:
-                raise ValueError("{} is not a valid sample identifier.".format(identifier))
+            crit = _subcriteria_for(identifier, 'sample')
+            sub_criteria += crit['criteria']
 
         if space:
-            sub_criteria.append(_subcriteria_for_code(space, 'space'))
+            sub_criteria.append(_subcriteria_for(space, 'space'))
         if project:
-            proj_crit = _subcriteria_for_code(project, 'project')
-            sub_criteria.append(proj_crit)
+            sub_criteria.append(_subcriteria_for(project, 'project'))
         if experiment:
-            sub_criteria.append(_subcriteria_for_code(experiment, 'experiment'))
+            sub_criteria.append(_subcriteria_for(experiment, 'experiment'))
+
+        if withParents:
+            sub_criteria.append(_subcriteria_for(withParents, 'sample', 'Parents'))
+        if withChildren:
+            sub_criteria.append(_subcriteria_for(withChildren, 'sample', 'Children'))
+
         if properties is not None:
             for prop in properties:
                 sub_criteria.append(_subcriteria_for_properties(prop, properties[prop]))
@@ -1445,26 +1549,6 @@ class Openbis:
             sub_criteria.append(_criteria_for_code(code))
         if permId:
             sub_criteria.append(_common_search("as.dto.common.search.PermIdSearchCriteria", permId))
-        if withParents:
-            if not isinstance(withParents, list):
-                withParents = [withParents]
-            for parent in withParents:
-                sub_criteria.append(
-                    _gen_search_criteria({
-                        "sample": "SampleParents",
-                        "identifier": parent
-                    })
-                )
-        if withChildren:
-            if not isinstance(withChildren, list):
-                withChildren = [withChildren]
-            for child in withChildren:
-                sub_criteria.append(
-                    _gen_search_criteria({
-                        "sample": "SampleChildren",
-                        "identifier": child
-                    })
-                )
 
         criteria = {
             "criteria": sub_criteria,
@@ -1596,29 +1680,35 @@ class Openbis:
     def get_datasets(
         self, code=None, type=None, withParents=None, withChildren=None,
         start_with=None, count=None, kind=None,
-        status=None, sample=None, experiment=None, project=None,
+        status=None, sample=None, experiment=None, collection=None, project=None,
         tags=None, props=None, **properties
     ):
+
+        if 'object' in properties:
+            sample = properties['object']
+        if collection is not None:
+            experiment = collection
 
         sub_criteria = []
 
         if code:
             sub_criteria.append(_criteria_for_code(code))
         if type:
-            sub_criteria.append(_subcriteria_for_type(type, 'DataSet'))
+            sub_criteria.append(_subcriteria_for_type(type, 'dataSet'))
+
         if withParents:
-            sub_criteria.append(_subcriteria_for_permid(withParents, 'DataSet', 'Parents'))
+            sub_criteria.append(_subcriteria_for(withParents, 'dataSet', 'Parents'))
         if withChildren:
-            sub_criteria.append(_subcriteria_for_permid(withChildren, 'DataSet', 'Children'))
+            sub_criteria.append(_subcriteria_for(withChildren, 'dataSet', 'Children'))
 
         if sample:
-            sub_criteria.append(_subcriteria_for_code(sample, 'Sample'))
+            sub_criteria.append(_subcriteria_for(sample, 'sample'))
         if experiment:
-            sub_criteria.append(_subcriteria_for_code(experiment, 'Experiment'))
+            sub_criteria.append(_subcriteria_for(experiment, 'experiment'))
+
         if project:
-            exp_crit = _subcriteria_for_code(experiment, 'Experiment')
-            proj_crit = _subcriteria_for_code(project, 'Project')
-            exp_crit['criteria'] = []
+            exp_crit = _subcriteria_for(experiment, 'experiment')
+            proj_crit = _subcriteria_for(project, 'project')
             exp_crit['criteria'].append(proj_crit)
             sub_criteria.append(exp_crit)
         if tags:

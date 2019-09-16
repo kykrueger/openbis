@@ -6,7 +6,7 @@ import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 import ObjectTypePropertyCell from './ObjectTypePropertyCell.jsx'
 import ObjectTypePropertyRow from './ObjectTypePropertyRow.jsx'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
 
 const styles = () => ({
@@ -19,8 +19,7 @@ const styles = () => ({
 })
 
 class ObjectTypeTable extends React.Component {
-
-  constructor(props){
+  constructor(props) {
     super(props)
     this.state = {}
   }
@@ -57,11 +56,9 @@ class ObjectTypeTable extends React.Component {
             </React.Fragment>
           ))}
         </TableBody>
-      </Table>)
+      </Table>
+    )
   }
-
 }
 
-export default _.flow(
-  withStyles(styles)
-)(ObjectTypeTable)
+export default _.flow(withStyles(styles))(ObjectTypeTable)

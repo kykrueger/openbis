@@ -17,6 +17,10 @@ const theme = createMuiTheme({
     },
     secondary: {
       main: lightBlue[600]
+    },
+    background: {
+      primary: '#ebebeb',
+      secondary: '#dbdbdb'
     }
   }
 })
@@ -26,10 +30,10 @@ const render = () => {
   const store = require('./store/store.js').default
 
   ReactDOM.render(
-    <Provider store = { store }>
-      <MuiThemeProvider theme={ theme }>
+    <Provider store={store}>
+      <MuiThemeProvider theme={theme}>
         <DragAndDropProvider>
-            <App />
+          <App />
         </DragAndDropProvider>
       </MuiThemeProvider>
     </Provider>,
