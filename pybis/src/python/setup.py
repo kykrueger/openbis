@@ -11,8 +11,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='PyBIS',
-    version= '1.8.4',
-    author='Swen Vermeul |  ID SIS | ETH Zürich',
+    version= '1.9.3',
+    author='Swen Vermeul • ID SIS • ETH Zürich',
     author_email='swen@ethz.ch',
     description='openBIS connection and interaction, optimized for using with Jupyter',
     long_description=long_description,
@@ -31,7 +31,7 @@ setup(
     ],
     python_requires=">=3.3",
     classifiers=[
-        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],

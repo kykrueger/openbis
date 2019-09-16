@@ -20,12 +20,17 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.jmock.Sequence;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -36,6 +41,7 @@ import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.server.IRemoteHostProvider;
+import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.test.RetryTen;
 import ch.systemsx.cisd.common.test.TestReportCleaner;
 
@@ -72,6 +78,10 @@ public class DefaultSessionManagerTest
 
     private IPrincipalProvider principalProvider;
 
+    private Sequence sequence;
+
+    private ISessionActionListener sessionActionListener;
+
     private void assertExceptionMessageForInvalidSessionToken(final UserFailureException ex)
     {
         final String message = ex.getMessage();
@@ -88,6 +98,8 @@ public class DefaultSessionManagerTest
         authenticationService = context.mock(IAuthenticationService.class);
         remoteHostProvider = context.mock(IRemoteHostProvider.class);
         principalProvider = context.mock(IPrincipalProvider.class);
+        sessionActionListener = context.mock(ISessionActionListener.class);
+        sequence = context.sequence("sequence");
         context.checking(new Expectations()
             {
                 {
@@ -98,12 +110,27 @@ public class DefaultSessionManagerTest
         logRecorder = new BufferedAppender("%-5p %c - %m%n", Level.DEBUG);
     }
 
-    @SuppressWarnings(
-    { "unchecked", "rawtypes" })
     private ISessionManager<BasicSession> createSessionManager(int sessionExpiration)
     {
+        return createSessionManager(sessionExpiration, new HashMap<>());
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private ISessionManager<BasicSession> createSessionManager(int sessionExpiration,
+            Map<String, Integer> maxNumberOfSessionByUser)
+    {
         return new DefaultSessionManager(sessionFactory, prefixGenerator, authenticationService,
-                remoteHostProvider, sessionExpiration, 0, true);
+                remoteHostProvider, sessionExpiration, 0, true)
+            {
+
+                @Override
+                protected int getMaxNumberOfSessionsFor(String user)
+                {
+                    Integer maxNumber = maxNumberOfSessionByUser.get(user);
+                    return maxNumber == null ? 0 : maxNumber;
+                }
+
+            };
     }
 
     @AfterMethod
@@ -165,6 +192,91 @@ public class DefaultSessionManagerTest
                                 + OSUtilities.LINE_SEPARATOR
                                 + "INFO  AUTH.DefaultSessionManager - \\[USER:'bla', HOST:'remote-host'\\]: login",
                         logRecorder.getLogContent()));
+
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testUnlimitedNumberOfSessions()
+    {
+        final String user = "bla";
+        context.checking(new Expectations()
+            {
+                {
+                    allowing(remoteHostProvider).getRemoteHost();
+                    will(returnValue(REMOTE_HOST));
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        one(authenticationService).tryGetAndAuthenticateUser(user, "blub");
+                        will(returnValue(principal));
+
+                        one(sessionFactory).create(with(any(String.class)), with(equal(user)),
+                                with(equal(principal)), with(equal(REMOTE_HOST)),
+                                with(any(Long.class)), with(any(Integer.class)));
+                        BasicSession session =
+                                new BasicSession(user + "-" + (i + 1), user, principal, REMOTE_HOST, 42L, 0);
+                        will(returnValue(session));
+                        inSequence(sequence);
+
+                        one(prefixGenerator).createPrefix(session);
+                        will(returnValue("[USER:'" + user + "', HOST:'remote-host']"));
+                    }
+
+                }
+            });
+
+        assertEquals("bla-1", sessionManager.tryToOpenSession("bla", "blub"));
+        assertEquals("bla-2", sessionManager.tryToOpenSession("bla", "blub"));
+        assertEquals("bla-3", sessionManager.tryToOpenSession("bla", "blub"));
+
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testLimitedNumberOfSession()
+    {
+        final String user = "bla";
+        RecordingMatcher<BasicSession> recordingSessionMatcher = new RecordingMatcher<BasicSession>();
+        context.checking(new Expectations()
+            {
+                {
+                    one(authenticationService).check();
+
+                    allowing(remoteHostProvider).getRemoteHost();
+                    will(returnValue(REMOTE_HOST));
+
+                    exactly(3).of(authenticationService).tryGetAndAuthenticateUser(user, "blub");
+                    will(returnValue(principal));
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        one(sessionFactory).create(with(any(String.class)), with(equal(user)),
+                                with(equal(principal)), with(equal(REMOTE_HOST)),
+                                with(any(Long.class)), with(any(Integer.class)));
+                        BasicSession session =
+                                new BasicSession(user + "-" + (i + 1), user, principal, REMOTE_HOST, 42L, 0);
+                        will(returnValue(session));
+                        inSequence(sequence);
+
+                        one(prefixGenerator).createPrefix(with(recordingSessionMatcher));
+                        will(returnValue("[USER:'" + user + "', HOST:'remote-host']"));
+                    }
+                    one(prefixGenerator).createPrefix(with(recordingSessionMatcher));
+                    will(returnValue("[USER:'" + user + "', HOST:'remote-host']"));
+                    
+                    one(sessionActionListener).sessionClosed("bla-1");
+                }
+            });
+        sessionManager = createSessionManager(SESSION_EXPIRATION_PERIOD_MINUTES, Collections.singletonMap("bla", 2));
+        sessionManager.addListener(sessionActionListener);
+
+        assertEquals("bla-1", sessionManager.tryToOpenSession("bla", "blub"));
+        assertEquals("bla-2", sessionManager.tryToOpenSession("bla", "blub"));
+        assertEquals("bla-3", sessionManager.tryToOpenSession("bla", "blub"));
+        assertEquals("[bla-1, bla-2, bla-1, bla-3]", 
+                recordingSessionMatcher.getRecordedObjects().stream().map(s -> s.getSessionToken())
+                .collect(Collectors.toList()).toString());
 
         context.assertIsSatisfied();
     }

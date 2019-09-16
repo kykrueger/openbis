@@ -51,28 +51,68 @@ o.logout()
 
 ## browsing masterdata
 ```
-o.get_experiment_types()
-et = o.get_experiment_type('TEST')
-et.get_propertyAssignments()
-
-o.get_sample_types()
+sample_types = o.get_sample_types()  # get a list of sample types 
+sample_types.df                      # DataFrame object
+st = o.get_sample_types()[3]         # get 4th element of that list
 st = o.get_sample_type('YEAST')
-st.get_propertyAssignments()
+st.code
+st.generatedCodePrefix
+st.attrs.all()                       # get all attributs as a dict
+st.validationPlugin                  # returns a plugin object
+
+st.get_property_assignments()
+st.assign_property(
+	prop='diff_time',
+	section = '',
+	ordinal = 5,
+	mandatory = True,
+	initialValueForExistingEntities = 'initial value'
+	showInEditView = True,
+	showRawValueInForms = True
+)
 
 o.get_material_types()
-mt = o.get_material_type('GENE')
-mt.get_propertyAssignments()
+# etc. — see above
 
 o.get_dataset_types()
-dst = o.get_dataset_types()[0]
-dst = o.get_dataset_type('RAW_DATA')
-dst.get_propertyAssignments()
-dst.get_propertyAssignments(with_vocabulary=True)
+# etc. — see above
+
+o.get_experiment_types()
+# etc. — see above
+
+o.get_property_types()
+pt = o.get_property_type('BARCODE_COMPLEXITY_CHECKER')
+pt.attrs.all()
+
+o.get_plugins()
+pl = o.get_plugin('Diff_time')
+pl.script  # the Jython script that processes this property
 
 o.get_vocabularies()
 o.get_vocabulary('BACTERIAL_ANTIBIOTIC_RESISTANCE')
 o.get_terms(vocabulary='STORAGE')
 o.get_tags()
+```
+
+## create plugins and property types
+```
+pl = o.new_plugin(
+	name       ='my_new_entry_validation_plugin',
+	pluginType ='ENTITY_VALIDATION',               # or 'DYNAMIC_PROPERTY' or 'MANAGED_PROPERTY',
+	entityKind = None,                             # or 'SAMPLE', 'MATERIAL', 'EXPERIMENT', 'DATA_SET'
+	script     = 'def calculate(): pass'           # a JYTHON script
+)
+pl.save()
+
+pt = o.new_property_type(
+	code='MY_NEW_PROPERTY_TYPE', 
+	label='yet another property type', 
+   description='my first property',
+   dataType='VARCHAR'
+)
+# dataType can be any of ['INTEGER', 'VARCHAR', 'MULTILINE_VARCHAR', 'REAL', 'TIMESTAMP', 'BOOLEAN', 'CONTROLLEDVOCABULARY', 'MATERIAL', 'HYPERLINK', 'XML']
+
+
 ```
 
 ## Users, Groups and RoleAssignments
@@ -86,9 +126,9 @@ group.assign_role(role='ADMIN', space='DEFAULT')
 group.get_roles() 
 group.revoke_role(role='ADMIN', space='DEFAULT')
 
-group.add_persons(['admin'])
-group.get_persons()
-group.del_persons(['admin'])
+group.add_members(['admin'])
+group.get_members()
+group.del_members(['admin'])
 group.delete()
 
 o.get_persons()
@@ -154,11 +194,13 @@ project.download_attachments()
 
 project.code
 project.description
-project.registrator
-project.registrationDate
-project.modifier
-project.modificationDate
+# ... and many more
 project.attrs.all()                   # returns a dict containing all attributes
+
+project.freeze = True
+project.freezeForExperiments = True
+project.freezeForSamples = True
+
 ```
 
 ## Samples
@@ -260,6 +302,12 @@ samples = o.get_samples(
 )
 samples.df                            # returns a pandas DataFrame object
 samples.get_datasets(type='ANALYZED_DATA')
+
+sample.freeze = True
+sample.freezeForComponents = True
+sample.freezeForChildren = True
+sample.freezeForParents = True
+sample.freezeForDataSets = True
 ```
 
 ## Experiments
@@ -306,6 +354,10 @@ exp.registrator
 exp.registrationDate
 exp.modifier
 exp.modificationDate
+
+exp.freeze = True
+exp.freezeForDataSets = True
+exp.freezeForSamples = True
 ```
 
 ## Datasets
@@ -402,6 +454,12 @@ datasets.df                       # get a pandas dataFrame object
 for dataset in datasets:
     print(dataset.permID)
     dataset.delete('give me a reason')
+
+ds.freeze = True
+ds.freezeForChildren = True
+ds.freezeForParents = True
+ds.freezeForComponents = True
+ds.freezeForContainers = True
 ```
 
 ## Semantic Annotations
@@ -461,7 +519,8 @@ o.get_tag('TAG_Name')
 
 tag.get_experiments()
 tag.get_samples()
-tag.delete()
+tag.get_owner()   # returns a person object
+tag.delete('why?')
 ```
 
 ## Vocabulary and VocabularyTerms
@@ -510,5 +569,20 @@ term = o.new_term(
 	description='here might appear a meaningful description'
 )
 term.save()
+```
+
+**update VocabularyTerms**
+
+To change the ordinal of a term, it has to be moved either to the top with the `.move_to_top()` method or after another term using the `.move_after_term('TERM_BEFORE')` method.
+
+```
+voc = o.get_vocabulary('STORAGE')
+term = voc.get_terms()['RT']
+term.label = "Room Temperature"
+term.official = True
+term.move_to_top()
+term.move_after_term('-40')
+term.save()
+term.delete()
 ```
 

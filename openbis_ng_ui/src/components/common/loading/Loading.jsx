@@ -1,27 +1,26 @@
 import React from 'react'
-import {withStyles} from '@material-ui/core/styles'
+import { withStyles } from '@material-ui/core/styles'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import logger from '../../../common/logger.js'
 
-const styles = {
+const styles = theme => ({
   loader: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     zIndex: 1000,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.palette.background.paper,
     opacity: 0.8,
-    textAlign: 'center',
+    textAlign: 'center'
   },
   progress: {
     position: 'absolute',
     top: '20%',
     left: 'calc(50% - 20px)'
   }
-}
+})
 
 class Loading extends React.Component {
-
   render() {
     logger.log(logger.DEBUG, 'Loading.render')
 
@@ -29,12 +28,11 @@ class Loading extends React.Component {
 
     return (
       <div>
-        {
-          this.props.loading &&
+        {this.props.loading && (
           <div className={classes.loader}>
-            <CircularProgress className={classes.progress}/>
+            <CircularProgress className={classes.progress} />
           </div>
-        }
+        )}
         {this.props.children}
       </div>
     )

@@ -61,53 +61,65 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		//
 		var toolbarModel = [];
 		if(this._projectFormModel.mode === FormMode.VIEW) {
-			var showSelectExperimentType = function() {
-				var $dropdown = FormUtil.getExperimentTypeDropdown("experimentTypeDropdown", true);
-				Util.showDropdownAndBlockUI("experimentTypeDropdown", $dropdown);
-				
-				$("#experimentTypeDropdown").on("change", function(event) {
-					var experimentTypeCode = $("#experimentTypeDropdown")[0].value;
-					_this._projectFormController.createNewExperiment(experimentTypeCode);
-				});
-				
-				$("#experimentTypeDropdownCancel").on("click", function(event) { 
-					Util.unblockUI();
-				});
-			}
-			
-			//Create Experiment
-			var isDefaultExperimentPressent = mainController.profile.getExperimentTypeForExperimentTypeCode("DEFAULT_EXPERIMENT") != null;
-			if(isDefaultExperimentPressent) {
-				var $createExpBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-				if(profile.isInventorySpace(_this._projectFormModel.project.spaceCode)) {
-					var experimentType = profile.getExperimentTypeForExperimentTypeCode(_this._projectFormModel.project.spaceCode);
-					if(experimentType) {
-						_this._projectFormController.createNewExperiment(_this._projectFormModel.project.spaceCode);
-					} else {
-						showSelectExperimentType();
-					}
-				} else {
-					_this._projectFormController.createNewExperiment("DEFAULT_EXPERIMENT");
+			var experimentKindName = ELNDictionary.getExperimentKindName(projectIdentifier);
+			if (_this._allowedToCreateExperiments()) {
+				//Create Experiment
+				var isDefaultExperimentPresent = mainController.profile.getExperimentTypeForExperimentTypeCode("DEFAULT_EXPERIMENT") != null;
+				if(isDefaultExperimentPresent) {
+					var newExperimentTypeDropdownId = "new-experiment-type-dropdown";
+					var defaultValueKey = entityPath.text() + "-FORM-" + newExperimentTypeDropdownId;
+
+					this._projectFormController.getDefaultSpaceValue(defaultValueKey, function (settingsValue) {
+						var defaultValue;
+						if (settingsValue) {
+							defaultValue = settingsValue;
+						} else if (profile.isInventorySpace(_this._projectFormModel.project.spaceCode)) {
+							var experimentType = profile.getExperimentTypeForExperimentTypeCode(_this._projectFormModel.project.spaceCode);
+							if (experimentType) {
+								defaultValue = _this._projectFormModel.project.spaceCode;
+							} else {
+								defaultValue = "COLLECTION";
+							}
+						} else {
+							defaultValue = "DEFAULT_EXPERIMENT";
+						}
+
+						$("option[value=" + defaultValue + "]").prop("selected", true);
+					});
+
+					var $experimentTypeDropdown = FormUtil.getInlineExperimentTypeDropdown(newExperimentTypeDropdownId, true);
+					var $createExpBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+						var experimentTypeCode = $("#" + newExperimentTypeDropdownId)[0].value;
+
+						if (experimentTypeCode && experimentTypeCode !== "") {
+							_this._projectFormController.createNewExperiment(experimentTypeCode);
+						}
+					});
+
+					toolbarModel.push({ component: $createExpBtn, tooltip: "Create " + experimentKindName });
+					toolbarModel.push({ component: $experimentTypeDropdown, tooltip: "Type of the " + experimentKindName + " to create" });
+
+					$experimentTypeDropdown.change(function(event) {
+						_this._projectFormController.setDefaultSpaceValue(defaultValueKey, $(event.target).val());
+					});
 				}
-				});
-				toolbarModel.push({ component : $createExpBtn, tooltip: "Create " + ELNDictionary.getExperimentKindName(projectIdentifier) });
 			}
-			
-			//Freeze
-			if(_this._projectFormModel.v3_project && _this._projectFormModel.v3_project.frozen !== undefined) { //Freezing available on the API
-				var isEntityFrozen = _this._projectFormModel.v3_project.frozen;
-				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-				var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, isEntityFrozen);
-				toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
-			}
-			
-			if(!_this._projectFormModel.v3_project.frozen) {
+            if (_this._allowedToMove()) {
+                //Move
+                var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
+                    var moveEntityController = new MoveEntityController("PROJECT", _this._projectFormModel.project.permId);
+                    moveEntityController.init();
+                });
+				toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
+            }
+			if(_this._allowedToEdit()) {
 				//Edit
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					_this._projectFormController.enableEditing();
 				});
 				toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
-			
+			}
+			if(_this._allowedToDelete()) {
 				//Delete
 				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
 					_this._projectFormController.deleteProject(reason);
@@ -141,8 +153,30 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				toolbarModel.push({ component : $share, tooltip: "Manage access" });
 			}
 
+            //Freeze
+            if(_this._projectFormModel.v3_project && _this._projectFormModel.v3_project.frozen !== undefined) { //Freezing available on the API
+                var isEntityFrozen = _this._projectFormModel.v3_project.frozen;
+                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+                var $freezeButton = FormUtil.getFreezeButton("PROJECT", this._projectFormModel.v3_project.permId.permId, isEntityFrozen);
+                toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+            }
+
+			var showSelectExperimentType = function() {
+				var $dropdown = FormUtil.getExperimentTypeDropdown("experimentTypeDropdown", true);
+				Util.showDropdownAndBlockUI("experimentTypeDropdown", $dropdown);
+
+				$("#experimentTypeDropdown").on("change", function(event) {
+					var experimentTypeCode = $("#experimentTypeDropdown")[0].value;
+					_this._projectFormController.createNewExperiment(experimentTypeCode);
+				});
+
+				$("#experimentTypeDropdownCancel").on("click", function(event) {
+					Util.unblockUI();
+				});
+			};
+
 			//Operations
-			var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + ELNDictionary.getExperimentKindName(projectIdentifier), event: function() {
+			var $operationsMenu = FormUtil.getOperationsMenu([{ label: "Create " + experimentKindName, event: function() {
 				showSelectExperimentType();
 			}}]);
 			toolbarModel.push({ component : $operationsMenu, tooltip: "Extra operations" });
@@ -247,5 +281,25 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		}
 		
 		$container.append($form);
-	}
+	};
+	
+	this._allowedToCreateExperiments = function() {
+		var project = this._projectFormModel.v3_project;
+		return project.frozenForExperiments == false;
+	};
+	
+	this._allowedToEdit = function() {
+		var project = this._projectFormModel.v3_project;
+		return project.frozen == false;
+	};
+
+	this._allowedToMove = function() {
+		var project = this._projectFormModel.v3_project;
+		return project.frozen == false && project.space.frozenForProjects == false;
+	};
+	
+	this._allowedToDelete = function() {
+		var project = this._projectFormModel.v3_project;
+		return project.frozen == false && project.space.frozenForProjects == false;
+	};
 }

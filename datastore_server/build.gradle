@@ -10,6 +10,7 @@ apply from: '../gradle/javaproject.gradle'
 
 configurations.create('testRuntimeFirst')
 configurations.create('testRuntimeSecond')
+configurations.create('datastoreExecRuntime')
 
 dependencies {
 
@@ -35,12 +36,25 @@ dependencies {
 
 	runtime 'bioformats:bioformats:5.9.2'
 
+	// eln-lims Jython APIs dependencies
+	datastoreExecRuntime files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/zip4j_1.3.2.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/plasmapper.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/eln-lims-api/lib/htmlcleaner-2.16.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/docx4j-3.3.3.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/docxbuilder.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/jsoup-1.11.3.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/serializer-2.7.2.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/slf4j-api-1.7.21.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/exports-api/lib/xalan-2.7.2.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/zenodo-exports-api/lib/job-scheduler.jar"),
+			files("../openbis_standard_technologies/dist/core-plugins/eln-lims/1/dss/reporting-plugins/password-reset-api/lib/persistentkeyvaluestore.jar")
+
 	testCompile (project(path: ':openbis', configuration: 'tests')) {
 		exclude group: 'google', module: 'gwt-user'
 	}
-				
+
 	testCompile project(path: ':common', configuration: 'tests'),
-				project(path: ':openbis-common', configuration: 'tests')
+			project(path: ':openbis-common', configuration: 'tests')
 
 	testRuntimeFirst 'javax:servlet-api:3.1.0'
 	testRuntimeSecond 'google:gwt-user:2.4'
@@ -52,7 +66,12 @@ configurations {
 
 sourceSets.test.runtimeClasspath = configurations.testRuntimeFirst + configurations.testRuntimeSecond + sourceSets.test.runtimeClasspath
 
-sourceSets { 
+sourceSets {
+	main {
+		resources {
+			srcDirs = ['source/java']
+		}
+	}
 	test {
 		resources {
 			srcDirs = ['source/java']
@@ -68,21 +87,21 @@ sourceSets {
 		}
 
 		compileClasspath += sourceSets.main.compileClasspath
-		runtimeClasspath += sourceSets.main.runtimeClasspath
+		runtimeClasspath += sourceSets.main.runtimeClasspath + configurations.datastoreExecRuntime
 	}
 }
 
 jar {
-    from('targets/dist') {
-        include 'BUILD*INFO'
-    }
-    from('source/java') {
-        include '*.xml'
-    }
-    from('source') {
-        include 'sql/**/*.sql'
-        into 'datastore_server'
-    }
+	from('targets/dist') {
+		include 'BUILD*INFO'
+	}
+	from('source/java') {
+		include '*.xml'
+	}
+	from('source') {
+		include 'sql/**/*.sql'
+		into 'datastore_server'
+	}
 }
 
 task executeOpenBisDataStore(type: JavaExec) {

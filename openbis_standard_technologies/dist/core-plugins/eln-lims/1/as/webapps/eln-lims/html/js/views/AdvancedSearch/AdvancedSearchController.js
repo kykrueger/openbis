@@ -35,6 +35,9 @@ function AdvancedSearchController(mainController, forceSearch) {
 
 	this.search = function() {
 		var criteria = this._advancedSearchModel.criteria;
+		if (criteria.cached) {
+			criteria.cached = false;
+		}
 		var numberOfGeneralRules = 0;
 		var numberOfRules = 0;
 		
@@ -137,6 +140,8 @@ function AdvancedSearchController(mainController, forceSearch) {
 				fetchOptions.from = options.pageIndex * options.pageSize;
 				fetchOptions.minTableInfo = true;
 				fetchOptions.withExperiment = true;
+				fetchOptions.withParents = false;
+				fetchOptions.withChildren = false;
 				optionsSearch = options.search;
 				// TODO : Unused on the UI, should be added for DataSets
 				// fetchOptions.withSample = true;
@@ -441,8 +446,8 @@ function AdvancedSearchController(mainController, forceSearch) {
 	this._doIfAdmin = function(experiment, action) {
 		var _this = this;
 		_this._mainController.getUserRole({
-			space: experiment.project.code,
-			project: experiment.project.space.code,
+			space: experiment.project.space.code,
+			project: experiment.project.code,
 		}, function(roles) {
 			var hasAdmin = roles.filter(function(role) { return role.indexOf('ADMIN') > -1 }).length > 0;
 			if (hasAdmin) {

@@ -29,30 +29,24 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		
 		var typeTitle = "Space: ";
 		
-		var $formTitle = $("<h2>").append(typeTitle + this._spaceFormModel.space.code);
+		var $formTitle = $("<h2>").append(typeTitle + this._spaceFormModel.space);
 		
 		//
 		// Toolbar
 		//
 		var toolbarModel = [];
-		var $createProj = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-			_this._spaceFormController.createProject();
-		});
-		toolbarModel.push({ component : $createProj, tooltip: "Create Project" });
-
-		//Freeze
-		if(_this._spaceFormModel.v3_space && _this._spaceFormModel.v3_space.frozen !== undefined) { //Freezing available on the API
-			var isEntityFrozen = _this._spaceFormModel.v3_space.frozen;
-			var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-			var $freezeButton = FormUtil.getFreezeButton("SPACE", _this._spaceFormModel.v3_space.permId.permId, isEntityFrozen);
-			toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+		if (_this._allowedToCreateProject()) {
+			var $createProj = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+				_this._spaceFormController.createProject();
+			});
+			toolbarModel.push({ component : $createProj, tooltip: "Create Project" });
 		}
-		
+
 		//Export
-		var $exportAll = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space.code, expand : true }], false);
+		var $exportAll = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space, expand : true }], false);
 		toolbarModel.push({ component : $exportAll, tooltip: "Export Metadata & Data" });
 		
-		var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space.code, expand : true }], true);
+		var $exportOnlyMetadata = FormUtil.getExportButton([{ type: "SPACE", permId : _this._spaceFormModel.space, expand : true }], true);
 		toolbarModel.push({ component : $exportOnlyMetadata, tooltip: "Export Metadata only" });
 		
 		//Jupyter Button
@@ -74,10 +68,24 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 			toolbarModel.push({ component : $share, tooltip: "Manage access" });
 		}
 
+        //Freeze
+        if(_this._spaceFormModel.v3_space && _this._spaceFormModel.v3_space.frozen !== undefined) { //Freezing available on the API
+            var isEntityFrozen = _this._spaceFormModel.v3_space.frozen;
+            var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+            var $freezeButton = FormUtil.getFreezeButton("SPACE", _this._spaceFormModel.v3_space.permId.permId, isEntityFrozen);
+            toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+        }
+
 		var $header = views.header;
 		$header.append($formTitle);
 		$header.append(FormUtil.getToolbar(toolbarModel));
 		
 		$container.append($form);
 	}
+	
+	this._allowedToCreateProject = function() {
+		var space = this._spaceFormModel.v3_space;
+		return space.frozenForProjects == false;
+	}
+	
 }

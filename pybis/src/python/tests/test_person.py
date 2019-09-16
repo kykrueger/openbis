@@ -8,7 +8,8 @@ from pybis import DataSet
 from pybis import Openbis
 
 
-def test_create_person(openbis_instance):
+def test_create_person(space):
+    openbis_instance=space.openbis
     timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
     person_name = 'test_person_' + timestamp
     person = openbis_instance.new_person(userId=person_name)
@@ -26,27 +27,25 @@ def test_create_person(openbis_instance):
     roles_exist = person.get_roles()
     assert len(roles_exist) == 0
 
-    person.assign_role('INSTANCE_OBSERVER')
+    person.assign_role('OBSERVER')
     roles_exist = person.get_roles()
     assert len(roles_exist) == 1
 
-    person.assign_role(role='SPACE_OBSERVER', space='DEFAULT')
+    person.assign_role(role='OBSERVER', space=space)
     roles_exist = person.get_roles()
     assert len(roles_exist) == 2
 
-    person.revoke_role(role='INSTANCE_OBSERVER')
+    person.revoke_role(role='OBSERVER')
     roles_exist = person.get_roles()
     assert len(roles_exist) == 1
 
-    person.revoke_role(role='SPACE_OBSERVER', space='DEFAULT')
+    person.revoke_role(role='OBSERVER', space=space)
     roles_exist = person.get_roles()
     assert len(roles_exist) == 0
 
+    #person.delete("test on {}".format(timestamp))
 
-
-    person.delete("test on {}".format(timestamp))
-
-    with pytest.raises(ValueError):
-        person_not_exists = openbis_instance.get_person(userId=person_name)
-        assert person_not_exists is None
+    #with pytest.raises(ValueError):
+    #    person_not_exists = openbis_instance.get_person(userId=person_name)
+    #    assert person_not_exists is None
 

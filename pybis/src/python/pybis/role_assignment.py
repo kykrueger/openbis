@@ -8,7 +8,7 @@ class RoleAssignment(OpenBisObject):
 
     def __init__(self, openbis_obj, data=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'RoleAssignment' )
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'roleAssignment' )
 
         if data is not None:
             self.a(data)
@@ -31,9 +31,10 @@ class RoleAssignment(OpenBisObject):
         return "{}".format(self.get('role'))
 
     def delete(self, reason='no reason specified'):
-        self.openbis.delete_entity(
-            entity='RoleAssignment', id=self.id, 
-            reason=reason, id_name='techId'
-        ) 
+        self.openbis.delete_openbis_entity(
+            entity='roleAssignment',
+            objectId=self._id,
+            reason= reason
+        )
         if VERBOSE:
             print("RoleAssignment role={}, roleLevel={} successfully deleted.".format(self.role, self.roleLevel))

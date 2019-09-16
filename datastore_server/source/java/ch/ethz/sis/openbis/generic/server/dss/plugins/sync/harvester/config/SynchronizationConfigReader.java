@@ -77,6 +77,10 @@ public class SynchronizationConfigReader
 
     private static final String VERBOSE_PROPERTY_NAME = "verbose";
 
+    private static final String SPACE_BLACK_LIST_PROPERTY_NAME = "space-black-list";
+
+    private static final String SPACE_WHITE_LIST_PROPERTY_NAME = "space-white-list";
+
     private static final String KEEP_ORIGINAL_TIMESTAMPS_AND_USERS_PROPERTY_NAME = "keep-original-timestamps-and-users";
 
     private static final String KEEP_ORIGINAL_FROZEN_FLAGS_PROPERTY_NAME = "keep-original-frozen-flags";
@@ -130,6 +134,9 @@ public class SynchronizationConfigReader
 
             config.setHarvesterUser(reader.getString(section, HARVESTER_USER_PROPERTY_NAME, null, true));
             config.setHarvesterPass(reader.getString(section, HARVESTER_PASS_PROPERTY_NAME, null, true));
+            
+            config.setSpaceBlackList(reader.getStrings(section, SPACE_BLACK_LIST_PROPERTY_NAME, new ArrayList<>()));
+            config.setSpaceWhiteList(reader.getStrings(section, SPACE_WHITE_LIST_PROPERTY_NAME, new ArrayList<>()));
 
             String dsSpaces = reader.getString(section, DATA_SOURCE_SPACES_PROPERTY_NAME, null, false);
             if (dsSpaces != null)

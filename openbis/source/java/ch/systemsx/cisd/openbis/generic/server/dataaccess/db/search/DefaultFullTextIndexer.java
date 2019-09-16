@@ -148,6 +148,9 @@ final class DefaultFullTextIndexer implements IFullTextIndexer
                 List<Long> subList = ids.subList(index, nextIndex);
                 final List<T> results =
                         listEntitiesWithRestrictedId(fullTextSession, clazz, subList);
+                if (subList.size() != results.size()) {
+                    operationLog.error(String.format("The system tried to index %d but only found %d on the database.", subList.size(), results.size()));
+                }
                 indexEntities(fullTextSession, results);
                 index = nextIndex;
                 operationLog.info(String.format("%d/%d %ss have been reindexed...", index,

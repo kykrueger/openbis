@@ -1,8 +1,44 @@
+## Changes with pybis-1.9.3
+
+* fixed documentation: add_members (not add_persons)
+* bugfix role assignments of groups
+
+## Changes with pybis-1.9.2
+
+* searches for datasets and samples are highly improved
+* search parameters can accept a code, an identifier or an openbis entity
+* searching for all datasets in a project now works
+* bugfixes
+
+
+## Changes with pybis-1.9.1
+
+* bugfix: controlled vocabulary
+
+
+## Changes with pybis-1.9.0
+
+* new: search, create, update and delete Property Types
+* new: search, create, update and delete Plugins
+* new: create and update Sample Types
+* freeze entities to prevent changes
+* added more tests
+
+
+## Changes with pybis-1.8.5
+
+* changed to v3 API when fetching datastores
+* gen_permId to generate unique permIds used for dataSets
+* support ELN-LIMS style identifiers: /SPACE/PROJECT/COLLECTION/OBJECT_CODE
+* terms now can be moved either to the top or after another term
+
+
 ## Changes with pybis-1.8.4
 
 * totalCount attribute added in every Things object
 * totalCount will return the total number of elements matching a search
 * bugfix in get_semantic_annotation method
+
 
 ## Changes with pybis-1.8.3
 
@@ -16,6 +52,7 @@
 * sample.props['some-weird.property-name'] = "some value"
 * check for mandatory properties in samples (objects), datasets and experiments (collections)
 
+
 ## Changes with pybis-1.8.1
 
 * revised documentation
@@ -27,17 +64,20 @@
 * `collection` is now alias for `experiment`
 * `object` is alias for `sample`
 
+
 ## Changes with pybis-1.8.0
 
 * better support for fetching entity-types (dataSetTypes, sampleTypes)
 * separation of propertyAssignments from entity-types
 * added .get_propertyAssignments() method to all entity-types
 
+
 ## Changes with pybis-1.7.6
 
 * bugfix dataset upload for relative files (e.g. ../../file or /User/username/file)
 * always only the filename is added to the dataset, not the folder containing it
 * corrected License file
+
 
 ## Changes with pybis-1.7.5
 
@@ -48,6 +88,7 @@
 * make properties more robust: allow get_samples(props='name') instead of get_samples(props=['name'])
 * fixed bug when parent/children of more than one element was searched: o.get_experiments().get_samples().get_parents()
 
+
 ## Changes with pybis-1.7.4
 
 * pyBIS now allows to create dataset-containers that contain no data themselves
@@ -57,15 +98,18 @@
 * README.md is now correctly displayed
 * setup.py is fixed, installation should no longer fail because of some utf-8 problems on certain machines
 
+
 ## Changes with pybis-1.7.3
 
 * improved packaging information
 * LICENSE included (Apache License v.2)
 
+
 ## Changes with pybis-1.7.2
 
 * added server_information to openBIS connection
 * bugfix: project samples are only fetched when instance supports them
+
 
 ## Changes with pybis-1.7.1
 

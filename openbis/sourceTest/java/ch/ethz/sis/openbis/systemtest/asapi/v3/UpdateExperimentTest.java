@@ -33,6 +33,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCrea
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.AttachmentFileName;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -43,10 +45,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifi
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -852,7 +858,7 @@ public class UpdateExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testFreezingForSample()
+    public void testFreezingForSampleCreations()
     {
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -873,7 +879,32 @@ public class UpdateExperimentTest extends AbstractExperimentTest
     }
 
     @Test
-    public void testFreezingForDataSets()
+    public void testFreezingForSampleDeletions()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentIdentifier expId = new ExperimentIdentifier("/CISD/NEMO/EXP10");
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setExperimentId(expId);
+        sampleCreation.setTypeId(new EntityTypePermId("NORMAL", EntityKind.SAMPLE));
+        sampleCreation.setCode(PREFIX + "S1");
+        sampleCreation.setSpaceId(new SpacePermId("CISD"));
+        SamplePermId sampleId = v3api.createSamples(sessionToken, Arrays.asList(sampleCreation)).get(0);
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(expId);
+        update.freezeForSamples();
+        v3api.updateExperiments(sessionToken, Arrays.asList(update));
+        SampleDeletionOptions deletionOptions = new SampleDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteSamples(sessionToken, Arrays.asList(sampleId), deletionOptions),
+                // Then
+                "ERROR: Operation DELETE SAMPLE is not allowed because experiment EXP10 is frozen");
+    }
+
+    @Test
+    public void testFreezingForDataSetCreations()
     {
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -895,10 +926,41 @@ public class UpdateExperimentTest extends AbstractExperimentTest
                 "ERROR: Operation SET EXPERIMENT is not allowed because experiment EXP10 is frozen for data set UET-D1.");
     }
 
+    @Test
+    public void testFreezingForDataSetDeletions()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        ExperimentIdentifier expId = new ExperimentIdentifier("/CISD/NEMO/EXP10");
+        DataSetCreation dataSetCreation = new DataSetCreation();
+        dataSetCreation.setCode(PREFIX + "D1");
+        dataSetCreation.setTypeId(new EntityTypePermId("DELETION_TEST_CONTAINER", EntityKind.DATA_SET));
+        dataSetCreation.setDataStoreId(new DataStorePermId("STANDARD"));
+        dataSetCreation.setDataSetKind(DataSetKind.CONTAINER);
+        dataSetCreation.setExperimentId(expId);
+        DataSetPermId dataSetId = v3api.createDataSets(sessionToken, Arrays.asList(dataSetCreation)).get(0);
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(expId);
+        update.freezeForDataSets();
+        v3api.updateExperiments(sessionToken, Arrays.asList(update));
+        DataSetDeletionOptions deletionOptions = new DataSetDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteDataSets(sessionToken, Arrays.asList(dataSetId), deletionOptions),
+                // Then
+                "ERROR: Operation DELETE DATA SET is not allowed because experiment EXP10 is frozen.");
+    }
+
     @Test(dataProvider = "freezeMethods")
     public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
     {
         // Given
+        RoleAssignmentCreation roleAssignmentCreation = new RoleAssignmentCreation();
+        roleAssignmentCreation.setRole(Role.ADMIN);
+        roleAssignmentCreation.setSpaceId(new SpacePermId("TEST-SPACE"));
+        roleAssignmentCreation.setUserId(new PersonPermId(TEST_POWER_USER_CISD));
+        v3api.createRoleAssignments(systemSessionToken, Arrays.asList(roleAssignmentCreation));
         final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
         ExperimentIdentifier expId = new ExperimentIdentifier("/CISD/NEMO/EXP10");
         ExperimentUpdate update = new ExperimentUpdate();

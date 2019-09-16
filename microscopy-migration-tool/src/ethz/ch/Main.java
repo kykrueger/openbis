@@ -56,9 +56,10 @@ public class Main
             
             doTheWork(true, AS_URL, DSS_URL, user, pass, true, true, true);
         } else {
-            String AS_URL = OPENBIS_LOCAL_DEV + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL;
-            String DSS_URL = DSS_LOCAL_DEV + "/datastore_server" + IDataStoreServerApi.SERVICE_URL;
-            doTheWork(true, AS_URL, DSS_URL, "pontia", "a", true, true, true);
+// Used for development
+//            String AS_URL = OPENBIS_LOCAL_DEV + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL;
+//            String DSS_URL = DSS_LOCAL_DEV + "/datastore_server" + IDataStoreServerApi.SERVICE_URL;
+//            doTheWork(true, AS_URL, DSS_URL, "pontia", "test", true, true, true);
             System.out.println("Example: java -jar microscopy_migration_tool.jar https://openbis-as-domain.ethz.ch https://openbis-dss-domain.ethz.ch user password");
         }
     }
@@ -202,13 +203,13 @@ public class Main
 
         System.out.println("4. Translate Properties to Samples");
 
-        PropertyType2SampleType FACS_ARIA_TUBE =    new PropertyType2SampleType(        "FACS_ARIA_TUBE",   "FACS_ARIA_SPECIMEN",   "FACS_ARIA_SPECIMEN",   "$NAME");
-        PropertyType2SampleType FACS_ARIA_WELL =    new PropertyType2SampleType(        "FACS_ARIA_WELL",   "FACS_ARIA_SPECIMEN",   "FACS_ARIA_SPECIMEN",   "$NAME");
-        PropertyType2SampleType INFLUX_TUBE =       new PropertyType2SampleType(        "INFLUX_TUBE",      "INFLUX_SPECIMEN",      "INFLUX_SPECIMEN",      "$NAME");
-        PropertyType2SampleType LSR_FORTESSA_TUBE = new PropertyType2SampleType(        "LSR_FORTESSA_TUBE","LSR_FORTESSA_SPECIMEN","LSR_FORTESSA_SPECIMEN","$NAME");
-        PropertyType2SampleType LSR_FORTESSA_WELL = new PropertyType2SampleType(        "LSR_FORTESSA_WELL","LSR_FORTESSA_SPECIMEN","LSR_FORTESSA_SPECIMEN","$NAME");
-        PropertyType2SampleType MOFLO_XDP_TUBE =    new PropertyType2SampleType(        "MOFLO_XDP_TUBE",   "MOFLO_XDP_SPECIMEN",   "MOFLO_XDP_SPECIMEN",   "$NAME");
-        PropertyType2SampleType S3E_TUBE =          new PropertyType2SampleType(        "S3E_TUBE",         "S3E_SPECIMEN",         "S3E_SPECIMEN",         "$NAME");
+        PropertyType2SampleType FACS_ARIA_TUBE =    new PropertyType2SampleType(        "FACS_ARIA_TUBE",   "FACS_ARIA_SPECIMEN",   "FACS_ARIA_SPECIMEN",   "$NAME", true, false);
+        PropertyType2SampleType FACS_ARIA_WELL =    new PropertyType2SampleType(        "FACS_ARIA_WELL",   "FACS_ARIA_SPECIMEN",   "FACS_ARIA_SPECIMEN",   "$NAME", true, true);
+        PropertyType2SampleType INFLUX_TUBE =       new PropertyType2SampleType(        "INFLUX_TUBE",      "INFLUX_SPECIMEN",      "INFLUX_SPECIMEN",      "$NAME", true, true);
+        PropertyType2SampleType LSR_FORTESSA_TUBE = new PropertyType2SampleType(        "LSR_FORTESSA_TUBE","LSR_FORTESSA_SPECIMEN","LSR_FORTESSA_SPECIMEN","$NAME", true, false);
+        PropertyType2SampleType LSR_FORTESSA_WELL = new PropertyType2SampleType(        "LSR_FORTESSA_WELL","LSR_FORTESSA_SPECIMEN","LSR_FORTESSA_SPECIMEN","$NAME", true, true);
+        PropertyType2SampleType MOFLO_XDP_TUBE =    new PropertyType2SampleType(        "MOFLO_XDP_TUBE",   "MOFLO_XDP_SPECIMEN",   "MOFLO_XDP_SPECIMEN",   "$NAME", true, true);
+        PropertyType2SampleType S3E_TUBE =          new PropertyType2SampleType(        "S3E_TUBE",         "S3E_SPECIMEN",         "S3E_SPECIMEN",         "$NAME", true, true);
 
         List<PropertyType2SampleType> propertiesMigrationConfigs = Arrays.asList(FACS_ARIA_TUBE,
                 FACS_ARIA_WELL,
@@ -249,9 +250,10 @@ public class Main
         EntityPropertyCopy FACS_ARIA_TUBE_p =               new SamplePropertyCopy( "FACS_ARIA_TUBE",           "FACS_ARIA_TUBE_NAME",                 "$NAME");
         EntityPropertyCopy INFLUX_TUBE_p =                  new SamplePropertyCopy( "INFLUX_TUBE",              "INFLUX_TUBE_NAME",                    "$NAME");
         EntityPropertyCopy MOFLO_XDP_TUBE_p =               new SamplePropertyCopy( "MOFLO_XDP_TUBE",           "MOFLO_XDP_TUBE_NAME",                 "$NAME");
-        EntityPropertyCopy S3E_TUBE_p =                     new SamplePropertyCopy( "S3E_TUBE",                 "S3E_NAME",                            "$NAME");
+        EntityPropertyCopy S3E_TUBE_p =                     new SamplePropertyCopy( "S3E_TUBE",                 "S3E_TUBE_NAME",                        "$NAME");
         EntityPropertyCopy MICROSCOPY_SAMPLE_TYPE_p =       new SamplePropertyCopy( "MICROSCOPY_SAMPLE_TYPE",   "MICROSCOPY_SAMPLE_NAME",              "$NAME");
         EntityPropertyCopy MICROSCOPY_ACCESSORY_FILE_p =    new DataSetPropertyCopy("MICROSCOPY_ACCESSORY_FILE","MICROSCOPY_ACCESSORY_FILE_NAME",      "$NAME");
+        EntityPropertyCopy MICROSCOPY_IMAGE_CONTAINER_p =   new DataSetPropertyCopy("MICROSCOPY_IMG_CONTAINER", "MICROSCOPY_IMG_CONTAINER_NAME",        "$NAME");
 
         List<EntityPropertyCopy> propertyCopiesMigrationConfig = Arrays.asList(LSR_FORTESSA_PLATE_p,
                 LSR_FORTESSA_TUBE_p,
@@ -261,7 +263,8 @@ public class Main
                 MOFLO_XDP_TUBE_p,
                 S3E_TUBE_p,
                 MICROSCOPY_SAMPLE_TYPE_p,
-                MICROSCOPY_ACCESSORY_FILE_p);
+                MICROSCOPY_ACCESSORY_FILE_p,
+                MICROSCOPY_IMAGE_CONTAINER_p);
 
         for (EntityPropertyCopy config:propertyCopiesMigrationConfig) {
             config.copy(sessionToken, v3);

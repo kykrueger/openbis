@@ -23,9 +23,10 @@ class Things():
     """
 
     def __init__(
-        self, openbis_obj, entity, df, 
+        self, openbis_obj, entity, df,
         identifier_name='code', additional_identifier=None, 
-        start_with=None, count=None, totalCount=None
+        start_with=None, count=None, totalCount=None,
+        single_item_method=None
     ):
         self.openbis = openbis_obj
         self.entity = entity
@@ -35,6 +36,7 @@ class Things():
         self.start_with = start_with
         self.count = count
         self.totalCount=totalCount
+        self.single_item_method=single_item_method
 
     def __repr__(self):
         return tabulate(self.df, headers=list(self.df))
@@ -145,18 +147,27 @@ class Things():
 
             if row is not None:
                 # invoke the openbis.get_<entity>() method
+                if self.single_item_method:
+                    get_item = self.single_item_method
+                else:
+                    get_item = getattr(self.openbis, 'get_' + self.entity)
                 if self.additional_identifier is None:
-                    return getattr(self.openbis, 'get_' + self.entity)(row[self.identifier_name].values[0])
+                    return get_item(row[self.identifier_name].values[0])
                 ## get an entry using two keys
                 else:
-                    return getattr(self.openbis, 'get_' + self.entity)(
+                    return get_item(
                             row[self.identifier_name].values[0],
                             row[self.additional_identifier].values[0]
                     )
 
     def __iter__(self):
+        if self.single_item_method:
+            get_item = self.single_item_method
+        else:
+            get_item = getattr(self.openbis, 'get_' + self.entity)
         for item in self.df[[self.identifier_name]][self.identifier_name].iteritems():
-            yield getattr(self.openbis, 'get_' + self.entity)(item[1])
+            yield get_item(item[1])
+            #yield getattr(self.openbis, 'get_' + self.entity)(item[1])
 
             # return self.df[[self.identifier_name]].to_dict()[self.identifier_name]
 

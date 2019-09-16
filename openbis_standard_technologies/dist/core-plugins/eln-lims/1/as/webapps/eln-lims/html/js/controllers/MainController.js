@@ -83,22 +83,48 @@ function MainController(profile) {
 	
 	//Functionality to keep state
 	this.backStack = [];
+
+	this.zenodoApiTokenKey = "personal-zenodo-api-token";
 	
 	//
 	// Validates and enters the app
 	//
-	
+
 	this.enterApp = function(data, username, password) {
+	    var _this = this;
+	    if(data && !username && !password) {
+	        this.openbisV1.listDataStores(function(result) {
+	            if(result && result.error && result.error.message) {
+	                var callback = function() {Util.unblockUI();};
+	                Util.showUserError(result.error.message, callback);
+	            } else {
+	                _this.initApp(data, username, password);
+	            }
+	        });
+	    } else {
+	        this.initApp(data, username, password);
+	    }
+	}
+
+	this.initApp = function(data, username, password) {
 		var localReference = this;
+		//
+		// Check
+		//
+
 		//
 		// Check Credentials
 		//
 		if(data.result == null){
 			$("#username").focus();
 			var callback = function() {Util.unblockUI();};
-			Util.showUserError('The given username or password is not correct.', callback);
+			var msg = 'The given username or password is not correct.';
+			if (data.error && data.error.message) {
+				msg = data.error.message;
+			}
+			Util.showUserError(msg, callback);
 			this.serverFacade.doIfFileAuthenticationService((function() {
-	            this._enablePasswordResetLink();
+				this._enablePasswordResetLink();
 			}).bind(this));
 			return;
 		}
@@ -193,6 +219,9 @@ function MainController(profile) {
 													
 													Util.unblockUI();
 													LayoutManager.resize(mainController.views, true); // Maybe fixes white screen on startup?
+
+													// Keep Alive
+													localReference.serverFacade.scheduleKeepAlive();
 												});
 											};
 											
@@ -376,11 +405,25 @@ function MainController(profile) {
 					break;
 				case "showExportTreePage":
 					document.title = "Export Builder";
-					var newView = new ExportTreeController(this);
-					var views = this._getNewViewModel(true, true, false);
-					newView.init(views);
-					this.currentView = newView;
+					var newExportView = new ExportTreeController(this);
+					var exportViews = this._getNewViewModel(true, true, false);
+					newExportView.init(exportViews);
+					this.currentView = newExportView;
 					//window.scrollTo(0,0);
+					break;
+				case "showResearchCollectionExportPage":
+					document.title = "Research Collection Export Builder";
+					var newResearchCollectionExportView = new ResearchCollectionExportController(this);
+					var researchCollectionExportViews = this._getNewViewModel(true, true, false);
+					newResearchCollectionExportView.init(researchCollectionExportViews);
+					this.currentView = newResearchCollectionExportView;
+					break;
+				case "showZenodoExportPage":
+					document.title = "Zenodo Export Builder";
+					var newZenodoExportView = new ZenodoExportController(this);
+					var zenodoExportViews = this._getNewViewModel(true, true, false);
+					newZenodoExportView.init(zenodoExportViews);
+					this.currentView = newZenodoExportView;
 					break;
 				case "showLabNotebookPage":
 					document.title = "Lab Notebook";
@@ -454,7 +497,7 @@ function MainController(profile) {
 				case "showSpacePage":
 					var _this = this;
 					this.serverFacade.getSpaceFromCode(arg, function(space) {
-						document.title = "Space " + space.code;
+						document.title = "Space " + space;
 						_this._showSpacePage(space);
 						//window.scrollTo(0,0);
 					});

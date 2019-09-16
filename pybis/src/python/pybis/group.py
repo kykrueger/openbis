@@ -4,22 +4,15 @@ from .utils import VERBOSE, extract_permid, extract_nested_permid,format_timesta
 from .things import Things
 from pandas import DataFrame
 
-class Group(OpenBisObject):
+class Group(
+    OpenBisObject,
+    entity='authorizationGroup',
+    single_item_method_name='get_group'
+    
+):
     """ Managing openBIS authorization groups
     """
     
-    def __init__(self, openbis_obj, data=None, **kwargs):
-        self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'AuthorizationGroup')
-
-        if data is not None:
-            self.a(data)
-            self.__dict__['data'] = data
-
-        if kwargs is not None:
-            for key in kwargs:
-                setattr(self, key, kwargs[key])
-
     def __dir__(self):
         return [
             'code','description','users','roleAssignments',
@@ -126,81 +119,6 @@ class Group(OpenBisObject):
                 "Role {} successfully revoked from group {}".format(role, self.code)
             ) 
         return
-
-
-    def _repr_html_(self):
-        """ creates a nice table in Jupyter notebooks when the object itself displayed
-        """
-        def nvl(val, string=''):
-            if val is None:
-                return string
-            return val
-
-        html = """
-            <table border="1" class="dataframe">
-            <thead>
-                <tr style="text-align: right;">
-                <th>attribute</th>
-                <th>value</th>
-                </tr>
-            </thead>
-            <tbody>
-        """
-
-        for attr in self._allowed_attrs:
-            if attr in ['users','roleAssignments']:
-                continue
-            html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
-                attr, nvl(getattr(self, attr, ''), '')
-            )
-
-        html += """
-            </tbody>
-            </table>
-        """
-
-        if getattr(self, '_users') is not None:
-            html += """
-                <br/>
-                <b>Users</b>
-                <table border="1" class="dataframe">
-                <thead>
-                    <tr style="text-align: right;">
-                    <th>userId</th>
-                    <th>FirstName</th>
-                    <th>LastName</th>
-                    <th>Email</th>
-                    <th>Space</th>
-                    <th>active</th>
-                    </tr>
-                </thead>
-                <tbody>
-            """
-            for user in self._users:
-                html += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                    user.get('userId'),
-                    user.get('firstName'),
-                    user.get('lastName'),
-                    user.get('email'),
-                    user.get('space').get('code') if user.get('space') is not None else '',
-                    user.get('active'),
-                )
-            html += """
-                </tbody>
-                </table>
-            """
-        return html
-
-    def delete(self, reason='unknown'):
-        self.openbis.delete_entity(
-            entity = "AuthorizationGroup",
-            id = self.permId, 
-            reason = reason
-        )
-        if VERBOSE:
-            print("Authorization group {} successfully deleted".format(
-                self.permId
-            ))
 
     def save(self):
         if self.is_new:

@@ -1,6 +1,6 @@
 from pandas import DataFrame, Series
 from tabulate import tabulate
-from .definitions import openbis_definitions, fetch_option
+from .definitions import openbis_definitions, fetch_option, get_method_for_entity, get_type_for_entity
 from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_person
 from .attachment import Attachment
 
@@ -27,9 +27,10 @@ class AttrHolder():
         if type is not None:
             self.__dict__['_type'] = type.data
 
-        self.__dict__['_allowed_attrs'] = openbis_definitions(entity)['attrs']
-        self.__dict__['_allowed_attrs_new'] = openbis_definitions(entity)['attrs_new']
-        self.__dict__['_allowed_attrs_up'] = openbis_definitions(entity)['attrs_up']
+        self.__dict__['_defs'] = openbis_definitions(entity)
+        #self.__dict__['_allowed_attrs'] = openbis_definitions(entity)['attrs']
+        #self.__dict__['_allowed_attrs_new'] = openbis_definitions(entity)['attrs_new']
+        #self.__dict__['_allowed_attrs_up'] = openbis_definitions(entity)['attrs_up']
         self.__dict__['_identifier'] = None
         self.__dict__['_is_new'] = True
         self.__dict__['_tags'] = []
@@ -53,7 +54,7 @@ class AttrHolder():
         # entity is read from openBIS, so it is not new anymore
         self.__dict__['_is_new'] = False
 
-        for attr in self._allowed_attrs:
+        for attr in self._defs['attrs']:
             if attr in ["code", "permId", "identifier", "type"]:
                 self.__dict__['_' + attr] = data.get(attr, None)
                 # remove the @id attribute
@@ -97,19 +98,14 @@ class AttrHolder():
                 self.__dict__['_' + attr] = data.get(attr, None)
 
 
-
     def _new_attrs(self, method_name=None):
         """Returns the Python-equivalent JSON request when a new object is created.
         It is used internally by the save() method of a newly created object.
         """
-        defs = openbis_definitions(self.entity)
         attr2ids = openbis_definitions('attr2ids')
+        new_obj = get_type_for_entity(self.entity, 'create')
 
-        new_obj = {
-            "@type": "as.dto.{}.create.{}Creation".format(self.entity.lower(), self.entity)
-        }
-
-        for attr in defs['attrs_new']:
+        for attr in self._defs['attrs_new']:
             items = None
 
             if attr == 'type':
@@ -151,9 +147,9 @@ class AttrHolder():
 
                 new_obj[key] = items
 
-        # guess the method name for creating a new entity and build the request
+        # if method_name is not defined: guess the method name for creating a new entity 
         if method_name is None:
-            method_name = "create{}s".format(self.entity)
+            method_name = get_method_for_entity(self.entity, 'create')
         request = {
             "method": method_name,
             "params": [
@@ -164,21 +160,26 @@ class AttrHolder():
         return request
 
 
-    def _up_attrs(self, method_name=None):
+    def _up_attrs(self, method_name=None, permId=None):
         """Returns the Python-equivalent JSON request when a new object is updated.
         It is used internally by the save() method of an object to be updated.
         """
-        defs = openbis_definitions(self._entity)
+        #defs = openbis_definitions(self._entity)
         attr2ids = openbis_definitions('attr2ids')
 
-        up_obj = {
-            "@type": "as.dto.{}.update.{}Update".format(self.entity.lower(), self.entity),
-            defs["identifier"]: self._permId
-        }
+        up_obj = get_type_for_entity(self.entity, 'update')
+
+        # for some weird reasons, the permId is called differently
+        # for every openBIS entity, but only when updating...
+        identifier_name = self._defs["identifier"]
+        if permId:
+            up_obj[identifier_name] = permId
+        else:
+            up_obj[identifier_name] = self._permId
 
         # look at all attributes available for that entity
         # that can be updated
-        for attr in defs['attrs_up']:
+        for attr in self._defs['attrs_up']:
             items = None
 
             if attr == 'attachments':
@@ -248,7 +249,7 @@ class AttrHolder():
                 # handle multivalue attributes (parents, children, tags etc.)
                 # we only cover the Set mechanism, which means we always update 
                 # all items in a list
-                if attr in defs['multi']:
+                if 'multi' in self._defs and attr in self._defs['multi']:
                     items = self.__dict__.get('_' + attr, [])
                     if items == None:
                         items = []
@@ -266,6 +267,14 @@ class AttrHolder():
                     value = self.__dict__.get('_' + attr, {})
                     if value is None:
                         pass
+                    elif isinstance(value, bool):
+                        # for boolean values no type is needed
+                        up_obj[attr] = value
+                        #{
+                        #    "value": value,
+                        #    "isModified": True,
+                        #    "@type": "as.dto.common.update.FieldUpdateValue"
+                        #}
                     elif isinstance(value, dict) and len(value) == 0:
                         # value is {}: it means that we want this attribute to be
                         # deleted, not updated.
@@ -287,7 +296,7 @@ class AttrHolder():
 
         # update an existing entity
         if method_name is None:
-            method_name = "update{}s".format(self.entity)
+            method_name = get_method_for_entity(self.entity, 'update')
         request = {
             "method": method_name,
             "params": [
@@ -369,7 +378,7 @@ class AttrHolder():
                     elif "permId" in item:
                         values.append(item['permId'])
                     else:
-                        pass
+                        values.append(item)
                 return values
 
             # attribute contains a dictionary: same procedure as above.
@@ -378,6 +387,8 @@ class AttrHolder():
                     return self.__dict__[int_name]['identifier']
                 elif "code" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['code']
+                elif "name" in self.__dict__[int_name]:
+                    return self.__dict__[int_name]['name']
                 elif "userId" in self.__dict__[int_name]:
                     return self.__dict__[int_name]['userId']
                 elif "permId" in self.__dict__[int_name]:
@@ -408,11 +419,17 @@ class AttrHolder():
             name = name_map[name]
 
         if self._is_new:
-            if name not in self._allowed_attrs_new:
-                raise ValueError("No such attribute: «{}» for entity: {}".format(name, self.entity))
+            if name not in self._defs['attrs_new']:
+                raise ValueError(
+                    "No such attribute: «{}» for entity: {}. Allowed attributes are: {}"
+                    .format(name, self.entity, self._defs['attrs_new'])
+                )
         else:
-            if name not in self._allowed_attrs_up:
-                raise ValueError("No such attribute: «{}» for entity: {}".format(name, self.entity))
+            if name not in self._defs['attrs_up']:
+                raise ValueError(
+                    "No such attribute: «{}» for entity: {}. Allowed attributes are: {}"
+                    .format(name, self.entity, self._defs['attrs_up'])
+                )
 
         if name in ["parents", "children", "components"]:
 
@@ -519,6 +536,15 @@ class AttrHolder():
         elif name in ["userIds"]:
             self.add_users(value)
 
+        elif name in self._defs:
+            # enum: check whether value is a valid constant
+            if value and value not in self._defs[name]:
+                raise ValueError(
+                    "Allowed values for enum {} are: {}"
+                    .format(name, self._defs[name])
+                )
+            else:
+                self.__dict__['_'+name] = value
         else:
             self.__dict__['_'+name] = value
 
@@ -764,8 +790,6 @@ class AttrHolder():
                 "permId": userId,
                 "@type": "as.dto.person.id.PersonPermId"
             })
-    set_members = set_users  # Alias
-
         
     def add_users(self, userIds):
         if userIds is None:
@@ -847,7 +871,7 @@ class AttrHolder():
         """Return all attributes of an entity in a dict
         """
         attrs = {}
-        for attr in self._allowed_attrs:
+        for attr in self._defs['attrs']:
             if attr == 'attachments':
                 continue
             attrs[attr] = getattr(self, attr)
@@ -870,7 +894,8 @@ class AttrHolder():
             <tbody>
         """
 
-        for attr in self._allowed_attrs:
+        attrs = self._defs['attrs_new'] if self.is_new else self._defs['attrs']
+        for attr in attrs:
             if attr == 'attachments':
                 continue
             html += "<tr> <td>{}</td> <td>{}</td> </tr>".format(
@@ -894,7 +919,8 @@ class AttrHolder():
 
         headers = ['attribute', 'value']
         lines = []
-        for attr in self._allowed_attrs:
+        attrs = self._defs['attrs_new'] if self.is_new else self._defs['attrs']
+        for attr in attrs:
             if attr == 'attachments':
                 continue
             elif attr == 'users' and '_users' in self.__dict__:

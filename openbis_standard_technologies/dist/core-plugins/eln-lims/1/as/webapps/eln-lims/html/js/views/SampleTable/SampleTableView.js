@@ -191,35 +191,19 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	// Menu Operations
 	//
 	this.createNewSample = function(experimentIdentifier) {
-		var _this = this;
-		var $dropdown = FormUtil.getSampleTypeDropdown("sampleTypeDropdown", true);
-		Util.showDropdownAndBlockUI("sampleTypeDropdown", $dropdown);
-		
-		$("#sampleTypeDropdown").on("change", function(event) {
-			var sampleTypeCode = $("#sampleTypeDropdown")[0].value;
-			var argsMap = {
-					"sampleTypeCode" : sampleTypeCode,
-					"experimentIdentifier" : experimentIdentifier
-			}
-			
-			var argsMapStr = JSON.stringify(argsMap);
-			Util.unblockUI();
-			mainController.changeView("showCreateSubExperimentPage", argsMapStr);
-		});
-		
-		$("#sampleTypeDropdownCancel").on("click", function(event) { 
-			Util.unblockUI();
-		});
+	    FormUtil.createNewSample(experimentIdentifier);
 	}
 	
 	this.registerSamples = function(experimentIdentifier) {
 		var allowedSampleTypes = null;
 		var forcedSpace = null;
+		var spaceCodeFromIdentifier = null;
 		if(this._sampleTableModel.sampleTypeCodeToUse) {
 			allowedSampleTypes = [this._sampleTableModel.sampleTypeCodeToUse, "STORAGE_POSITION"];
 		}
 		if(experimentIdentifier) {
-			forcedSpace = IdentifierUtil.getForcedSpaceIdentifier(IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier));
+			spaceCodeFromIdentifier = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+			forcedSpace = IdentifierUtil.getForcedSpaceIdentifier(spaceCodeFromIdentifier);
 		}
 		
 		var typeAndFileController = new TypeAndFileController('Register ' + ELNDictionary.Samples + '', "REGISTRATION", function(type, file) {
@@ -245,7 +229,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 					var experimentIdentifierOrDelete = experimentIdentifier;
 					if(experimentIdentifierOrDelete && typeAndFileController.getSampleTypeCode() === "STORAGE_POSITION") {
 						experimentIdentifierOrDelete = "__DELETE__";
-						forcedSpace = IdentifierUtil.getForcedSpaceIdentifier("STORAGE");
+						forcedSpace = profile.getStorageSpaceForSpace(spaceCodeFromIdentifier);
 					}
 					if(infoData.result.identifiersPressent) { //If identifiers are present they should match the space of the experiment
 						mainController.serverFacade.registerSamplesWithSilentOverrides(typeAndFileController.getSampleTypeCode(), forcedSpace, experimentIdentifierOrDelete, "sample-file-upload", null, finalCallback);
@@ -262,11 +246,13 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	this.updateSamples = function(experimentIdentifier) {
 		var allowedSampleTypes = null;
 		var forcedSpace = null;
+		var spaceCodeFromIdentifier = null;
 		if(this._sampleTableModel.sampleTypeCodeToUse) {
 			allowedSampleTypes = [this._sampleTableModel.sampleTypeCodeToUse, "STORAGE_POSITION"];
 		}
 		if(experimentIdentifier) {
-			forcedSpace = IdentifierUtil.getForcedSpaceIdentifier(IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier));
+			spaceCodeFromIdentifier = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
+			forcedSpace = IdentifierUtil.getForcedSpaceIdentifier(spaceCodeFromIdentifier);
 		}
 		var typeAndFileController = new TypeAndFileController('Update ' + ELNDictionary.Samples + '', "UPDATE", function(type, file) {
 			Util.blockUI();
@@ -286,7 +272,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			var experimentIdentifierOrDelete = experimentIdentifier;
 			if(experimentIdentifierOrDelete && typeAndFileController.getSampleTypeCode() === "STORAGE_POSITION") {
 				experimentIdentifierOrDelete = "__DELETE__";
-				forcedSpace = IdentifierUtil.getForcedSpaceIdentifier("STORAGE");
+				forcedSpace = profile.getStorageSpaceForSpace(spaceCodeFromIdentifier);
 			}
 			
 			mainController.serverFacade.fileUpload(typeAndFileController.getFile(), function(result) {

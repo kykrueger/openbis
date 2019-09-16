@@ -61,6 +61,9 @@ $.extend(DefaultProfile.prototype, {
 				showVocabularyViewer : true,
 				showUserManager : true,
 				showUserProfile : true,
+			    // Not fully implemented yet.
+				// showResearchCollectionExportBuilder : false,
+				showZenodoExportBuilder : false,
 		}
 		
 		this.orderLabInfo = {
@@ -132,7 +135,11 @@ $.extend(DefaultProfile.prototype, {
 		this.EDMSs = {
 //				"ADMIN-BS-MBPR28.D.ETHZ.CH-E96954A7" : "http://localhost:8080/download"
 		}
+		this.singleSignOnUrlTemplate = null;
+		this.singleSignOnLinkLabel = 'Single Sign On Login';
 		
+        this.customWidgetSettings = {};
+
 		this.plugins = [new GenericTechnology(), new LifeSciencesTechnology(), new MicroscopyTechnology(), new FlowCytometryTechnology()];
 		this.sampleFormTop = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {
@@ -149,6 +156,25 @@ $.extend(DefaultProfile.prototype, {
 				this.plugins[i].dataSetFormTop($container, model);
 			}
 		}
+		this.onSampleSave = function(sample, changesToDo, action) {
+            var idx = -1;
+            var _this = this;
+
+            var failed = function(message) {
+                Util.showError(message, null, false, true, false, true);
+            }
+
+            var next = null;
+                next = function() {
+                    idx = idx + 1;
+                    if(idx < _this.plugins.length) {
+                        _this.plugins[idx].onSampleSave(sample, changesToDo, next, failed);
+                    } else {
+                        action(sample, null, null, changesToDo);
+                    }
+                }
+            next();
+        }
 		this.dataSetFormBottom = function($container, model) {
 			for(var i = 0; i < this.plugins.length; i++) {
 				this.plugins[i].dataSetFormBottom($container, model);
@@ -156,8 +182,8 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 //		Jupyter integration config
-//		this.jupyterIntegrationServerEndpoint = "https://127.0.0.1:8002";
-//		this.jupyterEndpoint = "https://127.0.0.1:8000/";
+//		this.jupyterIntegrationServerEndpoint = "https://bs-openbis-sis-dev.ethz.ch:8002";
+//		this.jupyterEndpoint = "https://bs-openbis-sis-dev.ethz.ch:8000/";
 		
 		this.systemProperties = ["$ANNOTATIONS_STATE", "$FREEFORM_TABLE_STATE"];
 		this.forcedDisableRTF = [];
@@ -201,7 +227,7 @@ $.extend(DefaultProfile.prototype, {
 		this.inventorySpacesPostFixes = ["MATERIALS", "METHODS", "STORAGE", "STOCK_CATALOG"];
 		this.inventorySpaces = []; 
 		//Ending in "ELN_SETTINGS", "STOCK_ORDERS"
-		this.inventorySpacesReadOnlyPostFixes = ["ELN_SETTINGS", "STOCK_ORDERS"];
+		this.inventorySpacesReadOnlyPostFixes = ["ELN_SETTINGS", "STOCK_ORDERS", "PUBLICATIONS"];
 		this.inventorySpacesReadOnly = []; 
 		//Ending in "STORAGE"
 		this.storageSpacesPostFixes = ["STORAGE"];
@@ -285,10 +311,14 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.getStorageSpaceForSample = function(sample) {
+			return this.getStorageSpaceForSpace(sample.spaceCode);
+		}
+		
+		this.getStorageSpaceForSpace = function(spaceCode) {
 			var storageSpaceCode = null;
-			var prefixIndexOf = sample.spaceCode.indexOf("_"); // This is a euristic that only works if the prefixes can't contain "_"
+			var prefixIndexOf = spaceCode.indexOf("_"); // This is a euristic that only works if the prefixes can't contain "_"
 			if(prefixIndexOf !== -1) {
-				var prefix = sample.spaceCode.substring(0, prefixIndexOf);
+				var prefix = spaceCode.substring(0, prefixIndexOf);
 				for(var ssIdx = 0; ssIdx < this.storageSpaces.length; ssIdx++) {
 					if(this.storageSpaces[ssIdx].startsWith(prefix)) {
 						storageSpaceCode = this.storageSpaces[ssIdx];
@@ -320,7 +350,7 @@ $.extend(DefaultProfile.prototype, {
 		}
 		
 		this.getSampleTypeToolbarConfiguration = function(sampleTypeCode) {
-			var defaultToolbar = { CREATE : true, EDIT : true, FREEZE : true, MOVE : true, COPY: true, DELETE : true, PRINT: true, HIERARCHY_GRAPH : true, HIERARCHY_TABLE : true, UPLOAD_DATASET : true, UPLOAD_DATASET_HELPER : true, EXPORT_ALL : true, EXPORT_METADATA : true };
+			var defaultToolbar = { CREATE : true, EDIT : true, FREEZE : true, MOVE : true, COPY: true, DELETE : true, PRINT: true, HIERARCHY_GRAPH : true, HIERARCHY_TABLE : true, UPLOAD_DATASET : true, UPLOAD_DATASET_HELPER : true, EXPORT_ALL : true, EXPORT_METADATA : true, TEMPLATES : true };
 			if(this.sampleTypeDefinitionsExtension[sampleTypeCode] && this.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"]) {
 				var toolbarOptions = this.sampleTypeDefinitionsExtension[sampleTypeCode]["TOOLBAR"];
 				for(key in toolbarOptions) {
@@ -1106,6 +1136,17 @@ $.extend(DefaultProfile.prototype, {
 				callback();
 			}));
 		}
+
+		this.initCustomWidgetSettings = function(callback) {
+		    var _this = this;
+		    this.serverFacade.getCustomWidgetSettings(function(customWidgetSettings) {
+		        for(var cwIdx = 0; cwIdx < customWidgetSettings.length; cwIdx++) {
+		            var cw = customWidgetSettings[cwIdx];
+		            _this.customWidgetSettings[cw["Property Type"]] = cw["Widget"];
+		        }
+		        callback();
+		    });
+		}
 		
 		this.initServerInfo = function(callback) {
 			var _this = this;
@@ -1144,14 +1185,16 @@ $.extend(DefaultProfile.prototype, {
 									_this.initServerInfo(function() {
 										_this.isFileAuthUser(function() {
 											_this.initSpaces(function() {
-												_this.initSettings(function() {
-													//Check if the new storage system can be enabled
-													var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");
-													var storagePositionType = _this.getSampleTypeForSampleTypeCode("STORAGE_POSITION");										
-													_this.storagesConfiguration = { 
-															"isEnabled" : storageRack && storagePositionType
-													};
-													callbackWhenDone();
+											    _this.initCustomWidgetSettings(function() {
+                                                    _this.initSettings(function() {
+                                                        //Check if the new storage system can be enabled
+                                                        var storageRack = _this.getSampleTypeForSampleTypeCode("STORAGE");
+                                                        var storagePositionType = _this.getSampleTypeForSampleTypeCode("STORAGE_POSITION");
+                                                        _this.storagesConfiguration = {
+                                                                "isEnabled" : storageRack && storagePositionType
+                                                        };
+                                                        callbackWhenDone();
+                                                    });
 												});
 											});
 										});

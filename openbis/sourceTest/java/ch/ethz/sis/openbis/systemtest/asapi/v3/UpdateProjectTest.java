@@ -35,6 +35,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
@@ -42,6 +45,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update.ProjectUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
@@ -464,7 +469,7 @@ public class UpdateProjectTest extends AbstractTest
     }
 
     @Test
-    public void testFreezingForExperiments()
+    public void testFreezingForExperimentCreations()
     {
         // Given
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -484,10 +489,39 @@ public class UpdateProjectTest extends AbstractTest
                 "ERROR: Operation SET PROJECT is not allowed because project NEMO is frozen for experiment UPT-E1.");
     }
 
+    @Test
+    public void testFreezingForExperimentDeletions()
+    {
+        // Given
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        final IProjectId projectId = new ProjectIdentifier("/CISD/NEMO");
+        ExperimentCreation experimentCreation = new ExperimentCreation();
+        experimentCreation.setProjectId(projectId);
+        experimentCreation.setTypeId(new EntityTypePermId("DELETION_TEST", EntityKind.EXPERIMENT));
+        experimentCreation.setCode(PREFIX + "E1");
+        ExperimentPermId experimentPermId = v3api.createExperiments(sessionToken, Arrays.asList(experimentCreation)).get(0);
+        ProjectUpdate update = new ProjectUpdate();
+        update.setProjectId(projectId);
+        update.freezeForExperiments();
+        v3api.updateProjects(sessionToken, Arrays.asList(update));
+        ExperimentDeletionOptions deletionOptions = new ExperimentDeletionOptions();
+        deletionOptions.setReason("test");
+
+        // When
+        assertUserFailureException(Void -> v3api.deleteExperiments(sessionToken, Arrays.asList(experimentPermId), deletionOptions),
+                // Then
+                "ERROR: Operation DELETE EXPERIMENT is not allowed because project NEMO is frozen.");
+    }
+
     @Test(dataProvider = "freezeMethods")
     public void testUnauthorizedFreezing(MethodWrapper freezeMethod) throws Exception
     {
         // Given
+        RoleAssignmentCreation roleAssignmentCreation = new RoleAssignmentCreation();
+        roleAssignmentCreation.setRole(Role.ADMIN);
+        roleAssignmentCreation.setSpaceId(new SpacePermId("TEST-SPACE"));
+        roleAssignmentCreation.setUserId(new PersonPermId(TEST_POWER_USER_CISD));
+        v3api.createRoleAssignments(systemSessionToken, Arrays.asList(roleAssignmentCreation));
         final String sessionToken = v3api.login(TEST_POWER_USER_CISD, PASSWORD);
         IProjectId projectId = new ProjectIdentifier("/CISD/NEMO");
         ProjectUpdate update = new ProjectUpdate();

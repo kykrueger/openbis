@@ -115,7 +115,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		
 		if(this._sampleFormModel.mode === FormMode.VIEW) {
 			//Create Experiment Step
-			if(_this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP") {
+			if(_this._sampleFormModel.sample.sampleTypeCode === "EXPERIMENTAL_STEP" && _this._allowedToCreateChild()) {
 				var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
 					var argsMap = {
 							"sampleTypeCode" : "EXPERIMENTAL_STEP",
@@ -145,17 +145,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				}
 			}
 			
-			//Freeze
-			if(_this._sampleFormModel.v3_sample && _this._sampleFormModel.v3_sample.frozen !== undefined) { //Freezing available on the API
-				var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
-				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-				var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
-			    if(toolbarConfig.FREEZE) {
-                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
-                }
-			}
-			
-			if(!_this._sampleFormModel.v3_sample.frozen) {
+			if (_this._allowedToEdit()) {
 				//Edit
 				if(this._sampleFormModel.mode === FormMode.VIEW) {
 					var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
@@ -170,7 +160,8 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 						toolbarModel.push({ component : $editButton, tooltip: "Edit" });
 					}
 				}
-				
+			}
+			if (_this._allowedToMove()) {
 				//Move
 				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
 					var moveEntityController = new MoveEntityController("SAMPLE", _this._sampleFormModel.sample.permId);
@@ -179,12 +170,13 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				if(toolbarConfig.MOVE) {
 					toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
 				}
-				
+			}
+			if (_this._allowedToDelete()) {
 				//Delete
 				var warningText = null;
 				if(this._sampleFormModel.sample.children.length > 0 || this._sampleFormModel.datasets.length > 0) {
 					warningText = ""
-					var childrenThatAreNotPositions = 0;
+						var childrenThatAreNotPositions = 0;
 					for(var idx = 0; idx < this._sampleFormModel.sample.children.length; idx++) {
 						var child = this._sampleFormModel.sample.children[idx];
 						if(child.sampleTypeCode !== "STORAGE_POSITION") {
@@ -230,16 +222,19 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				if(toolbarConfig.DELETE) {
 					toolbarModel.push({ component : $deleteButton, tooltip: "Delete" });
 				}
-			
+				
 			}
-			
-			//Copy
-			var $copyButton = $("<a>", { 'class' : 'btn btn-default'} )
-			.append($('<img>', { 'src' : './img/copy-icon.png', 'style' : 'width:16px; height:16px;' }));
-			$copyButton.click(_this._getCopyButtonEvent());
-			if(toolbarConfig.COPY) {
-				toolbarModel.push({ component : $copyButton, tooltip: "Copy" });
+			if (_this._allowedToCopy()) {
+				//Copy
+				var $copyButton = $("<a>", { 'class' : 'btn btn-default'} )
+				.append($('<img>', { 'src' : './img/copy-icon.png', 'style' : 'width:16px; height:16px;' }));
+				$copyButton.click(_this._getCopyButtonEvent());
+				if(toolbarConfig.COPY) {
+					toolbarModel.push({ component : $copyButton, tooltip: "Copy" });
+				}
 			}
+				
+				
 			
 			//Print
 			var $printButton = $("<a>", { 'class' : 'btn btn-default'} ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
@@ -266,26 +261,28 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				toolbarModel.push({ component : $hierarchyTable, tooltip: "Hierarchy Table" });
 			}
 			
-			//Create Dataset
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
-				mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-			});
-			if(toolbarConfig.UPLOAD_DATASET) {
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
-			}
+			if(_this._allowedToRegisterDataSet()) {
+				//Create Dataset
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
+					mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
+				});
+				if(toolbarConfig.UPLOAD_DATASET) {
+					toolbarModel.push({ component : $uploadBtn, tooltip: "Upload Dataset" });
+				}
 			
-			//Get dropbox folder name
-			var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
-				var nameElements = [
-					"O",
-					_this._sampleFormModel.sample.spaceCode,
-					IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
-					_this._sampleFormModel.sample.code,
-				];
-				FormUtil.showDropboxFolderNameDialog(nameElements);
-			}).bind(this));
-			if(toolbarConfig.UPLOAD_DATASET_HELPER) {
-				toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+				//Get dropbox folder name
+				var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-circle-arrow-up", (function () {
+					var nameElements = [
+						"O",
+						_this._sampleFormModel.sample.spaceCode,
+						IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
+						_this._sampleFormModel.sample.code,
+					];
+					FormUtil.showDropboxFolderNameDialog(nameElements);
+				}).bind(this));
+				if(toolbarConfig.UPLOAD_DATASET_HELPER) {
+					toolbarModel.push({ component : $uploadBtn, tooltip: "Helper tool for Dataset upload using eln-lims dropbox" });
+				}
 			}
 			
 			//Export
@@ -307,6 +304,16 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				});
 				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
 			}
+
+            //Freeze
+            if(_this._sampleFormModel.v3_sample && _this._sampleFormModel.v3_sample.frozen !== undefined) { //Freezing available on the API
+                var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
+                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+            	var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
+                if(toolbarConfig.FREEZE) {
+                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                }
+            }
 		} else { //Create and Edit
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._sampleFormController.createUpdateCopySample();
@@ -314,6 +321,68 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn, tooltip: "Save" });
+
+            // Templates
+            if(toolbarConfig.TEMPLATES && this._sampleFormModel.mode === FormMode.CREATE) {
+                var $templateBtn = FormUtil.getButtonWithIcon("glyphicon-list-alt", function() {
+                    var criteria = {
+                        entityKind : "SAMPLE",
+                    	logicalOperator : "AND",
+                        rules : {
+                            "1" : { type : "Experiment",  name : "ATTR.CODE", value : "TEMPLATES_COLLECTION" },
+                    	    "2" : { type : "Project",     name : "ATTR.CODE", value : "TEMPLATES" },
+                    	    "2" : { type : "Attribute",   name : "SAMPLE_TYPE", value : _this._sampleFormModel.sample.sampleTypeCode },
+                        }
+                    }
+
+                    mainController.serverFacade.searchForSamplesAdvanced(criteria, {
+                    			only : true,
+                    			withProperties : true
+                    }, function(results) {
+                        var settingsForDropdown = [];
+                        for(var rIdx = 0; rIdx < results.totalCount; rIdx++) {
+                            var name = results.objects[rIdx].properties[profile.propertyReplacingCode];
+                            if(!name) {
+                                name = results.objects[rIdx].code;
+                            }
+                            settingsForDropdown.push({  label: name,
+                                                    value: results.objects[rIdx].identifier.identifier});
+                        }
+
+                        var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Select template");
+                        $dropdown.attr("id", "templatesDropdown");
+                        Util.showDropdownAndBlockUI("templatesDropdown", $dropdown);
+
+                        $("#templatesDropdown").on("change", function(event) {
+                            var sampleIdentifier = $("#templatesDropdown")[0].value;
+                            var sample = null;
+                            for(var rIdx = 0; rIdx < results.totalCount; rIdx++) {
+                                if(results.objects[rIdx].identifier.identifier === sampleIdentifier) {
+                                    sample = results.objects[rIdx];
+                                }
+                            }
+                            _this._sampleFormModel.sample.properties = sample.properties;
+
+                            if(_this._sampleFormModel.views.header) {
+                                _this._sampleFormModel.views.header.empty();
+                            }
+                            if(_this._sampleFormModel.views.content) {
+                                 _this._sampleFormModel.views.content.empty();
+                            }
+                            if(_this._sampleFormModel.views.auxContent) {
+                                 _this._sampleFormModel.views.auxContent.empty();
+                            }
+                            _this._sampleFormController.init(_this._sampleFormModel.views, true);
+                            Util.unblockUI();
+                        });
+
+                        $("#templatesDropdownCancel").on("click", function(event) {
+                            Util.unblockUI();
+                        });
+                    });
+                }, "Templates");
+                toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
+            }
 		}
 		
 		if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo) {
@@ -560,7 +629,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 			$formColumn.append($dataSetViewerContainer);
 		}
 		
-		if(this._sampleFormModel.mode === FormMode.VIEW) {
+		if(this._sampleFormModel.mode === FormMode.VIEW && _this._allowedToRegisterDataSet()) {
 			var $inlineDataSetForm = $("<div>");
 			if($rightPanel) {
 				$rightPanel.append($inlineDataSetForm);
@@ -658,10 +727,14 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				
 				if(this._sampleFormModel.mode === FormMode.VIEW) { //Show values without input boxes if the form is in view mode
 					if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
-						if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-							value = FormUtil.getVocabularyLabelForTermCode(propertyType, value);
+						var customWidget = profile.customWidgetSettings[propertyType.code];
+						if(customWidget === 'Spreadsheet') {
+						    var $jexcelContainer = $("<div>");
+                            JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
+						    $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+						} else {
+						    $controlGroup = FormUtil.createPropertyField(propertyType, value);
 						}
-						$controlGroup = FormUtil.getFieldForLabelWithText(propertyType.label, value, propertyType.code);
 					} else {
 						continue;
 					}
@@ -705,9 +778,27 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					if(propertyType.managed || propertyType.dinamic) {
 						$component.prop('disabled', true);
 					}
-					
-					if(propertyType.dataType === "MULTILINE_VARCHAR") {
-						$component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
+
+					var customWidget = profile.customWidgetSettings[propertyType.code];
+					if(customWidget) {
+					    switch(customWidget) {
+					        case 'Word Processor':
+					            if(propertyType.dataType === "MULTILINE_VARCHAR") {
+					                $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
+					            } else {
+					                alert("Word Processor only works with MULTILINE_VARCHAR data type.");
+					            }
+					            break;
+					        case 'Spreadsheet':
+					            if(propertyType.dataType === "XML") {
+                                    var $jexcelContainer = $("<div>");
+                                    JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
+                                    $component = $jexcelContainer;
+					            } else {
+					                alert("Spreadsheet only works with XML data type.");
+					            }
+					            break;
+					    }
 					} else if(propertyType.dataType === "TIMESTAMP") {
 						$component.on("dp.change", changeEvent(propertyType));
 					} else {
@@ -1149,5 +1240,35 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 		
 		// Show Widget
 		Util.blockUI($childrenGenerator, {'text-align' : 'left', 'top' : '10%', 'width' : '80%', 'left' : '10%', 'right' : '10%', 'height' : '80%', 'overflow' : 'auto'});
+	}
+	
+	this._allowedToCreateChild = function() {
+		var sample = this._sampleFormModel.v3_sample;
+		return sample.frozenForChildren == false && (!sample.experiment || sample.experiment.frozenForSamples == false);
+	}
+	
+	this._allowedToEdit = function() {
+		var sample = this._sampleFormModel.v3_sample;
+		return sample.frozen == false;
+	}
+	
+	this._allowedToMove = function() {
+		var sample = this._sampleFormModel.v3_sample;
+		return !sample.experiment || sample.experiment.frozenForSamples == false;
+	}
+	
+	this._allowedToDelete = function() {
+		var sample = this._sampleFormModel.v3_sample;
+		return sample.frozen == false && (!sample.experiment || sample.experiment.frozenForSamples == false);
+	}
+	
+	this._allowedToCopy = function() {
+		var sample = this._sampleFormModel.v3_sample;
+		return !sample.experiment || sample.experiment.frozenForSamples == false;
+	}
+	
+	this._allowedToRegisterDataSet = function() {
+		var sample = this._sampleFormModel.v3_sample;
+		return sample.frozenForDataSets == false && (!sample.experiment || sample.experiment.frozenForDataSets == false);
 	}
 }

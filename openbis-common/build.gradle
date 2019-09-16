@@ -9,7 +9,7 @@ dependencies {
 		project(':dbmigration'),
 		'googlecode:jsonrpc4j:1.5.3',
 		'reflections:reflections:0.9.10',
-		'sis:sis-jhdf5:19.02.0-pre1',
+		'sis:sis-jhdf5:19.04.0',
 		'lemnik:eodsql:2.2-CISD',
 		'springframework:spring-jdbc:5.0.1.RELEASE',
 		'apache:commons-collections4:4.1',

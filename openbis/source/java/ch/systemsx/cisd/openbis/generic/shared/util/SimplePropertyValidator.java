@@ -16,6 +16,17 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.util;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
+
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.properties.PropertyUtils.Boolean;

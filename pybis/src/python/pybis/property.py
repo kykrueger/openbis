@@ -9,11 +9,13 @@ class PropertyHolder():
         self.__dict__['_property_names'] = {}
         if type is not None:
             self.__dict__['_type'] = type
-            for prop in type.data['propertyAssignments']:
-                property_name = prop['propertyType']['code'].lower()
-                self._property_names[property_name]=prop['propertyType']
-                self._property_names[property_name]['mandatory'] = prop['mandatory']
-                self._property_names[property_name]['showInEditView'] = prop['showInEditView']
+            if 'propertyAssignments' in type.data \
+               and type.data['propertyAssignments'] is not None:
+                for prop in type.data['propertyAssignments']:
+                    property_name = prop['propertyType']['code'].lower()
+                    self._property_names[property_name]=prop['propertyType']
+                    self._property_names[property_name]['mandatory'] = prop['mandatory']
+                    self._property_names[property_name]['showInEditView'] = prop['showInEditView']
 
     def _get_terms(self, vocabulary):
         return self._openbis.get_terms(vocabulary)
@@ -58,7 +60,7 @@ class PropertyHolder():
             if name in self._property_names:
                 property_type = self._property_names[name]
                 if property_type['dataType'] == 'CONTROLLEDVOCABULARY':
-                    return self._get_terms(property_type['vocabulary']['code'])
+                    return self._get_terms(property_type['code'])
                 else:
                     syntax = { property_type["label"] : property_type["dataType"]}
                     if property_type["dataType"] == "TIMESTAMP":
@@ -80,7 +82,7 @@ class PropertyHolder():
         property_type = self._property_names[name]
         data_type = property_type['dataType']
         if data_type == 'CONTROLLEDVOCABULARY':
-            voc = self._get_terms(property_type['vocabulary']['code'])
+            voc = self._get_terms(property_type['code'])
             value = str(value).upper()
             if value not in voc.df['code'].values:
                 raise ValueError("Value for attribute {} must be one of these terms: {}".format(

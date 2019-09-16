@@ -19,10 +19,15 @@ package ch.systemsx.cisd.authentication;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -31,6 +36,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.log4j.Logger;
 
+import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -54,6 +60,11 @@ import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
  */
 public class DefaultSessionManager<T extends BasicSession> implements ISessionManager<T>
 {
+    private enum SessionClosingReason
+    {
+        LOGOUT, SESSION_EXPIRATION, SESSIONS_LIMIT
+    }
+
     public static final File NO_LOGIN_FILE = new File("./etc/nologin.html");
 
     private static final String LOGOUT_PREFIX = "LOGOUT: ";
@@ -116,8 +127,7 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
          */
         boolean hasExpired(Long sessionExpirationTimeOrNull)
         {
-            long sessionExpirationTime = sessionExpirationTimeOrNull == null ?
-                    session.getSessionExpirationTime() : sessionExpirationTimeOrNull;
+            long sessionExpirationTime = sessionExpirationTimeOrNull == null ? session.getSessionExpirationTime() : sessionExpirationTimeOrNull;
             return System.currentTimeMillis() - lastActiveTime > sessionExpirationTime;
         }
     }
@@ -131,7 +141,7 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
      */
     protected final Map<String, FullSession<T>> sessions =
             new LinkedHashMap<String, FullSession<T>>();
-    
+
     private final IAuthenticationService authenticationService;
 
     private final IRemoteHostProvider remoteHostProvider;
@@ -142,6 +152,8 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
     private final int sessionExpirationPeriodMillisNoLogin;
 
     private final boolean tryEmailAsUserName;
+
+    private final Set<ISessionActionListener> listeners = new LinkedHashSet<>();
 
     public DefaultSessionManager(final ISessionFactory<T> sessionFactory,
             final ILogMessagePrefixGenerator<T> prefixGenerator,
@@ -209,6 +221,17 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
                         + tokenGenerator.getNewToken(now, TIMESTAMP_TOKEN_SEPARATOR);
         synchronized (sessions)
         {
+            int maxNumberOfSessions = getMaxNumberOfSessionsFor(user);
+            if (maxNumberOfSessions > 0)
+            {
+                List<FullSession<T>> openSessions = getOpenSessionsFor(user);
+                while (openSessions.size() >= maxNumberOfSessions)
+                {
+                    FullSession<T> session = openSessions.remove(0);
+                    closeSession(session.getSession(), SessionClosingReason.SESSIONS_LIMIT);
+                }
+            }
+
             final T session =
                     sessionFactory.create(sessionToken, user, principal, getRemoteHost(), now,
                             sessionExpirationPeriodMillis);
@@ -219,6 +242,32 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
 
             return session;
         }
+    }
+
+    private List<FullSession<T>> getOpenSessionsFor(String user)
+    {
+        List<FullSession<T>> userSessions = new ArrayList<>();
+        for (FullSession<T> session : sessions.values())
+        {
+            if (session.getSession().getUserName().equals(user))
+            {
+                userSessions.add(session);
+            }
+        }
+        Collections.sort(userSessions, new SimpleComparator<FullSession<T>, Long>()
+            {
+                @Override
+                public Long evaluate(FullSession<T> session)
+                {
+                    return session.lastActiveTime;
+                }
+            });
+        return userSessions;
+    }
+
+    protected int getMaxNumberOfSessionsFor(String user)
+    {
+        return 0;
     }
 
     private ISessionMonitor getSessionMonitor()
@@ -423,6 +472,18 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
         }
     }
 
+    private void logLimitedNumberOfSessions(final T session)
+    {
+        final String prefix = prefixGenerator.createPrefix(session);
+        authenticationLog.info(prefix + ": session closed because limit of open session has been reached.");
+        if (operationLog.isInfoEnabled())
+        {
+            final String user = session.getUserName();
+            operationLog.info(LOGOUT_PREFIX + "Session '" + session.getSessionToken()
+                    + "' of user '" + user + "' has been closed because limit of open session has been reached.");
+        }
+    }
+
     @Override
     public boolean isAWellFormedSessionToken(String sessionTokenOrNull)
     {
@@ -510,7 +571,7 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
             }
             if (checkAndTouch && doSessionExpiration(session))
             {
-                closeSession(session.getSession(), false);
+                closeSession(session.getSession(), SessionClosingReason.SESSION_EXPIRATION);
             }
             if (checkAndTouch && isSessionUnavailable(session))
             {
@@ -585,7 +646,7 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
         synchronized (sessions)
         {
             final T session = getSession(sessionToken, false);
-            closeSession(session, true);
+            closeSession(session, SessionClosingReason.LOGOUT);
         }
     }
 
@@ -593,22 +654,32 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
     public void expireSession(String sessionToken) throws InvalidSessionException
     {
         final T session = getSession(sessionToken, false);
-        closeSession(session, false);
+        closeSession(session, SessionClosingReason.SESSION_EXPIRATION);
     }
 
-    private void closeSession(final T session, final boolean regularLogout)
+    private void closeSession(final T session, SessionClosingReason reason)
             throws InvalidSessionException
     {
         synchronized (sessions)
         {
             session.cleanup();
-            sessions.remove(session.getSessionToken());
-            if (regularLogout)
+            String sessionToken = session.getSessionToken();
+            sessions.remove(sessionToken);
+            switch (reason)
             {
-                logLogout(session);
-            } else
+                case LOGOUT:
+                    logLogout(session);
+                    break;
+                case SESSION_EXPIRATION:
+                    logSessionExpired(session);
+                    break;
+                case SESSIONS_LIMIT:
+                    logLimitedNumberOfSessions(session);
+                    break;
+            }
+            for (ISessionActionListener listener : listeners)
             {
-                logSessionExpired(session);
+                listener.sessionClosed(sessionToken);
             }
         }
     }
@@ -629,4 +700,11 @@ public class DefaultSessionManager<T extends BasicSession> implements ISessionMa
         }
         return p;
     }
+
+    @Override
+    public void addListener(ISessionActionListener listener)
+    {
+        listeners.add(listener);
+    }
+
 }

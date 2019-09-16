@@ -25,8 +25,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -92,8 +94,7 @@ public class ConfigReader
                 if (m.matches())
                 {
                     section = m.group(1).trim();
-                }
-                else if (section != null)
+                } else if (section != null)
                 {
                     m = keyValueRegex.matcher(line);
                     if (m.matches() && line.startsWith(IGNORE_LINE_CHAR) == false)
@@ -115,6 +116,21 @@ public class ConfigReader
     public void load(String path) throws IOException
     {
         loadFile(new File(path));
+    }
+
+    public List<String> getStrings(String section, String key, List<String> defaultStrings)
+    {
+        String strings = getValue(section, key);
+        if (strings == null)
+        {
+            return defaultStrings;
+        }
+        List<String> result = new ArrayList<>();
+        for (String string : strings.split(","))
+        {
+            result.add(string.trim());
+        }
+        return result;
     }
 
     public String getString(String section, String key, String defaultvalue, boolean mandatory)

@@ -16,19 +16,19 @@ export const ANOTHER_USER_DTO = {
 
 export const ALL_USERS_GROUP_DTO = {
   code: 'all-users-group',
-  users: [ TEST_USER_DTO, ANOTHER_USER_DTO ]
+  users: [TEST_USER_DTO, ANOTHER_USER_DTO]
 }
 
 export const TEST_GROUP_DTO = {
   code: 'test-group',
-  users: [ TEST_USER_DTO ]
+  users: [TEST_USER_DTO]
 }
 
 export const ANOTHER_GROUP_DTO = {
   code: 'another-group',
-  users: [ ANOTHER_USER_DTO ]
+  users: [ANOTHER_USER_DTO]
 }
 
-export function object(type, id){
+export function object(type, id) {
   return { type, id }
 }

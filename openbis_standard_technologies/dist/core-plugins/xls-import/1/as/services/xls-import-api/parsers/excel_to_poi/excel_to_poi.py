@@ -1,4 +1,4 @@
-from org.apache.commons.lang import StringUtils
+from org.apache.commons.lang3 import StringUtils
 from org.apache.poi.ss.usermodel import CellType
 from org.apache.poi.ss.usermodel import WorkbookFactory
 from org.apache.poi.ss.util import NumberToTextConverter
@@ -11,7 +11,6 @@ class ExcelToPoiParser(object):
     def parse(excel_byte_array):
         workbook = WorkbookFactory.create(ByteArrayInputStream(excel_byte_array))
 
-        data_colection = []
         definitions = []
         for sheet in workbook.sheetIterator():
             i = 0
@@ -50,19 +49,19 @@ class ExcelToPoiParser(object):
     def extract_string_value_from(cell):
         cell_type = cell.getCellTypeEnum()
         if cell_type == CellType.BLANK:
-            return "";
+            return ""
         elif cell_type == CellType.BOOLEAN:
-            return str(cell.getBooleanCellValue());
+            return str(cell.getBooleanCellValue())
         elif cell_type == CellType.NUMERIC:
-            return NumberToTextConverter.toText(cell.getNumericCellValue());
+            return NumberToTextConverter.toText(cell.getNumericCellValue())
         elif cell_type == CellType.STRING:
-            return cell.getStringCellValue();
+            return cell.getStringCellValue()
         elif cell_type == CellType.FORMULA:
-            raise SyntaxError("Excel formulas are not supported but one was found in cell " + extractCellPosition(cell));
+            raise SyntaxError("Excel formulas are not supported but one was found in the sheet")
         elif cell_type == CellType.ERROR:
-            raise SyntaxError("There is an error in cell " + extractCellPosition(cell));
+            raise SyntaxError("There is an error in a cell in the excel sheet")
         else:
-            raise SyntaxError("Unknown data type of cell " + extractCellPosition(cell));
+            raise SyntaxError("Unknown data type of cell in the excel sheet")
 
     @staticmethod
     def is_row_empty(row):
@@ -76,5 +75,5 @@ class ExcelToPoiParser(object):
     @staticmethod
     def is_cell_empty(cell):
         if cell is not None and cell.getCellType() != CellType.BLANK and StringUtils.isNotBlank(cell.toString()):
-            return False;
+            return False
         return True

@@ -13,21 +13,18 @@ import urllib.parse
 
 # needed for Data upload
 PYBIS_PLUGIN = "dataset-uploader-api"
-dataset_definitions = openbis_definitions('DataSet')
+dataset_definitions = openbis_definitions('dataSet')
 
 
-class DataSet(OpenBisObject):
+class DataSet(
+    OpenBisObject,
+    entity='dataSet',
+    single_item_method_name='get_dataset',
+):
     """ DataSet are openBIS objects that contain the actual files.
     """
 
     def __init__(self, openbis_obj, type, data=None, files=None, folder=None, kind=None, props=None, **kwargs):
-
-        if kwargs is None:
-            kwargs = {}
-        else:
-            for key in kwargs:
-                if key not in dataset_definitions['attrs_new']:
-                    raise ValueError("{} is not a valid attribute for a DataSet".format(key))
 
         if kind == 'PHYSICAL_DATA':
             if files is None:
@@ -44,7 +41,7 @@ class DataSet(OpenBisObject):
             self.__dict__['files'] = files
 
         # initialize the attributes
-        super(DataSet, self).__init__(openbis_obj, type, data, props, **kwargs)
+        super().__init__(openbis_obj, type=type, data=data, props=props, **kwargs)
 
         self.__dict__['files_in_wsp'] = []
 
@@ -99,25 +96,16 @@ class DataSet(OpenBisObject):
 
     def __dir__(self):
         return [
-            'permId',
-            'kind',
-            'props', 
             'get_parents()', 'get_children()', 'get_components()', 'get_contained()', 'get_containers()',
             'add_parents()', 'add_children()', 'add_components()', 'add_contained()', 'add_containers()', 
             'del_parents()', 'del_children()', 'del_components()', 'del_contained()', 'del_containers()',
             'set_parents()', 'set_children()', 'set_components()', 'set_contained()', 'set_containers()',
-            'sample', 
-            'experiment', 
-            'collection', 
-            'dataStore',
-            'physicalData',
-            'linkedData',
-            'tags', 'set_tags()', 'add_tags()', 'del_tags()',
+            'set_tags()', 'add_tags()', 'del_tags()',
             'add_attachment()', 'get_attachments()', 'download_attachments()',
             "get_files(start_folder='/')", 'file_list',
             'download(files=None, destination=None, wait_until_finished=True)', 
-            'status', 'size', 'archive()', 'unarchive()' 
-        ]
+            'archive()', 'unarchive()' 
+        ] + super().__dir__()
 
     def __setattr__(self, name, value):
         if name in ['folder']:
@@ -174,7 +162,6 @@ class DataSet(OpenBisObject):
         if VERBOSE: print("DataSet {} unarchived".format(self.permId))
 
     def archive_unarchive(self, method, fetchopts):
-        dss = self.get_datastore
         payload = {}
 
         request = {
@@ -381,7 +368,7 @@ class DataSet(OpenBisObject):
             raise ValueError('internal error while performing post request')
 
 
-    def _generate_plugin_request(self, dss):
+    def _generate_plugin_request(self, dss, permId=None):
         """generates a request to activate the dataset-uploader ingestion plugin to
         register our files as a new dataset
         """
@@ -408,6 +395,7 @@ class DataSet(OpenBisObject):
                 dss,
                 PYBIS_PLUGIN,
                 {
+                    "permId" : permId,
                     "method" : "insertDataSet",
                     "sampleIdentifier" : sample_identifier,
                     "experimentIdentifier" : experiment_identifier,
@@ -426,7 +414,8 @@ class DataSet(OpenBisObject):
         self.openbis.delete_entity(entity='DataSet',id=self.permId, reason=reason)
         if VERBOSE: print("DataSet {} successfully deleted.".format(self.permId))
 
-    def save(self):
+
+    def save(self, permId=None):
         for prop_name, prop in self.props._property_names.items():
             if prop['mandatory']:
                 if getattr(self.props, prop_name) is None or getattr(self.props, prop_name) == "":
@@ -434,8 +423,6 @@ class DataSet(OpenBisObject):
 
         if self.is_new:
             datastores = self.openbis.get_datastores()
-            permId = None
-
  
             if self.sample is None and self.experiment is None:
                 raise ValueError('A DataSet must be either connected to a Sample or an Experiment')
@@ -456,7 +443,7 @@ class DataSet(OpenBisObject):
 
                 # activate the ingestion plugin, as soon as the data is uploaded
                 # this will actually register the dataset in the datastore and the AS
-                request = self._generate_plugin_request(dss=datastores['code'][0])
+                request = self._generate_plugin_request(dss=datastores['code'][0], permId=permId)
                 resp = self.openbis._post_request(self.openbis.reg_v1, request)
                 if resp['rows'][0][0]['value'] == 'OK':
                     permId = resp['rows'][0][2]['value']
@@ -544,7 +531,7 @@ class DataSet(OpenBisObject):
             self.files_in_wsp.append(file_in_wsp)
 
             upload_url = (
-                datastore_url + '/session_workspace_file_upload'
+                datastore_url + '/datastore_server/session_workspace_file_upload'
                 + '?filename=' + url_filename
                 + '&id=1'
                 + '&startByte=0&endByte=0'
@@ -702,3 +689,20 @@ class PhysicalData():
                 getattr(self, attr, '')
             ])
         return tabulate(lines, headers=headers)
+
+
+class LinkedData():
+    def __init__(self, data=None):
+        self.data = data if data is not None else []
+        self.attrs = ['externalCode', 'contentCopies']
+
+    def __dir__(self):
+        return self.attrs
+
+    def __getattr__(self, name):
+        if name in self.attrs:
+            if name in self.data:
+                return self.data[name]
+        else:
+            return ''
+

@@ -86,18 +86,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		var toolbarModel = [];
 		if(this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini) {
 			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(_this._dataSetFormModel.dataSet.dataSetTypeCode);
-		
-			//Freeze
-			if(_this._dataSetFormModel.v3_dataset && _this._dataSetFormModel.v3_dataset.frozen !== undefined) { //Freezing available on the API
-				var isEntityFrozen = _this._dataSetFormModel.v3_dataset.frozen;
-				var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
-				var $freezeButton = FormUtil.getFreezeButton("DATASET", this._dataSetFormModel.v3_dataset.permId.permId, isEntityFrozen);
-				if(toolbarConfig.FREEZE) {
-				    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
-				}
-			}
-			
-			if(!_this._dataSetFormModel.v3_dataset.frozen) {
+			if (_this._allowedToEdit()) {
 				//Edit Button
 				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 					mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSet.code);
@@ -105,7 +94,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				if(toolbarConfig.EDIT) {
 					toolbarModel.push({ component : $editBtn, tooltip: "Edit" });
 				}
-				
+			}
+			if(_this._allowedToMove()) {
 				//Move
 				var $moveBtn = FormUtil.getButtonWithIcon("glyphicon-move", function () {
 					var moveEntityController = new MoveEntityController("DATASET", _this._dataSetFormModel.dataSet.code);
@@ -114,7 +104,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				if(toolbarConfig.MOVE) {
 					toolbarModel.push({ component : $moveBtn, tooltip: "Move" });
 				}
-				
+			}
+			if(_this._allowedToDelete()) {
 				//Delete Button
 				var $deleteBtn = FormUtil.getDeleteButton(function(reason) {
 					_this._dataSetFormController.deleteDataSet(reason);
@@ -206,6 +197,16 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				});
 				toolbarModel.push({ component : $jupyterBtn, tooltip: "Create Jupyter notebook" });
 			}
+
+            //Freeze
+            if(_this._dataSetFormModel.v3_dataset && _this._dataSetFormModel.v3_dataset.frozen !== undefined) { //Freezing available on the API
+                var isEntityFrozen = _this._dataSetFormModel.v3_dataset.frozen;
+                var isEntityFrozenTooltip = (isEntityFrozen)?"Entity Frozen":"Freeze Entity (Disable further modifications)";
+                var $freezeButton = FormUtil.getFreezeButton("DATASET", this._dataSetFormModel.v3_dataset.permId.permId, isEntityFrozen);
+                if(toolbarConfig.FREEZE) {
+                    toolbarModel.push({ component : $freezeButton, tooltip: isEntityFrozenTooltip });
+                }
+            }
 		} else if(!this._dataSetFormModel.isMini) {
 			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
 				_this._dataSetFormController.submitDataSet();
@@ -285,7 +286,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var dataSetType = this._dataSetFormModel.dataSet.dataSetTypeCode;
 			var parentsEditingDisabled = profile.dataSetTypeDefinitionsExtension[dataSetType] && profile.dataSetTypeDefinitionsExtension[dataSetType]["DATASET_PARENTS_DISABLED"]
 			if(!parentsEditingDisabled) {
-				this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add", false, false, true, false);
+				this._dataSetFormModel.datasetParentsComponent = new AdvancedEntitySearchDropdown(true, false, "Search parents to add",
+						false, false, true, false, false);
 				this._dataSetFormModel.datasetParentsComponent.init($dataSetParentsCodeLabel);
 				this._dataSetFormModel.datasetParentsComponent.addSelectedDataSets(this._dataSetFormModel.dataSet.parentCodes);
 			}
@@ -617,7 +619,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					continue;
 				}
 				
-				if(propertyType.code === "$XMLCOMMENTS") {
+                if(propertyType.code === "$XMLCOMMENTS") {
 					var $commentsContainer = $("<div>");
 					$fieldset.append($commentsContainer);
 					var isAvailable = this._dataSetFormController._addCommentsWidget($commentsContainer);
@@ -650,14 +652,19 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					
 					if(this._dataSetFormModel.mode === FormMode.VIEW) {
 						if(Util.getEmptyIfNull(value) !== "") { //Don't show empty fields, whole empty sections will show the title
-							if(propertyType.dataType === "CONTROLLEDVOCABULARY") {
-								value = FormUtil.getVocabularyLabelForTermCode(propertyType, value);
-							}
-							var $controlGroup = FormUtil.getFieldForLabelWithText(propertyType.label, value, propertyType.code);
-							$fieldset.append($controlGroup);
-						} else {
-							continue;
-						}
+                            var customWidget = profile.customWidgetSettings[propertyType.code];
+                                if(customWidget === 'Spreadsheet') {
+                                    var $jexcelContainer = $("<div>");
+                                    JExcelEditorManager.createField($jexcelContainer, this._dataSetFormModel.mode, propertyType.code, this._dataSetFormModel.dataSet);
+                                    $controlGroup = FormUtil.getFieldForComponentWithLabel($jexcelContainer, propertyType.label);
+                                    $fieldset.append($controlGroup);
+                                } else {
+                                    $controlGroup = FormUtil.createPropertyField(propertyType, value);
+                                    $fieldset.append($controlGroup);
+                                }
+                            } else {
+                                continue;
+                            }
 					} else {
 						var $controlGroup = $('<div>', {class : 'form-group'});
 						var requiredStar = (propertyType.mandatory)?"&nbsp;(*)":"";				
@@ -708,9 +715,27 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 							$component.prop('disabled', true);
 						}
 						
-						if(propertyType.dataType === "MULTILINE_VARCHAR") {
-							$component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
-						} else if(propertyType.dataType === "TIMESTAMP") {
+						var customWidget = profile.customWidgetSettings[propertyType.code];
+                        if(customWidget) {
+                            switch(customWidget) {
+                                case 'Word Processor':
+                                    if(propertyType.dataType === "MULTILINE_VARCHAR") {
+                                        $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType);
+                                    } else {
+                                        alert("Word Processor only works with MULTILINE_VARCHAR data type.");
+                                    }
+                                    break;
+                                case 'Spreadsheet':
+                                    if(propertyType.dataType === "XML") {
+                                        var $jexcelContainer = $("<div>");
+                                        JExcelEditorManager.createField($jexcelContainer, this._dataSetFormModel.mode, propertyType.code, this._dataSetFormModel.dataSet);
+                                        $component = $jexcelContainer;
+                                    } else {
+                                        alert("Spreadsheet only works with XML data type.");
+                                    }
+                                    break;
+                            }
+                        } else if(propertyType.dataType === "TIMESTAMP") {
 							$component.on("dp.change", changeEvent(propertyType));
 						} else {
 							$component.change(changeEvent(propertyType));
@@ -776,4 +801,26 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		this._dataSetFormController.setArchivingRequested(false);
 	}
 
+	this._allowedToEdit = function() {
+		var dataSet = this._dataSetFormModel.v3_dataset;
+		return dataSet.frozen == false;
+	}
+
+	this._allowedToMove = function() {
+		var dataSet = this._dataSetFormModel.v3_dataset;
+		var experiment = dataSet.experiment;
+		if (experiment && experiment.frozenForDataSets) {
+			return false;
+		}
+		var sample = dataSet.sample;
+		if (sample && sample.frozenForDataSets) {
+			return false;
+		}
+		return true;
+	}
+	
+	this._allowedToDelete = function() {
+		var dataSet = this._dataSetFormModel.v3_dataset;
+		return dataSet.frozen == false && this._allowedToMove();
+	}
 }

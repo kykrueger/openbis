@@ -25,7 +25,9 @@ function ProjectFormController(mainController, mode, project) {
 		require([ "as/dto/project/id/ProjectPermId", "as/dto/project/fetchoptions/ProjectFetchOptions" ],
 				function(ProjectPermId, ProjectFetchOptions) {
 				var id = new ProjectPermId(project.permId);
-				mainController.openbisV3.getProjects([ id ], new ProjectFetchOptions()).done(function(map) {
+				var fetchOptions = new ProjectFetchOptions();
+				fetchOptions.withSpace();
+				mainController.openbisV3.getProjects([ id ], fetchOptions).done(function(map) {
 	                _this._projectFormModel.v3_project = map[id];
 	                _this._mainController.getUserRole({
 	        			space: _this._projectFormModel.project.spaceCode,
@@ -123,4 +125,12 @@ function ProjectFormController(mainController, mode, project) {
 			Util.showError("No DSS available.", function() {Util.unblockUI();});
 		}
 	}
+
+	this.getDefaultSpaceValue = function (key, callback) {
+		this._mainController.serverFacade.getSetting(key, callback);
+	};
+
+	this.setDefaultSpaceValue = function (key, value) {
+		this._mainController.serverFacade.setSetting(key, value);
+	};
 }

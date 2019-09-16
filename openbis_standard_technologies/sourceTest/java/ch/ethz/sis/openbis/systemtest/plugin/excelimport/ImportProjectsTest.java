@@ -11,6 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -22,8 +23,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
 @Rollback
-public class ImportProjectsTest extends AbstractImportTest
-{
+public class ImportProjectsTest extends AbstractImportTest {
     @Autowired
     private IApplicationServerInternalApi v3api;
 
@@ -45,25 +45,15 @@ public class ImportProjectsTest extends AbstractImportTest
 
     private static String FILES_DIR;
 
-    private String sessionToken;
-
     @BeforeClass
-    public void setupClass() throws IOException
-    {
+    public void setupClass() throws IOException {
         String f = ImportProjectsTest.class.getName().replace(".", "/");
         FILES_DIR = f.substring(0, f.length() - ImportProjectsTest.class.getSimpleName().length()) + "/test_files/";
     }
 
-    @BeforeMethod
-    public void beforeTest()
-    {
-        sessionToken = v3api.login(TEST_USER, PASSWORD);
-    }
-
     @Test
     @DirtiesContext
-    public void testProjectsAreCreated() throws IOException
-    {
+    public void testProjectsAreCreated() throws IOException {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECTS_XLS)));
         // WHEN
@@ -76,8 +66,7 @@ public class ImportProjectsTest extends AbstractImportTest
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedSecondProject() throws IOException
-    {
+    public void testProjectsAreCreatedSecondProject() throws IOException {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECTS_XLS)));
         // WHEN
@@ -89,15 +78,13 @@ public class ImportProjectsTest extends AbstractImportTest
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfNoProjectCode() throws IOException
-    {
+    public void shouldThrowExceptionIfNoProjectCode() throws IOException {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECTS_NO_CODE)));
     }
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedNoDescription() throws IOException
-    {
+    public void testProjectsAreCreatedNoDescription() throws IOException {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECTS_NO_DESCRIPTION)));
         // WHEN
@@ -109,15 +96,13 @@ public class ImportProjectsTest extends AbstractImportTest
     }
 
     @Test(expectedExceptions = UserFailureException.class)
-    public void shouldThrowExceptionIfNoProjectSpace() throws IOException
-    {
+    public void shouldThrowExceptionIfNoProjectSpace() throws IOException {
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECTS_NO_SPACE)));
     }
 
     @Test
     @DirtiesContext
-    public void testProjectsAreCreatedSpaceOnServer() throws IOException
-    {
+    public void testProjectsAreCreatedSpaceOnServer() throws IOException {
         // GIVEN
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, SPACES)));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(FilenameUtils.concat(FILES_DIR, PROJECTS_WITH_SPACES_ON_SERVER)));

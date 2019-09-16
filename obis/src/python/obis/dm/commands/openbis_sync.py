@@ -47,7 +47,7 @@ class OpenbisSync(OpenbisCommand):
         try:
             data_set_code = self.openbis.create_permId()
             return CommandResult(returncode=0, output=""), data_set_code
-        except ValueError as e:
+        except Exception as e:
             return CommandResult(returncode=-1, output=str(e)), None
 
     def create_data_set(self, data_set_code, external_dms, repository_id, ignore_parent=False):
@@ -69,7 +69,7 @@ class OpenbisSync(OpenbisCommand):
                                                      sample=sample_id, experiment=experiment_id, properties=properties, parents=parent_data_set_id,
                                                      data_set_code=data_set_code, contents=contents)
             return CommandResult(returncode=0, output="Created data set {}.".format(str(data_set))), data_set
-        except ValueError as e:
+        except Exception as e:
             return CommandResult(returncode=-1, output=str(e)), None
 
 
@@ -157,7 +157,7 @@ class OpenbisSync(OpenbisCommand):
                 data_set = self.openbis.get_dataset(self.data_set_id())
                 if self.git_hash_matches(data_set):
                     return CommandResult(returncode=0, output="Nothing to sync.")
-            except ValueError as e:
+            except Exception as e:
                 if 'no such dataset' in str(e):
                     if info_only:
                         return CommandResult(returncode=-1, output="Parent data set not found in openBIS.")
