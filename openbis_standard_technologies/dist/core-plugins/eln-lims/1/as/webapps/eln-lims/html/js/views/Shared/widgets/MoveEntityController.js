@@ -44,6 +44,9 @@ function MoveEntityController(entityType, entityPermId) {
 							||
 							(entity.getExperiment() && entity.getExperiment().getIdentifier().identifier === moveEntityModel.selected.getIdentifier().identifier);
 					break;
+				case "PROJECT":
+					found = entity.getSpace().getPermId().identifier === moveEntityModel.selected.getPermId().identifier;
+					break;
 			}
 			
 			if(!found) {
@@ -64,6 +67,9 @@ function MoveEntityController(entityType, entityPermId) {
 							break;
 						case "DATASET":
 							mainController.changeView("showViewDataSetPageFromPermId", entity.getPermId().permId);
+							break;
+						case "PROJECT":
+							mainController.changeView("showProjectPageFromIdentifier", entity.getPermId().permId);
 							break;
 					}
 				});
@@ -117,6 +123,14 @@ function MoveEntityController(entityType, entityPermId) {
 						
 			            mainController.openbisV3.updateDataSets([ datasetUpdate ]).done(done).fail(fail);
         			});
+				break;
+			case "PROJECT":
+				require(["as/dto/project/update/ProjectUpdate"], function (ProjectUpdate) {
+					var projectUpdate = new ProjectUpdate();
+					projectUpdate.setProjectId(moveEntityModel.entity.getIdentifier());
+					projectUpdate.setSpaceId(moveEntityModel.selected.getPermId());
+					mainController.openbisV3.updateProjects([projectUpdate]).done(done).fail(fail);
+				});
 				break;
 		}
 		
