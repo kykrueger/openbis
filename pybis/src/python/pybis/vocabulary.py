@@ -127,7 +127,7 @@ class VocabularyTerm(OpenBisObject):
 
     def __init__(self, openbis_obj, data=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'VocabularyTerm')
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'vocabularyTerm')
 
         if data is not None:
             self._set_data(data)
