@@ -1614,7 +1614,7 @@ class Openbis:
         if permId:
             sub_criteria.append(_common_search("as.dto.common.search.PermIdSearchCriteria", permId))
         if type:
-            sub_criteria.append(_subcriteria_for_type(type, 'Experiment'))
+            sub_criteria.append(_subcriteria_for_code(type, 'experimentType'))
         if tags:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if is_finished is not None:
@@ -1694,7 +1694,7 @@ class Openbis:
         if code:
             sub_criteria.append(_criteria_for_code(code))
         if type:
-            sub_criteria.append(_subcriteria_for_type(type, 'dataSet'))
+            sub_criteria.append(_subcriteria_for_code(type, 'dataSetType'))
 
         if withParents:
             sub_criteria.append(_subcriteria_for(withParents, 'dataSet', 'Parents'))
@@ -2179,14 +2179,14 @@ class Openbis:
         )
 
 
-    def get_term(self, code, vocabularyCode=None, only_data=False):
-        entity_def = get_definition_for_entity('VocabularyTerm')
+    def get_term(self, code, vocabularyCode, only_data=False):
+        entity_def = get_definition_for_entity('vocabularyTerm')
         search_request = {
             "code": code,
             "vocabularyCode": vocabularyCode,
             "@type": "as.dto.vocabulary.id.VocabularyTermPermId"
         }
-        fetchopts = get_fetchoption_for_entity('VocabularyTerm')
+        fetchopts = get_fetchoption_for_entity('vocabularyTerm')
         for opt in ['registrator']:
             fetchopts[opt] = get_fetchoption_for_entity(opt)
         

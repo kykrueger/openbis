@@ -1,7 +1,13 @@
+## Changes with pybis-1.9.4
+
+* bugfix when searching for experiments or datasets of a given type
+
+
 ## Changes with pybis-1.9.3
 
 * fixed documentation: add_members (not add_persons)
 * bugfix role assignments of groups
+
 
 ## Changes with pybis-1.9.2
 

@@ -197,7 +197,7 @@ def openbis_definitions(entity):
             "multi": "parents children containers components".split(),
             "identifier": "dataSetId",
         },
-        "Material": {
+        "material": {
             "attrs_new": "code description type creation tags".split(),
             "attrs_up": "description type creation tags".split(),
             "attrs": "code description type creation registrator registrationDate modifier modificationDate tags".split(),
@@ -223,7 +223,7 @@ def openbis_definitions(entity):
             "delete": { "@type": "as.dto.vocabulary.delete.VocabularyDeletionOptions"},
             "fetch":  { "@type": "as.dto.vocabulary.fetchoptions.VocabularyFetchOptions"},
         },
-        "VocabularyTerm": {
+        "vocabularyTerm": {
             "attrs_new": "code vocabularyCode label description official ordinal".split(),
             "attrs_up": "label description official previousTermId".split(),
             "attrs": "code vocabularyCode label description official ordinal registrator registrationDate modifier modificationDate".split(),
