@@ -16,6 +16,9 @@ const styles = () => ({
   },
   adornment: {
     margin: '8px'
+  },
+  adornmentSpacer: {
+    width: '64px'
   }
 })
 
@@ -91,7 +94,11 @@ class FilterField extends React.Component {
         </InputAdornment>
       )
     } else {
-      return <React.Fragment></React.Fragment>
+      return (
+        <React.Fragment>
+          <div className={classes.adornmentSpacer}></div>
+        </React.Fragment>
+      )
     }
   }
 }

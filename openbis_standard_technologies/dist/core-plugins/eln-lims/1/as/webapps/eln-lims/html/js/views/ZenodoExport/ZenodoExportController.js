@@ -26,7 +26,7 @@ function ZenodoExportController(parentController) {
                 this.exportView = new ZenodoExportView(this, this.exportModel);
                 this.exportView.repaint(views);
             } else {
-                Util.showError('Personal Zenodo API Token missing, please set it on your user profile.');
+                Util.showError('Personal Zenodo API Token missing, please set it in your user profile.');
             }
         }).bind(this));
     };

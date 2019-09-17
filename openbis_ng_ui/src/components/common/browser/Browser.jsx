@@ -1,5 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
+import Paper from '@material-ui/core/Paper'
 import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles'
 import logger from '../../../common/logger.js'
@@ -58,7 +59,7 @@ class Browser extends React.PureComponent {
     const classes = this.props.classes
 
     return (
-      <div className={classes.container}>
+      <Paper square={true} elevation={3} classes={{ root: classes.container }}>
         <FilterField
           filter={this.props.filter}
           filterChange={this.props.filterChange}
@@ -70,7 +71,7 @@ class Browser extends React.PureComponent {
           nodeCollapse={this.props.nodeCollapse}
           level={0}
         />
-      </div>
+      </Paper>
     )
   }
 }
