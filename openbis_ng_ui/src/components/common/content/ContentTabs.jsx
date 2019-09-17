@@ -7,7 +7,12 @@ import CloseIcon from '@material-ui/icons/Close'
 import * as objectTypes from '../../../common/consts/objectType.js'
 import logger from '../../../common/logger.js'
 
-const styles = {
+const styles = theme => ({
+  tabsRoot: {
+    borderBottomStyle: 'solid',
+    borderBottomWidth: '1px',
+    borderBottomColor: theme.palette.background.secondary
+  },
   tabRoot: {
     textTransform: 'none'
   },
@@ -18,7 +23,7 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center'
   }
-}
+})
 
 class ContentTabs extends React.Component {
   handleTabChange = (event, value) => {
@@ -42,6 +47,7 @@ class ContentTabs extends React.Component {
         variant='scrollable'
         scrollButtons='on'
         onChange={this.handleTabChange}
+        classes={{ root: classes.tabsRoot }}
       >
         {this.props.objects.map(object => (
           <Tab
