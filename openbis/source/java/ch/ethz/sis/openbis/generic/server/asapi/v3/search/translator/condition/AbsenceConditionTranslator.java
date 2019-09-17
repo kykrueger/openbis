@@ -26,6 +26,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
 import java.util.List;
+import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NULL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
@@ -35,9 +36,10 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SA
 public class AbsenceConditionTranslator extends AbstractConditionTranslator<ISearchCriteria>
 {
     @Override
-    public void translate(final ISearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args, final StringBuilder sqlBuilder)
+    public void translate(final ISearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args, final StringBuilder sqlBuilder,
+            final Map<Object, Map<String, JoinInformation>> aliases)
     {
-        final String alias = Translator.getAlias(0);
+        final String alias = Translator.MAIN_TABLE_ALIAS;
         sqlBuilder.append(alias).append(PERIOD);
         if (criterion instanceof NoSampleContainerSearchCriteria)
         {

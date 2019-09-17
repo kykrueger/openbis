@@ -25,6 +25,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifie
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.List;
+import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
@@ -50,7 +51,7 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
 
     @Override
     public void translate(final IdSearchCriteria<ISampleId> criterion, final EntityMapper entityMapper, final List<Object> args,
-            final StringBuilder sqlBuilder)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         final ISampleId sampleId = criterion.getId();
 

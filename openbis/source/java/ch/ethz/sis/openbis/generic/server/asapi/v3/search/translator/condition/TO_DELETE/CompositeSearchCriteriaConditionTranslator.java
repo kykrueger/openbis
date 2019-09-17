@@ -22,9 +22,11 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
@@ -36,7 +38,7 @@ public class CompositeSearchCriteriaConditionTranslator extends AbstractConditio
     @Override
     public void translate(final AbstractCompositeSearchCriteria criterion,
             final EntityMapper entityMapper, final List<Object> args,
-            final StringBuilder sqlBuilder)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         final Collection<ISearchCriteria> subcriteria = criterion.getCriteria();
         final String operator = criterion.getOperator().toString();
@@ -55,7 +57,7 @@ public class CompositeSearchCriteriaConditionTranslator extends AbstractConditio
                     (IConditionTranslator<ISearchCriteria>) Translator.CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(subcriterion.getClass());
             if (conditionTranslator != null)
             {
-                conditionTranslator.translate(subcriterion, entityMapper, args, sqlBuilder);
+                conditionTranslator.translate(subcriterion, entityMapper, args, sqlBuilder, aliases);
             } else
             {
                 throw new IllegalArgumentException("Unsupported criterion type: " + subcriterion.getClass().getSimpleName());

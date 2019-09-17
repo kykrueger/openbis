@@ -52,7 +52,7 @@ class TranslatorUtils
     {
         if (value.getClass() == StringEqualToValue.class)
         {
-            sqlBuilder.append(EQ).append(QU);
+            sqlBuilder.append(EQ).append(SP).append(QU);
         } else if (value.getClass() == StringStartsWithValue.class)
         {
             sqlBuilder.append(SP).append(LIKE).append(SP).append(QU).append(SP).append(BARS).append(SP).append(SQ).

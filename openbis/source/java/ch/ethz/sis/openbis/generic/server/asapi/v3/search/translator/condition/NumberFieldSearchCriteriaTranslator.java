@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 
 import java.util.List;
+import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
@@ -30,21 +31,22 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator<NumberFieldSearchCriteria>
 {
     @Override
-    public JoinInformation getJoinInformation(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper)
+    public Map<String, JoinInformation> getJoinInformationMap(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper,
+            final IAliasFactory aliasFactory)
     {
         return null;
     }
 
     @Override
     public void translate(final NumberFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
-            final StringBuilder sqlBuilder)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
 
-                sqlBuilder.append(Translator.getAlias(0)).append(PERIOD).append(criterion.getFieldName()).append(SP);
+                sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(criterion.getFieldName()).append(SP);
                 TranslatorUtils.appendNumberComparatorOp(value, sqlBuilder);
                 sqlBuilder.append(NL);
                 args.add(value.getValue());

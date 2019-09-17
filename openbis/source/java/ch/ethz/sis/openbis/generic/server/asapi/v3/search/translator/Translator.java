@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
@@ -56,6 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
@@ -65,7 +67,6 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NEW_LINE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
@@ -78,6 +79,8 @@ public class Translator
 
     public static final Map<Class<? extends ISearchCriteria>, IConditionTranslator<? extends ISearchCriteria>> CRITERIA_TO_CONDITION_TRANSLATOR_MAP =
             new HashMap<>();
+
+    public static final String MAIN_TABLE_ALIAS = getAlias(new AtomicInteger(0));
 
     static
     {
@@ -105,6 +108,7 @@ public class Translator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NoSpaceSearchCriteria.class, absenceConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyFieldSearchCriteria.class, new AnyFieldSearchCriteriaTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, idSearchCriteriaTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringPropertySearchCriteria.class, new StringFieldSearchCriteriaTranslator());
     }
 
     private static final AtomicBoolean FIRST = new AtomicBoolean();
@@ -119,11 +123,11 @@ public class Translator
 
         final EntityMapper dbEntityKind = EntityMapper.toEntityMapper(entityKind);
 
-        final Map<Object, JoinInformation> aliases = new HashMap<>();
+        final Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
         final List<Object> args = new ArrayList<>();
 
-        final String where = buildWhere(dbEntityKind, criteria, args, operator);
         final String from = buildFrom(dbEntityKind, criteria, aliases);
+        final String where = buildWhere(dbEntityKind, criteria, args, operator, aliases);
         final String select = buildSelect(dbEntityKind);
 
         return new SelectQuery(select + from + where, args);
@@ -131,59 +135,63 @@ public class Translator
 
     private static String buildSelect(final EntityMapper dbEntityKind)
     {
-        return SELECT + SP + DISTINCT + SP + dbEntityKind.getEntitiesTableIdField() + NEW_LINE;
+        return SELECT + SP + DISTINCT + SP + MAIN_TABLE_ALIAS + PERIOD + dbEntityKind.getEntitiesTableIdField() + NEW_LINE;
     }
 
-    public static String getAlias(final int num) {
-        return "t" + num;
+    public static String getAlias(final AtomicInteger num) {
+        return "t" + num.getAndIncrement();
     }
 
-    private static String buildFrom(final EntityMapper entityMapper, final List<ISearchCriteria> criteria, Map<Object, JoinInformation> aliases)
+    private static String buildFrom(final EntityMapper entityMapper, final List<ISearchCriteria> criteria,
+            final Map<Object, Map<String, JoinInformation>> aliases)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
+        final AtomicInteger indexCounter = new AtomicInteger(1);
 
         final String entitiesTableName = entityMapper.getEntitiesTable();
         JoinInformation mainTable = new JoinInformation();
         mainTable.setMainTable(entitiesTableName);
-        mainTable.setMainTableId(entityMapper.getEntitiesTableIdField());
-        mainTable.setMainTableAlias(getAlias(aliases.size()));
-        aliases.put(entitiesTableName, mainTable);
+        mainTable.setMainTableIdField(entityMapper.getEntitiesTableIdField());
+        mainTable.setMainTableAlias(MAIN_TABLE_ALIAS);
 
-        sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(SP).append(AS).append(
-                SP).append(mainTable.getMainTableAlias()).append(NEW_LINE);
+        sqlBuilder.append(FROM).append(SP).append(entitiesTableName).append(SP).append(mainTable.getMainTableAlias()).append(NEW_LINE);
 
-        for (final ISearchCriteria criterion : criteria)
+        criteria.forEach(criterion ->
         {
             final IConditionTranslator conditionTranslator = CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
-
             if (conditionTranslator != null)
             {
-                final JoinInformation joinInformation = conditionTranslator.getJoinInformation(criterion, entityMapper);
+                final Map<String, JoinInformation> joinInformationMap = conditionTranslator.getJoinInformationMap(criterion,
+                        entityMapper, () -> getAlias(indexCounter));
 
-                if (joinInformation != null)
+                if (joinInformationMap != null)
                 {
-                    if (joinInformation.getSubTable() != null)
-                    { // Join required
-                        joinInformation.setSubTableAlias(getAlias(aliases.size()));
-                        sqlBuilder.append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP).append(AS)
-                                .append(joinInformation.getSubTableAlias()).append(SP)
-                                .append(ON).append(SP).append(mainTable.getMainTableAlias()).append(PERIOD).append(joinInformation.getMainTableId())
-                                .append(SP)
-                                .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
-                                .append(joinInformation.getSubTableId()).append(RP).append(NEW_LINE);
-                    }
-                    aliases.put(criterion, joinInformation);
+                    joinInformationMap.values().forEach(joinInformation ->
+                    {
+                        if (joinInformation.getSubTable() != null)
+                        { // Join required
+                            sqlBuilder.append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
+                                    .append(joinInformation.getSubTableAlias()).append(SP)
+                                    .append(ON).append(SP).append(joinInformation.getMainTableAlias())
+                                    .append(PERIOD).append(joinInformation.getMainTableIdField())
+                                    .append(SP)
+                                    .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
+                                    .append(joinInformation.getSubTableIdField()).append(NEW_LINE);
+                        }
+                    });
+                    aliases.put(criterion, joinInformationMap);
                 }
             } else
             {
                 throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
             }
-        }
+        });
         return sqlBuilder.toString();
     }
 
 
-    private static String buildWhere(final EntityMapper entityMapper, final List<ISearchCriteria> criteria, final List<Object> args, final SearchOperator operator)
+    private static String buildWhere(final EntityMapper entityMapper, final List<ISearchCriteria> criteria, final List<Object> args,
+            final SearchOperator operator, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
         if (isSearchAllCriteria(criteria))
@@ -211,7 +219,7 @@ public class Translator
                     (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
             if (conditionTranslator != null)
             {
-                conditionTranslator.translate(criterion, entityMapper, args, sqlBuilder);
+                conditionTranslator.translate(criterion, entityMapper, args, sqlBuilder, aliases);
             } else
             {
                 throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());

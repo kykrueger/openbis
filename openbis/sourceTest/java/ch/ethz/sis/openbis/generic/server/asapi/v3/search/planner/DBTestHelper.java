@@ -58,15 +58,15 @@ public class DBTestHelper
 
     public static final long USER_ID = 2L;
 
-    public static final long SAMPLE_ID1 = 1001L;
+    public static final long SAMPLE_ID_1 = 1001L;
 
-    public static final long SAMPLE_ID2 = 1002L;
+    public static final long SAMPLE_ID_2 = 1002L;
 
-    public static final long SAMPLE_ID3 = 1003L;
+    public static final long SAMPLE_ID_3 = 1003L;
 
-    public static final long SPACE_ID1 = 10000L;
+    public static final long SPACE_ID_1 = 10000L;
 
-    public static final long SPACE_ID2 = 10001L;
+    public static final long SPACE_ID_2 = 10001L;
 
     public static final long PROJECT_ID = 10002L;
 
@@ -74,75 +74,94 @@ public class DBTestHelper
 
     public static final long EXPERIMENT_TYPE_ID = 10004L;
 
-    public static final long SAMPLE_PROPERTY_ID2 = 1002L;
+    public static final long SAMPLE_PROPERTY_ID_2 = 1002L;
 
-    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID2 = 1002L;
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_2 = 1002L;
 
-    public static final long SAMPLE_PROPERTY_TYPE_ID2 = 1002L;
+    public static final long SAMPLE_PROPERTY_TYPE_ID_2 = 1002L;
 
-    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL2 = 2L;
+    /** Should be pointing to the "UNKNOWN" sample type. */
+    public static final long DEFAULT_SAMPLE_TYPE_ID = 1L;
 
-    public static final long SAMPLE_TYPE_ID2 = 1002L;
+    public static final long STRING_PROPERTY_TYPE_ID = 1001L;
 
-    public static final long SAMPLE_PROPERTY_VALUE2 = 101L;
+    public static final long STRING_SAMPLE_TYPE_PROPERTY_TYPE_ID = 1001L;
 
-    public static final String SAMPLE_PROPERTY_CODE2 = "TEST.LONG";
+    public static final long STRING_PROPERTY_SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL = 1L;
+
+    public static final long NUMBER_PROPERTY_SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL = 2L;
+
+    public static final long DATE_PROPERTY_SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL = 3L;
+
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL_2 = 2L;
+
+    public static final long SAMPLE_TYPE_ID_2 = 1002L;
+
+    public static final long SAMPLE_PROPERTY_2_VALUE = 101L;
+
+    public static final String SAMPLE_PROPERTY_CODE_2 = "TEST.LONG";
 
     public static final String DEFAULT_PERM_ID = "20190612105000000-0";
 
-    public static final String PERM_ID1 = "20190612105000000-1001";
+    public static final String PERM_ID_1 = "20190612105000000-1001";
 
-    public static final String PERM_ID2 = "20190612105000001-1001";
+    public static final String PERM_ID_2 = "20190612105000001-1001";
 
-    public static final String PERM_ID3 = "20190612105000000-1003";
+    public static final String PERM_ID_3 = "20190612105000000-1003";
 
     public static final String DEFAULT_CODE = "DEFAULT_UNIQUE_CODE";
 
     public static final String PROJECT_CODE = "PROJECT_CODE";
 
-    public static final String SPACE_CODE1 = "MY_SPACE_UNIQUE_CODE1";
+    public static final String SPACE_CODE_1 = "MY_SPACE_UNIQUE_CODE1";
 
-    public static final String SPACE_CODE2 = "MY_SPACE_UNIQUE_CODE2";
+    public static final String SPACE_CODE_2 = "MY_SPACE_UNIQUE_CODE2";
 
-    public static final String CODE1 = "MY_UNIQUE_CODE1";
+    public static final String CODE_1 = "MY_UNIQUE_CODE1";
 
-    public static final String CODE2 = "ANOTHER_UNIQUE_CODE2";
+    public static final String CODE_2 = "ANOTHER_UNIQUE_CODE2";
 
-    public static final String CODE3 = "ANOTHER_UNIQUE_CODE3";
+    public static final String CODE_3 = "ANOTHER_UNIQUE_CODE3";
 
     public static final int DEFAULT_VERSION = 10;
 
-    public static final int VERSION1 = 101;
+    public static final int VERSION_1 = 101;
 
-    public static final int VERSION2 = 102;
+    public static final int VERSION_2 = 102;
 
-    public static final int VERSION3 = 103;
+    public static final int VERSION_3 = 103;
 
-    public static final Date REGISTRATION_DATE1 = new Date(119, Calendar.JUNE, 11, 10, 50, 0);
+    public static final Date REGISTRATION_DATE_1 = new Date(119, Calendar.JUNE, 11, 10, 50, 0);
 
-    public static final Date REGISTRATION_DATE2 = new Date(119, Calendar.JUNE, 12, 10, 50, 0);
+    public static final Date REGISTRATION_DATE_2 = new Date(119, Calendar.JUNE, 12, 10, 50, 0);
 
-    public static final Date REGISTRATION_DATE3 = new Date(119, Calendar.JUNE, 13, 10, 50, 0);
+    public static final Date REGISTRATION_DATE_3 = new Date(119, Calendar.JUNE, 13, 10, 50, 0);
 
-    public static final String REGISTRATION_DATE_STRING1 = "2019-06-11 10:50:00 +0200";
+    public static final String REGISTRATION_DATE_STRING_1 = "2019-06-11 10:50:00 +0200";
 
-    public static final String REGISTRATION_DATE_STRING2 = "2019-06-12 10:50:00 +0200";
+    public static final String REGISTRATION_DATE_STRING_2 = "2019-06-12 10:50:00 +0200";
 
-    public static final String REGISTRATION_DATE_STRING3 = "2019-06-13 10:50:00 +0200";
+    public static final String REGISTRATION_DATE_STRING_3 = "2019-06-13 10:50:00 +0200";
 
-    public static final Date MODIFICATION_DATE1 = new Date(118, Calendar.JUNE, 11, 10, 50, 0);
+    public static final Date MODIFICATION_DATE_1 = new Date(118, Calendar.JUNE, 11, 10, 50, 0);
 
-    public static final Date MODIFICATION_DATE2 = new Date(118, Calendar.JUNE, 12, 10, 50, 0);
+    public static final Date MODIFICATION_DATE_2 = new Date(118, Calendar.JUNE, 12, 10, 50, 0);
 
-    public static final Date MODIFICATION_DATE3 = new Date(118, Calendar.JUNE, 13, 10, 50, 0);
+    public static final Date MODIFICATION_DATE_3 = new Date(118, Calendar.JUNE, 13, 10, 50, 0);
 
-    public static final String MODIFICATION_DATE_STRING1 = "2018-06-11 10:50:00 +0200";
+    public static final String MODIFICATION_DATE_STRING_1 = "2018-06-11 10:50:00 +0200";
 
-    public static final String MODIFICATION_DATE_STRING2 = "2018-06-12 10:50:00 +0200";
+    public static final String MODIFICATION_DATE_STRING_2 = "2018-06-12 10:50:00 +0200";
 
-    public static final String MODIFICATION_DATE_STRING3 = "2018-06-13 10:50:00 +0200";
+    public static final String MODIFICATION_DATE_STRING_3 = "2018-06-13 10:50:00 +0200";
 
     public static final Date DEFAULT_DATE = new Date(119, Calendar.JUNE, 10, 10, 50, 0);
+
+    public static final String STRING_PROPERTY_NAME = "TEST_STRING_PROPERTY";
+
+    public static final String NUMBER_PROPERTY_NAME = "TEST_NUMBER_PROPERTY";
+
+    public static final String DATE_PROPERTY_NAME = "TEST_DATE_PROPERTY";
 
     private JDBCSQLExecutor sqlExecutor;
 
@@ -193,8 +212,8 @@ public class DBTestHelper
 
     private void createProperties()
     {
-        createSampleProperty(SAMPLE_ID2, SAMPLE_PROPERTY_ID2, SAMPLE_TYPE_ID2, SAMPLE_TYPE_PROPERTY_TYPE_ID2,
-                SAMPLE_PROPERTY_TYPE_ID2, SAMPLE_PROPERTY_CODE2, String.valueOf(SAMPLE_PROPERTY_VALUE2));
+        createSampleProperty(SAMPLE_ID_2, SAMPLE_PROPERTY_ID_2, SAMPLE_TYPE_ID_2, SAMPLE_TYPE_PROPERTY_TYPE_ID_2,
+                SAMPLE_PROPERTY_TYPE_ID_2, SAMPLE_PROPERTY_CODE_2, String.valueOf(SAMPLE_PROPERTY_2_VALUE));
     }
 
     private void createSampleProperty(final long sampleId, final long samplePropertyId, final long sampleTypeId,
@@ -219,7 +238,7 @@ public class DBTestHelper
         stptValues.put(ColumnNames.PROPERTY_TYPE_COLUMN, propertyTypeId);
         stptValues.put(ColumnNames.SAMPLE_TYPE_COLUMN, sampleTypeId);
         stptValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
-        stptValues.put(ColumnNames.ORDINAL_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL2);
+        stptValues.put(ColumnNames.ORDINAL_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL_2);
         insertRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, stptValues);
 
         final Map<String, Object> samplePropertiesValues = new HashMap<>();
@@ -235,44 +254,44 @@ public class DBTestHelper
     private void createSamples()
     {
         final Map<String, Object> valuesMap1 = getDefaultValuesMap();
-        valuesMap1.put(ColumnNames.ID_COLUMN, SAMPLE_ID1);
-        valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID1);
-        valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION1);
-        valuesMap1.put(ColumnNames.CODE_COLUMN, CODE1);
-        valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE1);
-        valuesMap1.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE1);
-        valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
+        valuesMap1.put(ColumnNames.ID_COLUMN, SAMPLE_ID_1);
+        valuesMap1.put(ColumnNames.PERM_ID_COLUMN, PERM_ID_1);
+        valuesMap1.put(ColumnNames.VERSION_COLUMN, VERSION_1);
+        valuesMap1.put(ColumnNames.CODE_COLUMN, CODE_1);
+        valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE_1);
+        valuesMap1.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE_1);
+        valuesMap1.put(ColumnNames.SPACE_COLUMN, SPACE_ID_1);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap1);
 
         final Map<String, Object> valuesMap2 = getDefaultValuesMap();
-        valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID2);
-        valuesMap2.put(ColumnNames.ID_COLUMN, SAMPLE_ID2);
-        valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION2);
-        valuesMap2.put(ColumnNames.CODE_COLUMN, CODE2);
-        valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE2);
-        valuesMap2.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE2);
-        valuesMap2.put(ColumnNames.SPACE_COLUMN, SPACE_ID2);
+        valuesMap2.put(ColumnNames.PERM_ID_COLUMN, PERM_ID_2);
+        valuesMap2.put(ColumnNames.ID_COLUMN, SAMPLE_ID_2);
+        valuesMap2.put(ColumnNames.VERSION_COLUMN, VERSION_2);
+        valuesMap2.put(ColumnNames.CODE_COLUMN, CODE_2);
+        valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, REGISTRATION_DATE_2);
+        valuesMap2.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE_2);
+        valuesMap2.put(ColumnNames.SPACE_COLUMN, SPACE_ID_2);
         valuesMap2.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
-        valuesMap2.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);
+        valuesMap2.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID_1);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap2);
 
         final Map<String, Object> valuesMap3 = getDefaultValuesMap();
-        valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID3);
-        valuesMap3.put(ColumnNames.ID_COLUMN, SAMPLE_ID3);
-        valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION3);
-        valuesMap3.put(ColumnNames.CODE_COLUMN, CODE3);
-        valuesMap3.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE3);
+        valuesMap3.put(ColumnNames.PERM_ID_COLUMN, PERM_ID_3);
+        valuesMap3.put(ColumnNames.ID_COLUMN, SAMPLE_ID_3);
+        valuesMap3.put(ColumnNames.VERSION_COLUMN, VERSION_3);
+        valuesMap3.put(ColumnNames.CODE_COLUMN, CODE_3);
+        valuesMap3.put(ColumnNames.MODIFICATION_TIMESTAMP_COLUMN, MODIFICATION_DATE_3);
         valuesMap3.put(ColumnNames.PROJECT_COLUMN, PROJECT_ID);
         valuesMap3.put(ColumnNames.EXPERIMENT_COLUMN, EXPERIMENT_ID);
-        valuesMap3.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID1);
+        valuesMap3.put(ColumnNames.PART_OF_SAMPLE_COLUMN, SAMPLE_ID_1);
         insertRecord(TableNames.SAMPLES_ALL_TABLE, valuesMap3);
     }
 
     private void createSpaces()
     {
         final Map<String, Object> valuesMap1 = new HashMap<>();
-        valuesMap1.put(ColumnNames.ID_COLUMN, SPACE_ID1);
-        valuesMap1.put(ColumnNames.CODE_COLUMN, SPACE_CODE1);
+        valuesMap1.put(ColumnNames.ID_COLUMN, SPACE_ID_1);
+        valuesMap1.put(ColumnNames.CODE_COLUMN, SPACE_CODE_1);
         valuesMap1.put(ColumnNames.DESCRIPTION_COLUMN, null);
         valuesMap1.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap1.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
@@ -282,8 +301,8 @@ public class DBTestHelper
         insertRecord(TableNames.SPACES_TABLE, valuesMap1);
 
         final Map<String, Object> valuesMap2 = new HashMap<>();
-        valuesMap2.put(ColumnNames.ID_COLUMN, SPACE_ID2);
-        valuesMap2.put(ColumnNames.CODE_COLUMN, SPACE_CODE2);
+        valuesMap2.put(ColumnNames.ID_COLUMN, SPACE_ID_2);
+        valuesMap2.put(ColumnNames.CODE_COLUMN, SPACE_CODE_2);
         valuesMap2.put(ColumnNames.DESCRIPTION_COLUMN, null);
         valuesMap2.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
         valuesMap2.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
@@ -299,7 +318,7 @@ public class DBTestHelper
         valuesMap.put(ColumnNames.ID_COLUMN, PROJECT_ID);
         valuesMap.put(ColumnNames.PERM_ID_COLUMN, "20190301152050019-11");
         valuesMap.put(ColumnNames.CODE_COLUMN, PROJECT_CODE);
-        valuesMap.put(ColumnNames.SPACE_COLUMN, SPACE_ID1);
+        valuesMap.put(ColumnNames.SPACE_COLUMN, SPACE_ID_1);
         valuesMap.put(ColumnNames.PERSON_LEADER_COLUMN, null);
         valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, null);
         valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
@@ -347,6 +366,45 @@ public class DBTestHelper
         valuesMap.put(ColumnNames.VALIDATION_SCRIPT_ID_COLUMN, null);
         insertRecord(TableNames.EXPERIMENT_TYPES_TABLE, valuesMap);
     }
+
+//    private void createPropertyTypes()
+//    {
+//        final Map<String, Object> valuesMap = new HashMap<>();
+//        valuesMap.put(ColumnNames.ID_COLUMN, STRING_PROPERTY_TYPE_ID);
+//        valuesMap.put(ColumnNames.CODE_COLUMN, STRING_PROPERTY_NAME);
+//        valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, "Test");
+//        valuesMap.put(ColumnNames.LABEL_COLUMN, "Label");
+//        valuesMap.put(ColumnNames.DATA_TYPE_COLUMN, 1);
+//        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+//        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, 1);
+//        valuesMap.put(ColumnNames.IS_MANAGED_INTERNALLY, false);
+//        valuesMap.put(ColumnNames.IS_INTERNAL_NAMESPACE, false);
+//        insertRecord(TableNames.PROPERTY_TYPES_TABLE, valuesMap);
+//    }
+//
+//    private void createSampleTypePropertyTypes()
+//    {
+//        final Map<String, Object> valuesMap = new HashMap<>();
+//        valuesMap.put(ColumnNames.ID_COLUMN, STRING_SAMPLE_TYPE_PROPERTY_TYPE_ID);
+//        valuesMap.put(ColumnNames.SAMPLE_TYPE_COLUMN, DEFAULT_SAMPLE_TYPE_ID);
+//        valuesMap.put(ColumnNames.PROPERTY_TYPE_COLUMN, STRING_PROPERTY_TYPE_ID);
+//        valuesMap.put(ColumnNames.IS_MANDATORY, false);
+//        valuesMap.put(ColumnNames.IS_MANAGED_INTERNALLY, false);
+//        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, 1);
+//        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
+//        valuesMap.put(ColumnNames.ORDINAL_COLUMN, STRING_PROPERTY_SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL);
+//        insertRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, valuesMap);
+//    }
+//
+//    private void createSampleProperties()
+//    {
+//        final Map<String, Object> valuesMap = new HashMap<>();
+//        valuesMap.put(ColumnNames.SAMPLE_COLUMN, SAMPLE_ID_1);
+//        valuesMap.put(ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, 0);
+//        valuesMap.put(ColumnNames.VALUE_COLUMN, null);
+//        valuesMap.put(ColumnNames.VOCABULARY_TERM_COLUMN, null);
+//        insertRecord();
+//    }
 
     /**
      * Creates a map what contains default values for an object to be stored in DB.
@@ -412,20 +470,20 @@ public class DBTestHelper
         {
             connection.setAutoCommit(true);
 
-            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID2);
-            deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID2);
-            deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID2);
-            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID2);
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_2);
+            deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_2);
+            deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_2);
+            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_2);
 
-            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID3);
-            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID2);
-            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID1);
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_3);
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_2);
+            deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_1);
 
             deleteRecord(TableNames.EXPERIMENTS_ALL_TABLE, ColumnNames.ID_COLUMN, EXPERIMENT_ID);
             deleteRecord(TableNames.EXPERIMENT_TYPES_TABLE, ColumnNames.ID_COLUMN, EXPERIMENT_TYPE_ID);
             deleteRecord(TableNames.PROJECTS_TABLE, ColumnNames.ID_COLUMN, PROJECT_ID);
-            deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID1);
-            deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID2);
+            deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID_1);
+            deleteRecord(TableNames.SPACES_TABLE, ColumnNames.ID_COLUMN, SPACE_ID_2);
         } finally
         {
             closeConnection();

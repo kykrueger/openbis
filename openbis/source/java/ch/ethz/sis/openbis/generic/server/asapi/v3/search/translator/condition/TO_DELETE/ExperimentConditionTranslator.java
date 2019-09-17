@@ -20,8 +20,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbstractConditionTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
 
 import java.util.List;
+import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
@@ -32,7 +34,7 @@ public class ExperimentConditionTranslator extends AbstractConditionTranslator<E
     @Override
     public void translate(final ExperimentSearchCriteria criterion, final EntityMapper entityMapper,
             final List<Object> args,
-            final StringBuilder sqlBuilder)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         criterion.getCriteria().forEach(subcriterion ->
                 {

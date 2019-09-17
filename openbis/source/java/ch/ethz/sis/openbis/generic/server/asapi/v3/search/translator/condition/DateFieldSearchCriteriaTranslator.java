@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
@@ -46,7 +47,7 @@ public class DateFieldSearchCriteriaTranslator extends AbstractConditionTranslat
     @Override
     public void translate(final DateFieldSearchCriteria criterion, final EntityMapper entityMapper,
             final List<Object> args,
-            final StringBuilder sqlBuilder)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:

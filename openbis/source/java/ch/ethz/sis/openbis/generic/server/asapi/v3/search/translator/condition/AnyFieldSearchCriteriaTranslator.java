@@ -55,19 +55,20 @@ public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<An
     private final AtomicBoolean first = new AtomicBoolean();
 
     @Override
-    public JoinInformation getJoinInformation(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper)
+    public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper,
+            final IAliasFactory aliasFactory)
     {
         return null;
     }
 
     @Override
     public void translate(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
-            final StringBuilder sqlBuilder)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType()) {
             case ANY_FIELD:
             {
-                final String alias = Translator.getAlias(0);
+                final String alias = Translator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
                 final Map<String, SQLTypes> fieldToSQLTypeMap = entityMapper.getFieldToSQLTypeMap();
                 final String stringValue = value.getValue();

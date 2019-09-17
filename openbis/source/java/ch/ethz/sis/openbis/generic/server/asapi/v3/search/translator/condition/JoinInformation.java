@@ -1,11 +1,17 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 public class JoinInformation {
+
     private String mainTable;
-    private String mainTableId;
+
+    private String mainTableIdField;
+
     private String mainTableAlias;
+
     private String subTable;
-    private String subTableId;
+
+    private String subTableIdField;
+
     private String subTableAlias;
 
     public String getMainTable() {
@@ -16,12 +22,12 @@ public class JoinInformation {
         this.mainTable = mainTable;
     }
 
-    public String getMainTableId() {
-        return mainTableId;
+    public String getMainTableIdField() {
+        return mainTableIdField;
     }
 
-    public void setMainTableId(String mainTableId) {
-        this.mainTableId = mainTableId;
+    public void setMainTableIdField(String mainTableIdField) {
+        this.mainTableIdField = mainTableIdField;
     }
 
     public String getMainTableAlias() {
@@ -40,12 +46,12 @@ public class JoinInformation {
         this.subTable = subTable;
     }
 
-    public String getSubTableId() {
-        return subTableId;
+    public String getSubTableIdField() {
+        return subTableIdField;
     }
 
-    public void setSubTableId(String subTableId) {
-        this.subTableId = subTableId;
+    public void setSubTableIdField(String subTableIdField) {
+        this.subTableIdField = subTableIdField;
     }
 
     public String getSubTableAlias() {
@@ -55,6 +61,5 @@ public class JoinInformation {
     public void setSubTableAlias(String subTableAlias) {
         this.subTableAlias = subTableAlias;
     }
-
 
 }

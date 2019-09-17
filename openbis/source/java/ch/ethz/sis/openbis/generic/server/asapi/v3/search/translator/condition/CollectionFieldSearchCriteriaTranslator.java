@@ -21,6 +21,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
@@ -36,7 +37,7 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
 
     @Override
     public void translate(final CollectionFieldSearchCriteria<?> criterion, final EntityMapper entityMapper, final List<Object> args,
-            final StringBuilder sqlBuilder)
+            final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
