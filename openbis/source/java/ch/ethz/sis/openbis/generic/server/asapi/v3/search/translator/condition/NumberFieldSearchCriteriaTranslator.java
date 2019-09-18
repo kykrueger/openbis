@@ -88,7 +88,6 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
                 final String propertyName = criterion.getFieldName();
-
                 final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);

@@ -16,35 +16,35 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEarlierThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateLaterThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEarlierThanOrEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectEqualToValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.DateObjectLaterThanOrEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IDate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.CASE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ELSE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.END;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator.DATE_FORMAT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.THEN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TIMESTAMPTZ;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHEN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 
 public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<DateFieldSearchCriteria>
 {
 
-    private static final String DATE_REGEX = "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+    private static final String TIMESTAMP_DATA_TYPE_CODE = "TIMESTAMP";
 
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final DateFieldSearchCriteria criterion, final EntityMapper entityMapper,
@@ -67,15 +67,14 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
     }
 
     @Override
-    public void translate(final DateFieldSearchCriteria criterion, final EntityMapper entityMapper,
-            final List<Object> args,
+    public void translate(final DateFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType()) {
             case ATTRIBUTE:
             {
                 final Object fieldName = criterion.getFieldName();
-                final Object fieldValue = criterion.getFieldValue();
+                final IDate fieldValue = criterion.getFieldValue();
 
                 if (criterion instanceof RegistrationDateSearchCriteria)
                 {
@@ -88,44 +87,38 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
                     sqlBuilder.append(fieldName);
                 }
 
-                if (fieldValue instanceof DateEqualToValue || fieldValue instanceof DateObjectEqualToValue)
-                {
-                    sqlBuilder.append(EQ).append(QU);
-                } else if (fieldValue instanceof DateEarlierThanOrEqualToValue ||
-                        fieldValue instanceof DateObjectEarlierThanOrEqualToValue)
-                {
-                    sqlBuilder.append(LE).append(QU);
-                } else if (fieldValue instanceof DateLaterThanOrEqualToValue ||
-                        fieldValue instanceof DateObjectLaterThanOrEqualToValue)
-                {
-                    sqlBuilder.append(GE).append(QU);
-                } else
-                {
-                    throw new IllegalArgumentException("Unsupported field value: " + fieldValue.getClass().getSimpleName());
-                }
-
-                if (fieldValue instanceof AbstractDateValue)
-                {
-                    // String type date value.
-                    final String dateString = ((AbstractDateValue) fieldValue).getValue();
-                    try
-                    {
-                        args.add(DATE_FORMAT.parse(dateString));
-                    } catch (ParseException e)
-                    {
-                        throw new IllegalArgumentException("Illegal date [dateString='" + dateString + "']", e);
-                    }
-                } else
-                {
-                    // Date type date value.
-                    args.add(((AbstractDateObjectValue) fieldValue).getValue());
-                }
+                TranslatorUtils.appendDateComparatorOp(fieldValue, sqlBuilder);
+                TranslatorUtils.addDateValueToArgs(fieldValue, args);
                 break;
             }
 
             case PROPERTY:
             {
+                final IDate value = criterion.getFieldValue();
+                final String propertyName = criterion.getFieldName();
+                final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
 
+                sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
+
+                sqlBuilder.append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
+                        .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
+                args.add(propertyName);
+
+                sqlBuilder.append(SP).append(AND);
+
+                sqlBuilder.append(SP).append(joinInformationMap.get(entityMapper.getAttributeTypesTable()).getSubTableAlias())
+                        .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
+                args.add(TIMESTAMP_DATA_TYPE_CODE);
+
+                sqlBuilder.append(SP).append(THEN).append(SP);
+                sqlBuilder.append(joinInformationMap.get(entityMapper.getEntitiesTable()).getSubTableAlias())
+                        .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(DOUBLE_COLON).append(TIMESTAMPTZ).append(SP);
+                TranslatorUtils.appendDateComparatorOp(value, sqlBuilder);
+                TranslatorUtils.addDateValueToArgs(value, args);
+
+                sqlBuilder.append(SP).append(ELSE).append(SP).append(false).append(SP).append(END);
+
+                break;
             }
             case ANY_PROPERTY:
             case ANY_FIELD:

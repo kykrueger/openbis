@@ -23,6 +23,8 @@ public class SQLLexemes
 
     public static final String NUMERIC = "numeric";
 
+    public static final String TIMESTAMPTZ = "timestamptz";
+
     public static final String SELECT = "SELECT";
 
     public static final String INSERT = "INSERT";
