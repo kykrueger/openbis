@@ -37,6 +37,16 @@ public class SQLLexemes
 
     public static final String WHERE = "WHERE";
 
+    public static final String CASE = "CASE";
+
+    public static final String WHEN = "WHEN";
+
+    public static final String THEN = "THEN";
+
+    public static final String ELSE = "ELSE";
+
+    public static final String END = "END";
+
     public static final String LEFT = "LEFT";
 
     public static final String INNER = "INNER";

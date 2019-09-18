@@ -8,7 +8,7 @@ import java.util.Map;
 public abstract class AbstractConditionTranslator<CRITERIA extends ISearchCriteria> implements IConditionTranslator<CRITERIA> {
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(ISearchCriteria criterion, EntityMapper entityMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(CRITERIA criterion, EntityMapper entityMapper,
             final IAliasFactory aliasFactory) {
         return null;
     }

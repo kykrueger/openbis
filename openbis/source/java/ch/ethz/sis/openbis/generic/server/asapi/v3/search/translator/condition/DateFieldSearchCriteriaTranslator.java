@@ -41,8 +41,30 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATION_TIMESTAMP_COLUMN;
 
-public class DateFieldSearchCriteriaTranslator extends AbstractConditionTranslator<DateFieldSearchCriteria>
+public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<DateFieldSearchCriteria>
 {
+
+    private static final String DATE_REGEX = "^[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$";
+
+    @Override
+    public Map<String, JoinInformation> getJoinInformationMap(final DateFieldSearchCriteria criterion, final EntityMapper entityMapper,
+            final IAliasFactory aliasFactory)
+    {
+        switch (criterion.getFieldType())
+        {
+            case ATTRIBUTE:
+            {
+                return null;
+            }
+
+            case PROPERTY:
+            {
+                return TranslatorUtils.getPropertyJoinInformationMap(entityMapper, aliasFactory);
+            }
+        }
+
+        throw new IllegalArgumentException();
+    }
 
     @Override
     public void translate(final DateFieldSearchCriteria criterion, final EntityMapper entityMapper,
@@ -102,6 +124,9 @@ public class DateFieldSearchCriteriaTranslator extends AbstractConditionTranslat
             }
 
             case PROPERTY:
+            {
+
+            }
             case ANY_PROPERTY:
             case ANY_FIELD:
             {

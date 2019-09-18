@@ -27,6 +27,7 @@ import java.util.Set;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
@@ -60,12 +61,12 @@ public enum EntityMapper
 {
 
     SAMPLE(SAMPLES_ALL_TABLE, ID_COLUMN, SAMPLE_TYPE_COLUMN,
-            PROPERTY_TYPES_TABLE, ID_COLUMN,
-            SAMPLE_TYPES_TABLE, ID_COLUMN,
-            SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ID_COLUMN, PROPERTY_TYPE_COLUMN, SAMPLE_TYPE_COLUMN,
-            SAMPLE_PROPERTIES_TABLE, ID_COLUMN, SAMPLE_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_COLUMN,
-            SAMPLE_RELATIONSHIPS_ALL_TABLE, ID_COLUMN, PARENT_SAMPLE_COLUMN, CHILD_SAMPLE_COLUMN,
-            DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN);
+            PROPERTY_TYPES_TABLE, ID_COLUMN, DATA_TYPE_COLUMN,
+            SAMPLE_TYPES_TABLE,
+            ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ID_COLUMN, PROPERTY_TYPE_COLUMN,
+            SAMPLE_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE, ID_COLUMN, SAMPLE_COLUMN,
+            SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_ALL_TABLE, ID_COLUMN, PARENT_SAMPLE_COLUMN,
+            CHILD_SAMPLE_COLUMN, DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN);
 
     static
     {
@@ -81,6 +82,8 @@ public enum EntityMapper
     private String entitiesTableIdField;
 
     private String entitiesTableEntityTypeIdField;
+
+    private String attributeTypesTableDataTypeIdField;
 
     /*
      * Common Attribute definition Tables
@@ -140,19 +143,22 @@ public enum EntityMapper
     private Map<SQLTypes, Set<String>> sqlTypeToFieldsMap = new HashMap<>();
 
 
-    EntityMapper(String entitiesTable, String entitiesTableIdField, String entitiesTableEntityTypeIdField, String attributeTypesTable,
-            String attributeTypesTableIdField, String entityTypesTable, String entityTypesTableIdField, String entityTypesAttributeTypesTable,
-            String entityTypesAttributeTypesTableIdField, String entityTypesAttributeTypesTableEntityTypeIdField, String entityTypesAttributeTypesTableAttributeTypeIdField,
-            String valuesTable, String valuesTableIdField, String valuesTableEntityIdField,
-            String valuesTableEntityTypeAttributeTypeIdField, String relationshipsTable, String relationshipsTableIdField,
-            String relationshipsTableParentIdField, String relationshipsTableChildIdField, String dataTable, String dataTableIdField,
-            String dataTableEntityIdField)
+    EntityMapper(final String entitiesTable, final String entitiesTableIdField, final String entitiesTableEntityTypeIdField,
+            final String attributeTypesTable, final String attributeTypesTableIdField, final String attributeTypesTableDataTypeIdField,
+            final String entityTypesTable, final String entityTypesTableIdField, final String entityTypesAttributeTypesTable,
+            final String entityTypesAttributeTypesTableIdField, final String entityTypesAttributeTypesTableEntityTypeIdField,
+            final String entityTypesAttributeTypesTableAttributeTypeIdField,
+            final String valuesTable, final String valuesTableIdField, final String valuesTableEntityIdField,
+            final String valuesTableEntityTypeAttributeTypeIdField, final String relationshipsTable, final String relationshipsTableIdField,
+            final String relationshipsTableParentIdField, final String relationshipsTableChildIdField, final String dataTable,
+            final String dataTableIdField, final String dataTableEntityIdField)
     {
         this.entitiesTable = entitiesTable;
         this.entitiesTableIdField = entitiesTableIdField;
         this.entitiesTableEntityTypeIdField = entitiesTableEntityTypeIdField;
         this.attributeTypesTable = attributeTypesTable;
         this.attributeTypesTableIdField = attributeTypesTableIdField;
+        this.attributeTypesTableDataTypeIdField = attributeTypesTableDataTypeIdField;
         this.entityTypesTable = entityTypesTable;
         this.entityTypesTableIdField = entityTypesTableIdField;
         this.entityTypesAttributeTypesTable = entityTypesAttributeTypesTable;
@@ -200,6 +206,11 @@ public enum EntityMapper
     public String getAttributeTypesTableIdField()
     {
         return attributeTypesTableIdField;
+    }
+
+    public String getAttributeTypesTableDataTypeIdField()
+    {
+        return attributeTypesTableDataTypeIdField;
     }
 
     public String getEntityTypesTable()

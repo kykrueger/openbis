@@ -54,11 +54,11 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_3;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_1_NUMBER_VALUE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_2_STRING_VALUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_3_NUMBER_VALUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_DOUBLE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_LONG;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_STRING;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_2_STRING_VALUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.USER_ID;
@@ -595,5 +595,69 @@ public class SampleSearchManagerDBTest
         assertFalse(leCriterionSampleIds.contains(SAMPLE_ID_2));
         assertTrue(leCriterionSampleIds.contains(SAMPLE_ID_3));
     }
+
+//    /**
+//     * Tests {@link StringFieldSearchCriteriaTranslator} with date property search criteria using DB connection.
+//     */
+//    @Test
+//    public void testQueryDBWithDateProperty()
+//    {
+//        // =
+//        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+//        equalsCriterion.withDateProperty(SAMPLE_PROPERTY_CODE_DATE).thatEquals(SAMPLE_PROPERTY_2_DATE_VALUE);
+//        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+//        assertEquals(equalsCriterionSampleIds.size(), 1);
+//        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID_1));
+//        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID_2));
+//        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID_3));
+//
+//        // <
+//        final SampleSearchCriteria earlierCriterion1 = new SampleSearchCriteria();
+//        earlierCriterion1.withDateProperty(SAMPLE_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(SAMPLE_PROPERTY_2_EARLIER_DATE_VALUE);
+//        final Set<Long> earlierCriterionSampleIds1 = searchManager.searchForIDs(USER_ID, earlierCriterion1);
+//        assertEquals(earlierCriterionSampleIds1.size(), 0);
+//
+//        // <
+//        final SampleSearchCriteria earlierCriterion2 = new SampleSearchCriteria();
+//        earlierCriterion2.withDateProperty(SAMPLE_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(SAMPLE_PROPERTY_2_DATE_VALUE);
+//        final Set<Long> earlierCriterionSampleIds2 = searchManager.searchForIDs(USER_ID, earlierCriterion2);
+//        assertEquals(earlierCriterionSampleIds2.size(), 1);
+//        assertFalse(earlierCriterionSampleIds2.contains(SAMPLE_ID_1));
+//        assertFalse(earlierCriterionSampleIds2.contains(SAMPLE_ID_2));
+//        assertTrue(earlierCriterionSampleIds2.contains(SAMPLE_ID_3));
+//
+//        // <
+//        final SampleSearchCriteria earlierCriterion3 = new SampleSearchCriteria();
+//        earlierCriterion3.withDateProperty(SAMPLE_PROPERTY_CODE_DATE).thatIsEarlierThanOrEqualTo(SAMPLE_PROPERTY_2_LATER_DATE_VALUE);
+//        final Set<Long> earlierCriterionSampleIds3 = searchManager.searchForIDs(USER_ID, earlierCriterion3);
+//        assertEquals(earlierCriterionSampleIds3.size(), 1);
+//        assertFalse(earlierCriterionSampleIds3.contains(SAMPLE_ID_1));
+//        assertFalse(earlierCriterionSampleIds3.contains(SAMPLE_ID_2));
+//        assertTrue(earlierCriterionSampleIds3.contains(SAMPLE_ID_3));
+//
+//        // >
+//        final SampleSearchCriteria laterCriterion1 = new SampleSearchCriteria();
+//        laterCriterion1.withDateProperty(SAMPLE_PROPERTY_CODE_DATE).thatIsLaterThanOrEqualTo(SAMPLE_PROPERTY_2_LATER_DATE_VALUE);
+//        final Set<Long> laterCriterionSampleIds1 = searchManager.searchForIDs(USER_ID, laterCriterion1);
+//        assertEquals(laterCriterionSampleIds1.size(), 0);
+//
+//        // >
+//        final SampleSearchCriteria laterCriterion2 = new SampleSearchCriteria();
+//        laterCriterion2.withDateProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatIsLaterThanOrEqualTo(SAMPLE_PROPERTY_2_DATE_VALUE);
+//        final Set<Long> laterCriterionSampleIds2 = searchManager.searchForIDs(USER_ID, laterCriterion2);
+//        assertEquals(laterCriterionSampleIds2.size(), 1);
+//        assertFalse(laterCriterionSampleIds2.contains(SAMPLE_ID_1));
+//        assertFalse(laterCriterionSampleIds2.contains(SAMPLE_ID_2));
+//        assertTrue(laterCriterionSampleIds2.contains(SAMPLE_ID_3));
+//
+//        // >
+//        final SampleSearchCriteria laterCriterion3 = new SampleSearchCriteria();
+//        laterCriterion3.withDateProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatIsLaterThanOrEqualTo(SAMPLE_PROPERTY_2_EARLIER_DATE_VALUE);
+//        final Set<Long> laterCriterionSampleIds3 = searchManager.searchForIDs(USER_ID, laterCriterion3);
+//        assertEquals(laterCriterionSampleIds3.size(), 1);
+//        assertFalse(laterCriterionSampleIds3.contains(SAMPLE_ID_1));
+//        assertFalse(laterCriterionSampleIds3.contains(SAMPLE_ID_2));
+//        assertTrue(laterCriterionSampleIds3.contains(SAMPLE_ID_3));
+//    }
 
 }

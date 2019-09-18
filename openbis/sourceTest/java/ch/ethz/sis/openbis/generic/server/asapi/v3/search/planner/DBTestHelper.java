@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DELETE;
@@ -54,7 +55,13 @@ public class DBTestHelper
 
     public static final String CONTAINER_DELIMITER = ":";
 
-    public static final long DATA_TYPE_ID = 1L;
+    public static final String STRING_DATA_TYPE_CODE = "VARCHAR";
+
+    public static final String INTEGER_DATA_TYPE_CODE = "INTEGER";
+
+    public static final String DOUBLE_DATA_TYPE_CODE = "REAL";
+
+    public static final String DATE_DATA_TYPE_CODE = "TIMESTAMP";
 
     public static final long USER_ID = 2L;
 
@@ -117,6 +124,10 @@ public class DBTestHelper
     public static final double SAMPLE_PROPERTY_3_NUMBER_VALUE = 90.25;
 
     public static final Date SAMPLE_PROPERTY_2_DATE_VALUE = new Date(119, Calendar.SEPTEMBER, 17, 15, 58, 0);
+
+    public static final Date SAMPLE_PROPERTY_2_EARLIER_DATE_VALUE = new Date(119, Calendar.SEPTEMBER, 17, 15, 57, 0);
+
+    public static final Date SAMPLE_PROPERTY_2_LATER_DATE_VALUE = new Date(119, Calendar.SEPTEMBER, 17, 15, 59, 0);
 
     public static final long SAMPLE_PROPERTY_TYPE_ID_STRING = 1001L;
 
@@ -200,6 +211,9 @@ public class DBTestHelper
 
     private Connection connection;
 
+    /** Data type string to ID map. */
+    private Map<String, Long> dataTypeMap = new HashMap<>();
+
     public ISQLExecutor getSqlExecutor()
     {
         return sqlExecutor;
@@ -208,6 +222,11 @@ public class DBTestHelper
     public void setUp() throws Exception
     {
         initConnection(false);
+
+        final List<Map<String, Object>> values = sqlExecutor.execute("SELECT * FROM " + TableNames.DATA_TYPES_TABLE, Collections.emptyList());
+        dataTypeMap = values.stream().collect(Collectors.toMap(
+                stringObjectMap -> (String) stringObjectMap.get(ColumnNames.CODE_COLUMN),
+                stringObjectMap -> (Long) stringObjectMap.get(ColumnNames.ID_COLUMN)));
 
         populateDB();
     }
@@ -246,21 +265,24 @@ public class DBTestHelper
     private void createProperties()
     {
         createSampleProperty(SAMPLE_ID_1, SAMPLE_PROPERTY_ID_1, SAMPLE_TYPE_ID_1, SAMPLE_TYPE_PROPERTY_TYPE_ID_1,
-                SAMPLE_PROPERTY_TYPE_ID_STRING, SAMPLE_PROPERTY_CODE_LONG, SAMPLE_PROPERTY_1_NUMBER_VALUE);
+                SAMPLE_PROPERTY_TYPE_ID_STRING, SAMPLE_PROPERTY_CODE_LONG, SAMPLE_PROPERTY_1_NUMBER_VALUE, INTEGER_DATA_TYPE_CODE);
 
         createSampleProperty(SAMPLE_ID_2, SAMPLE_PROPERTY_ID_2, SAMPLE_TYPE_ID_2, SAMPLE_TYPE_PROPERTY_TYPE_ID_2,
-                SAMPLE_PROPERTY_TYPE_ID_LONG, SAMPLE_PROPERTY_CODE_STRING, SAMPLE_PROPERTY_2_STRING_VALUE);
+                SAMPLE_PROPERTY_TYPE_ID_LONG, SAMPLE_PROPERTY_CODE_STRING, SAMPLE_PROPERTY_2_STRING_VALUE, STRING_DATA_TYPE_CODE);
 
         createSampleProperty(SAMPLE_ID_3, SAMPLE_PROPERTY_ID_3, SAMPLE_TYPE_ID_3, SAMPLE_TYPE_PROPERTY_TYPE_ID_3,
-                SAMPLE_PROPERTY_TYPE_ID_DOUBLE, SAMPLE_PROPERTY_CODE_DOUBLE, SAMPLE_PROPERTY_3_NUMBER_VALUE);
+                SAMPLE_PROPERTY_TYPE_ID_DOUBLE, SAMPLE_PROPERTY_CODE_DOUBLE, SAMPLE_PROPERTY_3_NUMBER_VALUE, DOUBLE_DATA_TYPE_CODE);
 
         createSampleProperty(SAMPLE_ID_2, SAMPLE_PROPERTY_ID_4, SAMPLE_TYPE_ID_4, SAMPLE_TYPE_PROPERTY_TYPE_ID_4,
-                SAMPLE_PROPERTY_TYPE_ID_DATE, SAMPLE_PROPERTY_CODE_DATE, SAMPLE_PROPERTY_2_DATE_VALUE);
+                SAMPLE_PROPERTY_TYPE_ID_DATE, SAMPLE_PROPERTY_CODE_DATE, SAMPLE_PROPERTY_2_DATE_VALUE, DATE_DATA_TYPE_CODE);
     }
 
     private void createSampleProperty(final long sampleId, final long samplePropertyId, final long sampleTypeId,
-            final long sampleTypePropertyTypeId, final long propertyTypeId, final String code, final Object value)
+            final long sampleTypePropertyTypeId, final long propertyTypeId, final String code, final Object value,
+            final String dataTypeCode)
     {
+        final long dataTypeId = dataTypeMap.get(dataTypeCode);
+
         final Map<String, Object> sampleTypesValues = new HashMap<>();
         sampleTypesValues.put(ColumnNames.ID_COLUMN, sampleTypeId);
         sampleTypesValues.put(ColumnNames.CODE_COLUMN, code);
@@ -271,7 +293,7 @@ public class DBTestHelper
         propertyTypesValues.put(ColumnNames.CODE_COLUMN, code);
         propertyTypesValues.put(ColumnNames.LABEL_COLUMN, code);
         propertyTypesValues.put(ColumnNames.DESCRIPTION_COLUMN, code);
-        propertyTypesValues.put(ColumnNames.DATA_TYPE_COLUMN, DATA_TYPE_ID);
+        propertyTypesValues.put(ColumnNames.DATA_TYPE_COLUMN, dataTypeId);
         propertyTypesValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
         insertRecord(TableNames.PROPERTY_TYPES_TABLE, propertyTypesValues);
 

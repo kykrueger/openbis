@@ -29,6 +29,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -104,6 +106,7 @@ class TranslatorUtils
         final Map<String, JoinInformation> result = new LinkedHashMap<>();
         final String valuesTableAlias = aliasFactory.createAlias();
         final String entityTypesAttributeTypesTableAlias = aliasFactory.createAlias();
+        final String attributeTypesTableAlias = aliasFactory.createAlias();
 
         final JoinInformation joinInformation1 = new JoinInformation();
         joinInformation1.setMainTable(entityMapper.getEntitiesTable());
@@ -128,9 +131,18 @@ class TranslatorUtils
         joinInformation3.setMainTableAlias(entityTypesAttributeTypesTableAlias);
         joinInformation3.setMainTableIdField(entityMapper.getEntityTypesAttributeTypesTableAttributeTypeIdField());
         joinInformation3.setSubTable(entityMapper.getAttributeTypesTable());
-        joinInformation3.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation3.setSubTableAlias(attributeTypesTableAlias);
         joinInformation3.setSubTableIdField(entityMapper.getAttributeTypesTableIdField());
         result.put(entityMapper.getEntityTypesAttributeTypesTable(), joinInformation3);
+
+        final JoinInformation joinInformation4 = new JoinInformation();
+        joinInformation4.setMainTable(entityMapper.getAttributeTypesTable());
+        joinInformation4.setMainTableAlias(attributeTypesTableAlias);
+        joinInformation4.setMainTableIdField(entityMapper.getAttributeTypesTableDataTypeIdField());
+        joinInformation4.setSubTable(TableNames.DATA_TYPES_TABLE);
+        joinInformation4.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation4.setSubTableIdField(ColumnNames.ID_COLUMN);
+        result.put(entityMapper.getAttributeTypesTable(), joinInformation4);
 
         return result;
     }
