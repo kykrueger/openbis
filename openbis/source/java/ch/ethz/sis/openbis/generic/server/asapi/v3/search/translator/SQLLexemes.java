@@ -21,6 +21,8 @@ public class SQLLexemes
 
     public static final String UNNEST = "unnest";
 
+    public static final String NUMERIC = "numeric";
+
     public static final String SELECT = "SELECT";
 
     public static final String INSERT = "INSERT";
@@ -104,6 +106,8 @@ public class SQLLexemes
     public static final String RP = ")";
 
     public static final String SQ = "'";
+
+    public static final String TILDA = "~";
 
     private SQLLexemes()
     {

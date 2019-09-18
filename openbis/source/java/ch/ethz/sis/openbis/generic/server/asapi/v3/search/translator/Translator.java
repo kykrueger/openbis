@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.NumberPropertySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
@@ -109,6 +110,7 @@ public class Translator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyFieldSearchCriteria.class, new AnyFieldSearchCriteriaTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(IdSearchCriteria.class, idSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringPropertySearchCriteria.class, new StringFieldSearchCriteriaTranslator());
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NumberPropertySearchCriteria.class, new NumberFieldSearchCriteriaTranslator());
     }
 
     private static final AtomicBoolean FIRST = new AtomicBoolean();

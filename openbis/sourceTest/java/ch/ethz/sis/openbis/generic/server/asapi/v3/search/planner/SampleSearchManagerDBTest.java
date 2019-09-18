@@ -53,8 +53,10 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestH
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_3;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_2_VALUE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_1_NUMBER_VALUE;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_LONG;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_CODE_STRING;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_PROPERTY_2_STRING_VALUE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SPACE_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.USER_ID;
@@ -486,18 +488,64 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with ID search criteria using DB connection.
+     * Tests {@link StringFieldSearchCriteriaTranslator} with string property search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithStringProperty()
     {
         final SampleSearchCriteria stringPropertyCriterion = new SampleSearchCriteria();
-        stringPropertyCriterion.withProperty(SAMPLE_PROPERTY_CODE_2).thatEquals(String.valueOf(SAMPLE_PROPERTY_2_VALUE));
+        stringPropertyCriterion.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatEquals(SAMPLE_PROPERTY_2_STRING_VALUE);
         final Set<Long> stringPropertyCriterionSampleIds = searchManager.searchForIDs(USER_ID, stringPropertyCriterion);
         assertEquals(stringPropertyCriterionSampleIds.size(), 1);
         assertFalse(stringPropertyCriterionSampleIds.contains(SAMPLE_ID_1));
         assertTrue(stringPropertyCriterionSampleIds.contains(SAMPLE_ID_2));
         assertFalse(stringPropertyCriterionSampleIds.contains(SAMPLE_ID_3));
+    }
+
+    /**
+     * Tests {@link StringFieldSearchCriteriaTranslator} with number property search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithLongNumberProperty()
+    {
+        // =
+        final SampleSearchCriteria equalsCriterion = new SampleSearchCriteria();
+        equalsCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_LONG).thatEquals(SAMPLE_PROPERTY_1_NUMBER_VALUE);
+        final Set<Long> equalsCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsCriterion);
+        assertEquals(equalsCriterionSampleIds.size(), 1);
+        assertTrue(equalsCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(equalsCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        // >
+        final SampleSearchCriteria gtCriterion = new SampleSearchCriteria();
+        gtCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_LONG).thatIsGreaterThan(SAMPLE_PROPERTY_1_NUMBER_VALUE);
+        final Set<Long> gtCriterionSampleIds = searchManager.searchForIDs(USER_ID, gtCriterion);
+        assertEquals(gtCriterionSampleIds.size(), 0);
+
+        // >=
+        final SampleSearchCriteria geCriterion = new SampleSearchCriteria();
+        geCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_LONG).thatIsGreaterThan(SAMPLE_PROPERTY_1_NUMBER_VALUE - 1);
+        final Set<Long> geCriterionSampleIds = searchManager.searchForIDs(USER_ID, geCriterion);
+        assertEquals(geCriterionSampleIds.size(), 1);
+        assertTrue(geCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(geCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(geCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        // <
+        final SampleSearchCriteria ltCriterion = new SampleSearchCriteria();
+        ltCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_LONG).thatIsLessThan(SAMPLE_PROPERTY_1_NUMBER_VALUE);
+        final Set<Long> ltCriterionSampleIds = searchManager.searchForIDs(USER_ID, ltCriterion);
+        assertEquals(ltCriterionSampleIds.size(), 0);
+
+        // <=
+        final SampleSearchCriteria leCriterion = new SampleSearchCriteria();
+        leCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_LONG).thatIsLessThanOrEqualTo(SAMPLE_PROPERTY_1_NUMBER_VALUE + 1);
+        final Set<Long> leCriterionSampleIds = searchManager.searchForIDs(USER_ID, leCriterion);
+        assertEquals(leCriterionSampleIds.size(), 1);
+        assertTrue(leCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(leCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(leCriterionSampleIds.contains(SAMPLE_ID_3));
     }
 
 }

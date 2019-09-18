@@ -95,7 +95,7 @@ public enum SQLTypes
         this.name = name;
     }
 
-    private static SQLTypes javaClassToSQLType(final Class<?> klass)
+    public static SQLTypes javaClassToSQLType(final Class<?> klass)
     {
         return JAVA_TO_SQL_TYPE_MAP.get(klass);
     }
@@ -107,7 +107,7 @@ public enum SQLTypes
      * @param klass the class to which compatible SQL types should be found.
      * @return a set of SQL types which correspond to the given Java type.
      */
-    private static Set<SQLTypes> javaClassToCompatibleForSaveSQLTypes(final Class<?> klass)
+    public static Set<SQLTypes> javaClassToCompatibleForSaveSQLTypes(final Class<?> klass)
     {
         return JAVA_TO_COMPATIBLE_SQL_TYPES_MAP.get(klass);
     }

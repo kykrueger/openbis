@@ -74,14 +74,21 @@ public class DBTestHelper
 
     public static final long EXPERIMENT_TYPE_ID = 10004L;
 
+    public static final long SAMPLE_PROPERTY_ID_1 = 1001L;
+
     public static final long SAMPLE_PROPERTY_ID_2 = 1002L;
+
+    public static final long SAMPLE_PROPERTY_ID_3 = 1003L;
+
+    public static final long SAMPLE_PROPERTY_ID_4 = 1004L;
+
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_1 = 1001L;
 
     public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_2 = 1002L;
 
-    public static final long SAMPLE_PROPERTY_TYPE_ID_2 = 1002L;
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_3 = 1003L;
 
-    /** Should be pointing to the "UNKNOWN" sample type. */
-    public static final long DEFAULT_SAMPLE_TYPE_ID = 1L;
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_4 = 1004L;
 
     public static final long STRING_PROPERTY_TYPE_ID = 1001L;
 
@@ -95,11 +102,39 @@ public class DBTestHelper
 
     public static final long SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL_2 = 2L;
 
+    public static final long SAMPLE_TYPE_ID_1 = 1001L;
+
     public static final long SAMPLE_TYPE_ID_2 = 1002L;
 
-    public static final long SAMPLE_PROPERTY_2_VALUE = 101L;
+    public static final long SAMPLE_TYPE_ID_3 = 1003L;
 
-    public static final String SAMPLE_PROPERTY_CODE_2 = "TEST.LONG";
+    public static final long SAMPLE_TYPE_ID_4 = 1004L;
+
+    public static final String SAMPLE_PROPERTY_2_STRING_VALUE = "Test property value";
+
+    public static final long SAMPLE_PROPERTY_1_NUMBER_VALUE = 101L;
+
+    public static final double SAMPLE_PROPERTY_2_NUMBER_VALUE = 100.5;
+
+    public static final double SAMPLE_PROPERTY_3_NUMBER_VALUE = 90.25;
+
+    public static final Date SAMPLE_PROPERTY_2_DATE_VALUE = new Date(119, Calendar.SEPTEMBER, 17, 15, 58, 0);
+
+    public static final long SAMPLE_PROPERTY_TYPE_ID_STRING = 1001L;
+
+    public static final long SAMPLE_PROPERTY_TYPE_ID_LONG = 1002L;
+
+    public static final long SAMPLE_PROPERTY_TYPE_ID_DOUBLE = 1003L;
+
+    public static final long SAMPLE_PROPERTY_TYPE_ID_DATE = 1004L;
+
+    public static final String SAMPLE_PROPERTY_CODE_STRING = "TEST.STRING";
+
+    public static final String SAMPLE_PROPERTY_CODE_LONG = "TEST.LONG";
+
+    public static final String SAMPLE_PROPERTY_CODE_DOUBLE = "TEST.DOUBLE";
+
+    public static final String SAMPLE_PROPERTY_CODE_DATE = "TEST.DATE";
 
     public static final String DEFAULT_PERM_ID = "20190612105000000-0";
 
@@ -212,12 +247,21 @@ public class DBTestHelper
 
     private void createProperties()
     {
+        createSampleProperty(SAMPLE_ID_1, SAMPLE_PROPERTY_ID_1, SAMPLE_TYPE_ID_1, SAMPLE_TYPE_PROPERTY_TYPE_ID_1,
+                SAMPLE_PROPERTY_TYPE_ID_STRING, SAMPLE_PROPERTY_CODE_LONG, SAMPLE_PROPERTY_1_NUMBER_VALUE);
+
         createSampleProperty(SAMPLE_ID_2, SAMPLE_PROPERTY_ID_2, SAMPLE_TYPE_ID_2, SAMPLE_TYPE_PROPERTY_TYPE_ID_2,
-                SAMPLE_PROPERTY_TYPE_ID_2, SAMPLE_PROPERTY_CODE_2, String.valueOf(SAMPLE_PROPERTY_2_VALUE));
+                SAMPLE_PROPERTY_TYPE_ID_LONG, SAMPLE_PROPERTY_CODE_STRING, SAMPLE_PROPERTY_2_STRING_VALUE);
+
+        createSampleProperty(SAMPLE_ID_3, SAMPLE_PROPERTY_ID_3, SAMPLE_TYPE_ID_3, SAMPLE_TYPE_PROPERTY_TYPE_ID_3,
+                SAMPLE_PROPERTY_TYPE_ID_DOUBLE, SAMPLE_PROPERTY_CODE_DOUBLE, SAMPLE_PROPERTY_3_NUMBER_VALUE);
+
+        createSampleProperty(SAMPLE_ID_2, SAMPLE_PROPERTY_ID_4, SAMPLE_TYPE_ID_4, SAMPLE_TYPE_PROPERTY_TYPE_ID_4,
+                SAMPLE_PROPERTY_TYPE_ID_DATE, SAMPLE_PROPERTY_CODE_DATE, SAMPLE_PROPERTY_2_DATE_VALUE);
     }
 
     private void createSampleProperty(final long sampleId, final long samplePropertyId, final long sampleTypeId,
-            final long sampleTypePropertyTypeId, final long propertyTypeId, final String code, final String value)
+            final long sampleTypePropertyTypeId, final long propertyTypeId, final String code, final Object value)
     {
         final Map<String, Object> sampleTypesValues = new HashMap<>();
         sampleTypesValues.put(ColumnNames.ID_COLUMN, sampleTypeId);
@@ -367,45 +411,6 @@ public class DBTestHelper
         insertRecord(TableNames.EXPERIMENT_TYPES_TABLE, valuesMap);
     }
 
-//    private void createPropertyTypes()
-//    {
-//        final Map<String, Object> valuesMap = new HashMap<>();
-//        valuesMap.put(ColumnNames.ID_COLUMN, STRING_PROPERTY_TYPE_ID);
-//        valuesMap.put(ColumnNames.CODE_COLUMN, STRING_PROPERTY_NAME);
-//        valuesMap.put(ColumnNames.DESCRIPTION_COLUMN, "Test");
-//        valuesMap.put(ColumnNames.LABEL_COLUMN, "Label");
-//        valuesMap.put(ColumnNames.DATA_TYPE_COLUMN, 1);
-//        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
-//        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, 1);
-//        valuesMap.put(ColumnNames.IS_MANAGED_INTERNALLY, false);
-//        valuesMap.put(ColumnNames.IS_INTERNAL_NAMESPACE, false);
-//        insertRecord(TableNames.PROPERTY_TYPES_TABLE, valuesMap);
-//    }
-//
-//    private void createSampleTypePropertyTypes()
-//    {
-//        final Map<String, Object> valuesMap = new HashMap<>();
-//        valuesMap.put(ColumnNames.ID_COLUMN, STRING_SAMPLE_TYPE_PROPERTY_TYPE_ID);
-//        valuesMap.put(ColumnNames.SAMPLE_TYPE_COLUMN, DEFAULT_SAMPLE_TYPE_ID);
-//        valuesMap.put(ColumnNames.PROPERTY_TYPE_COLUMN, STRING_PROPERTY_TYPE_ID);
-//        valuesMap.put(ColumnNames.IS_MANDATORY, false);
-//        valuesMap.put(ColumnNames.IS_MANAGED_INTERNALLY, false);
-//        valuesMap.put(ColumnNames.PERSON_REGISTERER_COLUMN, 1);
-//        valuesMap.put(ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, DEFAULT_DATE);
-//        valuesMap.put(ColumnNames.ORDINAL_COLUMN, STRING_PROPERTY_SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL);
-//        insertRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, valuesMap);
-//    }
-//
-//    private void createSampleProperties()
-//    {
-//        final Map<String, Object> valuesMap = new HashMap<>();
-//        valuesMap.put(ColumnNames.SAMPLE_COLUMN, SAMPLE_ID_1);
-//        valuesMap.put(ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, 0);
-//        valuesMap.put(ColumnNames.VALUE_COLUMN, null);
-//        valuesMap.put(ColumnNames.VOCABULARY_TERM_COLUMN, null);
-//        insertRecord();
-//    }
-
     /**
      * Creates a map what contains default values for an object to be stored in DB.
      *
@@ -470,10 +475,29 @@ public class DBTestHelper
         {
             connection.setAutoCommit(true);
 
-            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_2);
+            // Removing the string property.
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_STRING);
+            deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_1);
+            deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_1);
+            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_1);
+
+            // Removing the long property.
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_LONG);
             deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_2);
             deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_2);
             deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_2);
+
+            // Removing the double property.
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_DOUBLE);
+            deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_3);
+            deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_3);
+            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_3);
+
+            // Removing the date property.
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_DATE);
+            deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_4);
+            deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_4);
+            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_4);
 
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_3);
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_2);

@@ -27,6 +27,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringContainsValu
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEndsWithValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringStartsWithValue;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BARS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
@@ -91,7 +96,43 @@ class TranslatorUtils
         {
             throw new IllegalArgumentException("Unsupported AbstractNumberValue type: " + value.getClass().getSimpleName());
         }
-        sqlBuilder.append(QU);
+        sqlBuilder.append(SP).append(QU);
+    }
+
+    static Map<String, JoinInformation> getPropertyJoinInformationMap(final EntityMapper entityMapper, final IAliasFactory aliasFactory)
+    {
+        final Map<String, JoinInformation> result = new LinkedHashMap<>();
+        final String valuesTableAlias = aliasFactory.createAlias();
+        final String entityTypesAttributeTypesTableAlias = aliasFactory.createAlias();
+
+        final JoinInformation joinInformation1 = new JoinInformation();
+        joinInformation1.setMainTable(entityMapper.getEntitiesTable());
+        joinInformation1.setMainTableAlias(Translator.MAIN_TABLE_ALIAS);
+        joinInformation1.setMainTableIdField(entityMapper.getEntitiesTableIdField());
+        joinInformation1.setSubTable(entityMapper.getValuesTable());
+        joinInformation1.setSubTableAlias(valuesTableAlias);
+        joinInformation1.setSubTableIdField(entityMapper.getValuesTableEntityIdField());
+        result.put(entityMapper.getEntitiesTable(), joinInformation1);
+
+        final JoinInformation joinInformation2 = new JoinInformation();
+        joinInformation2.setMainTable(entityMapper.getValuesTable());
+        joinInformation2.setMainTableAlias(valuesTableAlias);
+        joinInformation2.setMainTableIdField(entityMapper.getValuesTableEntityIdField());
+        joinInformation2.setSubTable(entityMapper.getEntityTypesAttributeTypesTable());
+        joinInformation2.setSubTableAlias(entityTypesAttributeTypesTableAlias);
+        joinInformation2.setSubTableIdField(entityMapper.getEntityTypesAttributeTypesTableIdField());
+        result.put(entityMapper.getValuesTable(), joinInformation2);
+
+        final JoinInformation joinInformation3 = new JoinInformation();
+        joinInformation3.setMainTable(entityMapper.getEntityTypesAttributeTypesTable());
+        joinInformation3.setMainTableAlias(entityTypesAttributeTypesTableAlias);
+        joinInformation3.setMainTableIdField(entityMapper.getEntityTypesAttributeTypesTableAttributeTypeIdField());
+        joinInformation3.setSubTable(entityMapper.getAttributeTypesTable());
+        joinInformation3.setSubTableAlias(aliasFactory.createAlias());
+        joinInformation3.setSubTableIdField(entityMapper.getAttributeTypesTableIdField());
+        result.put(entityMapper.getEntityTypesAttributeTypesTable(), joinInformation3);
+
+        return result;
     }
 
 }
