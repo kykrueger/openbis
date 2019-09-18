@@ -114,8 +114,6 @@ public class DBTestHelper
 
     public static final long SAMPLE_PROPERTY_1_NUMBER_VALUE = 101L;
 
-    public static final double SAMPLE_PROPERTY_2_NUMBER_VALUE = 100.5;
-
     public static final double SAMPLE_PROPERTY_3_NUMBER_VALUE = 90.25;
 
     public static final Date SAMPLE_PROPERTY_2_DATE_VALUE = new Date(119, Calendar.SEPTEMBER, 17, 15, 58, 0);
