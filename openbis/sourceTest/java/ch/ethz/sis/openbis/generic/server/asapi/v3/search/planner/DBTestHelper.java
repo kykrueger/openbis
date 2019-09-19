@@ -129,6 +129,12 @@ public class DBTestHelper
 
     public static final Date SAMPLE_PROPERTY_2_LATER_DATE_VALUE = new Date(119, Calendar.SEPTEMBER, 17, 15, 59, 0);
 
+    public static final String SAMPLE_PROPERTY_2_DATE_STRING_VALUE = "2019-09-17 15:58:00 +0200";
+
+    public static final String SAMPLE_PROPERTY_2_EARLIER_DATE_STRING_VALUE = "2019-09-17 15:57:00 +0200";
+
+    public static final String SAMPLE_PROPERTY_2_LATER_DATE_STRING_VALUE = "2019-09-17 15:59:00 +0200";
+
     public static final long SAMPLE_PROPERTY_TYPE_ID_STRING = 1001L;
 
     public static final long SAMPLE_PROPERTY_TYPE_ID_LONG = 1002L;
