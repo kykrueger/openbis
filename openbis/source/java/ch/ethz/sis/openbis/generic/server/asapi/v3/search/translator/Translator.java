@@ -52,7 +52,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.NumberFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
-import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
+import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -77,8 +77,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 public class Translator
 {
 
-    public static final DateFormat DATE_FORMAT = new SimpleDateFormat(
-            SimplePropertyValidator.SupportedDatePattern.CANONICAL_DATE_PATTERN.getPattern());
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat(BasicConstant.DATE_WITHOUT_TIMEZONE_PATTERN);
 
     public static final Map<Class<? extends ISearchCriteria>, IConditionTranslator<? extends ISearchCriteria>> CRITERIA_TO_CONDITION_TRANSLATOR_MAP =
             new HashMap<>();

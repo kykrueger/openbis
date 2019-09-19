@@ -113,7 +113,7 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
             public <T, C extends Collection<T>> C sortAndPage(final C objects, final ISearchCriteria c, final FetchOptions fo)
             {
                 List<T> toPage = new ArrayList<>(objects);
-                return (C) toPage.subList(fo.getFrom(), fo.getFrom() + fo.getCount());
+                return (C) toPage.subList(fo.getFrom(), Math.min(fo.getFrom() + fo.getCount(), toPage.size()));
             }
 
         };
