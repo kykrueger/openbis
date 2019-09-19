@@ -502,13 +502,63 @@ public class SampleSearchManagerDBTest
     @Test
     public void testQueryDBWithStringProperty()
     {
-        final SampleSearchCriteria stringPropertyCriterion = new SampleSearchCriteria();
-        stringPropertyCriterion.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatEquals(SAMPLE_PROPERTY_2_STRING_VALUE);
-        final Set<Long> stringPropertyCriterionSampleIds = searchManager.searchForIDs(USER_ID, stringPropertyCriterion);
-        assertEquals(stringPropertyCriterionSampleIds.size(), 1);
-        assertFalse(stringPropertyCriterionSampleIds.contains(SAMPLE_ID_1));
-        assertTrue(stringPropertyCriterionSampleIds.contains(SAMPLE_ID_2));
-        assertFalse(stringPropertyCriterionSampleIds.contains(SAMPLE_ID_3));
+        final SampleSearchCriteria equalsStringPropertyCriterion = new SampleSearchCriteria();
+        equalsStringPropertyCriterion.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatEquals(SAMPLE_PROPERTY_2_STRING_VALUE);
+        final Set<Long> equalsStringPropertyCriterionSampleIds = searchManager.searchForIDs(USER_ID, equalsStringPropertyCriterion);
+        assertEquals(equalsStringPropertyCriterionSampleIds.size(), 1);
+        assertFalse(equalsStringPropertyCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(equalsStringPropertyCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(equalsStringPropertyCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria equalsStringPropertyCriterionNotFound = new SampleSearchCriteria();
+        equalsStringPropertyCriterionNotFound.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatEquals(SAMPLE_PROPERTY_2_STRING_VALUE + "-");
+        final Set<Long> equalsStringPropertyCriterionSampleIdsNotFound = searchManager.searchForIDs(USER_ID, equalsStringPropertyCriterionNotFound);
+        assertEquals(equalsStringPropertyCriterionSampleIdsNotFound.size(), 0);
+
+        final SampleSearchCriteria startsWithStringPropertyCriterion = new SampleSearchCriteria();
+        startsWithStringPropertyCriterion.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatStartsWith(SAMPLE_PROPERTY_2_STRING_VALUE.substring(0, 10));
+        final Set<Long> startsWithStringPropertyCriterionSampleIds = searchManager.searchForIDs(USER_ID, startsWithStringPropertyCriterion);
+        assertEquals(startsWithStringPropertyCriterionSampleIds.size(), 1);
+        assertFalse(startsWithStringPropertyCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(startsWithStringPropertyCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(startsWithStringPropertyCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria startsWithStringPropertyCriterionNotFound = new SampleSearchCriteria();
+        startsWithStringPropertyCriterionNotFound.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatStartsWith(
+                SAMPLE_PROPERTY_2_STRING_VALUE.substring(0, 10) + "-");
+        final Set<Long> startsWithStringPropertyCriterionSampleIdsNotFound = searchManager.searchForIDs(USER_ID,
+                startsWithStringPropertyCriterionNotFound);
+        assertEquals(startsWithStringPropertyCriterionSampleIdsNotFound.size(), 0);
+
+        final SampleSearchCriteria endsWithStringPropertyCriterion = new SampleSearchCriteria();
+        endsWithStringPropertyCriterion.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatEndsWith(SAMPLE_PROPERTY_2_STRING_VALUE.substring(10));
+        final Set<Long> endsWithStringPropertyCriterionSampleIds = searchManager.searchForIDs(USER_ID, endsWithStringPropertyCriterion);
+        assertEquals(endsWithStringPropertyCriterionSampleIds.size(), 1);
+        assertFalse(endsWithStringPropertyCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(endsWithStringPropertyCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(endsWithStringPropertyCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria endsWithStringPropertyCriterionNotFound = new SampleSearchCriteria();
+        endsWithStringPropertyCriterionNotFound.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatEndsWith(SAMPLE_PROPERTY_2_STRING_VALUE.substring(10)
+                + "-");
+        final Set<Long> endsWithStringPropertyCriterionSampleIdsNotFound = searchManager.searchForIDs(USER_ID,
+                endsWithStringPropertyCriterionNotFound);
+        assertEquals(endsWithStringPropertyCriterionSampleIdsNotFound.size(), 0);
+
+        final SampleSearchCriteria containsStringPropertyCriterion = new SampleSearchCriteria();
+        containsStringPropertyCriterion.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatContains(SAMPLE_PROPERTY_2_STRING_VALUE.substring(3, 10));
+        final Set<Long> containsStringPropertyCriterionSampleIds = searchManager.searchForIDs(USER_ID, containsStringPropertyCriterion);
+        assertEquals(containsStringPropertyCriterionSampleIds.size(), 1);
+        assertFalse(containsStringPropertyCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(containsStringPropertyCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(containsStringPropertyCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria containsStringPropertyCriterionNotFound = new SampleSearchCriteria();
+        containsStringPropertyCriterionNotFound.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatContains(SAMPLE_PROPERTY_2_STRING_VALUE.substring(3, 10)
+                + "-");
+        final Set<Long> containsStringPropertyCriterionSampleIdsNotFound = searchManager.searchForIDs(USER_ID,
+                containsStringPropertyCriterionNotFound);
+        assertEquals(containsStringPropertyCriterionSampleIdsNotFound.size(), 0);
     }
 
     /**
