@@ -117,9 +117,9 @@ public class DBTestHelper
 
     public static final long SAMPLE_TYPE_ID_4 = 1004L;
 
-    public static final String SAMPLE_PROPERTY_2_STRING_VALUE = "Test property value";
-
     public static final long SAMPLE_PROPERTY_1_NUMBER_VALUE = 101L;
+
+    public static final String SAMPLE_PROPERTY_2_STRING_VALUE = "Test property value";
 
     public static final double SAMPLE_PROPERTY_3_NUMBER_VALUE = 90.25;
 

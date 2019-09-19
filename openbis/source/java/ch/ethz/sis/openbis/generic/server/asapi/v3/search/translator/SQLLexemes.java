@@ -79,6 +79,8 @@ public class SQLLexemes
 
     public static final String NULL = "NULL";
 
+    public static final String TRUE = Boolean.TRUE.toString();
+
     public static final String FALSE = Boolean.FALSE.toString();
 
     public static final String IS_NOT_NULL = IS + SP + NOT + SP + NULL;

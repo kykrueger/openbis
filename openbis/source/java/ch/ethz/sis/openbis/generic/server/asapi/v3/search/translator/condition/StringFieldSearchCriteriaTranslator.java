@@ -78,7 +78,6 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
             {
                 final AbstractStringValue value = criterion.getFieldValue();
                 final String propertyName = criterion.getFieldName();
-
                 final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
 
                 sqlBuilder.append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())

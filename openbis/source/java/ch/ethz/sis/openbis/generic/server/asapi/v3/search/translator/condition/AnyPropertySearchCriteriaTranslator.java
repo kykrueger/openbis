@@ -17,14 +17,14 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractStringValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringEqualToValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyStringValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
 import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
 
 import java.util.EnumSet;
@@ -41,86 +41,52 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.INT8;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.TIMESTAMP_WITH_TZ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes.VARCHAR;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DOUBLE_COLON;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FALSE;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NL;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.TRUE;
 
-public class AnyFieldSearchCriteriaTranslator implements IConditionTranslator<AnyFieldSearchCriteria>
+public class AnyPropertySearchCriteriaTranslator implements IConditionTranslator<AnyPropertySearchCriteria>
 {
 
     private final AtomicBoolean first = new AtomicBoolean();
 
     @Override
-    public Map<String, JoinInformation> getJoinInformationMap(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper,
+    public Map<String, JoinInformation> getJoinInformationMap(final AnyPropertySearchCriteria criterion, final EntityMapper entityMapper,
             final IAliasFactory aliasFactory)
     {
-        return null;
+        if (criterion.getFieldType() == SearchFieldType.ANY_PROPERTY)
+        {
+            return TranslatorUtils.getPropertyJoinInformationMap(entityMapper, aliasFactory);
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     @Override
-    public void translate(final AnyFieldSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
+    public void translate(final AnyPropertySearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         switch (criterion.getFieldType())
         {
-            case ANY_FIELD:
+            case ANY_PROPERTY:
             {
-                final String alias = Translator.MAIN_TABLE_ALIAS;
                 final AbstractStringValue value = criterion.getFieldValue();
-                final Map<String, SQLTypes> fieldToSQLTypeMap = entityMapper.getFieldToSQLTypeMap();
-                final String stringValue = value.getValue();
-                final Set<SQLTypes> compatibleSqlTypesForValue = findCompatibleSqlTypesForValue(stringValue);
+                final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
 
-                first.set(true);
-                fieldToSQLTypeMap.forEach((fieldName, fieldSQLType) ->
+                if (value.getClass() != AnyStringValue.class)
                 {
-                    final boolean equalsToComparison = (value.getClass() == StringEqualToValue.class);
-                    final boolean includeColumn = compatibleSqlTypesForValue.contains(fieldSQLType);
-
-                    if (!equalsToComparison || includeColumn)
-                    {
-                        if (first.get())
-                        {
-                            first.set(false);
-                        } else
-                        {
-                            sqlBuilder.append(SP).append(SQLLexemes.OR).append(SP);
-                        }
-                    }
-
-                    if (equalsToComparison)
-                    {
-                        if (includeColumn)
-                        {
-                            sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(EQ).append(QU).append(DOUBLE_COLON).
-                                    append(fieldSQLType.toString());
-                            args.add(stringValue);
-                        }
-                    } else
-                    {
-                        sqlBuilder.append(alias).append(PERIOD).append(fieldName).append(DOUBLE_COLON).append(VARCHAR);
-                        TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
-                        args.add(stringValue);
-                    }
-                });
-
-                if (args.isEmpty())
-                {
-                    // When there are no columns selected (no values added), then the query should return nothing
-                    sqlBuilder.append(FALSE);
+                    sqlBuilder.append(SP).append(joinInformationMap.get(entityMapper.getEntitiesTable()).getSubTableAlias())
+                            .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
+                    TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
+                    args.add(value.getValue());
+                } else {
+                    sqlBuilder.append(TRUE);
                 }
-
-                sqlBuilder.append(NL);
-
                 break;
             }
 
+            case ANY_FIELD:
             case PROPERTY:
-            case ANY_PROPERTY:
             case ATTRIBUTE:
             {
                 throw new IllegalArgumentException("Field type " + criterion.getFieldType() + " is not supported");
