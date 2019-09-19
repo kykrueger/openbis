@@ -40,6 +40,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbsenceConditionTranslator;
@@ -51,6 +52,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.I
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.NumberFieldSearchCriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.SampleSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 
@@ -93,6 +95,7 @@ public class Translator
         final AbsenceConditionTranslator absenceConditionTranslator = new AbsenceConditionTranslator();
         final IdSearchCriteriaTranslator idSearchCriteriaTranslator = new IdSearchCriteriaTranslator();
 
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SampleSearchCriteria.class, new SampleSearchCriteriaTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(StringFieldSearchCriteria.class, stringFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(CodeSearchCriteria.class, stringFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(PermIdSearchCriteria.class, stringFieldSearchCriteriaTranslator);
