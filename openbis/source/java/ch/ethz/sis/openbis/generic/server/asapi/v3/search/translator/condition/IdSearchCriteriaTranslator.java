@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
@@ -90,11 +92,11 @@ public class IdSearchCriteriaTranslator extends AbstractConditionTranslator<IdSe
                 sqlBuilder.append(RP).append(SP).append(AND).append(SP);
             }
 
-            sqlBuilder.append(CODE_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(sampleCode);
         } else if (sampleId.getClass() == SamplePermId.class)
         {
-            sqlBuilder.append(PERM_ID_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(PERM_ID_COLUMN).append(EQ).append(QU);
             args.add(((SamplePermId) sampleId).getPermId());
         } else
         {

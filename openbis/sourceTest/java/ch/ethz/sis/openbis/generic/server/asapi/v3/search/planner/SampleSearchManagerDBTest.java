@@ -577,7 +577,7 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with string property search criteria using DB connection.
+     * Tests {@link SampleSearchManager} with string property search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithStringProperty()
@@ -649,7 +649,7 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with long number property search criteria using DB connection.
+     * Tests {@link SampleSearchManager} with long number property search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithLongNumberProperty()
@@ -695,7 +695,7 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with double number property search criteria using DB connection.
+     * Tests {@link SampleSearchManager} with double number property search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithDoubleNumberProperty()
@@ -741,7 +741,7 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with date property search criteria using DB connection.
+     * Tests {@link SampleSearchManager} with date property search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithDateProperty()
@@ -805,7 +805,7 @@ public class SampleSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with date property search criteria using DB connection.
+     * Tests {@link SampleSearchManager} with date string date property search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithStringDateProperty()
@@ -866,6 +866,83 @@ public class SampleSearchManagerDBTest
         assertFalse(laterCriterionSampleIds3.contains(SAMPLE_ID_1));
         assertTrue(laterCriterionSampleIds3.contains(SAMPLE_ID_2));
         assertFalse(laterCriterionSampleIds3.contains(SAMPLE_ID_3));
+    }
+
+    /**
+     * Tests {@link SampleSearchManager} with compound field criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithCompoundFieldCriteria()
+    {
+        final SampleSearchCriteria compoundAndFieldCriterion = new SampleSearchCriteria();
+        compoundAndFieldCriterion.withAndOperator().withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE_2);
+        compoundAndFieldCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_2);
+        final Set<Long> compoundAndFieldCriterionSampleIds = searchManager.searchForIDs(USER_ID, compoundAndFieldCriterion);
+        assertFalse(compoundAndFieldCriterionSampleIds.isEmpty());
+        assertFalse(compoundAndFieldCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(compoundAndFieldCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(compoundAndFieldCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria compoundOrFieldCriterion = new SampleSearchCriteria();
+        compoundOrFieldCriterion.withOrOperator().withRegistrationDate().thatIsEarlierThanOrEqualTo(REGISTRATION_DATE_2);
+        compoundOrFieldCriterion.withRegistrationDate().thatIsLaterThanOrEqualTo(REGISTRATION_DATE_2);
+        final Set<Long> compoundOrFieldCriterionSampleIds = searchManager.searchForIDs(USER_ID, compoundOrFieldCriterion);
+        assertFalse(compoundOrFieldCriterionSampleIds.isEmpty());
+        assertTrue(compoundOrFieldCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(compoundOrFieldCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertTrue(compoundOrFieldCriterionSampleIds.contains(SAMPLE_ID_3));
+    }
+
+    /**
+     * Tests {@link SampleSearchManager} with compound field criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithCompoundPropertyCriteria()
+    {
+        final SampleSearchCriteria compoundAndPropertyCriterion1 = new SampleSearchCriteria();
+        compoundAndPropertyCriterion1.withAndOperator().withNumberProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatIsLessThanOrEqualTo(
+                SAMPLE_PROPERTY_3_NUMBER_VALUE);
+        compoundAndPropertyCriterion1.withNumberProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatIsGreaterThanOrEqualTo(SAMPLE_PROPERTY_3_NUMBER_VALUE);
+        final Set<Long> compoundAndPropertyCriterionSampleIds1 = searchManager.searchForIDs(USER_ID, compoundAndPropertyCriterion1);
+        assertEquals(compoundAndPropertyCriterionSampleIds1.size(), 1);
+        assertFalse(compoundAndPropertyCriterionSampleIds1.contains(SAMPLE_ID_1));
+        assertFalse(compoundAndPropertyCriterionSampleIds1.contains(SAMPLE_ID_2));
+        assertTrue(compoundAndPropertyCriterionSampleIds1.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria compoundAndPropertyCriterion2 = new SampleSearchCriteria();
+        compoundAndPropertyCriterion2.withAndOperator().withNumberProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatIsLessThan(
+                SAMPLE_PROPERTY_3_NUMBER_VALUE);
+        compoundAndPropertyCriterion2.withNumberProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatIsGreaterThanOrEqualTo(SAMPLE_PROPERTY_3_NUMBER_VALUE);
+        final Set<Long> compoundAndPropertyCriterionSampleIds2 = searchManager.searchForIDs(USER_ID, compoundAndPropertyCriterion2);
+        assertEquals(compoundAndPropertyCriterionSampleIds2.size(), 0);
+
+        final SampleSearchCriteria compoundOrPropertyCriterion = new SampleSearchCriteria();
+        compoundOrPropertyCriterion.withOrOperator().withNumberProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatEquals(SAMPLE_PROPERTY_3_NUMBER_VALUE);
+        compoundOrPropertyCriterion.withProperty(SAMPLE_PROPERTY_CODE_STRING).thatEquals(SAMPLE_PROPERTY_2_STRING_VALUE);
+        final Set<Long> compoundOrPropertyCriterionSampleIds = searchManager.searchForIDs(USER_ID, compoundOrPropertyCriterion);
+        assertEquals(compoundOrPropertyCriterionSampleIds.size(), 2);
+        assertFalse(compoundOrPropertyCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(compoundOrPropertyCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertTrue(compoundOrPropertyCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria compoundAndPropertyFieldCriterion = new SampleSearchCriteria();
+        compoundAndPropertyFieldCriterion.withAndOperator().withCodes().thatIn(Arrays.asList(CODE_1, CODE_3));
+        compoundAndPropertyFieldCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_DOUBLE).thatIsGreaterThan(SAMPLE_PROPERTY_3_NUMBER_VALUE
+                - 0.000001);
+        final Set<Long> compoundAndPropertyFieldCriterionSampleIds = searchManager.searchForIDs(USER_ID, compoundAndPropertyFieldCriterion);
+        assertEquals(compoundAndPropertyFieldCriterionSampleIds.size(), 1);
+        assertFalse(compoundAndPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertFalse(compoundAndPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertTrue(compoundAndPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_3));
+
+        final SampleSearchCriteria compoundOrPropertyFieldCriterion = new SampleSearchCriteria();
+        compoundOrPropertyFieldCriterion.withOrOperator().withPermId().thatEquals(PERM_ID_2);
+        compoundOrPropertyFieldCriterion.withNumberProperty(SAMPLE_PROPERTY_CODE_LONG).thatEquals(SAMPLE_PROPERTY_1_NUMBER_VALUE);
+        final Set<Long> compoundOrPropertyFieldCriterionSampleIds = searchManager.searchForIDs(USER_ID, compoundOrPropertyFieldCriterion);
+        assertEquals(compoundOrPropertyFieldCriterionSampleIds.size(), 2);
+        assertTrue(compoundOrPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_1));
+        assertTrue(compoundOrPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_2));
+        assertFalse(compoundOrPropertyFieldCriterionSampleIds.contains(SAMPLE_ID_3));
     }
 
 }

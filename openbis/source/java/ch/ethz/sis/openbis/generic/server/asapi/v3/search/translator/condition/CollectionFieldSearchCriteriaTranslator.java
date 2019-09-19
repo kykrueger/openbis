@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Map;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
@@ -45,7 +47,7 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
                 final Object fieldName = ATTRIBUTE_ID_TO_COLUMN_NAME.get(criterion.getFieldName());
                 final Collection<?> fieldValue = criterion.getFieldValue();
 
-                sqlBuilder.append(fieldName).append(SP).append(IN).append(SP).append(LP).
+                sqlBuilder.append(Translator.MAIN_TABLE_ALIAS).append(PERIOD).append(fieldName).append(SP).append(IN).append(SP).append(LP).
                         append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
                         append(RP);
 
