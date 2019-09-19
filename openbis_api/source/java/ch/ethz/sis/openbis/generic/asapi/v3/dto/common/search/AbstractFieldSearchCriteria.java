@@ -24,7 +24,7 @@ public abstract class AbstractFieldSearchCriteria<T> extends AbstractSearchCrite
 
     private static final long serialVersionUID = 1L;
 
-    private final String fieldName;
+    private String fieldName;
 
     private final SearchFieldType fieldType;
 
@@ -39,6 +39,11 @@ public abstract class AbstractFieldSearchCriteria<T> extends AbstractSearchCrite
     public String getFieldName()
     {
         return fieldName;
+    }
+
+    public void setFieldName(final String fieldName)
+    {
+        this.fieldName = fieldName;
     }
 
     public SearchFieldType getFieldType()

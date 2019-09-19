@@ -16,23 +16,28 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.systemsx.cisd.openbis.generic.server.ConcurrentOperation;
 import ch.systemsx.cisd.openbis.generic.server.IConcurrentOperationLimiter;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author pkupczyk
  */
 public abstract class OperationExecutor<OPERATION extends IOperation, RESULT extends IOperationResult> implements IOperationExecutor
 {
+
+    private static final String PREFIX_TO_CLEAN = "$";
 
     @Autowired
     protected IConcurrentOperationLimiter operationLimiter;
@@ -58,7 +63,7 @@ public abstract class OperationExecutor<OPERATION extends IOperation, RESULT ext
                             @Override
                             public RESULT execute()
                             {
-                                return doExecute(context, theOperation);
+                                return cleanupAndExecute(context, theOperation);
                             }
                         });
                 } else
@@ -68,7 +73,7 @@ public abstract class OperationExecutor<OPERATION extends IOperation, RESULT ext
                             @Override
                             public RESULT execute()
                             {
-                                return doExecute(context, theOperation);
+                                return cleanupAndExecute(context, theOperation);
                             }
                         });
                 }
@@ -78,6 +83,38 @@ public abstract class OperationExecutor<OPERATION extends IOperation, RESULT ext
         }
 
         return (Map<IOperation, IOperationResult>) results;
+    }
+
+    private RESULT cleanupAndExecute(IOperationContext context, OPERATION operation)
+    {
+        cleanPrefixesInCriteria(operation);
+        return doExecute(context, operation);
+    }
+
+    private void cleanPrefixesInCriteria(OPERATION operation)
+    {
+        if (operation instanceof SearchObjectsOperation)
+        {
+            final ISearchCriteria searchCriteria = ((SearchObjectsOperation) operation).getCriteria();
+
+            if (searchCriteria instanceof AbstractCompositeSearchCriteria)
+            {
+                cleanPrefixesInCriteria((AbstractCompositeSearchCriteria) searchCriteria);
+            }
+        }
+    }
+
+    private void cleanPrefixesInCriteria(final AbstractCompositeSearchCriteria criterion)
+    {
+        criterion.getCriteria().forEach(subcriterion -> {
+            if (subcriterion instanceof AbstractFieldSearchCriteria) {
+                final AbstractFieldSearchCriteria fieldSearchSubcriterion = (AbstractFieldSearchCriteria) subcriterion;
+                final String fieldName = fieldSearchSubcriterion.getFieldName();
+                if (fieldName.startsWith(PREFIX_TO_CLEAN)) {
+                    fieldSearchSubcriterion.setFieldName(fieldName.substring(PREFIX_TO_CLEAN.length()));
+                }
+            }
+        });
     }
 
     protected abstract Class<? extends OPERATION> getOperationClass();
