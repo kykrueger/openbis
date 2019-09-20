@@ -89,13 +89,17 @@ public class DBTestHelper
 
     public static final long SAMPLE_PROPERTY_ID_4 = 1004L;
 
-    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_1 = 1001L;
+    public static final long SAMPLE_PROPERTY_ID_5 = 1005L;
 
-    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_2 = 1002L;
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_1 = 2001L;
 
-    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_3 = 1003L;
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_2 = 2002L;
 
-    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_4 = 1004L;
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_3 = 2003L;
+
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_4 = 2004L;
+
+    public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_5 = 2005L;
 
     public static final long STRING_PROPERTY_TYPE_ID = 1001L;
 
@@ -109,16 +113,20 @@ public class DBTestHelper
 
     public static final long SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL_2 = 2L;
 
-    public static final long SAMPLE_TYPE_ID_1 = 1001L;
+    public static final long SAMPLE_TYPE_ID_1 = 3001L;
 
-    public static final long SAMPLE_TYPE_ID_2 = 1002L;
+    public static final long SAMPLE_TYPE_ID_2 = 3002L;
 
-    public static final long SAMPLE_TYPE_ID_3 = 1003L;
+    public static final long SAMPLE_TYPE_ID_3 = 3003L;
 
-    public static final long SAMPLE_TYPE_ID_4 = 1004L;
+    public static final long SAMPLE_TYPE_ID_4 = 3004L;
+
+    public static final long SAMPLE_TYPE_ID_5 = 3005L;
 
     public static final long SAMPLE_PROPERTY_1_NUMBER_VALUE = 101L;
 
+    public static final String SAMPLE_PROPERTY_1_INTERNAL_STRING_VALUE = "Internal value";
+    
     public static final String SAMPLE_PROPERTY_2_STRING_VALUE = "Test property value";
 
     public static final double SAMPLE_PROPERTY_3_NUMBER_VALUE = 90.25;
@@ -135,13 +143,17 @@ public class DBTestHelper
 
     public static final String SAMPLE_PROPERTY_2_LATER_DATE_STRING_VALUE = "2019-09-17 15:59:00 +0200";
 
-    public static final long SAMPLE_PROPERTY_TYPE_ID_STRING = 1001L;
+    public static final long SAMPLE_PROPERTY_TYPE_ID_STRING = 4001L;
 
-    public static final long SAMPLE_PROPERTY_TYPE_ID_LONG = 1002L;
+    public static final long SAMPLE_PROPERTY_TYPE_ID_LONG = 4002L;
 
-    public static final long SAMPLE_PROPERTY_TYPE_ID_DOUBLE = 1003L;
+    public static final long SAMPLE_PROPERTY_TYPE_ID_DOUBLE = 4003L;
 
-    public static final long SAMPLE_PROPERTY_TYPE_ID_DATE = 1004L;
+    public static final long SAMPLE_PROPERTY_TYPE_ID_DATE = 4004L;
+
+    public static final long SAMPLE_PROPERTY_TYPE_ID_STRING_INTERNAL = 4005L;
+
+    public static final String INTERNAL_SAMPLE_PROPERTY_CODE_STRING = "$TEST.STRING";
 
     public static final String SAMPLE_PROPERTY_CODE_STRING = "TEST.STRING";
 
@@ -207,11 +219,18 @@ public class DBTestHelper
 
     public static final Date DEFAULT_DATE = new Date(119, Calendar.JUNE, 10, 10, 50, 0);
 
-    public static final String STRING_PROPERTY_NAME = "TEST_STRING_PROPERTY";
+    public static final String SAMPLE_TYPE_CODE_1 = "SAMPLE.TYPE.1";
 
-    public static final String NUMBER_PROPERTY_NAME = "TEST_NUMBER_PROPERTY";
+    public static final String SAMPLE_TYPE_CODE_2 = "SAMPLE.TYPE.2";
 
-    public static final String DATE_PROPERTY_NAME = "TEST_DATE_PROPERTY";
+    public static final String SAMPLE_TYPE_CODE_3 = "SAMPLE.TYPE.3";
+
+    public static final String SAMPLE_TYPE_CODE_4 = "SAMPLE.TYPE.4";
+
+    public static final String SAMPLE_TYPE_CODE_5 = "SAMPLE.TYPE.5";
+
+    /** Indicator that the property is internal. */
+    private static final String INTERNAL_PROPERTY_PREFIX = "$";
 
     private JDBCSQLExecutor sqlExecutor;
 
@@ -271,36 +290,47 @@ public class DBTestHelper
     private void createProperties()
     {
         createSampleProperty(SAMPLE_ID_1, SAMPLE_PROPERTY_ID_1, SAMPLE_TYPE_ID_1, SAMPLE_TYPE_PROPERTY_TYPE_ID_1,
-                SAMPLE_PROPERTY_TYPE_ID_STRING, SAMPLE_PROPERTY_CODE_LONG, SAMPLE_PROPERTY_1_NUMBER_VALUE, INTEGER_DATA_TYPE_CODE);
+                SAMPLE_PROPERTY_TYPE_ID_LONG, SAMPLE_TYPE_CODE_1, SAMPLE_PROPERTY_CODE_LONG, SAMPLE_PROPERTY_1_NUMBER_VALUE, INTEGER_DATA_TYPE_CODE);
 
         createSampleProperty(SAMPLE_ID_2, SAMPLE_PROPERTY_ID_2, SAMPLE_TYPE_ID_2, SAMPLE_TYPE_PROPERTY_TYPE_ID_2,
-                SAMPLE_PROPERTY_TYPE_ID_LONG, SAMPLE_PROPERTY_CODE_STRING, SAMPLE_PROPERTY_2_STRING_VALUE, STRING_DATA_TYPE_CODE);
+                SAMPLE_PROPERTY_TYPE_ID_STRING, SAMPLE_TYPE_CODE_2, SAMPLE_PROPERTY_CODE_STRING, SAMPLE_PROPERTY_2_STRING_VALUE, STRING_DATA_TYPE_CODE);
 
         createSampleProperty(SAMPLE_ID_3, SAMPLE_PROPERTY_ID_3, SAMPLE_TYPE_ID_3, SAMPLE_TYPE_PROPERTY_TYPE_ID_3,
-                SAMPLE_PROPERTY_TYPE_ID_DOUBLE, SAMPLE_PROPERTY_CODE_DOUBLE, SAMPLE_PROPERTY_3_NUMBER_VALUE, DOUBLE_DATA_TYPE_CODE);
+                SAMPLE_PROPERTY_TYPE_ID_DOUBLE, SAMPLE_TYPE_CODE_3, SAMPLE_PROPERTY_CODE_DOUBLE, SAMPLE_PROPERTY_3_NUMBER_VALUE, DOUBLE_DATA_TYPE_CODE);
 
         createSampleProperty(SAMPLE_ID_2, SAMPLE_PROPERTY_ID_4, SAMPLE_TYPE_ID_4, SAMPLE_TYPE_PROPERTY_TYPE_ID_4,
-                SAMPLE_PROPERTY_TYPE_ID_DATE, SAMPLE_PROPERTY_CODE_DATE, SAMPLE_PROPERTY_2_DATE_VALUE, DATE_DATA_TYPE_CODE);
+                SAMPLE_PROPERTY_TYPE_ID_DATE, SAMPLE_TYPE_CODE_4, SAMPLE_PROPERTY_CODE_DATE, SAMPLE_PROPERTY_2_DATE_VALUE, DATE_DATA_TYPE_CODE);
+
+        createSampleProperty(SAMPLE_ID_1, SAMPLE_PROPERTY_ID_5, SAMPLE_TYPE_ID_5, SAMPLE_TYPE_PROPERTY_TYPE_ID_5,
+                SAMPLE_PROPERTY_TYPE_ID_STRING_INTERNAL, SAMPLE_TYPE_CODE_5, INTERNAL_SAMPLE_PROPERTY_CODE_STRING, SAMPLE_PROPERTY_1_INTERNAL_STRING_VALUE,
+                STRING_DATA_TYPE_CODE);
     }
 
     private void createSampleProperty(final long sampleId, final long samplePropertyId, final long sampleTypeId,
-            final long sampleTypePropertyTypeId, final long propertyTypeId, final String code, final Object value,
+            final long sampleTypePropertyTypeId, final long propertyTypeId, final String sampleTypeCode, String propertyTypeCode,
+            final Object value,
             final String dataTypeCode)
     {
         final long dataTypeId = dataTypeMap.get(dataTypeCode);
+        final boolean isInternalCode = propertyTypeCode.startsWith(INTERNAL_PROPERTY_PREFIX);
+        if (isInternalCode)
+        {
+            propertyTypeCode = propertyTypeCode.substring(INTERNAL_PROPERTY_PREFIX.length());
+        }
 
         final Map<String, Object> sampleTypesValues = new HashMap<>();
         sampleTypesValues.put(ColumnNames.ID_COLUMN, sampleTypeId);
-        sampleTypesValues.put(ColumnNames.CODE_COLUMN, code);
+        sampleTypesValues.put(ColumnNames.CODE_COLUMN, sampleTypeCode);
         insertRecord(TableNames.SAMPLE_TYPES_TABLE, sampleTypesValues);
 
         final Map<String, Object> propertyTypesValues = new HashMap<>();
         propertyTypesValues.put(ColumnNames.ID_COLUMN, propertyTypeId);
-        propertyTypesValues.put(ColumnNames.CODE_COLUMN, code);
-        propertyTypesValues.put(ColumnNames.LABEL_COLUMN, code);
-        propertyTypesValues.put(ColumnNames.DESCRIPTION_COLUMN, code);
+        propertyTypesValues.put(ColumnNames.CODE_COLUMN, propertyTypeCode);
+        propertyTypesValues.put(ColumnNames.LABEL_COLUMN, propertyTypeCode.toLowerCase());
+        propertyTypesValues.put(ColumnNames.DESCRIPTION_COLUMN, "");
         propertyTypesValues.put(ColumnNames.DATA_TYPE_COLUMN, dataTypeId);
         propertyTypesValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        propertyTypesValues.put(ColumnNames.IS_INTERNAL_NAMESPACE, isInternalCode);
         insertRecord(TableNames.PROPERTY_TYPES_TABLE, propertyTypesValues);
 
         final Map<String, Object> stptValues = new HashMap<>();
@@ -501,14 +531,14 @@ public class DBTestHelper
         {
             connection.setAutoCommit(true);
 
-            // Removing the string property.
-            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_STRING);
+            // Removing the long property.
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_LONG);
             deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_1);
             deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_1);
             deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_1);
 
-            // Removing the long property.
-            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_LONG);
+            // Removing the string property.
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_STRING);
             deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_2);
             deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_2);
             deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_2);
@@ -524,6 +554,12 @@ public class DBTestHelper
             deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_4);
             deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_4);
             deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_4);
+
+            // Removing the internal string property.
+            deleteRecord(TableNames.PROPERTY_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_TYPE_ID_STRING_INTERNAL);
+            deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_5);
+            deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_5);
+            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_5);
 
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_3);
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_2);

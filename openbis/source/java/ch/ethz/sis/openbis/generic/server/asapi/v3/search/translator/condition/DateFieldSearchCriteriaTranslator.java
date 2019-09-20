@@ -97,12 +97,16 @@ public class DateFieldSearchCriteriaTranslator implements IConditionTranslator<D
             case PROPERTY:
             {
                 final IDate value = criterion.getFieldValue();
-                final String propertyName = criterion.getFieldName();
+                final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
+                final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
+                final String entityTypesSubTableAlias = joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
 
-                sqlBuilder.append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
+                TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+
+                sqlBuilder.append(SP).append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(propertyName);
 

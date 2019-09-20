@@ -46,6 +46,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.AND;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.BARS;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.GE;
@@ -54,6 +55,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LIKE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERCENT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SQ;
@@ -61,6 +63,9 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Tran
 
 class TranslatorUtils
 {
+
+    /** Indicator that the property is internal. */
+    private static final String INTERNAL_PROPERTY_PREFIX = "$";
 
     private TranslatorUtils()
     {
@@ -196,4 +201,23 @@ class TranslatorUtils
         }
         sqlBuilder.append(SP).append(QU);
     }
+
+    static boolean isPropertyInternal(final String propertyName)
+    {
+        return propertyName.startsWith(INTERNAL_PROPERTY_PREFIX);
+    }
+
+    static String normalisePropertyName(final String propertyName)
+    {
+        return isPropertyInternal(propertyName) ? propertyName.substring(INTERNAL_PROPERTY_PREFIX.length()) : propertyName;
+    }
+
+    static void appendInternalExternalConstraint(final StringBuilder sqlBuilder, final List<Object> args,
+            final String entityTypesSubTableAlias, final boolean internalProperty)
+    {
+        sqlBuilder.append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.IS_INTERNAL_NAMESPACE).append(SP)
+                .append(EQ).append(SP).append(QU).append(SP).append(AND);
+        args.add(internalProperty);
+    }
+
 }

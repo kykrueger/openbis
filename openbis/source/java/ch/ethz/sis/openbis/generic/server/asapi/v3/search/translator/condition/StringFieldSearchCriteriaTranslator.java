@@ -35,6 +35,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 
 public class StringFieldSearchCriteriaTranslator implements IConditionTranslator<StringFieldSearchCriteria>
 {
+
     @Override
     public Map<String, JoinInformation> getJoinInformationMap(final StringFieldSearchCriteria criterion, final EntityMapper entityMapper,
             final IAliasFactory aliasFactory)
@@ -77,17 +78,20 @@ public class StringFieldSearchCriteriaTranslator implements IConditionTranslator
             case PROPERTY:
             {
                 final AbstractStringValue value = criterion.getFieldValue();
-                final String propertyName = criterion.getFieldName();
+                final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
+                final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
+                final String entityTypesSubTableAlias = joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
 
-                sqlBuilder.append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
-                        .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
+                TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+
+                sqlBuilder.append(SP).append(entityTypesSubTableAlias).append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ)
+                        .append(SP).append(QU);
                 args.add(propertyName);
 
                 if (value.getClass() != AnyStringValue.class)
                 {
-                    sqlBuilder.append(SP).append(AND).append(SP)
-                            .append(joinInformationMap.get(entityMapper.getEntitiesTable()).getSubTableAlias())
+                    sqlBuilder.append(SP).append(AND).append(SP).append(joinInformationMap.get(entityMapper.getEntitiesTable()).getSubTableAlias())
                             .append(PERIOD).append(ColumnNames.VALUE_COLUMN).append(SP);
                     TranslatorUtils.appendStringComparatorOp(value, sqlBuilder);
                     args.add(value.getValue());

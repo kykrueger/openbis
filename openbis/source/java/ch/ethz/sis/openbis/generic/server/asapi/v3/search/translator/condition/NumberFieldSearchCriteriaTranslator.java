@@ -82,17 +82,22 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
                 TranslatorUtils.appendNumberComparatorOp(value, sqlBuilder);
                 sqlBuilder.append(NL);
                 args.add(value.getValue());
+                break;
             }
 
             case PROPERTY:
             {
                 final AbstractNumberValue value = criterion.getFieldValue();
-                final String propertyName = criterion.getFieldName();
+                final String propertyName = TranslatorUtils.normalisePropertyName(criterion.getFieldName());
+                final boolean internalProperty = TranslatorUtils.isPropertyInternal(criterion.getFieldName());
                 final Map<String, JoinInformation> joinInformationMap = aliases.get(criterion);
+                final String entityTypesSubTableAlias = joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias();
 
                 sqlBuilder.append(CASE).append(SP).append(WHEN).append(SP);
 
-                sqlBuilder.append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
+                TranslatorUtils.appendInternalExternalConstraint(sqlBuilder, args, entityTypesSubTableAlias, internalProperty);
+
+                sqlBuilder.append(SP).append(joinInformationMap.get(entityMapper.getEntityTypesAttributeTypesTable()).getSubTableAlias())
                         .append(PERIOD).append(ColumnNames.CODE_COLUMN).append(SP).append(EQ).append(SP).append(QU);
                 args.add(propertyName);
 
@@ -117,7 +122,6 @@ public class NumberFieldSearchCriteriaTranslator implements IConditionTranslator
                 args.add(value.getValue());
 
                 sqlBuilder.append(SP).append(ELSE).append(SP).append(false).append(SP).append(END);
-
                 break;
             }
 
