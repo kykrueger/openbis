@@ -1,5 +1,7 @@
 const autoBind = require('auto-bind')
 
+import { dto } from './dto.js'
+
 export class Facade {
   constructor() {
     autoBind(this)
@@ -87,6 +89,12 @@ export class Facade {
 
   searchMaterialTypes(criteria, fo) {
     return this.v3.searchMaterialTypes(criteria, fo)
+  }
+
+  executeService() {
+    let id = new dto.CustomASServiceCode('openbis-ng-ui-service')
+    let options = new dto.CustomASServiceExecutionOptions()
+    return this.v3.executeCustomASService(id, options)
   }
 }
 

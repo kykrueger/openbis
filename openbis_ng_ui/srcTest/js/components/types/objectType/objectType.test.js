@@ -1,12 +1,12 @@
 import React from 'react'
 import { mount } from 'enzyme'
-import DragAndDropProvider from '../../../../src/components/common/dnd/DragAndDropProvider.jsx'
-import ObjectType from '../../../../src/components/types/objectType/ObjectType.jsx'
-import { facade, dto } from '../../../../src/services/openbis.js'
-import * as actions from '../../../../src/store/actions/actions.js'
-import { createStore } from '../../../../src/store/store.js'
+import DragAndDropProvider from '../../../../../src/js/components/common/dnd/DragAndDropProvider.jsx'
+import ObjectType from '../../../../../src/js/components/types/objectType/ObjectType.jsx'
+import { facade, dto } from '../../../../../src/js/services/openbis.js'
+import * as actions from '../../../../../src/js/store/actions/actions.js'
+import { createStore } from '../../../../../src/js/store/store.js'
 
-jest.mock('../../../../src/services/openbis.js')
+jest.mock('../../../../../src/js/services/openbis.js')
 
 let store = null
 

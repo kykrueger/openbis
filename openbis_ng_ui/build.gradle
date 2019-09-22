@@ -30,5 +30,22 @@ node {
   nodeModulesDir = file("${projectDir}")
 }
 
-npm_run_build.dependsOn npm_run_test
-build.dependsOn npm_run_build
+task cleanBuild(type:Delete){
+  delete 'build'
+}
+
+task copyCorePlugins(type: Copy) {
+  from file('src/core-plugins')
+  into file('build/core-plugins')
+}
+
+task copyWebApp(type: Copy) {
+  from file('build/js')
+  into file('build/core-plugins/openbis-ng-ui/1/as/webapps/openbis-ng-ui/html')
+}
+
+npm_run_build.dependsOn cleanBuild
+copyCorePlugins.dependsOn npm_run_build
+copyWebApp.dependsOn copyCorePlugins
+build.dependsOn copyWebApp
+build.dependsOn npm_run_test

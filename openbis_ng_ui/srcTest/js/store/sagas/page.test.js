@@ -1,11 +1,11 @@
-import * as actions from '../../../src/store/actions/actions.js'
-import * as selectors from '../../../src/store/selectors/selectors.js'
-import * as objectType from '../../../src/common/consts/objectType.js'
-import * as pages from '../../../src/common/consts/pages.js'
-import { createStore } from '../../../src/store/store.js'
+import * as actions from '../../../../src/js/store/actions/actions.js'
+import * as selectors from '../../../../src/js/store/selectors/selectors.js'
+import * as objectType from '../../../../src/js/common/consts/objectType.js'
+import * as pages from '../../../../src/js/common/consts/pages.js'
+import { createStore } from '../../../../src/js/store/store.js'
 import * as fixture from '../../common/fixture.js'
 
-jest.mock('../../../src/services/openbis.js')
+jest.mock('../../../../src/js/services/openbis.js')
 
 let store = null
 

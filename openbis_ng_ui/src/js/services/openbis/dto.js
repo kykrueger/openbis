@@ -26,7 +26,9 @@ const CLASS_FULL_NAMES = [
   'as/dto/vocabulary/search/VocabularyTermSearchCriteria',
   'as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions',
   'as/dto/plugin/id/PluginPermId',
-  'as/dto/webapp/create/WebAppSettingCreation'
+  'as/dto/webapp/create/WebAppSettingCreation',
+  'as/dto/service/id/CustomASServiceCode',
+  'as/dto/service/CustomASServiceExecutionOptions'
 ]
 
 class Dto {
