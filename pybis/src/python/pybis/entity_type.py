@@ -228,9 +228,13 @@ class DataSetType(
     entity='dataSetType',
     single_item_method_name='get_dataset_type'
 ):
+
+    def __init__(self, openbis_obj, type=None, data=None, props=None, **kwargs):
+        OpenBisObject.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+        EntityType.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+
     def __dir__(self):
-        return [
-        ] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
+        return [] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
 
 
 class MaterialType(
@@ -238,6 +242,10 @@ class MaterialType(
     entity='materialType',
     single_item_method_name='get_material_type'
 ):
+    def __init__(self, openbis_obj, type=None, data=None, props=None, **kwargs):
+        OpenBisObject.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+        EntityType.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+
     def __dir__(self):
         return [
         ] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
@@ -248,6 +256,11 @@ class ExperimentType(
     entity='experimentType',
     single_item_method_name='get_experiment_type'
 ):
+
+    def __init__(self, openbis_obj, type=None, data=None, props=None, **kwargs):
+        OpenBisObject.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+        EntityType.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+
     def __dir__(self):
         return [
         ] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)

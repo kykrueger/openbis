@@ -97,12 +97,14 @@ function UserProfileView(userProfileController, userProfileModel) {
     }
 
 	this._getOptionsMenu = function() {
-        var items = [
-            {
+        var items = [];
+        if(this._userProfileController.isFileAuthentication()) {
+            items.push({
                 label : "Change Password",
                 event : this._userProfileController.resetPassword.bind(this._userProfileController),
-            }
-        ];
+            })
+        }
+
         return FormUtil.getOperationsMenu(items);
 	}
 

@@ -54,9 +54,13 @@ function UserProfileController(mainController, mode) {
 		this.setSettingValue(this._zenodoApiTokenKey, userInformation.zenodoToken);
 		this._mainController.serverFacade.updateUserInformation(userId, userInformation, (function(ok) {
 			if (ok) {
-				Util.showInfo("Profile saved. You will be logged out automatically in order to reload the profile data upon login.", (function() {
-					this._mainController.serverFacade.logout();
-				}).bind(this));
+				if(this.isFileAuthentication()) {
+				    Util.showInfo("Profile saved. You will be logged out automatically in order to reload the profile data upon login.", (function() {
+					    this._mainController.serverFacade.logout();
+				    }).bind(this));
+				} else {
+				    mainController.changeView("showUserProfilePage");
+				}
 			}
 		}).bind(this));
 	}
