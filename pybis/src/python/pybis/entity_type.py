@@ -1,10 +1,15 @@
-from tabulate import tabulate
-from texttable import Texttable
 from pandas import DataFrame
 from .openbis_object import OpenBisObject
 from .things import Things
-from .utils import check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, extract_permid, extract_code, extract_name, VERBOSE
+from .utils import format_timestamp, extract_code, extract_name, VERBOSE
 from .definitions import get_method_for_entity, get_type_for_entity
+from pandas import DataFrame
+
+from .definitions import get_method_for_entity, get_type_for_entity
+from .openbis_object import OpenBisObject
+from .things import Things
+from .utils import format_timestamp, extract_code, extract_name, VERBOSE
+
 
 class EntityType:
     """ EntityTypes define a variety of an entity, eg. sample, dataSet, experiment
@@ -228,9 +233,13 @@ class DataSetType(
     entity='dataSetType',
     single_item_method_name='get_dataset_type'
 ):
+
+    def __init__(self, openbis_obj, type=None, data=None, props=None, **kwargs):
+        OpenBisObject.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+        EntityType.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+
     def __dir__(self):
-        return [
-        ] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
+        return [] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
 
 
 class MaterialType(
@@ -238,6 +247,10 @@ class MaterialType(
     entity='materialType',
     single_item_method_name='get_material_type'
 ):
+    def __init__(self, openbis_obj, type=None, data=None, props=None, **kwargs):
+        OpenBisObject.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+        EntityType.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+
     def __dir__(self):
         return [
         ] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)
@@ -248,6 +261,11 @@ class ExperimentType(
     entity='experimentType',
     single_item_method_name='get_experiment_type'
 ):
+
+    def __init__(self, openbis_obj, type=None, data=None, props=None, **kwargs):
+        OpenBisObject.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+        EntityType.__init__(self, openbis_obj, type=type, data=data, props=props, **kwargs)
+
     def __dir__(self):
         return [
         ] + EntityType.__dir__(self) + OpenBisObject.__dir__(self)

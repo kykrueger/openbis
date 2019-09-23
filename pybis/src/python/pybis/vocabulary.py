@@ -1,8 +1,8 @@
-from .utils import VERBOSE
-from .openbis_object import OpenBisObject 
 from .attribute import AttrHolder
-from .definitions import openbis_definitions, fetch_option, get_type_for_entity, get_method_for_entity
-import json
+from .definitions import openbis_definitions, get_type_for_entity, get_method_for_entity
+from .openbis_object import OpenBisObject
+from .utils import VERBOSE
+
 
 class Vocabulary(
     OpenBisObject,
@@ -127,7 +127,7 @@ class VocabularyTerm(OpenBisObject):
 
     def __init__(self, openbis_obj, data=None, **kwargs):
         self.__dict__['openbis'] = openbis_obj
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'VocabularyTerm')
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'vocabularyTerm')
 
         if data is not None:
             self._set_data(data)

@@ -65,8 +65,8 @@
     "dev": "webpack-dev-server --hot --config webpack.config.dev.js",
     "build": "webpack-cli --config webpack.config.js",
     "unit": "jest",
-    "lint": "eslint --ext .js,.jsx src test",
-    "lint:fix": "eslint --ext .js,.jsx src test --fix",
+    "lint": "eslint --ext .js,.jsx src/js srcTest/js",
+    "lint:fix": "eslint --ext .js,.jsx src/js srcTest/js --fix",
     "test": "jest",
     "test:debug": "node --inspect-brk=9229 ./node_modules/.bin/jest --runInBand",
     "test:watch": "npm test -- --watch"

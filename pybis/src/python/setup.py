@@ -1,4 +1,3 @@
-import os
 import sys
 
 if sys.version_info < (3,3):
@@ -11,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='PyBIS',
-    version= '1.9.3',
+    version= '1.9.5',
     author='Swen Vermeul • ID SIS • ETH Zürich',
     author_email='swen@ethz.ch',
     description='openBIS connection and interaction, optimized for using with Jupyter',

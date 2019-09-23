@@ -1,19 +1,19 @@
-from .openbis_object import OpenBisObject 
-from .utils import VERBOSE
-from .property import PropertyHolder
 from .attribute import AttrHolder
-import json
+from .openbis_object import OpenBisObject
+from .property import PropertyHolder
+from .utils import VERBOSE
+
 
 class Material(OpenBisObject):
     """ Managing openBIS materials
     """
 
     def __init__(self, openbis_obj, type, data=None, props=None, **kwargs):
-        self.__dict__['entity'] = 'Material'
+        self.__dict__['entity'] = 'material'
         self.__dict__['openbis'] = openbis_obj
         self.__dict__['type'] = type
         self.__dict__['p'] = PropertyHolder(openbis_obj, type)
-        self.__dict__['a'] = AttrHolder(openbis_obj, 'Material', type)
+        self.__dict__['a'] = AttrHolder(openbis_obj, 'material', type)
 
         if data is not None:
             self._set_data(data)

@@ -9,26 +9,22 @@ Work with openBIS from Python.
 """
 
 from __future__ import print_function
-import os
-import random
 
+import os
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-import time
 import json
 import re
-from urllib.parse import urlparse, urljoin, quote
+from urllib.parse import urlparse, urljoin
 import zlib
-from collections import namedtuple
-from texttable import Texttable
-from tabulate import tabulate
 
 from . import data_set as pbds
-from .utils import parse_jackson, check_datatype, split_identifier, format_timestamp, is_identifier, is_permid, nvl, VERBOSE
-from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid,extract_property_assignments,extract_role_assignments,extract_person, extract_person_details,extract_id,extract_userId
+from .utils import parse_jackson, split_identifier, format_timestamp, is_identifier, is_permid
+from .utils import extract_attr, extract_permid, extract_code,extract_deletion,extract_identifier,extract_nested_identifier,extract_nested_permid, \
+    extract_person, extract_id,extract_userId
 from .entity_type import EntityType, SampleType, DataSetType, MaterialType, ExperimentType
 from .vocabulary import Vocabulary, VocabularyTerm
 from .openbis_object import OpenBisObject 
@@ -47,10 +43,7 @@ from .role_assignment import RoleAssignment
 from .tag import Tag
 from .semantic_annotation import SemanticAnnotation
 
-from pandas import DataFrame, Series
-import pandas as pd
-
-from datetime import datetime
+from pandas import DataFrame
 
 LOG_NONE    = 0
 LOG_SEVERE  = 1
@@ -1614,7 +1607,7 @@ class Openbis:
         if permId:
             sub_criteria.append(_common_search("as.dto.common.search.PermIdSearchCriteria", permId))
         if type:
-            sub_criteria.append(_subcriteria_for_type(type, 'Experiment'))
+            sub_criteria.append(_subcriteria_for_code(type, 'experimentType'))
         if tags:
             sub_criteria.append(_subcriteria_for_tags(tags))
         if is_finished is not None:
@@ -1694,7 +1687,7 @@ class Openbis:
         if code:
             sub_criteria.append(_criteria_for_code(code))
         if type:
-            sub_criteria.append(_subcriteria_for_type(type, 'dataSet'))
+            sub_criteria.append(_subcriteria_for_code(type, 'dataSetType'))
 
         if withParents:
             sub_criteria.append(_subcriteria_for(withParents, 'dataSet', 'Parents'))
@@ -2179,14 +2172,14 @@ class Openbis:
         )
 
 
-    def get_term(self, code, vocabularyCode=None, only_data=False):
-        entity_def = get_definition_for_entity('VocabularyTerm')
+    def get_term(self, code, vocabularyCode, only_data=False):
+        entity_def = get_definition_for_entity('vocabularyTerm')
         search_request = {
             "code": code,
             "vocabularyCode": vocabularyCode,
             "@type": "as.dto.vocabulary.id.VocabularyTermPermId"
         }
-        fetchopts = get_fetchoption_for_entity('VocabularyTerm')
+        fetchopts = get_fetchoption_for_entity('vocabularyTerm')
         for opt in ['registrator']:
             fetchopts[opt] = get_fetchoption_for_entity(opt)
         
