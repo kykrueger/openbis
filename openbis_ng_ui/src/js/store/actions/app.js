@@ -1,4 +1,5 @@
 export const INIT = 'INIT'
+export const CLEAR = 'CLEAR'
 export const LOGIN = 'LOGIN'
 export const LOGOUT = 'LOGOUT'
 export const SEARCH = 'SEARCH'
@@ -7,6 +8,7 @@ export const SEARCH_CHANGE = 'SEARCH_CHANGE'
 export const ERROR_CHANGE = 'ERROR_CHANGE'
 export const ROUTE_CHANGE = 'ROUTE_CHANGE'
 
+export const SET_INITIALIZED = 'SET_INITIALIZED'
 export const SET_LOADING = 'SET_LOADING'
 export const SET_SEARCH = 'SET_SEARCH'
 export const SET_SESSION = 'SET_SESSION'
@@ -15,6 +17,10 @@ export const SET_ROUTE = 'SET_ROUTE'
 
 export const init = () => ({
   type: INIT
+})
+
+export const clear = () => ({
+  type: CLEAR
 })
 
 export const login = (username, password) => ({
@@ -62,6 +68,13 @@ export const routeChange = route => ({
   type: ROUTE_CHANGE,
   payload: {
     route
+  }
+})
+
+export const setInitialized = initialized => ({
+  type: SET_INITIALIZED,
+  payload: {
+    initialized
   }
 })
 

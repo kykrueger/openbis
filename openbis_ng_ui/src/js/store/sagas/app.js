@@ -17,14 +17,19 @@ export default function* appSaga() {
 }
 
 function* init() {
-  try {
-    yield put(actions.setLoading(true))
-    yield call([dto, dto.init])
-    yield call([facade, facade.init])
-  } catch (e) {
-    yield put(actions.setError(e))
-  } finally {
-    yield put(actions.setLoading(false))
+  let initialized = yield select(selectors.getInitialized)
+
+  if (!initialized) {
+    try {
+      yield put(actions.setLoading(true))
+      yield call([dto, dto.init])
+      yield call([facade, facade.init])
+      yield put(actions.setInitialized(true))
+    } catch (e) {
+      yield put(actions.setError(e))
+    } finally {
+      yield put(actions.setLoading(false))
+    }
   }
 }
 
@@ -62,7 +67,7 @@ function* logout() {
   try {
     yield put(actions.setLoading(true))
     yield putAndWait(actions.apiRequest({ method: 'logout' }))
-    yield put(actions.init())
+    yield put(actions.clear())
     yield put(actions.routeChange('/'))
   } catch (e) {
     yield put(actions.setError(e))

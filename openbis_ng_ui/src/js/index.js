@@ -1,6 +1,7 @@
 import 'regenerator-runtime/runtime'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import store from './store/store.js'
 import { Provider } from 'react-redux'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import DragAndDropProvider from './components/common/dnd/DragAndDropProvider.jsx'
@@ -26,8 +27,7 @@ const theme = createMuiTheme({
 })
 
 const render = () => {
-  const App = require('./components/App.jsx').default
-  const store = require('./store/store.js').default
+  let App = require('./components/App.jsx').default
 
   ReactDOM.render(
     <Provider store={store}>
@@ -44,10 +44,6 @@ const render = () => {
 /* eslint-disable no-undef */
 if (module.hot) {
   module.hot.accept('./components/App.jsx', () => setTimeout(render))
-  module.hot.accept('./store/reducers/reducers.js', () => {
-    const nextRootReducer = require('./store/reducers/reducers.js').default
-    store.replaceReducer(nextRootReducer)
-  })
 }
 
 render()
