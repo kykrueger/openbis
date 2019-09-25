@@ -16,11 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.JDBCSQLExecutor;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
-import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -33,6 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.JDBCSQLExecutor;
+import ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames;
+import ch.systemsx.cisd.openbis.generic.shared.dto.TableNames;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.COMMA;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DELETE;
@@ -236,12 +236,19 @@ public class DBTestHelper
 
     private Connection connection;
 
+    private boolean autocommit = false;
+
     /** Data type string to ID map. */
     private Map<String, Long> dataTypeMap = new HashMap<>();
 
     public ISQLExecutor getSqlExecutor()
     {
         return sqlExecutor;
+    }
+
+    public void setAutocommit(final boolean autocommit)
+    {
+        this.autocommit = autocommit;
     }
 
     public void setUp() throws Exception
@@ -265,7 +272,12 @@ public class DBTestHelper
     {
         connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/openbis_dev", "postgres", "");
         connection.setAutoCommit(autocommit);
-        sqlExecutor = new JDBCSQLExecutor(connection);
+
+        if (sqlExecutor == null)
+        {
+            sqlExecutor = new JDBCSQLExecutor();
+        }
+        sqlExecutor.setConnection(connection);
     }
 
     private void populateDB() throws SQLException
@@ -525,7 +537,7 @@ public class DBTestHelper
                 VALUES + SP + LP + questionMarks + RP, values);
     }
 
-    public void cleanDB() throws Exception
+    public void tearDown() throws Exception
     {
         try
         {
@@ -581,7 +593,7 @@ public class DBTestHelper
         closeConnection();
 
         // A different connection should be used to be able to clean up even when the transaction is set for rollback.
-        initConnection(true);
+        initConnection(autocommit);
     }
 
     private void closeConnection() throws SQLException

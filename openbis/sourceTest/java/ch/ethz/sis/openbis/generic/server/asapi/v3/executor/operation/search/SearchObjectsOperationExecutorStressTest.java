@@ -29,18 +29,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
-import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
@@ -57,6 +52,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.OperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -66,8 +62,14 @@ import ch.systemsx.cisd.openbis.generic.server.ConcurrentOperationLimiter;
 import ch.systemsx.cisd.openbis.generic.server.ConcurrentOperationLimiterConfig;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.util.RuntimeCache;
-
 import net.sf.ehcache.CacheManager;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * @author pkupczyk
@@ -333,9 +335,21 @@ public class SearchObjectsOperationExecutorStressTest
         }
 
         @Override
+        protected ISearchManager getSearchManager()
+        {
+            throw new IllegalStateException("This method should not be invoked.");
+        }
+
+        @Override
         protected Class getOperationClass()
         {
             return TestSearchOperation.class;
+        }
+
+        @Override
+        protected IOperationResult doExecute(final IOperationContext context, final IOperation operation)
+        {
+            return super.doExecute(context, (SearchObjectsOperation) operation);
         }
 
         @Override

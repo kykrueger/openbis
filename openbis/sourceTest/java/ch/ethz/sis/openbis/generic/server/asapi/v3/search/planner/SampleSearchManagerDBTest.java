@@ -16,6 +16,9 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import java.util.Arrays;
+import java.util.Set;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ModificationDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSearchCriteria;
@@ -23,17 +26,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.transaction.TransactionStatus;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.Set;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE_2;
@@ -78,9 +80,19 @@ import static org.testng.Assert.assertTrue;
 public class SampleSearchManagerDBTest
 {
 
+    private static final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("testApplicationContext.xml");
+
+    private DBTestHelper dbTestHelper = context.getBean(DBTestHelper.class);
+
+    private PostgresSearchDAO searchDAO;
+
+    private ISQLAuthorisationInformationProviderDAO authInfoProviderDAO;
+
+    private IID2PETranslator iid2PETranslator;
+
     private SampleSearchManager searchManager;
 
-    private DBTestHelper dbTestHelper = new DBTestHelper();
+    private TransactionStatus transactionStatus;
 
     public SampleSearchManagerDBTest() throws ClassNotFoundException
     {
@@ -90,26 +102,27 @@ public class SampleSearchManagerDBTest
     @BeforeClass
     public void setUpClass() throws Exception
     {
-        dbTestHelper.setUp();
-    }
-
-    @BeforeTest
-    public void setUp() throws Exception
-    {
-        dbTestHelper.resetConnection();
-
-        final ISQLExecutor sqlExecutor = dbTestHelper.getSqlExecutor();
-        final PostgresSearchDAO searchDAO = new PostgresSearchDAO(sqlExecutor);
-        final ISQLAuthorisationInformationProviderDAO authInfoProviderDAO =
-                new PostgresAuthorisationInformationProviderDAO(sqlExecutor);
-
-        searchManager = new SampleSearchManager(searchDAO, authInfoProviderDAO);
+        searchDAO = context.getBean(PostgresSearchDAO.class);
+        authInfoProviderDAO = context.getBean(ISQLAuthorisationInformationProviderDAO.class);
+        iid2PETranslator = context.getBean("sample-id-2-pet-translator", IID2PETranslator.class);
     }
 
     @AfterClass
     public void tearDownClass() throws Exception
     {
-        dbTestHelper.cleanDB();
+        context.close();
+    }
+
+    @BeforeMethod
+    public void setUp() throws Exception
+    {
+        searchManager = new SampleSearchManager(searchDAO, authInfoProviderDAO, iid2PETranslator);
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception
+    {
+        dbTestHelper.resetConnection();
     }
 
     /**

@@ -16,6 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -25,18 +32,12 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort.ISortAndPage;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -56,6 +57,8 @@ public class SampleSearchManagerTest
 
     private ISQLAuthorisationInformationProviderDAO authInfoProviderMock;
 
+    private IID2PETranslator iid2PETranslatorMock;
+
     private SampleSearchManager searchManager;
 
     private ISortAndPage sortAndPageMock;
@@ -67,7 +70,8 @@ public class SampleSearchManagerTest
         searchDAOMock = context.mock(ISQLSearchDAO.class);
         authInfoProviderMock = context.mock(ISQLAuthorisationInformationProviderDAO.class);
         sortAndPageMock = context.mock(ISortAndPage.class);
-        searchManager = new SampleSearchManager(searchDAOMock, authInfoProviderMock);
+        iid2PETranslatorMock = context.mock(IID2PETranslator.class);
+        searchManager = new SampleSearchManager(searchDAOMock, authInfoProviderMock, iid2PETranslatorMock);
     }
 
     @AfterMethod

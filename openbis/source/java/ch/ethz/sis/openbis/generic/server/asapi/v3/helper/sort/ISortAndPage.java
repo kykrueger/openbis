@@ -16,10 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sort;
 
+import java.util.Collection;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-
-import java.util.Collection;
 
 public interface ISortAndPage
 {

@@ -16,9 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.experiment;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -29,8 +26,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.SearchExperimentsOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.experiment.IExperimentTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author pkupczyk
@@ -63,6 +63,12 @@ public class SearchExperimentsOperationExecutor
     protected ITranslator<Long, Experiment, ExperimentFetchOptions> getTranslator()
     {
         return translator;
+    }
+
+    @Override
+    protected ISearchManager<ExperimentSearchCriteria, Long> getSearchManager()
+    {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
     @Override

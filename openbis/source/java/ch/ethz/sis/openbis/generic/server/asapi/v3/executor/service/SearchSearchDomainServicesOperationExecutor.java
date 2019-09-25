@@ -16,9 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -29,9 +26,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchSearchDomai
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchSearchDomainServicesOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Franz-Josef Elmer
@@ -69,6 +69,12 @@ public class SearchSearchDomainServicesOperationExecutor
                 return object;
             }
         };
+    }
+
+    @Override
+    protected ISearchManager<SearchDomainServiceSearchCriteria, SearchDomainService> getSearchManager()
+    {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
     @Override

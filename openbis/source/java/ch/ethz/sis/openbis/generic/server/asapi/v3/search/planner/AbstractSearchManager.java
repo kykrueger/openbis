@@ -16,12 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,33 +24,50 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+
 /**
  * Manages detailed search with complex search criteria.
  *
  * @author Viktor Kovtun
  * @author Juan Fuentes
  */
-public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, ENTITY> implements ISearchManager<CRITERIA>
+public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OBJECT_PE> implements ISearchManager<CRITERIA, OBJECT_PE>
 {
     private final ISQLSearchDAO searchDAO;
 
     private final ISQLAuthorisationInformationProviderDAO authProvider;
 
-    public AbstractSearchManager(final ISQLSearchDAO searchDAO,
-            ISQLAuthorisationInformationProviderDAO authProvider)
+    private final IID2PETranslator<OBJECT_PE> idsTranslator;
+
+    public AbstractSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+            final IID2PETranslator idsTranslator)
     {
         this.searchDAO = searchDAO;
         this.authProvider = authProvider;
+        this.idsTranslator = idsTranslator;
     }
 
-    /**
-     * Filters sample IDs set leaving the ones to which the user has access.
-     *
-     * @param userId the ID of the user.
-     * @param ids IDs to filter.
-     * @return IDs of samples which the user is authorised to access.
-     */
-    public abstract Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids);
+    @Override
+    public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids)
+    {
+        final AuthorisationInformation authorizedSpaceProjectIds = getAuthProvider().findAuthorisedSpaceProjectIDs(userId);
+        if (authorizedSpaceProjectIds.getInstanceRoles().isEmpty())
+        {
+            return doFilterIDsByUserRights(ids, authorizedSpaceProjectIds);
+        } else
+        {
+            return ids;
+        }
+    }
+
+    protected abstract Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorizedSpaceProjectIds);
 
     protected List<ISearchCriteria> getOtherCriteriaThan(AbstractCompositeSearchCriteria compositeSearchCriteria,
             Class<? extends ISearchCriteria>... classes)
@@ -154,6 +165,10 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, EN
     protected ISQLAuthorisationInformationProviderDAO getAuthProvider()
     {
         return authProvider;
+    }
+
+    public List<OBJECT_PE> translate(final Collection<Long> ids) {
+        return idsTranslator.translate(ids);
     }
 
 }

@@ -16,11 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
-
 import java.util.Set;
 
-public interface ISearchManager<CRITERIA extends ISearchCriteria>
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
+
+public interface ISearchManager<CRITERIA extends ISearchCriteria, OBJECT_PE> extends IID2PETranslator<OBJECT_PE>
 {
 
     /**
@@ -31,6 +32,13 @@ public interface ISearchManager<CRITERIA extends ISearchCriteria>
      */
     Set<Long> searchForIDs(final Long userId, final CRITERIA criteria);
 
-
+    /**
+     * Filters IDs of certain
+     *
+     * @param userId
+     * @param ids
+     * @return
+     */
+    Set<Long> filterIDsByUserRights(Long userId, Set<Long> ids);
 
 }

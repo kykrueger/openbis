@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate;
 
-import java.sql.Connection;
+import java.util.Collection;
+import java.util.List;
 
-public class HibernateSQLExecutor extends JDBCSQLExecutor
+/**
+ * Translator from long IDs to {@link OBJECT_PE} type.
+ *
+ * @param <OBJECT_PE>
+ */
+public interface IID2PETranslator<OBJECT_PE>
 {
 
-    public HibernateSQLExecutor(final Connection connection)
-    {
-        super();
-        setConnection(connection);
-    }
+    List<OBJECT_PE> translate(final Collection<Long> ids);
 
 }

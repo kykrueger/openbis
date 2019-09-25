@@ -16,8 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,13 +28,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
+
 public class JDBCSQLExecutor implements ISQLExecutor
 {
 
     /** Connection used for this executor. */
-    private final Connection connection;
+    private Connection connection;
 
-    public JDBCSQLExecutor(final Connection connection)
+    public void setConnection(final Connection connection)
     {
         this.connection = connection;
     }

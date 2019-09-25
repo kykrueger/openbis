@@ -16,6 +16,15 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyPropertySearchCriteria;
@@ -41,6 +50,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCrite
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbsenceConditionTranslator;
@@ -48,6 +58,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.A
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AnyPropertySearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CollectionFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DateFieldSearchCriteriaTranslator;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.EntityTypeSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
@@ -55,15 +66,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.N
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.SampleSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
@@ -117,6 +119,8 @@ public class Translator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(NumberPropertySearchCriteria.class, numberFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(DatePropertySearchCriteria.class, dateFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyPropertySearchCriteria.class, new AnyPropertySearchCriteriaTranslator());
+
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SampleTypeSearchCriteria.class, new EntityTypeSearchCriteriaTranslator());
     }
 
     private static final AtomicBoolean FIRST = new AtomicBoolean();

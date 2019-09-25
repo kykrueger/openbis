@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2011 ETH Zuerich, CISD
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <import resource="applicationContext.xml"/>
+
+    <bean id="db-test-helper" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper" init-method="setUp"
+          destroy-method="tearDown">
+        <property name="autocommit" value="false"/>
+    </bean>
+
+    <bean id="sql-executor" factory-bean="db-test-helper" factory-method="getSqlExecutor"/>
+
+    <bean id="postgres-search-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO">
+        <constructor-arg ref="sql-executor"/>
+    </bean>
+
+    <bean id="information-provider-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO">
+        <constructor-arg ref="sql-executor"/>
+    </bean>
+
+    <bean id="sample-id-2-pet-translator" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.SampleID2PETranslator">
+        <constructor-arg>
+            <bean factory-bean="dao-factory" factory-method="getSampleDAO"/>
+        </constructor-arg>
+    </bean>
+
+    <bean class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager">
+        <constructor-arg ref="postgres-search-dao"/>
+        <constructor-arg ref="information-provider-dao"/>
+        <constructor-arg ref="sample-id-2-pet-translator"/>
+    </bean>
+</beans>

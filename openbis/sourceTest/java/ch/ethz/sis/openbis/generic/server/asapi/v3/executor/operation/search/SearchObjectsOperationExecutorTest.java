@@ -24,12 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.CacheMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -45,6 +45,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.OperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
@@ -55,6 +56,8 @@ import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.openbis.generic.server.ConcurrentOperationLimiter;
 import ch.systemsx.cisd.openbis.generic.server.ConcurrentOperationLimiterConfig;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * @author pkupczyk
@@ -320,9 +323,21 @@ public class SearchObjectsOperationExecutorTest
         }
 
         @Override
+        protected ISearchManager getSearchManager()
+        {
+            throw new IllegalStateException("This method should not be invoked.");
+        }
+
+        @Override
         protected Class getOperationClass()
         {
             return TestSearchOperation.class;
+        }
+
+        @Override
+        protected IOperationResult doExecute(final IOperationContext context, final IOperation operation)
+        {
+            return super.doExecute(context, (SearchObjectsOperation) operation);
         }
 
         @Override

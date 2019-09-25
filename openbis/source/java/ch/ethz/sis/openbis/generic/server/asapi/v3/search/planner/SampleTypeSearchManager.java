@@ -18,22 +18,22 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Set;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 
 /**
- * Manages detailed search with complex sample search criteria.
- * 
+ * Manages detailed search with complex sample type search criteria.
+ *
  * @author Viktor Kovtun
- * @author Juan Fuentes
  */
-public class SampleSearchManager extends AbstractCompositeEntitySearchManager<SampleSearchCriteria, Long>
+public class SampleTypeSearchManager extends AbstractCompositeEntitySearchManager<SampleTypeSearchCriteria, SampleType>
 {
 
-    public SampleSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
+    public SampleTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
             final IID2PETranslator idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
@@ -42,7 +42,7 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
     @Override
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorizedSpaceProjectIds)
     {
-        return getAuthProvider().getAuthorisedSamples(ids, authorizedSpaceProjectIds);
+        throw new RuntimeException("Filter method not implemented yet.");
     }
 
 }

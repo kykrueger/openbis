@@ -16,9 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -29,8 +26,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOpe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.SearchDataSetsOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SearchObjectsOperationExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.dataset.IDataSetTranslator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author pkupczyk
@@ -62,6 +62,12 @@ public class SearchDataSetsOperationExecutor extends SearchObjectsOperationExecu
     protected ITranslator<Long, DataSet, DataSetFetchOptions> getTranslator()
     {
         return translator;
+    }
+
+    @Override
+    protected ISearchManager<DataSetSearchCriteria, Long> getSearchManager()
+    {
+        throw new RuntimeException("This method is not implemented yet.");
     }
 
     @Override

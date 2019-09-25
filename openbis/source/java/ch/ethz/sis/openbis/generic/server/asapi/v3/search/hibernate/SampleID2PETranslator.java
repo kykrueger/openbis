@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate;
 
-import java.sql.Connection;
+import java.util.Collection;
+import java.util.List;
 
-public class HibernateSQLExecutor extends JDBCSQLExecutor
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
+
+public class SampleID2PETranslator implements IID2PETranslator<SamplePE>
 {
+    private ISampleDAO dao;
 
-    public HibernateSQLExecutor(final Connection connection)
+    public SampleID2PETranslator(final ISampleDAO dao)
     {
-        super();
-        setConnection(connection);
+        this.dao = dao;
     }
 
+    @Override
+    public List<SamplePE> translate(final Collection<Long> ids)
+    {
+        return dao.listByIDs(ids);
+    }
 }
