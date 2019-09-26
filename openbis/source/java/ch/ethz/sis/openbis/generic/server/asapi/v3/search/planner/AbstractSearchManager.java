@@ -54,6 +54,17 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         this.idsTranslator = idsTranslator;
     }
 
+    /**
+     * Checks whether a collection contains any values.
+     *
+     * @param collection collection to be checked for values.
+     * @return {@code false} if collection is {@code null} or empty, true otherwise.
+     */
+    protected static boolean containsValues(final Collection<?> collection)
+    {
+        return collection != null && !collection.isEmpty();
+    }
+
     @Override
     public Set<Long> filterIDsByUserRights(final Long userId, final Set<Long> ids)
     {

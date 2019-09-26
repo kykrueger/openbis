@@ -109,11 +109,11 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
                 {{
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.OR);
+                            Collections.singletonList(criterion), SearchOperator.OR, false);
                     will(returnValue(mainCriteriaIds));
 
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, parentCriteria,
-                            SearchOperator.OR);
+                            SearchOperator.OR, false);
                     will(returnValue(parentCriteriaIds));
 
                     one(searchDAOMock).findChildIDs(EntityKind.SAMPLE, parentCriteriaIds);
@@ -154,11 +154,11 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
                 {{
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.AND);
+                            Collections.singletonList(criterion), SearchOperator.AND, false);
                     will(returnValue(mainCriteriaIds));
 
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, parentCriteria,
-                            SearchOperator.OR);
+                            SearchOperator.OR, false);
                     will(returnValue(parentCriteriaIds));
 
                     one(searchDAOMock).findChildIDs(EntityKind.SAMPLE, parentCriteriaIds);
@@ -198,11 +198,11 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
                 {{
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, childCriteria,
-                            SearchOperator.AND);
+                            SearchOperator.AND, false);
                     will(returnValue(childCriteriaIds));
 
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.OR);
+                            Collections.singletonList(criterion), SearchOperator.OR, false);
                     will(returnValue(mainCriteriaIds));
 
                     one(searchDAOMock).findParentIDs(EntityKind.SAMPLE, childCriteriaIds);
@@ -243,11 +243,11 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
         {{
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, childCriteria,
-                    SearchOperator.OR);
+                    SearchOperator.OR, false);
             will(returnValue(childCriteriaIds));
 
             one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
-                    Collections.singletonList(criterion), SearchOperator.AND);
+                    Collections.singletonList(criterion), SearchOperator.AND, false);
             will(returnValue(mainCriteriaIds));
 
             one(searchDAOMock).findParentIDs(EntityKind.SAMPLE, childCriteriaIds);
@@ -276,7 +276,7 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
                 {{
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
-                            Collections.singletonList(criterion), SearchOperator.AND);
+                            Collections.singletonList(criterion), SearchOperator.AND, false);
                     will(returnValue(expectedIds));
                 }});
 
@@ -296,7 +296,7 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
                 {{
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(equal(EntityKind.SAMPLE)),
-                            with(any(List.class)), with(any(SearchOperator.class)));
+                            with(any(List.class)), with(any(SearchOperator.class)), false);
                     will(returnValue(expectedIds));
                 }});
 
@@ -316,7 +316,7 @@ public class SampleSearchManagerTest
         context.checking(new Expectations()
                 {{
                     one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(equal(EntityKind.SAMPLE)),
-                            with(any(List.class)), with(any(SearchOperator.class)));
+                            with(any(List.class)), with(any(SearchOperator.class)), false);
                     will(returnValue(Collections.emptySet()));
                 }});
 

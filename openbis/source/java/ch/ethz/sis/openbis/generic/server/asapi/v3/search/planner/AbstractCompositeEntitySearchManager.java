@@ -16,7 +16,6 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -54,17 +53,6 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
 
     protected abstract CRITERIA createEmptyCriteria();
 
-    /**
-     * Checks whether a collection contains any values.
-     *
-     * @param collection collection to be checked for values.
-     * @return {@code false} if collection is {@code null} or empty, true otherwise.
-     */
-    private static boolean containsValues(final Collection<?> collection)
-    {
-        return collection != null && !collection.isEmpty();
-    }
-
     @Override
     public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria)
     {
@@ -82,7 +70,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         if (!mainCriteria.isEmpty())
         {
             mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(), mainCriteria,
-                    criteria.getOperator());
+                    criteria.getOperator(), false);
         }
 
         // The parents criteria can be or not recursive, they are resolved by a recursive call
@@ -152,7 +140,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     {
         final CRITERIA criteria = createEmptyCriteria();
         return getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(), Collections.singletonList(criteria),
-                SearchOperator.OR);
+                SearchOperator.OR, false);
     }
 
     private Set<Long> getChildrenIdsOf(final Set<Long> parentIdSet)

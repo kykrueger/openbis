@@ -30,11 +30,12 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_ID_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_1;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_2;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_3;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_ID_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_ID_4;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.USER_ID;
 import static org.testng.Assert.assertEquals;
 
@@ -84,11 +85,11 @@ public class SampleTypeSearchManagerDBTest
      *
      * @param criterion criterion to be checked.
      */
-    private void checkCriterion(final SampleTypeSearchCriteria criterion)
+    private void checkCriterion(final SampleTypeSearchCriteria criterion, final long sampleTypeId)
     {
-        final Set<Long> sampleIds = searchManager.searchForIDs(USER_ID, criterion);
-        assertEquals(sampleIds.size(), 1);
-        assertEquals(sampleIds.iterator().next().longValue(), SAMPLE_ID_1);
+        final Set<Long> sampleTypeIds = searchManager.searchForIDs(USER_ID, criterion);
+        assertEquals(sampleTypeIds.size(), 1);
+        assertEquals(sampleTypeIds.iterator().next().longValue(), sampleTypeId);
     }
 
     /**
@@ -99,19 +100,21 @@ public class SampleTypeSearchManagerDBTest
     {
         final SampleTypeSearchCriteria equalsCriterion = new SampleTypeSearchCriteria();
         equalsCriterion.withCode().thatEquals(SAMPLE_TYPE_CODE_1);
-        checkCriterion(equalsCriterion);
+        checkCriterion(equalsCriterion, SAMPLE_TYPE_ID_1);
 
         final SampleTypeSearchCriteria containsCriterion = new SampleTypeSearchCriteria();
         containsCriterion.withCode().thatContains(SAMPLE_TYPE_CODE_2.substring(1, SAMPLE_TYPE_CODE_2.length() - 1));
-        checkCriterion(containsCriterion);
+        final Set<Long> containsCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, containsCriterion);
+        assertEquals(containsCriterionSampleTypeIds.size(), 5);
 
         final SampleTypeSearchCriteria startsWithCriterion = new SampleTypeSearchCriteria();
         startsWithCriterion.withCode().thatStartsWith(SAMPLE_TYPE_CODE_3.substring(0, 4));
-        checkCriterion(startsWithCriterion);
+        final Set<Long> startsWithCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, containsCriterion);
+        assertEquals(startsWithCriterionSampleTypeIds.size(), 5);
 
         final SampleTypeSearchCriteria endsWithCriterion = new SampleTypeSearchCriteria();
         endsWithCriterion.withCode().thatEndsWith(SAMPLE_TYPE_CODE_4.substring(4));
-        checkCriterion(endsWithCriterion);
+        checkCriterion(endsWithCriterion, SAMPLE_TYPE_ID_4);
     }
 
 }

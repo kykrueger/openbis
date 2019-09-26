@@ -19,6 +19,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.RegistrationDateSe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringPropertySearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.NoExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCriteria;
@@ -125,15 +125,13 @@ public class Translator
 
     private static final AtomicBoolean FIRST = new AtomicBoolean();
 
-    public static SelectQuery translate(final EntityKind entityKind, final List<ISearchCriteria> criteria,
+    public static SelectQuery translate(final EntityMapper dbEntityKind, final Collection<ISearchCriteria> criteria,
             final SearchOperator operator)
     {
         if (criteria == null && criteria.isEmpty())
         {
             throw new IllegalArgumentException("Empty or null criteria provided.");
         }
-
-        final EntityMapper dbEntityKind = EntityMapper.toEntityMapper(entityKind);
 
         final Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
         final List<Object> args = new ArrayList<>();
@@ -154,14 +152,14 @@ public class Translator
         return "t" + num.getAndIncrement();
     }
 
-    private static String buildFrom(final EntityMapper entityMapper, final List<ISearchCriteria> criteria,
+    private static String buildFrom(final EntityMapper entityMapper, final Collection<ISearchCriteria> criteria,
             final Map<Object, Map<String, JoinInformation>> aliases)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
         final AtomicInteger indexCounter = new AtomicInteger(1);
 
         final String entitiesTableName = entityMapper.getEntitiesTable();
-        JoinInformation mainTable = new JoinInformation();
+        final JoinInformation mainTable = new JoinInformation();
         mainTable.setMainTable(entitiesTableName);
         mainTable.setMainTableIdField(entityMapper.getEntitiesTableIdField());
         mainTable.setMainTableAlias(MAIN_TABLE_ALIAS);
@@ -202,7 +200,7 @@ public class Translator
     }
 
 
-    private static String buildWhere(final EntityMapper entityMapper, final List<ISearchCriteria> criteria, final List<Object> args,
+    private static String buildWhere(final EntityMapper entityMapper, final Collection<ISearchCriteria> criteria, final List<Object> args,
             final SearchOperator operator, final Map<Object, Map<String, JoinInformation>> aliases)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
@@ -247,11 +245,11 @@ public class Translator
      * @param criteria the criteria to be checked.
      * @return {@code true} if the criteria contain only one entity search value which is empty.
      */
-    private static boolean isSearchAllCriteria(final List<ISearchCriteria> criteria)
+    private static boolean isSearchAllCriteria(final Collection<ISearchCriteria> criteria)
     {
         if (criteria.size() == 1)
         {
-            final ISearchCriteria criterion = criteria.get(0);
+            final ISearchCriteria criterion = criteria.iterator().next();
             if (criterion instanceof AbstractEntitySearchCriteria<?> &&
                     ((AbstractEntitySearchCriteria<?>) criterion).getCriteria().isEmpty())
             {

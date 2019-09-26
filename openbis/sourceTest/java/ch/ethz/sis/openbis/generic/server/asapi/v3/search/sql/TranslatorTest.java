@@ -16,16 +16,16 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
@@ -47,7 +47,7 @@ public class TranslatorTest
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
         final SelectQuery result =
-                Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+                Translator.translate(EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s\n" +
@@ -59,12 +59,11 @@ public class TranslatorTest
     public void testTranslateSearchSamplesById()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria().withAndOperator();
-//        sampleSearchCriteria.withIdentifier().thatEquals(SAMPLE_ID);
         final SampleIdentifier sampleIdentifier = new SampleIdentifier(SAMPLE_ID);
         sampleSearchCriteria.withId().thatEquals(sampleIdentifier);
 
         final SelectQuery result =
-                Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+                Translator.translate(EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s\n" +
@@ -83,7 +82,7 @@ public class TranslatorTest
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
         final SelectQuery result =
-                Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+                Translator.translate(EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s\n" +
@@ -102,7 +101,7 @@ public class TranslatorTest
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
         final SelectQuery result =
-                Translator.translate(EntityKind.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+                Translator.translate(EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
 
         assertEquals(result, new SelectQuery(String.format(
                 "SELECT DISTINCT %s\n" +

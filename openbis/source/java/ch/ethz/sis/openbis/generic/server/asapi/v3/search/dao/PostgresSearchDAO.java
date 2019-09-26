@@ -16,6 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -23,12 +30,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class PostgresSearchDAO implements ISQLSearchDAO
 {
@@ -39,19 +40,19 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         this.sqlExecutor = sqlExecutor;
     }
 
-    public Set<Long> queryDBWithNonRecursiveCriteria(final EntityKind entityKind, final List<ISearchCriteria> criteria,
-            final SearchOperator operator)
+    public Set<Long> queryDBWithNonRecursiveCriteria(final EntityKind entityKind, final Collection<ISearchCriteria> criteria,
+            final SearchOperator operator, final boolean entityTypeSearch)
     {
-        final SelectQuery selectQuery = Translator.translate(entityKind, criteria, operator);
+        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind, entityTypeSearch);
+        final SelectQuery selectQuery = Translator.translate(entityMapper, criteria, operator);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
-        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind);
-        return result.stream().map(stringObjectMap -> (Long) stringObjectMap.get(entityMapper.getDataTableIdField())).collect(Collectors.toSet());
+        return result.stream().map(stringLongMap -> (Long) stringLongMap.get(entityMapper.getEntitiesTableIdField())).collect(Collectors.toSet());
     }
 
     @Override
     public Set<Long> findChildIDs(final EntityKind entityKind, final Set<Long> parentIdSet)
     {
-        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind);
+        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind, false);
         final String query = "SELECT DISTINCT " + entityMapper.getRelationshipsTableChildIdField() + "\n" +
                 "FROM " + entityMapper.getRelationshipsTable() + "\n" +
                 "WHERE " + entityMapper.getRelationshipsTableParentIdField() + " IN (?)";
@@ -61,7 +62,7 @@ public class PostgresSearchDAO implements ISQLSearchDAO
     @Override
     public Set<Long> findParentIDs(final EntityKind entityKind, final Set<Long> childIdSet)
     {
-        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind);
+        final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind, false);
         final String query = "SELECT DISTINCT " + entityMapper.getRelationshipsTableParentIdField() + "\n" +
                 "FROM " + entityMapper.getRelationshipsTable() + "\n" +
                 "WHERE " + entityMapper.getRelationshipsTableChildIdField() + " IN (?)";

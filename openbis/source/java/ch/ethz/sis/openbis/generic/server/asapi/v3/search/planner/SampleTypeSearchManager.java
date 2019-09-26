@@ -16,8 +16,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
+import java.util.Collections;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
@@ -48,7 +50,35 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
     @Override
     public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria)
     {
-        return null;
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(),
+                criteria.getCriteria(), criteria.getOperator(), true);
+
+        // Reaching this point we have the intermediate results of all recursive queries
+        final Set<Long> resultBeforeFiltering;
+        if (containsValues(mainCriteriaIntermediateResults))
+        { // If we have results, we use them
+            resultBeforeFiltering = mainCriteriaIntermediateResults;
+        } else
+        { // If we don't have results and criteria are not empty, there is no results.
+            resultBeforeFiltering = Collections.emptySet();
+        }
+
+        return filterIDsByUserRights(userId, resultBeforeFiltering);
+    }
+
+    /**
+     * Returns entity kind related to the entity type of this manager.
+     *
+     * @return entity kind related to the entity type of this manager.
+     */
+    private EntityKind getEntityKind()
+    {
+        return EntityKind.SAMPLE;
+    }
+
+    private SampleTypeSearchCriteria createEmptyCriteria()
+    {
+        return new SampleTypeSearchCriteria();
     }
 
 }

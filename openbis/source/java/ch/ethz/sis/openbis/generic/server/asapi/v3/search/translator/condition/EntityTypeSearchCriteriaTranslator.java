@@ -38,6 +38,7 @@ public class EntityTypeSearchCriteriaTranslator implements IConditionTranslator<
     public void translate(final AbstractEntityTypeSearchCriteria criterion, final EntityMapper entityMapper, final List<Object> args,
             final StringBuilder sqlBuilder, final Map<Object, Map<String, JoinInformation>> aliases)
     {
+
         sqlBuilder.append(TRUE);
     }
 

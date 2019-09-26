@@ -16,22 +16,29 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.SQLTypes;
+
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CHILD_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.CODE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DESCRIPTION_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_CODE_PREFIX;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.GENERATED_FROM_DEPTH;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_AUTO_GENERATED_CODE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_LISTABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.IS_SUBCODE_UNIQUE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MODIFICATION_TIMESTAMP_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PARENT_SAMPLE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_DEPTH;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERM_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
@@ -42,7 +49,9 @@ import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.REGISTRATI
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SHOW_PARENT_METADATA;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.VALIDATION_SCRIPT_ID_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.DATA_ALL_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.PROPERTY_TYPES_TABLE;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.TableNames.SAMPLES_ALL_TABLE;
@@ -66,12 +75,17 @@ public enum EntityMapper
             ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ID_COLUMN, SAMPLE_TYPE_COLUMN,
             PROPERTY_TYPE_COLUMN, SAMPLE_PROPERTIES_TABLE, ID_COLUMN, SAMPLE_COLUMN,
             SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, SAMPLE_RELATIONSHIPS_ALL_TABLE, ID_COLUMN, PARENT_SAMPLE_COLUMN,
-            CHILD_SAMPLE_COLUMN, DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN);
+            CHILD_SAMPLE_COLUMN, DATA_ALL_TABLE, ID_COLUMN, SAMPLE_COLUMN),
+
+    SAMPLE_TYPE(SAMPLE_TYPES_TABLE, ID_COLUMN, null,  null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null);
 
     static
     {
         initSampleFieldToSQLTypeMap();
         initSampleSqlTypeToFieldsMap();
+        initSampleTypeFieldToSQLTypeMap();
+        initSampleTypeSqlTypeToFieldsMap();
     }
 
     /*
@@ -178,9 +192,10 @@ public enum EntityMapper
         this.dataTableEntityIdField = dataTableEntityIdField;
     }
 
-    public static EntityMapper toEntityMapper(final EntityKind entityKind)
+    public static EntityMapper toEntityMapper(final EntityKind entityKind, final boolean isEntityType)
     {
-        return EntityMapper.valueOf(entityKind.name());
+        // By convention entity mapper values corresponding to types should end with "_TYPE"
+        return EntityMapper.valueOf(entityKind.name() + (isEntityType ? "_TYPE" : ""));
     }
 
     public String getEntitiesTable()
@@ -317,6 +332,37 @@ public enum EntityMapper
         fields.put(PART_OF_SAMPLE_COLUMN, SQLTypes.INT8);
         fields.put(PERSON_MODIFIER_COLUMN, SQLTypes.INT8);
         fields.put(PROJECT_COLUMN, SQLTypes.INT8);
+    }
+
+    private static void initSampleTypeFieldToSQLTypeMap()
+    {
+        final Map<String, SQLTypes> fields = SAMPLE_TYPE.fieldToSQLTypeMap;
+        fields.put(CODE_COLUMN, SQLTypes.VARCHAR);
+        fields.put(DESCRIPTION_COLUMN, SQLTypes.VARCHAR);
+        fields.put(GENERATED_CODE_PREFIX, SQLTypes.VARCHAR);
+        fields.put(MODIFICATION_TIMESTAMP_COLUMN, SQLTypes.TIMESTAMP_WITH_TZ);
+        fields.put(GENERATED_FROM_DEPTH, SQLTypes.INT4);
+        fields.put(PART_OF_DEPTH, SQLTypes.INT4);
+        fields.put(VALIDATION_SCRIPT_ID_COLUMN, SQLTypes.INT8);
+        fields.put(IS_AUTO_GENERATED_CODE, SQLTypes.BOOLEAN);
+        fields.put(IS_SUBCODE_UNIQUE, SQLTypes.BOOLEAN);
+        fields.put(IS_LISTABLE, SQLTypes.BOOLEAN);
+        fields.put(SHOW_PARENT_METADATA, SQLTypes.BOOLEAN);
+    }
+
+    private static void initSampleTypeSqlTypeToFieldsMap()
+    {
+        final Map<SQLTypes, Set<String>> map = SAMPLE_TYPE.sqlTypeToFieldsMap;
+        final Set<String> varcharColumns = new HashSet<>(Arrays.asList(CODE_COLUMN, DESCRIPTION_COLUMN, GENERATED_CODE_PREFIX));
+        final Set<String> timestampColumns = new HashSet<>(Arrays.asList(MODIFICATION_TIMESTAMP_COLUMN));
+        final Set<String> int4Columns = new HashSet<>(Arrays.asList(GENERATED_FROM_DEPTH, PART_OF_DEPTH));
+        final Set<String> int8Columns = new HashSet<>(Arrays.asList(VALIDATION_SCRIPT_ID_COLUMN));
+        final Set<String> booleanColumns = new HashSet<>(Arrays.asList(IS_AUTO_GENERATED_CODE, IS_SUBCODE_UNIQUE, IS_LISTABLE, SHOW_PARENT_METADATA));
+        map.put(SQLTypes.VARCHAR, varcharColumns);
+        map.put(SQLTypes.TIMESTAMP_WITH_TZ, timestampColumns);
+        map.put(SQLTypes.INT4, int4Columns);
+        map.put(SQLTypes.INT8, int8Columns);
+        map.put(SQLTypes.BOOLEAN, booleanColumns);
     }
 
     private static void initSampleSqlTypeToFieldsMap()
