@@ -30,7 +30,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETransl
  *
  * @author Viktor Kovtun
  */
-public class SampleTypeSearchManager extends AbstractCompositeEntitySearchManager<SampleTypeSearchCriteria, SampleType>
+public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSearchCriteria, SampleType>
 {
 
     public SampleTypeSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
@@ -43,6 +43,12 @@ public class SampleTypeSearchManager extends AbstractCompositeEntitySearchManage
     protected Set<Long> doFilterIDsByUserRights(final Set<Long> ids, final AuthorisationInformation authorizedSpaceProjectIds)
     {
         throw new RuntimeException("Filter method not implemented yet.");
+    }
+
+    @Override
+    public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria)
+    {
+        return null;
     }
 
 }

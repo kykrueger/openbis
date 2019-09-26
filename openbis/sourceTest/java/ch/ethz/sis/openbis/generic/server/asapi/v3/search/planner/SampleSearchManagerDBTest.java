@@ -29,12 +29,11 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.transaction.TransactionStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.CODE_1;
@@ -80,7 +79,7 @@ import static org.testng.Assert.assertTrue;
 public class SampleSearchManagerDBTest
 {
 
-    private static final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("testApplicationContext.xml");
+    private static final AbstractApplicationContext context = new ClassPathXmlApplicationContext("testApplicationContext.xml");
 
     private DBTestHelper dbTestHelper = context.getBean(DBTestHelper.class);
 
@@ -91,8 +90,6 @@ public class SampleSearchManagerDBTest
     private IID2PETranslator iid2PETranslator;
 
     private SampleSearchManager searchManager;
-
-    private TransactionStatus transactionStatus;
 
     public SampleSearchManagerDBTest() throws ClassNotFoundException
     {
@@ -105,18 +102,13 @@ public class SampleSearchManagerDBTest
         searchDAO = context.getBean(PostgresSearchDAO.class);
         authInfoProviderDAO = context.getBean(ISQLAuthorisationInformationProviderDAO.class);
         iid2PETranslator = context.getBean("sample-id-2-pet-translator", IID2PETranslator.class);
+        searchManager = new SampleSearchManager(searchDAO, authInfoProviderDAO, iid2PETranslator);
     }
 
     @AfterClass
     public void tearDownClass() throws Exception
     {
-        context.close();
-    }
-
-    @BeforeMethod
-    public void setUp() throws Exception
-    {
-        searchManager = new SampleSearchManager(searchDAO, authInfoProviderDAO, iid2PETranslator);
+        context.registerShutdownHook();
     }
 
     @AfterMethod

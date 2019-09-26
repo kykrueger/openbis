@@ -18,6 +18,10 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner;
 
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.AuthorisationInformation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
@@ -37,6 +41,30 @@ public class SampleSearchManager extends AbstractCompositeEntitySearchManager<Sa
             final IID2PETranslator idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
+    }
+
+    @Override
+    protected EntityKind getEntityKind()
+    {
+        return EntityKind.SAMPLE;
+    }
+
+    @Override
+    protected Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass()
+    {
+        return SampleParentsSearchCriteria.class;
+    }
+
+    @Override
+    protected Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass()
+    {
+        return SampleChildrenSearchCriteria.class;
+    }
+
+    @Override
+    protected SampleSearchCriteria createEmptyCriteria()
+    {
+        return new SampleSearchCriteria();
     }
 
     @Override

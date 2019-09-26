@@ -27,9 +27,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractCompositeS
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleChildrenSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleParentsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.ISQLSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
@@ -45,6 +42,19 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     }
 
     /**
+     * Returns what kind of entity should be searched.
+     *
+     * @return an entity kind.
+     */
+    protected abstract EntityKind getEntityKind();
+
+    protected abstract Class<? extends AbstractCompositeSearchCriteria> getParentsSearchCriteriaClass();
+
+    protected abstract Class<? extends AbstractCompositeSearchCriteria> getChildrenSearchCriteriaClass();
+
+    protected abstract CRITERIA createEmptyCriteria();
+
+    /**
      * Checks whether a collection contains any values.
      *
      * @param collection collection to be checked for values.
@@ -58,10 +68,11 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     @Override
     public Set<Long> searchForIDs(final Long userId, final CRITERIA criteria)
     {
-        final List<ISearchCriteria> parentsCriteria = getCriteria(criteria, SampleParentsSearchCriteria.class);
-        final List<ISearchCriteria> childrenCriteria = getCriteria(criteria, SampleChildrenSearchCriteria.class);
-        final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, SampleParentsSearchCriteria.class,
-                SampleChildrenSearchCriteria.class);
+        final Class<? extends AbstractCompositeSearchCriteria> parentsSearchCriteriaClass = getParentsSearchCriteriaClass();
+        final Class<? extends AbstractCompositeSearchCriteria> childrenSearchCriteriaClass = getChildrenSearchCriteriaClass();
+        final List<ISearchCriteria> parentsCriteria = getCriteria(criteria, parentsSearchCriteriaClass);
+        final List<ISearchCriteria> childrenCriteria = getCriteria(criteria, childrenSearchCriteriaClass);
+        final List<ISearchCriteria> mainCriteria = getOtherCriteriaThan(criteria, parentsSearchCriteriaClass, childrenSearchCriteriaClass);
 
         Set<Long> mainCriteriaIntermediateResults = null;
         Set<Long> parentCriteriaIntermediateResults = null;
@@ -70,7 +81,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
         if (!mainCriteria.isEmpty())
         {
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, mainCriteria,
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(), mainCriteria,
                     criteria.getOperator());
         }
 
@@ -120,8 +131,8 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     private Set<Long> findFinalRelationshipIds(final Long userId, final SearchOperator operator,
             final List<ISearchCriteria> relatedEntitiesCriteria)
     {
-        final List<Set<Long>> relatedIds =  relatedEntitiesCriteria.stream().flatMap(sampleSearchCriteria -> {
-            final Set<Long> foundParentIds = searchForIDs(userId, (CRITERIA) sampleSearchCriteria);
+        final List<Set<Long>> relatedIds =  relatedEntitiesCriteria.stream().flatMap(entitySearchCriteria -> {
+            final Set<Long> foundParentIds = searchForIDs(userId, (CRITERIA) entitySearchCriteria);
             return foundParentIds.isEmpty() ? Stream.empty() : Stream.of(foundParentIds);
         }).collect(Collectors.toList());
 
@@ -133,14 +144,14 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      */
 
     /**
-     * Queries the DB to return all sample IDs.
+     * Queries the DB to return all entity IDs.
      *
-     * @return set of IDs of all samples.
+     * @return set of IDs of all entities.
      */
     private Set<Long> getAllIds()
     {
-        final SampleSearchCriteria criteria = new SampleSearchCriteria();
-        return getSearchDAO().queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, Collections.singletonList(criteria),
+        final CRITERIA criteria = createEmptyCriteria();
+        return getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(), Collections.singletonList(criteria),
                 SearchOperator.OR);
     }
 
@@ -148,7 +159,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     {
         try
         {
-            return getSearchDAO().findChildIDs(EntityKind.SAMPLE, parentIdSet);
+            return getSearchDAO().findChildIDs(getEntityKind(), parentIdSet);
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -160,7 +171,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
     {
         try
         {
-            return getSearchDAO().findParentIDs(EntityKind.SAMPLE, childIdSet);
+            return getSearchDAO().findParentIDs(getEntityKind(), childIdSet);
         } catch (Exception e)
         {
             e.printStackTrace();
