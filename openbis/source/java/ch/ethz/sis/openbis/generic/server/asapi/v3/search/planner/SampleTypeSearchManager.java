@@ -53,15 +53,10 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
         final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(),
                 criteria.getCriteria(), criteria.getOperator(), true);
 
-        // Reaching this point we have the intermediate results of all recursive queries
-        final Set<Long> resultBeforeFiltering;
-        if (containsValues(mainCriteriaIntermediateResults))
-        { // If we have results, we use them
-            resultBeforeFiltering = mainCriteriaIntermediateResults;
-        } else
-        { // If we don't have results and criteria are not empty, there is no results.
-            resultBeforeFiltering = Collections.emptySet();
-        }
+        // If we have results, we use them
+        // If we don't have results and criteria are not empty, there are no results.
+        final Set<Long> resultBeforeFiltering =
+                containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
 
         return filterIDsByUserRights(userId, resultBeforeFiltering);
     }
@@ -74,11 +69,6 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
     private EntityKind getEntityKind()
     {
         return EntityKind.SAMPLE;
-    }
-
-    private SampleTypeSearchCriteria createEmptyCriteria()
-    {
-        return new SampleTypeSearchCriteria();
     }
 
 }

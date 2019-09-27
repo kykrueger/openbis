@@ -22,7 +22,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCr
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.ISQLAuthorisationInformationProviderDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IID2PETranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchCriteriaTranslator;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.testng.annotations.AfterClass;
@@ -30,21 +29,24 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_1;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_2;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_3;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_CODE_4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_ID_1;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.SAMPLE_TYPE_ID_4;
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.DBTestHelper.USER_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.LISTABLE_SAMPLE_TYPE_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.NOT_LISTABLE_SAMPLE_TYPE_ID;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_2;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_3;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_CODE_4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_ID_1;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.SAMPLE_TYPE_ID_4;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SamplesDBTestHelper.USER_ID;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class SampleTypeSearchManagerDBTest
 {
 
     private static final AbstractApplicationContext context = new ClassPathXmlApplicationContext("testApplicationContext.xml");
 
-    private DBTestHelper dbTestHelper = context.getBean(DBTestHelper.class);
+    private SamplesDBTestHelper dbTestHelper = context.getBean(SamplesDBTestHelper.class);
 
     private PostgresSearchDAO searchDAO;
 
@@ -93,7 +95,7 @@ public class SampleTypeSearchManagerDBTest
     }
 
     /**
-     * Tests {@link StringFieldSearchCriteriaTranslator} with string attribute search criteria using DB connection.
+     * Tests {@link SampleTypeSearchManager} with string attribute search criteria using DB connection.
      */
     @Test
     public void testQueryDBWithCode()
@@ -115,6 +117,23 @@ public class SampleTypeSearchManagerDBTest
         final SampleTypeSearchCriteria endsWithCriterion = new SampleTypeSearchCriteria();
         endsWithCriterion.withCode().thatEndsWith(SAMPLE_TYPE_CODE_4.substring(4));
         checkCriterion(endsWithCriterion, SAMPLE_TYPE_ID_4);
+    }
+
+    /**
+     * Tests {@link SampleTypeSearchManager} with boolean search criteria using DB connection.
+     */
+    @Test
+    public void testQueryDBWithListable()
+    {
+        final SampleTypeSearchCriteria trueCriterion = new SampleTypeSearchCriteria();
+        trueCriterion.withListable().thatEquals(true);
+        final Set<Long> trueCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, trueCriterion);
+        assertTrue(trueCriterionSampleTypeIds.contains(LISTABLE_SAMPLE_TYPE_ID));
+
+        final SampleTypeSearchCriteria falseCriterion = new SampleTypeSearchCriteria();
+        falseCriterion.withListable().thatEquals(false);
+        final Set<Long> falseCriterionSampleTypeIds = searchManager.searchForIDs(USER_ID, falseCriterion);
+        assertTrue(falseCriterionSampleTypeIds.contains(NOT_LISTABLE_SAMPLE_TYPE_ID));
     }
 
 }

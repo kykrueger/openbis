@@ -48,7 +48,7 @@ import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLL
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.VALUES;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
 
-public class DBTestHelper
+public class SamplesDBTestHelper
 {
 
     public static final String ID_DELIMITER = "/";
@@ -101,16 +101,6 @@ public class DBTestHelper
 
     public static final long SAMPLE_TYPE_PROPERTY_TYPE_ID_5 = 2005L;
 
-    public static final long STRING_PROPERTY_TYPE_ID = 1001L;
-
-    public static final long STRING_SAMPLE_TYPE_PROPERTY_TYPE_ID = 1001L;
-
-    public static final long STRING_PROPERTY_SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL = 1L;
-
-    public static final long NUMBER_PROPERTY_SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL = 2L;
-
-    public static final long DATE_PROPERTY_SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL = 3L;
-
     public static final long SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL_2 = 2L;
 
     public static final long SAMPLE_TYPE_ID_1 = 3001L;
@@ -122,6 +112,10 @@ public class DBTestHelper
     public static final long SAMPLE_TYPE_ID_4 = 3004L;
 
     public static final long SAMPLE_TYPE_ID_5 = 3005L;
+
+    public static final long LISTABLE_SAMPLE_TYPE_ID = 3101L;
+
+    public static final long NOT_LISTABLE_SAMPLE_TYPE_ID = 3102L;
 
     public static final long SAMPLE_PROPERTY_1_NUMBER_VALUE = 101L;
 
@@ -197,13 +191,9 @@ public class DBTestHelper
 
     public static final Date REGISTRATION_DATE_2 = new Date(119, Calendar.JUNE, 12, 10, 50, 0);
 
-    public static final Date REGISTRATION_DATE_3 = new Date(119, Calendar.JUNE, 13, 10, 50, 0);
-
     public static final String REGISTRATION_DATE_STRING_1 = "2019-06-11 10:50:00 +0200";
 
     public static final String REGISTRATION_DATE_STRING_2 = "2019-06-12 10:50:00 +0200";
-
-    public static final String REGISTRATION_DATE_STRING_3 = "2019-06-13 10:50:00 +0200";
 
     public static final Date MODIFICATION_DATE_1 = new Date(118, Calendar.JUNE, 11, 10, 50, 0);
 
@@ -211,11 +201,7 @@ public class DBTestHelper
 
     public static final Date MODIFICATION_DATE_3 = new Date(118, Calendar.JUNE, 13, 10, 50, 0);
 
-    public static final String MODIFICATION_DATE_STRING_1 = "2018-06-11 10:50:00 +0200";
-
     public static final String MODIFICATION_DATE_STRING_2 = "2018-06-12 10:50:00 +0200";
-
-    public static final String MODIFICATION_DATE_STRING_3 = "2018-06-13 10:50:00 +0200";
 
     public static final Date DEFAULT_DATE = new Date(119, Calendar.JUNE, 10, 10, 50, 0);
 
@@ -228,6 +214,10 @@ public class DBTestHelper
     public static final String SAMPLE_TYPE_CODE_4 = "SAMPLE.TYPE.4";
 
     public static final String SAMPLE_TYPE_CODE_5 = "SAMPLE.TYPE.5";
+
+    public static final String LISTABLE_SAMPLE_TYPE_CODE = "SAMPLE.TYPE.LISTABLE";
+
+    public static final String NOT_LISTABLE_SAMPLE_TYPE_CODE = "SAMPLE.TYPE.NOT.LISTABLE";
 
     /** Indicator that the property is internal. */
     private static final String INTERNAL_PROPERTY_PREFIX = "$";
@@ -290,6 +280,7 @@ public class DBTestHelper
             createExperiment();
             createSamples();
             createProperties();
+            createSampleTypes();
 
             connection.commit();
         } catch (final Exception e)
@@ -297,6 +288,21 @@ public class DBTestHelper
             connection.rollback();
             throw e;
         }
+    }
+
+    private void createSampleTypes()
+    {
+        final Map<String, Object> listableSampleTypeValues = new HashMap<>();
+        listableSampleTypeValues.put(ColumnNames.ID_COLUMN, LISTABLE_SAMPLE_TYPE_ID);
+        listableSampleTypeValues.put(ColumnNames.CODE_COLUMN, LISTABLE_SAMPLE_TYPE_CODE);
+        listableSampleTypeValues.put(ColumnNames.IS_LISTABLE, true);
+        insertRecord(TableNames.SAMPLE_TYPES_TABLE, listableSampleTypeValues);
+
+        final Map<String, Object> notListableSampleTypeValues = new HashMap<>();
+        notListableSampleTypeValues.put(ColumnNames.ID_COLUMN, NOT_LISTABLE_SAMPLE_TYPE_ID);
+        notListableSampleTypeValues.put(ColumnNames.CODE_COLUMN, NOT_LISTABLE_SAMPLE_TYPE_CODE);
+        notListableSampleTypeValues.put(ColumnNames.IS_LISTABLE, false);
+        insertRecord(TableNames.SAMPLE_TYPES_TABLE, notListableSampleTypeValues);
     }
 
     private void createProperties()
@@ -330,20 +336,20 @@ public class DBTestHelper
             propertyTypeCode = propertyTypeCode.substring(INTERNAL_PROPERTY_PREFIX.length());
         }
 
-        final Map<String, Object> sampleTypesValues = new HashMap<>();
-        sampleTypesValues.put(ColumnNames.ID_COLUMN, sampleTypeId);
-        sampleTypesValues.put(ColumnNames.CODE_COLUMN, sampleTypeCode);
-        insertRecord(TableNames.SAMPLE_TYPES_TABLE, sampleTypesValues);
+        final Map<String, Object> sampleTypeValues = new HashMap<>();
+        sampleTypeValues.put(ColumnNames.ID_COLUMN, sampleTypeId);
+        sampleTypeValues.put(ColumnNames.CODE_COLUMN, sampleTypeCode);
+        insertRecord(TableNames.SAMPLE_TYPES_TABLE, sampleTypeValues);
 
-        final Map<String, Object> propertyTypesValues = new HashMap<>();
-        propertyTypesValues.put(ColumnNames.ID_COLUMN, propertyTypeId);
-        propertyTypesValues.put(ColumnNames.CODE_COLUMN, propertyTypeCode);
-        propertyTypesValues.put(ColumnNames.LABEL_COLUMN, propertyTypeCode.toLowerCase());
-        propertyTypesValues.put(ColumnNames.DESCRIPTION_COLUMN, "");
-        propertyTypesValues.put(ColumnNames.DATA_TYPE_COLUMN, dataTypeId);
-        propertyTypesValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
-        propertyTypesValues.put(ColumnNames.IS_INTERNAL_NAMESPACE, isInternalCode);
-        insertRecord(TableNames.PROPERTY_TYPES_TABLE, propertyTypesValues);
+        final Map<String, Object> propertyTypeValues = new HashMap<>();
+        propertyTypeValues.put(ColumnNames.ID_COLUMN, propertyTypeId);
+        propertyTypeValues.put(ColumnNames.CODE_COLUMN, propertyTypeCode);
+        propertyTypeValues.put(ColumnNames.LABEL_COLUMN, propertyTypeCode.toLowerCase());
+        propertyTypeValues.put(ColumnNames.DESCRIPTION_COLUMN, "");
+        propertyTypeValues.put(ColumnNames.DATA_TYPE_COLUMN, dataTypeId);
+        propertyTypeValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        propertyTypeValues.put(ColumnNames.IS_INTERNAL_NAMESPACE, isInternalCode);
+        insertRecord(TableNames.PROPERTY_TYPES_TABLE, propertyTypeValues);
 
         final Map<String, Object> stptValues = new HashMap<>();
         stptValues.put(ColumnNames.ID_COLUMN, sampleTypePropertyTypeId);
@@ -353,14 +359,14 @@ public class DBTestHelper
         stptValues.put(ColumnNames.ORDINAL_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ORDINAL_2);
         insertRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, stptValues);
 
-        final Map<String, Object> samplePropertiesValues = new HashMap<>();
-        samplePropertiesValues.put(ColumnNames.ID_COLUMN, samplePropertyId);
-        samplePropertiesValues.put(ColumnNames.SAMPLE_COLUMN, sampleId);
-        samplePropertiesValues.put(ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, sampleTypePropertyTypeId);
-        samplePropertiesValues.put(ColumnNames.VALUE_COLUMN, value);
-        samplePropertiesValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
-        samplePropertiesValues.put(ColumnNames.PERSON_AUTHOR_COLUMN, USER_ID);
-        insertRecord(TableNames.SAMPLE_PROPERTIES_TABLE, samplePropertiesValues);
+        final Map<String, Object> samplePropertyValues = new HashMap<>();
+        samplePropertyValues.put(ColumnNames.ID_COLUMN, samplePropertyId);
+        samplePropertyValues.put(ColumnNames.SAMPLE_COLUMN, sampleId);
+        samplePropertyValues.put(ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN, sampleTypePropertyTypeId);
+        samplePropertyValues.put(ColumnNames.VALUE_COLUMN, value);
+        samplePropertyValues.put(ColumnNames.PERSON_REGISTERER_COLUMN, USER_ID);
+        samplePropertyValues.put(ColumnNames.PERSON_AUTHOR_COLUMN, USER_ID);
+        insertRecord(TableNames.SAMPLE_PROPERTIES_TABLE, samplePropertyValues);
     }
 
     private void createSamples()
@@ -572,6 +578,10 @@ public class DBTestHelper
             deleteRecord(TableNames.SAMPLE_PROPERTIES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_PROPERTY_ID_5);
             deleteRecord(TableNames.SAMPLE_TYPE_PROPERTY_TYPE_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_PROPERTY_TYPE_ID_5);
             deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, SAMPLE_TYPE_ID_5);
+
+            // Removing sample types
+            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, LISTABLE_SAMPLE_TYPE_ID);
+            deleteRecord(TableNames.SAMPLE_TYPES_TABLE, ColumnNames.ID_COLUMN, NOT_LISTABLE_SAMPLE_TYPE_ID);
 
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_3);
             deleteRecord(TableNames.SAMPLES_ALL_TABLE, ColumnNames.ID_COLUMN, SAMPLE_ID_2);
