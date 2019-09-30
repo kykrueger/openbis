@@ -16,15 +16,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
-import java.sql.Connection;
-
 public class HibernateSQLExecutor extends JDBCSQLExecutor
 {
 
-    public HibernateSQLExecutor(final Connection connection)
+    public HibernateSQLExecutor()
     {
         super();
-        setConnection(connection);
     }
 
 }

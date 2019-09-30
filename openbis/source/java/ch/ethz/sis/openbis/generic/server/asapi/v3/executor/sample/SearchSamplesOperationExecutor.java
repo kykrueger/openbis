@@ -30,6 +30,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.sample.ISampleTranslator;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +50,9 @@ public class SearchSamplesOperationExecutor extends SearchObjectsOperationExecut
 
     @Autowired
     private SampleSearchManager sampleSearchManager;
+
+    @Autowired
+    protected IDAOFactory daoFactory;
 
     @Override
     protected Class<? extends SearchObjectsOperation<SampleSearchCriteria, SampleFetchOptions>> getOperationClass()

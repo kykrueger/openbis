@@ -26,24 +26,4 @@
     </bean>
 
     <bean id="sql-executor" factory-bean="db-test-helper" factory-method="getSqlExecutor"/>
-
-    <bean id="postgres-search-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO">
-        <constructor-arg ref="sql-executor"/>
-    </bean>
-
-    <bean id="information-provider-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO">
-        <constructor-arg ref="sql-executor"/>
-    </bean>
-
-    <bean id="sample-id-2-pet-translator" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.SampleID2PETranslator">
-        <constructor-arg>
-            <bean factory-bean="dao-factory" factory-method="getSampleDAO"/>
-        </constructor-arg>
-    </bean>
-
-    <bean class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager">
-        <constructor-arg ref="postgres-search-dao"/>
-        <constructor-arg ref="information-provider-dao"/>
-        <constructor-arg ref="sample-id-2-pet-translator"/>
-    </bean>
 </beans>

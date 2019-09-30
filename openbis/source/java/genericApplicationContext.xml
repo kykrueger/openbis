@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:plugins="http://www.springframework.org/schema/context"
-	xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:cache="http://www.springframework.org/schema/cache"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:plugins="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 			http://www.springframework.org/schema/tx
 			http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
             http://www.springframework.org/schema/context
             http://www.springframework.org/schema/context/spring-context-2.5.xsd
             http://www.springframework.org/schema/aop 
-            http://www.springframework.org/schema/aop/spring-aop.xsd
-            http://www.springframework.org/schema/cache
-            http://www.springframework.org/schema/cache/spring-cache.xsd">
+            http://www.springframework.org/schema/aop/spring-aop.xsd">
 
 	<import resource="hibernateContext.xml" />
 	<import resource="dbConfigurationContext.xml" />
@@ -194,6 +191,41 @@
 		class="ch.systemsx.cisd.openbis.generic.server.dataaccess.DataStoreServerBasedDataSourceProvider">
 		<constructor-arg ref="dao-factory" />
 		<constructor-arg value="etc/dss-datasource-mapping" />
+	</bean>
+
+<!--	<bean id="session-factory" factory-bean="dao-factory" factory-method="getSessionFactory"/>-->
+
+<!--	<bean id="current-session" factory-bean="session-factory" factory-method="openSession"/>-->
+
+	<bean id="current-session" factory-bean="hibernate-session-factory" factory-method="openSession"/>
+
+	<bean id="sql-executor" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.HibernateSQLExecutor">
+		<property name="connection">
+			<!--suppress SpringBeanConstructorArgInspection, SpringXmlModelInspection -->
+			<bean factory-bean="current-session" factory-method="connection"/>
+		</property>
+	</bean>
+
+	<bean id="postgres-search-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO"
+		  lazy-init="true">
+		<constructor-arg ref="sql-executor"/>
+	</bean>
+
+	<bean id="information-provider-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO"
+			lazy-init="true">
+		<constructor-arg ref="sql-executor"/>
+	</bean>
+
+	<bean id="sample-id-2-pet-translator" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.SampleID2PETranslator">
+		<constructor-arg>
+			<bean factory-bean="dao-factory" factory-method="getSampleDAO"/>
+		</constructor-arg>
+	</bean>
+
+	<bean class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="sample-id-2-pet-translator"/>
 	</bean>
 
 	<!-- // Common -->
