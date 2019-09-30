@@ -16,13 +16,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate;
 
-import java.util.Collection;
 import java.util.List;
 
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 
-public class SampleID2PETranslator implements IID2PETranslator<SamplePE>
+public class SampleID2PETranslator implements IID2PETranslator<Long>
 {
     private ISampleDAO dao;
 
@@ -32,8 +30,8 @@ public class SampleID2PETranslator implements IID2PETranslator<SamplePE>
     }
 
     @Override
-    public List<SamplePE> translate(final Collection<Long> ids)
+    public List<Long> translate(final List<Long> ids)
     {
-        return dao.listByIDs(ids);
+        return ids;
     }
 }

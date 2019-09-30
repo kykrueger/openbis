@@ -47,7 +47,7 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
     private final IID2PETranslator<OBJECT_PE> idsTranslator;
 
     public AbstractSearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator)
+            final IID2PETranslator<OBJECT_PE> idsTranslator)
     {
         this.searchDAO = searchDAO;
         this.authProvider = authProvider;
@@ -178,7 +178,7 @@ public abstract class AbstractSearchManager<CRITERIA extends ISearchCriteria, OB
         return authProvider;
     }
 
-    public List<OBJECT_PE> translate(final Collection<Long> ids) {
+    public List<OBJECT_PE> translate(final List<Long> ids) {
         return idsTranslator.translate(ids);
     }
 

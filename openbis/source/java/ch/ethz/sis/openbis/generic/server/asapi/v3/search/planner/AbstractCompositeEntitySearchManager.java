@@ -35,7 +35,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
 {
 
     public AbstractCompositeEntitySearchManager(final ISQLSearchDAO searchDAO, final ISQLAuthorisationInformationProviderDAO authProvider,
-            final IID2PETranslator idsTranslator)
+            final IID2PETranslator<OBJECT_PE> idsTranslator)
     {
         super(searchDAO, authProvider, idsTranslator);
     }

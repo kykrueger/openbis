@@ -99,7 +99,7 @@ public abstract class SearchObjectsOperationExecutor<OBJECT, OBJECT_PE, CRITERIA
 
         final Set<Long> allResultsIds = getSearchManager().searchForIDs(userId, criteria);
         final Set<Long> filteredResults = getSearchManager().filterIDsByUserRights(userId, allResultsIds);
-        final Collection<Long> sortedAndPagedResults = sortAndPage.sortAndPage(filteredResults, criteria, fetchOptions);
+        final List<Long> sortedAndPagedResults = (List<Long>) sortAndPage.sortAndPage(filteredResults, criteria, fetchOptions);
         final List<OBJECT_PE> objectPEResults = getSearchManager().translate(sortedAndPagedResults);
         final Map<OBJECT_PE, OBJECT> translatedMap = doTranslate(translationContext, objectPEResults, fetchOptions);
 

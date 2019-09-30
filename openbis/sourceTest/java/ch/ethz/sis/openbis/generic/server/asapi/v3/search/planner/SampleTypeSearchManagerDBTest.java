@@ -52,7 +52,7 @@ public class SampleTypeSearchManagerDBTest
 
     private ISQLAuthorisationInformationProviderDAO authInfoProviderDAO;
 
-    private IID2PETranslator iid2PETranslator;
+    private IID2PETranslator<Long> iid2PETranslator;
 
     private SampleTypeSearchManager searchManager;
 
