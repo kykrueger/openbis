@@ -144,7 +144,7 @@ public class Translator
         final Map<Object, Map<String, JoinInformation>> aliases = new HashMap<>();
         final List<Object> args = new ArrayList<>();
 
-        final String from = buildFrom(dbEntityKind, criteria, aliases);
+        final String from = buildFrom(dbEntityKind, criteria, aliases, criteriaToManagerMap);
         final String where = buildWhere(dbEntityKind, criteria, args, operator, aliases, criteriaToManagerMap, userId);
         final String select = buildSelect(dbEntityKind);
 
@@ -161,7 +161,8 @@ public class Translator
     }
 
     private static String buildFrom(final EntityMapper entityMapper, final Collection<ISearchCriteria> criteria,
-            final Map<Object, Map<String, JoinInformation>> aliases)
+            final Map<Object, Map<String, JoinInformation>> aliases,
+            final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
         final AtomicInteger indexCounter = new AtomicInteger(1);
@@ -176,32 +177,36 @@ public class Translator
 
         criteria.forEach(criterion ->
         {
-            final IConditionTranslator conditionTranslator = CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
-            if (conditionTranslator != null)
+            if (!criteriaToManagerMap.containsKey(criterion.getClass()))
             {
-                final Map<String, JoinInformation> joinInformationMap = conditionTranslator.getJoinInformationMap(criterion,
-                        entityMapper, () -> getAlias(indexCounter));
-
-                if (joinInformationMap != null)
+                // Search for a translator only when you don't have a manager for the criterion.
+                final IConditionTranslator conditionTranslator = CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
+                if (conditionTranslator != null)
                 {
-                    joinInformationMap.values().forEach(joinInformation ->
+                    final Map<String, JoinInformation> joinInformationMap = conditionTranslator.getJoinInformationMap(criterion,
+                            entityMapper, () -> getAlias(indexCounter));
+
+                    if (joinInformationMap != null)
                     {
-                        if (joinInformation.getSubTable() != null)
-                        { // Join required
-                            sqlBuilder.append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
-                                    .append(joinInformation.getSubTableAlias()).append(SP)
-                                    .append(ON).append(SP).append(joinInformation.getMainTableAlias())
-                                    .append(PERIOD).append(joinInformation.getMainTableIdField())
-                                    .append(SP)
-                                    .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
-                                    .append(joinInformation.getSubTableIdField()).append(NEW_LINE);
-                        }
-                    });
-                    aliases.put(criterion, joinInformationMap);
+                        joinInformationMap.values().forEach(joinInformation ->
+                        {
+                            if (joinInformation.getSubTable() != null)
+                            { // Join required
+                                sqlBuilder.append(INNER_JOIN).append(SP).append(joinInformation.getSubTable()).append(SP)
+                                        .append(joinInformation.getSubTableAlias()).append(SP)
+                                        .append(ON).append(SP).append(joinInformation.getMainTableAlias())
+                                        .append(PERIOD).append(joinInformation.getMainTableIdField())
+                                        .append(SP)
+                                        .append(EQ).append(SP).append(joinInformation.getSubTableAlias()).append(PERIOD)
+                                        .append(joinInformation.getSubTableIdField()).append(NEW_LINE);
+                            }
+                        });
+                        aliases.put(criterion, joinInformationMap);
+                    }
+                } else
+                {
+                    throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
                 }
-            } else
-            {
-                throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
             }
         });
         return sqlBuilder.toString();
