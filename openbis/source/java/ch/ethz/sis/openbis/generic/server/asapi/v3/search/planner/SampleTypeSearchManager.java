@@ -49,7 +49,7 @@ public class SampleTypeSearchManager extends AbstractSearchManager<SampleTypeSea
     @Override
     public Set<Long> searchForIDs(final Long userId, final SampleTypeSearchCriteria criteria)
     {
-        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(),
+        final Set<Long> mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getEntityKind(),
                 criteria.getCriteria(), criteria.getOperator(), true);
 
         // If we have results, we use them

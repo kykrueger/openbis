@@ -29,7 +29,7 @@ public interface ISQLSearchDAO
     /**
      *
      */
-    Set<Long> queryDBWithNonRecursiveCriteria(EntityKind entityKind, Collection<ISearchCriteria> criteria,
+    Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, EntityKind entityKind, Collection<ISearchCriteria> criteria,
             SearchOperator operator, final boolean entityTypeSearch);
 
 

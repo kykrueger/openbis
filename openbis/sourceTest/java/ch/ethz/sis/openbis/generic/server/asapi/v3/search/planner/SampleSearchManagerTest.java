@@ -102,17 +102,18 @@ public class SampleSearchManagerTest
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
         searchCriteria.withParents().withOrOperator().setCriteria(new ArrayList<>(parentCriteria));
 
+        final Long userId = 1L;
         final Set<Long> parentCriteriaIds = new HashSet<>(Arrays.asList(11L, 13L, 19L, 17L));
         final Set<Long> parentCriteriaResultingIds = new HashSet<>(Arrays.asList(1L, 3L, 9L, 7L));
         final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 5L));
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
         context.checking(new Expectations()
                 {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE,
                             Collections.singletonList(criterion), SearchOperator.OR, false);
                     will(returnValue(mainCriteriaIds));
 
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, parentCriteria,
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE, parentCriteria,
                             SearchOperator.OR, false);
                     will(returnValue(parentCriteriaIds));
 
@@ -146,18 +147,18 @@ public class SampleSearchManagerTest
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
         searchCriteria.withParents().withOrOperator().setCriteria(new ArrayList<>(parentCriteria));
 
+        final Long userId = 1L;
         final Set<Long> parentCriteriaIds = new HashSet<>(Arrays.asList(11L, 13L, 19L, 17L));
         final Set<Long> parentCriteriaResultingIds = new HashSet<>(Arrays.asList(1L, 3L, 9L, 7L));
         final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 3L));
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
-
         context.checking(new Expectations()
                 {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE,
                             Collections.singletonList(criterion), SearchOperator.AND, false);
                     will(returnValue(mainCriteriaIds));
 
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, parentCriteria,
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE, parentCriteria,
                             SearchOperator.OR, false);
                     will(returnValue(parentCriteriaIds));
 
@@ -191,17 +192,18 @@ public class SampleSearchManagerTest
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
         searchCriteria.withChildren().withAndOperator().setCriteria(new ArrayList<>(childCriteria));
 
+        final Long userId = 1L;
         final Set<Long> childCriteriaIds = new HashSet<>(Arrays.asList(11L, 12L, 14L, 18L));
         final Set<Long> childCriteriaResultingIds = new HashSet<>(Arrays.asList(1L, 3L, 9L, 7L));
         final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 5L));
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 5L, 7L, 9L));
         context.checking(new Expectations()
                 {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, childCriteria,
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE, childCriteria,
                             SearchOperator.AND, false);
                     will(returnValue(childCriteriaIds));
 
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE,
                             Collections.singletonList(criterion), SearchOperator.OR, false);
                     will(returnValue(mainCriteriaIds));
 
@@ -235,18 +237,18 @@ public class SampleSearchManagerTest
         searchCriteria.setCriteria(new ArrayList<>(Arrays.asList(criterion)));
         searchCriteria.withChildren().withOrOperator().setCriteria(new ArrayList<>(childCriteria));
 
+        final Long userId = 1L;
         final Set<Long> childCriteriaIds = new HashSet<>(Arrays.asList(11L, 12L, 14L, 18L));
         final Set<Long> childCriteriaResultingIds = new HashSet<>(Arrays.asList(1L, 3L, 5L, 7L));
         final Set<Long> mainCriteriaIds = new HashSet<>(Arrays.asList(1L, 2L, 3L));
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L));
-
         context.checking(new Expectations()
         {{
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE, childCriteria,
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE, childCriteria,
                     SearchOperator.OR, false);
             will(returnValue(childCriteriaIds));
 
-            one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+            one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE,
                     Collections.singletonList(criterion), SearchOperator.AND, false);
             will(returnValue(mainCriteriaIds));
 
@@ -273,9 +275,10 @@ public class SampleSearchManagerTest
 
         final Set<Long> expectedIds = new HashSet<>(Arrays.asList(1L, 3L, 5L, 7L));
 
+        final Long userId = 1L;
         context.checking(new Expectations()
                 {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(EntityKind.SAMPLE,
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, EntityKind.SAMPLE,
                             Collections.singletonList(criterion), SearchOperator.AND, false);
                     will(returnValue(expectedIds));
                 }});
@@ -292,10 +295,11 @@ public class SampleSearchManagerTest
     @Test
     public void testSearchForIDsNoCriteria()
     {
+        final Long userId = 1L;
         final Set<Long> expectedIds = new HashSet(Arrays.asList(1L, 2L, 3L, 4L));
         context.checking(new Expectations()
                 {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(equal(EntityKind.SAMPLE)),
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, with(equal(EntityKind.SAMPLE)),
                             with(any(List.class)), with(any(SearchOperator.class)), false);
                     will(returnValue(expectedIds));
                 }});
@@ -313,9 +317,10 @@ public class SampleSearchManagerTest
         final SampleSearchCriteria searchCriteria = new SampleSearchCriteria();
         searchCriteria.withAndOperator().setCriteria(new ArrayList<>(Collections.singletonList(criterion)));
 
+        final Long userId = 1L;
         context.checking(new Expectations()
                 {{
-                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(with(equal(EntityKind.SAMPLE)),
+                    one(searchDAOMock).queryDBWithNonRecursiveCriteria(userId, with(equal(EntityKind.SAMPLE)),
                             with(any(List.class)), with(any(SearchOperator.class)), false);
                     will(returnValue(Collections.emptySet()));
                 }});

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,15 +52,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.search.NoProjectSearchCr
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.ListableSampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.NoSampleContainerSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.NoSpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbsenceConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AnyFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AnyPropertySearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CollectionFieldSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DateFieldSearchCriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.EntityTypeSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdSearchCriteriaTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.JoinInformation;
@@ -72,12 +72,17 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.DISTINCT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.EQ;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.FROM;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.INNER_JOIN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.NEW_LINE;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.ON;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.WHERE;
 
 public class Translator
@@ -122,14 +127,14 @@ public class Translator
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(DatePropertySearchCriteria.class, dateFieldSearchCriteriaTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AnyPropertySearchCriteria.class, new AnyPropertySearchCriteriaTranslator());
 
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SampleTypeSearchCriteria.class, new EntityTypeSearchCriteriaTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ListableSampleTypeSearchCriteria.class, new ListableSampleTypeSearchCriteriaTranslator());
     }
 
     private static final AtomicBoolean FIRST = new AtomicBoolean();
 
-    public static SelectQuery translate(final EntityMapper dbEntityKind, final Collection<ISearchCriteria> criteria,
-            final SearchOperator operator)
+    public static SelectQuery translate(final Long userId, final EntityMapper dbEntityKind, final Collection<ISearchCriteria> criteria,
+            final SearchOperator operator,
+            final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap)
     {
         if (criteria == null && criteria.isEmpty())
         {
@@ -140,7 +145,7 @@ public class Translator
         final List<Object> args = new ArrayList<>();
 
         final String from = buildFrom(dbEntityKind, criteria, aliases);
-        final String where = buildWhere(dbEntityKind, criteria, args, operator, aliases);
+        final String where = buildWhere(dbEntityKind, criteria, args, operator, aliases, criteriaToManagerMap, userId);
         final String select = buildSelect(dbEntityKind);
 
         return new SelectQuery(select + from + where, args);
@@ -204,7 +209,9 @@ public class Translator
 
 
     private static String buildWhere(final EntityMapper entityMapper, final Collection<ISearchCriteria> criteria, final List<Object> args,
-            final SearchOperator operator, final Map<Object, Map<String, JoinInformation>> aliases)
+            final SearchOperator operator, final Map<Object, Map<String, JoinInformation>> aliases,
+            final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap,
+            final Long userId)
     {
         final StringBuilder sqlBuilder = new StringBuilder();
         if (isSearchAllCriteria(criteria))
@@ -227,15 +234,25 @@ public class Translator
                 sqlBuilder.append(SP).append(logicalOperator).append(SP);
             }
 
-            @SuppressWarnings("unchecked")
-            final IConditionTranslator<ISearchCriteria> conditionTranslator =
-                    (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
-            if (conditionTranslator != null)
+            final ISearchManager<ISearchCriteria, ?> subqueryManager = criteriaToManagerMap.get(criterion.getClass());
+
+            if (subqueryManager != null)
             {
-                conditionTranslator.translate(criterion, entityMapper, args, sqlBuilder, aliases);
+                final Set<Long> ids = subqueryManager.searchForIDs(userId, criterion);
+                sqlBuilder.append(MAIN_TABLE_ALIAS).append(PERIOD).append(entityMapper.getEntitiesTableEntityTypeIdField()).append(SP)
+                        .append(IN).append(SP).append(LP).append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).append(RP);
+                args.add(ids.toArray(new Long[0]));
             } else
             {
-                throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
+                @SuppressWarnings("unchecked") final IConditionTranslator<ISearchCriteria> conditionTranslator =
+                        (IConditionTranslator<ISearchCriteria>) CRITERIA_TO_CONDITION_TRANSLATOR_MAP.get(criterion.getClass());
+                if (conditionTranslator != null)
+                {
+                    conditionTranslator.translate(criterion, entityMapper, args, sqlBuilder, aliases);
+                } else
+                {
+                    throw new IllegalArgumentException("Unsupported criterion type: " + criterion.getClass().getSimpleName());
+                }
             }
         });
 

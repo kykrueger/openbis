@@ -69,7 +69,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         // The main criteria have no recursive ISearchCriteria into it, to facilitate building a query
         if (!mainCriteria.isEmpty())
         {
-            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(), mainCriteria,
+            mainCriteriaIntermediateResults = getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getEntityKind(), mainCriteria,
                     criteria.getOperator(), false);
         }
 
@@ -102,7 +102,7 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
         } else if (mainCriteria.isEmpty() && parentsCriteria.isEmpty() && childrenCriteria.isEmpty())
         {
             // If we don't have results and criteria are empty, return all.
-            resultBeforeFiltering = getAllIds();
+            resultBeforeFiltering = getAllIds(userId);
         } else
         {
             // If we don't have results and criteria are not empty, there are no results.
@@ -138,11 +138,12 @@ public abstract class AbstractCompositeEntitySearchManager<CRITERIA extends Abst
      * Queries the DB to return all entity IDs.
      *
      * @return set of IDs of all entities.
+     * @param userId
      */
-    private Set<Long> getAllIds()
+    private Set<Long> getAllIds(final Long userId)
     {
         final CRITERIA criteria = createEmptyCriteria();
-        return getSearchDAO().queryDBWithNonRecursiveCriteria(getEntityKind(), Collections.singletonList(criteria),
+        return getSearchDAO().queryDBWithNonRecursiveCriteria(userId, getEntityKind(), Collections.singletonList(criteria),
                 SearchOperator.OR, false);
     }
 

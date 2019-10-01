@@ -3,7 +3,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
 	   xmlns:plugins="http://www.springframework.org/schema/context"
-	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:aop="http://www.springframework.org/schema/aop" xmlns:util="http://www.springframework.org/schema/util"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans
 			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 			http://www.springframework.org/schema/tx
@@ -11,7 +11,9 @@
             http://www.springframework.org/schema/context
             http://www.springframework.org/schema/context/spring-context-2.5.xsd
             http://www.springframework.org/schema/aop 
-            http://www.springframework.org/schema/aop/spring-aop.xsd">
+            http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/util
+            http://www.springframework.org/schema/util/spring-util.xsd">
 
 	<import resource="hibernateContext.xml" />
 	<import resource="dbConfigurationContext.xml" />
@@ -193,40 +195,47 @@
 		<constructor-arg value="etc/dss-datasource-mapping" />
 	</bean>
 
-<!--	<bean id="session-factory" factory-bean="dao-factory" factory-method="getSessionFactory"/>-->
-
-<!--	<bean id="current-session" factory-bean="session-factory" factory-method="openSession"/>-->
-
 	<bean id="current-session" factory-bean="hibernate-session-factory" factory-method="openSession"/>
+
+	<!--suppress SpringBeanConstructorArgInspection, SpringXmlModelInspection -->
+	<bean id="connection" factory-bean="current-session" factory-method="connection"/>
 
 	<bean id="sql-executor" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.HibernateSQLExecutor">
 		<property name="connection">
 			<!--suppress SpringBeanConstructorArgInspection, SpringXmlModelInspection -->
-			<bean factory-bean="current-session" factory-method="connection"/>
+			<bean factory-bean="connection" factory-method="getInnermostDelegateInternal"/>
 		</property>
 	</bean>
 
-	<bean id="postgres-search-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO"
-		  lazy-init="true">
+	<bean id="postgres-search-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.dao.PostgresSearchDAO">
+		<constructor-arg ref="sql-executor"/>
+		<property name="criteriaToManagerMap" ref="criteria-to-manager-map"/>
+	</bean>
+
+	<bean id="information-provider-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO">
 		<constructor-arg ref="sql-executor"/>
 	</bean>
 
-	<bean id="information-provider-dao" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.auth.PostgresAuthorisationInformationProviderDAO"
-			lazy-init="true">
-		<constructor-arg ref="sql-executor"/>
+	<bean id="identity-translator" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.IdentityTranslator">
 	</bean>
 
-	<bean id="sample-id-2-pet-translator" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate.SampleID2PETranslator">
-		<constructor-arg>
-			<bean factory-bean="dao-factory" factory-method="getSampleDAO"/>
-		</constructor-arg>
-	</bean>
-
-	<bean class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager">
+	<bean id="sample-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager" lazy-init="true">
 		<constructor-arg ref="postgres-search-dao"/>
 		<constructor-arg ref="information-provider-dao"/>
-		<constructor-arg ref="sample-id-2-pet-translator"/>
+		<constructor-arg ref="identity-translator"/>
 	</bean>
+
+	<bean id="sample-type-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleTypeSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
+	<util:map id="criteria-to-manager-map" map-class="java.util.HashMap" key-type="java.lang.Class"
+			  value-type="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager">
+		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria" value-ref="sample-search-manager"/>
+		<entry key="ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria" value-ref="sample-type-search-manager"/>
+	</util:map>
 
 	<!-- // Common -->
 

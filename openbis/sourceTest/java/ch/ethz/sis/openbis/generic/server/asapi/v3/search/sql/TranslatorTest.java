@@ -18,11 +18,16 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 import org.testng.annotations.Test;
@@ -36,23 +41,35 @@ import static org.testng.Assert.assertEquals;
 public class TranslatorTest
 {
 
+    private static final Long USER_ID = 1L;
+
     private static final String SAMPLE_ID = "A";
 
     private static final String REGISTRATION_DATE = "2019-04-11 14:21:16.392852+02";
 
     private static final String MODIFICATION_DATE = "2019-04-11 14:57:55.74435+02";
 
+    private static final String MAIN_TABLE_ALIAS = "t0";
+
+    protected static final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> CRITERIA_TO_MANAGER_MAP = new HashMap<>();
+
+    static {
+        CRITERIA_TO_MANAGER_MAP.put(SampleSearchCriteria.class, null);
+        CRITERIA_TO_MANAGER_MAP.put(SampleTypeSearchCriteria.class, null);
+    }
+
     @Test
     public void testTranslateSearchAllSamples()
     {
         final SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
         final SelectQuery result =
-                Translator.translate(EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+                Translator.translate(USER_ID, EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND,
+                        CRITERIA_TO_MANAGER_MAP);
 
         assertEquals(result, new SelectQuery(String.format(
-                "SELECT DISTINCT %s\n" +
-                "FROM %s\n",
-                ID_COLUMN, SAMPLES_ALL_TABLE), Collections.emptyList()));
+                "SELECT DISTINCT %s.%s\n" +
+                "FROM %s %s\n",
+                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, MAIN_TABLE_ALIAS), Collections.emptyList()));
     }
 
     @Test
@@ -63,13 +80,14 @@ public class TranslatorTest
         sampleSearchCriteria.withId().thatEquals(sampleIdentifier);
 
         final SelectQuery result =
-                Translator.translate(EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+                Translator.translate(USER_ID, EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND,
+                        CRITERIA_TO_MANAGER_MAP);
 
         assertEquals(result, new SelectQuery(String.format(
-                "SELECT DISTINCT %s\n" +
-                "FROM %s\n" +
+                "SELECT DISTINCT %s.%s\n" +
+                "FROM %s %s\n" +
                 "WHERE %s=?",
-                ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN),
+                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, MAIN_TABLE_ALIAS, ID_COLUMN),
                 Collections.singletonList(sampleIdentifier)));
     }
 
@@ -82,13 +100,15 @@ public class TranslatorTest
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
         final SelectQuery result =
-                Translator.translate(EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+                Translator.translate(USER_ID, EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND,
+                CRITERIA_TO_MANAGER_MAP);
 
         assertEquals(result, new SelectQuery(String.format(
-                "SELECT DISTINCT %s\n" +
-                "FROM %s\n" +
+                "SELECT DISTINCT %s.%s\n" +
+                "FROM %s %s\n" +
                 "WHERE %s=? AND %s=? AND %s=?\n",
-                ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN, REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN),
+                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, MAIN_TABLE_ALIAS, ID_COLUMN, REGISTRATION_TIMESTAMP_COLUMN,
+                MODIFICATION_TIMESTAMP_COLUMN),
                 Arrays.asList(SAMPLE_ID, REGISTRATION_DATE, MODIFICATION_DATE)));
     }
 
@@ -101,13 +121,15 @@ public class TranslatorTest
         sampleSearchCriteria.withModificationDate().thatEquals(MODIFICATION_DATE);
 
         final SelectQuery result =
-                Translator.translate(EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND);
+                Translator.translate(USER_ID, EntityMapper.SAMPLE, Collections.singletonList(sampleSearchCriteria), SearchOperator.AND,
+                        CRITERIA_TO_MANAGER_MAP);
 
         assertEquals(result, new SelectQuery(String.format(
-                "SELECT DISTINCT %s\n" +
-                "FROM %s\n" +
+                "SELECT DISTINCT %s.%s\n" +
+                "FROM %s %s\n" +
                 "WHERE %s=? OR %s=? OR %s=?\n",
-                ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN, REGISTRATION_TIMESTAMP_COLUMN, MODIFICATION_TIMESTAMP_COLUMN),
+                MAIN_TABLE_ALIAS, ID_COLUMN, SAMPLES_ALL_TABLE, ID_COLUMN, MAIN_TABLE_ALIAS, REGISTRATION_TIMESTAMP_COLUMN,
+                MODIFICATION_TIMESTAMP_COLUMN),
                 Arrays.asList(SAMPLE_ID, REGISTRATION_DATE, MODIFICATION_DATE)));
     }
 

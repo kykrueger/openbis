@@ -18,16 +18,11 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.hibernate;
 
 import java.util.List;
 
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
-
-public class SampleID2PETranslator implements IID2PETranslator<Long>
+/**
+ * Translator that translates IDs to the same values.
+ */
+public class IdentityTranslator implements IID2PETranslator<Long>
 {
-    private ISampleDAO dao;
-
-    public SampleID2PETranslator(final ISampleDAO dao)
-    {
-        this.dao = dao;
-    }
 
     @Override
     public List<Long> translate(final List<Long> ids)

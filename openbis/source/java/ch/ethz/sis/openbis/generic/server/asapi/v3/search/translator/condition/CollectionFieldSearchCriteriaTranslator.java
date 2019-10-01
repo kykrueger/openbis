@@ -16,13 +16,13 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
 
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
 import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
@@ -51,7 +51,7 @@ public class CollectionFieldSearchCriteriaTranslator extends AbstractConditionTr
                         append(SELECT).append(SP).append(UNNEST).append(LP).append(QU).append(RP).
                         append(RP);
 
-                args.add(fieldValue.toArray(new Object[fieldValue.size()]));
+                args.add(fieldValue.toArray(new Object[0]));
                 break;
             }
 

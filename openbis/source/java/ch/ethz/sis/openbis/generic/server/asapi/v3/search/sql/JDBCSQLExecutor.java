@@ -103,43 +103,39 @@ public class JDBCSQLExecutor implements ISQLExecutor
             final Object object = args.get(index);
             if (object != null && object.getClass().isArray())
             {
-                final Object[] objectArray = (Object[]) object;
                 final Class<?> componentType = object.getClass().getComponentType();
                 final String dbArrayTypeName;
 
                 if (componentType.isPrimitive()) {
-                    if (boolean.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = SQLTypes.BOOLEAN.toString();
-                    } else if (byte.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = SQLTypes.INT2.toString();
-                    } else if (char.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = SQLTypes.CHARACTER.toString();
-                    } else if (double.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = SQLTypes.FLOAT8.toString();
-                    } else if (float.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = SQLTypes.FLOAT4.toString();
-                    } else if (int.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = SQLTypes.INT4.toString();
-                    } else if (long.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = SQLTypes.INT8.toString();
-                    } else if (short.class.isAssignableFrom(componentType))
-                    {
-                        dbArrayTypeName = SQLTypes.INT2.toString();
-                    } else
-                    {
-                        /* No else. No other primitive types exist. */
-                        throw new AssertionError();
-                    }
+                    throw new IllegalArgumentException("Arrays of primitive types are not supported");
                 } else
                 {
-                    if (componentType.isAssignableFrom(String.class)) {
+                    if (Boolean.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = SQLTypes.BOOLEAN.toString();
+                    } else if (Byte.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = SQLTypes.INT2.toString();
+                    } else if (Character.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = SQLTypes.CHARACTER.toString();
+                    } else if (Double.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = SQLTypes.FLOAT8.toString();
+                    } else if (Float.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = SQLTypes.FLOAT4.toString();
+                    } else if (Integer.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = SQLTypes.INT4.toString();
+                    } else if (Long.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = SQLTypes.INT8.toString();
+                    } else if (Short.class.isAssignableFrom(componentType))
+                    {
+                        dbArrayTypeName = SQLTypes.INT2.toString();
+                    } else if (String.class.isAssignableFrom(componentType))
+                    {
                         dbArrayTypeName = SQLTypes.VARCHAR.toString();
                     } else
                     {
@@ -147,6 +143,7 @@ public class JDBCSQLExecutor implements ISQLExecutor
                     }
                 }
 
+                final Object[] objectArray = (Object[]) object;
                 preparedStatement.setArray(index + 1, connection.createArrayOf(dbArrayTypeName, objectArray));
             } else if (object instanceof Date)
             {

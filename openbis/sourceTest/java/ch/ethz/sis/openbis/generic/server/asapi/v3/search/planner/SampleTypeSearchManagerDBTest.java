@@ -66,7 +66,7 @@ public class SampleTypeSearchManagerDBTest
     {
         searchDAO = context.getBean(PostgresSearchDAO.class);
         authInfoProviderDAO = context.getBean(ISQLAuthorisationInformationProviderDAO.class);
-        iid2PETranslator = context.getBean("sample-id-2-pet-translator", IID2PETranslator.class);
+        iid2PETranslator = context.getBean("identity-translator", IID2PETranslator.class);
         searchManager = new SampleTypeSearchManager(searchDAO, authInfoProviderDAO, iid2PETranslator);
     }
 

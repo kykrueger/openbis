@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.EntityMapper;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.sql.ISQLExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SelectQuery;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.Translator;
@@ -35,16 +36,19 @@ public class PostgresSearchDAO implements ISQLSearchDAO
 {
     private ISQLExecutor sqlExecutor;
 
+    private Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap;
+
     public PostgresSearchDAO(ISQLExecutor sqlExecutor)
     {
         this.sqlExecutor = sqlExecutor;
     }
 
-    public Set<Long> queryDBWithNonRecursiveCriteria(final EntityKind entityKind, final Collection<ISearchCriteria> criteria,
+    public Set<Long> queryDBWithNonRecursiveCriteria(final Long userId, final EntityKind entityKind,
+            final Collection<ISearchCriteria> criteria,
             final SearchOperator operator, final boolean entityTypeSearch)
     {
         final EntityMapper entityMapper = EntityMapper.toEntityMapper(entityKind, entityTypeSearch);
-        final SelectQuery selectQuery = Translator.translate(entityMapper, criteria, operator);
+        final SelectQuery selectQuery = Translator.translate(userId, entityMapper, criteria, operator, criteriaToManagerMap);
         final List<Map<String, Object>> result = sqlExecutor.execute(selectQuery.getQuery(), selectQuery.getArgs());
         return result.stream().map(stringLongMap -> (Long) stringLongMap.get(entityMapper.getEntitiesTableIdField())).collect(Collectors.toSet());
     }
@@ -74,6 +78,12 @@ public class PostgresSearchDAO implements ISQLSearchDAO
         final List<Map<String, Object>> queryResultList = sqlExecutor.execute(query, args);
         return queryResultList.stream().map(stringObjectMap -> (Long) stringObjectMap.get(entityMapper.getRelationshipsTableChildIdField()))
                 .collect(Collectors.toSet());
+    }
+
+    public void setCriteriaToManagerMap(
+            final Map<Class<? extends ISearchCriteria>, ISearchManager<ISearchCriteria, ?>> criteriaToManagerMap)
+    {
+        this.criteriaToManagerMap = criteriaToManagerMap;
     }
 
 }
