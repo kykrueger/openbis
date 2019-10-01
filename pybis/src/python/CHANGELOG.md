@@ -1,3 +1,7 @@
+## Changes with pybis-1.9.6
+
+* bugfix when vocabulary attribute was not identical to the code of the aassigned property type
+
 ## Changes with pybis-1.9.5
 
 * bugfixes: get_property_assignments() method fixed for dataSet-, experiment- and materialTypes
