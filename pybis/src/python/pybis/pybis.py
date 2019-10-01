@@ -3353,7 +3353,8 @@ class Openbis:
         if 'collection' in kwargs:
             kwargs['experiment'] = kwargs['collection']
             kwargs.pop('collection', None)
-        return Sample(self, type=self.get_sample_type(type), project=project, data=None, props=props, **kwargs)
+        sample_type = self.get_sample_type(type)
+        return Sample(self, type=sample_type, project=project, data=None, props=props, **kwargs)
 
     new_object = new_sample # Alias
 
